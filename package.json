@@ -5,7 +5,8 @@
   "description": "Sniper Duel: shooter PvP de francotiradores en el navegador (Three.js).",
   "scripts": {
     "build": "python3 build.py",
-    "test": "python3 build.py && node test/core.test.js && node test/smoke.test.js",
+    "test": "python3 build.py && node test/core.test.js && node test/phase2.test.js && node test/smoke.test.js",
+    "test:phase2": "node test/phase2.test.js",
     "test:core": "node test/core.test.js",
     "test:smoke": "node test/smoke.test.js"
   }

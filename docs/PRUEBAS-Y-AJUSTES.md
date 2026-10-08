@@ -1,10 +1,11 @@
-# Sniper Duel — Fase 1 estabilizada: pruebas y ajustes
+# Sniper Duel — pruebas y ajustes (fase 1 + fase 2A: navaja y entrenamiento)
 
 ## Qué está probado y qué no
 
 **Pruebas automáticas (las ejecuta Claude en Node, sin navegador)**
 - `test/core.test.js` — 69 comprobaciones del núcleo puro: movimiento, arma, balística y retroceso. Todas pasan.
-- `test/smoke.test.js` — 25 comprobaciones del juego completo con Three.js y la página sustituidos por imitaciones. Recorre el menú, el duelo, el campo de tiro, la muerte y reaparición, la pausa y el panel F3 durante miles de fotogramas. Detecta errores de ejecución, fugas de proyectiles y eventos, y diferencias por FPS. Todas pasan, tres ejecuciones seguidas.
+- `test/phase2.test.js` — 54 comprobaciones de la fase 2A: cambio de arma, navaja, alcance, daño frontal y por la espalda, paredes, poses, interacción con el cerrojo y la recarga, y 2 minutos de bots de entrenamiento en cada dificultad. Todas pasan.
+- `test/smoke.test.js` — 53 comprobaciones del juego completo con Three.js y la página sustituidos por imitaciones. Recorre el menú, el duelo, el campo de tiro, la muerte y reaparición, la pausa y el panel F3 durante miles de fotogramas. Detecta errores de ejecución, fugas de proyectiles y eventos, y diferencias por FPS. Todas pasan, tres ejecuciones seguidas.
 
 **Lo que NO cubren las pruebas automáticas** (solo se ve jugando en un navegador):
 - Todo lo visual: el renderizado, las animaciones, el humo y que el rifle no atraviese la cámara.
@@ -53,6 +54,27 @@ Si sale alguna ✘, o un mensaje de ERROR, pásale la lista a Claude.
 | 25 | Campo de tiro: dispara al suelo, a una caja, a un barril y a una pared a 20 m y a 80 m. | Cada superficie suena distinta (tierra sorda, madera seca, metal que tintinea, pared que cruje). A 80 m el sonido llega claramente después del impacto. |
 | 26 | Acierta a una diana a 100 m. | Marcador inmediato, y el golpe seco del impacto llega unos 0,3 s después. |
 
+### Fase 2A — navaja y entrenamiento
+
+| # | Qué hacer | Resultado esperado |
+|---|---|---|
+| 27 | Pulsa 3 y luego 1 varias veces. | El rifle baja y sale la navaja (unos 0,35 s); al volver, el rifle sube en unos 0,45 s. Sin saltos de posición ni objetos que atraviesen la cámara. |
+| 28 | Con la navaja, mira el modelo. | Hoja oscura con filo claro, punta recortada, guarda, mango con anillas y pomo. Se distingue bien de día y a la sombra. |
+| 29 | Con la navaja, clic izquierdo varias veces. | Golpes alternos (derecha y revés) cada 0,4 s, con silbido. Al darle a una pared cercana: chispa y sonido metálico. |
+| 30 | Pulsa F con la navaja. | La sacas de lado, la giras sobre sí misma y la vuelves a guardar en la mano. Un clic durante la inspección la corta y ataca. |
+| 31 | Campo de tiro: acércate de frente a una diana (a menos de 2 m) y golpea dos veces. | Primer golpe: «NAVAJA −50». Segundo: «NAVAJA», baja. |
+| 32 | Rodea una diana (miran hacia ti) y golpéala desde detrás. | Una sola cuchillada: «POR LA ESPALDA», marcador dorado. |
+| 33 | Golpea a una diana con una pared o una caja en medio. | No le hace daño. |
+| 34 | Dispara el rifle, pulsa 3 y enseguida 1, y vuelve a disparar. | El segundo disparo no sale antes de lo normal (cerrojo 0,95 s). |
+| 35 | Empieza a recargar (R), cambia a la navaja a mitad y vuelve al rifle. | La recarga sigue donde estaba, no empieza de cero ni se completa sola. |
+| 36 | Con la navaja, clic derecho. | No entra la mira. |
+| 37 | Corre con la navaja y compara en F3 con el rifle. | Velocidad un 8 % mayor (andar 4,97 frente a 4,60 m/s). |
+| 38 | Menú → Campo de tiro → Bots de entrenamiento en FÁCIL, NORMAL y DIFÍCIL. | Aparecen 3, 4 o 5 bots naranjas desarmados además de las dianas. En fácil andan despacio; en difícil esprintan, se deslizan, saltan y se esconden tras las coberturas. No disparan. |
+| 39 | Juega 3 minutos contra los bots de entrenamiento. | Ninguno se queda atascado en paredes o cajas. Reaparecen a los 3 s de caer. |
+| 40 | Activa «Munición infinita» y dispara 10 veces. | El cargador no baja de 5 y no recargas. |
+| 41 | Arriba, en el campo de tiro. | Se ven BAJAS, DAÑO y NAVAJA (impactos/golpes), además de lo anterior. «Reiniciar estadísticas» los pone a cero. |
+| 42 | Móvil: botón ARMA. | Alterna rifle y navaja. Con la navaja, FUEGO pasa a ATACAR y desaparece MIRA. |
+
 Si algo no cumple lo esperado, apunta el número de la prueba y lo que muestra F3 en ese momento.
 
 ## Parámetros para afinar las sensaciones (`core/config.js`)
@@ -76,6 +98,17 @@ Si algo no cumple lo esperado, apunta el número de la prueba y lo que muestra F
 - `recoil.pitch`, `recoil.stiffness`, `recoil.damping`: la fuerza del golpe, la rapidez con que vuelve y si rebota. Es solo visual.
 - `dmg`: el daño por zona.
 
+**Navaja** (`knives.tactica`)
+- `draw` / `holster`: lo que tarda en salir y en guardarse.
+- `interval`: el tiempo entre golpes. `hitAt`: en qué momento del golpe se comprueba el impacto.
+- `range`, `cone`, `closeCone`: el alcance y lo ancho que corta.
+- `dmgFront`, `dmgBack`, `backArc`: el daño de frente y por la espalda, y el ángulo que cuenta como espalda.
+- `moveMul`: la velocidad extra con la navaja.
+
+**Cambio de arma** (`loadout`): `rifleDraw` y `rifleHolster`.
+
+**Entrenamiento** (`training`): para cada dificultad, el número de bots, su velocidad y cada cuánto cambian de dirección, esprintan, se deslizan, saltan o buscan cobertura.
+
 **Sensaciones** (`feel`): el FOV, el aumento de FOV en sprint y slide, el balanceo al andar, la sacudida, el golpe al aterrizar y la cámara lenta del headshot (solo afecta a efectos).
 
 ## Arquitectura
@@ -83,6 +116,8 @@ Si algo no cumple lo esperado, apunta el número de la prueba y lo que muestra F
 - `core/config.js`: todos los números del juego.
 - `core/movement.js`: la simulación del jugador. Es pura y determinista y no usa Three.js.
 - `core/weapon.js`: el estado del arma, la regla de precisión, la balística y el retroceso. También puro.
+- `core/melee.js`: el cambio de arma, la navaja, el golpe cuerpo a cuerpo (alcance, cono, paredes, espalda) y sus animaciones. Puro.
+- `core/trainer.js`: el cerebro de los bots de entrenamiento. Genera los mismos comandos que un jugador, y el bot se mueve con `movement.js`.
 - `src/page.html`: el cliente: render, cámara, modelo del arma, efectos, audio, bots, interfaz y entrada.
 - `build.py`: une todo en `index.html`, la página que se abre en el navegador.
 

@@ -89,6 +89,40 @@ const SD_CONFIG = {
     }
   },
 
+  // melee weapons (extensible: add another entry for a new knife or skin)
+  knives: {
+    tactica: {
+      name: 'NAVAJA TÁCTICA',
+      draw: 0.25,          // s to equip
+      holster: 0.08,       // s to put away
+      interval: 0.40,      // s between attacks
+      hitAt: 0.12,         // s into the swing when the hit is checked
+      attackBuffer: 0.15,  // s a click is remembered before the next swing is allowed
+      range: 2.0,          // m from your body to the target's body
+      cone: 0.7,           // rad half-angle in front of you that the blade covers
+      closeDist: 0.9,      // m: inside this distance the cone widens…
+      closeCone: 1.2,      // …to this half-angle
+      dmgFront: 50,
+      dmgBack: 100,
+      backArc: 1.05,       // rad: attacker within ±60° of the target's back = backstab
+      moveMul: 1.08,       // +8 % movement speed while the knife is out
+      inspect: 1.8         // s inspect animation (F)
+    }
+  },
+
+  loadout: {
+    rifleDraw: 0.35,       // s to bring the rifle back up after switching
+    rifleHolster: 0.1      // s to put the rifle away
+  },
+
+  // free training in the shooting range: unarmed bots that move like players
+  training: {
+    area: { minX: -15, maxX: 15, minZ: 68, maxZ: 166 },
+    easy:   { count: 3, speedMul: 0.6, run: 0,    changeMin: 1.8,  changeMax: 3.2, slide: 0,    jump: 0,    cover: 0,    crouch: 0.1 },
+    normal: { count: 4, speedMul: 1,   run: 0.35, changeMin: 0.9,  changeMax: 1.8, slide: 0.25, jump: 0.05, cover: 0.35, crouch: 0.15 },
+    hard:   { count: 5, speedMul: 1,   run: 0.6,  changeMin: 0.45, changeMax: 1.1, slide: 0.5,  jump: 0.15, cover: 0.5,  crouch: 0.2 }
+  },
+
   feel: {
     fovDesktop: 75, fovTouch: 70,
     sprintFov: 5, slideFov: 6,

@@ -9,7 +9,8 @@
                crouchPressed, // edge: crouch went down this tick (starts a slide)
                jump,          // edge: jump pressed this tick
                ads,           // 0..1 aim-down-sights progress (slows you down)
-               reloading }
+               reloading,
+               speedMul }     // optional, e.g. 1.08 with the knife out
    world   = { colliders:[{minX,minY,minZ,maxX,maxY,maxZ}], ramps:[{minX,maxX,minZ,maxZ,axis,hLow,hHigh,highAtMin}] } */
 (function (root) {
 'use strict';
@@ -117,6 +118,7 @@ function step(s, cmd, dt, world, cfg) {
     if (!s.sprinting && mz > 0.3) speed *= cfg.backMul;
     if (cmd.ads > 0.5) speed = Math.min(speed, (s.crouch ? cfg.crouch : cfg.walk) * cfg.adsMul);
     if (cmd.reloading) speed *= cfg.reloadMul;
+    speed *= cmd.speedMul || 1;
     if (wl < 0.01) {
       // no input: brake to a stop
       const d = cfg.groundDecel * dt;

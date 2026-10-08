@@ -2,7 +2,7 @@
 
 Shooter PvP de francotiradores en el navegador, hecho con Three.js. Sin Unity ni Godot: se abre `index.html` y se juega.
 
-**Fase actual:** 1 — gunplay y movimiento con un solo rifle (HALCÓN R7), duelo contra bots y campo de tiro a 20/50/100 m.
+**Fase actual:** 2A — rifle HALCÓN R7 + navaja táctica, duelo contra bots y campo de tiro (dianas a 20/50/100 m y bots de entrenamiento desarmados).
 
 ## Jugar
 
@@ -19,8 +19,10 @@ Abre `index.html` en el navegador (ordenador o móvil). Pulsa **F3** durante la 
 | Rueda | Zoom 4× / 8× |
 | Clic izquierdo | Disparar |
 | R | Recargar |
+| 1 / 3 | Rifle / navaja |
+| F | Inspeccionar navaja |
 
-En móvil hay joystick y botones en pantalla.
+En móvil hay joystick y botones en pantalla (ARMA cambia entre rifle y navaja).
 
 ## Estructura
 
@@ -29,6 +31,8 @@ core/            Lógica pura y determinista (sin Three.js), reutilizable por un
   config.js      Todos los números que definen las sensaciones (movimiento, rifle, cámara)
   movement.js    Simulación del jugador: aceleración, sprint, crouch, slide, salto, colisiones, rampas
   weapon.js      Estados del arma, regla de precisión, balística con caída de bala, retroceso
+  melee.js       Cambio de arma, navaja, golpe cuerpo a cuerpo (alcance, paredes, espalda), animaciones
+  trainer.js     Cerebro de los bots de entrenamiento (mismos comandos que un jugador)
 src/page.html    Cliente: render, cámara, modelo del arma, efectos, audio, bots, interfaz, controles
 build.py         Une core/ + src/page.html en index.html (un solo archivo)
 test/            Pruebas automáticas en Node
@@ -47,7 +51,8 @@ npm test                # build + pruebas automáticas
 ```
 
 - `test/core.test.js` — 69 comprobaciones de movimiento, arma, balística y retroceso.
-- `test/smoke.test.js` — 25 comprobaciones del juego completo con Three.js y la página sustituidos por imitaciones (no prueba lo visual).
+- `test/phase2.test.js` — 54 comprobaciones de navaja, cambio de arma y bots de entrenamiento.
+- `test/smoke.test.js` — 53 comprobaciones del juego completo con Three.js y la página sustituidos por imitaciones (no prueba lo visual).
 
 Edita `core/` o `src/page.html`, nunca `index.html` directamente: se regenera con `build.py`.
 
@@ -55,4 +60,4 @@ Las pruebas que hay que hacer jugando están en [`docs/PRUEBAS-Y-AJUSTES.md`](do
 
 ## Hoja de ruta
 
-1. **Gunplay** (actual) · 2. Segundo rifle · 3. 1v1 online con sala privada y código · 4. Salas 2v2 / 3v3
+1. Gunplay ✔ · 2A. **Navaja y entrenamiento** (actual) · 2B. Controles móviles · 3. 1v1 online con sala privada y código · 4. Salas 2v2 / 3v3

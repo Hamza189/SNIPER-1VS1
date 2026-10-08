@@ -11,7 +11,10 @@ const bump = (p, a, b) => { const t = clamp((p - a) / (b - a), 0, 1); return Mat
 /* ---------------- weapon state machine ----------------
    states: raise → ready ⇄ bolt ; ready → reload → ready
    cmd = { fire (edge), ads (held/toggled), reload (edge) }
-   ctx = { sprinting, alive }
+   ctx = { sprinting, alive, holstered }
+   holstered (another weapon is out, or the rifle is being drawn):
+     no ADS, no firing, reload progress pauses (never resets), the bolt keeps cycling,
+     so switching weapons can never be used to fire sooner.
    tick() returns events: fire, dry, boltLift, boltBack, eject, boltFwd, boltLock, ready,
                           reloadStart, magOut, magIn, reloadEnd                          */
 function createState(cfg) {
@@ -27,16 +30,17 @@ function resetForSpawn(w) { w.ammo = w.cfg.mag; setState(w, 'raise'); w.ads = 0;
 
 function tick(w, cmd, dt, ctx) {
   const c = w.cfg, ev = [];
-  w.t += dt;
+  const hol = !!ctx.holstered;
+  if (!(hol && w.state === 'reload')) w.t += dt;
   w.fireBuf = Math.max(0, w.fireBuf - dt);
   if (ctx.sprinting) w.sprintRecover = c.sprintOut; else w.sprintRecover = Math.max(0, w.sprintRecover - dt);
   if (cmd.fire) w.fireBuf = c.fireBuffer + (ctx.sprinting ? 0 : w.sprintRecover);
 
   // aim down sights: linear progress, the presentation layer eases it
-  const canAds = cmd.ads && ctx.alive && !ctx.sprinting && w.state !== 'reload' && w.state !== 'raise';
+  const canAds = cmd.ads && ctx.alive && !hol && !ctx.sprinting && w.state !== 'reload' && w.state !== 'raise';
   w.ads = clamp(w.ads + (canAds ? dt / c.adsTime : -dt / c.adsOutTime), 0, 1);
 
-  if (cmd.reload && w.state === 'ready' && w.ammo < c.mag) startReload(w, ev);
+  if (cmd.reload && !hol && w.state === 'ready' && w.ammo < c.mag) startReload(w, ev);
 
   switch (w.state) {
     case 'raise': if (w.t >= c.raise) { setState(w, 'ready'); ev.push({ type: 'ready' }); } break;
@@ -54,6 +58,7 @@ function tick(w, cmd, dt, ctx) {
       break;
     }
     case 'reload': {
+      if (hol) break; // paused while holstered
       const p = w.t / c.reload, k = c.reloadKeys, b = k.bolt;
       once(w, 'out', p >= k.magOut[0], ev, { type: 'magOut' });
       if (!w.magIn && p >= k.magIn[1]) { w.magIn = true; w.ammo = c.mag; ev.push({ type: 'magIn' }); }
@@ -68,6 +73,7 @@ function tick(w, cmd, dt, ctx) {
   }
 
   // trigger: fires on the same tick the bolt locks if the press was buffered
+  if (hol) w.fireBuf = 0;
   if (w.fireBuf > 0 && ctx.alive && w.state === 'ready' && w.sprintRecover <= 0) {
     if (w.ammo > 0) {
       w.ammo--; w.shots++; w.fireBuf = 0;
