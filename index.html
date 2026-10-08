@@ -1,3 +1,13 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Sniper Duel">
+<link rel="manifest" href="manifest.webmanifest">
 <title>Sniper Duel</title>
 <meta name="theme-color" content="#0f0d0a">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -20,7 +30,7 @@
   --f-mono:'IBM Plex Mono',ui-monospace,Menlo,Consolas,monospace;
   color-scheme:dark;
 }
-html,body{height:100%;margin:0;overflow:hidden;background:var(--ink);color:var(--hud);font-family:var(--f-mono);-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;margin:0;overflow:hidden;overscroll-behavior:none;background:var(--ink);color:var(--hud);font-family:var(--f-mono);-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;-webkit-tap-highlight-color:transparent}
 canvas#c,#touch,#hud{touch-action:none}
 canvas#c{position:fixed;inset:0;width:100%;height:100%;display:block;background:var(--ink)}
 button{font:inherit;color:inherit}
@@ -200,17 +210,27 @@ h1 span{display:block;color:var(--sand)}
 #stickKnob{position:absolute;left:50%;top:50%;width:52px;height:52px;margin:-26px 0 0 -26px;border-radius:50%;background:rgba(244,234,216,.35)}
 #stickBase.sprint{border-color:var(--signal)}
 #stickBase.sprint #stickKnob{background:rgba(255,138,43,.6)}
-.tb{position:absolute;border-radius:50%;border:1.5px solid rgba(244,234,216,.45);background:rgba(15,13,10,.35);font-family:var(--f-display);font-size:17px;letter-spacing:.06em;color:var(--hud);display:grid;place-items:center;padding:0;line-height:1;touch-action:none}
+.tb{position:absolute;opacity:var(--tbOp,.9);width:56px;height:56px;border-radius:50%;border:1.5px solid rgba(244,234,216,.45);background:rgba(15,13,10,.35);font-family:var(--f-display);font-size:17px;letter-spacing:.06em;color:var(--hud);display:grid;place-items:center;padding:0;line-height:1;touch-action:none}
 .tb.on{background:rgba(244,234,216,.85);color:var(--ink)}
 .tb.press{transform:scale(.92)}
-#tbFire{width:86px;height:86px;right:calc(22px + env(safe-area-inset-right,0px));bottom:calc(22px + env(safe-area-inset-bottom,0px));border-color:var(--signal);font-size:20px;background:rgba(255,138,43,.25)}
-#tbScope{width:66px;height:66px;right:calc(122px + env(safe-area-inset-right,0px));bottom:calc(30px + env(safe-area-inset-bottom,0px))}
-#tbCrouch{width:54px;height:54px;right:calc(202px + env(safe-area-inset-right,0px));bottom:calc(22px + env(safe-area-inset-bottom,0px));font-size:14px}
-#tbJump{width:56px;height:56px;right:calc(36px + env(safe-area-inset-right,0px));bottom:calc(124px + env(safe-area-inset-bottom,0px));font-size:15px}
-#tbReload{width:48px;height:48px;right:calc(108px + env(safe-area-inset-right,0px));bottom:calc(112px + env(safe-area-inset-bottom,0px))}
-#tbBreath{width:56px;height:56px;right:calc(172px + env(safe-area-inset-right,0px));bottom:calc(96px + env(safe-area-inset-bottom,0px));font-size:14px}
-#tbZoom{width:46px;height:46px;right:calc(40px + env(safe-area-inset-right,0px));bottom:calc(196px + env(safe-area-inset-bottom,0px))}
-#tbSwap{width:48px;height:48px;right:calc(178px + env(safe-area-inset-right,0px));bottom:calc(166px + env(safe-area-inset-bottom,0px));font-size:14px}
+#tbFire,#tbFire2{border-color:var(--signal);font-size:20px;background:rgba(255,138,43,.25)}
+#tbCrouch,#tbBreath,#tbSwap{font-size:14px}
+#touch.editing{z-index:30;background:rgba(12,10,8,.35)}
+#touch.editing .tb{outline:1px dashed rgba(244,234,216,.5);outline-offset:3px}
+#touch.editing .tb.sel{outline:2px solid var(--signal);background:rgba(255,138,43,.35)}
+#editPanel{position:fixed;left:50%;top:calc(10px + env(safe-area-inset-top,0px));transform:translateX(-50%);z-index:31;width:min(560px,calc(100% - 32px));box-sizing:border-box;padding:12px 14px;display:grid;gap:8px;background:rgba(28,25,21,.94);border:1px solid var(--line);touch-action:manipulation}
+#editPanel .btn{font-size:18px;padding:8px 14px 5px}
+.edRow{display:flex;align-items:center;gap:10px;font-size:12px;color:var(--sand)}
+.edRow input{flex:1;accent-color:var(--signal)}
+.edRow output{min-width:36px;text-align:right;font-variant-numeric:tabular-nums}
+.setGrid{display:grid;gap:10px}
+.setGrid .sens .lbl{min-width:120px}
+#settings,#settings *{touch-action:manipulation}
+#rotate{position:fixed;inset:0;z-index:40;display:grid;place-items:center;background:var(--ink);text-align:center;padding:24px}
+#rotate h3{font-family:var(--f-display);font-size:44px;line-height:.9;margin:18px 0 6px;color:var(--hud);font-weight:600}
+#rotate p{margin:0;color:var(--sand);font-size:13px}
+#rotate .phone{width:46px;height:80px;margin:0 auto;border:3px solid var(--sand);border-radius:8px;animation:turn 1.8s ease-in-out infinite}
+@keyframes turn{0%,20%{transform:rotate(0)}60%,100%{transform:rotate(-90deg)}}
 #tbPause{width:38px;height:38px;left:calc(14px + env(safe-area-inset-left,0px));top:calc(12px + env(safe-area-inset-top,0px));font-size:15px}
 body.touch #vitals{left:calc(62px + env(safe-area-inset-left,0px));top:calc(14px + env(safe-area-inset-top,0px));bottom:auto;width:150px}
 body.touch #ammo{left:calc(62px + env(safe-area-inset-left,0px));right:auto;top:calc(52px + env(safe-area-inset-top,0px));bottom:auto;justify-items:start}
@@ -233,6 +253,9 @@ body.touch #top{width:min(300px,46vw)}
   #feed div{animation:none}
 }
 </style>
+</head>
+<body>
+
 
 <canvas id="c"></canvas>
 
@@ -289,16 +312,44 @@ body.touch #top{width:min(300px,46vw)}
 
 <div id="touch" hidden>
   <div id="stickBase" hidden><div id="stickKnob"></div></div>
-  <button class="tb" id="tbFire" aria-label="Disparar">FUEGO</button>
-  <button class="tb" id="tbScope" aria-label="Mira">MIRA</button>
-  <button class="tb" id="tbCrouch" aria-label="Agacharse">AGACH</button>
-  <button class="tb" id="tbJump" aria-label="Saltar">SALTO</button>
-  <button class="tb" id="tbReload" aria-label="Recargar">R</button>
-  <button class="tb" id="tbBreath" aria-label="Aguantar respiración" hidden>AIRE</button>
-  <button class="tb" id="tbZoom" aria-label="Cambiar zoom" hidden>8×</button>
-  <button class="tb" id="tbSwap" aria-label="Cambiar arma">ARMA</button>
-  <button class="tb" id="tbPause" aria-label="Pausa">II</button>
+  <button class="tb" id="tbFire" data-btn="fire" aria-label="Disparar">FUEGO</button>
+  <button class="tb" id="tbScope" data-btn="scope" aria-label="Mira">MIRA</button>
+  <button class="tb" id="tbCrouch" data-btn="crouch" aria-label="Agacharse o deslizarse">AGACH</button>
+  <button class="tb" id="tbJump" data-btn="jump" aria-label="Saltar">SALTO</button>
+  <button class="tb" id="tbReload" data-btn="reload" aria-label="Recargar">R</button>
+  <button class="tb" id="tbBreath" data-btn="breath" aria-label="Aguantar respiración" hidden>AIRE</button>
+  <button class="tb" id="tbZoom" data-btn="zoom" aria-label="Cambiar zoom" hidden>8×</button>
+  <button class="tb" id="tbSwap" data-btn="swap" aria-label="Cambiar arma">ARMA</button>
+  <button class="tb" id="tbInspect" data-btn="inspect" aria-label="Inspeccionar navaja" hidden>INSP</button>
+  <button class="tb" id="tbFire2" data-btn="fire2" aria-label="Disparar (izquierda)" hidden>FUEGO</button>
+  <button class="tb" id="tbPause" data-btn="pause" aria-label="Pausa">II</button>
 </div>
+
+<div id="editPanel" hidden>
+  <div class="edRow"><b id="edName">Toca un botón para elegirlo</b><span class="hint">Arrástralo para moverlo</span></div>
+  <label class="edRow"><span>Tamaño</span><input id="edSize" type="range" min="36" max="140" step="2" value="60"><output id="edSizeOut">60</output></label>
+  <label class="edRow"><span>Opacidad (todos)</span><input id="edOp" type="range" min="0.3" max="1" step="0.05" value="0.9"><output id="edOpOut">0.90</output></label>
+  <div class="row"><button class="btn" id="edSave" type="button">GUARDAR</button><button class="btn ghost" id="edReset" type="button">RESTAURAR</button><button class="btn ghost" id="edCancel" type="button">CANCELAR</button></div>
+</div>
+
+<div id="settings" class="overlay center" hidden>
+  <div class="panel">
+    <div class="eyebrow">Ajustes</div>
+    <h2 style="font-size:clamp(40px,7vw,60px)">CONTROLES</h2>
+    <div class="setGrid">
+      <label class="sens"><span class="lbl">Sensib. horizontal</span><input id="sH" type="range" min="0.2" max="3" step="0.05"><output id="sHo"></output></label>
+      <label class="sens"><span class="lbl">Sensib. vertical</span><input id="sV" type="range" min="0.2" max="3" step="0.05"><output id="sVo"></output></label>
+      <label class="sens"><span class="lbl">Con mira</span><input id="sA" type="range" min="0.3" max="2" step="0.05"><output id="sAo"></output></label>
+      <label class="sens"><span class="lbl">Dedo (móvil)</span><input id="sT" type="range" min="0.3" max="3" step="0.05"><output id="sTo"></output></label>
+      <label class="chk"><input type="checkbox" id="sInv"> Invertir eje vertical</label>
+      <label class="chk"><input type="checkbox" id="sLeft"> Botón FUEGO también a la izquierda (móvil)</label>
+    </div>
+    <div class="row"><button class="btn ghost" id="openEditor" type="button" style="font-size:20px">EDITAR BOTONES TÁCTILES</button><button class="btn ghost" id="setReset" type="button" style="font-size:20px">RESTAURAR</button></div>
+    <div class="row"><button class="btn" id="setClose" type="button">LISTO</button></div>
+  </div>
+</div>
+
+<div id="rotate" hidden><div class="box"><div class="phone"></div><h3>GIRA EL MÓVIL</h3><p>Sniper Duel se juega en horizontal.</p></div></div>
 
 <div id="menu" class="overlay">
   <div class="menuInner">
@@ -333,11 +384,12 @@ body.touch #top{width:min(300px,46vw)}
           </div>
         </div>
         <div>
-          <div class="lbl" style="margin-bottom:6px">Sensibilidad</div>
+          <div class="lbl" style="margin-bottom:6px">Sensibilidad general</div>
           <div class="sens"><input id="sens" type="range" min="0.3" max="2.5" step="0.05" value="1"><output id="sensOut">1.00</output></div>
         </div>
         <div class="row">
           <button class="btn" id="play" type="button">JUGAR</button>
+          <button class="btn ghost" id="openSettings" type="button" style="font-size:22px">AJUSTES</button>
           <span class="hint" id="orientHint"></span>
         </div>
         <div class="road"><span class="now">1 · Gunplay</span><span>2 · Segundo rifle</span><span>3 · 1v1 online</span><span>4 · Salas</span></div>
@@ -387,7 +439,7 @@ body.touch #top{width:min(300px,46vw)}
     <div class="eyebrow">Pausa</div>
     <h2>EN ESPERA</h2>
     <div class="row"><button class="btn" id="resume" type="button">REANUDAR</button><button class="btn ghost" id="toMenu1" type="button">MENÚ</button></div>
-    <div class="row"><button class="btn ghost" id="dbgBtn" type="button" style="font-size:18px">PANEL TÉCNICO (F3)</button><button class="btn ghost" id="rangeReset" type="button" style="font-size:18px">REINICIAR ESTADÍSTICAS</button><button class="btn ghost" id="selfTestBtn" type="button" style="font-size:18px">AUTOTEST DE PUNTERÍA</button></div>
+    <div class="row"><button class="btn ghost" id="pauseSettings" type="button" style="font-size:18px">AJUSTES</button><button class="btn ghost" id="dbgBtn" type="button" style="font-size:18px">PANEL TÉCNICO (F3)</button><button class="btn ghost" id="rangeReset" type="button" style="font-size:18px">REINICIAR ESTADÍSTICAS</button><button class="btn ghost" id="selfTestBtn" type="button" style="font-size:18px">AUTOTEST DE PUNTERÍA</button></div>
     <pre id="selfTestOut" hidden></pre>
   </div>
 </div>
@@ -1136,6 +1188,179 @@ const SDTrainer = { createBrain, think, toLocal };
 if (typeof module !== 'undefined' && module.exports) module.exports = SDTrainer; else root.SDTrainer = SDTrainer;
 })(typeof window !== 'undefined' ? window : globalThis);
 
+/* SNIPER DUEL — player settings (sensitivity, invert Y, touch options).
+   Pure: no DOM. The page loads/saves them through a small storage adapter. */
+(function (root) {
+'use strict';
+const clamp = (v, a, b) => v < a ? a : v > b ? b : v;
+
+const DEFAULTS = {
+  sensH: 1,        // horizontal look sensitivity
+  sensV: 1,        // vertical look sensitivity
+  adsSens: 1,      // extra multiplier while the scope is up (on top of the automatic zoom scaling)
+  touchLook: 1,    // extra multiplier for finger dragging
+  invertY: false,
+  leftFire: false  // second FIRE button on the left side (3-4 finger play)
+};
+const RANGES = { sensH: [0.2, 3], sensV: [0.2, 3], adsSens: [0.3, 2], touchLook: [0.3, 3] };
+
+// any stored object → a complete, valid settings object (unknown keys dropped, numbers clamped)
+function sanitize(o) {
+  const s = Object.assign({}, DEFAULTS);
+  if (!o || typeof o !== 'object') return s;
+  for (const k of Object.keys(RANGES)) {
+    const v = Number(o[k]);
+    if (o[k] !== undefined && o[k] !== null && o[k] !== '' && isFinite(v)) s[k] = clamp(v, RANGES[k][0], RANGES[k][1]);
+  }
+  for (const k of ['invertY', 'leftFire']) if (typeof o[k] === 'boolean') s[k] = o[k];
+  return s;
+}
+// reads from a store with get(key, default); migrates the old single "sens" value
+function load(store) {
+  const saved = store.get('settings', null);
+  if (saved) return sanitize(saved);
+  const old = Number(store.get('sens', 1));
+  return sanitize(isFinite(old) ? { sensH: old, sensV: old } : {});
+}
+function save(store, s) { store.set('settings', sanitize(s)); }
+
+/* Converts a pointer movement in pixels into a yaw/pitch change in radians.
+   ctx = { scoped, fovRatio (tan(fov/2)/tan(baseFov/2)), touch } */
+function lookDelta(dx, dy, s, ctx) {
+  const base = ctx.touch ? 0.0042 : 0.0022;
+  const k = base * ctx.fovRatio * (ctx.scoped ? s.adsSens : 1) * (ctx.touch ? s.touchLook : 1);
+  return { yaw: -dx * k * s.sensH, pitch: -dy * k * s.sensV * (s.invertY ? -1 : 1) };
+}
+
+const SDSettings = { DEFAULTS, RANGES, sanitize, load, save, lookDelta };
+if (typeof module !== 'undefined' && module.exports) module.exports = SDSettings; else root.SDSettings = SDSettings;
+})(typeof window !== 'undefined' ? window : globalThis);
+
+/* SNIPER DUEL — on-screen touch button layout (position, size, transparency).
+   Pure: no DOM. Positions are the distance in px from the button's CENTRE to the nearest
+   screen edges it is anchored to (right/bottom for the action cluster, left/bottom for the
+   optional left FIRE), so buttons stay under the thumbs on any phone size. */
+(function (root) {
+'use strict';
+const clamp = (v, a, b) => v < a ? a : v > b ? b : v;
+
+const BUTTONS = {
+  fire:    { label: 'FUEGO',  anchor: 'br', dx: 65,  dy: 65,  size: 86 },
+  scope:   { label: 'MIRA',   anchor: 'br', dx: 155, dy: 63,  size: 66 },
+  crouch:  { label: 'AGACH',  anchor: 'br', dx: 229, dy: 49,  size: 54 },
+  jump:    { label: 'SALTO',  anchor: 'br', dx: 64,  dy: 152, size: 56 },
+  reload:  { label: 'R',      anchor: 'br', dx: 132, dy: 136, size: 48 },
+  breath:  { label: 'AIRE',   anchor: 'br', dx: 200, dy: 124, size: 56 },
+  zoom:    { label: '8×',     anchor: 'br', dx: 63,  dy: 219, size: 46 },
+  swap:    { label: 'ARMA',   anchor: 'br', dx: 202, dy: 190, size: 48 },
+  inspect: { label: 'INSP',   anchor: 'br', dx: 262, dy: 124, size: 46 },
+  fire2:   { label: 'FUEGO',  anchor: 'bl', dx: 70,  dy: 232, size: 70 }
+};
+const SIZE = [36, 140], OPACITY = [0.3, 1];
+
+function defaults() {
+  const b = {};
+  for (const k in BUTTONS) b[k] = { dx: BUTTONS[k].dx, dy: BUTTONS[k].dy, size: BUTTONS[k].size };
+  return { opacity: 0.9, buttons: b };
+}
+function sanitize(o) {
+  const d = defaults();
+  if (!o || typeof o !== 'object') return d;
+  const op = Number(o.opacity);
+  if (isFinite(op)) d.opacity = clamp(op, OPACITY[0], OPACITY[1]);
+  if (o.buttons && typeof o.buttons === 'object') for (const k in BUTTONS) {
+    const s = o.buttons[k]; if (!s) continue;
+    for (const f of ['dx', 'dy', 'size']) { const v = Number(s[f]); if (isFinite(v)) d.buttons[k][f] = v; }
+    d.buttons[k].size = clamp(d.buttons[k].size, SIZE[0], SIZE[1]);
+    d.buttons[k].dx = Math.max(0, d.buttons[k].dx); d.buttons[k].dy = Math.max(0, d.buttons[k].dy);
+  }
+  return d;
+}
+// keep a button fully on a W×H screen (4 px margin)
+function clampToScreen(b, W, H) {
+  const r = b.size / 2 + 4;
+  return { dx: clamp(b.dx, r, Math.max(r, W - r)), dy: clamp(b.dy, r, Math.max(r, H - r)), size: b.size };
+}
+// screen rectangle (left, top, size) of a button for a W×H screen
+function rect(name, b, W, H) {
+  const c = clampToScreen(b, W, H), anchor = BUTTONS[name].anchor;
+  const cx = anchor === 'bl' ? c.dx : W - c.dx, cy = H - c.dy;
+  return { left: cx - c.size / 2, top: cy - c.size / 2, size: c.size, cx, cy };
+}
+// a drag to screen point (x, y) → new dx/dy for that button
+function moveTo(name, b, x, y, W, H) {
+  const anchor = BUTTONS[name].anchor;
+  return clampToScreen({ dx: anchor === 'bl' ? x : W - x, dy: H - y, size: b.size }, W, H);
+}
+function load(store) { return sanitize(store.get('touchLayout', null)); }
+function save(store, L) { store.set('touchLayout', sanitize(L)); }
+
+const SDLayout = { BUTTONS, SIZE, OPACITY, defaults, sanitize, clampToScreen, rect, moveTo, load, save };
+if (typeof module !== 'undefined' && module.exports) module.exports = SDLayout; else root.SDLayout = SDLayout;
+})(typeof window !== 'undefined' ? window : globalThis);
+
+/* SNIPER DUEL — multi-finger touch logic (joystick, look, buttons). Pure: no DOM.
+   The page feeds it pointer events (id, x, y, which button was touched) and reads back
+   the joystick, the held buttons and the accumulated look movement.
+
+   Rules
+   - A finger that lands on a button presses that button (one finger per button).
+   - A finger in the left part of the screen (not on a button) becomes the joystick,
+     centred where it landed (floating stick). Only one joystick finger at a time.
+   - Any other finger, and the finger holding FIRE, turns the camera when it moves. */
+(function (root) {
+'use strict';
+const CFG = { stickZone: 0.42, radius: 56, deadzone: 0.12, sprintAt: 0.95, sprintForward: -0.5, lookGain: 1.35 };
+
+function create(cfg) {
+  return { cfg: Object.assign({}, CFG, cfg || {}), stickId: null, ox: 0, oy: 0, jx: 0, jy: 0, sprint: false, knobX: 0, knobY: 0,
+    look: new Map(), held: new Map(), dx: 0, dy: 0 };
+}
+function down(c, p) {
+  // p = { id, x, y, button (name or null), W }
+  if (p.button) {
+    c.held.set(p.id, p.button);
+    if (p.button === 'fire' || p.button === 'fire2') c.look.set(p.id, { x: p.x, y: p.y });
+    return { press: p.button };
+  }
+  if (p.x < p.W * c.cfg.stickZone && c.stickId === null) {
+    c.stickId = p.id; c.ox = p.x; c.oy = p.y; c.jx = c.jy = 0; c.sprint = false; c.knobX = c.knobY = 0;
+    return { stickStart: { x: p.x, y: p.y } };
+  }
+  c.look.set(p.id, { x: p.x, y: p.y });
+  return {};
+}
+function move(c, p) {
+  if (p.id === c.stickId) {
+    let dx = p.x - c.ox, dy = p.y - c.oy; const d = Math.hypot(dx, dy), R = c.cfg.radius;
+    if (d > R) { dx *= R / d; dy *= R / d; }
+    c.knobX = dx; c.knobY = dy;
+    const raw = Math.min(1, d / R);
+    // dead zone in the middle, then rescale so the edge of the dead zone is 0 and the rim is 1
+    const m = raw <= c.cfg.deadzone ? 0 : (raw - c.cfg.deadzone) / (1 - c.cfg.deadzone);
+    const nx = d > 0 ? dx / Math.min(d, R) : 0, ny = d > 0 ? dy / Math.min(d, R) : 0;
+    c.jx = nx * m; c.jy = ny * m;
+    c.sprint = raw >= c.cfg.sprintAt && ny < c.cfg.sprintForward;   // stick pushed to the rim, forward
+    return;
+  }
+  const l = c.look.get(p.id);
+  if (l) { c.dx += (p.x - l.x) * c.cfg.lookGain; c.dy += (p.y - l.y) * c.cfg.lookGain; l.x = p.x; l.y = p.y; }
+}
+function up(c, id) {
+  const out = {};
+  if (id === c.stickId) { c.stickId = null; c.jx = c.jy = 0; c.sprint = false; c.knobX = c.knobY = 0; out.stickEnd = true; }
+  if (c.held.has(id)) { out.release = c.held.get(id); c.held.delete(id); }
+  c.look.delete(id);
+  return out;
+}
+function drain(c) { const o = { dx: c.dx, dy: c.dy }; c.dx = 0; c.dy = 0; return o; }
+function isHeld(c, name) { for (const v of c.held.values()) if (v === name) return true; return false; }
+function reset(c) { c.stickId = null; c.jx = c.jy = 0; c.sprint = false; c.look.clear(); c.held.clear(); c.dx = c.dy = 0; c.knobX = c.knobY = 0; }
+
+const SDTouch = { CFG, create, down, move, up, drain, isHeld, reset };
+if (typeof module !== 'undefined' && module.exports) module.exports = SDTouch; else root.SDTouch = SDTouch;
+})(typeof window !== 'undefined' ? window : globalThis);
+
 </script>
 <script>
 (function(){
@@ -1662,7 +1887,6 @@ const DIFFS=[
   {name:'ÉLITE',react:[0.5,0.75],hit:0.62,head:0.16,bots:4,spot:1.35}
 ];
 let diff=clamp(store.get('diff',1)|0,0,2);
-let sens=clamp(+store.get('sens',1)||1,0.3,2.5);
 const GOAL=10;
 /* Gunplay and movement numbers live in core/config.js (SD_CONFIG). */
 const MOVE=SD_CONFIG.move,FEEL=SD_CONFIG.feel,TICK_DT=1/SD_CONFIG.TICK;
@@ -2163,50 +2387,130 @@ document.addEventListener('pointerlockchange',()=>{
   if(!pointerLocked&&(state==='playing'||state==='dead')&&!isTouch)pause();
 });
 
-/* =================== INPUT: TOUCH =================== */
+/* =================== INPUT: TOUCH (Pointer Events + client/touch.js) =================== */
 const touchEl=$('#touch');const stickBase=$('#stickBase'),stickKnob=$('#stickKnob');
-const TT=new Map();
-function btnPress(id,down){
-  const el=$('#'+id);el.classList.toggle('press',down);
-  if(!down){if(id==='tbBreath')input.breath=false;if(id==='tbFire')input.fireHeld=false;return;}
+const TOUCH=SDTouch.create();
+let LAYOUT=SDLayout.load(store);
+const EDIT={on:false,sel:null,offX:0,offY:0,dragId:null,backup:null};
+function btnEl(name){return touchEl.querySelector('[data-btn="'+name+'"]');}
+function applyLayout(){
+  const W=window.innerWidth,H=window.innerHeight;
+  touchEl.style.setProperty('--tbOp',LAYOUT.opacity);
+  for(const name in SDLayout.BUTTONS){const el=btnEl(name);if(!el)continue;const r=SDLayout.rect(name,LAYOUT.buttons[name],W,H);
+    el.style.left=r.left.toFixed(1)+'px';el.style.top=r.top.toFixed(1)+'px';el.style.width=el.style.height=r.size+'px';el.style.right=el.style.bottom='auto';}
+}
+function btnPress(name,down){
+  const el=btnEl(name);if(el)el.classList.toggle('press',down);
+  if(!down){if(name==='breath')input.breath=false;if(name==='fire'||name==='fire2')input.fireHeld=false;return;}
   audioInit();
-  switch(id){
-    case 'tbFire':input.fireHeld=true;input.firePressed=true;break;
-    case 'tbScope':input.scopeToggle=!input.scopeToggle;break;
-    case 'tbCrouch':input.crouchHeld=!input.crouchHeld;input.crouchPressed=true;break;
-    case 'tbJump':input.jumpPressed=true;break;
-    case 'tbReload':input.reloadPressed=true;break;
-    case 'tbBreath':input.breath=true;break;
-    case 'tbZoom':WS.zoom=WS.zoom===8?4:8;SFX.click(0,3000,0.15);break;
-    case 'tbPause':pause();break;
-    case 'tbSwap':input.select=(LOAD.pending||LOAD.active)==='rifle'?'knife':'rifle';break;
+  switch(name){
+    case 'fire':case 'fire2':input.fireHeld=true;input.firePressed=true;break;
+    case 'scope':input.scopeToggle=!input.scopeToggle;break;
+    case 'crouch':input.crouchHeld=!input.crouchHeld;input.crouchPressed=true;break;
+    case 'jump':input.jumpPressed=true;break;
+    case 'reload':input.reloadPressed=true;break;
+    case 'breath':input.breath=true;break;
+    case 'zoom':WS.zoom=WS.zoom===8?4:8;SFX.click(0,3000,0.15);break;
+    case 'pause':pause();break;
+    case 'swap':input.select=(LOAD.pending||LOAD.active)==='rifle'?'knife':'rifle';break;
+    case 'inspect':input.inspect=true;break;
   }
 }
-touchEl.addEventListener('touchstart',e=>{
-  e.preventDefault();
-  for(const t of e.changedTouches){
-    const b=t.target.closest&&t.target.closest('.tb');
-    if(b){TT.set(t.identifier,{type:b.id==='tbFire'?'fire':'btn',id:b.id,x:t.clientX,y:t.clientY});btnPress(b.id,true);continue;}
-    let hasStick=false;for(const v of TT.values())if(v.type==='stick')hasStick=true;
-    if(t.clientX<window.innerWidth*0.42&&!hasStick){TT.set(t.identifier,{type:'stick',ox:t.clientX,oy:t.clientY});stickBase.hidden=false;stickBase.style.left=t.clientX+'px';stickBase.style.top=t.clientY+'px';stickKnob.style.transform='';}
-    else TT.set(t.identifier,{type:'look',x:t.clientX,y:t.clientY});
-  }
-},{passive:false});
-touchEl.addEventListener('touchmove',e=>{
-  e.preventDefault();
-  for(const t of e.changedTouches){const v=TT.get(t.identifier);if(!v)continue;
-    if(v.type==='stick'){let dx=t.clientX-v.ox,dy=t.clientY-v.oy;const d=Math.hypot(dx,dy),R0=56;if(d>R0){dx*=R0/d;dy*=R0/d;}
-      input.joyX=dx/R0;input.joyY=dy/R0;input.joySprint=d>R0*1.05&&dy<-R0*0.55;stickKnob.style.transform='translate('+dx+'px,'+dy+'px)';stickBase.classList.toggle('sprint',input.joySprint);}
-    else if(v.type==='look'||v.type==='fire'){input.lookDX+=(t.clientX-v.x)*1.35;input.lookDY+=(t.clientY-v.y)*1.35;v.x=t.clientX;v.y=t.clientY;}}
-},{passive:false});
-function touchEnd(e){
-  e.preventDefault();
-  for(const t of e.changedTouches){const v=TT.get(t.identifier);if(!v)continue;TT.delete(t.identifier);
-    if(v.type==='stick'){input.joyX=input.joyY=0;input.joySprint=false;stickBase.hidden=true;stickBase.classList.remove('sprint');}
-    if(v.type==='btn'||v.type==='fire')btnPress(v.id,false);}
+function touchFeed(){ // touch state → the same input fields the keyboard/mouse use
+  input.joyX=TOUCH.jx;input.joyY=TOUCH.jy;input.joySprint=TOUCH.sprint;
+  const d=SDTouch.drain(TOUCH);input.lookDX+=d.dx;input.lookDY+=d.dy;
+  stickKnob.style.transform='translate('+TOUCH.knobX.toFixed(1)+'px,'+TOUCH.knobY.toFixed(1)+'px)';
+  stickBase.classList.toggle('sprint',TOUCH.sprint);
 }
-touchEl.addEventListener('touchend',touchEnd,{passive:false});
-touchEl.addEventListener('touchcancel',touchEnd,{passive:false});
+function releaseAllTouches(){for(const name of new Set(TOUCH.held.values()))btnPress(name,false);SDTouch.reset(TOUCH);stickBase.hidden=true;input.joyX=input.joyY=0;input.joySprint=false;}
+touchEl.addEventListener('pointerdown',e=>{
+  e.preventDefault();
+  try{touchEl.setPointerCapture(e.pointerId);}catch(err){}
+  const b=e.target&&e.target.closest?e.target.closest('.tb'):null;
+  const name=b&&b.dataset?b.dataset.btn:null;
+  if(EDIT.on){ // layout editor: pick and drag buttons
+    if(!name||name==='pause')return;
+    const r=SDLayout.rect(name,LAYOUT.buttons[name],window.innerWidth,window.innerHeight);
+    EDIT.sel=name;EDIT.dragId=e.pointerId;EDIT.offX=e.clientX-r.cx;EDIT.offY=e.clientY-r.cy;editorSelect(name);return;
+  }
+  const r=SDTouch.down(TOUCH,{id:e.pointerId,x:e.clientX,y:e.clientY,button:name,W:window.innerWidth});
+  if(r.press)btnPress(r.press,true);
+  if(r.stickStart){stickBase.hidden=false;stickBase.style.left=r.stickStart.x+'px';stickBase.style.top=r.stickStart.y+'px';stickKnob.style.transform='';}
+},{passive:false});
+touchEl.addEventListener('pointermove',e=>{
+  e.preventDefault();
+  if(EDIT.on){if(e.pointerId!==EDIT.dragId||!EDIT.sel)return;const b=LAYOUT.buttons[EDIT.sel];
+    const m=SDLayout.moveTo(EDIT.sel,b,e.clientX-EDIT.offX,e.clientY-EDIT.offY,window.innerWidth,window.innerHeight);b.dx=m.dx;b.dy=m.dy;applyLayout();return;}
+  SDTouch.move(TOUCH,{id:e.pointerId,x:e.clientX,y:e.clientY});
+},{passive:false});
+function touchUp(e){
+  e.preventDefault();
+  if(EDIT.on){if(e.pointerId===EDIT.dragId)EDIT.dragId=null;return;}
+  const r=SDTouch.up(TOUCH,e.pointerId);
+  if(r.release)btnPress(r.release,false);
+  if(r.stickEnd)stickBase.hidden=true;
+}
+touchEl.addEventListener('pointerup',touchUp,{passive:false});
+touchEl.addEventListener('pointercancel',touchUp,{passive:false});
+touchEl.addEventListener('contextmenu',e=>e.preventDefault());
+// iOS Safari: no pinch-zoom or double-tap zoom while playing
+document.addEventListener('gesturestart',e=>{if(state!=='menu')e.preventDefault();},{passive:false});
+document.addEventListener('dblclick',e=>{if(state!=='menu')e.preventDefault();},{passive:false});
+window.addEventListener('resize',()=>{applyLayout();checkOrientation();});
+window.addEventListener('orientationchange',()=>setTimeout(()=>{applyLayout();checkOrientation();},150));
+applyLayout();
+
+/* ---- layout editor ---- */
+function editorSelect(name){
+  for(const el of touchEl.querySelectorAll('.tb'))el.classList.toggle('sel',el.dataset&&el.dataset.btn===name);
+  $('#edName').textContent=name?SDLayout.BUTTONS[name].label+' ('+name+')':'Toca un botón para elegirlo';
+  if(name){$('#edSize').value=LAYOUT.buttons[name].size;$('#edSizeOut').textContent=LAYOUT.buttons[name].size;}
+}
+function openEditor(){
+  EDIT.on=true;EDIT.sel=null;EDIT.backup=JSON.parse(JSON.stringify(LAYOUT));
+  releaseAllTouches();
+  $('#settings').hidden=true;touchEl.hidden=false;touchEl.classList.add('editing');
+  for(const name in SDLayout.BUTTONS){const el=btnEl(name);if(el)el.hidden=(name==='fire2'&&!SETTINGS.leftFire);}
+  $('#edOp').value=LAYOUT.opacity;$('#edOpOut').textContent=(+LAYOUT.opacity).toFixed(2);
+  $('#editPanel').hidden=false;editorSelect(null);applyLayout();checkOrientation();
+}
+function closeEditor(saveIt){
+  if(saveIt)SDLayout.save(store,LAYOUT);else LAYOUT=SDLayout.sanitize(EDIT.backup);
+  EDIT.on=false;touchEl.classList.remove('editing');$('#editPanel').hidden=true;editorSelect(null);
+  touchEl.hidden=!(isTouch&&(state==='playing'||state==='dead'));
+  applyLayout();$('#settings').hidden=false;checkOrientation();
+}
+$('#edSize').addEventListener('input',()=>{if(!EDIT.sel)return;LAYOUT.buttons[EDIT.sel].size=+$('#edSize').value;$('#edSizeOut').textContent=$('#edSize').value;applyLayout();});
+$('#edOp').addEventListener('input',()=>{LAYOUT.opacity=+$('#edOp').value;$('#edOpOut').textContent=(+$('#edOp').value).toFixed(2);applyLayout();});
+$('#edSave').addEventListener('click',()=>closeEditor(true));
+$('#edCancel').addEventListener('click',()=>closeEditor(false));
+$('#edReset').addEventListener('click',()=>{LAYOUT=SDLayout.defaults();$('#edOp').value=LAYOUT.opacity;$('#edOpOut').textContent=LAYOUT.opacity.toFixed(2);editorSelect(EDIT.sel);applyLayout();});
+
+/* ---- settings panel ---- */
+let SETTINGS=SDSettings.load(store);
+const SET_UI=[['sH','sensH'],['sV','sensV'],['sA','adsSens'],['sT','touchLook']];
+function settingsToUI(){for(const [id,k] of SET_UI){$('#'+id).value=SETTINGS[k];$('#'+id+'o').textContent=(+SETTINGS[k]).toFixed(2);}$('#sInv').checked=SETTINGS.invertY;$('#sLeft').checked=SETTINGS.leftFire;
+  const g=(SETTINGS.sensH+SETTINGS.sensV)/2;$('#sens').value=g;$('#sensOut').textContent=g.toFixed(2);}
+function settingsChanged(){SETTINGS=SDSettings.sanitize(SETTINGS);SDSettings.save(store,SETTINGS);settingsToUI();}
+for(const [id,k] of SET_UI)$('#'+id).addEventListener('input',()=>{SETTINGS[k]=+$('#'+id).value;settingsChanged();});
+$('#sInv').addEventListener('change',()=>{SETTINGS.invertY=$('#sInv').checked;settingsChanged();});
+$('#sLeft').addEventListener('change',()=>{SETTINGS.leftFire=$('#sLeft').checked;settingsChanged();});
+let settingsFrom='menu';
+function openSettings(from){settingsFrom=from;settingsToUI();$('#settings').hidden=false;}
+$('#openSettings').addEventListener('click',()=>{audioInit();SFX.ui();openSettings('menu');});
+$('#pauseSettings').addEventListener('click',()=>{SFX.ui();openSettings('pause');});
+$('#setClose').addEventListener('click',()=>{$('#settings').hidden=true;SFX.ui();});
+$('#setReset').addEventListener('click',()=>{SETTINGS=SDSettings.sanitize({});settingsChanged();});
+$('#openEditor').addEventListener('click',()=>{SFX.ui();openEditor();});
+settingsToUI();
+
+/* ---- portrait warning (a web page cannot always force landscape) ---- */
+function checkOrientation(){
+  const portrait=window.innerHeight>window.innerWidth;
+  const show=isTouch&&portrait&&(state==='playing'||state==='dead'||state==='paused'||EDIT.on);
+  $('#rotate').hidden=!show;
+  if(show&&(state==='playing'||state==='dead'))pause();
+}
 
 /* =================== MENU / FLOW =================== */
 function setDiff(d){diff=d;store.set('diff',d);document.querySelectorAll('#diffSeg button').forEach(b=>b.setAttribute('aria-pressed',String(+b.dataset.d===d)));}
@@ -2223,8 +2527,8 @@ setTrain(TRAIN.level);
 $('#infAmmo').checked=TRAIN.infAmmo;
 $('#infAmmo').addEventListener('change',()=>{TRAIN.infAmmo=$('#infAmmo').checked;store.set('infAmmo',TRAIN.infAmmo);});
 function updateRangeHud(){if(mode!=='range')return;$('#rK').textContent=STATS.kills;$('#rD').textContent=Math.round(STATS.damage);$('#rN').textContent=STATS.meleeHits+'/'+(STATS.meleeSwings||0);$('#rT').textContent=STATS.kills>=2?((STATS.lastKill-STATS.firstKill)/(STATS.kills-1)).toFixed(2):'–';$('#rS').textContent=STATS.shots;$('#rH').textContent=STATS.hits;$('#rC').textContent=STATS.rangeHs;$('#rA').textContent=(STATS.shots?Math.round(STATS.hits/STATS.shots*100):0)+'%';}
-const sensEl=$('#sens');sensEl.value=sens;$('#sensOut').textContent=sens.toFixed(2);
-sensEl.addEventListener('input',()=>{sens=+sensEl.value;$('#sensOut').textContent=sens.toFixed(2);store.set('sens',sens);});
+const sensEl=$('#sens');
+sensEl.addEventListener('input',()=>{SETTINGS.sensH=SETTINGS.sensV=+sensEl.value;settingsChanged();});
 if(isTouch){$('#keysDesk').hidden=true;$('#keysTouch').hidden=false;}
 $('#play').addEventListener('click',startMatch);
 $('#again').addEventListener('click',startMatch);
@@ -2257,12 +2561,13 @@ function startMatch(){
   $('#menu').hidden=true;$('#over').hidden=true;$('#pause').hidden=true;$('#hud').hidden=false;
   $('#touch').hidden=!isTouch;
   state='playing';
-  if(isTouch){try{const de=document.documentElement;if(de.requestFullscreen)de.requestFullscreen().catch(()=>{});}catch(e){}}
+  if(isTouch){try{const de=document.documentElement;const fs=de.requestFullscreen?de.requestFullscreen():null;const lock=()=>{try{const o=screen.orientation;if(o&&o.lock)o.lock('landscape').catch(()=>{});}catch(e){}};if(fs&&fs.then)fs.then(lock).catch(()=>{});else lock();}catch(e){}
+    applyLayout();setTimeout(checkOrientation,300);}
   else requestLock();
 }
 // one-shot inputs (clicks, key presses) that have not been used yet are thrown away whenever
 // the game is interrupted, so nothing fires, jumps or switches on its own afterwards
-function clearPendingInput(){input.firePressed=input.jumpPressed=input.crouchPressed=input.reloadPressed=false;input.select=null;input.inspect=false;input.lookDX=input.lookDY=0;}
+function clearPendingInput(){if(typeof releaseAllTouches==='function')releaseAllTouches();input.firePressed=input.jumpPressed=input.crouchPressed=input.reloadPressed=false;input.select=null;input.inspect=false;input.lookDX=input.lookDY=0;}
 function pause(){if(state!=='playing'&&state!=='dead')return;pausedFrom=state;state='paused';$('#pause').hidden=false;input.fireHeld=false;input.scope=false;input.keys={};clearPendingInput();}
 let pausedFrom='playing';
 function resume(){if(state!=='paused')return;clearPendingInput();state=pausedFrom;$('#pause').hidden=true;audioInit();if(!isTouch&&!lockFailed)requestLock();}
@@ -2402,8 +2707,9 @@ let hpDirty=false;
 const _rt=new T.Vector3();
 function applyLook(){
   const fovRatio=Math.tan(camera.fov*Math.PI/360)/Math.tan(BASE_FOV*Math.PI/360);
-  const lookScale=(isTouch?0.0042:0.0022)*sens*fovRatio;
-  if(P.alive){P.yaw-=input.lookDX*lookScale;P.pitch=clamp(P.pitch-input.lookDY*lookScale,-1.45,1.45);}
+  if(isTouch)touchFeed();
+  const ld=SDSettings.lookDelta(input.lookDX,input.lookDY,SETTINGS,{scoped:WCORE.ads>=GUNCFG.scopeAt,fovRatio,touch:isTouch});
+  if(P.alive){P.yaw+=ld.yaw;P.pitch=clamp(P.pitch+ld.pitch,-1.45,1.45);}
   WS.swayX=clamp(-input.lookDX*0.0009,-0.05,0.05)*0.25+WS.swayX*0.75;
   WS.swayY=clamp(input.lookDY*0.0009,-0.05,0.05)*0.25+WS.swayY*0.75;
   input.lookDX=0;input.lookDY=0;
@@ -2466,7 +2772,7 @@ function updateCamera(dt,alpha){
     const ready=WCORE.state==='ready'&&WCORE.ammo>0;const ch=$('#chamber');ch.textContent=ready?'● LISTO':WCORE.state==='reload'?'○ RECARGA':'○ CERROJO';ch.classList.toggle('cycling',!ready);
     $('#airVig').style.opacity=P.exhausted>0?(0.55+Math.sin(P.swayT*7)*0.2).toFixed(2):P.holding?(0.15*clamp(1-P.breath,0,1)+0.08).toFixed(2):0;
   }
-  if(isTouch){const bz=$('#tbZoom'),bb=$('#tbBreath'),kn=LOAD.active==='knife';$('#tbScope').hidden=kn;$('#tbFire').textContent=kn?'ATACAR':'FUEGO';if(bz.hidden===showScope){bz.hidden=!showScope;bb.hidden=!showScope;}bz.textContent=WS.zoom+'×';bb.classList.toggle('on',P.holding);$('#tbScope').classList.toggle('on',input.scopeToggle);$('#tbCrouch').classList.toggle('on',input.crouchHeld);}
+  if(isTouch&&!EDIT.on){const bz=$('#tbZoom'),bb=$('#tbBreath'),kn=LOAD.active==='knife';$('#tbScope').hidden=kn;$('#tbInspect').hidden=!kn;$('#tbFire2').hidden=!SETTINGS.leftFire;$('#tbFire').textContent=$('#tbFire2').textContent=kn?'ATACAR':'FUEGO';if(bz.hidden===showScope){bz.hidden=!showScope;bb.hidden=!showScope;}bz.textContent=WS.zoom+'×';bb.classList.toggle('on',P.holding);$('#tbScope').classList.toggle('on',input.scopeToggle);$('#tbCrouch').classList.toggle('on',input.crouchHeld);}
   // hip crosshair shows the real spread cone
   const cr=$('#cross');
   const knife=LOAD.active==='knife';
@@ -2684,6 +2990,9 @@ function frame(now){
 }
 resize();
 requestAnimationFrame(frame);
-window.__SD={MAT,LOAD,TRAINERS,get RANGE_BOTS(){return RANGE_BOTS;},TRAIN,setTrain,impactFX,surfaceOf,soundDelay,aimSelfTest,P,PM,WS,WCORE,RECOIL,AIM,BOTS,DUMMIES,BULLETS,EVENTS,PARTS,STATS,get state(){return state;},get mode(){return mode;},setMode,input,startMatch,simTick,frame,toMenu,pause,resume};
+window.__SD={TOUCH,EDIT,openEditor,get SETTINGS(){return SETTINGS;},get LAYOUT(){return LAYOUT;},checkOrientation,MAT,LOAD,TRAINERS,get RANGE_BOTS(){return RANGE_BOTS;},TRAIN,setTrain,impactFX,surfaceOf,soundDelay,aimSelfTest,P,PM,WS,WCORE,RECOIL,AIM,BOTS,DUMMIES,BULLETS,EVENTS,PARTS,STATS,get state(){return state;},get mode(){return mode;},setMode,input,startMatch,simTick,frame,toMenu,pause,resume};
 })();
 </script>
+
+</body>
+</html>

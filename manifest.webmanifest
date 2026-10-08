@@ -1,0 +1,9 @@
+{
+  "name": "Sniper Duel",
+  "short_name": "Sniper Duel",
+  "start_url": "./",
+  "display": "fullscreen",
+  "orientation": "landscape",
+  "background_color": "#0f0d0a",
+  "theme_color": "#0f0d0a"
+}

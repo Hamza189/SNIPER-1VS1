@@ -1,10 +1,12 @@
-# Sniper Duel — pruebas y ajustes (fase 1 + fase 2A: navaja y entrenamiento)
+# Sniper Duel — pruebas y ajustes (fase 1, fase 2A y etapa B: controles móviles)
 
 ## Qué está probado y qué no
 
 **Pruebas automáticas (las ejecuta Claude en Node, sin navegador)**
 - `test/core.test.js` — 69 comprobaciones del núcleo puro: movimiento, arma, balística y retroceso. Todas pasan.
 - `test/phase2.test.js` — 58 comprobaciones de la fase 2A: cambio de arma, navaja, alcance, daño frontal y por la espalda, paredes, poses, interacción con el cerrojo y la recarga, y 2 minutos de bots de entrenamiento en cada dificultad. Todas pasan.
+- `test/mobile.test.js` — 38 comprobaciones de la lógica táctil: joystick (zona muerta, sprint al fondo, diagonal), varios dedos a la vez, ajustes (sensibilidad, invertir, guardado) y disposición de botones (cabe en iPhone SE, 8, 14 y Android grande, sin solapes).
+- `test/touch.smoke.test.js` — 37 comprobaciones del juego completo arrancado como móvil (844×390) y manejado con eventos de dedo: joystick, sprint, slide, salto, cámara, disparo con mira arrastrando, AIRE, rifle/navaja, pausa, aviso de girar, editor de botones, guardado y 400 toques aleatorios.
 - `test/smoke.test.js` — 57 comprobaciones del juego completo con Three.js y la página sustituidos por imitaciones. Recorre el menú, el duelo, el campo de tiro, la muerte y reaparición, la pausa y el panel F3 durante miles de fotogramas. Detecta errores de ejecución, fugas de proyectiles y eventos, y diferencias por FPS. Todas pasan, tres ejecuciones seguidas.
 
 **Lo que NO cubren las pruebas automáticas** (solo se ve jugando en un navegador):
@@ -79,6 +81,26 @@ Si sale alguna ✘, o un mensaje de ERROR, pásale la lista a Claude.
 | 41 | Arriba, en el campo de tiro. | Se ven BAJAS, DAÑO y NAVAJA (impactos/golpes), además de lo anterior. «Reiniciar estadísticas» los pone a cero. |
 | 42 | Móvil: botón ARMA. | Alterna rifle y navaja. Con la navaja, FUEGO pasa a ATACAR y desaparece MIRA. |
 
+### Etapa B — controles móviles (en un iPhone con Safari y en un Android con Chrome)
+
+Para jugar en el móvil hace falta la web en Netlify (o GitHub Pages): la página publicada de Claude no es la adecuada para el móvil. En iPhone, Compartir → «Añadir a pantalla de inicio» abre el juego a pantalla completa.
+
+| # | Qué hacer | Resultado esperado |
+|---|---|---|
+| 43 | Abre el juego con el móvil en vertical y pulsa JUGAR. | Aviso «GIRA EL MÓVIL». Al girarlo desaparece y el juego sigue en pausa hasta que pulses REANUDAR. |
+| 44 | Pon un dedo en la mitad izquierda y muévelo. | Aparece el joystick donde has tocado. Poco recorrido = andar despacio; al fondo hacia delante el aro se pone naranja y esprintas. |
+| 45 | Con el joystick pulsado, arrastra otro dedo por la derecha. | Te mueves y giras a la vez. Un segundo dedo en la izquierda también gira la cámara (no roba el joystick). |
+| 46 | Mantén FUEGO y arrastra el dedo. | Dispara y puedes corregir la puntería sin soltar. |
+| 47 | MIRA, luego AIRE mantenido, luego FUEGO. | La mira se queda puesta; AIRE reduce el balanceo mientras lo mantienes; dispara. |
+| 48 | Esprinta y toca AGACH. Tócalo otra vez. | Slide; la segunda vez te levantas. |
+| 49 | ARMA, FUEGO, INSP, ARMA. | Navaja, ataque, inspección, rifle. Con la navaja MIRA desaparece. |
+| 50 | Pellizca la pantalla o toca dos veces rápido. | No hace zoom ni desplaza la página. |
+| 51 | Ajustes → sensibilidad horizontal, vertical, con mira y dedo. Invertir eje vertical. | Cada uno cambia lo suyo. Al cerrar y volver a abrir el juego se mantienen. |
+| 52 | Ajustes → EDITAR BOTONES. Arrastra SALTO, cámbiale el tamaño, baja la opacidad y GUARDAR. | Los botones quedan donde los dejas, con su tamaño. Al reabrir el juego siguen así. RESTAURAR vuelve a la disposición original. |
+| 53 | Ajustes → «FUEGO también a la izquierda». | Aparece un segundo FUEGO a la izquierda para jugar con 3-4 dedos. |
+| 54 | Pausa con el joystick pulsado y reanuda. | El jugador no sigue andando solo. |
+| 55 | Juega 10 minutos. | Sin dedos «pegados», sin que el móvil se caliente demasiado (anota FPS en F3: Pausa → PANEL TÉCNICO). |
+
 Si algo no cumple lo esperado, apunta el número de la prueba y lo que muestra F3 en ese momento.
 
 ## Parámetros para afinar las sensaciones (`core/config.js`)
@@ -122,6 +144,9 @@ Si algo no cumple lo esperado, apunta el número de la prueba y lo que muestra F
 - `core/weapon.js`: el estado del arma, la regla de precisión, la balística y el retroceso. También puro.
 - `core/melee.js`: el cambio de arma, la navaja, el golpe cuerpo a cuerpo (alcance, cono, paredes, espalda) y sus animaciones. Puro.
 - `core/trainer.js`: el cerebro de los bots de entrenamiento. Genera los mismos comandos que un jugador, y el bot se mueve con `movement.js`.
+- `client/settings.js`: ajustes del jugador (sensibilidad, invertir, opciones táctiles).
+- `client/layout.js`: posición, tamaño y opacidad de los botones táctiles.
+- `client/touch.js`: joystick, cámara y botones con varios dedos.
 - `src/page.html`: el cliente: render, cámara, modelo del arma, efectos, audio, bots, interfaz y entrada.
 - `build.py`: une todo en `index.html`, la página que se abre en el navegador.
 

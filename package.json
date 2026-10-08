@@ -1,13 +1,14 @@
 {
   "name": "sniper-duel",
-  "version": "0.1.0",
+  "version": "0.3.0",
   "private": true,
   "description": "Sniper Duel: shooter PvP de francotiradores en el navegador (Three.js).",
   "scripts": {
     "build": "python3 build.py",
-    "test": "python3 build.py && node test/core.test.js && node test/phase2.test.js && node test/smoke.test.js",
+    "test": "python3 build.py && node test/core.test.js && node test/phase2.test.js && node test/mobile.test.js && node test/smoke.test.js && node test/touch.smoke.test.js",
     "test:phase2": "node test/phase2.test.js",
     "test:core": "node test/core.test.js",
-    "test:smoke": "node test/smoke.test.js"
+    "test:smoke": "node test/smoke.test.js",
+    "test:mobile": "node test/mobile.test.js && node test/touch.smoke.test.js"
   }
 }
