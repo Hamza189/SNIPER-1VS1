@@ -876,7 +876,9 @@ const ENV=(()=>{const face=(top,mid,bot)=>{const c=document.createElement('canva
   C(0.022,0.022,0.022,rubber,0,0.068,0.105);
   C(0.025,0.0175,0.06,scopeM,0,0.068,0.15);
   C(0.025,0.025,0.03,rubber,0,0.068,0.19);
-  const lr=new T.Mesh(new T.CircleGeometry(0.02,20),lens);lr.position.set(0,0.068,0.206);GUN.add(lr);
+  // eyepiece glass: almost black seen from behind (a bright disc right in front of the eye looked wrong)
+  const eyeGlass=new T.MeshStandardMaterial({color:0x080b0e,metalness:.2,roughness:.08,emissive:0x010304,envMap:ENV,envMapIntensity:0.35});
+  const lr=new T.Mesh(new T.CircleGeometry(0.02,20),eyeGlass);lr.position.set(0,0.068,0.206);GUN.add(lr);
   // bolt: handle, bigger knob, body
   const bolt=new T.Group();bolt.position.set(0.024,0.012,0.08);GUN.add(bolt);RIF.bolt=bolt;
   const bh=new T.Mesh(new T.CylinderGeometry(0.0055,0.0055,0.06,8),metal);bh.rotation.z=Math.PI/2;bh.position.set(0.03,0,0);bolt.add(bh);
