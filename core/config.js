@@ -14,7 +14,7 @@ const SD_CONFIG = {
     crouch: 2.4,          // m/s
     adsMul: 0.5,          // speed multiplier while scoped
     reloadMul: 0.9,
-    groundAccel: 50,      // m/s² when speeding up / changing direction
+    groundAccel: 58,      // m/s² when speeding up / changing direction
     groundDecel: 60,      // m/s² when releasing all input (how fast you stop)
     overspeedDecel: 11,   // m/s² when going faster than the target speed (after sprint or slide): momentum bleeds off smoothly
     airAccel: 11,         // m/s² of steering in the air
@@ -26,12 +26,12 @@ const SD_CONFIG = {
     coyote: 0.1,          // s you can still jump after walking off an edge
     jumpBuffer: 0.12,     // s a jump press is remembered before landing
     slideMinSpeed: 5.6,   // m/s needed to start a slide
-    slideBoost: 1.6,      // m/s added on slide start
-    slideMax: 9.6,        // m/s cap
-    slideFriction: 2.6,   // m/s² constant slide friction
-    slideDrag: 0.42,      // 1/s, speed-proportional slide friction
-    slideMinEnd: 2.8,     // slide ends below this speed
-    slideMaxTime: 1.15,   // s
+    slideBoost: 2.4,      // m/s added on slide start (explosive start)
+    slideMax: 9.8,        // m/s cap
+    slideFriction: 5,     // m/s² constant slide friction
+    slideDrag: 0.7,       // 1/s, speed-proportional slide friction
+    slideMinEnd: 3.2,     // slide ends below this speed
+    slideMaxTime: 0.7,    // s (short and explosive: ~0.68 s)
     slideSteer: 1.4,      // rad/s of steering during a slide
     slideCooldown: 0.55,  // s before another slide
     slideJumpCap: 8.6,    // m/s max carried into a slide-jump
@@ -50,9 +50,9 @@ const SD_CONFIG = {
       bolt: 0.95,          // s between shots (whole bolt cycle)
       reload: 2.35,        // s
       adsTime: 0.2,        // s hip → scope
-      adsOutTime: 0.14,    // s scope → hip
+      adsOutTime: 0.1,     // s scope → hip
       scopeAt: 0.85,       // ADS progress at which the scope picture appears AND the shot becomes perfectly accurate
-      sprintOut: 0.16,     // s after sprinting before you can fire
+      sprintOut: 0.1,      // s after sprinting before you can fire (a press in between is kept)
       fireBuffer: 0.12,    // s a trigger press is remembered (fires the instant the bolt locks)
       hipSpread: 0.05,     // rad, hip-fire cone
       adsSpreadMin: 0.4,   // spread multiplier right before the scope appears
@@ -74,11 +74,11 @@ const SD_CONFIG = {
       exhaustMul: 2.4,
       holdMul: 0.03,
       recoil: {            // visual only: never changes where the bullet goes
-        pitch: 0.055,      // rad peak camera kick when scoped
-        pitchHip: 0.08,
+        pitch: 0.068,      // rad peak camera kick when scoped
+        pitchHip: 0.095,
         yaw: 0.012,
-        stiffness: 170,    // spring: higher = faster recovery
-        damping: 0.8,      // 1 = no overshoot, lower = bouncier
+        stiffness: 420,    // spring: higher = faster recovery (~0.28 s back to rest)
+        damping: 1.0,      // 1 = no overshoot, lower = bouncier
         viewKick: 1        // viewmodel kick strength
       },
       zooms: [4, 8],
@@ -92,7 +92,8 @@ const SD_CONFIG = {
   feel: {
     fovDesktop: 75, fovTouch: 70,
     sprintFov: 5, slideFov: 6,
-    bob: 0.045,
+    bob: 0.031,           // camera head-bob (hip only; zero when scoped)
+    vmBob: 0.7,           // viewmodel bob multiplier
     shake: 0.012,
     landKick: 0.018,      // camera dip per m/s of landing speed
     headshotFovPunch: 0.06,

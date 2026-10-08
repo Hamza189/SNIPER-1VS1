@@ -132,6 +132,8 @@ const deadAt2 = !d.alive;
 frames(Math.round(1.3 / 0.016), 16);
 check('diana derribada vuelve a los 3 s', deadAt2 && d.alive);
 key('F3', true); frames(20, 16);
+let st = null; try { st = SD.aimSelfTest(); } catch (e) { errors.push(e); }
+check('el autotest de puntería se ejecuta sin errores', Array.isArray(st) && st.length > 1, st && st[0]);
 check('campo de tiro sin errores', errors.length === 0, errors[0] && errors[0].message);
 
 console.log('\nINDEPENDENCIA DE FPS (juego completo)');

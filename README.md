@@ -46,8 +46,8 @@ python3 build.py        # genera index.html
 npm test                # build + pruebas automáticas
 ```
 
-- `test/core.test.js` — 67 comprobaciones de movimiento, arma, balística y retroceso.
-- `test/smoke.test.js` — 21 comprobaciones del juego completo con Three.js y la página sustituidos por imitaciones (no prueba lo visual).
+- `test/core.test.js` — 69 comprobaciones de movimiento, arma, balística y retroceso.
+- `test/smoke.test.js` — 22 comprobaciones del juego completo con Three.js y la página sustituidos por imitaciones (no prueba lo visual).
 
 Edita `core/` o `src/page.html`, nunca `index.html` directamente: se regenera con `build.py`.
 

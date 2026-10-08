@@ -92,13 +92,13 @@ button{font:inherit;color:inherit}
 #hitmark.hs i{background:var(--gold);height:15px}
 #hitmark .ring{position:absolute;left:-20px;top:-20px;width:40px;height:40px;border:2px solid var(--gold);border-radius:50%;opacity:0;box-sizing:border-box}
 #hitmark.hs .ring{opacity:1}
-#hud.scoped #callout{top:22%}
-#hud.scoped #calloutMain{font-size:clamp(30px,5vw,52px)}
+#hud.scoped #callout{top:9%}
+#hud.scoped #calloutMain{font-size:clamp(24px,3.6vw,40px)}
 @keyframes hm{0%{opacity:1;transform:scale(1.5)}25%{opacity:1;transform:scale(1)}100%{opacity:0;transform:scale(1)}}
 
-#callout{position:absolute;left:50%;top:33%;transform:translate(-50%,-50%);text-align:center;opacity:0;z-index:8}
-#callout.on{animation:co 1.5s cubic-bezier(.2,.9,.2,1) forwards}
-#calloutMain{font-family:var(--f-display);font-size:clamp(46px,8vw,86px);line-height:.8;letter-spacing:.04em;font-weight:600;color:var(--hud);text-shadow:0 2px 0 rgba(0,0,0,.5),0 0 24px rgba(0,0,0,.4)}
+#callout{position:absolute;left:50%;top:22%;transform:translate(-50%,-50%);text-align:center;opacity:0;z-index:8}
+#callout.on{animation:co .9s cubic-bezier(.2,.9,.2,1) forwards}
+#calloutMain{font-family:var(--f-display);font-size:clamp(32px,5vw,58px);line-height:.8;letter-spacing:.04em;font-weight:600;color:var(--hud);text-shadow:0 2px 0 rgba(0,0,0,.5),0 0 24px rgba(0,0,0,.4)}
 #callout.hs #calloutMain{color:var(--gold)}
 #calloutSub{margin-top:6px;font-size:13px;letter-spacing:.2em;color:var(--sand);text-shadow:0 1px 4px #000}
 @keyframes co{0%{opacity:0;transform:translate(-50%,-50%) scale(1.6)}10%{opacity:1;transform:translate(-50%,-50%) scale(.96)}18%{transform:translate(-50%,-50%) scale(1)}75%{opacity:1}100%{opacity:0;transform:translate(-50%,-60%) scale(1)}}
@@ -185,6 +185,7 @@ h1 span{display:block;color:var(--sand)}
 #death .box{text-align:center;display:grid;gap:8px}
 #death h3{font-family:var(--f-display);font-size:64px;line-height:.8;margin:0;color:var(--blood);font-weight:600}
 #death p{margin:0;font-size:12px;letter-spacing:.16em;color:var(--sand)}
+#selfTestOut{margin:0;font:11px/1.5 var(--f-mono);color:#cfe8c4;white-space:pre-wrap;max-height:40vh;overflow:auto;border-top:1px solid var(--line);padding-top:10px}
 #dbg{position:fixed;left:calc(10px + env(safe-area-inset-left,0px));top:calc(64px + env(safe-area-inset-top,0px));z-index:15;pointer-events:none;background:rgba(10,9,7,.78);border:1px solid var(--line);padding:8px 10px}
 #dbg pre{margin:0;font:11px/1.45 var(--f-mono);color:#cfe8c4;white-space:pre}
 #loadErr{position:fixed;inset:0;display:grid;place-items:center;padding:24px;text-align:center;z-index:50;background:var(--ink)}
@@ -367,7 +368,8 @@ body.touch #top{width:min(300px,46vw)}
     <div class="eyebrow">Pausa</div>
     <h2>EN ESPERA</h2>
     <div class="row"><button class="btn" id="resume" type="button">REANUDAR</button><button class="btn ghost" id="toMenu1" type="button">MENÚ</button></div>
-    <div class="row"><button class="btn ghost" id="dbgBtn" type="button" style="font-size:18px">PANEL TÉCNICO (F3)</button><button class="btn ghost" id="rangeReset" type="button" style="font-size:18px">REINICIAR ESTADÍSTICAS</button></div>
+    <div class="row"><button class="btn ghost" id="dbgBtn" type="button" style="font-size:18px">PANEL TÉCNICO (F3)</button><button class="btn ghost" id="rangeReset" type="button" style="font-size:18px">REINICIAR ESTADÍSTICAS</button><button class="btn ghost" id="selfTestBtn" type="button" style="font-size:18px">AUTOTEST DE PUNTERÍA</button></div>
+    <pre id="selfTestOut" hidden></pre>
   </div>
 </div>
 
@@ -407,7 +409,7 @@ const SD_CONFIG = {
     crouch: 2.4,          // m/s
     adsMul: 0.5,          // speed multiplier while scoped
     reloadMul: 0.9,
-    groundAccel: 50,      // m/s² when speeding up / changing direction
+    groundAccel: 58,      // m/s² when speeding up / changing direction
     groundDecel: 60,      // m/s² when releasing all input (how fast you stop)
     overspeedDecel: 11,   // m/s² when going faster than the target speed (after sprint or slide): momentum bleeds off smoothly
     airAccel: 11,         // m/s² of steering in the air
@@ -419,12 +421,12 @@ const SD_CONFIG = {
     coyote: 0.1,          // s you can still jump after walking off an edge
     jumpBuffer: 0.12,     // s a jump press is remembered before landing
     slideMinSpeed: 5.6,   // m/s needed to start a slide
-    slideBoost: 1.6,      // m/s added on slide start
-    slideMax: 9.6,        // m/s cap
-    slideFriction: 2.6,   // m/s² constant slide friction
-    slideDrag: 0.42,      // 1/s, speed-proportional slide friction
-    slideMinEnd: 2.8,     // slide ends below this speed
-    slideMaxTime: 1.15,   // s
+    slideBoost: 2.4,      // m/s added on slide start (explosive start)
+    slideMax: 9.8,        // m/s cap
+    slideFriction: 5,     // m/s² constant slide friction
+    slideDrag: 0.7,       // 1/s, speed-proportional slide friction
+    slideMinEnd: 3.2,     // slide ends below this speed
+    slideMaxTime: 0.7,    // s (short and explosive: ~0.68 s)
     slideSteer: 1.4,      // rad/s of steering during a slide
     slideCooldown: 0.55,  // s before another slide
     slideJumpCap: 8.6,    // m/s max carried into a slide-jump
@@ -443,9 +445,9 @@ const SD_CONFIG = {
       bolt: 0.95,          // s between shots (whole bolt cycle)
       reload: 2.35,        // s
       adsTime: 0.2,        // s hip → scope
-      adsOutTime: 0.14,    // s scope → hip
+      adsOutTime: 0.1,     // s scope → hip
       scopeAt: 0.85,       // ADS progress at which the scope picture appears AND the shot becomes perfectly accurate
-      sprintOut: 0.16,     // s after sprinting before you can fire
+      sprintOut: 0.1,      // s after sprinting before you can fire (a press in between is kept)
       fireBuffer: 0.12,    // s a trigger press is remembered (fires the instant the bolt locks)
       hipSpread: 0.05,     // rad, hip-fire cone
       adsSpreadMin: 0.4,   // spread multiplier right before the scope appears
@@ -467,11 +469,11 @@ const SD_CONFIG = {
       exhaustMul: 2.4,
       holdMul: 0.03,
       recoil: {            // visual only: never changes where the bullet goes
-        pitch: 0.055,      // rad peak camera kick when scoped
-        pitchHip: 0.08,
+        pitch: 0.068,      // rad peak camera kick when scoped
+        pitchHip: 0.095,
         yaw: 0.012,
-        stiffness: 170,    // spring: higher = faster recovery
-        damping: 0.8,      // 1 = no overshoot, lower = bouncier
+        stiffness: 420,    // spring: higher = faster recovery (~0.28 s back to rest)
+        damping: 1.0,      // 1 = no overshoot, lower = bouncier
         viewKick: 1        // viewmodel kick strength
       },
       zooms: [4, 8],
@@ -485,7 +487,8 @@ const SD_CONFIG = {
   feel: {
     fovDesktop: 75, fovTouch: 70,
     sprintFov: 5, slideFov: 6,
-    bob: 0.045,
+    bob: 0.031,           // camera head-bob (hip only; zero when scoped)
+    vmBob: 0.7,           // viewmodel bob multiplier
     shake: 0.012,
     landKick: 0.018,      // camera dip per m/s of landing speed
     headshotFovPunch: 0.06,
@@ -1650,8 +1653,8 @@ function callout(main,sub,hs,minor){
   const c=$('#callout');if(minor&&c.classList.contains('on')&&calloutTimer>0.3)return;
   $('#calloutMain').textContent=main;$('#calloutSub').textContent=sub;
   c.className='';void c.offsetWidth;c.className='on'+(hs?' hs':'');
-  $('#calloutMain').style.fontSize=minor?'clamp(30px,5vw,48px)':'';
-  calloutTimer=1.5;
+  $('#calloutMain').style.fontSize=minor?'clamp(22px,3.4vw,34px)':'';
+  calloutTimer=0.9;
 }
 function addFeed(html,cls){const f=$('#feed');const d=document.createElement('div');d.className=cls||'';d.innerHTML=html;f.prepend(d);while(f.children.length>4)f.lastChild.remove();setTimeout(()=>d.remove(),6000);}
 
@@ -1987,7 +1990,7 @@ function updateViewmodel(dt){
   pos.y+=0.012*VM.airW*free+VM.land*0.45;
   // bob (hip only)
   const bob=P.bob*free*MOTION,bm=PM.sprinting?1.8:1;
-  pos.x+=Math.cos(P.stepPhase)*0.011*bob*bm;pos.y+=-Math.abs(Math.sin(P.stepPhase))*0.012*bob*bm;
+  pos.x+=Math.cos(P.stepPhase)*0.011*bob*bm*FEEL.vmBob;pos.y+=-Math.abs(Math.sin(P.stepPhase))*0.012*bob*bm*FEEL.vmBob;
   pos.y+=Math.sin(P.swayT*1.6)*0.0025*free;
   // look inertia
   pos.x+=WS.swayX*(1-ads*0.8);pos.y+=WS.swayY*(1-ads*0.8);ry+=WS.swayX*1.4;rx+=WS.swayY*1.2;
@@ -2049,6 +2052,69 @@ window.addEventListener('keydown',e=>{if(e.code==='F3'){e.preventDefault();toggl
 $('#dbgBtn').addEventListener('click',toggleDebug);
 $('#rangeReset').addEventListener('click',()=>{Object.assign(STATS,{kills:0,hs:0,shots:0,hits:0,longest:0,rangeHs:0,firstShot:-1,lastKill:0});updateRangeHud();SFX.ui();});
 
+/* =================== AIM SELF-TEST (runs in the real browser engine) ===================
+   Checks, with the real Three.js raycasts and the real bullet simulation:
+   1. the centre of the screen points exactly where the shot goes (recoil and shake removed);
+   2. a perfect shot at each static target's head / torso / legs hits that part;
+   3. a shot 35 cm over a head misses. Targets are not damaged.                             */
+function simulateShot(origin,fwdDir){
+  // same construction as doFire(): aim basis from yaw/pitch, then the zero lift
+  const yaw=Math.atan2(-fwdDir.x,-fwdDir.z),pitch=Math.asin(clamp(fwdDir.y,-1,1));
+  _ae.set(pitch,yaw,0,'YXZ');_aq.setFromEuler(_ae);
+  const f=new T.Vector3(0,0,-1).applyQuaternion(_aq),u=new T.Vector3(0,1,0).applyQuaternion(_aq);
+  const dir=f.addScaledVector(u,Math.tan(SDWeapon.zeroLift(GUNCFG))).normalize();
+  const b=SDWeapon.createBullet(origin.x,origin.y,origin.z,dir.x,dir.y,dir.z,GUNCFG);
+  const targets=shotTargets();
+  for(let i=0;i<400;i++){
+    const sg=SDWeapon.stepBullet(b,TICK_DT,GUNCFG);
+    RAY.set(_bo.set(sg.x0,sg.y0,sg.z0),_bd.set(sg.dx,sg.dy,sg.dz));RAY.near=0;RAY.far=sg.len;
+    const h=RAY.intersectObjects(targets,false);
+    if(h.length)return h[0];
+    if(b.dist+=sg.len,b.dist>GUNCFG.maxRange)break;
+  }
+  return null;
+}
+function aimSelfTest(){
+  const out=[];let ok=0,bad=0;
+  const mark=(good,txt)=>{good?ok++:bad++;out.push((good?'✔ ':'✘ ')+txt);};
+  // 1. reticle alignment
+  const rp=RECOIL.p,ry=RECOIL.y,sh=P.shake;RECOIL.p=RECOIL.y=0;P.shake=0;
+  camera.rotation.set(AIM.pitch,AIM.yaw,P.roll);camera.updateMatrixWorld(true);
+  const camDir=new T.Vector3();camera.getWorldDirection(camDir);
+  _ae.set(AIM.pitch,AIM.yaw,0,'YXZ');_aq.setFromEuler(_ae);const aimDir=new T.Vector3(0,0,-1).applyQuaternion(_aq);
+  const ang=camDir.angleTo(aimDir)*1000;
+  mark(ang<0.01,'centro de pantalla = dirección del disparo (desvío '+ang.toFixed(4)+' mrad)');
+  RECOIL.p=rp;RECOIL.y=ry;P.shake=sh;
+  // 2–3. perfect shots at every static, visible target
+  if(mode!=='range'){out.push('Para probar impactos abre el CAMPO DE TIRO.');}
+  else{
+    const origin=new T.Vector3(AIM.ox,AIM.oy,AIM.oz);
+    for(const d of DUMMIES){
+      if(!d.alive||d.slot.move)continue;
+      d.g.updateMatrixWorld(true);
+      const parts={};for(const m of d.hit){if(!parts[m.userData.part])parts[m.userData.part]=m;}
+      const dist=d.g.position.distanceTo(origin);
+      for(const part of ['head','torso','legs']){
+        const tp=new T.Vector3();parts[part].getWorldPosition(tp);
+        const dir=tp.clone().sub(origin).normalize();
+        const h=simulateShot(origin,dir);
+        if(h&&h.object.userData.bot&&h.object.userData.bot!==d){out.push('· '+d.name+' '+part+' → se cruzó otra diana, repite el autotest');continue;}
+        const got=h&&h.object.userData.bot===d?h.object.userData.part:(h?'cobertura/escenario':'nada');
+        const err=h&&h.object.userData.bot===d?((h.point.y-tp.y)*100).toFixed(1)+' cm':'';
+        const covered=got==='cobertura/escenario';
+        if(covered&&d.slot.note){out.push('· '+d.name+' '+dist.toFixed(0)+' m '+part+' → tapado por la cobertura (correcto)');continue;}
+        mark(got===part,d.name+' '+dist.toFixed(0)+' m · '+part+' → '+got+(err?' ('+err+')':''));
+      }
+      const over=parts.head.getWorldPosition(new T.Vector3()).add(new T.Vector3(0,0.35,0));
+      const h2=simulateShot(origin,over.sub(origin).normalize());
+      mark(!(h2&&h2.object.userData.bot===d),d.name+' · 35 cm sobre la cabeza → '+(h2&&h2.object.userData.bot===d?'impacta (MAL)':'falla (correcto)'));
+    }
+  }
+  out.unshift('AUTOTEST: '+ok+' correctas, '+bad+' fallidas'+(bad?'  ← avisa a Claude con esta lista':''));
+  return out;
+}
+$('#selfTestBtn').addEventListener('click',()=>{const o=$('#selfTestOut');o.hidden=false;o.textContent=aimSelfTest().join('\n');SFX.ui();});
+
 /* =================== LOOP =================== */
 let last=performance.now();let menuAng=0;let rangeT=0;let simAcc=0;
 function frame(now){
@@ -2082,6 +2148,6 @@ function frame(now){
 }
 resize();
 requestAnimationFrame(frame);
-window.__SD={P,PM,WS,WCORE,RECOIL,AIM,BOTS,DUMMIES,BULLETS,EVENTS,PARTS,STATS,get state(){return state;},get mode(){return mode;},setMode,input,startMatch,simTick,frame,toMenu,pause,resume};
+window.__SD={aimSelfTest,P,PM,WS,WCORE,RECOIL,AIM,BOTS,DUMMIES,BULLETS,EVENTS,PARTS,STATS,get state(){return state;},get mode(){return mode;},setMode,input,startMatch,simTick,frame,toMenu,pause,resume};
 })();
 </script>

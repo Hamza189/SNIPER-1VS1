@@ -3,8 +3,8 @@
 ## Qué está probado y qué no
 
 **Pruebas automáticas (las ejecuta Claude en Node, sin navegador)**
-- `test/core.test.js` — 67 comprobaciones del núcleo puro: movimiento, arma, balística y retroceso. Todas pasan.
-- `test/smoke.test.js` — 21 comprobaciones del juego completo con Three.js y la página sustituidos por imitaciones. Recorre el menú, el duelo, el campo de tiro, la muerte y reaparición, la pausa y el panel F3 durante miles de fotogramas. Detecta errores de ejecución, fugas de proyectiles y eventos, y diferencias por FPS. Todas pasan, tres ejecuciones seguidas.
+- `test/core.test.js` — 69 comprobaciones del núcleo puro: movimiento, arma, balística y retroceso. Todas pasan.
+- `test/smoke.test.js` — 22 comprobaciones del juego completo con Three.js y la página sustituidos por imitaciones. Recorre el menú, el duelo, el campo de tiro, la muerte y reaparición, la pausa y el panel F3 durante miles de fotogramas. Detecta errores de ejecución, fugas de proyectiles y eventos, y diferencias por FPS. Todas pasan, tres ejecuciones seguidas.
 
 **Lo que NO cubren las pruebas automáticas** (solo se ve jugando en un navegador):
 - Todo lo visual: el renderizado, las animaciones, el humo y que el rifle no atraviese la cámara.
@@ -16,6 +16,13 @@
 
 Pulsa **F3** para ver el panel técnico. En móvil está en Pausa → Panel técnico.
 
+**Antes de nada: autotest de puntería.** Campo de tiro → Pausa → AUTOTEST DE PUNTERÍA. Usa el motor real del navegador y dispara balas simuladas, sin dañar a nadie. Comprueba que:
+- el centro de la pantalla apunta exactamente adonde va la bala;
+- un disparo perfecto a la cabeza, al torso y a las piernas de cada diana fija da en esa zona;
+- un disparo 35 cm por encima de la cabeza falla.
+
+Si sale alguna ✘, pásale la lista a Claude.
+
 | # | Qué hacer | Resultado esperado |
 |---|---|---|
 | 1 | Campo de tiro. Apunta con la mira a la diana fija de 50 m (la de la izquierda), al centro de la cabeza, sin moverte. Aguanta el aire y dispara. | HEADSHOT, con el marcador dorado y su aro. En F3, «objetivo» muestra `DIANA-x head` antes de disparar. |
@@ -23,14 +30,14 @@ Pulsa **F3** para ver el panel técnico. En móvil está en Pausa → Panel téc
 | 3 | Lo mismo con la diana fija de 100 m, apuntando al centro de la cabeza. | Impacta unos 12 cm bajo el centro: todavía cabeza, justo en el borde. Apuntando un pelo alto (primera marca) es seguro. |
 | 4 | Diana móvil de 100 m: apunta justo a su cabeza mientras pasa. | Fallas por detrás. Adelantando algo más de un cuerpo (unos 0,6 m), aciertas. |
 | 5 | Dispara 10 veces a la pared de enfrente con la mira, cada una con la retícula sobre un punto distinto. | Cada marca de impacto aparece exactamente bajo el centro de la retícula. Nunca desplazada por el retroceso. |
-| 6 | Dispara con la mira y mira el visor justo después. | Ningún humo tapa la imagen. El retroceso sube la vista y vuelve sola en menos de 0,4 s. |
+| 6 | Dispara con la mira y mira el visor justo después. | Ningún humo tapa la imagen. El retroceso sube la vista con fuerza y vuelve sola en unos 0,28 s, sin rebote. |
 | 7 | Dispara desde la cadera y entra a la mira enseguida. | El humo se ve en el cañón y se desvanece al empezar a apuntar. Nunca dentro de la mira. |
 | 8 | Mantén pulsado el disparo con la mira. | Cada disparo sale exactamente en el instante del «clac» de cierre del cerrojo. En el visor, «○ CERROJO» pasa a «● LISTO» en ese mismo momento. |
 | 9 | Esprinta (Shift + W) y mira el rifle. | El rifle baja y gira hacia la izquierda, cruzado. No sube. |
-| 10 | Esprinta y pulsa clic derecho. | El sprint se corta y la mira entra sin saltos. El disparo solo es posible unos 0,16 s después de dejar de esprintar. |
+| 10 | Esprinta y pulsa clic derecho. | El sprint se corta y la mira entra sin saltos. El disparo solo es posible 0,1 s después de dejar de esprintar; si pulsas antes, sale solo en ese momento. |
 | 11 | Esprinta, pulsa C (slide) y, durante el slide, haz clic derecho y dispara. | Quickscope en slide: si la imagen de la mira ya está, la bala va donde apunta la retícula. |
 | 12 | Esprinta, pulsa C y suéltala enseguida. | El slide se corta y te levantas conservando algo de inercia, sin frenazo brusco. |
-| 13 | Esprinta, C y Espacio durante el slide. | Slide-jump: saltas sin perder la velocidad. En F3 la velocidad no pasa de 8,6. |
+| 13 | Esprinta, C y Espacio durante el slide. | Slide-jump: saltas sin perder la velocidad. En F3 la velocidad no pasa de 8,6. El slide dura unos 0,68 s. |
 | 14 | Salta sobre una caja de 1,2 m. | Subes. Salto corto, nada flotante (unos 0,6 s en el aire). |
 | 15 | Sube la rampa del pueblo hasta el tejado (al sur de la plaza) y la del campo de tiro. | Subes y bajas pegado a la rampa, sin botar. |
 | 16 | Q / E junto a una pared. | Te asomas sin que la cámara atraviese la pared. |

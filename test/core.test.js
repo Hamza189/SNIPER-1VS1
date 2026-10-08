@@ -66,7 +66,7 @@ console.log('\nMOVIMIENTO');
   dist = Math.abs(s.z - x0);
   check('slide: empieza al agacharse esprintando', started !== null, started && started.toFixed(2) + ' m/s');
   check('slide: conserva y suma velocidad inicial', started > v0, v0.toFixed(2) + ' → ' + (started || 0).toFixed(2));
-  check('slide: dura entre 0,7 y 1,15 s', ended > 0.7 && ended <= mc.slideMaxTime + 0.01, ended && ended.toFixed(3) + ' s');
+  check('slide: corto y explosivo, entre 0,55 y 0,72 s', ended >= 0.55 && ended <= 0.72, ended && ended.toFixed(3) + ' s');
   check('slide: recorre 5-9 m', dist > 5 && dist < 9.5, dist.toFixed(2) + ' m (incluye el tramo agachado)');
   check('slide: acaba agachado a velocidad baja', s.crouch && !s.sliding && hs(s) <= mc.crouch + 0.01, hs(s).toFixed(2));
 }
@@ -242,6 +242,10 @@ console.log('\nRETROCESO');
   check('pico del retroceso ≈ configurado', Math.abs(peak - rr.pitch) / rr.pitch < 0.12, (peak * 1000).toFixed(1) + ' vs ' + (rr.pitch * 1000).toFixed(1) + ' mrad');
   check('se recupera (<5%) antes del siguiente disparo', back > 0 && back < rc.bolt * 0.6, back.toFixed(3) + ' s');
   check('termina en reposo', Math.abs(r.p) < 1e-4 && Math.abs(r.y) < 1e-4);
+  const r2 = W.createRecoil(); W.kickRecoil(r2, rr.pitch, rr.yaw, rr); let minP = 0;
+  for (let i = 0; i < 240; i++) { W.stepRecoil(r2, DT, rr); minP = Math.min(minP, r2.p); }
+  check('sin rebote (no baja por debajo del punto de apuntado)', minP > -rr.pitch * 0.01, (minP * 1000).toFixed(2) + ' mrad');
+  check('recuperación en ≤ 0,30 s', back <= 0.3, back.toFixed(3) + ' s');
 }
 
 console.log('\n' + pass + ' correctas, ' + fail + ' fallidas');
