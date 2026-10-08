@@ -51,8 +51,8 @@ npm test                # build + pruebas automáticas
 ```
 
 - `test/core.test.js` — 69 comprobaciones de movimiento, arma, balística y retroceso.
-- `test/phase2.test.js` — 54 comprobaciones de navaja, cambio de arma y bots de entrenamiento.
-- `test/smoke.test.js` — 53 comprobaciones del juego completo con Three.js y la página sustituidos por imitaciones (no prueba lo visual).
+- `test/phase2.test.js` — 58 comprobaciones de navaja, cambio de arma y bots de entrenamiento.
+- `test/smoke.test.js` — 57 comprobaciones del juego completo con Three.js y la página sustituidos por imitaciones (no prueba lo visual).
 
 Edita `core/` o `src/page.html`, nunca `index.html` directamente: se regenera con `build.py`.
 

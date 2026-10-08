@@ -4,8 +4,8 @@
 
 **Pruebas automáticas (las ejecuta Claude en Node, sin navegador)**
 - `test/core.test.js` — 69 comprobaciones del núcleo puro: movimiento, arma, balística y retroceso. Todas pasan.
-- `test/phase2.test.js` — 54 comprobaciones de la fase 2A: cambio de arma, navaja, alcance, daño frontal y por la espalda, paredes, poses, interacción con el cerrojo y la recarga, y 2 minutos de bots de entrenamiento en cada dificultad. Todas pasan.
-- `test/smoke.test.js` — 53 comprobaciones del juego completo con Three.js y la página sustituidos por imitaciones. Recorre el menú, el duelo, el campo de tiro, la muerte y reaparición, la pausa y el panel F3 durante miles de fotogramas. Detecta errores de ejecución, fugas de proyectiles y eventos, y diferencias por FPS. Todas pasan, tres ejecuciones seguidas.
+- `test/phase2.test.js` — 58 comprobaciones de la fase 2A: cambio de arma, navaja, alcance, daño frontal y por la espalda, paredes, poses, interacción con el cerrojo y la recarga, y 2 minutos de bots de entrenamiento en cada dificultad. Todas pasan.
+- `test/smoke.test.js` — 57 comprobaciones del juego completo con Three.js y la página sustituidos por imitaciones. Recorre el menú, el duelo, el campo de tiro, la muerte y reaparición, la pausa y el panel F3 durante miles de fotogramas. Detecta errores de ejecución, fugas de proyectiles y eventos, y diferencias por FPS. Todas pasan, tres ejecuciones seguidas.
 
 **Lo que NO cubren las pruebas automáticas** (solo se ve jugando en un navegador):
 - Todo lo visual: el renderizado, las animaciones, el humo y que el rifle no atraviese la cámara.
@@ -21,6 +21,10 @@ Pulsa **F3** para ver el panel técnico. En móvil está en Pausa → Panel téc
 - el centro de la pantalla apunta exactamente adonde va la bala;
 - un disparo perfecto a la cabeza, al torso y a las piernas de cada diana fija da en esa zona;
 - un disparo 35 cm por encima de la cabeza falla.
+
+También comprueba, con la geometría real, que la navaja no atraviesa la pared del campo de tiro y que sí alcanza sin obstáculos.
+
+**Resultado real (9 oct 2026, vídeo de Hamza):** 15 correctas, 0 fallidas; desvío retícula/disparo 0,0000 mrad; a 20 m errores de 0,9–1,6 cm; a ~100 m unos −7 cm (caída esperada), sigue siendo headshot.
 
 Si sale alguna ✘, o un mensaje de ERROR, pásale la lista a Claude.
 

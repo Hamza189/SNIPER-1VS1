@@ -203,5 +203,23 @@ for (const level of ['easy', 'normal', 'hard']) {
   check('la IA traduce bien su dirección a controles de jugador', mx < 1e-6, mx.toExponential(1));
 }
 
+console.log('\nETAPA A: SIN DISPAROS FANTASMA (arma)');
+{ const w = readyRifle(); let n = 0;
+  for (let i = 0; i < 20 / DT; i++) W.tick(w, { fire: false, ads: i % 300 < 150 }, DT, { sprinting: false, alive: true }).forEach(e => { if (e.type === 'fire') n++; });
+  check('20 s apuntando y soltando sin pulsar el gatillo: 0 disparos', n === 0);
+  n = 0; W.tick(w, { fire: true }, DT, { sprinting: false, alive: true }).forEach(e => { if (e.type === 'fire') n++; });
+  // press again 0.5 s into the bolt (well before the 0.12 s buffer window) → ignored, never fires later
+  for (let i = 1; i < 3 / DT; i++) { const press = Math.abs(i * DT - 0.5) < DT / 2; W.tick(w, { fire: press }, DT, { sprinting: false, alive: true }).forEach(e => { if (e.type === 'fire') n++; }); }
+  check('un clic a mitad del cerrojo (antes del margen) se ignora y no dispara después', n === 1, n + ' disparos');
+  const w2 = readyRifle(); let m = 0;
+  W.tick(w2, { fire: true }, DT, { sprinting: false, alive: true }); for (let i = 0; i < 130; i++) W.tick(w2, {}, DT, { sprinting: false, alive: true });
+  W.tick(w2, { reload: true }, DT, { sprinting: false, alive: true });
+  for (let i = 1; i < 4 / DT; i++) { const press = Math.abs(i * DT - 1.0) < DT / 2; W.tick(w2, { fire: press }, DT, { sprinting: false, alive: true }).forEach(e => { if (e.type === 'fire') m++; }); }
+  check('un clic durante la recarga no dispara al terminarla', m === 0, m + ' disparos');
+  const w3 = readyRifle(); let k = 0;
+  for (let i = 0; i < 2 / DT; i++) W.tick(w3, { fire: true }, DT, { sprinting: false, alive: false }).forEach(e => { if (e.type === 'fire') k++; });
+  check('muerto no se dispara', k === 0);
+}
+
 console.log('\n' + pass + ' correctas, ' + fail + ' fallidas');
 process.exit(fail ? 1 : 0);

@@ -136,6 +136,19 @@ let st = null; try { st = SD.aimSelfTest(); } catch (e) { errors.push(e); }
 check('el autotest de puntería se ejecuta sin errores', Array.isArray(st) && st.length > 1, st && st[0]);
 check('campo de tiro sin errores', errors.length === 0, errors[0] && errors[0].message);
 
+console.log('\nETAPA A: SIN DISPAROS NI ACCIONES FANTASMA');
+{ SD.toMenu(); frames(3, 16); SD.setMode('range'); SD.setTrain('off'); SD.startMatch(); frames(60, 16);
+  const s0 = SD.STATS.shots;
+  SD.input.firePressed = true; SD.pause(); frames(20, 16); SD.resume(); frames(60, 16);
+  check('un clic pendiente al pausar no dispara al reanudar', SD.STATS.shots === s0, (SD.STATS.shots - s0) + ' disparos');
+  SD.input.select = 'knife'; SD.input.jumpPressed = true; SD.pause(); frames(5, 16); SD.resume(); frames(60, 16);
+  check('un cambio de arma o salto pendiente al pausar se descarta', SD.LOAD.active === 'rifle' && SD.PM.onGround, SD.LOAD.active);
+  const s1 = SD.STATS.shots; frames(Math.round(10 / 0.016), 16);
+  check('10 s sin tocar nada: ningún disparo', SD.STATS.shots === s1);
+  SD.input.firePressed = true; frames(Math.round(3 / 0.016), 16);
+  check('un solo clic = un solo disparo (aunque pasen 3 s)', SD.STATS.shots - s1 === 1, (SD.STATS.shots - s1) + ' disparos');
+}
+
 console.log('\nFASE 2A: NAVAJA Y CAMBIO DE ARMA (juego completo)');
 { SD.toMenu(); frames(3, 16); SD.setMode('range'); SD.setTrain('off'); SD.startMatch(); frames(50, 16);
   key('Digit3', true); key('Digit3', false); frames(30, 16);

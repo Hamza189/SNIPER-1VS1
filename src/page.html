@@ -189,7 +189,7 @@ h1 span{display:block;color:var(--sand)}
 #death .box{text-align:center;display:grid;gap:8px}
 #death h3{font-family:var(--f-display);font-size:64px;line-height:.8;margin:0;color:var(--blood);font-weight:600}
 #death p{margin:0;font-size:12px;letter-spacing:.16em;color:var(--sand)}
-#selfTestOut{margin:0;font:11px/1.5 var(--f-mono);color:#cfe8c4;white-space:pre-wrap;max-height:40vh;overflow:auto;border-top:1px solid var(--line);padding-top:10px}
+#selfTestOut{margin:0;font:13px/1.55 var(--f-mono);color:#cfe8c4;white-space:pre-wrap;max-height:40vh;overflow:auto;border-top:1px solid var(--line);padding-top:10px}
 #dbg{position:fixed;left:calc(10px + env(safe-area-inset-left,0px));top:calc(64px + env(safe-area-inset-top,0px));z-index:15;pointer-events:none;background:rgba(10,9,7,.78);border:1px solid var(--line);padding:8px 10px}
 #dbg pre{margin:0;font:11px/1.45 var(--f-mono);color:#cfe8c4;white-space:pre}
 #loadErr{position:fixed;inset:0;display:grid;place-items:center;padding:24px;text-align:center;z-index:50;background:var(--ink)}
@@ -1198,6 +1198,7 @@ function pickPlayerSpawn(){
   return best;
 }
 function respawnPlayer(){
+  clearPendingInput();
   const n=mode==='range'?RANGE.spawn:pickPlayerSpawn();
   Object.assign(PM,SDMovement.createState(n.x,0,n.z));PMprev.x=n.x;PMprev.y=0;PMprev.z=n.z;
   P.yaw=mode==='range'?Math.PI:Math.atan2(n.x,n.z);P.pitch=0;P.hp=100;P.alive=true;P.deadT=0;P.roll=0;
@@ -1509,6 +1510,7 @@ $('#toMenu1').addEventListener('click',toMenu);
 $('#toMenu2').addEventListener('click',toMenu);
 
 function startMatch(){
+  clearPendingInput();
   audioInit();SFX.ui();
   const df=DIFFS[diff];
   while(BOTS.length<df.bots)BOTS.push(new Bot(BOTS.length));
@@ -1535,9 +1537,12 @@ function startMatch(){
   if(isTouch){try{const de=document.documentElement;if(de.requestFullscreen)de.requestFullscreen().catch(()=>{});}catch(e){}}
   else requestLock();
 }
-function pause(){if(state!=='playing'&&state!=='dead')return;pausedFrom=state;state='paused';$('#pause').hidden=false;input.fireHeld=false;input.scope=false;input.keys={};}
+// one-shot inputs (clicks, key presses) that have not been used yet are thrown away whenever
+// the game is interrupted, so nothing fires, jumps or switches on its own afterwards
+function clearPendingInput(){input.firePressed=input.jumpPressed=input.crouchPressed=input.reloadPressed=false;input.select=null;input.inspect=false;input.lookDX=input.lookDY=0;}
+function pause(){if(state!=='playing'&&state!=='dead')return;pausedFrom=state;state='paused';$('#pause').hidden=false;input.fireHeld=false;input.scope=false;input.keys={};clearPendingInput();}
 let pausedFrom='playing';
-function resume(){if(state!=='paused')return;state=pausedFrom;$('#pause').hidden=true;audioInit();if(!isTouch&&!lockFailed)requestLock();}
+function resume(){if(state!=='paused')return;clearPendingInput();state=pausedFrom;$('#pause').hidden=true;audioInit();if(!isTouch&&!lockFailed)requestLock();}
 function toMenu(){state='menu';$('#pause').hidden=true;$('#over').hidden=true;$('#hud').hidden=true;$('#scope').hidden=true;$('#death').hidden=true;$('#touch').hidden=true;$('#menu').hidden=false;BOTS.concat(DUMMIES,TRAINERS).forEach(b=>{b.alive=false;b.g.visible=false;b.trainerActive=false;});BULLETS.length=0;BTR.forEach(m=>m.visible=false);scene.fog.near=45;scene.fog.far=175;if(document.exitPointerLock&&pointerLocked)document.exitPointerLock();}
 function endMatch(win){
   if(state==='over'||state==='menu')return;
@@ -1908,10 +1913,20 @@ function aimSelfTest(){
       mark(!(h2&&h2.object.userData.bot===d),d.name+' · 35 cm sobre la cabeza → '+(h2&&h2.object.userData.bot===d?'impacta (MAL)':'falla (correcto)'));
     }
   }
-  out.unshift('AUTOTEST: '+ok+' correctas, '+bad+' fallidas'+(bad?'  ← avisa a Claude con esta lista':''));
+  // 4. knife vs walls, with the real scene geometry: the range's right wall (x 17–18) sits between
+  //    an attacker at x=16.6 and a target at x=18.4 (1.8 m apart, inside the knife's reach)
+  if(mode==='range'){
+    const knifeLos=(ax,az,t)=>losClear(ax,1.62,az,t.x,1.1,t.z);
+    const tgt=(x,z)=>({ref:null,x,z,y0:0,y1:1.8,radius:0.3,fx:0,fz:1});
+    const wall=SDMelee.resolve({x:16.6,z:120,eyeY:1.62,fx:1,fz:0},[tgt(18.4,120)],KCFG,t=>knifeLos(16.6,120,t));
+    mark(!wall,'navaja con la pared del campo en medio → '+(wall?'ATRAVIESA (MAL)':'bloqueada (correcto)'));
+    const open=SDMelee.resolve({x:14,z:120,eyeY:1.62,fx:1,fz:0},[tgt(15.8,120)],KCFG,t=>knifeLos(14,120,t));
+    mark(!!open,'navaja sin obstáculos a 1,8 m → '+(open?'impacta (correcto)':'no impacta (MAL)'));
+  }
+  out.unshift((bad?'✘ ':'✔ ')+'AUTOTEST: '+ok+' correctas, '+bad+' fallidas'+(bad?'  ← pásale esta lista a Claude':''));
   return out;
 }
-$('#selfTestBtn').addEventListener('click',()=>{const o=$('#selfTestOut');o.hidden=false;o.textContent='Ejecutando…';try{o.textContent=aimSelfTest().join('\n');}catch(e){o.textContent='ERROR en el autotest: '+e.message+'\n'+(e.stack||'').split('\n').slice(0,3).join('\n')+'\n← pásale esto a Claude';}SFX.ui();});
+$('#selfTestBtn').addEventListener('click',()=>{const o=$('#selfTestOut');o.hidden=false;o.textContent='Ejecutando…';try{const lines=aimSelfTest();o.innerHTML='';lines.forEach((l,i)=>{const d=document.createElement('div');d.textContent=l;if(i===0){d.style.fontSize='17px';d.style.fontWeight='600';d.style.marginBottom='6px';}d.style.color=l.startsWith('✘')?'#ff6b5a':l.startsWith('✔')?'#9fe08a':'#d8ccb4';o.appendChild(d);});}catch(e){o.textContent='ERROR en el autotest: '+e.message+'\n'+(e.stack||'').split('\n').slice(0,3).join('\n')+'\n← pásale esto a Claude';}SFX.ui();});
 
 /* =================== LOOP =================== */
 let last=performance.now();let menuAng=0;let rangeT=0;let simAcc=0;
