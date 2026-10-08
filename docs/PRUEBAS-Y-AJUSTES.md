@@ -39,7 +39,7 @@ Pulsa **F3** para ver el panel técnico. En móvil está en Pausa → Panel téc
 | 19 | Limita los FPS (o juega en el móvil) y repite la prueba 1. | Mismo resultado. En F3, «sim» se queda en 120 Hz aunque los FPS bajen. |
 | 20 | Duelo completo de principio a fin en cada dificultad. | Los bots disparan, el destello avisa, mueres y reapareces, y aparecen VICTORIA o DERROTA con las estadísticas. |
 | 21 | Móvil: joystick al fondo, AGACH, MIRA, AIRE y FUEGO arrastrando. | Mismo comportamiento que en el ordenador. AGACH esprintando hace slide; púlsalo otra vez para levantarte. |
-| 22 | Campo de tiro: Pausa → Reiniciar estadísticas y dispara 20 veces. | Disparos = 20. La precisión y «S/BAJA» (segundos por baja) cuadran con lo que has hecho. |
+| 22 | Campo de tiro: Pausa → Reiniciar estadísticas y dispara 20 veces. | Disparos = 20. La precisión y «S ENTRE BAJAS» (segundos de media entre una baja y la siguiente) cuadran con lo que has hecho. |
 
 Si algo no cumple lo esperado, apunta el número de la prueba y lo que muestra F3 en ese momento.
 

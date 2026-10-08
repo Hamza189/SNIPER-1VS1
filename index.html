@@ -238,7 +238,7 @@ body.touch #top{width:min(300px,46vw)}
       <div class="goal">PRIMERO A 10</div>
       <div class="side bots"><b id="kBots">0</b><span>BOTS</span></div>
     </div>
-    <div id="rangeHud" hidden><span>DISPAROS<b id="rS">0</b></span><span>IMPACTOS<b id="rH">0</b></span><span>CABEZA<b id="rC">0</b></span><span>PRECISIÓN<b id="rA">0%</b></span><span>S/BAJA<b id="rT">–</b></span></div>
+    <div id="rangeHud" hidden><span>DISPAROS<b id="rS">0</b></span><span>IMPACTOS<b id="rH">0</b></span><span>CABEZA<b id="rC">0</b></span><span>PRECISIÓN<b id="rA">0%</b></span><span>S ENTRE BAJAS<b id="rT">–</b></span></div>
   </div>
   <div id="feed"></div>
   <div id="cross"><i></i><i></i><i></i><i></i><b></b></div>
@@ -1305,7 +1305,7 @@ const P={pos:new T.Vector3(),vel:new T.Vector3(),yaw:0,pitch:0,onGround:true,cro
 const WS={state:'raise',t:0,ammo:GUNCFG.mag,mag:GUNCFG.mag,kick:0,ads:0,swayX:0,swayY:0,flashT:0,zoom:8,zoomCur:8};
 // last rendered aim: the shot leaves from exactly what the player saw
 const AIM={ox:0,oy:0,oz:0,yaw:0,pitch:0};
-const STATS={firstShot:-1,lastKill:0,rangeHs:0,kills:0,deaths:0,hs:0,shots:0,hits:0,longest:0,start:0,botKills:0};
+const STATS={firstShot:-1,firstKill:0,lastKill:0,rangeHs:0,kills:0,deaths:0,hs:0,shots:0,hits:0,longest:0,start:0,botKills:0};
 let state='menu';
 const input={keys:{},fireHeld:false,firePressed:false,scope:false,scopeToggle:false,crouchHeld:false,crouchPressed:false,jumpPressed:false,reloadPressed:false,breath:false,lookDX:0,lookDY:0,joyX:0,joyY:0,joySprint:false};
 let pointerLocked=false,lockFailed=false;
@@ -1632,7 +1632,7 @@ function updateVMSmoke(dt){
     p.s.scale.set(sz,sz,1);p.s.material.opacity=0.28*(1-k)*fade;}
 }
 function onKill(bot,head,dist){
-  STATS.kills++;if(head)STATS.hs++;STATS.longest=Math.max(STATS.longest,dist);STATS.lastKill=gameTime;
+  STATS.kills++;if(head)STATS.hs++;STATS.longest=Math.max(STATS.longest,dist);if(STATS.kills===1)STATS.firstKill=gameTime;STATS.lastKill=gameTime;
   if(mode==='range'){hitmarker(head?'hs':'kill');if(head){SFX.headshot();P.fovPunch=FEEL.headshotFovPunch*MOTION;slowmo=FEEL.headshotSlowmo;vibrate([30,40,60]);}else{SFX.bodyHit();SFX.kill();vibrate(50);}
     callout(head?'HEADSHOT':'DERRIBADA',Math.round(dist)+' m',head);addFeed('TÚ ▸ '+bot.name+(head?' · <em>HEADSHOT</em>':'')+' · '+Math.round(dist)+' m',head?'mine hs':'mine');return;}
   $('#kYou').textContent=STATS.kills;
@@ -1767,7 +1767,7 @@ const MODE_SUB={duel:'Pueblo abandonado. Tú contra bots francotiradores. Gana e
 function setMode(m){mode=m;store.set('mode',m);document.querySelectorAll('#modeSeg button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.m===m)));$('#modeSub').textContent=MODE_SUB[m];$('#diffBlock').hidden=m==='range';}
 document.querySelectorAll('#modeSeg button').forEach(b=>b.addEventListener('click',()=>{setMode(b.dataset.m);audioInit();SFX.ui();}));
 setMode(mode);
-function updateRangeHud(){if(mode!=='range')return;$('#rT').textContent=STATS.kills&&STATS.lastKill>STATS.firstShot?((STATS.lastKill-STATS.firstShot)/STATS.kills).toFixed(2):'–';$('#rS').textContent=STATS.shots;$('#rH').textContent=STATS.hits;$('#rC').textContent=STATS.rangeHs;$('#rA').textContent=(STATS.shots?Math.round(STATS.hits/STATS.shots*100):0)+'%';}
+function updateRangeHud(){if(mode!=='range')return;$('#rT').textContent=STATS.kills>=2?((STATS.lastKill-STATS.firstKill)/(STATS.kills-1)).toFixed(2):'–';$('#rS').textContent=STATS.shots;$('#rH').textContent=STATS.hits;$('#rC').textContent=STATS.rangeHs;$('#rA').textContent=(STATS.shots?Math.round(STATS.hits/STATS.shots*100):0)+'%';}
 const sensEl=$('#sens');sensEl.value=sens;$('#sensOut').textContent=sens.toFixed(2);
 sensEl.addEventListener('input',()=>{sens=+sensEl.value;$('#sensOut').textContent=sens.toFixed(2);store.set('sens',sens);});
 if(isTouch){$('#keysDesk').hidden=true;$('#keysTouch').hidden=false;}
