@@ -87,7 +87,7 @@ button{font:inherit;color:inherit}
 #hitmark i:nth-child(2){transform:rotate(135deg) translateY(-14px)}
 #hitmark i:nth-child(3){transform:rotate(225deg) translateY(-14px)}
 #hitmark i:nth-child(4){transform:rotate(315deg) translateY(-14px)}
-#hitmark.on{animation:hm .32s ease-out}
+#hitmark.on{animation:hm .26s ease-out}
 #hitmark.kill i{background:var(--blood)}
 #hitmark.hs i{background:var(--gold);height:15px}
 #hitmark .ring{position:absolute;left:-20px;top:-20px;width:40px;height:40px;border:2px solid var(--gold);border-radius:50%;opacity:0;box-sizing:border-box}
@@ -428,7 +428,7 @@ const camera=new T.PerspectiveCamera(BASE_FOV,1,0.05,600);
 camera.rotation.order='YXZ';
 scene.add(camera);
 const wScene=new T.Scene();
-const wCam=new T.PerspectiveCamera(52,1,0.01,10);
+const wCam=new T.PerspectiveCamera(50,1,0.01,10);
 
 function resize(){
   const w=window.innerWidth,h=window.innerHeight;
@@ -696,7 +696,8 @@ function tone(at,dur,o){
   osc.connect(g);g.connect(outNode(o.pan,o.verb));osc.start(t);osc.stop(t+dur+0.05);
 }
 const SFX={
-  shot(){nz(0,0.07,{type:'bandpass',f:2600,q:0.6,g:1.0});nz(0,0.5,{f:2400,f2:220,g:0.95,verb:0.7});tone(0,0.32,{f:110,f2:36,g:1.0});nz(0.02,1.1,{f:600,f2:120,g:0.25,verb:1.0});},
+  shot(){SFX.click(0,3400,0.2);nz(0,0.07,{type:'bandpass',f:2600,q:0.6,g:1.0});nz(0,0.5,{f:2400,f2:220,g:0.95,verb:0.7});tone(0,0.32,{f:110,f2:36,g:1.0});tone(0,0.5,{f:58,f2:32,g:0.55});nz(0.02,1.1,{f:600,f2:120,g:0.25,verb:1.0});
+    nz(0.075,0.25,{f:1300,f2:400,g:0.22,pan:-0.4});nz(0.14,0.35,{f:900,f2:250,g:0.13,pan:0.5,verb:0.6});},
   dry(){nz(0,0.03,{type:'bandpass',f:2400,q:5,g:0.4});},
   click(at,f,g){nz(at,0.03,{type:'bandpass',f:f||2000,q:6,g:g||0.5});tone(at,0.02,{f:(f||2000)*0.5,type:'square',g:0.03});},
   slide(at,f1,f2){nz(at,0.09,{type:'bandpass',f:f1,f2:f2,q:3,g:0.25});},
@@ -704,6 +705,12 @@ const SFX={
   casing(at){at=at||0;tone(at,0.13,{f:3600,g:0.06});tone(at,0.1,{f:5300,g:0.04});tone(at+0.14,0.09,{f:3500,g:0.035});tone(at+0.23,0.06,{f:3450,g:0.02});},
   reload(){SFX.click(0.18,1900,0.4);nz(0.3,0.12,{type:'bandpass',f:1200,q:2,g:0.2});nz(0.95,0.09,{f:900,g:0.55});SFX.click(1.0,2100,0.6);SFX.bolt(1.38);},
   hit(){tone(0,0.06,{f:1500,type:'triangle',g:0.22});tone(0.005,0.05,{f:950,g:0.12});},
+  hitTick(){tone(0,0.05,{f:1500,type:'triangle',g:0.2});},
+  thwack(at){nz(at,0.12,{f:520,g:0.6});tone(at,0.1,{f:150,f2:70,g:0.5});},
+  impDirt(at,g){nz(at,0.12,{f:380,g:0.45*g});nz(at,0.05,{type:'bandpass',f:1100,q:1,g:0.12*g});},
+  impWood(at,g){tone(at,0.09,{f:230,f2:140,g:0.5*g});nz(at,0.05,{type:'bandpass',f:1300,q:2,g:0.35*g});},
+  impMetal(at,g){tone(at,0.3,{f:2250,g:0.18*g});tone(at,0.22,{f:3420,g:0.09*g});nz(at,0.03,{type:'highpass',f:3500,g:0.3*g});},
+  impConcrete(at,g){nz(at,0.04,{type:'bandpass',f:2600,q:1.5,g:0.35*g});nz(at,0.1,{f:500,g:0.3*g});},
   bodyHit(){nz(0,0.09,{f:650,g:0.55});tone(0,0.09,{f:170,f2:85,g:0.45});tone(0.004,0.05,{f:1300,type:'triangle',g:0.16});},
   bLift(){SFX.click(0,2300,0.45);},
   bBack(){SFX.slide(0,1600,900);SFX.click(0.07,1700,0.5);},
@@ -774,57 +781,87 @@ function later(d,fn){EVENTS.push({t:gameTime+d,fn});}
 function runEvents(){for(let i=EVENTS.length-1;i>=0;i--){if(EVENTS[i].t<=gameTime){const e=EVENTS[i];EVENTS.splice(i,1);e.fn();}}}
 
 /* =================== WEAPON VIEWMODEL =================== */
-const wHemi=new T.HemisphereLight(0xe8eeff,0x6a5038,0.9);wScene.add(wHemi);
-const wKey=new T.DirectionalLight(0xffe0bb,1.0);wKey.position.set(-1,2,1);wScene.add(wKey);
+const wHemi=new T.HemisphereLight(0xe8eeff,0x7a5c40,1.05);wScene.add(wHemi);
+const wKey=new T.DirectionalLight(0xffe0bb,1.3);wKey.position.set(-1,2,1);wScene.add(wKey);
+const wRim=new T.DirectionalLight(0xffc98f,0.75);wRim.position.set(1.5,1,-2);wScene.add(wRim);
 const wFill=new T.DirectionalLight(0x9fb7ff,0.35);wFill.position.set(1.5,0.5,-1);wScene.add(wFill);
 wScene.add(wCam);
 const WROOT=new T.Group();wScene.add(WROOT);
 const GUN=new T.Group();WROOT.add(GUN);
 const RIF={};
+// small environment map so metal reads as metal (without one, metallic surfaces render almost black)
+const ENV=(()=>{const face=(top,mid,bot)=>{const c=document.createElement('canvas');c.width=c.height=64;const g=c.getContext('2d');if(g){const gr=g.createLinearGradient(0,0,0,64);gr.addColorStop(0,top);gr.addColorStop(0.5,mid);gr.addColorStop(1,bot);g.fillStyle=gr;g.fillRect(0,0,64,64);}return c;};
+  const side=()=>face('#7d8fb0','#f1c08e','#b08a5e');
+  const t=new T.CubeTexture([side(),side(),face('#9fb4d8','#9fb4d8','#9fb4d8'),face('#9a7a52','#9a7a52','#9a7a52'),side(),side()]);t.needsUpdate=true;return t;})();
 (function buildRifle(){
-  const metal=new T.MeshStandardMaterial({color:0x2a2c2e,metalness:.65,roughness:.4});
-  const metal2=new T.MeshStandardMaterial({color:0x3e4146,metalness:.55,roughness:.5});
-  const poly=new T.MeshStandardMaterial({color:0x8d7a58,roughness:.82});
-  const rubber=new T.MeshStandardMaterial({color:0x141414,roughness:.95});
-  const glove=new T.MeshStandardMaterial({color:0x3b3628,roughness:.9});
-  const sleeve=new T.MeshStandardMaterial({color:0x5a5440,roughness:.95});
-  const lens=new T.MeshStandardMaterial({color:0x0f2236,metalness:.9,roughness:.08,emissive:0x0b1a2c});
+  const metal=new T.MeshStandardMaterial({color:0x474b50,metalness:.55,roughness:.36,envMap:ENV,envMapIntensity:.9});
+  const metal2=new T.MeshStandardMaterial({color:0x5c6168,metalness:.45,roughness:.45,envMap:ENV,envMapIntensity:.8});
+  const scopeM=new T.MeshStandardMaterial({color:0x2f3338,metalness:.5,roughness:.3,envMap:ENV,envMapIntensity:1});
+  const poly=new T.MeshStandardMaterial({color:0xa58e66,roughness:.72});
+  const polyDk=new T.MeshStandardMaterial({color:0x7d6a4c,roughness:.8});
+  const rubber=new T.MeshStandardMaterial({color:0x17171a,roughness:.95});
+  const glove=new T.MeshStandardMaterial({color:0x3f3a2c,roughness:.9});
+  const sleeve=new T.MeshStandardMaterial({color:0x5e5843,roughness:.95});
+  const lens=new T.MeshStandardMaterial({color:0x1d4a63,metalness:.3,roughness:.04,emissive:0x0c2233,envMap:ENV,envMapIntensity:1.4});
   const B=(w,h,d,m,x,y,z,p)=>{const o=new T.Mesh(new T.BoxGeometry(w,h,d),m);o.position.set(x,y,z);(p||GUN).add(o);return o;};
   const C=(rt,rb,len,m,x,y,z,p,segs)=>{const o=new T.Mesh(new T.CylinderGeometry(rt,rb,len,segs||16),m);o.rotation.x=Math.PI/2;o.position.set(x,y,z);(p||GUN).add(o);return o;};
+  const V=(r,h,m,x,y,z,p,segs)=>{const o=new T.Mesh(new T.CylinderGeometry(r,r,h,segs||14),m);o.position.set(x,y,z);(p||GUN).add(o);return o;}; // vertical cylinder
+  // receiver + picatinny rail
   B(0.052,0.058,0.30,metal,0,0,0.02);
-  B(0.003,0.022,0.055,rubber,0.0265,0.012,-0.02);
-  C(0.011,0.013,0.56,metal,0,0.004,-0.41);
+  B(0.003,0.022,0.055,rubber,0.0265,0.012,-0.02); // ejection port
+  B(0.024,0.008,0.27,metal2,0,0.033,0.02);
+  for(let k=0;k<12;k++)B(0.027,0.004,0.008,metal2,0,0.039,-0.105+k*0.022);
+  C(0.017,0.017,0.04,metal2,0,0.008,0.19); // bolt shroud
+  // barrel + muzzle brake with ports
+  C(0.011,0.014,0.56,metal,0,0.004,-0.41);
   C(0.019,0.019,0.075,metal2,0,0.004,-0.71);
-  B(0.042,0.01,0.05,rubber,0,0.004,-0.71);
+  for(const sx of [-1,1])for(const z of [-0.692,-0.722]){B(0.004,0.013,0.014,rubber,sx*0.0185,0.004,z);}
+  // handguard (FDE) with slots, end cap, sling stud and folded bipod
   B(0.064,0.066,0.34,poly,0,-0.012,-0.29);
+  for(const sx of [-1,1])for(const z of [-0.2,-0.28,-0.36])B(0.002,0.012,0.045,rubber,sx*0.0325,-0.012,z);
+  B(0.066,0.068,0.01,metal2,0,-0.012,-0.462);
+  V(0.005,0.012,metal2,0,-0.05,-0.43);
+  for(const sx of [-1,1]){const lg=C(0.0045,0.0045,0.19,metal2,sx*0.016,-0.052,-0.33);lg.rotation.z=0;}
+  B(0.04,0.012,0.022,metal2,0,-0.05,-0.435);
+  // stock: body, cheek riser with knob, spacers, butt pad
   B(0.056,0.07,0.16,poly,0,-0.03,0.24);
   B(0.05,0.13,0.14,poly,0,-0.05,0.38);
-  B(0.054,0.14,0.022,rubber,0,-0.05,0.46);
-  B(0.045,0.03,0.12,poly,0,0.026,0.31);
-  const grip=B(0.038,0.095,0.05,poly,0,-0.075,0.12);grip.rotation.x=-0.35;
-  B(0.008,0.006,0.07,metal,0,-0.056,0.05);
+  B(0.045,0.03,0.12,polyDk,0,0.028,0.31);
+  const kb=V(0.008,0.012,metal2,0.027,0.022,0.31);kb.rotation.z=Math.PI/2;
+  B(0.052,0.132,0.006,rubber,0,-0.05,0.452);B(0.052,0.132,0.006,metal2,0,-0.05,0.444);
+  B(0.054,0.14,0.022,rubber,0,-0.05,0.466);
+  // grip + trigger guard loop
+  const grip=B(0.038,0.095,0.05,polyDk,0,-0.075,0.12);grip.rotation.x=-0.35;
+  B(0.008,0.006,0.075,metal,0,-0.062,0.055);B(0.006,0.02,0.006,metal,0,-0.052,0.018);
   B(0.006,0.025,0.006,metal,0,-0.045,0.06);
-  RIF.mag=B(0.036,0.06,0.075,metal2,0,-0.055,-0.03);
-  RIF.magY=-0.055;
-  B(0.03,0.05,0.018,metal,0,0.042,-0.08);B(0.03,0.05,0.018,metal,0,0.042,0.07);
-  C(0.0175,0.0175,0.26,metal,0,0.068,0.0);
-  C(0.0175,0.029,0.06,metal,0,0.068,-0.155);
-  C(0.029,0.029,0.05,metal,0,0.068,-0.205);
-  const l=new T.Mesh(new T.CircleGeometry(0.026,20),lens);l.position.set(0,0.068,-0.231);l.rotation.y=Math.PI;GUN.add(l);
-  C(0.025,0.0175,0.06,metal,0,0.068,0.15);
+  // magazine (base plate moves with it)
+  RIF.mag=B(0.036,0.06,0.075,metal2,0,-0.055,-0.03);RIF.magY=-0.055;
+  B(0.042,0.008,0.082,metal,0,-0.033,0,RIF.mag);
+  // scope: rings with caps, tube, objective + sunshade, turrets with caps, parallax knob, power ring, ocular
+  for(const z of [-0.08,0.07]){B(0.03,0.04,0.018,metal,0,0.048,z);C(0.021,0.021,0.016,metal2,0,0.068,z);}
+  C(0.0175,0.0175,0.26,scopeM,0,0.068,0.0);
+  C(0.0175,0.029,0.06,scopeM,0,0.068,-0.155);
+  C(0.029,0.029,0.05,scopeM,0,0.068,-0.205);
+  C(0.031,0.031,0.04,scopeM,0,0.068,-0.25);
+  const lf=new T.Mesh(new T.CircleGeometry(0.027,24),lens);lf.position.set(0,0.068,-0.271);lf.rotation.y=Math.PI;GUN.add(lf);
+  V(0.012,0.028,metal2,0,0.096,0);V(0.0135,0.008,scopeM,0,0.112,0);
+  const ts=V(0.012,0.028,metal2,0.03,0.068,0);ts.rotation.z=Math.PI/2;const tc=V(0.0135,0.008,scopeM,0.046,0.068,0);tc.rotation.z=Math.PI/2;
+  const pk=V(0.011,0.022,metal2,-0.028,0.068,0.0);pk.rotation.z=Math.PI/2;
+  C(0.022,0.022,0.022,rubber,0,0.068,0.105);
+  C(0.025,0.0175,0.06,scopeM,0,0.068,0.15);
   C(0.025,0.025,0.03,rubber,0,0.068,0.19);
-  const tt=new T.Mesh(new T.CylinderGeometry(0.012,0.012,0.03,12),metal2);tt.position.set(0,0.098,0);GUN.add(tt);
-  const ts=new T.Mesh(new T.CylinderGeometry(0.012,0.012,0.03,12),metal2);ts.rotation.z=Math.PI/2;ts.position.set(0.03,0.068,0);GUN.add(ts);
+  const lr=new T.Mesh(new T.CircleGeometry(0.02,20),lens);lr.position.set(0,0.068,0.206);GUN.add(lr);
+  // bolt: handle, bigger knob, body
   const bolt=new T.Group();bolt.position.set(0.024,0.012,0.08);GUN.add(bolt);RIF.bolt=bolt;
-  const bh=new T.Mesh(new T.CylinderGeometry(0.005,0.005,0.06,8),metal);bh.rotation.z=Math.PI/2;bh.position.set(0.03,0,0);bolt.add(bh);
-  const bk=new T.Mesh(new T.SphereGeometry(0.013,12,8),metal2);bk.position.set(0.062,-0.004,0);bolt.add(bk);
-  const bb=new T.Mesh(new T.CylinderGeometry(0.009,0.009,0.1,10),metal2);bb.rotation.x=Math.PI/2;bb.position.set(-0.012,0,0.02);bolt.add(bb);
+  const bh=new T.Mesh(new T.CylinderGeometry(0.0055,0.0055,0.06,8),metal);bh.rotation.z=Math.PI/2;bh.position.set(0.03,0,0);bolt.add(bh);
+  const bk=new T.Mesh(new T.SphereGeometry(0.015,14,10),metal2);bk.position.set(0.064,-0.004,0);bolt.add(bk);
+  const bb=new T.Mesh(new T.CylinderGeometry(0.009,0.009,0.1,10),metal);bb.rotation.x=Math.PI/2;bb.position.set(-0.012,0,0.02);bolt.add(bb);
   // hands & sleeves
   B(0.075,0.05,0.11,glove,0,-0.062,-0.30);
-  const lf=B(0.085,0.085,0.42,sleeve,-0.07,-0.17,-0.1);lf.rotation.set(0.45,0.3,0);
+  const lfa=B(0.085,0.085,0.42,sleeve,-0.07,-0.17,-0.1);lfa.rotation.set(0.45,0.3,0);
   B(0.062,0.09,0.08,glove,0.004,-0.088,0.135);
   B(0.02,0.018,0.04,glove,0.012,-0.05,0.07);
-  const rf=B(0.09,0.09,0.38,sleeve,0.05,-0.17,0.33);rf.rotation.set(0.55,-0.1,0);
+  const rfa=B(0.09,0.09,0.38,sleeve,0.05,-0.17,0.33);rfa.rotation.set(0.55,-0.1,0);
   // muzzle flash
   RIF.flash=new T.Sprite(new T.SpriteMaterial({map:flashTex,transparent:true,depthWrite:false,blending:T.AdditiveBlending,color:0xffd5a0}));
   RIF.flash.position.set(0,0.004,-0.8);RIF.flash.scale.set(0.32,0.32,1);RIF.flash.visible=false;GUN.add(RIF.flash);
@@ -893,7 +930,7 @@ class Bot{
     const rifle=new T.Group();rifle.position.set(0.1,1.38,0.36);this.g.add(rifle);
     const rb=new T.Mesh(new T.BoxGeometry(0.05,0.07,1.0),BOT_MAT.gun);rifle.add(rb);
     const rs=new T.Mesh(new T.CylinderGeometry(0.025,0.03,0.3,8),BOT_MAT.gun);rs.rotation.x=Math.PI/2;rs.position.set(0,0.07,0.05);rifle.add(rs);
-    this.glint=new T.Sprite(glintMatBase.clone());this.glint.position.set(0.1,1.45,0.6);this.glint.scale.set(0.05,0.05,1);this.glint.visible=false;this.g.add(this.glint);
+    this.glint=new T.Sprite(glintMatBase.clone());this.glint.position.set(0.12,1.46,0.62);this.glint.scale.set(0.05,0.05,1);this.glint.visible=false;this.g.add(this.glint);
     this.muzzle=new T.Vector3(0.1,1.38,0.9);
     scene.add(this.g);this.g.visible=false;this.alive=false;this.hp=100;
     this.reset();
@@ -986,7 +1023,7 @@ class Bot{
             if(Math.random()<0.5&&this.pickDest()){}else{this.state='watch';this.watchT=rand(2.5,4.5);this.lookYaw=toPYaw;}this.spot=0.4;}}
         else{this.lostT=0;
           if(this.aimT>=this.reaction&&this.cool<=0&&Math.abs(angDiff(toPYaw,this.yaw))<0.12)this.shoot();}
-        if(this.glint.visible){const pul=0.045+Math.sin(gameTime*14)*0.012+(this.aimT>this.reaction*0.75?0.025:0);this.glint.scale.set(pul,pul,1);}
+        if(this.glint.visible){let pul=0.022+Math.sin(gameTime*14)*0.005+(this.aimT>this.reaction*0.75?0.01:0);if(WCORE.ads>=GUNCFG.scopeAt)pul*=0.55;this.glint.scale.set(pul,pul,1);}
         break;}
     }
     g.rotation.y=this.yaw;
@@ -1017,7 +1054,7 @@ class Bot{
       const end=hits.length?hits[0].point:mz.clone().addScaledVector(dir,200);
       tracer(mz,end,760,0xffc68a,6);
       const sidePan=clamp(side.dot(new T.Vector3(Math.cos(P.yaw),0,-Math.sin(P.yaw))),-1,1);
-      later(Math.min(0.2,this.dist/760),()=>{if(!P.alive)return;SFX.whizz(sidePan);P.shake=Math.max(P.shake,0.25);if(hits.length){impactFX(hits[0]);}});
+      later(Math.min(0.2,this.dist/760),()=>{if(!P.alive)return;SFX.whizz(sidePan);P.shake=Math.max(P.shake,0.25);if(hits.length){impactFX(hits[0],hits[0].distance);}});
     }
     if(Math.random()<0.4){this.glint.visible=false;if(!this.pickDest()){this.state='watch';this.watchT=2;}this.spot=0.6;}
   }
@@ -1093,12 +1130,31 @@ function killPlayer(bot,head){
 
 /* =================== FIRING =================== */
 function moveCtx(){return {speed:Math.hypot(PM.vx,PM.vz),airborne:!PM.onGround,crouch:PM.crouch,sliding:PM.sliding};}
-function impactFX(hit){
+function surfaceOf(obj){
+  const m=obj.material;
+  if(Array.isArray(m))return 'plaster';
+  if(m===MAT.crate)return 'wood';
+  if(m===MAT.rust||m===MAT.metal||m===MAT.carPaint||m===MAT.glass||m===MAT.tire)return 'metal';
+  if(m===MAT.sand||m===MAT.road||m===MAT.bag)return 'dirt';
+  if(m===MAT.concrete||m===MAT.concreteDark||m===MAT.roof)return 'concrete';
+  return 'plaster';
+}
+const SURF={
+  dirt:{dust:0xc9ab80,n:5,size:0.34,sparks:0,snd:'impDirt'},
+  wood:{dust:0x8a6a42,n:4,size:0.22,sparks:1,snd:'impWood'},
+  metal:{dust:0x9a958c,n:2,size:0.16,sparks:5,snd:'impMetal'},
+  concrete:{dust:0xc8c2b6,n:4,size:0.26,sparks:2,snd:'impConcrete'},
+  plaster:{dust:0xe2d6c0,n:4,size:0.28,sparks:1,snd:'impConcrete'}
+};
+// sound reaches you later the further away the impact is (speed of sound), capped so it stays readable
+function soundDelay(dist){return Math.min(0.35,dist/343);}
+function impactFX(hit,dist){
   const n=hit.face?hit.face.normal.clone().transformDirection(hit.object.matrixWorld):new T.Vector3(0,1,0);
-  // discreet: a small puff, a few sparks, a mark
-  emit(hit.point,{n:4,color:0xc9ab80,size:0.28,grow:1.1,life:0.7,spread:0.5,dir:n,speed:1.8,g:-1.5,op:0.5});
-  emit(hit.point,{n:2,color:0xffc070,size:0.06,life:0.14,spread:2,dir:n,speed:3.5,add:true,op:0.9,g:-9,drag:0.5});
+  const sf=SURF[surfaceOf(hit.object)];
+  emit(hit.point,{n:sf.n,color:sf.dust,size:sf.size,grow:1.1,life:0.7,spread:0.5,dir:n,speed:1.8,g:-1.5,op:0.5});
+  if(sf.sparks)emit(hit.point,{n:sf.sparks,color:0xffc070,size:0.05,life:0.14,spread:2,dir:n,speed:4,add:true,op:0.95,g:-9,drag:0.5});
   decal(hit.point,n);
+  if(dist!==undefined&&dist<95)SFX[sf.snd](soundDelay(dist),clamp(1.2-dist/80,0.25,1));
 }
 /* ---- bullets: SDWeapon ballistics (exact parabola per fixed tick) + a swept ray per step ---- */
 const BULLETS=[];const BTR=[];
@@ -1139,9 +1195,10 @@ function bulletHit(h,b){
     emit(h.point,{n:3,color:0xffb070,size:0.09,life:0.22,spread:2.5,add:true,op:0.9,drag:2});
     emit(h.point,{n:2,color:0x7a5a46,size:0.2,grow:0.6,life:0.45,spread:0.6,op:0.45});
     if(part==='head')STATS.rangeHs++;
+    SFX.thwack(soundDelay(dist));
     if(killed)onKill(bot,part==='head',dist);
-    else{hitmarker('body');SFX.bodyHit();callout('IMPACTO','−'+dmg+' · '+Math.round(dist)+' m',false,true);}
-  }else{impactFX(h);if(dist<45)SFX.impact();}
+    else{hitmarker('body');SFX.hitTick();callout('IMPACTO','−'+dmg+' · '+Math.round(dist)+' m',false,true);}
+  }else impactFX(h,dist);
   updateRangeHud();
 }
 /* ---- shot: direction from the last rendered aim (reticle), never from recoil or shake ---- */
@@ -1162,7 +1219,7 @@ function doFire(e){
   SFX.shot();vibrate(28);
   const rc=GUNCFG.recoil;SDWeapon.kickRecoil(RECOIL,scoped?rc.pitch:rc.pitchHip,rand(-1,1)*rc.yaw,rc);
   P.shake=Math.max(P.shake,scoped?0.3:0.7);
-  WS.kick=rc.viewKick;WS.flashT=0.055;RIF.flash.material.rotation=Math.random()*6;
+  WS.kick=rc.viewKick;WS.flashT=0.055;RIF.flash.material.rotation=Math.random()*6;const fs=rand(0.28,0.4);RIF.flash.scale.set(fs,fs,1);
   camLight.position.copy(muzzleW);camLight.intensity=3.2;
   if(scoped){const sf=$('#scopeFlash');sf.classList.remove('on');void sf.offsetWidth;sf.classList.add('on');}
   else emitVM(0.8);
@@ -1189,13 +1246,13 @@ function updateVMSmoke(dt){
 }
 function onKill(bot,head,dist){
   STATS.kills++;if(head)STATS.hs++;STATS.longest=Math.max(STATS.longest,dist);if(STATS.kills===1)STATS.firstKill=gameTime;STATS.lastKill=gameTime;
-  if(mode==='range'){hitmarker(head?'hs':'kill');if(head){SFX.headshot();P.fovPunch=FEEL.headshotFovPunch*MOTION;slowmo=FEEL.headshotSlowmo;vibrate([30,40,60]);}else{SFX.bodyHit();SFX.kill();vibrate(50);}
+  if(mode==='range'){hitmarker(head?'hs':'kill');if(head){SFX.headshot();P.fovPunch=FEEL.headshotFovPunch*MOTION;slowmo=FEEL.headshotSlowmo;vibrate([30,40,60]);}else{SFX.hitTick();SFX.kill();vibrate(50);}
     callout(head?'HEADSHOT':'DERRIBADA',Math.round(dist)+' m',head);addFeed('TÚ ▸ '+bot.name+(head?' · <em>HEADSHOT</em>':'')+' · '+Math.round(dist)+' m',head?'mine hs':'mine');return;}
   $('#kYou').textContent=STATS.kills;
   hitmarker(head?'hs':'kill');
   const pts=head?100:50;const long=dist>55;
   if(head){SFX.headshot();P.fovPunch=FEEL.headshotFovPunch*MOTION;slowmo=FEEL.headshotSlowmo;vibrate([30,40,60]);}
-  else{SFX.bodyHit();SFX.kill();vibrate(50);}
+  else{SFX.hitTick();SFX.kill();vibrate(50);}
   callout(head?'HEADSHOT':'ELIMINADO','+'+(pts+(long?25:0))+' · '+Math.round(dist)+' m'+(long?' · TIRO LARGO':''),head);
   addFeed('TÚ ▸ '+bot.name+(head?' · <em>HEADSHOT</em>':'')+' · '+Math.round(dist)+' m',head?'mine hs':'mine');
   if(STATS.kills>=GOAL)later(1.4,()=>endMatch(true));
@@ -1529,7 +1586,7 @@ function updateCamera(dt,alpha){
 }
 
 /* =================== VIEWMODEL (per rendered frame) =================== */
-const _hip=new T.Vector3(0.155,-0.15,-0.42),_adsP=new T.Vector3(0,-0.068,-0.27);
+const _hip=new T.Vector3(0.15,-0.143,-0.395),_adsP=new T.Vector3(0,-0.068,-0.27);
 function updateViewmodel(dt){
   const ads=ss(WCORE.ads),free=1-ads;
   const pos=_hip.clone().lerp(_adsP,ads);
@@ -1666,7 +1723,7 @@ function aimSelfTest(){
   out.unshift('AUTOTEST: '+ok+' correctas, '+bad+' fallidas'+(bad?'  ← avisa a Claude con esta lista':''));
   return out;
 }
-$('#selfTestBtn').addEventListener('click',()=>{const o=$('#selfTestOut');o.hidden=false;o.textContent=aimSelfTest().join('\n');SFX.ui();});
+$('#selfTestBtn').addEventListener('click',()=>{const o=$('#selfTestOut');o.hidden=false;o.textContent='Ejecutando…';try{o.textContent=aimSelfTest().join('\n');}catch(e){o.textContent='ERROR en el autotest: '+e.message+'\n'+(e.stack||'').split('\n').slice(0,3).join('\n')+'\n← pásale esto a Claude';}SFX.ui();});
 
 /* =================== LOOP =================== */
 let last=performance.now();let menuAng=0;let rangeT=0;let simAcc=0;
@@ -1701,6 +1758,6 @@ function frame(now){
 }
 resize();
 requestAnimationFrame(frame);
-window.__SD={aimSelfTest,P,PM,WS,WCORE,RECOIL,AIM,BOTS,DUMMIES,BULLETS,EVENTS,PARTS,STATS,get state(){return state;},get mode(){return mode;},setMode,input,startMatch,simTick,frame,toMenu,pause,resume};
+window.__SD={MAT,impactFX,surfaceOf,soundDelay,aimSelfTest,P,PM,WS,WCORE,RECOIL,AIM,BOTS,DUMMIES,BULLETS,EVENTS,PARTS,STATS,get state(){return state;},get mode(){return mode;},setMode,input,startMatch,simTick,frame,toMenu,pause,resume};
 })();
 </script>

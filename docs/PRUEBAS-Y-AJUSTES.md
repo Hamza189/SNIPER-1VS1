@@ -4,7 +4,7 @@
 
 **Pruebas automáticas (las ejecuta Claude en Node, sin navegador)**
 - `test/core.test.js` — 69 comprobaciones del núcleo puro: movimiento, arma, balística y retroceso. Todas pasan.
-- `test/smoke.test.js` — 22 comprobaciones del juego completo con Three.js y la página sustituidos por imitaciones. Recorre el menú, el duelo, el campo de tiro, la muerte y reaparición, la pausa y el panel F3 durante miles de fotogramas. Detecta errores de ejecución, fugas de proyectiles y eventos, y diferencias por FPS. Todas pasan, tres ejecuciones seguidas.
+- `test/smoke.test.js` — 25 comprobaciones del juego completo con Three.js y la página sustituidos por imitaciones. Recorre el menú, el duelo, el campo de tiro, la muerte y reaparición, la pausa y el panel F3 durante miles de fotogramas. Detecta errores de ejecución, fugas de proyectiles y eventos, y diferencias por FPS. Todas pasan, tres ejecuciones seguidas.
 
 **Lo que NO cubren las pruebas automáticas** (solo se ve jugando en un navegador):
 - Todo lo visual: el renderizado, las animaciones, el humo y que el rifle no atraviese la cámara.
@@ -21,7 +21,7 @@ Pulsa **F3** para ver el panel técnico. En móvil está en Pausa → Panel téc
 - un disparo perfecto a la cabeza, al torso y a las piernas de cada diana fija da en esa zona;
 - un disparo 35 cm por encima de la cabeza falla.
 
-Si sale alguna ✘, pásale la lista a Claude.
+Si sale alguna ✘, o un mensaje de ERROR, pásale la lista a Claude.
 
 | # | Qué hacer | Resultado esperado |
 |---|---|---|
@@ -47,6 +47,11 @@ Si sale alguna ✘, pásale la lista a Claude.
 | 20 | Duelo completo de principio a fin en cada dificultad. | Los bots disparan, el destello avisa, mueres y reapareces, y aparecen VICTORIA o DERROTA con las estadísticas. |
 | 21 | Móvil: joystick al fondo, AGACH, MIRA, AIRE y FUEGO arrastrando. | Mismo comportamiento que en el ordenador. AGACH esprintando hace slide; púlsalo otra vez para levantarte. |
 | 22 | Campo de tiro: Pausa → Reiniciar estadísticas y dispara 20 veces. | Disparos = 20. La precisión y «S ENTRE BAJAS» (segundos de media entre una baja y la siguiente) cuadran con lo que has hecho. |
+
+| 23 | Mira el rifle a plena luz y a la sombra de un edificio. | Se distinguen el metal (con brillos), la madera sintética clara del guardamanos y la culata, el visor, el raíl y el cerrojo. No es una mancha negra. |
+| 24 | Duelo: deja que un bot te apunte y míralo con la mira. | El destello es un punto brillante pequeño junto a su visor. Se le sigue viendo la cabeza. |
+| 25 | Campo de tiro: dispara al suelo, a una caja, a un barril y a una pared a 20 m y a 80 m. | Cada superficie suena distinta (tierra sorda, madera seca, metal que tintinea, pared que cruje). A 80 m el sonido llega claramente después del impacto. |
+| 26 | Acierta a una diana a 100 m. | Marcador inmediato, y el golpe seco del impacto llega unos 0,3 s después. |
 
 Si algo no cumple lo esperado, apunta el número de la prueba y lo que muestra F3 en ese momento.
 

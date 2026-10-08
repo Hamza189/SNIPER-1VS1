@@ -136,6 +136,18 @@ let st = null; try { st = SD.aimSelfTest(); } catch (e) { errors.push(e); }
 check('el autotest de puntería se ejecuta sin errores', Array.isArray(st) && st.length > 1, st && st[0]);
 check('campo de tiro sin errores', errors.length === 0, errors[0] && errors[0].message);
 
+console.log('\nIMPACTOS POR SUPERFICIE');
+{ const kinds = { crate: 'wood', rust: 'metal', carPaint: 'metal', sand: 'dirt', bag: 'dirt', concrete: 'concrete', roof: 'concrete' };
+  let okSurf = true, detail = [];
+  for (const [mat, want] of Object.entries(kinds)) { const got = SD.surfaceOf({ material: SD.MAT[mat] }); if (got !== want) { okSurf = false; detail.push(mat + '→' + got); } }
+  if (SD.surfaceOf({ material: [SD.MAT.roof, SD.MAT.roof] }) !== 'plaster') { okSurf = false; detail.push('edificio'); }
+  check('cada material se clasifica en su superficie', okSurf, detail.join(', ') || 'madera, metal, tierra, hormigón, yeso');
+  let threw = null;
+  try { for (const mat of ['crate', 'rust', 'sand', 'concrete']) for (const d of [5, 60, 120]) SD.impactFX({ point: new window.THREE.Vector3(), face: null, object: { material: SD.MAT[mat], matrixWorld: null } }, d); } catch (e) { threw = e; }
+  check('los impactos de cada superficie se ejecutan sin errores', !threw, threw && threw.message);
+  check('el sonido del impacto llega más tarde a más distancia, con tope', SD.soundDelay(34.3) > 0.099 && SD.soundDelay(34.3) < 0.101 && SD.soundDelay(500) === 0.35);
+}
+
 console.log('\nINDEPENDENCIA DE FPS (juego completo)');
 function runAt(ms, seconds) {
   SD.toMenu(); frames(2, 16); SD.setMode('range'); SD.startMatch();
