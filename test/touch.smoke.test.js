@@ -119,6 +119,11 @@ console.log('\nMANTENER FUEGO = MIRA, SOLTAR = DISPARO (opción por defecto)');
   if (SD.state === 'paused') SD.resume();
   H.frames(30, 16);
   check('girar el móvil con FUEGO pulsado: no dispara al volver', SD.STATS.shots === s5 && SD.state === 'playing', SD.state);
+  H.frames(60, 16); const s6 = SD.STATS.shots;
+  H.pointer('pointerdown', 3, 779, 325, 'fire'); H.frames(10, 16);
+  H.fire('window', 'blur'); H.pointer('pointerup', 3, 779, 325, 'fire'); const pausedOnBlur = SD.state === 'paused';
+  SD.resume(); H.frames(30, 16);
+  check('el navegador pierde el foco con FUEGO pulsado: pausa y no dispara', pausedOnBlur && SD.STATS.shots === s6);
 }
 
 console.log('\nRIFLE Y NAVAJA EN MÓVIL');

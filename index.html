@@ -2608,6 +2608,8 @@ function endMatch(win){
   if(document.exitPointerLock&&pointerLocked)document.exitPointerLock();
 }
 document.addEventListener('visibilitychange',()=>{if(document.hidden)pause();});
+// the browser loses focus (control centre, notification, app switcher): pause, which drops every held finger without shooting
+window.addEventListener('blur',()=>{if(isTouch)pause();});window.addEventListener('pagehide',()=>pause());
 
 /* =================== SIMULATION TICK (fixed 120 Hz) =================== */
 let slowmo=0;
