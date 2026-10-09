@@ -22,7 +22,8 @@ const LIMITS = {
   nameLen: 16,
   cmdBurst: 120,           // commands the server accepts ahead of real time (1 s at 120 Hz: a phone that
                            // stalls and catches up is not corrected; a speed hack gains at most 1 s once)
-  tickHz: 120              // one command = one simulation tick of 1/120 s (same as the client)
+  tickHz: 120,             // one command = one simulation tick of 1/120 s (same as the client)
+  interpMs: 110            // the client draws the rival this far in the past (the server rewinds by it)
 };
 // command bits
 const B = { sprint: 1, crouch: 2, crouchPressed: 4, jump: 8, fire: 16, adsHeld: 32, reload: 64, inspect: 128, selKnife: 256, selRifle: 512, breath: 1024 };
@@ -41,23 +42,25 @@ function packCmd(c) {
   if (c.select === 'knife') b |= B.selKnife; else if (c.select === 'rifle') b |= B.selRifle;
   const r = (x, n) => Math.round(x * n) / n;
   const a = [r(c.mx || 0, 1000), r(c.mz || 0, 1000), r(c.yaw || 0, 1e5), r(c.pitch || 0, 1e5), b];
-  if (c.fd && c.fo) a.push(r(c.fd[0], 1e5), r(c.fd[1], 1e5), r(c.fd[2], 1e5), r(c.fo[0], 1000), r(c.fo[1], 1000), r(c.fo[2], 1000));
+  if (c.fd && c.fo) { a.push(r(c.fd[0], 1e5), r(c.fd[1], 1e5), r(c.fd[2], 1e5), r(c.fo[0], 1000), r(c.fo[1], 1000), r(c.fo[2], 1000));
+    if (typeof c.ft === 'number' && isFinite(c.ft)) a.push(Math.round(c.ft)); }   // ft: server time of the rival pose on screen
   return a;
 }
 const num = (x, lo, hi) => typeof x === 'number' && isFinite(x) && x >= lo && x <= hi;
 // compact array → command, or null if malformed
 function unpackCmd(a) {
-  if (!Array.isArray(a) || (a.length !== 5 && a.length !== 11)) return null;
+  if (!Array.isArray(a) || (a.length !== 5 && a.length !== 11 && a.length !== 12)) return null;
   if (!num(a[0], -1.5, 1.5) || !num(a[1], -1.5, 1.5) || !num(a[2], -1e6, 1e6) || !num(a[3], -1.6, 1.6) || !num(a[4], 0, 4095) || (a[4] | 0) !== a[4]) return null;
   const b = a[4];
   const c = { mx: Math.max(-1, Math.min(1, a[0])), mz: Math.max(-1, Math.min(1, a[1])), yaw: a[2], pitch: a[3],
     sprint: !!(b & B.sprint), crouch: !!(b & B.crouch), crouchPressed: !!(b & B.crouchPressed), jump: !!(b & B.jump),
     fire: !!(b & B.fire), adsHeld: !!(b & B.adsHeld), reload: !!(b & B.reload), inspect: !!(b & B.inspect), breath: !!(b & B.breath),
     select: b & B.selKnife ? 'knife' : b & B.selRifle ? 'rifle' : null };
-  if (a.length === 11) {
+  if (a.length >= 11) {
     for (let i = 5; i < 8; i++) if (!num(a[i], -1.01, 1.01)) return null;
     for (let i = 8; i < 11; i++) if (!num(a[i], -1e4, 1e4)) return null;
     c.fd = [a[5], a[6], a[7]]; c.fo = [a[8], a[9], a[10]];
+    if (a.length === 12) { if (!num(a[11], 0, 1e13)) return null; c.ft = a[11]; }
   }
   return c;
 }
@@ -84,7 +87,7 @@ function parse(text) {
       return { msg: { t: 'in', m: m.m, s: m.s, c } };
     }
     case 'rematch': return { msg: { t: 'rematch' } };
-    case 'ping': return num(m.c, 0, 1e15) ? { msg: { t: 'ping', c: m.c } } : { error: 'shape' };
+    case 'ping': return num(m.c, 0, 1e15) && (m.r === undefined || num(m.r, 0, 1e5)) ? { msg: { t: 'ping', c: m.c, r: m.r === undefined ? undefined : Math.min(600, m.r) } } : { error: 'shape' };
     case 'leave': return { msg: { t: 'leave' } };
     default: return { error: 'type' };
   }

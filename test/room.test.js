@@ -304,6 +304,38 @@ for (const [lat, jit, loss] of [[20, 0, 0], [80, 10, 0], [150, 30, 0], [250, 50,
   check('10 % de comandos perdidos: el cliente se corrige y acaba donde dice el servidor', A.N.corrMax > 0 && d < 1e-6, 'corrección máx ' + A.N.corrMax.toFixed(2) + ' m, desfase final ' + d.toExponential(1));
 }
 
+console.log('\nCOMPENSACIÓN DE LATENCIA (rival en movimiento)');
+// an open lane where the rival can strafe ±4 m and stay in plain sight the whole time
+const lane = (() => { for (const [x, z] of MAP.nav) { const x2 = x + 36;
+  if (!MAP.nav.some(n => n[0] === x2 && n[1] === z)) continue;
+  let ok = true; for (let dz = -4.5; dz <= 4.5 && ok; dz += 0.5) for (const y of [0.5, 1.2, 1.6]) if (!G.losClear(INDEX, x, 1.6, z, x2, y, z + dz)) { ok = false; break; }
+  if (ok) return [[x, z], [x2, z]]; } return null; })();
+check('hay un pasillo abierto para disparar a un rival que se mueve', !!lane, lane && JSON.stringify(lane));
+for (const lat of [40, 120]) {
+  // B strafes left-right at walking speed across A's line of fire; A aims where it SEES B
+  let shoot = false;
+  const strafe = (c, S) => ({ mx: Math.floor(S.t / 900) % 2 ? 1 : -1, yaw: c.local.ms.x < pair[1][0] - 1 ? -Math.PI / 2 : Math.PI / 2 });
+  const S = createSim({ latency: lat, jitter: lat / 8, seed: 3 + lat });
+  const { A, B } = S.setupMatch((c, S) => {
+    // a real sniper leads a moving target by the bullet's flight time (600 m/s); nothing more
+    const rp = c.N.remotePose(); if (!rp) return { yaw: 0 };
+    const ms = c.local.ms, fl = Math.hypot(rp.x - ms.x, rp.z - ms.z) / CFG.rifles.halcon.speed;
+    const p = [rp.x + rp.vx * fl, rp.y + 1.17 * HB.scaleOf(rp.eye), rp.z + rp.vz * fl];
+    const l = lookAt(c, p); return { yaw: l.yaw, pitch: l.pitch, fire: shoot, adsHeld: true }; }, (c, S) => ({ mx: Math.floor(S.t / 1600) % 2 ? 1 : -1, yaw: Math.PI / 2 }));
+  place(S, A, B, lane[0], lane[1]);
+  let shots = 0;
+  S.run(1500);
+  for (let k = 0; k < 5; k++) { S.room.debug.set('B', 'hp', 1000); shoot = true; S.run(20); shoot = false; S.run(1100); shots++; }
+  const hits = evs(A, 'hit').length;
+  check(lat + ' ms: disparos al rival en movimiento donde A lo ve (con la anticipación normal por el vuelo de la bala) → el servidor los cuenta (' + hits + '/' + shots + ')', hits >= shots - 1, 'ping ' + Math.round(A.N.rtt) + ' ms');
+}
+{ // the rewind never goes further back than 200 ms, whatever the client claims
+  const S = createSim({ latency: 20 });
+  const { A } = S.setupMatch(() => ({ yaw: 0 }), () => ({ yaw: 0 }));
+  S.room.message(A.conn, JSON.stringify({ t: 'ping', c: 1, r: 99999 }), S.t);
+  check('un cliente que declara un ping enorme no consigue más de 250 ms de retroceso', S.room.seats.A.rtt <= 600 && SDRoom.RULES.maxRewindMs === 250);
+}
+
 console.log('\nESTRÉS (en memoria)');
 { let ok = 0;
   for (let i = 0; i < 100; i++) {

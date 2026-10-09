@@ -20,7 +20,7 @@ function create(opts) {
     send: opts.send, now: opts.now, world: opts.world, local: opts.local,   // local = { ms, w, load } of the game
     you: null, token: null, code: null, phase: 'none', match: 0, names: {}, players: [],
     seq: 0, pending: [], outBuf: [], sendEvery: opts.sendEvery || 3, ticksSinceSend: 0,
-    remote: [], interpMs: opts.interpMs || 110, offset: 0, rtt: 0, rtts: [], lastPing: -1e9,
+    remote: [], interpMs: opts.interpMs || PR.LIMITS.interpMs, offset: 0, rtt: 0, rtts: [], lastPing: -1e9,
     snapCount: 0, snapRate: 0, snapWin: 0, lastAck: -1, corr: 0, corrMax: 0, lastSnapAt: 0,
     lastEvQ: 0, hp: 100, alive: true, score: { A: 0, B: 0 }, startIn: 0, startedAt: 0, events: [], lastShot: null, lastReject: null, seenShots: new Set()
   };
@@ -29,7 +29,7 @@ function create(opts) {
   N.ready = on => out({ t: 'ready', on: !!on });
   N.rematch = () => out({ t: 'rematch' });
   N.leave = () => out({ t: 'leave' });
-  N.ping = () => { N.lastPing = N.now(); out({ t: 'ping', c: N.now() }); };
+  N.ping = () => { N.lastPing = N.now(); out({ t: 'ping', c: N.now(), r: N.rtts.length ? Math.round(N.rtt) : undefined }); };
   N.serverNow = () => N.now() + N.offset;
 
   // the game ran one tick with this command (call it before/after stepping, same tick)

@@ -54,7 +54,7 @@ function createSim(o) {
     for (const e of r.wev) if (e.type === 'fire') {
       const ms = c.local.ms, eye = [ms.x, ms.y + ms.eye, ms.z];
       const cp = Math.cos(cmd.pitch);
-      cmd.fd = cmd.aimDir || [-Math.sin(cmd.yaw) * cp, Math.sin(cmd.pitch), -Math.cos(cmd.yaw) * cp]; cmd.fo = eye;
+      cmd.fd = cmd.aimDir || [-Math.sin(cmd.yaw) * cp, Math.sin(cmd.pitch), -Math.cos(cmd.yaw) * cp]; cmd.fo = eye; cmd.ft = c.N.serverNow() - c.N.interpMs;   // the rival pose on screen (as the page sends it)
       c.fireLog.push({ t: S.t, eye, d: cmd.fd });
     }
     N.queueCmd(cmd);
@@ -75,7 +75,7 @@ function createSim(o) {
   // two players in a started match
   S.setupMatch = (aiA, aiB) => {
     const A = S.addClient('Hamza', aiA), B = S.addClient('Novia', aiB);
-    A.N.hello('Hamza'); B.N.hello('Novia'); S.run(200);
+    A.N.hello('Hamza'); S.run(Math.max(100, 3 * (o.latency + o.jitter))); B.N.hello('Novia'); S.run(200);
     A.N.ready(true); B.N.ready(true);
     S.until(() => A.N.phase === 'playing' && B.N.phase === 'playing', 6000);
     return { A, B };

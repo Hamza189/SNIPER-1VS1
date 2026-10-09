@@ -27,7 +27,10 @@ const HB = isNode ? require('./hitbox.js') : root.SDHitbox;
 const PR = isNode ? require('./protocol.js') : root.SDProto;
 
 const RULES = { killsToWin: 10, hp: 100, respawnMs: 3000, countdownMs: 3000, regenDelayMs: 5000, regenPerSec: 22,
-  reconnectMs: 60000, lobbySeatMs: 60000, silentMs: 6000, idleRoomMs: 15 * 60000, snapHz: 20, maxShotDev: 0.3, maxOriginDist: 0.9 };
+  reconnectMs: 60000, lobbySeatMs: 60000, silentMs: 6000, idleRoomMs: 15 * 60000, snapHz: 20, maxShotDev: 0.3, maxOriginDist: 0.9,
+  // lag compensation: a bullet is tested against the rival where the shooter SAW them
+  // (half the round trip + the client's interpolation delay), never more than maxRewindMs back
+  maxRewindMs: 250 };
 const DT = 1 / PR.LIMITS.tickHz;
 const GUN = CFG.rifles.halcon, KNIFE = CFG.knives.tactica;
 
@@ -84,7 +87,7 @@ function create(opts) {
     return { x: best.x, z: best.z, yaw: Math.atan2(best.x, best.z) };
   }
   function placeSeat(s, sp) {
-    SDP.respawn(s.p, sp.x, 0, sp.z);
+    SDP.respawn(s.p, sp.x, 0, sp.z); s.hist = [];
     s.yaw = sp.yaw; s.pitch = 0; s.hp = RULES.hp; s.alive = true; s.lastHit = -1e9;
   }
 
@@ -187,7 +190,7 @@ function create(opts) {
     const r = PR.parse(text);
     if (r.error) { if (++c.strikes > 20) R.close(conn, 4002, 'bad'); R.send(conn, JSON.stringify({ t: 'error', code: 'bad_msg', why: r.error })); return; }
     const m = r.msg;
-    if (m.t === 'ping') { R.send(conn, JSON.stringify({ t: 'pong', c: m.c, s: now })); return; }
+    if (m.t === 'ping') { if (c.seat && R.seats[c.seat] && R.seats[c.seat].conn === conn && m.r !== undefined) R.seats[c.seat].rtt = m.r; R.send(conn, JSON.stringify({ t: 'pong', c: m.c, s: now })); return; }
     if (m.t === 'hello') { if (!c.seat) hello(conn, c, m); return; }
     const s = c.seat && R.seats[c.seat]; if (!s || s.conn !== conn) return;
     switch (m.t) {
@@ -235,6 +238,27 @@ function create(opts) {
     for (const e of r.lev) if (e.type === 'knifeHit') knife(s);
   }
 
+  /* ---------- pose history (lag compensation) ---------- */
+  function record(s) {
+    const ms = s.p.ms, h = s.hist || (s.hist = []);
+    h.push({ t: R.now, x: ms.x, y: ms.y, z: ms.z, eye: ms.eye, yaw: s.yaw });
+    while (h.length > 2 && h[1].t < R.now - 1000) h.shift();
+  }
+  // the seat's body as it was at server time t (interpolated); now if no history
+  function poseAt(s, t) {
+    const ms = s.p.ms, h = s.hist;
+    const cur = { x: ms.x, y: ms.y, z: ms.z, eye: ms.eye, yaw: s.yaw };
+    if (!h || !h.length || t >= R.now) return cur;
+    if (t <= h[0].t) return h[0];
+    for (let i = h.length - 1; i > 0; i--) {
+      const a = h[i - 1], b = h[i];
+      if (t >= a.t && t <= b.t) { const f = (t - a.t) / Math.max(1e-6, b.t - a.t);
+        return { x: a.x + (b.x - a.x) * f, y: a.y + (b.y - a.y) * f, z: a.z + (b.z - a.z) * f, eye: a.eye + (b.eye - a.eye) * f, yaw: f < 0.5 ? a.yaw : b.yaw }; }
+    }
+    return h[h.length - 1].t <= t ? cur : h[h.length - 1];
+  }
+  const rewindOf = s => Math.max(0, Math.min(RULES.maxRewindMs, (s.rtt || 0) / 2 + PR.LIMITS.interpMs));
+
   /* ---------- rifle ---------- */
   function aimDir(yaw, pitch) {
     const cp = Math.cos(pitch);
@@ -257,11 +281,11 @@ function create(opts) {
     if (why) { sendTo(s, { t: 'ev', m: R.match, e: [{ k: 'rejected', what: 'shot', why }] }); log('shot rejected ' + s.id + ' ' + why); }
     s.shots++;
     const b = Wp.createBullet(o[0], o[1], o[2], d[0], d[1], d[2], GUN);
-    b.id = ++R.bulletId; b.by = s.id; b.ox = o[0]; b.oy = o[1]; b.oz = o[2];
+    b.id = ++R.bulletId; b.by = s.id; b.ox = o[0]; b.oy = o[1]; b.oz = o[2]; b.rewind = typeof cmd.ft === 'number' ? Math.max(0, Math.min(RULES.maxRewindMs, R.now - cmd.ft)) : rewindOf(s);
     R.bullets.push(b);
     sendAll({ t: 'ev', m: R.match, e: [{ k: 'shot', id: b.id, by: s.id, o: o.map(v => Math.round(v * 1000) / 1000), d: d.map(v => Math.round(v * 1e5) / 1e5), corrected: !!why }] });
   }
-  function stepBullets(dt) {
+  function stepBullets(dt, at) {
     for (const b of R.bullets) {
       if (b.done) continue;
       const sg = Wp.stepBullet(b, dt, GUN);
@@ -269,8 +293,8 @@ function create(opts) {
       let lim = mh ? mh.t : sg.len, hitP = null;
       const tgt = R.seats[other(b.by)];
       if (tgt && tgt.alive) {
-        const ms = tgt.p.ms;
-        const h = HB.segPlayer(G, { x: ms.x, y: ms.y, z: ms.z, eye: ms.eye, yaw: tgt.yaw }, sg.x0, sg.y0, sg.z0, sg.dx, sg.dy, sg.dz, lim);
+        const pose = poseAt(tgt, (at === undefined ? R.now : at) - (b.rewind || 0));
+        const h = HB.segPlayer(G, pose, sg.x0, sg.y0, sg.z0, sg.dx, sg.dy, sg.dz, lim);
         if (h) hitP = h;
       }
       if (hitP) { b.done = true; damage(R.seats[b.by], tgt, hitP.part, GUN.dmg[hitP.part], b, [sg.x0 + sg.dx * hitP.t, sg.y0 + sg.dy * hitP.t, sg.z0 + sg.dz * hitP.t]); }
@@ -316,7 +340,8 @@ function create(opts) {
     if (R.phase === 'playing') {
       // bullets fly in steps of 1/120 s whatever the server tick
       let n = Math.round(dtMs / (DT * 1000)); n = Math.max(1, Math.min(30, n));
-      for (let i = 0; i < n && R.phase === 'playing'; i++) { stepBullets(DT); checkWin(); }
+      for (let i = 0; i < n && R.phase === 'playing'; i++) { stepBullets(DT, now - (n - 1 - i) * DT * 1000); checkWin(); }
+      for (const id of ['A', 'B']) { const s = R.seats[id]; if (s && s.alive) record(s); }
       for (const id of ['A', 'B']) {
         const s = R.seats[id]; if (!s) continue;
         if (!s.alive && now - s.diedAt >= RULES.respawnMs && R.phase === 'playing') {

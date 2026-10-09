@@ -31,10 +31,12 @@ JSON sobre WebSocket. Lo validan `core/protocol.js` (en el cliente y en el servi
 | `ready` | `on` | en el lobby | solo en fase `lobby` |
 | `in` | `m, s, c:[cmd…]` | cada 3 ticks (≈40/s) o al disparar | de 1 a 24 comandos; `s` es la secuencia del primero |
 | `rematch` | – | tras el final | – |
-| `ping` | `c` (reloj del cliente) | cada 1,5 s | – |
+| `ping` | `c` (reloj del cliente), `r` (ping medido, ms; opcional) | cada 1,5 s | – |
 | `leave` | – | al salir | – |
 
-Comando compacto: `[mx, mz, yaw, pitch, bits]`. Si es un disparo se añaden `fdx, fdy, fdz, fox, foy, foz`, que son la dirección real del disparo (con dispersión y oscilación) y su origen.
+Comando compacto: `[mx, mz, yaw, pitch, bits]`. Si es un disparo se añaden `fdx, fdy, fdz, fox, foy, foz`, que son la dirección real del disparo (con dispersión y oscilación) y su origen, y opcionalmente `ft`: la hora del servidor en la que estaba el rival que se veía en pantalla (hora estimada del servidor − 110 ms de interpolación).
+
+**Compensación de latencia (acotada).** Cada bala se comprueba contra el rival *donde lo veía quien disparó*: el servidor guarda 1 s de posiciones de cada jugador y, en cada paso de la bala, usa la pose de `ahora − retroceso`, con `retroceso = ahora − ft` limitado a 0–250 ms (sin `ft`: ping/2 + 110 ms, con el mismo límite). Así acertar a alguien que corre solo exige la anticipación normal por el vuelo de la bala (600 m/s), no adivinar el ping. Precio conocido: quien acaba de ponerse a cubierto puede recibir un impacto hasta 250 ms después. Un cliente que declare un ping o una hora falsos no consigue más de 250 ms.
 
 Los bits son estos:
 

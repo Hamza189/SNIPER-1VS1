@@ -1843,7 +1843,7 @@ function simTick(dt){
     for(const e of mev)onMoveEvent(e);
     for(const e of lev)onLoadoutEvent(e);
     for(const e of wev)onWeaponEvent(e,hol);
-    if(online){if(NET.fire){cmd.fo=NET.fire.o;cmd.fd=NET.fire.d;}NET.N.queueCmd(cmd);} // the same command goes to the server
+    if(online){if(NET.fire){cmd.fo=NET.fire.o;cmd.fd=NET.fire.d;cmd.ft=NET.N.serverNow()-NET.N.interpMs;}NET.N.queueCmd(cmd);} // the same command goes to the server (ft: when the rival on screen was there, for lag compensation)
     // breath (only while the scope picture is up)
     const scoped=WCORE.ads>=GUNCFG.scopeAt;
     if(scoped&&cmd.breath&&P.breath>0&&P.exhausted<=0){if(!P.holding){P.holding=true;SFX.breathIn();}P.breath-=dt/GUNCFG.breathHold;if(P.breath<=0){P.breath=0;P.exhausted=GUNCFG.exhaustTime;P.holding=false;SFX.breathOut();}}
