@@ -29,6 +29,17 @@ standalone = (
     "<link rel=\"manifest\" href=\"manifest.webmanifest\">\n"
     + head + "\n</head>\n<body>\n" + body + "\n</body>\n</html>\n"
 )
+# The standalone page serves its own copy of Three.js (vendor/three.min.js, official r128 build),
+# so the game does not depend on a CDN that a network or ISP may block. If that file ever fails,
+# it falls back to two public CDNs before showing the error screen.
+CDN = '<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>'
+assert standalone.count(CDN) == 1
+LOCAL = (
+    '<script src="vendor/three.min.js"></script>\n'
+    '<script data-loader>window.THREE||document.write(\'<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js"><\\/script>\')</script>\n'
+    '<script data-loader>window.THREE||document.write(\'<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"><\\/script>\')</script>'
+)
+standalone = standalone.replace(CDN, LOCAL)
 (root / "index.html").write_text(standalone)
 (root / "build").mkdir(exist_ok=True)
 (root / "build" / "artifact.html").write_text(fragment)
