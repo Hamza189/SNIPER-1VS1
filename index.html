@@ -253,11 +253,12 @@ h1 span{display:block;color:var(--sand)}
 #rotate .phone{width:46px;height:80px;margin:0 auto;border:3px solid var(--sand);border-radius:8px;animation:turn 1.8s ease-in-out infinite}
 @keyframes turn{0%,20%{transform:rotate(0)}60%,100%{transform:rotate(-90deg)}}
 #tbPause{width:38px;height:38px;left:calc(14px + env(safe-area-inset-left,0px));top:calc(12px + env(safe-area-inset-top,0px));font-size:15px}
-body.touch #vitals{left:calc(62px + env(safe-area-inset-left,0px));top:calc(14px + env(safe-area-inset-top,0px));bottom:auto;width:150px}
+body.touch #vitals{left:calc(62px + env(safe-area-inset-left,0px));top:calc(14px + env(safe-area-inset-top,0px));bottom:auto;width:110px}
 body.touch #ammo{left:calc(62px + env(safe-area-inset-left,0px));right:auto;top:calc(52px + env(safe-area-inset-top,0px));bottom:auto;justify-items:start}
 body.touch #ammoNum{font-size:34px}
 body.touch #feed{font-size:10px}
-body.touch #top{width:min(300px,46vw)}
+body.touch #top{width:min(300px,38vw)}
+body.touch #score .side span{max-width:11vw;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 
 @media (max-width:760px){
   .menuInner{grid-template-columns:minmax(0,1fr);align-content:start}
@@ -1834,7 +1835,7 @@ const SDNet = { create };
 if (isNode) module.exports = SDNet; else root.SDNet = SDNet;
 })(typeof window !== 'undefined' ? window : globalThis);
 
-const BUILD_ID="a10a292";
+const BUILD_ID="4539421";
 </script>
 <script>
 (function(){
