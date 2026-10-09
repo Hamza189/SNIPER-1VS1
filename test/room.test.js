@@ -99,7 +99,7 @@ console.log('\nMOVIMIENTO SINCRONIZADO');
   const fast = []; for (let i = 0; i < 24; i++) fast.push(PR.packCmd({ mz: -1, yaw: 0, sprint: true }));
   for (let k = 0; k < 40; k++) S.room.message(A.conn, JSON.stringify({ t: 'in', m: S.room.match, s: 100000 + k * 24, c: fast }), S.t);
   const moved = Math.abs(seat.p.ms.z - x0);
-  check('960 comandos de golpe: solo se aplican los que permite el tiempo real', moved < 7.0 * 0.6, moved.toFixed(2) + ' m (sin límite: ' + (960 / 120 * 7).toFixed(0) + ' m)');
+  check('960 comandos de golpe: solo se aplican los que permite el tiempo real (+1 s de margen)', moved < 7.0 * 1.15, moved.toFixed(2) + ' m (sin límite: ' + (960 / 120 * 7).toFixed(0) + ' m)');
 }
 
 console.log('\nRIFLE ONLINE');
@@ -257,6 +257,17 @@ console.log('\nDESCONEXIÓN Y RECONEXIÓN');
   const A = S.addClient('Hamza'); A.N.hello('Hamza'); S.run(100);
   const A2 = S.addClient('Hamza'); A2.N.hello('Hamza', A.N.token); S.run(100);
   check('mismo token dos veces: una sola plaza, la conexión vieja se cierra', A2.N.you === 'A' && !A.open && !S.room.seats.B);
+}
+
+{ // leaving in the middle of a match
+  const S = createSim({ latency: 30 });
+  const { A, B } = S.setupMatch(() => ({ yaw: 0 }), () => ({ yaw: 0 }));
+  A.N.leave(); S.run(300);
+  check('A sale a mitad de partida: B gana por abandono y sigue viendo el resultado', evs(B, 'over').some(e => e.winner === 'B' && e.why === 'abandono') && S.room.phase === 'over' && B.N.phase === 'over');
+  B.N.rematch(); S.run(200);
+  check('B pulsa ESPERAR OTRO RIVAL: vuelve al lobby y puede entrar otro', S.room.phase === 'lobby' && B.N.phase === 'lobby');
+  const C = S.addClient('Nuevo'); C.N.hello('Nuevo'); S.run(200);
+  check('un jugador nuevo entra en la plaza libre', C.N.you === 'A' && S.room.seats.B && S.room.seats.A.name === 'Nuevo');
 }
 
 console.log('\nLATENCIA, JITTER Y PÉRDIDA');

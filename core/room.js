@@ -192,13 +192,20 @@ function create(opts) {
     switch (m.t) {
       case 'ready': if (R.phase === 'lobby') { s.ready = m.on; sendAll(lobbyMsg()); maybeStart(); } break;
       case 'rematch':
+        if (R.phase === 'over' && !R.seats[other(s.id)]) {   // the rival is gone: back to the lobby to wait for someone
+          R.phase = 'lobby'; R.winner = undefined; R.rematch = { A: false, B: false }; s.ready = false; s.kills = s.deaths = 0;
+          // the remaining player becomes A if needed (a new player always joins the free seat)
+          sendAll(lobbyMsg()); save(); break;
+        }
         if (R.phase === 'over') { R.rematch[s.id] = true; sendAll(lobbyMsg());
           if (R.rematch.A && R.rematch.B && R.seats.A.conn != null && R.seats.B.conn != null) startMatch(); }
         break;
       case 'leave':
         R.seats[s.id] = null; c.seat = null; R.close(conn, 4000, 'leave'); log('leave ' + s.id);
+        // leaving a running match: the other one wins and keeps seeing the result screen
         if (R.phase !== 'lobby' && R.phase !== 'over') endMatch(other(s.id), 'abandono');
-        R.phase = 'lobby'; R.winner = undefined; const o = R.seats[other(s.id)]; if (o) o.ready = false;
+        { const o = R.seats[other(s.id)]; if (o) o.ready = false; }
+        if (!R.seats.A && !R.seats.B) { R.phase = 'lobby'; R.winner = undefined; }
         sendAll(lobbyMsg()); save(); break;
       case 'in': commands(s, m); break;
     }

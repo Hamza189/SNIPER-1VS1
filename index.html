@@ -1755,7 +1755,7 @@ const SDNet = { create };
 if (isNode) module.exports = SDNet; else root.SDNet = SDNet;
 })(typeof window !== 'undefined' ? window : globalThis);
 
-const BUILD_ID="780e01b";
+const BUILD_ID="91ef8fb";
 </script>
 <script>
 (function(){
@@ -3536,7 +3536,8 @@ function netEvent(e){
       if(NET.view==='lobby'||mode!=='online')renderLobby();
       if(N.phase==='lobby'&&mode==='online'&&state!=='menu'){netEndOnline();mpShow('lobby');renderLobby();mpMsg('');}
       if(N.phase==='paused'&&mode==='online'){const off=(N.players||[]).find(p=>p&&!p.connected);if(off&&off.id!==N.you)netBanner('RIVAL DESCONECTADO · esperando a que vuelva (60 s)');}
-      if(mode==='online'&&N.phase==='over'){const r=e.m.rematch||{};const other=N.you==='A'?'B':'A';$('#overEyebrow').textContent=r[N.you]&&!r[other]?'Esperando al rival…':r[other]&&!r[N.you]?'¡El rival quiere la revancha!':'Fin de la partida';}
+      if(mode==='online'&&N.phase==='over'&&(N.players||[]).filter(Boolean).length<2){$('#overEyebrow').textContent='El rival ha salido de la sala';$('#again').textContent='ESPERAR OTRO RIVAL';}
+      else if(mode==='online'&&N.phase==='over'){const r=e.m.rematch||{};const other=N.you==='A'?'B':'A';$('#overEyebrow').textContent=r[N.you]&&!r[other]?'Esperando al rival…':r[other]&&!r[N.you]?'¡El rival quiere la revancha!':'Fin de la partida';}
       if(N.phase==='lobby'&&(N.players||[]).filter(Boolean).length<2&&mode!=='online'&&NET.view==='lobby')mpMsg('');
       break;
     case 'start':netStart(e.m);break;
@@ -3639,7 +3640,7 @@ function netOver(e){
   $('#oK').textContent=st.kills||0;$('#oD').textContent=st.deaths||0;$('#oH').textContent=st.hs||0;
   $('#oA').textContent=(st.shots?Math.round(st.hits/st.shots*100):0)+'%';$('#oL').textContent=Math.round(STATS.longest)+' m';
   const secs=Math.round(gameTime-STATS.start);$('#oT').textContent=Math.floor(secs/60)+':'+String(secs%60).padStart(2,'0');
-  $('#again').textContent='REVANCHA';
+  $('#again').textContent=e.why==='abandono'?'ESPERAR OTRO RIVAL':'REVANCHA';
   $('#over').hidden=false;$('#scope').hidden=true;$('#death').hidden=true;$('#touch').hidden=true;
   state='over';if(document.exitPointerLock&&pointerLocked)document.exitPointerLock();
   if(win){SFX.headshot();}

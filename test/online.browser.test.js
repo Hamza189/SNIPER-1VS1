@@ -114,6 +114,9 @@ async function until(page, fn, arg, ms) { try { await page.waitForFunction(fn, a
     await A.click('#hud', { force: true }).catch(() => {});
     await A.evaluate(() => __SD.toMenu());
     check('A sale al menú: vuelve el juego offline', await until(A, () => __SD.mode !== 'online' && !document.getElementById('mp').hidden || !document.getElementById('menu').hidden, null, 3000));
+    check('B ve la victoria por abandono', await until(B, () => !document.getElementById('over').hidden && document.getElementById('overTitle').textContent === 'VICTORIA', null, 5000));
+    await B.click('#again');
+    check('B pulsa ESPERAR OTRO RIVAL: vuelve al lobby de su sala', await until(B, () => !document.getElementById('mp').hidden && !document.getElementById('mpLobby').hidden, null, 5000));
     check('sin errores de JavaScript en ninguna de las dos páginas', errors.length === 0, errors.slice(0, 3).join(' | ') || 'ninguno');
   } catch (e) { fail++; console.log('  FAIL ' + (e && e.stack || e)); }
   await browser.close(); web.close(); await srv.close();
