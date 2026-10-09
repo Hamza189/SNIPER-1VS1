@@ -1835,7 +1835,7 @@ const SDNet = { create };
 if (isNode) module.exports = SDNet; else root.SDNet = SDNet;
 })(typeof window !== 'undefined' ? window : globalThis);
 
-const BUILD_ID="4539421";
+const BUILD_ID="f069d01";
 </script>
 <script>
 (function(){
@@ -3536,6 +3536,15 @@ class RemotePlayer{
     const sp=Math.hypot(pose.vx||0,pose.vz||0);
     this.walk+=dt*sp*1.6;const sw=pose.g&&sp>0.5&&pose.mode!=='slide'?Math.sin(this.walk)*Math.min(0.6,sp/9):0;
     this.legL.rotation.x=sw;this.legR.rotation.x=-sw;
+    // the rival heard nearby (within 30 m, panned): footsteps (not crouched or sliding) and the bolt / reload
+    const ddx=pose.x-P.pos.x,ddz=pose.z-P.pos.z,dist=Math.hypot(ddx,ddz);
+    if(dist<30&&pose.alive&&AU.ctx){
+      const att=Math.pow(Math.max(0,1-dist/30),1.5),pan=clamp(Math.sin((bearingDeg(pose.x,pose.z)-heading())*Math.PI/180),-1,1);
+      if(pose.g&&sp>1&&pose.mode!=='slide'&&pose.mode!=='agachado'){const prev=this.stepPh||0;this.stepPh=prev+sp*dt*1.6;
+        if(Math.floor(prev/Math.PI)!==Math.floor(this.stepPh/Math.PI))nz(0,0.07,{f:pose.mode==='sprint'?720:520,g:(pose.mode==='sprint'?0.16:0.09)*att,rate:rand(.8,1.2),pan});}
+      if(pose.ws!==this.lastWs){if(pose.ws==='bolt')nz(0.08,0.08,{type:'bandpass',f:1600,q:3,g:0.25*att,pan});else if(pose.ws==='reload')nz(0,0.2,{type:'bandpass',f:1400,q:1,g:0.12*att,pan});}
+    }
+    this.lastWs=pose.ws;
     if(this.flashT>0){this.flashT-=dt;this.flash.visible=this.flashT>0;}
     if(pose.alive){this.alive=true;this.deadT=0;this.g.rotation.x=0;this.g.visible=true;}
     else{this.alive=false;this.deadT+=dt;this.g.rotation.x=-Math.min(1,this.deadT/0.45)*Math.PI/2;this.g.visible=this.deadT<2.6;}

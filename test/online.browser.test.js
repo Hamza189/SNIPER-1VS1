@@ -87,7 +87,8 @@ async function until(page, fn, arg, ms) { try { await page.waitForFunction(fn, a
     await sleep(1200);
     await aimAndFire(A, 1.17);
     check('segundo disparo: B muere y ve la pantalla de eliminado', await until(B, () => !document.getElementById('death').hidden && __SD.state === 'dead', null, 3000));
-    check('el marcador cambia en los dos: 1–0', await A.textContent('#kYou') === '1' && await B.textContent('#kBots') === '1');
+    // each page applies the kill when its own message arrives (frames are slow without a GPU): wait up to 2 s each
+    check('el marcador cambia en los dos: 1–0', await until(A, () => document.getElementById('kYou').textContent === '1', null, 2000) && await until(B, () => document.getElementById('kBots').textContent === '1', null, 2000));
     check('B reaparece a los 3 s', await until(B, () => __SD.state === 'playing' && __SD.P.alive && document.getElementById('death').hidden, null, 6000));
     // B shoots A too
     room.debug.place('A', -46, -46, -Math.PI / 2); room.debug.place('B', -10, -46, Math.PI / 2); await sleep(1500);
