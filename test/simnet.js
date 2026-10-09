@@ -53,7 +53,7 @@ function createSim(o) {
     if (N.phase !== 'playing' || !N.alive || !c.ai) return;
     const cmd = PR.quantize(Object.assign({ mx: 0, mz: 0, yaw: 0, pitch: 0 }, c.ai(c, S)));
     const r = SDP.step(c.local, cmd, DT, c.world, CFG.move);
-    for (const e of r.wev) if (e.type === 'fire') {
+    for (const e of [...r.wev, ...(r.pev || []), ...(r.sev || [])]) if (e.type === 'fire') {
       const ms = c.local.ms, eye = [ms.x, ms.y + ms.eye, ms.z];
       const cp = Math.cos(cmd.pitch);
       cmd.fd = cmd.aimDir || [-Math.sin(cmd.yaw) * cp, Math.sin(cmd.pitch), -Math.cos(cmd.yaw) * cp]; cmd.fo = eye; cmd.ft = c.N.serverNow() - c.N.interpMs;   // the rival pose on screen (as the page sends it)

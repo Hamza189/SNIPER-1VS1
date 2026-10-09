@@ -29,6 +29,9 @@ function create(opts) {
   N.ready = on => out({ t: 'ready', on: !!on });
   N.rematch = () => out({ t: 'rematch' });
   N.chooseMap = id => out({ t: 'map', id });
+  // my primary ('rifle' | 'shotgun'): the server uses it from my next spawn, and so does my prediction
+  N.kit = 'rifle';
+  N.chooseKit = id => { if (id !== 'rifle' && id !== 'shotgun') return; N.kit = id; out({ t: 'kit', id }); };
   N.leave = () => out({ t: 'leave' });
   N.ping = () => { N.lastPing = N.now(); out({ t: 'ping', c: N.now(), r: N.rtts.length ? Math.round(N.rtt) : undefined }); };
   N.serverNow = () => N.now() + N.offset;
@@ -101,7 +104,7 @@ function create(opts) {
       case 'start':
         N.match = m.m; if (m.map) N.map = m.map; N.names = m.names || {}; N.phase = 'countdown'; N.startIn = m.in; N.startedAt = N.now();
         if (!m.resume) { N.pending = []; N.outBuf = []; N.lastAck = -1; N.remote = []; N.score = { A: 0, B: 0 }; N.seenShots.clear(); N.corrMax = 0;
-          SDP.respawn(N.local, m.spawn.x, 0, m.spawn.z); }   // same spawn as the server: no correction on the first snapshot
+          SDP.respawn(N.local, m.spawn.x, 0, m.spawn.z, N.kit); }   // same spawn as the server: no correction on the first snapshot
         else { N.lastAck = m.lastSeq; N.pending = N.pending.filter(p => p.seq > m.lastSeq); }
         N.alive = true; N.hp = 100;
         ev.push({ k: 'start', m }); break;
@@ -131,7 +134,7 @@ function create(opts) {
           if (e.k === 'over') N.phase = 'over';
           if (e.k === 'hit' && e.to === N.you) N.hp = e.hp;
           if (e.k === 'kill' && e.to === N.you) N.alive = false;
-          if (e.k === 'respawn' && e.id === N.you) { N.alive = true; N.hp = 100; N.pending = []; SDP.respawn(N.local, e.x, 0, e.z); }
+          if (e.k === 'respawn' && e.id === N.you) { N.alive = true; N.hp = 100; N.pending = []; SDP.respawn(N.local, e.x, 0, e.z, N.kit); }
           ev.push(e);
         }
         break;

@@ -20,13 +20,13 @@ const bump = (p, a, b) => { const t = clamp((p - a) / (b - a), 0, 1); return Mat
 function createState(cfg) {
   return { cfg, ammo: cfg.mag, state: 'raise', t: 0, ads: 0, fireBuf: 0, sprintRecover: 0, fired: {}, magIn: false, shots: 0, bloom: 0 };
 }
-function setState(w, st) { w.state = st; w.t = 0; w.fired = {}; w.magIn = false; }
+function setState(w, st) { w.state = st; w.t = 0; w.fired = {}; w.magIn = false; w.endAt = null; }
 function once(w, key, cond, ev, e) { if (cond && !w.fired[key]) { w.fired[key] = true; ev.push(e); } }
 function startReload(w, ev) {
   if (w.state === 'reload') return;
-  setState(w, 'reload'); ev.push({ type: 'reloadStart' });
+  setState(w, 'reload'); w.shellsIn = 0; w.stop = false; ev.push({ type: 'reloadStart' });
 }
-function resetForSpawn(w) { w.ammo = w.cfg.mag; setState(w, 'raise'); w.ads = 0; w.fireBuf = 0; w.sprintRecover = 0; w.bloom = 0; }
+function resetForSpawn(w) { w.ammo = w.cfg.mag; setState(w, 'raise'); w.ads = 0; w.fireBuf = 0; w.sprintRecover = 0; w.bloom = 0; w.stop = false; w.shellsIn = 0; }
 
 function tick(w, cmd, dt, ctx) {
   const c = w.cfg, ev = [];
@@ -60,6 +60,20 @@ function tick(w, cmd, dt, ctx) {
     }
     case 'reload': {
       if (hol) break; // paused while holstered
+      if (c.shells) {   // tube: hands to the port, one shell at a time, back to the pump
+        const S = c.shells;
+        if (cmd.fire && w.ammo > 0) w.stop = true;          // pressing the trigger stops the loading
+        if (w.endAt === null || w.endAt === undefined) {
+          const k = Math.floor((w.t - S.start) / S.each + 1e-9);   // shells fully pushed in by now
+          if (w.t >= S.start && k > (w.shellsIn || 0) && w.ammo < c.mag) { w.shellsIn = (w.shellsIn || 0) + 1; w.ammo++; ev.push({ type: 'shellIn', n: w.ammo }); }
+          if (w.ammo >= c.mag || (w.stop && w.ammo > 0)) { w.endAt = w.t; ev.push({ type: 'reloadEnding' }); }
+        }
+        if (w.endAt !== null && w.endAt !== undefined && w.t - w.endAt >= S.end - 1e-9) {
+          const shoot = w.stop; setState(w, 'ready'); w.stop = false; ev.push({ type: 'reloadEnd' }, { type: 'ready' });
+          if (shoot) w.fireBuf = Math.max(w.fireBuf, c.fireBuffer);   // the press that stopped it fires now
+        }
+        break;
+      }
       const p = w.t / c.reload, k = c.reloadKeys, b = k.bolt;
       once(w, 'out', p >= k.magOut[0], ev, { type: 'magOut' });
       if (!w.magIn && p >= k.magIn[1]) { w.magIn = true; w.ammo = c.mag; ev.push({ type: 'magIn' }); }
@@ -79,7 +93,7 @@ function tick(w, cmd, dt, ctx) {
     if (w.ammo > 0) {
       w.ammo--; w.shots++; w.fireBuf = 0;
       if (c.bloomPerShot) w.bloom = Math.min(c.bloomMax, (w.bloom || 0) + c.bloomPerShot);
-      ev.push({ type: 'fire', ads: w.ads, scoped: w.ads >= c.scopeAt });
+      ev.push({ type: 'fire', ads: w.ads, scoped: w.ads >= c.scopeAt, n: w.shots });
       setState(w, 'bolt');
     } else if (cmd.fire) { w.fireBuf = 0; ev.push({ type: 'dry' }); startReload(w, ev); }
   }
@@ -119,6 +133,32 @@ function reloadPose(p, c) {
            magVisible: !(p > k.magOut[1] && p < k.magIn[0]), lift: bolt.lift, back: bolt.back };
 }
 
+/* ---------------- shotgun pattern ----------------
+   Fixed, readable pattern (centre, inner ring, outer ring) turned by the golden angle on every
+   shot: the client and the server compute exactly the same pellets from the same centre
+   direction, so nobody can send their own pellets. Returns unit vectors [x, y, z].        */
+function pelletOffsets(c, ads, seed) {
+  const n = c.pellets || 1, r = c.pelletSpread * (1 + ((c.pelletAdsMul || 1) - 1) * clamp(ads, 0, 1));
+  const rot = (seed || 0) * 2.399963, out = [[0, 0]];
+  const inner = Math.max(0, Math.min(n - 1, Math.round((n - 1) / 3))), outer = n - 1 - inner;
+  for (let i = 0; i < inner; i++) { const a = rot + i * 2 * Math.PI / inner; out.push([Math.cos(a) * r * 0.45, Math.sin(a) * r * 0.45]); }
+  for (let i = 0; i < outer; i++) { const a = rot + 0.6 + i * 2 * Math.PI / outer; out.push([Math.cos(a) * r, Math.sin(a) * r]); }
+  return out;
+}
+function pelletDirs(d, c, ads, seed) {
+  // basis around the centre direction (right is horizontal, up is perpendicular to both)
+  let rx = -d[2], rz = d[0], rn = Math.hypot(rx, rz);
+  if (rn < 1e-6) { rx = 1; rz = 0; rn = 1; }
+  rx /= rn; rz /= rn;
+  const ux = -rz * d[1], uy = rz * d[0] - rx * d[2], uz = rx * d[1];   // up = right × d … (sign fixed below)
+  const s = uy < 0 ? -1 : 1;
+  return pelletOffsets(c, ads, seed).map(([a, b]) => {
+    const ta = Math.tan(a), tb = Math.tan(b) * s;
+    const x = d[0] + rx * ta + ux * tb, y = d[1] + uy * tb, z = d[2] + rz * ta + uz * tb, n = Math.hypot(x, y, z);
+    return [x / n, y / n, z / n];
+  });
+}
+
 /* ---------------- ballistics ---------------- */
 // barrel tilt above the line of sight so the drop curve crosses the reticle at cfg.zero metres
 function zeroLift(c) { return Math.atan(c.gravity * c.zero / (2 * c.speed * c.speed)); }
@@ -152,7 +192,7 @@ function stepRecoil(r, dt, rc) {
   }
 }
 
-const SDWeapon = { createState, tick, spread, startReload, resetForSpawn, boltPose, reloadPose,
+const SDWeapon = { createState, tick, spread, startReload, resetForSpawn, boltPose, reloadPose, pelletOffsets, pelletDirs,
   zeroLift, createBullet, stepBullet, createRecoil, kickRecoil, stepRecoil };
 if (typeof module !== 'undefined' && module.exports) module.exports = SDWeapon; else root.SDWeapon = SDWeapon;
 })(typeof window !== 'undefined' ? window : globalThis);

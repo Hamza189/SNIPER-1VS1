@@ -12,18 +12,24 @@ const seg = (p, a, b) => ss((p - a) / (b - a));
 
 /* ---------------- loadout + knife state ----------------
    cmd = { select: 'rifle' | 'pistol' | 'knife' | null, attack (edge), inspect (edge) }
+   'rifle' means "my primary": the slot holds L.primary ('rifle' or 'shotgun', chosen before a
+   match or for the next spawn). The other primary can never be drawn.
    events: holster, draw, drawn, swing, knifeHit, inspect */
-function createLoadout(knifeCfg, loadCfg, pistolCfg) {
-  return { kc: knifeCfg, lc: loadCfg, pc: pistolCfg || null, active: 'rifle', phase: 'ready', t: 0, pending: null,
+function createLoadout(knifeCfg, loadCfg, pistolCfg, shotgunCfg) {
+  return { kc: knifeCfg, lc: loadCfg, pc: pistolCfg || null, sc: shotgunCfg || null, primary: 'rifle', active: 'rifle', phase: 'ready', t: 0, pending: null,
     knife: { state: 'idle', t: 0, side: 1, hitDone: false, buf: 0, swings: 0 } };
 }
-function holsterTime(L) { return L.active === 'rifle' ? L.lc.rifleHolster : L.active === 'pistol' ? L.lc.pistolHolster : L.kc.holster; }
-function drawTime(L) { return L.active === 'rifle' ? L.lc.rifleDraw : L.active === 'pistol' ? L.lc.pistolDraw : L.kc.draw; }
-function resetLoadout(L) { L.active = 'rifle'; L.phase = 'ready'; L.t = 0; L.pending = null; Object.assign(L.knife, { state: 'idle', t: 0, hitDone: false, buf: 0 }); }
+function holsterTime(L) { return L.active === 'rifle' ? L.lc.rifleHolster : L.active === 'pistol' ? L.lc.pistolHolster : L.active === 'shotgun' ? L.lc.shotgunHolster : L.kc.holster; }
+function drawTime(L) { return L.active === 'rifle' ? L.lc.rifleDraw : L.active === 'pistol' ? L.lc.pistolDraw : L.active === 'shotgun' ? L.lc.shotgunDraw : L.kc.draw; }
+// the primary: 'rifle' or 'shotgun' (anything else is ignored). Only call it right before
+// resetLoadout (spawn / respawn): changing it mid-life would let you draw the other one
+function setPrimary(L, id) { if ((id === 'rifle' || id === 'shotgun') && (id !== 'shotgun' || L.sc)) L.primary = id; }
+function resetLoadout(L) { L.active = L.primary || 'rifle'; L.phase = 'ready'; L.t = 0; L.pending = null; Object.assign(L.knife, { state: 'idle', t: 0, hitDone: false, buf: 0 }); }
 
 function tickLoadout(L, cmd, dt) {
   const ev = [], k = L.knife, kc = L.kc;
   L.t += dt;
+  if (cmd.select === 'rifle' || cmd.select === 'shotgun') cmd = Object.assign({}, cmd, { select: L.primary || 'rifle' });
   // weapon selection
   if (cmd.select && cmd.select !== (L.pending || L.active)) {
     if (L.phase === 'holster') L.pending = cmd.select;                    // change of mind mid-holster
@@ -62,7 +68,7 @@ function tickLoadout(L, cmd, dt) {
 function rifleHolstered(L) { return !(L.active === 'rifle' && L.phase === 'ready'); }
 // any gun (rifle | pistol): true unless it is the one fully drawn
 function holstered(L, name) { return !(L.active === name && L.phase === 'ready'); }
-function speedMul(L) { if (L.phase === 'holster') return 1; return L.active === 'knife' ? L.kc.moveMul : L.active === 'pistol' && L.pc ? (L.pc.moveMul || 1) : 1; }
+function speedMul(L) { if (L.phase === 'holster') return 1; return L.active === 'knife' ? L.kc.moveMul : L.active === 'pistol' && L.pc ? (L.pc.moveMul || 1) : L.active === 'shotgun' && L.sc ? (L.sc.moveMul || 1) : 1; }
 
 /* ---------------- melee hit resolution ----------------
    attacker = { x, z, eyeY, fx, fz }           (fx,fz = horizontal facing, unit length)
@@ -118,6 +124,6 @@ function inspectPose(p) {
   return o;
 }
 
-const SDMelee = { createLoadout, resetLoadout, tickLoadout, rifleHolstered, holstered, speedMul, resolve, slashPose, drawPose, inspectPose };
+const SDMelee = { createLoadout, resetLoadout, setPrimary, tickLoadout, rifleHolstered, holstered, speedMul, resolve, slashPose, drawPose, inspectPose };
 if (typeof module !== 'undefined' && module.exports) module.exports = SDMelee; else root.SDMelee = SDMelee;
 })(typeof window !== 'undefined' ? window : globalThis);

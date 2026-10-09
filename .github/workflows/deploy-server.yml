@@ -20,7 +20,7 @@ jobs:
         with:
           node-version: 22
       - name: Pruebas del núcleo y de la sala antes de publicar
-        run: node test/core.test.js && node test/room.test.js
+        run: node test/core.test.js && node test/pistol.test.js && node test/shotgun.test.js && node test/room.test.js
       - name: Publicar en Cloudflare
         id: deploy
         uses: cloudflare/wrangler-action@v3

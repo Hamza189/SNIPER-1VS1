@@ -32,7 +32,7 @@ const RULES = { killsToWin: 10, hp: 100, respawnMs: 3000, countdownMs: 3000, reg
   // (half the round trip + the client's interpolation delay), never more than maxRewindMs back
   maxRewindMs: 250 };
 const DT = 1 / PR.LIMITS.tickHz;
-const GUN = CFG.rifles.halcon, PISTOL = CFG.pistols.vibora, KNIFE = CFG.knives.tactica;
+const GUN = CFG.rifles.halcon, PISTOL = CFG.pistols.vibora, SHOTGUN = CFG.shotguns.furia, KNIFE = CFG.knives.tactica;
 
 function create(opts) {
   // maps: opts.maps = { id: map data } (opts.map alone = one map called 'pueblo'); the creator
@@ -45,7 +45,7 @@ function create(opts) {
   const rand = opts.rand || Math.random;
   const R = {
     code: opts.code, phase: 'lobby', match: 0, startAt: 0, tickN: 0, now: opts.now || 0,
-    seats: { A: null, B: null }, conns: new Map(), evSeq: 0, bullets: [], bulletId: 0, winner: undefined,
+    seats: { A: null, B: null }, conns: new Map(), evSeq: 0, bullets: [], bulletId: 0, shotId: 0, winner: undefined,
     pausedAt: 0, lastSnap: 0, lastActive: opts.now || 0, lastPlay: opts.now || 0, closed: false, rematch: { A: false, B: false }, log: [],
     send: opts.send || (() => {}), close: opts.close || (() => {}), randBytes: opts.randBytes, persist: opts.persist || null
   };
@@ -56,15 +56,15 @@ function create(opts) {
   const evq = obj => { if (obj.t === 'ev') obj.q = ++R.evSeq; return obj; };
   const sendAll = obj => { evq(obj); const s = JSON.stringify(obj); for (const id of ['A', 'B']) { const st = R.seats[id]; if (st && st.conn != null) R.send(st.conn, s); } };
   const log = (msg) => { R.log.push(Math.round(R.now) + ' ' + msg); if (R.log.length > 200) R.log.shift(); };
-  const pubPlayers = () => ['A', 'B'].map(id => { const s = R.seats[id]; return s ? { id, name: s.name, connected: s.conn != null, ready: s.ready, kills: s.kills } : null; });
+  const pubPlayers = () => ['A', 'B'].map(id => { const s = R.seats[id]; return s ? { id, name: s.name, connected: s.conn != null, ready: s.ready, kills: s.kills, kit: s.kit } : null; });
   const lobbyMsg = () => ({ t: 'lobby', phase: R.phase, players: pubPlayers(), match: R.match, map: mapId, maps: Object.keys(MAPS), winner: R.winner === undefined ? undefined : R.winner, rematch: R.rematch });
   function save() {
     if (!R.persist) return;
     R.persist({ code: R.code, map: mapId, phase: R.phase === 'playing' || R.phase === 'countdown' || R.phase === 'paused' ? 'interrupted' : R.phase, match: R.match,
-      seats: ['A', 'B'].map(id => { const s = R.seats[id]; return s ? { id, name: s.name, token: s.token, kills: s.kills, deaths: s.deaths } : null; }) });
+      seats: ['A', 'B'].map(id => { const s = R.seats[id]; return s ? { id, name: s.name, token: s.token, kills: s.kills, deaths: s.deaths, kit: s.kit } : null; }) });
   }
   function newSeat(id, name, token) {
-    return { id, name: name || (id === 'A' ? 'JUGADOR 1' : 'JUGADOR 2'), token, conn: null, ready: false, leftAt: 0,
+    return { id, name: name || (id === 'A' ? 'JUGADOR 1' : 'JUGADOR 2'), token, conn: null, ready: false, leftAt: 0, kit: 'rifle',
       p: SDP.create(0, 0, 0), hp: RULES.hp, alive: false, diedAt: 0, lastHit: -1e9, kills: 0, deaths: 0,
       lastSeq: -1, budget: PR.LIMITS.cmdBurst, budgetAt: R.now, yaw: 0, pitch: 0, shots: 0, hits: 0, hs: 0 };
   }
@@ -93,7 +93,7 @@ function create(opts) {
     return { x: best.x, z: best.z, yaw: Math.atan2(best.x, best.z) };
   }
   function placeSeat(s, sp) {
-    SDP.respawn(s.p, sp.x, 0, sp.z); s.hist = [];
+    SDP.respawn(s.p, sp.x, 0, sp.z, s.kit); s.hist = [];   // the chosen primary takes effect at every spawn
     s.yaw = sp.yaw; s.pitch = 0; s.hp = RULES.hp; s.alive = true; s.lastHit = -1e9;
   }
 
@@ -204,6 +204,9 @@ function create(opts) {
       case 'map':   // only the room's creator chooses, and only between matches
         if (s.id === 'A' && MAPS[m.id] && (R.phase === 'lobby' || R.phase === 'over')) { mapId = m.id; sendAll(lobbyMsg()); save(); }
         break;
+      case 'kit':   // my primary for my next spawn (any time: the rival sees it in the lobby)
+        if (s.kit !== m.id) { s.kit = m.id; if (R.phase === 'lobby' || R.phase === 'over') sendAll(lobbyMsg()); save(); }
+        break;
       case 'ready': R.lastPlay = now; if (R.phase === 'lobby') { s.ready = m.on; sendAll(lobbyMsg()); maybeStart(); } break;
       case 'rematch':
         if (R.phase === 'over' && !R.seats[other(s.id)]) {   // the rival is gone: back to the lobby to wait for someone
@@ -246,6 +249,7 @@ function create(opts) {
     const r = SDP.step(s.p, cmd, DT, ix.world, CFG.move);
     for (const e of r.wev) if (e.type === 'fire') fire(s, cmd, GUN, 'rifle');
     for (const e of r.pev || []) if (e.type === 'fire') fire(s, cmd, PISTOL, 'pistol');
+    for (const e of r.sev || []) if (e.type === 'fire') fire(s, cmd, SHOTGUN, 'shotgun', e);
     for (const e of r.lev) if (e.type === 'knifeHit') knife(s);
   }
 
@@ -275,7 +279,7 @@ function create(opts) {
     const cp = Math.cos(pitch);
     return [-Math.sin(yaw) * cp, Math.sin(pitch), -Math.cos(yaw) * cp];
   }
-  function fire(s, cmd, gun, kind) {
+  function fire(s, cmd, gun, kind, fe) {
     const ms = s.p.ms, eye = [ms.x, ms.y + ms.eye, ms.z];
     const a = aimDir(s.yaw, s.pitch);
     let d = a, o = eye, why = null;
@@ -291,13 +295,25 @@ function create(opts) {
     }
     if (why) { sendTo(s, { t: 'ev', m: R.match, e: [{ k: 'rejected', what: 'shot', why }] }); log('shot rejected ' + s.id + ' ' + why); }
     s.shots++;
-    const b = Wp.createBullet(o[0], o[1], o[2], d[0], d[1], d[2], gun);
-    b.cfg = gun; b.kind = kind;
-    b.id = ++R.bulletId; b.by = s.id; b.ox = o[0]; b.oy = o[1]; b.oz = o[2]; b.rewind = typeof cmd.ft === 'number' ? Math.max(0, Math.min(RULES.maxRewindMs, R.now - cmd.ft)) : rewindOf(s);
-    R.bullets.push(b);
-    sendAll({ t: 'ev', m: R.match, e: [{ k: 'shot', id: b.id, by: s.id, w: kind, o: o.map(v => Math.round(v * 1000) / 1000), d: d.map(v => Math.round(v * 1e5) / 1e5), corrected: !!why }] });
+    const rewind = typeof cmd.ft === 'number' ? Math.max(0, Math.min(RULES.maxRewindMs, R.now - cmd.ft)) : rewindOf(s);
+    // shotgun: the server spreads the pellets itself from the (checked) centre direction, with the
+    // same fixed pattern as the client (Wp.pelletDirs): the client never sends pellets
+    const pel = gun.pellets > 1, ads = fe ? fe.ads : 0, seed = fe ? fe.n : 0;
+    const dirs = pel ? Wp.pelletDirs(d, gun, ads, seed) : [d], shot = ++R.shotId;
+    let first = 0;
+    for (const v of dirs) {
+      const b = Wp.createBullet(o[0], o[1], o[2], v[0], v[1], v[2], gun);
+      b.cfg = gun; b.kind = kind; if (pel) b.shot = shot;
+      b.id = ++R.bulletId; b.by = s.id; b.ox = o[0]; b.oy = o[1]; b.oz = o[2]; b.rewind = rewind;
+      if (!first) first = b.id;
+      R.bullets.push(b);
+    }
+    const ev = { k: 'shot', id: first, by: s.id, w: kind, o: o.map(v => Math.round(v * 1000) / 1000), d: d.map(v => Math.round(v * 1e5) / 1e5), corrected: !!why };
+    if (pel) { ev.ads = ads; ev.n = seed; }
+    sendAll({ t: 'ev', m: R.match, e: [ev] });
   }
   function stepBullets(dt, at) {
+    const pend = new Map();   // pellets of one shot that hit in this step: one hit, damage summed
     for (const b of R.bullets) {
       if (b.done) continue;
       const gun = b.cfg || GUN;
@@ -310,25 +326,35 @@ function create(opts) {
         const h = HB.segPlayer(G, pose, sg.x0, sg.y0, sg.z0, sg.dx, sg.dy, sg.dz, lim);
         if (h) hitP = h;
       }
-      if (hitP) { b.done = true; damage(R.seats[b.by], tgt, hitP.part, dmgAt(gun, hitP.part, b.dist + hitP.t), b, [sg.x0 + sg.dx * hitP.t, sg.y0 + sg.dy * hitP.t, sg.z0 + sg.dz * hitP.t]); }
+      if (hitP && b.shot) {
+        b.done = true;
+        const dm = dmgAt(gun, hitP.part, b.dist + hitP.t), pt = [sg.x0 + sg.dx * hitP.t, sg.y0 + sg.dy * hitP.t, sg.z0 + sg.dz * hitP.t];
+        const q = pend.get(b.shot);
+        if (!q) pend.set(b.shot, { b, tgt, dmg: dm, part: hitP.part, pt, n: 1 });
+        else { q.dmg += dm; q.n++; if (rank[hitP.part] > rank[q.part]) { q.part = hitP.part; q.pt = pt; } }
+      }
+      else if (hitP) { b.done = true; damage(R.seats[b.by], tgt, hitP.part, dmgAt(gun, hitP.part, b.dist + hitP.t), b, [sg.x0 + sg.dx * hitP.t, sg.y0 + sg.dy * hitP.t, sg.z0 + sg.dz * hitP.t]); }
       else if (mh) { b.done = true; }
       else { b.dist += sg.len; if (b.dist > gun.maxRange || b.y < -5) b.done = true; }
       if (R.phase !== 'playing') return;
     }
+    for (const q of pend.values()) { damage(R.seats[q.b.by], q.tgt, q.part, q.dmg, q.b, q.pt, q.n); if (R.phase !== 'playing') return; }
     R.bullets = R.bullets.filter(b => !b.done);
   }
+  const rank = { legs: 0, torso: 1, head: 2 };
   // damage of a gun at a distance (the pistol loses punch with range; the rifle does not)
   function dmgAt(gun, part, dist) {
     const f = gun.falloff; let k = 1;
     if (f) k = dist <= f.from ? 1 : dist >= f.to ? f.min : 1 - (1 - f.min) * (dist - f.from) / (f.to - f.from);
     return Math.round(gun.dmg[part] * k);
   }
-  function damage(att, vic, part, dmg, b, pt) {
+  function damage(att, vic, part, dmg, b, pt, pellets) {
     if (!vic.alive) return;
     vic.hp -= dmg; vic.lastHit = R.now;
     if (att) { att.hits++; if (part === 'head') att.hs++; }
     const dist = b ? Math.hypot(pt[0] - b.ox, pt[2] - b.oz) : 0;
     const e = [{ k: 'hit', by: att ? att.id : null, to: vic.id, part, dmg, hp: Math.max(0, Math.round(vic.hp)), pt: pt.map(v => Math.round(v * 100) / 100), dist: Math.round(dist), weapon: b ? (b.kind || 'rifle') : 'knife' }];
+    if (pellets) e[0].pellets = pellets;
     if (vic.hp <= 0) {
       vic.hp = 0; vic.alive = false; vic.diedAt = R.now; vic.deaths++;
       if (att) att.kills++;
@@ -416,7 +442,7 @@ function create(opts) {
   // restore seats after the server object was evicted (names, tokens, score)
   function restore(d) {
     if (!d || !d.seats) return;
-    for (const x of d.seats) if (x) { const s = newSeat(x.id, x.name, x.token); s.kills = x.kills || 0; s.deaths = x.deaths || 0; s.leftAt = R.now; R.seats[x.id] = s; }
+    for (const x of d.seats) if (x) { const s = newSeat(x.id, x.name, x.token); s.kills = x.kills || 0; s.deaths = x.deaths || 0; if (x.kit === 'shotgun') s.kit = 'shotgun'; s.leftAt = R.now; R.seats[x.id] = s; }
     R.match = d.match || 0;
     if (d.map && MAPS[d.map]) mapId = d.map;
     R.phase = d.phase === 'over' ? 'over' : 'lobby'; // a match cut by a restart goes back to the lobby

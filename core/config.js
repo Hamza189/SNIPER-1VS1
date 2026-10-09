@@ -142,11 +142,51 @@ const SD_CONFIG = {
     }
   },
 
+  // close-range primary, chosen instead of the rifle before a match (or for the next spawn).
+  // Same state machine: 'bolt' is the pump cycle; the reload puts the shells in one by one
+  // and a trigger press stops it as soon as there is a shell in the tube.
+  shotguns: {
+    furia: {
+      name: 'FURIA 12',
+      mag: 6,
+      raise: 0.45,
+      bolt: 0.78,          // s pump cycle between shots
+      adsTime: 0.16, adsOutTime: 0.1,
+      scopeAt: 2,          // never: bead and rear notch (iron sights)
+      ironZoom: 1.15,
+      sprintOut: 0.08, fireBuffer: 0.15,
+      hipSpread: 0.012,    // rad: cone of the CENTRE of the pattern (the pellets spread around it)
+      adsSpreadMin: 0.5,
+      moveSpread: 0.012, airSpread: 0.03, crouchSpreadMul: 0.85,
+      pellets: 9,          // centre + inner ring of 3 + outer ring of 5 (fixed pattern, turned each shot)
+      pelletSpread: 0.065, // rad radius of the outer ring from the hip…
+      pelletAdsMul: 0.7,   // …× 0.7 aiming down the sights
+      climb: 0.03,
+      dmg: { head: 24, torso: 15, legs: 11 },   // PER PELLET: 7+ pellets in the body up close = kill
+      falloff: { from: 7, to: 24, min: 0.25 },  // × 1 up to 7 m, × 0.25 from 24 m
+      // result (centre of the chest, standing): one shot kills up to ~5 m from the hip and ~7 m
+      // aiming; two shots at 12 m aiming; beyond ~18 m it barely scratches
+      speed: 330, gravity: 9.8, zero: 15, maxRange: 35,   // pellets vanish after 35 m
+      moveMul: 0.98,
+      sway: 0.003, swayMoveMul: 0.3, swayCrouchMul: 0.6, swayAirMul: 2.5,
+      breathHold: 3.5, breathRecover: 3.2, exhaustTime: 2.6, exhaustMul: 2.4, holdMul: 1,
+      recoil: { pitch: 0.06, pitchHip: 0.085, yaw: 0.02, stiffness: 380, damping: 0.9, viewKick: 1.3 },
+      zooms: [1],
+      // pump: back (eject) then forward, as fractions of the cycle
+      boltKeys: { lift: [0, 0.01], back: [0.1, 0.42], eject: 0.3, fwd: [0.48, 0.8], down: [0.01, 0.02] },
+      shells: { start: 0.32, each: 0.4, end: 0.3 },  // s: hands to the port, per shell, back to the pump
+      reloadKeys: { magOut: [0.08, 0.3], magIn: [0.42, 0.62], bolt: [0.74, 0.94] },  // unused (shell reload)
+      reload: 0.32 + 6 * 0.4 + 0.3                   // s for a full tube from empty (HUD / tests)
+    }
+  },
+
   loadout: {
     rifleDraw: 0.35,       // s to bring the rifle back up after switching
     rifleHolster: 0.1,     // s to put the rifle away
     pistolDraw: 0.28,      // the sidearm comes out fast: quicker than reloading the rifle
-    pistolHolster: 0.08
+    pistolHolster: 0.08,
+    shotgunDraw: 0.4,
+    shotgunHolster: 0.12
   },
 
   // free training in the shooting range: unarmed bots that move like players

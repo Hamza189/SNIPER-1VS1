@@ -370,6 +370,56 @@ console.log('\nPISTOLA VÍBORA 9 ONLINE');
   check('gatillo mantenido 1 s: como mucho ' + (Math.floor(1 / CFG.pistols.vibora.bolt) + 1) + ' disparos', n >= 4 && n <= Math.floor(1 / CFG.pistols.vibora.bolt) + 1, n);
 }
 
+console.log('\nESCOPETA FURIA 12 ONLINE');
+{ const S = createSim({ maps: 'arena', latency: 30 });
+  let shoot = false, part = 1.17, reload = false;
+  const { A, B } = S.setupMatch((c, S) => { const s = S.room.seats.B.p.ms; return Object.assign(lookAt(c, [s.x, s.y + part, s.z]), { fire: shoot, adsHeld: true, reload }); }, () => ({ yaw: Math.PI / 2 }));
+  // A picks the shotgun mid-match: nothing changes until A's next spawn
+  A.N.chooseKit('shotgun'); S.run(300);
+  check('elegir la escopeta en mitad de la vida no la saca todavía', S.room.seats.A.kit === 'shotgun' && S.room.seats.A.p.load.active === 'rifle' && A.local.load.active === 'rifle');
+  S.room.debug.set('A', 'hp', 1); S.room.debug.set('A', 'lastHit', 1e15);
+  // A dies (B's AI does not shoot: kill A directly through the server) and respawns with the shotgun
+  S.room.debug.seat('A').alive = false; S.room.debug.seat('A').diedAt = S.room.now; S.run(3500);
+  check('al reaparecer, A tiene la FURIA 12 en la mano (servidor y cliente)', S.room.seats.A.alive && S.room.seats.A.p.load.active === 'shotgun' && A.local.load.active === 'shotgun', S.room.seats.A.p.load.active + ' / ' + A.local.load.active);
+  // point blank: 4 m to the chest, aiming
+  S.room.debug.place('A', -2, -14, -Math.PI / 2); S.room.debug.place('B', 2, -14, Math.PI / 2); S.run(900); A.N.corrMax = 0;
+  const k0 = evs(A, 'kill').length, h0 = evs(A, 'hit').length, sh0 = evs(B, 'shot').length;
+  shoot = true; S.run(9); shoot = false; S.run(400);
+  const hs = evs(A, 'hit').slice(h0);
+  check('a 4 m apuntando al pecho: un solo impacto con los perdigones sumados', hs.length === 1 && hs[0].weapon === 'shotgun' && hs[0].pellets >= 7, hs[0] && hs[0].pellets + ' perdigones, ' + hs[0].dmg + ' de daño');
+  check('y lo mata de un tiro', evs(A, 'kill').length === k0 + 1 && evs(A, 'kill')[k0].weapon === 'shotgun');
+  const sh = evs(B, 'shot').slice(sh0)[0];
+  check('el disparo llega al rival como de escopeta con el patrón (para dibujarlo igual)', sh && sh.w === 'shotgun' && typeof sh.n === 'number' && typeof sh.ads === 'number');
+  check('un disparo cuenta como uno en las estadísticas (no nueve)', S.room.seats.A.shots >= 1 && S.room.seats.A.hits === 1, S.room.seats.A.shots + ' disparos, ' + S.room.seats.A.hits + ' impactos');
+  check('cartuchos iguales en cliente y servidor', A.local.sw.ammo === S.room.seats.A.p.sw.ammo && A.local.sw.ammo === CFG.shotguns.furia.mag - 1, A.local.sw.ammo);
+  check('sin correcciones de predicción con la escopeta', A.N.corrMax < 1e-6, A.N.corrMax.toExponential(1));
+  // 20 m: it barely scratches
+  S.run(3300);
+  S.room.debug.place('A', -10, -3, -Math.PI / 2); S.room.debug.place('B', 10, -3, Math.PI / 2); S.run(900);
+  const h1 = evs(A, 'hit').length; shoot = true; S.run(9); shoot = false; S.run(600);
+  const far = evs(A, 'hit')[h1];
+  check('a 20 m hace poco daño (perdigones sueltos y caída por distancia)', !far || far.dmg < 30, far ? far.pellets + ' perdigones, ' + far.dmg : 'ningún perdigón');
+  // cadence: holding the trigger never beats the pump
+  const s0 = evs(A, 'shot').length; shoot = true; S.run(2000); shoot = false; S.run(200);
+  const n = evs(A, 'shot').length - s0, maxN = Math.floor(2 / CFG.shotguns.furia.bolt) + 1;
+  check('gatillo mantenido 2 s: como mucho ' + maxN + ' disparos (bombeo)', n >= 2 && n <= maxN, n);
+  // shell-by-shell reload on the server, the same as the client
+  S.run(800); reload = true; S.run(20); reload = false; S.run(5000);   // (R works once the pump is back)
+  check('recarga cartucho a cartucho: el servidor y el cliente terminan con el tubo lleno', S.room.seats.A.p.sw.ammo === CFG.shotguns.furia.mag && A.local.sw.ammo === CFG.shotguns.furia.mag, S.room.seats.A.p.sw.ammo + ' / ' + A.local.sw.ammo + ' ' + S.room.seats.A.p.sw.state + ' ' + S.room.seats.A.p.load.active + ' vivo ' + S.room.seats.A.alive);
+  // a hostile kit is refused
+  check('una principal inventada se rechaza', PR.parse(JSON.stringify({ t: 'kit', id: 'bazooka' })).error === 'shape');
+}
+
+{ // the kit in the lobby: each player sees the other's primary before the match
+  const S = createSim({ maps: 'arena' });
+  const A = S.addClient('Hamza'), B = S.addClient('Novia');
+  A.N.hello('Hamza'); S.run(100); B.N.hello('Novia'); S.run(100);
+  B.N.chooseKit('shotgun'); S.run(100);
+  check('en el lobby, A ve que B ha elegido la escopeta', (A.N.players || []).some(p => p && p.id === 'B' && p.kit === 'shotgun') && (A.N.players || []).some(p => p && p.id === 'A' && p.kit === 'rifle'));
+  A.N.ready(true); B.N.ready(true); S.until(() => A.N.phase === 'playing' && B.N.phase === 'playing', 6000);
+  check('la partida empieza con la escopeta en la mano de B (servidor y su predicción)', S.room.seats.B.p.load.active === 'shotgun' && B.local.load.active === 'shotgun' && S.room.seats.A.p.load.active === 'rifle');
+}
+
 console.log('\nCOMPENSACIÓN DE LATENCIA (rival en movimiento)');
 // an open lane where the rival can strafe ±4 m and stay in plain sight the whole time
 const lane = (() => { for (const [x, z] of MAP.nav) { const x2 = x + 36;
