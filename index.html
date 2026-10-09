@@ -1838,7 +1838,7 @@ const SDNet = { create };
 if (isNode) module.exports = SDNet; else root.SDNet = SDNet;
 })(typeof window !== 'undefined' ? window : globalThis);
 
-const BUILD_ID="635e507";const BUILD_HASH="e2b47b20f5";
+const BUILD_ID="d5fb5e7";const BUILD_HASH="ae49f3601f";
 </script>
 <script>
 (function(){
@@ -3536,6 +3536,9 @@ class RemotePlayer{
     this.aim.rotation.x=-clamp(pose.pitch,-1.2,1.2)/k*0.9+this.relW*0.55;
     this.aim.rotation.z=this.relW*0.35+(this.boltT>0?Math.sin(Math.min(1,this.boltT/0.95)*Math.PI)*0.12:0);
     const knife=pose.wpn==='knife';this.knife.visible=knife;for(const m of this.rifleParts)m.visible=!knife;
+    // knife attack: a quick forward thrust of the arms
+    this.stabT=knife&&pose.ks==='attack'?(this.stabT||0)+dt:0;
+    this.aim.position.z=this.stabT>0?Math.sin(Math.min(1,this.stabT/0.3)*Math.PI)*0.28:0;
     const sp=Math.hypot(pose.vx||0,pose.vz||0);
     this.walk+=dt*sp*1.6;const sw=pose.g&&sp>0.5&&pose.mode!=='slide'?Math.sin(this.walk)*Math.min(0.6,sp/9):0;
     this.legL.rotation.x=sw;this.legR.rotation.x=-sw;

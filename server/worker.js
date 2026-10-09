@@ -26,6 +26,8 @@ export default {
     if (url.pathname === '/health') return json({ ok: true, v: PR.VERSION, server: 'cloudflare' }, 200, h);
     if (url.pathname === '/create' && req.method === 'POST') {
       if (!originOk(env, req.headers.get('Origin'))) return json({ error: 'origin' }, 403, h);
+      // no more than 10 rooms a minute from one address (Workers rate limiting binding)
+      if (env.CREATE_LIMITER) { try { const ip = req.headers.get('CF-Connecting-IP') || 'x'; const { success } = await env.CREATE_LIMITER.limit({ key: ip }); if (!success) return json({ error: 'busy' }, 429, h); } catch (e) {} }
       for (let i = 0; i < 5; i++) {
         const code = PR.codeFrom(crypto.getRandomValues(new Uint8Array(6)));
         const stub = env.ROOMS.get(env.ROOMS.idFromName(code));

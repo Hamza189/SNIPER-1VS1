@@ -383,7 +383,7 @@ function create(opts) {
     if (!s) return null;
     const ms = s.p.ms, L = s.p.load;
     return { x: r3(ms.x), y: r3(ms.y), z: r3(ms.z), vx: r3(ms.vx), vz: r3(ms.vz), yaw: r4(s.yaw), pitch: r4(s.pitch), eye: r3(ms.eye),
-      mode: ms.mode, g: ms.onGround ? 1 : 0, alive: s.alive ? 1 : 0, wpn: L.active, ads: r3(s.p.w.ads), ws: s.p.w.state, hp: Math.round(s.hp),
+      mode: ms.mode, g: ms.onGround ? 1 : 0, alive: s.alive ? 1 : 0, wpn: L.active, ks: L.knife.state, ads: r3(s.p.w.ads), ws: s.p.w.state, hp: Math.round(s.hp),
       name: s.name, on: s.conn != null ? 1 : 0 };
   }
   function sendSnap(s) {

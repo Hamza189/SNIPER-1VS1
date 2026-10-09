@@ -15,3 +15,12 @@ class_name = "RoomDO"
 [[migrations]]
 tag = "v1"
 new_sqlite_classes = ["RoomDO"]
+
+# room creation limit per address (Workers Rate Limiting, included in the free plan)
+[[ratelimits]]
+name = "CREATE_LIMITER"
+namespace_id = "1001"
+
+  [ratelimits.simple]
+  limit = 10
+  period = 60
