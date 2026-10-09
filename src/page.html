@@ -194,6 +194,7 @@ h1 span{display:block;color:var(--sand)}
 #selfTestOut{margin:0;font:13px/1.55 var(--f-mono);color:#cfe8c4;white-space:pre-wrap;max-height:40vh;overflow:auto;border-top:1px solid var(--line);padding-top:10px}
 #dbg{position:fixed;left:calc(10px + env(safe-area-inset-left,0px));top:calc(64px + env(safe-area-inset-top,0px));z-index:15;pointer-events:none;background:rgba(10,9,7,.78);border:1px solid var(--line);padding:8px 10px}
 #dbg pre{margin:0;font:11px/1.45 var(--f-mono);color:#cfe8c4;white-space:pre}
+#lockHint{position:fixed;top:14%;left:50%;transform:translateX(-50%);z-index:30;pointer-events:none;padding:8px 14px;background:rgba(15,13,10,.82);border:1px solid var(--amber,#ff9a3c);color:#f3e9d6;font:600 13px/1.3 'IBM Plex Mono',monospace;letter-spacing:.06em;text-align:center}
 #loadErr{position:fixed;inset:0;display:grid;place-items:center;padding:24px;text-align:center;z-index:50;background:var(--ink)}
 
 /* ---------- Touch controls ---------- */
@@ -332,6 +333,7 @@ body.touch #top{width:min(300px,46vw)}
       <label class="sens"><span class="lbl">Dedo (móvil)</span><input id="sT" type="range" min="0.3" max="3" step="0.05"><output id="sTo"></output></label>
       <label class="chk"><input type="checkbox" id="sInv"> Invertir eje vertical</label>
       <label class="chk"><input type="checkbox" id="sLeft"> Botón FUEGO también a la izquierda (móvil)</label>
+      <label class="chk"><input type="checkbox" id="sRel"> Móvil: mantener FUEGO apunta con la mira, soltar dispara</label>
     </div>
     <div class="row"><button class="btn ghost" id="openEditor" type="button" style="font-size:20px">EDITAR BOTONES TÁCTILES</button><button class="btn ghost" id="setReset" type="button" style="font-size:20px">RESTAURAR</button></div>
     <div class="row"><button class="btn" id="setClose" type="button">LISTO</button></div>
@@ -449,6 +451,7 @@ body.touch #top{width:min(300px,46vw)}
   </div>
 </div>
 
+<div id="lockHint" hidden>HAZ CLIC EN LA PANTALLA PARA CONTROLAR LA CÁMARA CON EL RATÓN</div>
 <div id="loadErr" hidden><p>No se ha podido cargar el motor 3D. Revisa la conexión y vuelve a abrir la página.</p></div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
@@ -468,7 +471,7 @@ const rand=(a,b)=>a+Math.random()*(b-a);
 const ss=t=>{t=clamp(t,0,1);return t*t*(3-2*t);};
 const seg=(p,a,b)=>ss((p-a)/(b-a));
 const bump=(p,a,b)=>{const t=clamp((p-a)/(b-a),0,1);return Math.sin(t*Math.PI);};
-const isTouch=(window.matchMedia&&matchMedia('(pointer: coarse)').matches)||('ontouchstart' in window&&navigator.maxTouchPoints>0);
+const isTouch=window.matchMedia?matchMedia('(pointer: coarse)').matches:('ontouchstart' in window&&navigator.maxTouchPoints>0);
 const reduceMotion=window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches;
 const MOTION=reduceMotion?0.35:1;
 const store={get(k,d){try{const v=localStorage.getItem('sniperduel_'+k);return v==null?d:JSON.parse(v);}catch(e){return d;}},set(k,v){try{localStorage.setItem('sniperduel_'+k,JSON.stringify(v));}catch(e){}}};
@@ -1002,7 +1005,7 @@ const WS={state:'raise',t:0,ammo:GUNCFG.mag,mag:GUNCFG.mag,kick:0,ads:0,swayX:0,
 const AIM={ox:0,oy:0,oz:0,yaw:0,pitch:0};
 const STATS={damage:0,meleeHits:0,firstShot:-1,firstKill:0,lastKill:0,rangeHs:0,kills:0,deaths:0,hs:0,shots:0,hits:0,longest:0,start:0,botKills:0};
 let state='menu';
-const input={keys:{},fireHeld:false,firePressed:false,scope:false,scopeToggle:false,crouchHeld:false,crouchPressed:false,jumpPressed:false,reloadPressed:false,breath:false,select:null,inspect:false,lookDX:0,lookDY:0,joyX:0,joyY:0,joySprint:false};
+const input={keys:{},fireHeld:false,firePressed:false,fireAim:false,fireAimShot:0,scope:false,scopeToggle:false,crouchHeld:false,crouchPressed:false,jumpPressed:false,reloadPressed:false,breath:false,select:null,inspect:false,lookDX:0,lookDY:0,joyX:0,joyY:0,joySprint:false};
 let pointerLocked=false,lockFailed=false;
 const compassMarks=[];
 
@@ -1246,7 +1249,7 @@ function respawnPlayer(){
   Object.assign(RECOIL,SDWeapon.createRecoil());
   SDWeapon.resetForSpawn(WCORE);SDMelee.resetLoadout(LOAD);if(typeof updateWeaponHud==='function')updateWeaponHud();VM.deadW=0;VM.eye=MOVE.eyeStand;
   syncFromSim();
-  input.scope=false;input.scopeToggle=false;input.crouchHeld=false;
+  input.scope=false;input.scopeToggle=false;input.crouchHeld=false;input.fireAim=false;input.fireAimShot=0;
   $('#death').hidden=true;updateAmmoUI();updateHpUI();SFX.raise();
 }
 function damagePlayer(dmg,bot,head){
@@ -1262,7 +1265,7 @@ function damagePlayer(dmg,bot,head){
 }
 function killPlayer(bot,head){
   P.alive=false;P.deadT=0;STATS.deaths++;STATS.botKills++;
-  input.scope=false;input.scopeToggle=false;
+  input.scope=false;input.scopeToggle=false;input.fireAim=false;input.fireAimShot=0;
   $('#kBots').textContent=STATS.botKills;
   addFeed(bot.name+' ▸ TÚ'+(head?' · <em>HEADSHOT</em>':'')+' · '+Math.round(bot.dist)+' m','dead');
   $('#deathBy').textContent=bot.name+' · '+Math.round(bot.dist)+' m'+(head?' · HEADSHOT':'');
@@ -1457,7 +1460,7 @@ window.addEventListener('keydown',e=>{
 window.addEventListener('keyup',e=>{input.keys[e.code]=false;});
 canvas.addEventListener('mousedown',e=>{
   if(isTouch)return;
-  if(state==='playing'&&!pointerLocked&&!lockFailed){requestLock();return;}
+  if(state==='playing'&&!pointerLocked){requestLock();if(!lockFailed)return;} // lock refused before: ask again on every click, and still let the click shoot
   if(state!=='playing'&&state!=='dead')return;
   if(e.button===0){input.fireHeld=true;input.firePressed=true;}
   if(e.button===2){input.scope=true;}
@@ -1494,10 +1497,20 @@ function applyLayout(){
 }
 function btnPress(name,down){
   const el=btnEl(name);if(el)el.classList.toggle('press',down);
-  if(!down){if(name==='breath')input.breath=false;if(name==='fire'||name==='fire2')input.fireHeld=false;return;}
+  if(!down){
+    if(name==='breath')input.breath=false;
+    if(name==='fire'||name==='fire2'){
+      input.fireHeld=false;
+      // release-to-fire: the shot goes when the finger lifts, still with the rifle in hand
+      if(input.fireAim){input.fireAim=false;if(LOAD.active==='rifle'&&!LOAD.pending){input.firePressed=true;input.fireAimShot=GUNCFG.fireBuffer+0.02;}}
+    }
+    return;
+  }
   audioInit();
   switch(name){
-    case 'fire':case 'fire2':input.fireHeld=true;input.firePressed=true;break;
+    case 'fire':case 'fire2':
+      if(SETTINGS.releaseFire&&LOAD.active==='rifle'&&!LOAD.pending){input.fireAim=true;break;} // hold: scope up, aim with the same finger
+      input.fireHeld=true;input.firePressed=true;break;
     case 'scope':input.scopeToggle=!input.scopeToggle;break;
     case 'crouch':input.crouchHeld=!input.crouchHeld;input.crouchPressed=true;break;
     case 'jump':input.jumpPressed=true;break;
@@ -1582,12 +1595,13 @@ $('#edReset').addEventListener('click',()=>{LAYOUT=SDLayout.defaults();$('#edOp'
 /* ---- settings panel ---- */
 let SETTINGS=SDSettings.load(store);
 const SET_UI=[['sH','sensH'],['sV','sensV'],['sA','adsSens'],['sT','touchLook']];
-function settingsToUI(){for(const [id,k] of SET_UI){$('#'+id).value=SETTINGS[k];$('#'+id+'o').textContent=(+SETTINGS[k]).toFixed(2);}$('#sInv').checked=SETTINGS.invertY;$('#sLeft').checked=SETTINGS.leftFire;
+function settingsToUI(){for(const [id,k] of SET_UI){$('#'+id).value=SETTINGS[k];$('#'+id+'o').textContent=(+SETTINGS[k]).toFixed(2);}$('#sInv').checked=SETTINGS.invertY;$('#sLeft').checked=SETTINGS.leftFire;$('#sRel').checked=SETTINGS.releaseFire;
   const g=(SETTINGS.sensH+SETTINGS.sensV)/2;$('#sens').value=g;$('#sensOut').textContent=g.toFixed(2);}
 function settingsChanged(){SETTINGS=SDSettings.sanitize(SETTINGS);SDSettings.save(store,SETTINGS);settingsToUI();}
 for(const [id,k] of SET_UI)$('#'+id).addEventListener('input',()=>{SETTINGS[k]=+$('#'+id).value;settingsChanged();});
 $('#sInv').addEventListener('change',()=>{SETTINGS.invertY=$('#sInv').checked;settingsChanged();});
 $('#sLeft').addEventListener('change',()=>{SETTINGS.leftFire=$('#sLeft').checked;settingsChanged();});
+$('#sRel').addEventListener('change',()=>{SETTINGS.releaseFire=$('#sRel').checked;settingsChanged();});
 let settingsFrom='menu';
 function openSettings(from){settingsFrom=from;settingsToUI();$('#settings').hidden=false;}
 $('#openSettings').addEventListener('click',()=>{audioInit();SFX.ui();openSettings('menu');});
@@ -1660,11 +1674,11 @@ function startMatch(){
 }
 // one-shot inputs (clicks, key presses) that have not been used yet are thrown away whenever
 // the game is interrupted, so nothing fires, jumps or switches on its own afterwards
-function clearPendingInput(){if(typeof releaseAllTouches==='function')releaseAllTouches();input.firePressed=input.jumpPressed=input.crouchPressed=input.reloadPressed=false;input.select=null;input.inspect=false;input.lookDX=input.lookDY=0;}
-function pause(){if(state!=='playing'&&state!=='dead')return;pausedFrom=state;state='paused';$('#pause').hidden=false;input.fireHeld=false;input.scope=false;input.keys={};clearPendingInput();}
+function clearPendingInput(){if(typeof releaseAllTouches==='function')releaseAllTouches();input.firePressed=input.jumpPressed=input.crouchPressed=input.reloadPressed=false;input.fireAim=false;input.fireAimShot=0;input.select=null;input.inspect=false;input.lookDX=input.lookDY=0;}
+function pause(){if(state!=='playing'&&state!=='dead')return;pausedFrom=state;state='paused';$('#pause').hidden=false;$('#lockHint').hidden=true;if(pointerLocked&&document.exitPointerLock)document.exitPointerLock();input.fireHeld=false;input.scope=false;input.keys={};clearPendingInput();}
 let pausedFrom='playing';
-function resume(){if(state!=='paused')return;clearPendingInput();state=pausedFrom;$('#pause').hidden=true;audioInit();if(!isTouch&&!lockFailed)requestLock();}
-function toMenu(){state='menu';$('#pause').hidden=true;$('#over').hidden=true;$('#hud').hidden=true;$('#scope').hidden=true;$('#death').hidden=true;$('#touch').hidden=true;$('#menu').hidden=false;BOTS.concat(DUMMIES,TRAINERS).forEach(b=>{b.alive=false;b.g.visible=false;b.trainerActive=false;});BULLETS.length=0;BTR.forEach(m=>m.visible=false);scene.fog.near=45;scene.fog.far=175;if(document.exitPointerLock&&pointerLocked)document.exitPointerLock();}
+function resume(){if(state!=='paused')return;clearPendingInput();state=pausedFrom;$('#pause').hidden=true;audioInit();if(!isTouch)requestLock();}
+function toMenu(){state='menu';$('#pause').hidden=true;$('#lockHint').hidden=true;$('#over').hidden=true;$('#hud').hidden=true;$('#scope').hidden=true;$('#death').hidden=true;$('#touch').hidden=true;$('#menu').hidden=false;BOTS.concat(DUMMIES,TRAINERS).forEach(b=>{b.alive=false;b.g.visible=false;b.trainerActive=false;});BULLETS.length=0;BTR.forEach(m=>m.visible=false);scene.fog.near=45;scene.fog.far=175;if(document.exitPointerLock&&pointerLocked)document.exitPointerLock();}
 function endMatch(win){
   if(state==='over'||state==='menu')return;
   state='over';
@@ -1692,14 +1706,14 @@ function buildCmd(){
   if(k.KeyW||k.ArrowUp)mz-=1;if(k.KeyS||k.ArrowDown)mz+=1;if(k.KeyA||k.ArrowLeft)mx-=1;if(k.KeyD||k.ArrowRight)mx+=1;
   mx+=input.joyX;mz+=input.joyY;
   const shift=!isTouch&&!!(k.ShiftLeft||k.ShiftRight);
-  const adsWanted=!!(input.scope||input.scopeToggle);
+  const adsWanted=!!(input.scope||input.scopeToggle||input.fireAim||input.fireAimShot>0);
   const cmd={mx,mz,yaw:P.yaw,
     sprint:(shift&&!adsWanted)||(input.joySprint&&!adsWanted),
     crouch:isTouch?input.crouchHeld:!!(k.KeyC||k.ControlLeft),
     crouchPressed:input.crouchPressed,jump:input.jumpPressed,
     ads:WCORE.ads,reloading:WCORE.state==='reload',
     fire:input.firePressed,adsHeld:adsWanted,reload:input.reloadPressed,breath:shift||input.breath};
-  input.crouchPressed=input.jumpPressed=input.firePressed=input.reloadPressed=false;
+  input.crouchPressed=input.jumpPressed=input.firePressed=input.reloadPressed=false;if(input.fireAimShot>0)input.fireAimShot-=TICK_DT;
   return cmd;
 }
 function onMoveEvent(e){
@@ -1712,7 +1726,7 @@ function onMoveEvent(e){
 function onWeaponEvent(e,hol){
   if(hol&&e.type!=='fire')return; // the rifle is away: its bolt keeps cycling silently
   switch(e.type){
-    case 'fire':if(mode==='range'&&TRAIN.infAmmo)WCORE.ammo=GUNCFG.mag;doFire(e);break;
+    case 'fire':if(mode==='range'&&TRAIN.infAmmo)WCORE.ammo=GUNCFG.mag;input.fireAimShot=0;doFire(e);break;
     case 'dry':SFX.dry();break;
     case 'boltLift':SFX.bLift();break;
     case 'boltBack':SFX.bBack();break;
@@ -1865,6 +1879,7 @@ function updateCamera(dt,alpha){
     const ready=WCORE.state==='ready'&&WCORE.ammo>0;const ch=$('#chamber');ch.textContent=ready?'● LISTO':WCORE.state==='reload'?'○ RECARGA':'○ CERROJO';ch.classList.toggle('cycling',!ready);
     $('#airVig').style.opacity=P.exhausted>0?(0.55+Math.sin(P.swayT*7)*0.2).toFixed(2):P.holding?(0.15*clamp(1-P.breath,0,1)+0.08).toFixed(2):0;
   }
+  {const lh=document.getElementById('lockHint'),want=!isTouch&&!pointerLocked&&state==='playing';if(lh.hidden===want)lh.hidden=!want;}
   if(isTouch&&!EDIT.on){const bz=$('#tbZoom'),bb=$('#tbBreath'),kn=LOAD.active==='knife';$('#tbScope').hidden=kn;$('#tbInspect').hidden=!kn;$('#tbFire2').hidden=!SETTINGS.leftFire;$('#tbFire').textContent=$('#tbFire2').textContent=kn?'ATACAR':'FUEGO';if(bz.hidden===showScope){bz.hidden=!showScope;bb.hidden=!showScope;}bz.textContent=WS.zoom+'×';bb.classList.toggle('on',P.holding);$('#tbScope').classList.toggle('on',input.scopeToggle);$('#tbCrouch').classList.toggle('on',input.crouchHeld);}
   // hip crosshair shows the real spread cone
   const cr=$('#cross');

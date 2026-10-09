@@ -100,6 +100,12 @@ Para jugar en el móvil hace falta la web en Netlify (o GitHub Pages): la págin
 | 53 | Ajustes → «FUEGO también a la izquierda». | Aparece un segundo FUEGO a la izquierda para jugar con 3-4 dedos. |
 | 54 | Pausa con el joystick pulsado y reanuda. | El jugador no sigue andando solo. |
 | 55 | Juega 10 minutos. | Sin dedos «pegados», sin que el móvil se caliente demasiado (anota FPS en F3: Pausa → PANEL TÉCNICO). |
+| 56 | PC (github.io): pulsa JUGAR y gira el ratón varias vueltas seguidas hacia el mismo lado. | Giro de 360° sin tope; el cursor no se ve. Si sale «HAZ CLIC EN LA PANTALLA…», un clic lo arregla. |
+| 57 | PC: Esc → CONTINUAR enseguida, y vuelve a girar. | Si el navegador no recaptura el ratón sale el aviso; un clic y vuelve el giro libre. |
+| 58 | Móvil: mantén FUEGO. | Sube la mira y no dispara; arrastrando ese mismo dedo apuntas. |
+| 59 | Móvil: suelta FUEGO con la retícula en la diana. | Dispara al soltar, con la mira; después la mira baja sola. |
+| 60 | Móvil: con MIRA ya puesta, mantén y suelta FUEGO. | Dispara al soltar y la mira se queda puesta. |
+| 61 | Móvil: Ajustes → desmarca «mantener FUEGO apunta…». | FUEGO vuelve a disparar al tocar (modo clásico). |
 
 Si algo no cumple lo esperado, apunta el número de la prueba y lo que muestra F3 en ese momento.
 

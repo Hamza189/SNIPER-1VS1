@@ -10,7 +10,8 @@ const DEFAULTS = {
   adsSens: 1,      // extra multiplier while the scope is up (on top of the automatic zoom scaling)
   touchLook: 1,    // extra multiplier for finger dragging
   invertY: false,
-  leftFire: false  // second FIRE button on the left side (3-4 finger play)
+  leftFire: false, // second FIRE button on the left side (3-4 finger play)
+  releaseFire: true // touch, rifle: holding FIRE raises the scope, lifting the finger fires
 };
 const RANGES = { sensH: [0.2, 3], sensV: [0.2, 3], adsSens: [0.3, 2], touchLook: [0.3, 3] };
 
@@ -22,7 +23,7 @@ function sanitize(o) {
     const v = Number(o[k]);
     if (o[k] !== undefined && o[k] !== null && o[k] !== '' && isFinite(v)) s[k] = clamp(v, RANGES[k][0], RANGES[k][1]);
   }
-  for (const k of ['invertY', 'leftFire']) if (typeof o[k] === 'boolean') s[k] = o[k];
+  for (const k of ['invertY', 'leftFire', 'releaseFire']) if (typeof o[k] === 'boolean') s[k] = o[k];
   return s;
 }
 // reads from a store with get(key, default); migrates the old single "sens" value

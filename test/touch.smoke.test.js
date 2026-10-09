@@ -43,7 +43,8 @@ console.log('\nCÁMARA Y DISPARO');
   check('doble sensibilidad horizontal = doble giro', Math.abs((SD.P.yaw - y1) / dYaw - 2) < 0.02, ((SD.P.yaw - y1) / dYaw).toFixed(3) + '×');
   SD.SETTINGS.sensH = 1;
 }
-{ H.frames(30, 16); const s0 = SD.STATS.shots;
+{ SD.SETTINGS.releaseFire = false; // classic mode: FIRE shoots on press
+  H.frames(30, 16); const s0 = SD.STATS.shots;
   H.pointer('pointerdown', 3, 779, 325, 'fire'); H.frames(2, 16); H.pointer('pointerup', 3, 779, 325, 'fire'); H.frames(5, 16);
   check('tocar FUEGO dispara una vez', SD.STATS.shots - s0 === 1);
   H.frames(70, 16);
@@ -59,6 +60,38 @@ console.log('\nCÁMARA Y DISPARO');
   check('soltar AIRE: respira', !SD.P.holding);
   H.pointer('pointerdown', 4, 689, 327, 'scope'); H.pointer('pointerup', 4, 689, 327, 'scope'); H.frames(20, 16);
   check('MIRA otra vez: quita el telescopio', SD.WCORE.ads === 0);
+}
+
+console.log('\nMANTENER FUEGO = MIRA, SOLTAR = DISPARO (opción por defecto)');
+{ SD.SETTINGS.releaseFire = true;
+  check('la opción viene activada por defecto', require('../client/settings.js').DEFAULTS.releaseFire === true);
+  H.frames(90, 16);
+  const s0 = SD.STATS.shots, y0 = SD.P.yaw;
+  H.pointer('pointerdown', 3, 779, 325, 'fire'); H.frames(30, 16);
+  check('mantener FUEGO sube la mira sin disparar', SD.WCORE.ads === 1 && SD.STATS.shots === s0, 'ads ' + SD.WCORE.ads.toFixed(2));
+  H.pointer('pointermove', 3, 795, 320, 'fire'); H.frames(3, 16);
+  check('con el dedo en FUEGO se apunta arrastrando', SD.P.yaw !== y0 && SD.STATS.shots === s0);
+  H.pointer('pointerup', 3, 795, 320, 'fire'); H.frames(1, 16);
+  check('soltar FUEGO dispara una vez, con la mira', SD.STATS.shots - s0 === 1);
+  H.frames(40, 16);
+  check('después del disparo la mira baja sola', SD.WCORE.ads === 0 && SD.STATS.shots - s0 === 1);
+  // a hold that is interrupted by the pause does not shoot later
+  H.frames(90, 16); const s1 = SD.STATS.shots;
+  H.pointer('pointerdown', 3, 779, 325, 'fire'); H.frames(10, 16);
+  SD.pause(); H.pointer('pointerup', 3, 779, 325, 'fire'); SD.resume(); H.frames(20, 16);
+  check('pausar con FUEGO pulsado no dispara al volver', SD.STATS.shots === s1);
+  // with the scope already toggled on, the scope stays after the shot
+  H.frames(90, 16);
+  H.pointer('pointerdown', 4, 689, 327, 'scope'); H.pointer('pointerup', 4, 689, 327, 'scope'); H.frames(20, 16);
+  const s2 = SD.STATS.shots;
+  H.pointer('pointerdown', 3, 779, 325, 'fire'); H.frames(3, 16); H.pointer('pointerup', 3, 779, 325, 'fire'); H.frames(30, 16);
+  check('con MIRA ya puesta: soltar dispara y la mira se queda', SD.STATS.shots - s2 === 1 && SD.WCORE.ads === 1);
+  H.pointer('pointerdown', 4, 689, 327, 'scope'); H.pointer('pointerup', 4, 689, 327, 'scope'); H.frames(20, 16);
+  // released while the bolt is still far from ready: no late shot, and the scope does not stay stuck
+  H.frames(90, 16); const s3 = SD.STATS.shots;
+  H.pointer('pointerdown', 3, 779, 325, 'fire'); H.frames(3, 16); H.pointer('pointerup', 3, 779, 325, 'fire'); H.frames(2, 16);
+  H.pointer('pointerdown', 3, 779, 325, 'fire'); H.frames(3, 16); H.pointer('pointerup', 3, 779, 325, 'fire'); H.frames(120, 16);
+  check('soltar otra vez con el cerrojo a medias: ni disparo tardío ni mira atascada', SD.STATS.shots - s3 === 1 && SD.WCORE.ads === 0, (SD.STATS.shots - s3) + ' disparo(s)');
 }
 
 console.log('\nRIFLE Y NAVAJA EN MÓVIL');

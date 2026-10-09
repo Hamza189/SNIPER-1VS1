@@ -20,7 +20,7 @@ const server = http.createServer((req, res) => {
 let pass = 0, fail = 0;
 const check = (n, c, i) => { (c ? pass++ : fail++); console.log((c ? '  ok   ' : '  FAIL ') + n + (i !== undefined ? '  (' + i + ')' : '')); };
 // ids of the overlays that must only appear when the game asks for them
-const OVERLAYS = ['loadErr', 'rotate', 'settings', 'editPanel', 'pause', 'over', 'death', 'selfTestOut', 'dbg'];
+const OVERLAYS = ['lockHint', 'loadErr', 'rotate', 'settings', 'editPanel', 'pause', 'over', 'death', 'selfTestOut', 'dbg'];
 const shown = page => page.evaluate(ids => ids.filter(id => { const e = document.getElementById(id); return e && e.checkVisibility && e.checkVisibility(); }), OVERLAYS);
 
 (async () => {
@@ -54,6 +54,22 @@ const shown = page => page.evaluate(ids => ids.filter(id => { const e = document
       if (!/✔ AUTOTEST/.test(head)) res.filter(l => l.startsWith('✘')).forEach(l => console.log('       ' + l));
       const ov2 = await shown(page);
       check('jugando no tapa nada ninguna pantalla oculta', ov2.length === 0, ov2.join(', ') || 'ninguna');
+      // pointer lock refused once (e.g. clicking too soon after Esc): the game must keep asking
+      // on every click and tell the player, instead of falling back to a camera stuck at the screen edges
+      const lk = await page.evaluate(async () => {
+        const c = document.querySelector('canvas'); let calls = 0;
+        c.requestPointerLock = () => { calls++; return Promise.reject(new Error('denied')); };
+        __SD.pause(); await new Promise(r => setTimeout(r, 300)); __SD.resume(); await new Promise(r => setTimeout(r, 900));
+        const hint = document.getElementById('lockHint').checkVisibility();
+        const before = calls;
+        c.dispatchEvent(new MouseEvent('mousedown', { button: 0, bubbles: true })); window.dispatchEvent(new MouseEvent('mouseup', { button: 0 }));
+        c.dispatchEvent(new MouseEvent('mousedown', { button: 0, bubbles: true })); window.dispatchEvent(new MouseEvent('mouseup', { button: 0 }));
+        return { hint, before, after: calls };
+      });
+      check('si el navegador no captura el ratón, sale el aviso HAZ CLIC', lk.hint);
+      check('cada clic vuelve a pedir capturar el ratón (antes se rendía tras el primer fallo)', lk.after - lk.before === 2, lk.before + ' → ' + lk.after + ' peticiones');
+      await page.evaluate(() => __SD.pause());
+      check('en pausa el aviso desaparece', !(await page.evaluate(() => document.getElementById('lockHint').checkVisibility())));
       await ctx.close();
     }
     console.log('\nMÓVIL (emulación de pantalla táctil 844×390; NO es Safari ni Android reales)');
