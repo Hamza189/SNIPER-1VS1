@@ -58,8 +58,8 @@ export class RoomDO {
     });
   }
   makeRoom() {
-    if (!INDEX) INDEX = G.createMapIndex(MAP);
-    this.room = SDRoom.create({ code: this.code, map: MAP, index: INDEX, now: Date.now(),
+    if (!INDEX) { INDEX = {}; for (const id in MAP.maps) INDEX[id] = G.createMapIndex(MAP.maps[id]); }
+    this.room = SDRoom.create({ code: this.code, maps: MAP.maps, indexes: INDEX, defaultMap: 'arena', now: Date.now(),
       send: (c, t) => { const ws = this.socks.get(c); if (ws) try { ws.send(t); } catch (e) {} },
       close: (c, code, why) => { const ws = this.socks.get(c); if (ws) try { ws.close(code, why); } catch (e) {} },
       randBytes: n => crypto.getRandomValues(new Uint8Array(n)),

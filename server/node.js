@@ -16,7 +16,7 @@ function startServer(opts) {
   opts = opts || {};
   const origins = (opts.origins || process.env.ALLOWED_ORIGINS || 'https://hamza189.github.io,http://localhost,http://127.0.0.1').split(',').map(s => s.trim()).filter(Boolean);
   const maxRooms = opts.maxRooms || +process.env.MAX_ROOMS || 200;
-  const index = G.createMapIndex(MAP);                 // built once, shared by every room
+  const indexes = {}; for (const id in MAP.maps) indexes[id] = G.createMapIndex(MAP.maps[id]);   // built once, shared by every room
   const rooms = new Map();
   const clock = opts.clock || (() => Date.now());
   const sockets = new Map(); let nextConn = 1;
@@ -26,7 +26,7 @@ function startServer(opts) {
 
   function makeRoom() {
     let code; do { code = PR.codeFrom(crypto.randomBytes(6)); } while (rooms.has(code));
-    const room = SDRoom.create({ code, map: MAP, index, now: clock(), debug: !!opts.debug,
+    const room = SDRoom.create({ code, maps: MAP.maps, indexes, defaultMap: 'arena', now: clock(), debug: !!opts.debug,
       send: (c, t) => { const ws = sockets.get(c); if (ws && ws.readyState === 1) ws.send(t); },
       close: (c, code2, why) => { const ws = sockets.get(c); if (ws) try { ws.close(code2, why); } catch (e) {} },
       randBytes: n => crypto.randomBytes(n) });

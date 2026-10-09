@@ -37,7 +37,7 @@ core/            Lógica pura y determinista (sin Three.js): la usan el navegado
   melee.js       Cambio de arma, navaja (alcance, paredes, espalda), animaciones
   player.js      El tick de un jugador (navaja → movimiento → rifle), idéntico en cliente y servidor
   trainer.js     Cerebro de los bots de entrenamiento
-  mapdata.js     El mapa exportado del navegador (triángulos, cajas, rampas) para el servidor
+  mapdata.js     Los mapas (PUEBLO y ARENA DE PRUEBAS) exportados del navegador para el servidor
   geom.js        Rayos/segmentos contra el mapa y el cuerpo (mismo resultado que Three.js)
   hitbox.js      Zonas de impacto cabeza/torso/piernas (servidor y modelo del rival)
   protocol.js    Protocolo de red v1 validado (docs/PROTOCOLO.md)

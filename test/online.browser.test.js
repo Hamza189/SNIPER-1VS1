@@ -41,20 +41,27 @@ async function until(page, fn, arg, ms) { try { await page.waitForFunction(fn, a
     check('B abre el enlace: el código ya está puesto', await until(B, c => document.getElementById('mpCode').value === c, code));
     await B.fill('#mpName', 'Novia'); await B.click('#mpJoin');
     check('los dos ven a los dos jugadores en el lobby', await until(A, () => document.querySelectorAll('#mpPlayers li').length === 2) && await until(B, () => document.querySelectorAll('#mpPlayers li').length === 2));
+    // map choice: the creator picks, the guest sees it and cannot change it
+    check('la sala empieza con ARENA DE PRUEBAS elegida', await until(B, () => { const b = document.querySelector('#mpMapSeg button[aria-pressed="true"]'); return b && b.dataset.map === 'arena'; }));
+    await A.click('#mpMapSeg button[data-map="pueblo"]');
+    check('A cambia a PUEBLO y B lo ve', await until(B, () => __SD.NET.N.map === 'pueblo'));
+    check('B no puede cambiar el mapa', await B.evaluate(() => document.querySelector('#mpMapSeg button[data-map="arena"]').disabled));
+    await A.click('#mpMapSeg button[data-map="arena"]'); await until(B, () => __SD.NET.N.map === 'arena');
     const vis = await B.evaluate(() => { const r = document.getElementById('mpReady').getBoundingClientRect(); return r.bottom <= innerHeight && r.top >= 0 && r.width > 0; });
     check('en una pantalla de móvil apaisado el botón LISTO se ve sin desplazar', vis);
     await A.click('#mpReady'); await B.click('#mpReady');
     check('cuenta atrás en los dos', await until(A, () => !document.getElementById('countdown').hidden) && await until(B, () => __SD.NET.N.phase === 'countdown' || __SD.NET.N.phase === 'playing'));
+    check('los dos juegan en la ARENA (mapa del servidor = mapa dibujado)', await until(A, () => __SD.WORLD_ID === 'arena', null, 9000) && await until(B, () => __SD.WORLD_ID === 'arena', null, 9000) && srv.rooms.get(code).debug.mapId === 'arena');
     check('empieza la partida en los dos', await until(A, () => __SD.NET.N.phase === 'playing' && __SD.state === 'playing', null, 9000) && await until(B, () => __SD.NET.N.phase === 'playing', null, 9000));
     check('el marcador muestra el nombre del rival', (await A.textContent('#kBotsLbl')) === 'NOVIA' && (await B.textContent('#kBotsLbl')) === 'HAMZA');
-    // face to face on an open street, 36 m apart
+    // face to face across the arena, 36 m apart on an open lane
     const room = srv.rooms.get(code);
-    room.debug.place('A', -46, -46, -Math.PI / 2); room.debug.place('B', -10, -46, Math.PI / 2);
+    room.debug.place('A', -18, -3, -Math.PI / 2); room.debug.place('B', 18, -3, Math.PI / 2);
     await sleep(1500);
     const seen = async (pg) => pg.evaluate(() => { const R = __SD.REMOTE; return R && R.g.visible ? { x: R.g.position.x, z: R.g.position.z } : null; });
     const sa = await seen(A), sb = await seen(B);
-    check('A ve a B en su sitio', sa && Math.abs(sa.x + 10) < 0.5 && Math.abs(sa.z + 46) < 0.5, sa && sa.x.toFixed(2) + ',' + sa.z.toFixed(2));
-    check('B ve a A en su sitio', sb && Math.abs(sb.x + 46) < 0.5 && Math.abs(sb.z + 46) < 0.5, sb && sb.x.toFixed(2) + ',' + sb.z.toFixed(2));
+    check('A ve a B en su sitio', sa && Math.abs(sa.x - 18) < 0.5 && Math.abs(sa.z + 3) < 0.5, sa && sa.x.toFixed(2) + ',' + sa.z.toFixed(2));
+    check('B ve a A en su sitio', sb && Math.abs(sb.x + 18) < 0.5 && Math.abs(sb.z + 3) < 0.5, sb && sb.x.toFixed(2) + ',' + sb.z.toFixed(2));
     // B walks: A sees it move (the test teleport above is a legitimate server correction: start counting after it)
     await B.evaluate(() => { __SD.NET.N.corrMax = 0; });
     await B.evaluate(() => { __SD.input.keys.KeyD = true; }); await sleep(1500); await B.evaluate(() => { __SD.input.keys.KeyD = false; }); await sleep(1500);
@@ -62,6 +69,8 @@ async function until(page, fn, arg, ms) { try { await page.waitForFunction(fn, a
     check('B se mueve y A lo ve moverse', sa2 && Math.hypot(sa2.x - sa.x, sa2.z - sa.z) > 1 && Math.hypot(sa2.x - real.x, sa2.z - real.z) < 0.6, sa2 && Math.hypot(sa2.x - sa.x, sa2.z - sa.z).toFixed(2) + ' m');
     const predOk = await B.evaluate(() => __SD.NET.N.corrMax);
     check('la predicción de B no tuvo que corregir', predOk < 0.01, predOk.toFixed(4) + ' m · comandos descartados por el servidor: ' + (room.seats.B.dropped || 0));
+    // back to the open lane for the shooting part (the walk may have put a crate in the way)
+    room.debug.place('B', 18, -3, Math.PI / 2); await sleep(1200);
     // A aims at B's chest with the scope and fires through the real input path
     const aimAndFire = async (pg, y) => {
       const who = pg === A ? 'A' : 'B', s0 = room.seats[who].shots, h0 = room.seats[who].hits;
@@ -91,7 +100,7 @@ async function until(page, fn, arg, ms) { try { await page.waitForFunction(fn, a
     check('el marcador cambia en los dos: 1–0', await until(A, () => document.getElementById('kYou').textContent === '1', null, 2000) && await until(B, () => document.getElementById('kBots').textContent === '1', null, 2000));
     check('B reaparece a los 3 s', await until(B, () => __SD.state === 'playing' && __SD.P.alive && document.getElementById('death').hidden, null, 6000));
     // B shoots A too
-    room.debug.place('A', -46, -46, -Math.PI / 2); room.debug.place('B', -10, -46, Math.PI / 2); await sleep(1500);
+    room.debug.place('A', -18, -3, -Math.PI / 2); room.debug.place('B', 18, -3, Math.PI / 2); await sleep(1500);
     await aimAndFire(B, 1.17);
     check('B dispara a A y A recibe daño', await until(A, () => __SD.P.hp < 100, null, 3000));
     // last kill: 9 → 10

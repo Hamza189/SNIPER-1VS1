@@ -304,6 +304,43 @@ for (const [lat, jit, loss] of [[20, 0, 0], [80, 10, 0], [150, 30, 0], [250, 50,
   check('10 % de comandos perdidos: el cliente se corrige y acaba donde dice el servidor', A.N.corrMax > 0 && d < 1e-6, 'corrección máx ' + A.N.corrMax.toFixed(2) + ' m, desfase final ' + d.toExponential(1));
 }
 
+console.log('\nMAPAS: ARENA DE PRUEBAS');
+{ const S = createSim({ maps: 'arena', latency: 30 });
+  const A = S.addClient('Hamza'), B = S.addClient('Novia');
+  A.N.hello('Hamza'); S.run(150); B.N.hello('Novia'); S.run(150);
+  check('una sala nueva empieza con la ARENA', A.N.map === 'arena' && B.N.map === 'arena');
+  B.N.chooseMap('pueblo'); S.run(150);
+  check('el invitado no puede cambiar el mapa', S.room.debug.mapId === 'arena');
+  A.N.chooseMap('pueblo'); S.run(150);
+  check('quien crea la sala elige PUEBLO y los dos lo ven', S.room.debug.mapId === 'pueblo' && B.N.map === 'pueblo');
+  A.N.chooseMap('marte'); S.run(150);
+  check('un mapa que no existe se ignora', S.room.debug.mapId === 'pueblo');
+  A.N.chooseMap('arena'); S.run(150);
+  A.N.ready(true); B.N.ready(true); S.run(300);
+  const st = evs(A, 'start')[0];
+  check('la partida empieza en la ARENA para los dos', st && st.m.map === 'arena' && evs(B, 'start')[0].m.map === 'arena');
+  const sa = evs(A, 'start')[0].m.spawn, sb = evs(B, 'start')[0].m.spawn;
+  const inside = s => Math.abs(s.x) < 23.5 && Math.abs(s.z) < 15.5;
+  check('los dos aparecen dentro de la arena, uno en cada lado', inside(sa) && inside(sb) && sa.x < 0 && sb.x > 0 && Math.hypot(sa.x - sb.x, sa.z - sb.z) > 25, JSON.stringify([sa, sb]));
+  const AM = MAP.maps.arena;
+  check('ningún punto de aparición de la arena está dentro de una caja', AM.nav.every(([x, z]) => !AM.colliders.some(c => x > c.minX - 0.35 && x < c.maxX + 0.35 && z > c.minZ - 0.35 && z < c.maxZ + 0.35 && c.minY < 1.5)));
+  S.run(3300);
+  // a headshot across the arena (36 m lane at z = -3)
+  let shoot = false;
+  A.ai = (c, S) => { const s = S.room.seats.B.p.ms; return Object.assign(lookAt(c, [s.x, s.y + 1.63, s.z]), { fire: shoot, adsHeld: true }); };
+  B.ai = () => ({ yaw: Math.PI / 2 });
+  S.room.debug.place('A', -18, -3, -Math.PI / 2); S.room.debug.place('B', 18, -3, Math.PI / 2); S.run(800);
+  shoot = true; S.run(20); shoot = false; S.run(600);
+  check('headshot de lado a lado de la arena', evs(A, 'hit').some(e => e.part === 'head'));
+  S.run(3300);
+  const rb = S.room.seats.B.p.ms;
+  check('reaparece dentro de la arena', inside(rb) && S.room.seats.B.alive, rb.x.toFixed(1) + ',' + rb.z.toFixed(1));
+  // the centre block stops a bullet: A west of it, B east, both at z = 0
+  S.room.debug.place('A', -6, 0.0, -Math.PI / 2); S.room.debug.place('B', 6, 0.0, Math.PI / 2); S.run(1500);
+  const h0 = evs(A, 'hit').length; shoot = true; S.run(20); shoot = false; S.run(600);
+  check('el bloque central para las balas', evs(A, 'hit').length === h0 && evs(A, 'shot').length >= 2);
+}
+
 console.log('\nCOMPENSACIÓN DE LATENCIA (rival en movimiento)');
 // an open lane where the rival can strafe ±4 m and stay in plain sight the whole time
 const lane = (() => { for (const [x, z] of MAP.nav) { const x2 = x + 36;

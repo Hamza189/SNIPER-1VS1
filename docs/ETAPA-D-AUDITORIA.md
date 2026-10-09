@@ -24,5 +24,5 @@ Nada se ha rehecho desde cero. La arquitectura publicada (Worker + Durable Objec
 
 ## Siguiente fase (creativa)
 
-1. **ARENA DE PRUEBAS:** un mapa 1v1 compacto para encontrar rápido al rival cuando se prueba con dos dispositivos.
+1. **ARENA DE PRUEBAS** ✔ (9-10-2026): mapa 1v1 compacto, elegido por defecto en las salas nuevas; el creador puede cambiar a PUEBLO en el lobby.
 2. Nuevas armas, mejores animaciones, sonidos e impactos.

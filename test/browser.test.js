@@ -48,8 +48,11 @@ const shown = page => page.evaluate(ids => ids.filter(id => { const e = document
       check('el botón JUGAR se ve', st.play);
       // the server's copy of the map (core/mapdata.js) is exactly the world the page builds
       const { dumpWorld } = require('../tools/export-map.js'), MAPF = require('../core/mapdata.js');
-      const d = await dumpWorld(page);
-      check('el mapa del servidor coincide con el del juego (si cambias el mapa: node tools/export-map.js)', JSON.stringify(d.tris) === JSON.stringify(MAPF.tris) && JSON.stringify(d.ds) === JSON.stringify(MAPF.ds) && JSON.stringify(d.colliders) === JSON.stringify(MAPF.colliders) && JSON.stringify(d.ramps) === JSON.stringify(MAPF.ramps), (d.tris.length / 9) + ' triángulos');
+      for (const id of ['pueblo', 'arena']) {
+        const d = await dumpWorld(page, id), M = MAPF.maps[id];
+        check('mapa ' + id + ': el del servidor coincide con el del juego (si cambias un mapa: node tools/export-map.js)', !!M && JSON.stringify(d.tris) === JSON.stringify(M.tris) && JSON.stringify(d.ds) === JSON.stringify(M.ds) && JSON.stringify(d.colliders) === JSON.stringify(M.colliders) && JSON.stringify(d.ramps) === JSON.stringify(M.ramps) && JSON.stringify(d.nav) === JSON.stringify(M.nav), (d.tris.length / 9) + ' triángulos');
+      }
+      check('después de comprobar los mapas la página sigue en el pueblo', await page.evaluate(() => __SD.WORLD_ID === 'pueblo'));
       const dup = await page.evaluate(() => { const c = {}; document.querySelectorAll('[id]').forEach(e => c[e.id] = (c[e.id] || 0) + 1); return Object.keys(c).filter(k => c[k] > 1); });
       check('ningún id repetido en la página (si se repite, un dato se escribe en el sitio equivocado)', dup.length === 0, dup.join(', ') || 'ninguno');
       // real mouse click on JUGAR → the browser really captures the mouse (Pointer Lock)

@@ -6,8 +6,9 @@
 2. Uno pulsa **MULTIJUGADOR** → escribe su nombre → **CREAR SALA**. Sale un código de 6 letras.
 3. **COMPARTIR INVITACIÓN** (o COPIAR CÓDIGO) y se envía por WhatsApp. El enlace lleva `?sala=CÓDIGO` y abre el juego directamente en esa sala.
 4. La otra persona abre el enlace (o MULTIJUGADOR → UNIRSE con el código), pone su nombre y entra.
-5. Los dos pulsáis **LISTO**. El servidor hace una cuenta atrás de 3 s y empieza la partida, cada uno en un lado del pueblo.
-6. Gana el primero que llegue a **10 bajas**. Al terminar: **REVANCHA** (los dos) y empieza otra partida sin recargar.
+5. Quien crea la sala elige el **mapa**: **ARENA DE PRUEBAS** (por defecto, un patio cerrado de 48 × 32 m con un bloque central con rampas a su tejado, muros bajos, muros altos, pilares y cajas: os encontráis enseguida) o **PUEBLO** (el mapa grande). La otra persona ve la elección.
+6. Los dos pulsáis **LISTO**. El servidor hace una cuenta atrás de 3 s y empieza la partida, cada uno en un lado del pueblo.
+7. Gana el primero que llegue a **10 bajas**. Al terminar: **REVANCHA** (los dos) y empieza otra partida sin recargar.
 
 Reglas: 100 de vida, regeneración tras 5 s sin daño, reaparición a los 3 s con el cargador lleno, cabeza 250 / torso 85 / piernas 55, navaja 50 de frente y 100 por la espalda. Si los dos llegáis a 10 en el mismo instante es **EMPATE**.
 

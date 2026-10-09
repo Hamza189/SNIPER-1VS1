@@ -28,6 +28,7 @@ function create(opts) {
   N.hello = (name, token) => out({ t: 'hello', v: PR.VERSION, name, token: token || undefined });
   N.ready = on => out({ t: 'ready', on: !!on });
   N.rematch = () => out({ t: 'rematch' });
+  N.chooseMap = id => out({ t: 'map', id });
   N.leave = () => out({ t: 'leave' });
   N.ping = () => { N.lastPing = N.now(); out({ t: 'ping', c: N.now(), r: N.rtts.length ? Math.round(N.rtt) : undefined }); };
   N.serverNow = () => N.now() + N.offset;
@@ -96,9 +97,9 @@ function create(opts) {
     const ev = [];
     switch (m.t) {
       case 'welcome': N.you = m.you; N.token = m.token; N.code = m.code; N.phase = m.phase; N.players = m.players; N.match = m.match; ev.push({ k: 'welcome', m }); break;
-      case 'lobby': N.phase = m.phase; N.players = m.players; ev.push({ k: 'lobby', m }); break;
+      case 'lobby': N.phase = m.phase; N.players = m.players; if (m.map) N.map = m.map; if (m.maps) N.maps = m.maps; ev.push({ k: 'lobby', m }); break;
       case 'start':
-        N.match = m.m; N.names = m.names || {}; N.phase = 'countdown'; N.startIn = m.in; N.startedAt = N.now();
+        N.match = m.m; if (m.map) N.map = m.map; N.names = m.names || {}; N.phase = 'countdown'; N.startIn = m.in; N.startedAt = N.now();
         if (!m.resume) { N.pending = []; N.outBuf = []; N.lastAck = -1; N.remote = []; N.score = { A: 0, B: 0 }; N.seenShots.clear(); N.corrMax = 0;
           SDP.respawn(N.local, m.spawn.x, 0, m.spawn.z); }   // same spawn as the server: no correction on the first snapshot
         else { N.lastAck = m.lastSeq; N.pending = N.pending.filter(p => p.seq > m.lastSeq); }

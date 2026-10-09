@@ -25,9 +25,9 @@ function createSim(o) {
     S.q.push({ at, deliver, text });
     if (o.dup && R() < o.dup) S.q.push({ at: at + 1, deliver, text });
   }
-  const room = SDRoom.create({ code: 'TESTAA', map: MAP, index: INDEX, now: 0, debug: true, rand: rng(o.seed + 1),
+  const room = SDRoom.create(Object.assign(o.maps ? { maps: MAP.maps, defaultMap: o.maps } : { map: MAP, index: INDEX }, { code: 'TESTAA', now: 0, debug: true, rand: rng(o.seed + 1),
     send: (conn, text) => { const c = S.byConn[conn]; if (c && c.open) wire('s' + conn, () => c.recv(text), text); },
-    close: (conn) => { const c = S.byConn[conn]; if (c) c.open = false; } });
+    close: (conn) => { const c = S.byConn[conn]; if (c) c.open = false; } }));
   S.room = room; S.byConn = {};
   let nextConn = 1;
   S.addClient = (name, ai) => {

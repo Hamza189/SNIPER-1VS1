@@ -35,7 +35,13 @@ const DT = 1 / PR.LIMITS.tickHz;
 const GUN = CFG.rifles.halcon, KNIFE = CFG.knives.tactica;
 
 function create(opts) {
-  const ix = opts.index || G.createMapIndex(opts.map);
+  // maps: opts.maps = { id: map data } (opts.map alone = one map called 'pueblo'); the creator
+  // picks one in the lobby; indexes are built once and can be shared between rooms
+  const MAPS = opts.maps || { pueblo: opts.map };
+  const IXS = Object.assign({}, opts.indexes || {}); if (opts.index && !opts.indexes) IXS[Object.keys(MAPS)[0]] = opts.index;
+  const indexOf = id => IXS[id] || (IXS[id] = G.createMapIndex(MAPS[id]));
+  let mapId = opts.defaultMap && MAPS[opts.defaultMap] ? opts.defaultMap : Object.keys(MAPS)[0];
+  let ix = indexOf(mapId), MAP = MAPS[mapId];
   const rand = opts.rand || Math.random;
   const R = {
     code: opts.code, phase: 'lobby', match: 0, startAt: 0, tickN: 0, now: opts.now || 0,
@@ -51,10 +57,10 @@ function create(opts) {
   const sendAll = obj => { evq(obj); const s = JSON.stringify(obj); for (const id of ['A', 'B']) { const st = R.seats[id]; if (st && st.conn != null) R.send(st.conn, s); } };
   const log = (msg) => { R.log.push(Math.round(R.now) + ' ' + msg); if (R.log.length > 200) R.log.shift(); };
   const pubPlayers = () => ['A', 'B'].map(id => { const s = R.seats[id]; return s ? { id, name: s.name, connected: s.conn != null, ready: s.ready, kills: s.kills } : null; });
-  const lobbyMsg = () => ({ t: 'lobby', phase: R.phase, players: pubPlayers(), match: R.match, winner: R.winner === undefined ? undefined : R.winner, rematch: R.rematch });
+  const lobbyMsg = () => ({ t: 'lobby', phase: R.phase, players: pubPlayers(), match: R.match, map: mapId, maps: Object.keys(MAPS), winner: R.winner === undefined ? undefined : R.winner, rematch: R.rematch });
   function save() {
     if (!R.persist) return;
-    R.persist({ code: R.code, phase: R.phase === 'playing' || R.phase === 'countdown' || R.phase === 'paused' ? 'interrupted' : R.phase, match: R.match,
+    R.persist({ code: R.code, map: mapId, phase: R.phase === 'playing' || R.phase === 'countdown' || R.phase === 'paused' ? 'interrupted' : R.phase, match: R.match,
       seats: ['A', 'B'].map(id => { const s = R.seats[id]; return s ? { id, name: s.name, token: s.token, kills: s.kills, deaths: s.deaths } : null; }) });
   }
   function newSeat(id, name, token) {
@@ -71,7 +77,7 @@ function create(opts) {
   function spawnPoint(id, avoid) {
     // far from the rival, out of their sight when possible; first spawns on opposite sides
     let best = null, bs = -1e9;
-    const nav = opts.map.nav;
+    const nav = MAP.nav;
     for (let k = 0; k < 60; k++) {
       const n = nav[(rand() * nav.length) | 0], x = n[0], z = n[1];
       let s = rand() * 4;
@@ -98,6 +104,7 @@ function create(opts) {
     startMatch();
   }
   function startMatch() {
+    ix = indexOf(mapId); MAP = MAPS[mapId];
     R.match++; R.phase = 'countdown'; R.startAt = R.now + RULES.countdownMs; R.bullets.length = 0; R.winner = undefined;
     R.rematch = { A: false, B: false };
     const a = R.seats.A, b = R.seats.B;
@@ -105,7 +112,7 @@ function create(opts) {
     const sa = spawnPoint('A', null); placeSeat(a, sa);
     const sb = spawnPoint('B', { x: sa.x, y: 0, z: sa.z }); placeSeat(b, sb);
     for (const s of [a, b]) { s.lastSeq = -1; s.budget = PR.LIMITS.cmdBurst; s.budgetAt = R.startAt; }
-    for (const s of [a, b]) sendTo(s, { t: 'start', m: R.match, in: RULES.countdownMs, you: s.id,
+    for (const s of [a, b]) sendTo(s, { t: 'start', m: R.match, map: mapId, in: RULES.countdownMs, you: s.id,
       spawn: { x: s.p.ms.x, z: s.p.ms.z, yaw: s.yaw }, rules: { kills: RULES.killsToWin, hp: RULES.hp, respawnMs: RULES.respawnMs },
       names: { A: a.name, B: b.name } });
     log('start match ' + R.match); save();
@@ -164,7 +171,7 @@ function create(opts) {
     sendTo(s, msg);
     // back in the middle of a match: what it needs to continue
     if (R.phase === 'playing' || R.phase === 'paused' || R.phase === 'countdown') {
-      sendTo(s, { t: 'start', m: R.match, in: Math.max(0, R.startAt - R.now), you: s.id, resume: true,
+      sendTo(s, { t: 'start', m: R.match, map: mapId, in: Math.max(0, R.startAt - R.now), you: s.id, resume: true,
         spawn: { x: s.p.ms.x, z: s.p.ms.z, yaw: s.yaw }, rules: { kills: RULES.killsToWin, hp: RULES.hp, respawnMs: RULES.respawnMs },
         names: { A: R.seats.A && R.seats.A.name, B: R.seats.B && R.seats.B.name }, lastSeq: s.lastSeq });
       sendSnap(s);
@@ -194,6 +201,9 @@ function create(opts) {
     if (m.t === 'hello') { if (!c.seat) hello(conn, c, m); return; }
     const s = c.seat && R.seats[c.seat]; if (!s || s.conn !== conn) return;
     switch (m.t) {
+      case 'map':   // only the room's creator chooses, and only between matches
+        if (s.id === 'A' && MAPS[m.id] && (R.phase === 'lobby' || R.phase === 'over')) { mapId = m.id; sendAll(lobbyMsg()); save(); }
+        break;
       case 'ready': R.lastPlay = now; if (R.phase === 'lobby') { s.ready = m.on; sendAll(lobbyMsg()); maybeStart(); } break;
       case 'rematch':
         if (R.phase === 'over' && !R.seats[other(s.id)]) {   // the rival is gone: back to the lobby to wait for someone
@@ -399,6 +409,7 @@ function create(opts) {
     if (!d || !d.seats) return;
     for (const x of d.seats) if (x) { const s = newSeat(x.id, x.name, x.token); s.kills = x.kills || 0; s.deaths = x.deaths || 0; s.leftAt = R.now; R.seats[x.id] = s; }
     R.match = d.match || 0;
+    if (d.map && MAPS[d.map]) mapId = d.map;
     R.phase = d.phase === 'over' ? 'over' : 'lobby'; // a match cut by a restart goes back to the lobby
   }
   function isIdle(now) { return R.conns.size === 0 && now - R.lastActive > 5 * 60000; }
@@ -407,7 +418,7 @@ function create(opts) {
   const debug = opts.debug ? {
     place(id, x, z, yaw) { const st = R.seats[id]; SDP.respawn(st.p, x, 0, st.p.ms ? z : z); st.p.ms.x = x; st.p.ms.z = z; st.yaw = yaw || 0; st.alive = true; st.hp = RULES.hp; },
     set(id, k, v) { R.seats[id][k] = v; },
-    seat: id => R.seats[id], index: ix
+    seat: id => R.seats[id], get index() { return ix; }, get mapId() { return mapId; }
   } : null;
   return Object.assign(R, { connect, disconnect, message, tick, restore, isIdle, RULES, debug });
 }

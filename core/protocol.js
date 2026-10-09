@@ -4,6 +4,7 @@
    Client → server
      hello   { t, v, name, token? }          first message; token = reconnect to my seat
      ready   { t, on }                       lobby: I am ready / not ready
+     map     { t, id }                       lobby, creator only: choose the map ('pueblo', 'arena')
      in      { t, m, s, c:[cmd...] }         commands of match m, first sequence number s
      rematch { t }                           after the end: play again
      ping    { t, c }                        c = client clock (ms)
@@ -86,6 +87,7 @@ function parse(text) {
       const c = []; for (const a of m.c) { const x = unpackCmd(a); if (!x) return { error: 'cmd' }; c.push(x); }
       return { msg: { t: 'in', m: m.m, s: m.s, c } };
     }
+    case 'map': return typeof m.id === 'string' && /^[a-z]{2,16}$/.test(m.id) ? { msg: { t: 'map', id: m.id } } : { error: 'shape' };
     case 'rematch': return { msg: { t: 'rematch' } };
     case 'ping': return num(m.c, 0, 1e15) && (m.r === undefined || num(m.r, 0, 1e5)) ? { msg: { t: 'ping', c: m.c, r: m.r === undefined ? undefined : Math.min(600, m.r) } } : { error: 'shape' };
     case 'leave': return { msg: { t: 'leave' } };

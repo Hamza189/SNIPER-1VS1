@@ -4,7 +4,12 @@
 'use strict';
 const SDNet = require('../client/netcore.js'), SDP = require('../core/player.js'), PR = require('../core/protocol.js');
 const G = require('../core/geom.js'), MAP = require('../core/mapdata.js'), CFG = require('../core/config.js');
-const INDEX = G.createMapIndex(MAP);
+// the live map follows the room's choice (the server starts rooms in the arena): one world
+// object whose lists are swapped when a match starts, like the page does
+const IXS = {}; for (const id in (MAP.maps || { pueblo: MAP })) IXS[id] = G.createMapIndex((MAP.maps || { pueblo: MAP })[id]);
+const WORLD = { colliders: IXS.pueblo.world.colliders, ramps: IXS.pueblo.world.ramps };
+const useMap = id => { const w = (IXS[id] || IXS.pueblo).world; WORLD.colliders = w.colliders; WORLD.ramps = w.ramps; };
+const INDEX = { world: WORLD };
 const base = (process.argv[2] || '').replace(/\/$/, '');
 const jsonOut = process.argv.indexOf('--json') > 0 ? process.argv[process.argv.indexOf('--json') + 1] : null;
 const results = []; let pass = 0, fail = 0;
@@ -15,7 +20,7 @@ function client(code) {
   const local = SDP.create(0, 0, 0), c = { local, events: [], closed: null, ai: null };
   c.N = SDNet.create({ send: t => c.ws && c.ws.readyState === 1 && c.ws.send(t), now: () => Date.now(), world: INDEX.world, local });
   c.open = () => new Promise((res, rej) => { const ws = new WebSocket(base.replace(/^http/, 'ws') + '/room/' + code); c.ws = ws;
-    ws.onopen = res; ws.onerror = rej; ws.onclose = e => { c.closed = e.code; }; ws.onmessage = e => { for (const v of c.N.onMessage(e.data)) c.events.push(v); }; });
+    ws.onopen = res; ws.onerror = rej; ws.onclose = e => { c.closed = e.code; }; ws.onmessage = e => { for (const v of c.N.onMessage(e.data)) { if (v.k === 'start' && v.m.map) useMap(v.m.map); c.events.push(v); } }; });
   c.timer = setInterval(() => { const N = c.N; if (N.phase !== 'playing' || !N.alive || !c.ai) return;
     const cmd = PR.quantize(Object.assign({ mx: 0, mz: 0, yaw: 0, pitch: 0 }, c.ai(c))); SDP.step(c.local, cmd, 1 / 120, INDEX.world, CFG.move); N.queueCmd(cmd); }, 1000 / 120);
   c.ping = setInterval(() => c.N.ping(), 1000);

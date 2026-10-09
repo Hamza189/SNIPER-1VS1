@@ -157,6 +157,7 @@ h1 span{display:block;color:var(--sand)}
 .seg button{flex:1;background:none;border:0;padding:10px 6px;font-size:11px;letter-spacing:.16em;cursor:pointer;color:var(--dust)}
 .seg button+button{border-left:1px solid var(--line)}
 .seg button[aria-pressed="true"]{background:var(--hud);color:var(--ink)}
+.seg button:disabled{cursor:default}.seg button:disabled:not([aria-pressed="true"]){opacity:.45}
 .seg button:focus-visible,.btn:focus-visible{outline:2px solid var(--signal);outline-offset:2px}
 .chk{display:flex;align-items:center;gap:8px;margin-top:10px;font-size:12px;color:var(--sand);cursor:pointer}
 .chk input{accent-color:var(--signal);width:16px;height:16px}
@@ -521,7 +522,7 @@ body.touch #score .side span{max-width:11vw;overflow:hidden;text-overflow:ellips
     <div id="mpLobby" hidden style="display:grid;gap:14px">
       <div style="display:grid;gap:4px"><span class="lbl">Código de sala</span><div id="mpCodeBig">------</div></div>
       <div class="row"><button class="btn ghost" id="mpCopy" type="button" style="font-size:20px">COPIAR CÓDIGO</button><button class="btn ghost" id="mpShare" type="button" style="font-size:20px">COMPARTIR INVITACIÓN</button></div>
-      <p class="mpLink" id="mpLink"></p>
+      <div style="display:grid;gap:6px"><p class="mpLink" id="mpLink" style="margin:0"></p><span class="lbl">Mapa (lo elige quien crea la sala)</span><div class="seg" id="mpMapSeg" role="group" aria-label="Mapa"><button type="button" data-map="arena">ARENA DE PRUEBAS</button><button type="button" data-map="pueblo">PUEBLO</button></div></div>
       <ul id="mpPlayers"></ul>
       <p class="mpMsg" id="mpStatus">ESPERANDO AL SEGUNDO JUGADOR…</p>
       <div class="row"><button class="btn" id="mpReady" type="button">LISTO</button><button class="btn ghost" id="mpLeave" type="button" style="font-size:20px">SALIR</button></div>
@@ -1320,6 +1321,7 @@ if (isNode) module.exports = SDPlayer; else root.SDPlayer = SDPlayer;
    Client → server
      hello   { t, v, name, token? }          first message; token = reconnect to my seat
      ready   { t, on }                       lobby: I am ready / not ready
+     map     { t, id }                       lobby, creator only: choose the map ('pueblo', 'arena')
      in      { t, m, s, c:[cmd...] }         commands of match m, first sequence number s
      rematch { t }                           after the end: play again
      ping    { t, c }                        c = client clock (ms)
@@ -1402,6 +1404,7 @@ function parse(text) {
       const c = []; for (const a of m.c) { const x = unpackCmd(a); if (!x) return { error: 'cmd' }; c.push(x); }
       return { msg: { t: 'in', m: m.m, s: m.s, c } };
     }
+    case 'map': return typeof m.id === 'string' && /^[a-z]{2,16}$/.test(m.id) ? { msg: { t: 'map', id: m.id } } : { error: 'shape' };
     case 'rematch': return { msg: { t: 'rematch' } };
     case 'ping': return num(m.c, 0, 1e15) && (m.r === undefined || num(m.r, 0, 1e5)) ? { msg: { t: 'ping', c: m.c, r: m.r === undefined ? undefined : Math.min(600, m.r) } } : { error: 'shape' };
     case 'leave': return { msg: { t: 'leave' } };
@@ -1713,6 +1716,7 @@ function create(opts) {
   N.hello = (name, token) => out({ t: 'hello', v: PR.VERSION, name, token: token || undefined });
   N.ready = on => out({ t: 'ready', on: !!on });
   N.rematch = () => out({ t: 'rematch' });
+  N.chooseMap = id => out({ t: 'map', id });
   N.leave = () => out({ t: 'leave' });
   N.ping = () => { N.lastPing = N.now(); out({ t: 'ping', c: N.now(), r: N.rtts.length ? Math.round(N.rtt) : undefined }); };
   N.serverNow = () => N.now() + N.offset;
@@ -1781,9 +1785,9 @@ function create(opts) {
     const ev = [];
     switch (m.t) {
       case 'welcome': N.you = m.you; N.token = m.token; N.code = m.code; N.phase = m.phase; N.players = m.players; N.match = m.match; ev.push({ k: 'welcome', m }); break;
-      case 'lobby': N.phase = m.phase; N.players = m.players; ev.push({ k: 'lobby', m }); break;
+      case 'lobby': N.phase = m.phase; N.players = m.players; if (m.map) N.map = m.map; if (m.maps) N.maps = m.maps; ev.push({ k: 'lobby', m }); break;
       case 'start':
-        N.match = m.m; N.names = m.names || {}; N.phase = 'countdown'; N.startIn = m.in; N.startedAt = N.now();
+        N.match = m.m; if (m.map) N.map = m.map; N.names = m.names || {}; N.phase = 'countdown'; N.startIn = m.in; N.startedAt = N.now();
         if (!m.resume) { N.pending = []; N.outBuf = []; N.lastAck = -1; N.remote = []; N.score = { A: 0, B: 0 }; N.seenShots.clear(); N.corrMax = 0;
           SDP.respawn(N.local, m.spawn.x, 0, m.spawn.z); }   // same spawn as the server: no correction on the first snapshot
         else { N.lastAck = m.lastSeq; N.pending = N.pending.filter(p => p.seq > m.lastSeq); }
@@ -1838,7 +1842,7 @@ const SDNet = { create };
 if (isNode) module.exports = SDNet; else root.SDNet = SDNet;
 })(typeof window !== 'undefined' ? window : globalThis);
 
-const BUILD_ID="d5fb5e7";const BUILD_HASH="ae49f3601f";
+const BUILD_ID="65f2649";const BUILD_HASH="787f180c3d";
 </script>
 <script>
 (function(){
@@ -1980,8 +1984,9 @@ function box(w,h,d,mat,x,y,z,o){
   if(o.collide!==false)addCollider(x-w/2,y,z-d/2,x+w/2,y+h,z+d/2);
   return m;
 }
-// ground
-{const g=new T.Mesh(new T.PlaneGeometry(400,400),MAT.sand);g.rotation.x=-Math.PI/2;g.receiveShadow=true;scene.add(g);W.ray.push(g);sandTex.repeat.set(100,100);
+// ground (shared by every map); everything added to the scene after it belongs to the town
+let GROUND=null;const TOWN_FROM=scene.children.length;
+{const g=new T.Mesh(new T.PlaneGeometry(400,400),MAT.sand);g.rotation.x=-Math.PI/2;g.receiveShadow=true;scene.add(g);W.ray.push(g);GROUND=g;sandTex.repeat.set(100,100);
  const r1=new T.Mesh(new T.PlaneGeometry(9,98),MAT.road);r1.rotation.x=-Math.PI/2;r1.position.y=0.012;r1.receiveShadow=true;scene.add(r1);
  const r2=new T.Mesh(new T.PlaneGeometry(98,7),MAT.road);r2.rotation.x=-Math.PI/2;r2.position.y=0.014;r2.receiveShadow=true;scene.add(r2);
  roadTex.repeat.set(2,20);}
@@ -2100,6 +2105,62 @@ function findPath(a,b){
   while(h<q.length){const c=q[h++];if(c===b)break;for(const n of NAV[c].n){if(prev[n]===-1){prev[n]=c;q.push(n);}}}
   if(prev[b]===-1)return null;
   const p=[];let c=b;while(c!==a){p.push(c);c=prev[c];}p.reverse();return p;
+}
+
+
+/* =================== ARENA DE PRUEBAS (compact 1v1 map) ===================
+   A walled 48 × 32 m yard, symmetric east–west, so two players find each other quickly:
+   a central block with ramps to its roof (high ground with a parapet), low sandbag walls to
+   crouch behind, a few tall walls and pillars that break the lines of sight, crates.
+   It is built into its own lists (colliders, ray targets, ramps) and its own scene objects;
+   setWorld() swaps which map is live. The server gets the same geometry (core/mapdata.js). */
+const WORLDS={pueblo:{colliders:W.colliders,ray:W.ray,ramps:W.ramps,objs:scene.children.slice(TOWN_FROM).filter(o=>o!==GROUND),nav:NAV,label:'PUEBLO'}};
+{
+  W.colliders=[];W.ray=[GROUND];W.ramps=[];
+  const from=scene.children.length;
+  const AX=24,AZ=16,H=5;
+  const stripe=new T.MeshStandardMaterial({color:0xd88a3a,roughness:.9});
+  // perimeter (with an orange band so the arena reads as a test yard)
+  box(AX*2+2,H,1,MAT.concreteDark,0,0,-AZ-0.5);box(AX*2+2,H,1,MAT.concreteDark,0,0,AZ+0.5);
+  box(1,H,AZ*2,MAT.concreteDark,-AX-0.5,0,0);box(1,H,AZ*2,MAT.concreteDark,AX+0.5,0,0);
+  for(const [w,d,x,z] of [[AX*2,0.05,0,-AZ+0.01],[AX*2,0.05,0,AZ-0.01],[0.05,AZ*2,-AX+0.01,0],[0.05,AZ*2,AX-0.01,0]])box(w,0.35,d,stripe,x,1.6,z,{collide:false,ray:false,cast:false});
+  // floor: concrete slab with painted lines (visual; bullets hit the ground plane)
+  {const floorTex=roadTex.clone();floorTex.needsUpdate=true;floorTex.repeat.set(12,8);const slab=new T.Mesh(new T.PlaneGeometry(AX*2,AZ*2),new T.MeshStandardMaterial({map:floorTex,color:0x8a8174,roughness:1}));slab.rotation.x=-Math.PI/2;slab.position.y=0.015;slab.receiveShadow=true;scene.add(slab);
+   const lm=new T.MeshBasicMaterial({color:0xe9d3ae,transparent:true,opacity:.5});
+   for(const [w,d,x,z] of [[0.18,AZ*2,0,0],[0.18,AZ*2,-18,0],[0.18,AZ*2,18,0],[AX*2,0.18,0,0]]){const l=new T.Mesh(new T.PlaneGeometry(w,d),lm);l.rotation.x=-Math.PI/2;l.position.set(x,0.025,z);scene.add(l);}}
+  // centre block + ramps to its roof from both sides, parapet on the roof
+  box(5,3.2,5,MAT.concrete,0,0,0);box(5.4,0.3,5.4,MAT.concreteDark,0,3.2,0,{collide:false});
+  addRamp(-8,-2.5,-1,1,'x',0,3.2,false);addRamp(2.5,8,-1,1,'x',0,3.2,true);
+  box(5,0.9,0.4,MAT.bag,0,3.2,-2.3);box(5,0.9,0.4,MAT.bag,0,3.2,2.3);
+  // low sandbag walls (crouch to hide, stand to shoot over them)
+  for(const s2 of [-1,1]){
+    box(0.8,1.05,4,MAT.bag,11*s2,0,-6);box(0.8,1.05,4,MAT.bag,11*s2,0,6);
+    box(0.8,1.05,5,MAT.bag,17*s2,0,0);
+    box(4,1.05,0.8,MAT.bag,5*s2,0,-11);box(4,1.05,0.8,MAT.bag,5*s2,0,11);
+    // tall walls that break the long lines of sight
+    box(0.6,3,5,MAT.concrete,15*s2,0,-10);box(0.6,3,5,MAT.concrete,15*s2,0,10);
+    // pillars
+    box(1,3,1,MAT.concreteDark,4.5*s2,0,-7);box(1,3,1,MAT.concreteDark,4.5*s2,0,7);
+  }
+  box(6,3,0.6,MAT.concrete,0,0,-12);box(6,3,0.6,MAT.concrete,0,0,12);
+  // crates [x,z,stack]
+  for(const [x,z,st] of [[-7,4,1],[7,-4,1],[-20,-12,2],[20,12,2],[-20,12,1],[20,-12,1],[-9,-12,1],[9,12,1]]){
+    for(let i=0;i<st;i++){const m=new T.Mesh(new T.BoxGeometry(1.2,1.2,1.2),MAT.crate);m.position.set(x,0.6+i*1.2,z);m.rotation.y=(i?0.12:0);m.castShadow=m.receiveShadow=true;scene.add(m);W.ray.push(m);}
+    addCollider(x-0.6,0,z-0.6,x+0.6,1.2*st,z+0.6);
+  }
+  // spawn candidates: open floor points (A spawns west, B east; respawns far from the rival)
+  const nav=[];for(let x=-22;x<=22;x+=2)for(let z=-14;z<=14;z+=2)if(!blockedPt(x,z,1.0))nav.push({x,z,n:[]});
+  WORLDS.arena={colliders:W.colliders,ray:W.ray,ramps:W.ramps,objs:scene.children.slice(from),nav,label:'ARENA DE PRUEBAS'};
+  for(const o of WORLDS.arena.objs)o.visible=false;
+  W.colliders=WORLDS.pueblo.colliders;W.ray=WORLDS.pueblo.ray;W.ramps=WORLDS.pueblo.ramps;
+}
+let WORLD_ID='pueblo';
+// switch the live map: what is drawn, what the player collides with, what bullets hit
+function setWorld(id){
+  if(!WORLDS[id]||id===WORLD_ID)return;
+  for(const o of WORLDS[WORLD_ID].objs)o.visible=false;
+  const w=WORLDS[id];for(const o of w.objs)o.visible=true;
+  W.colliders=w.colliders;W.ray=w.ray;W.ramps=w.ramps;WORLD_ID=id;
 }
 
 /* =================== AUDIO =================== */
@@ -3626,6 +3687,7 @@ function netLeave(toMainMenu){
   history.replaceState(null,'',location.pathname);
 }
 function netEndOnline(){
+  setWorld('pueblo');
   if(mode==='online'){mode=NET.prevMode||'duel';}
   if(REMOTE)REMOTE.update(null,0);
   $('#netStat').hidden=true;$('#countdown').hidden=true;
@@ -3642,6 +3704,7 @@ function renderLobby(){
     li.append(nm,st);ul.append(li);}
   const two=(N.players||[]).filter(Boolean).length===2;const me=(N.players||[]).find(p=>p&&p.id===N.you);
   $('#mpReady').textContent=me&&me.ready?'NO ESTOY LISTO':'LISTO';
+  document.querySelectorAll('#mpMapSeg button').forEach(b=>{b.setAttribute('aria-pressed',String(b.dataset.map===N.map));b.disabled=N.you!=='A';});
   $('#mpStatus').textContent=!two?'ESPERANDO AL SEGUNDO JUGADOR… Comparte el código o el enlace.':me&&me.ready?'Esperando a que el rival esté listo…':'Pulsa LISTO. Empieza cuando los dos lo estéis.';
 }
 function netEvent(e){
@@ -3727,6 +3790,7 @@ function netEvent(e){
 function escapeHtml(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
 function netStart(m){
   const N=NET.N;
+  setWorld(m.map||'pueblo');
   if(mode!=='online'){NET.prevMode=mode;mode='online';}
   if(!REMOTE)REMOTE=new RemotePlayer();
   clearPendingInput();audioInit();
@@ -3806,6 +3870,7 @@ window.addEventListener('online',()=>{if(NET.want&&!NET.ws){NET.retryAt=0;}});
 // menu wiring
 $('#mpName').value=store.get('mpName','')||'';
 $('#mpBtn').addEventListener('click',()=>{audioInit();SFX.ui();mpShow(NET.N&&NET.code?'lobby':'home');mpMsg('');netServerUrl();});
+document.querySelectorAll('#mpMapSeg button').forEach(b=>b.addEventListener('click',()=>{const N=NET.N;if(!N||N.you!=='A')return;N.chooseMap(b.dataset.map);SFX.ui();}));
 $('#mpBack').addEventListener('click',()=>{$('#mp').hidden=true;$('#menu').hidden=false;SFX.ui();});
 $('#mpCreate').addEventListener('click',netCreate);
 $('#mpJoin').addEventListener('click',()=>netJoin($('#mpCode').value));
@@ -3861,7 +3926,7 @@ function frame(now){
 }
 resize();
 requestAnimationFrame(frame);
-window.__SD={renderer,GFX,gfxApply,get NET(){return NET;},get REMOTE(){return REMOTE;},W,NAV:typeof NAV!=="undefined"?NAV:null,TOUCH,EDIT,openEditor,get SETTINGS(){return SETTINGS;},get LAYOUT(){return LAYOUT;},checkOrientation,MAT,LOAD,TRAINERS,get RANGE_BOTS(){return RANGE_BOTS;},TRAIN,setTrain,impactFX,surfaceOf,soundDelay,aimSelfTest,P,PM,WS,WCORE,RECOIL,AIM,BOTS,DUMMIES,BULLETS,EVENTS,PARTS,STATS,get state(){return state;},get mode(){return mode;},setMode,input,startMatch,simTick,frame,toMenu,pause,resume};
+window.__SD={setWorld,WORLDS,get WORLD_ID(){return WORLD_ID;},renderer,GFX,gfxApply,get NET(){return NET;},get REMOTE(){return REMOTE;},W,NAV:typeof NAV!=="undefined"?NAV:null,TOUCH,EDIT,openEditor,get SETTINGS(){return SETTINGS;},get LAYOUT(){return LAYOUT;},checkOrientation,MAT,LOAD,TRAINERS,get RANGE_BOTS(){return RANGE_BOTS;},TRAIN,setTrain,impactFX,surfaceOf,soundDelay,aimSelfTest,P,PM,WS,WCORE,RECOIL,AIM,BOTS,DUMMIES,BULLETS,EVENTS,PARTS,STATS,get state(){return state;},get mode(){return mode;},setMode,input,startMatch,simTick,frame,toMenu,pause,resume};
 })();
 </script>
 
