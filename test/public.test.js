@@ -43,8 +43,11 @@ function client(code) {
     check('dos conexiones WSS abiertas', A.ws.readyState === 1 && B.ws.readyState === 1);
     A.N.hello('Prueba A'); await waitFor(() => A.N.you); B.N.hello('Prueba B'); await waitFor(() => B.N.you);
     check('A y B en la sala', A.N.you === 'A' && B.N.you === 'B');
+    B.N.chooseKit('shotgun');
+    check('B elige la escopeta FURIA 12 y A lo ve en el lobby', await waitFor(() => (A.N.players || []).some(p => p && p.id === 'B' && p.kit === 'shotgun'), 3000));
     A.N.ready(true); B.N.ready(true);
     check('la partida empieza (cuenta atrás de 3 s)', await waitFor(() => A.N.phase === 'playing' && B.N.phase === 'playing', 8000));
+    check('B empieza con la escopeta y A se la ve en la mano', B.N.local.load.active === 'shotgun' && await waitFor(() => { const p = A.N.remotePose(); return p && p.wpn === 'shotgun'; }, 3000));
     A.ai = () => ({ mz: -1, yaw: 0.5 }); B.ai = () => ({ mx: 1, yaw: 2 });
     await sleep(3000);
     check('instantáneas del servidor a ~20 por segundo', A.N.snapRate >= 15, A.N.snapRate + '/s');
