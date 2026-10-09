@@ -1,0 +1,13 @@
+# Runs the game's automated tests on GitHub's machines (manual trigger for now).
+name: Pruebas
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: python3 build.py && node test/vendor.test.js && node test/core.test.js && node test/phase2.test.js && node test/mobile.test.js
