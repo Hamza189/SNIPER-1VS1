@@ -11,7 +11,10 @@ const DEFAULTS = {
   touchLook: 1,    // extra multiplier for finger dragging (only used on touch screens)
   invertY: false,
   leftFire: false, // second FIRE button on the left side (3-4 finger play)
-  releaseFire: true // touch, rifle: holding FIRE raises the scope, lifting the finger fires
+  releaseFire: true, // touch, rifle: holding FIRE raises the scope, lifting the finger fires
+  quality: 'auto',  // graphics: auto | bajo | medio | alto
+  fpsCap: 60,       // 60 or 30 (30 saves battery and heat on phones)
+  showFps: false    // small FPS counter on screen
 };
 // Phones start from different values (agreed after testing on iPhone); PC defaults are unchanged.
 // A device that already saved its settings keeps them; RESTAURAR goes back to these.
@@ -27,7 +30,9 @@ function sanitize(o, touch) {
     const v = Number(o[k]);
     if (o[k] !== undefined && o[k] !== null && o[k] !== '' && isFinite(v)) s[k] = clamp(v, RANGES[k][0], RANGES[k][1]);
   }
-  for (const k of ['invertY', 'leftFire', 'releaseFire']) if (typeof o[k] === 'boolean') s[k] = o[k];
+  for (const k of ['invertY', 'leftFire', 'releaseFire', 'showFps']) if (typeof o[k] === 'boolean') s[k] = o[k];
+  if (['auto', 'bajo', 'medio', 'alto'].includes(o.quality)) s.quality = o.quality;
+  if (o.fpsCap === 30 || o.fpsCap === 60) s.fpsCap = o.fpsCap;
   return s;
 }
 // reads from a store with get(key, default); migrates the old single "sens" value

@@ -221,6 +221,7 @@ h1 span{display:block;color:var(--sand)}
 #netStat{position:fixed;top:calc(env(safe-area-inset-top,0px) + 6px);right:calc(env(safe-area-inset-right,0px) + 10px);z-index:8;pointer-events:none;font:500 11px/1 var(--f-mono);letter-spacing:.08em;color:var(--sand);text-shadow:0 1px 2px #000}
 #netStat i{display:inline-block;width:7px;height:7px;border-radius:50%;background:#5bd16b;margin-right:6px;vertical-align:1px}
 #netStat.warn i{background:var(--gold)}#netStat.bad i{background:var(--blood)}
+#fpsBox{position:fixed;left:calc(8px + env(safe-area-inset-left));top:calc(6px + env(safe-area-inset-top));z-index:25;pointer-events:none;font:600 11px/1 'IBM Plex Mono',monospace;color:#f3e9d6;background:rgba(15,13,10,.6);padding:3px 6px;letter-spacing:.06em}
 #lockHint{position:fixed;top:14%;left:50%;transform:translateX(-50%);z-index:30;pointer-events:none;padding:8px 14px;background:rgba(15,13,10,.82);border:1px solid var(--amber,#ff9a3c);color:#f3e9d6;font:600 13px/1.3 'IBM Plex Mono',monospace;letter-spacing:.06em;text-align:center}
 #loadErr{position:fixed;inset:0;display:grid;place-items:center;padding:24px;text-align:center;z-index:50;background:var(--ink)}
 
@@ -328,6 +329,7 @@ body.touch #top{width:min(300px,46vw)}
 </div>
 
 <div id="dbg" hidden><pre id="dbgTxt"></pre></div>
+<div id="fpsBox" hidden>– FPS</div>
 <div id="death" hidden><div class="box"><h3>ELIMINADO</h3><p id="deathBy">BOT-2 · 48 m</p><p id="deathCount">Reapareces en 3</p></div></div>
 
 <div id="touch" hidden>
@@ -365,6 +367,13 @@ body.touch #top{width:min(300px,46vw)}
       <label class="chk"><input type="checkbox" id="sLeft"> Botón FUEGO también a la izquierda (móvil)</label>
       <label class="chk"><input type="checkbox" id="sRel"> Móvil: mantener FUEGO apunta con la mira, soltar dispara</label>
     </div>
+    <div class="lbl" style="margin:14px 0 6px">Gráficos</div>
+    <div class="seg" id="qSeg" role="group" aria-label="Calidad gráfica"><button type="button" data-q="auto">AUTO</button><button type="button" data-q="bajo">BAJO</button><button type="button" data-q="medio">MEDIO</button><button type="button" data-q="alto">ALTO</button></div>
+    <div class="setGrid" style="margin-top:10px">
+      <label class="chk"><input type="checkbox" id="sFps30"> Limitar a 30 FPS (ahorra batería y calor)</label>
+      <label class="chk"><input type="checkbox" id="sShowFps"> Mostrar FPS en pantalla</label>
+    </div>
+    <p class="note" id="qNote" style="margin:8px 0 0;font-size:12px;opacity:.75"></p>
     <div class="row"><button class="btn ghost" id="openEditor" type="button" style="font-size:20px">EDITAR BOTONES TÁCTILES</button><button class="btn ghost" id="setReset" type="button" style="font-size:20px">RESTAURAR</button></div>
     <div class="row"><button class="btn" id="setClose" type="button">LISTO</button></div>
   </div>
@@ -1438,7 +1447,10 @@ const DEFAULTS = {
   touchLook: 1,    // extra multiplier for finger dragging (only used on touch screens)
   invertY: false,
   leftFire: false, // second FIRE button on the left side (3-4 finger play)
-  releaseFire: true // touch, rifle: holding FIRE raises the scope, lifting the finger fires
+  releaseFire: true, // touch, rifle: holding FIRE raises the scope, lifting the finger fires
+  quality: 'auto',  // graphics: auto | bajo | medio | alto
+  fpsCap: 60,       // 60 or 30 (30 saves battery and heat on phones)
+  showFps: false    // small FPS counter on screen
 };
 // Phones start from different values (agreed after testing on iPhone); PC defaults are unchanged.
 // A device that already saved its settings keeps them; RESTAURAR goes back to these.
@@ -1454,7 +1466,9 @@ function sanitize(o, touch) {
     const v = Number(o[k]);
     if (o[k] !== undefined && o[k] !== null && o[k] !== '' && isFinite(v)) s[k] = clamp(v, RANGES[k][0], RANGES[k][1]);
   }
-  for (const k of ['invertY', 'leftFire', 'releaseFire']) if (typeof o[k] === 'boolean') s[k] = o[k];
+  for (const k of ['invertY', 'leftFire', 'releaseFire', 'showFps']) if (typeof o[k] === 'boolean') s[k] = o[k];
+  if (['auto', 'bajo', 'medio', 'alto'].includes(o.quality)) s.quality = o.quality;
+  if (o.fpsCap === 30 || o.fpsCap === 60) s.fpsCap = o.fpsCap;
   return s;
 }
 // reads from a store with get(key, default); migrates the old single "sens" value
@@ -1601,6 +1615,55 @@ function reset(c) { c.stickId = null; c.jx = c.jy = 0; c.sprint = false; c.look.
 
 const SDTouch = { CFG, create, down, move, up, drain, isHeld, reset };
 if (typeof module !== 'undefined' && module.exports) module.exports = SDTouch; else root.SDTouch = SDTouch;
+})(typeof window !== 'undefined' ? window : globalThis);
+
+/* SNIPER DUEL — graphics profiles and automatic resolution (Stage C). Pure: no DOM.
+   Profiles change only how the picture is drawn (resolution, shadows), never the simulation,
+   the hit zones, the fog distance or what is visible: the rival is drawn the same way in all.
+
+   AUTO = MEDIO on phones, ALTO on computers, and then the resolution follows the real FPS:
+   every 1.5 s, if the frame rate is clearly under the target the internal resolution drops a
+   step; when it has stayed comfortably over the target for a while it goes back up. */
+(function (root) {
+'use strict';
+const PROFILES = {
+  bajo:  { label: 'BAJO',  prMax: 1.0,  shadows: false, shadowMap: 0 },
+  medio: { label: 'MEDIO', prMax: 1.35, shadows: true,  shadowMap: 1024 },
+  alto:  { label: 'ALTO',  prMax: 2.0,  shadows: true,  shadowMap: 2048 }
+};
+const ADAPT = { window: 1.5, minScale: 0.55, down: 0.1, up: 0.05, lowAt: 0.85, highAt: 0.96, upAfter: 3 };
+
+function resolve(choice, touch) { return PROFILES[choice] ? choice : (touch ? 'medio' : 'alto'); }
+// device pixel ratio actually used for a profile and an adaptive scale
+function pixelRatio(profile, dpr, scale) { return Math.max(0.5, Math.min(dpr || 1, PROFILES[profile].prMax) * (scale || 1)); }
+
+function createAdaptive(target, enabled) {
+  return { target: target || 60, enabled: enabled !== false, scale: 1, acc: 0, frames: 0, fps: 0, goodFor: 0, changed: 0 };
+}
+// feed the duration of one rendered frame (s). Returns true when scale changed.
+function feed(a, dt) {
+  if (!(dt > 0) || dt > 0.5) return false;          // a pause or a background tab: ignore
+  a.acc += dt; a.frames++;
+  if (a.acc < ADAPT.window) return false;
+  a.fps = a.frames / a.acc; const win = a.acc; a.acc = 0; a.frames = 0;
+  if (!a.enabled) return false;
+  if (a.fps < a.target * ADAPT.lowAt && a.scale > ADAPT.minScale) {
+    a.scale = Math.max(ADAPT.minScale, Math.round((a.scale - ADAPT.down) * 100) / 100); a.goodFor = 0; a.changed++; return true;
+  }
+  if (a.fps >= a.target * ADAPT.highAt && a.scale < 1) {
+    a.goodFor += win;
+    if (a.goodFor >= ADAPT.upAfter) { a.scale = Math.min(1, Math.round((a.scale + ADAPT.up) * 100) / 100); a.goodFor = 0; a.changed++; return true; }
+  } else a.goodFor = 0;
+  return false;
+}
+// FPS cap: only the 30 FPS option limits (every 2nd frame on a 60 Hz screen, every 4th at
+// 120 Hz); otherwise every display frame is drawn (144 Hz monitors keep 144). The simulation
+// keeps its 120 Hz ticks either way.
+function drawEvery(cap, refreshHz) { return cap === 30 ? Math.max(1, Math.round((refreshHz || 60) / 30)) : 1; }
+function shouldDraw(cap, frameIndex, refreshHz) { return frameIndex % drawEvery(cap, refreshHz) === 0; }
+
+const SDQuality = { PROFILES, ADAPT, resolve, pixelRatio, createAdaptive, feed, drawEvery, shouldDraw };
+if (typeof module !== 'undefined' && module.exports) module.exports = SDQuality; else root.SDQuality = SDQuality;
 })(typeof window !== 'undefined' ? window : globalThis);
 
 /* SNIPER DUEL — multiplayer client logic without DOM or sockets (the page and the tests
@@ -1758,7 +1821,7 @@ const SDNet = { create };
 if (isNode) module.exports = SDNet; else root.SDNet = SDNet;
 })(typeof window !== 'undefined' ? window : globalThis);
 
-const BUILD_ID="8a0f01b";
+const BUILD_ID="6562948";
 </script>
 <script>
 (function(){
@@ -1783,9 +1846,12 @@ if(isTouch)document.body.classList.add('touch');
 const canvas=$('#c');
 // ?perf=low (automatic tests on machines without a GPU): no shadows, quarter resolution
 const PERF_LOW=/[?&]perf=low\b/.test(location.search);
-const renderer=new T.WebGLRenderer({canvas,antialias:!PERF_LOW&&(!isTouch||devicePixelRatio<2),powerPreference:'high-performance'});
-renderer.setPixelRatio(PERF_LOW?0.5:Math.min(window.devicePixelRatio||1,isTouch?1.6:2));
-renderer.shadowMap.enabled=!PERF_LOW;
+// graphics profile (Ajustes → Gráficos): read before the renderer exists, antialiasing can only be chosen now
+const GFX={choice:SDSettings.load(store,isTouch).quality,profile:'medio',adapt:null,frame:0,lastRaf:0,lastDraw:0,hz:0};
+GFX.profile=PERF_LOW?'bajo':SDQuality.resolve(GFX.choice,isTouch);
+const renderer=new T.WebGLRenderer({canvas,antialias:!PERF_LOW&&GFX.profile==='alto'&&(!isTouch||devicePixelRatio<2),powerPreference:'high-performance'});
+renderer.setPixelRatio(PERF_LOW?0.5:SDQuality.pixelRatio(GFX.profile,window.devicePixelRatio,1));
+renderer.shadowMap.enabled=!PERF_LOW&&SDQuality.PROFILES[GFX.profile].shadows;
 renderer.shadowMap.type=T.PCFSoftShadowMap;
 renderer.autoClear=false;
 const scene=new T.Scene();
@@ -1852,7 +1918,7 @@ const W={colliders:[],ray:[]};
 const sun=new T.DirectionalLight(0xffd6a6,1.15);
 sun.position.set(-45,60,-30);
 sun.castShadow=true;
-sun.shadow.mapSize.set(isTouch?1024:2048,isTouch?1024:2048);
+{const ms=SDQuality.PROFILES[GFX.profile].shadowMap||1024;sun.shadow.mapSize.set(ms,ms);}
 const sc=sun.shadow.camera;sc.left=-62;sc.right=62;sc.top=62;sc.bottom=-62;sc.near=10;sc.far=180;
 sun.shadow.bias=-0.0006;
 scene.add(sun);scene.add(sun.target);
@@ -2903,14 +2969,32 @@ $('#edReset').addEventListener('click',()=>{LAYOUT=SDLayout.defaults();$('#edOp'
 
 /* ---- settings panel ---- */
 let SETTINGS=SDSettings.load(store,isTouch);
+gfxApply();
 const SET_UI=[['sH','sensH'],['sV','sensV'],['sA','adsSens'],['sT','touchLook']];
-function settingsToUI(){for(const [id,k] of SET_UI){$('#'+id).value=SETTINGS[k];$('#'+id+'o').textContent=(+SETTINGS[k]).toFixed(2);}$('#sInv').checked=SETTINGS.invertY;$('#sLeft').checked=SETTINGS.leftFire;$('#sRel').checked=SETTINGS.releaseFire;
+function settingsToUI(){for(const [id,k] of SET_UI){$('#'+id).value=SETTINGS[k];$('#'+id+'o').textContent=(+SETTINGS[k]).toFixed(2);}$('#sInv').checked=SETTINGS.invertY;$('#sLeft').checked=SETTINGS.leftFire;$('#sRel').checked=SETTINGS.releaseFire;$('#sFps30').checked=SETTINGS.fpsCap===30;$('#sShowFps').checked=SETTINGS.showFps;document.querySelectorAll('#qSeg button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.q===SETTINGS.quality)));gfxNote();
   const g=(SETTINGS.sensH+SETTINGS.sensV)/2;$('#sens').value=g;$('#sensOut').textContent=g.toFixed(2);}
-function settingsChanged(){SETTINGS=SDSettings.sanitize(SETTINGS,isTouch);SDSettings.save(store,SETTINGS,isTouch);settingsToUI();}
+function settingsChanged(){SETTINGS=SDSettings.sanitize(SETTINGS,isTouch);SDSettings.save(store,SETTINGS,isTouch);gfxApply();settingsToUI();}
+// graphics: profile, adaptive resolution and FPS cap applied live (antialiasing only on reload)
+function gfxApply(){
+  if(PERF_LOW)return;
+  const prof=SDQuality.resolve(SETTINGS.quality,isTouch),P0=SDQuality.PROFILES[prof];
+  const changed=prof!==GFX.profile;GFX.profile=prof;GFX.choice=SETTINGS.quality;
+  if(!GFX.adapt||changed||GFX.adapt.target!==SETTINGS.fpsCap)GFX.adapt=SDQuality.createAdaptive(SETTINGS.fpsCap,SETTINGS.quality==='auto');
+  GFX.adapt.enabled=SETTINGS.quality==='auto';if(!GFX.adapt.enabled)GFX.adapt.scale=1;
+  renderer.setPixelRatio(SDQuality.pixelRatio(prof,window.devicePixelRatio,GFX.adapt.scale));
+  if(renderer.shadowMap.enabled!==P0.shadows){renderer.shadowMap.enabled=P0.shadows;scene.traverse(o=>{if(o.material){for(const m of [].concat(o.material))m.needsUpdate=true;}});}
+  if(P0.shadowMap&&sun.shadow.mapSize.x!==P0.shadowMap){sun.shadow.mapSize.set(P0.shadowMap,P0.shadowMap);if(sun.shadow.map){sun.shadow.map.dispose();sun.shadow.map=null;}}
+  $('#fpsBox').hidden=!SETTINGS.showFps;
+}
+function gfxNote(){const n=$('#qNote');if(!n)return;const prof=SDQuality.resolve(SETTINGS.quality,isTouch);
+  n.textContent=(SETTINGS.quality==='auto'?'AUTO → '+SDQuality.PROFILES[prof].label+', la resolución se ajusta sola a los FPS reales. ':'')+'Resolución interna '+Math.round(renderer.getPixelRatio()*100)/100+'×'+(GFX.adapt&&GFX.adapt.fps?' · '+Math.round(GFX.adapt.fps)+' FPS':'')+'. El suavizado de bordes cambia al recargar la página.';}
 for(const [id,k] of SET_UI)$('#'+id).addEventListener('input',()=>{SETTINGS[k]=+$('#'+id).value;settingsChanged();});
 $('#sInv').addEventListener('change',()=>{SETTINGS.invertY=$('#sInv').checked;settingsChanged();});
 $('#sLeft').addEventListener('change',()=>{SETTINGS.leftFire=$('#sLeft').checked;settingsChanged();});
 $('#sRel').addEventListener('change',()=>{SETTINGS.releaseFire=$('#sRel').checked;settingsChanged();});
+$('#sFps30').addEventListener('change',()=>{SETTINGS.fpsCap=$('#sFps30').checked?30:60;settingsChanged();});
+$('#sShowFps').addEventListener('change',()=>{SETTINGS.showFps=$('#sShowFps').checked;settingsChanged();});
+document.querySelectorAll('#qSeg button').forEach(b=>b.addEventListener('click',()=>{SETTINGS.quality=b.dataset.q;settingsChanged();SFX.ui();}));
 let settingsFrom='menu';
 function openSettings(from){settingsFrom=from;settingsToUI();$('#settings').hidden=false;}
 $('#openSettings').addEventListener('click',()=>{audioInit();SFX.ui();openSettings('menu');});
@@ -3719,13 +3803,19 @@ function frame(now){
   if(mode==='online')netFrame(rdt);
   updateDebug(rdt);
   sun.position.set(camera.position.x-45,60,camera.position.z-30);sun.target.position.set(camera.position.x,0,camera.position.z);
+  // FPS cap: skip drawing (not simulating) some display frames; adaptive resolution follows the drawn FPS
+  GFX.frame++;const rawDt=(now-GFX.lastRaf)/1000;GFX.lastRaf=now;if(rawDt>0&&rawDt<0.2)GFX.hz=GFX.hz?GFX.hz+(1/rawDt-GFX.hz)*0.05:1/rawDt;
+  if(!SDQuality.shouldDraw(SETTINGS.fpsCap,GFX.frame,GFX.hz))return;
+  const drawDt=(now-GFX.lastDraw)/1000;GFX.lastDraw=now;
+  if(!PERF_LOW&&GFX.adapt){if(SDQuality.feed(GFX.adapt,drawDt))renderer.setPixelRatio(SDQuality.pixelRatio(GFX.profile,window.devicePixelRatio,GFX.adapt.scale));
+    if(SETTINGS.showFps&&GFX.adapt.frames===0)$('#fpsBox').textContent=Math.round(GFX.adapt.fps)+' FPS · '+Math.round(renderer.getPixelRatio()*100)/100+'×';}
   renderer.clear();
   renderer.render(scene,camera);
   if((WROOT.visible||KROOT.visible)&&(state==='playing'||state==='dead')){renderer.clearDepth();renderer.render(wScene,wCam);}
 }
 resize();
 requestAnimationFrame(frame);
-window.__SD={get NET(){return NET;},get REMOTE(){return REMOTE;},W,NAV:typeof NAV!=="undefined"?NAV:null,TOUCH,EDIT,openEditor,get SETTINGS(){return SETTINGS;},get LAYOUT(){return LAYOUT;},checkOrientation,MAT,LOAD,TRAINERS,get RANGE_BOTS(){return RANGE_BOTS;},TRAIN,setTrain,impactFX,surfaceOf,soundDelay,aimSelfTest,P,PM,WS,WCORE,RECOIL,AIM,BOTS,DUMMIES,BULLETS,EVENTS,PARTS,STATS,get state(){return state;},get mode(){return mode;},setMode,input,startMatch,simTick,frame,toMenu,pause,resume};
+window.__SD={renderer,GFX,gfxApply,get NET(){return NET;},get REMOTE(){return REMOTE;},W,NAV:typeof NAV!=="undefined"?NAV:null,TOUCH,EDIT,openEditor,get SETTINGS(){return SETTINGS;},get LAYOUT(){return LAYOUT;},checkOrientation,MAT,LOAD,TRAINERS,get RANGE_BOTS(){return RANGE_BOTS;},TRAIN,setTrain,impactFX,surfaceOf,soundDelay,aimSelfTest,P,PM,WS,WCORE,RECOIL,AIM,BOTS,DUMMIES,BULLETS,EVENTS,PARTS,STATS,get state(){return state;},get mode(){return mode;},setMode,input,startMatch,simTick,frame,toMenu,pause,resume};
 })();
 </script>
 

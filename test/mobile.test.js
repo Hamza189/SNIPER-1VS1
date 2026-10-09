@@ -120,5 +120,27 @@ console.log('\nDISPOSICIÓN DE BOTONES');
   check('restaurar = disposición por defecto', JSON.stringify(LY.defaults()) === JSON.stringify(LY.sanitize(null)));
 }
 
+console.log('\nGRÁFICOS (etapa C)');
+{ const Q = require('../client/quality.js');
+  check('AUTO = MEDIO en móvil y ALTO en PC', Q.resolve('auto', true) === 'medio' && Q.resolve('auto', false) === 'alto' && Q.resolve('bajo', false) === 'bajo');
+  check('resolución interna: el móvil (pantalla 3×) no pasa de 1,35× en MEDIO ni de 1,0× en BAJO', Q.pixelRatio('medio', 3, 1) === 1.35 && Q.pixelRatio('bajo', 3, 1) === 1 && Q.pixelRatio('alto', 1, 1) === 1);
+  check('BAJO sin sombras; MEDIO y ALTO con sombras', !Q.PROFILES.bajo.shadows && Q.PROFILES.medio.shadows && Q.PROFILES.alto.shadows);
+  const a = Q.createAdaptive(60, true);
+  for (let i = 0; i < 2 * 1.6 * 38; i++) Q.feed(a, 1 / 38);           // 38 FPS for ~3 s
+  check('a 38 FPS (objetivo 60) la resolución baja sola', a.scale < 1, 'escala ' + a.scale);
+  const low = a.scale; for (let i = 0; i < 60 * 60; i++) Q.feed(a, 1 / 60);   // then a minute at 60
+  check('si luego va a 60 FPS, vuelve a subir poco a poco hasta 1', a.scale > low && a.scale <= 1, 'escala ' + a.scale);
+  for (let i = 0; i < 60 * 40; i++) Q.feed(a, 1 / 12);
+  check('nunca baja de 0,55 aunque vaya fatal', a.scale >= Q.ADAPT.minScale, 'escala ' + a.scale);
+  const m = Q.createAdaptive(60, false); for (let i = 0; i < 300; i++) Q.feed(m, 1 / 30);
+  check('con calidad fija (no AUTO) la resolución no cambia sola', m.scale === 1);
+  check('un salto grande (pausa, segundo plano) no cuenta como FPS bajos', (() => { const b = Q.createAdaptive(60, true); Q.feed(b, 3); return b.frames === 0; })());
+  const drawn = (cap, hz, n) => { let d = 0; for (let i = 0; i < n; i++) if (Q.shouldDraw(cap, i, hz)) d++; return d; };
+  check('límite 30 FPS: pantalla de 60 Hz dibuja 30 por segundo, de 120 Hz también 30', drawn(30, 60, 60) === 30 && drawn(30, 120, 120) === 30);
+  check('sin límite (60): dibuja todos los fotogramas de la pantalla (144 Hz sigue a 144)', drawn(60, 144, 144) === 144 && drawn(60, 60, 60) === 60);
+  const st = ST.sanitize({ quality: 'ultra', fpsCap: 45, showFps: 'si' });
+  check('ajustes de gráficos: valores raros vuelven al defecto (AUTO, 60, sin contador)', st.quality === 'auto' && st.fpsCap === 60 && st.showFps === false);
+}
+
 console.log('\n' + pass + ' correctas, ' + fail + ' fallidas');
 process.exit(fail ? 1 : 0);

@@ -90,6 +90,22 @@ const shown = page => page.evaluate(ids => ids.filter(id => { const e = document
       check('en pausa el aviso desaparece', !(await page.evaluate(() => document.getElementById('lockHint').checkVisibility())));
       await ctx.close();
     }
+    console.log('\nGRÁFICOS');
+    { const { ctx, page } = await open({ viewport: { width: 1280, height: 720 }, deviceScaleFactor: 2 });
+      const q = await page.evaluate(async () => {
+        const S = __SD, r = {};
+        const set = async (k, v) => { S.SETTINGS[k] = v; document.querySelector('#qSeg button[data-q="' + (k === 'quality' ? v : S.SETTINGS.quality) + '"]').click(); await new Promise(f => setTimeout(f, 50)); };
+        await set('quality', 'bajo'); r.bajo = { pr: S.renderer.getPixelRatio(), sh: S.renderer.shadowMap.enabled };
+        await set('quality', 'alto'); r.alto = { pr: S.renderer.getPixelRatio(), sh: S.renderer.shadowMap.enabled };
+        document.getElementById('sShowFps').click(); await new Promise(f => setTimeout(f, 1800));
+        r.fps = document.getElementById('fpsBox').checkVisibility() ? document.getElementById('fpsBox').textContent : null;
+        document.getElementById('sShowFps').click();
+        document.querySelector('#qSeg button[data-q="auto"]').click();
+        return r; });
+      check('BAJO: sin sombras y resolución 1×; ALTO: sombras y resolución 2× (pantalla 2×)', !q.bajo.sh && q.bajo.pr === 1 && q.alto.sh && q.alto.pr === 2, JSON.stringify(q.bajo) + ' ' + JSON.stringify(q.alto));
+      check('el contador de FPS aparece al activarlo', !!q.fps && /FPS/.test(q.fps), q.fps);
+      await ctx.close();
+    }
     console.log('\nMÓVIL (emulación de pantalla táctil 844×390; NO es Safari ni Android reales)');
     { const { ctx, page } = await open({ viewport: { width: 844, height: 390 }, hasTouch: true, isMobile: true, deviceScaleFactor: 3 });
       const ov = await shown(page);
