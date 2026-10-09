@@ -1,6 +1,6 @@
-# Publishes the multiplayer server to Cloudflare whenever its code changes on main,
-# then checks the public server with two real clients and records the result in the repo
-# (server.json = the address the game connects to; server-status.json = the last check).
+# Publishes the multiplayer server to Cloudflare whenever its code changes on main, then
+# checks the public server with two real clients. The address and every failed check are
+# shown as annotations of the run (gh run view), readable without downloading the logs.
 # Needs the repository secrets CLOUDFLARE_API_TOKEN and CLOUDFLARE_ACCOUNT_ID.
 name: Desplegar servidor
 on:
@@ -9,7 +9,7 @@ on:
     paths: ['core/**', 'server/**', 'client/netcore.js', 'test/public.test.js', 'wrangler.toml', '.github/workflows/deploy-server.yml']
   workflow_dispatch:
 permissions:
-  contents: write
+  contents: read
 concurrency: deploy-server
 jobs:
   deploy:
@@ -30,16 +30,6 @@ jobs:
       - name: Comprobar el servidor público con dos clientes
         run: |
           URL="${{ steps.deploy.outputs.deployment-url }}"
-          echo "Servidor: $URL"
+          echo "::notice title=Servidor publicado::$URL"
           sleep 8
-          node test/public.test.js "$URL" --json server-status.json || echo "FALLO" > .public-failed
-          printf '{\n "url": "%s"\n}\n' "$URL" > server.json
-      - name: Guardar dirección y resultado en el repositorio
-        run: |
-          git config user.name "sniper-duel-bot"
-          git config user.email "actions@users.noreply.github.com"
-          git add server.json server-status.json
-          git commit -m "Servidor publicado: dirección y comprobación [skip ci]" || exit 0
-          git pull --rebase origin main && git push origin HEAD:main
-      - name: Marcar fallo si la comprobación pública falló
-        run: test ! -f .public-failed
+          node test/public.test.js "$URL"

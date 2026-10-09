@@ -55,6 +55,10 @@ function client(code) {
   } catch (e) { check('sin errores', false, e && (e.message || e)); }
   if (A) A.stop(); if (B) B.stop();
   console.log('\n' + pass + ' correctas, ' + fail + ' fallidas');
+  if (process.env.GITHUB_ACTIONS) {   // visible in the run summary without the logs
+    console.log('::notice title=Comprobación pública::' + pass + ' correctas, ' + fail + ' fallidas · ' + results.map(r => (r.ok ? '✔ ' : '✘ ') + r.n + (r.i ? ' (' + r.i + ')' : '')).join(' | ').slice(0, 900));
+    for (const r of results) if (!r.ok) console.log('::error title=Falla::' + r.n + (r.i ? ' (' + r.i + ')' : ''));
+  }
   if (jsonOut) require('fs').writeFileSync(jsonOut, JSON.stringify({ url: base, when: new Date().toISOString(), pass, fail, results }, null, 1) + '\n');
   process.exit(fail ? 1 : 0);
 })();
