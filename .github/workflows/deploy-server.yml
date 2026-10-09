@@ -1,11 +1,15 @@
-# Publishes the multiplayer server to Cloudflare whenever its code changes on main.
+# Publishes the multiplayer server to Cloudflare whenever its code changes on main,
+# then checks the public server with two real clients and records the result in the repo
+# (server.json = the address the game connects to; server-status.json = the last check).
 # Needs the repository secrets CLOUDFLARE_API_TOKEN and CLOUDFLARE_ACCOUNT_ID.
 name: Desplegar servidor
 on:
   push:
     branches: [main]
-    paths: ['core/**', 'server/**', 'wrangler.toml', '.github/workflows/deploy-server.yml']
+    paths: ['core/**', 'server/**', 'client/netcore.js', 'test/public.test.js', 'wrangler.toml', '.github/workflows/deploy-server.yml']
   workflow_dispatch:
+permissions:
+  contents: write
 concurrency: deploy-server
 jobs:
   deploy:
@@ -15,10 +19,27 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-      - name: Pruebas del núcleo antes de publicar
+      - name: Pruebas del núcleo y de la sala antes de publicar
         run: node test/core.test.js && node test/room.test.js
       - name: Publicar en Cloudflare
+        id: deploy
         uses: cloudflare/wrangler-action@v3
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+      - name: Comprobar el servidor público con dos clientes
+        run: |
+          URL="${{ steps.deploy.outputs.deployment-url }}"
+          echo "Servidor: $URL"
+          sleep 8
+          node test/public.test.js "$URL" --json server-status.json || echo "FALLO" > .public-failed
+          printf '{\n "url": "%s"\n}\n' "$URL" > server.json
+      - name: Guardar dirección y resultado en el repositorio
+        run: |
+          git config user.name "sniper-duel-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add server.json server-status.json
+          git commit -m "Servidor publicado: dirección y comprobación [skip ci]" || exit 0
+          git pull --rebase origin main && git push origin HEAD:main
+      - name: Marcar fallo si la comprobación pública falló
+        run: test ! -f .public-failed
