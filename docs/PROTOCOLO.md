@@ -29,12 +29,16 @@ JSON sobre WebSocket. Lo validan `core/protocol.js` (en el cliente y en el servi
 |---|---|---|---|
 | `hello` | `v:1, name, token?` | primer mensaje | versión exacta; nombre limpio de 16 caracteres como máximo; token `[A-Za-z0-9_-]{16,64}` |
 | `ready` | `on` | en el lobby | solo en fase `lobby` |
+| `map` | `id` (`arena`, `pueblo`) | en el lobby o al terminar | solo la plaza `A` |
+| `kit` | `id` (`rifle` = HALCÓN R7, `shotgun` = FURIA 12) | en cualquier momento | se usa desde la siguiente aparición del jugador; nunca cambia el arma que lleva en la mano |
 | `in` | `m, s, c:[cmd…]` | cada 3 ticks (≈40/s) o al disparar | de 1 a 24 comandos; `s` es la secuencia del primero |
 | `rematch` | – | tras el final | – |
 | `ping` | `c` (reloj del cliente), `r` (ping medido, ms; opcional) | cada 1,5 s | – |
 | `leave` | – | al salir | – |
 
 Comando compacto: `[mx, mz, yaw, pitch, bits]`. Si es un disparo se añaden `fdx, fdy, fdz, fox, foy, foz`, que son la dirección real del disparo (con dispersión y oscilación) y su origen, y opcionalmente `ft`: la hora del servidor en la que estaba el rival que se veía en pantalla (hora estimada del servidor − 110 ms de interpolación).
+
+**Escopeta (FURIA 12).** El cliente envía solo la dirección central del disparo, que se valida igual que la de cualquier bala. El servidor genera los 9 perdigones con el patrón fijo de `SDWeapon.pelletDirs` (centro, anillo interior de 3 y exterior de 5, girado en cada disparo según el número de disparo `n`, más abierto desde la cadera que apuntando). El cliente que dispara y el rival dibujan exactamente el mismo patrón con `ads` y `n` del evento `shot`. Los perdigones del mismo disparo que impactan en el mismo paso se suman en un solo `hit` con `pellets`; cuenta como un disparo y un impacto en las estadísticas.
 
 **Compensación de latencia (acotada).** Cada bala se comprueba contra el rival *donde lo veía quien disparó*: el servidor guarda 1 s de posiciones de cada jugador y, en cada paso de la bala, usa la pose de `ahora − retroceso`, con `retroceso = ahora − ft` limitado a 0–250 ms (sin `ft`: ping/2 + 110 ms, con el mismo límite). Así acertar a alguien que corre solo exige la anticipación normal por el vuelo de la bala (600 m/s), no adivinar el ping. Precio conocido: quien acaba de ponerse a cubierto puede recibir un impacto hasta 250 ms después. Un cliente que declare un ping o una hora falsos no consigue más de 250 ms.
 
@@ -51,8 +55,9 @@ Los bits son estos:
 | 64 | recargar |
 | 128 | inspeccionar |
 | 256 | navaja |
-| 512 | rifle |
+| 512 | arma principal (rifle o escopeta, la que se haya elegido) |
 | 1024 | aguantar el aire |
+| 2048 | pistola |
 
 `mx` y `mz` van en [-1,1] redondeados a milésimas, y `yaw` y `pitch` a 1e-5. El cliente simula con el comando ya redondeado (`SDProto.quantize`), así que la predicción coincide con el servidor bit a bit.
 
@@ -61,10 +66,10 @@ Los bits son estos:
 | t | Contenido |
 |---|---|
 | `welcome` | `you`, `token`, `code`, `phase`, `match`, `players`, `rules` |
-| `lobby` | `phase`, `players[{id,name,connected,ready,kills}]`, `winner`, `rematch` |
+| `lobby` | `phase`, `players[{id,name,connected,ready,kills,kit}]`, `map`, `maps`, `winner`, `rematch` |
 | `start` | `m`, `in` (ms de cuenta atrás), `you`, `spawn{x,z,yaw}`, `rules`, `names`; con `resume:true, lastSeq` si es una vuelta a una partida en curso |
 | `snap` | 20/s: `m`, `k` (tick), `ph`, `ack` (último comando aplicado), `me` (estado completo de movimiento, arma y navaja), `hp`, `alive`, `op` (rival: posición, velocidad, `yaw`/`pitch`, ojo, modo, arma, ADS, estado, vida), `sc`, `now` |
-| `ev` | `m`, `q`, `e:[…]` con `go`, `shot{id,by,o,d,corrected}`, `hit{by,to,part,dmg,hp,pt,dist,weapon}`, `kill{by,to,part,dist,weapon,sc}`, `respawn{id,x,z,yaw}`, `pause{who}`, `resume`, `rejected{what,why}`, `over{winner,why,sc,stats}` |
+| `ev` | `m`, `q`, `e:[…]` con `go`, `shot{id,by,w,o,d,corrected}` (escopeta: también `ads` y `n`), `hit{by,to,part,dmg,hp,pt,dist,weapon}` (escopeta: también `pellets`), `kill{by,to,part,dist,weapon,sc}`, `respawn{id,x,z,yaw}`, `pause{who}`, `resume`, `rejected{what,why}`, `over{winner,why,sc,stats}` |
 | `pong` | `c` (eco) y `s` (reloj del servidor) |
 | `error` | `code`: `bad_msg`, `full`, `no_room`, `in_progress` o `idle` |
 

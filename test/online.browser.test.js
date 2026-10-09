@@ -33,6 +33,7 @@ async function until(page, fn, arg, ms) { try { await page.waitForFunction(fn, a
     console.log('\nPARTIDA 1v1 EN DOS NAVEGADORES REALES (servidor local)');
     const A = await open('');
     await A.click('#mpBtn'); await A.fill('#mpName', 'Hamza'); await A.click('#mpCreate');
+    if (process.env.SHOTS) { await sleep(300); await A.screenshot({ path: process.env.SHOTS + '/lobby-movil.png' }); }
     check('A crea la sala y ve el código', await until(A, () => /^[A-Z0-9]{6}$/.test(document.getElementById('mpCodeBig').textContent)));
     const code = await A.textContent('#mpCodeBig');
     const link = await A.textContent('#mpLink');
@@ -59,9 +60,11 @@ async function until(page, fn, arg, ms) { try { await page.waitForFunction(fn, a
     room.debug.place('A', -18, -3, -Math.PI / 2); room.debug.place('B', 18, -3, Math.PI / 2);
     await sleep(1500);
     const seen = async (pg) => pg.evaluate(() => { const R = __SD.REMOTE; return R && R.g.visible ? { x: R.g.position.x, z: R.g.position.z } : null; });
-    const sa = await seen(A), sb = await seen(B);
-    check('A ve a B en su sitio', sa && Math.abs(sa.x - 18) < 0.5 && Math.abs(sa.z + 3) < 0.5, sa && sa.x.toFixed(2) + ',' + sa.z.toFixed(2));
-    check('B ve a A en su sitio', sb && Math.abs(sb.x + 18) < 0.5 && Math.abs(sb.z + 3) < 0.5, sb && sb.x.toFixed(2) + ',' + sb.z.toFixed(2));
+    // (waits on the pages: on a 2-CPU machine two software-rendered pages can fall a few seconds behind)
+    const at = (pg, x, z) => until(pg, ([x, z]) => { const R = __SD.REMOTE; return R && R.g.visible && Math.abs(R.g.position.x - x) < 0.5 && Math.abs(R.g.position.z - z) < 0.5; }, [x, z], 6000);
+    const okA = await at(A, 18, -3), okB = await at(B, -18, -3), sa = await seen(A), sb = await seen(B);
+    check('A ve a B en su sitio', okA, sa && sa.x.toFixed(2) + ',' + sa.z.toFixed(2));
+    check('B ve a A en su sitio', okB, sb && sb.x.toFixed(2) + ',' + sb.z.toFixed(2));
     // B walks: A sees it move (the test teleport above is a legitimate server correction: start counting after it)
     await B.evaluate(() => { __SD.NET.N.corrMax = 0; });
     await B.evaluate(() => { __SD.input.keys.KeyD = true; }); await sleep(1500); await B.evaluate(() => { __SD.input.keys.KeyD = false; }); await sleep(1500);
@@ -81,6 +84,8 @@ async function until(page, fn, arg, ms) { try { await page.waitForFunction(fn, a
       }
     };
     const aim = async (pg, y) => {
+      const who = pg === A ? 'A' : 'B', me = room.seats[who].p.ms, op = room.seats[who === 'A' ? 'B' : 'A'].p.ms;
+      await until(pg, ([mx, mz, ox, oz]) => { const R = __SD.REMOTE, P = __SD.P; return Math.hypot(P.pos.x - mx, P.pos.z - mz) < 0.2 && R && R.g.visible && Math.hypot(R.g.position.x - ox, R.g.position.z - oz) < 0.3; }, [me.x, me.z, op.x, op.z], 6000);
       // wait for the scope to be fully up (game time, not wall time: a software GPU can run at a few FPS)
       await pg.evaluate(() => { __SD.input.scope = true; }); await sleep(300); await until(pg, () => __SD.WCORE.ads >= 1, null, 4000);
       await pg.evaluate((yy) => { const R = __SD.REMOTE, P = __SD.P, eye = P.pos.y + __SD.PM.eye;
@@ -111,7 +116,10 @@ async function until(page, fn, arg, ms) { try { await page.waitForFunction(fn, a
     if (!vic) { console.log('       diagnóstico: fase ' + room.phase + ' · disparos A ' + room.seats.A.shots + ' impactos ' + room.seats.A.hits + ' · vida B ' + Math.round(room.seats.B.hp) + ' viva ' + room.seats.B.alive + ' · arma A ' + room.seats.A.p.w.state + ' balas ' + room.seats.A.p.w.ammo + ' · bajas A ' + room.seats.A.kills + ' muertes B ' + room.seats.B.deaths + ' activo A ' + room.seats.A.p.load.active);
       console.log('       ' + room.log.slice(-6).join(' | ')); }
     check('décima baja: A ve VICTORIA', await until(A, () => !document.getElementById('over').hidden && document.getElementById('overTitle').textContent === 'VICTORIA', null, 4000));
-    check('B ve DERROTA', await until(B, () => !document.getElementById('over').hidden && document.getElementById('overTitle').textContent === 'DERROTA', null, 4000));
+    // (8 s: with two pages drawing by software in one machine, a page can lag a few seconds)
+    const der = await until(B, () => !document.getElementById('over').hidden && document.getElementById('overTitle').textContent === 'DERROTA', null, 8000);
+    if (!der) console.log('       diagnóstico B: ' + JSON.stringify(await B.evaluate(() => ({ st: __SD.state, ph: __SD.NET.N.phase, over: !document.getElementById('over').hidden, title: document.getElementById('overTitle').textContent, net: __SD.NET.status, dead: !document.getElementById('death').hidden, alive: __SD.P.alive }))) + ' · errores ' + errors.slice(-3).join(' | '));
+    check('B ve DERROTA', der);
     await A.click('#again'); await sleep(300);
     check('revancha de uno solo: espera al rival', await A.textContent('#overEyebrow') === 'Esperando al rival…' && room.phase === 'over');
     await B.click('#again');
@@ -131,6 +139,23 @@ async function until(page, fn, arg, ms) { try { await page.waitForFunction(fn, a
       check('disparo de pistola a 20 m: el servidor quita daño de pistola (cabeza 90 / torso 34 / piernas 26, con caída por distancia)', hitP && Object.values(PCv.dmg).some(v => Math.abs(lost - v * f) < 2.5), hp0 + ' → ' + Math.round(room.seats.B.hp) + ' (−' + lost.toFixed(1) + ')');
       check('el disparo llega a B como de pistola', await B.evaluate(() => __SD.NET.N.lastShot && __SD.NET.N.lastShot.w === 'pistol'));
       check('munición de la pistola igual en A y en el servidor', await A.evaluate(() => __SD.PCORE.ammo) === room.seats.A.p.pw.ammo); }
+    // FURIA 12 online: A picks it in the pause menu (real click), gets it at the next spawn, fires point blank
+    await A.evaluate(() => __SD.pause()); await sleep(300);
+    if (process.env.SHOTS) await A.screenshot({ path: process.env.SHOTS + '/pausa-movil.png' });
+    await A.locator('#pause .kitSeg button[data-kit="shotgun"]').click(); await sleep(400);
+    await A.evaluate(() => __SD.resume());
+    check('A elige FURIA 12 en la pausa: el servidor lo sabe, pero A sigue con su arma hasta reaparecer', room.seats.A.kit === 'shotgun' && room.seats.A.p.load.active !== 'shotgun');
+    { const sa = room.debug.seat('A'); sa.alive = false; sa.diedAt = room.now; }
+    check('al reaparecer, A lleva la escopeta (servidor, su página y lo que ve B)', await until(A, () => __SD.LOAD.active === 'shotgun' && __SD.P.alive, null, 8000) && room.seats.A.p.load.active === 'shotgun' && await until(B, () => __SD.NET.N.remotePose() && __SD.NET.N.remotePose().wpn === 'shotgun', null, 5000));
+    room.debug.place('A', -2, -3, -Math.PI / 2); room.debug.place('B', 2, -3, Math.PI / 2); room.debug.set('B', 'lastHit', 1e15); await sleep(1500);
+    { const hp0 = room.seats.B.hp, d0 = room.seats.B.deaths;
+      await A.evaluate(() => { const R = __SD.REMOTE, P = __SD.P, eye = P.pos.y + __SD.PM.eye; const dx = R.g.position.x - P.pos.x, dy = R.g.position.y + 1.17 - eye, dz = R.g.position.z - P.pos.z; P.yaw = Math.atan2(-dx, -dz); P.pitch = Math.atan2(dy, Math.hypot(dx, dz)); });
+      await A.evaluate(() => { __SD.input.scope = true; }); await sleep(300); await until(A, () => __SD.SCORE.ads >= 1 && __SD.SCORE.state === 'ready', null, 4000);
+      await A.evaluate(() => { __SD.input.firePressed = true; }); await sleep(600); await A.evaluate(() => { __SD.input.scope = false; });
+      const dead = room.seats.B.deaths > d0, lost = dead ? hp0 : hp0 - room.seats.B.hp;
+      check('escopeta a 4 m al pecho: el servidor suma los perdigones (mata o casi)', dead || lost >= 90, dead ? 'B eliminado' : '−' + Math.round(lost));
+      check('el disparo llega a B como de escopeta y B lo dibuja con el mismo patrón', await B.evaluate(() => __SD.NET.N.lastShot && __SD.NET.N.lastShot.w === 'shotgun' && typeof __SD.NET.N.lastShot.n === 'number'));
+      check('cartuchos iguales en A y en el servidor', await until(A, n => __SD.SCORE.ammo === n, room.seats.A.p.sw.ammo, 2000) && room.seats.A.p.sw.ammo === 5, room.seats.A.p.sw.ammo); }
     // the pause menu does not stop the online match, and B dropping shows RECONECTANDO
     await A.evaluate(() => __SD.pause()); await sleep(500);
     check('pausa en online: el servidor sigue y A no dispara', room.phase === 'playing' && await A.evaluate(() => __SD.state) === 'paused');
