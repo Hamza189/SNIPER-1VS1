@@ -2199,7 +2199,11 @@ class RemotePlayer{
     const k=SDHitbox.scaleOf(pose.eye);
     this.g.position.set(pose.x,pose.y,pose.z);this.g.rotation.y=SDHitbox.bodyYaw(pose.yaw);
     this.body.scale.set(1,k,1);
-    this.aim.rotation.x=-clamp(pose.pitch,-1.2,1.2)/k*0.9;
+    // reloading: rifle tipped down and in; working the bolt: a short tug of the right arm
+    const tgtR=pose.ws==='reload'?1:0;this.relW=(this.relW||0)+(tgtR-(this.relW||0))*Math.min(1,dt*8);
+    this.boltT=pose.ws==='bolt'?(this.boltT||0)+dt:0;
+    this.aim.rotation.x=-clamp(pose.pitch,-1.2,1.2)/k*0.9+this.relW*0.55;
+    this.aim.rotation.z=this.relW*0.35+(this.boltT>0?Math.sin(Math.min(1,this.boltT/0.95)*Math.PI)*0.12:0);
     const knife=pose.wpn==='knife';this.knife.visible=knife;for(const m of this.rifleParts)m.visible=!knife;
     const sp=Math.hypot(pose.vx||0,pose.vz||0);
     this.walk+=dt*sp*1.6;const sw=pose.g&&sp>0.5&&pose.mode!=='slide'?Math.sin(this.walk)*Math.min(0.6,sp/9):0;
