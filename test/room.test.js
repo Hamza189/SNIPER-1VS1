@@ -270,6 +270,17 @@ console.log('\nDESCONEXIÓN Y RECONEXIÓN');
   check('un jugador nuevo entra en la plaza libre', C.N.you === 'A' && S.room.seats.B && S.room.seats.A.name === 'Nuevo');
 }
 
+{ // a socket that goes silent (no close) is detected; an idle lobby is closed
+  const S = createSim({ latency: 30 });
+  const { A, B } = S.setupMatch(() => ({ yaw: 0 }), () => ({ yaw: 0 }));
+  B.open = false;           // the phone is locked: nothing arrives any more, no close either
+  S.run(7000);
+  check('socket mudo 6 s: el servidor lo da por desconectado y pausa', S.room.phase === 'paused' && A.N.phase === 'paused');
+  const S2 = createSim(); const X = S2.addClient('X'); X.N.hello('X'); S2.run(100);
+  S2.run(16 * 60000);
+  check('sala abierta 15 min sin jugar: se cierra', X.events.some(e => e.k === 'error' && e.code === 'idle') && S2.room.conns.size === 0);
+}
+
 console.log('\nLATENCIA, JITTER Y PÉRDIDA');
 for (const [lat, jit, loss] of [[20, 0, 0], [80, 10, 0], [150, 30, 0], [250, 50, 0], [80, 40, 0.05]]) {
   let shoot = false;

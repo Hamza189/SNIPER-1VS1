@@ -1755,7 +1755,7 @@ const SDNet = { create };
 if (isNode) module.exports = SDNet; else root.SDNet = SDNet;
 })(typeof window !== 'undefined' ? window : globalThis);
 
-const BUILD_ID="91ef8fb";
+const BUILD_ID="c80561d";
 </script>
 <script>
 (function(){
@@ -3481,7 +3481,7 @@ function netConnect(code){
     if(NET.ws!==ws)return;NET.ws=null;
     NET.closeWhy=e.code;
     if(!NET.want)return;
-    if([4000,4001,4003,4004].includes(e.code)){NET.want=false;NET.status='off';if(e.code===4001)netAbort('Has abierto la sala en otra pestaña o dispositivo.');return;}
+    if([4000,4001,4003,4004,4005].includes(e.code)){NET.want=false;NET.status='off';if(e.code===4001)netAbort('Has abierto la sala en otra pestaña o dispositivo.');return;}
     netRetry();
   };
 }
@@ -3598,7 +3598,7 @@ function netEvent(e){
     case 'rejected':netErr('rechazado '+e.what+': '+e.why);break;
     case 'over':netOver(e);break;
     case 'error':{
-      const msg={full:'ESA SALA ESTÁ LLENA.',no_room:'ESA SALA NO EXISTE (o ha caducado).',in_progress:'ESA PARTIDA YA HA EMPEZADO.'}[e.code];
+      const msg={full:'ESA SALA ESTÁ LLENA.',no_room:'ESA SALA NO EXISTE (o ha caducado).',in_progress:'ESA PARTIDA YA HA EMPEZADO.',idle:'SALA CERRADA POR INACTIVIDAD. Crea otra cuando queráis jugar.'}[e.code];
       netErr('error '+e.code+(e.why?' '+e.why:''));
       if(msg){NET.want=false;netEndOnline();mpShow('home');mpMsg(msg,true);store.set('tok_'+NET.code,null);}
       break;}
@@ -3653,16 +3653,21 @@ function netFrame(rdt){
   if(REMOTE)REMOTE.update(N.remotePose(),rdt);
   if(N.phase==='countdown'){const left=Math.max(0,N.startIn-(now-N.startedAt));const c=$('#countdown');c.hidden=left<=0;c.textContent=Math.ceil(left/1000)||'';}
   else if(!$('#countdown').hidden)$('#countdown').hidden=true;
-  if(NET.ws&&NET.ws.readyState===1&&now-N.lastPing>1500)N.ping();
-  // reconnect when due
-  if(NET.want&&!NET.ws&&NET.status==='reconnecting'&&now>=NET.retryAt)netConnect(NET.code);
-  // a socket that stays open but silent (phone woke up, network changed): replace it
-  if(NET.ws&&NET.ws.readyState===1&&now-NET.lastMsgAt>4000&&(N.phase==='playing'||N.phase==='countdown')){netErr('sin datos 4 s: reconexión');try{NET.ws.onclose=null;NET.ws.close();}catch(e){}NET.ws=null;netRetry();}
   const s=$('#netStat');const rtt=Math.round(N.rtt);
   s.className=NET.status!=='online'?'bad':rtt>150?'warn':'';
   $('#netStatTxt').textContent=NET.status==='online'?rtt+' ms':NET.status==='reconnecting'?'RECONECTANDO':'SIN CONEXIÓN';
 }
-// back from background: check the connection at once
+// connection upkeep, also in the lobby (the server drops sockets silent for 6 s): ping,
+// reconnect when due, replace a socket that stays open but brings nothing
+setInterval(()=>{
+  const N=NET.N;if(!N)return;const now=performance.now();
+  if(NET.ws&&NET.ws.readyState===1&&now-N.lastPing>1500)N.ping();
+  if(NET.want&&!NET.ws&&NET.status==='reconnecting'&&now>=NET.retryAt&&!document.hidden)netConnect(NET.code);
+  if(NET.ws&&NET.ws.readyState===1&&now-NET.lastMsgAt>4000){netErr('sin datos 4 s: reconexión');try{NET.ws.onclose=null;NET.ws.close();}catch(e){}NET.ws=null;netRetry();}
+},250);
+// to the background (iPhone locked, app switch): close the socket ourselves so the rival's game
+// pauses at once instead of shooting at a frozen player; back: reconnect at once
+document.addEventListener('visibilitychange',()=>{if(document.hidden&&NET.want&&NET.ws){try{NET.ws.onclose=null;NET.ws.close(4100,'background');}catch(e){}NET.ws=null;NET.status='reconnecting';NET.retries=0;NET.retryAt=0;}});
 document.addEventListener('visibilitychange',()=>{if(!document.hidden&&NET.want&&(!NET.ws||NET.ws.readyState>1)){NET.retries=0;NET.retryAt=0;if(NET.status!=='reconnecting')netRetry();NET.retryAt=0;}});
 window.addEventListener('online',()=>{if(NET.want&&!NET.ws){NET.retryAt=0;}});
 // menu wiring

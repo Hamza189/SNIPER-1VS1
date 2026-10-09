@@ -37,7 +37,7 @@ function boot(opts) {
     document, localStorage: { getItem: k => storage[k] ?? null, setItem: (k, v) => { storage[k] = v; } },
     performance: { now: () => clock.now }, requestAnimationFrame: cb => { rafCb = cb; }, screen: {},
     URLSearchParams, location: { search: '', origin: 'http://test', pathname: '/' }, history: { replaceState() {} },
-    setTimeout: (f) => 0, console, Math, JSON, Object, Array, Map, Set, Int32Array, Number, String, Symbol, Proxy, Error
+    setTimeout: (f) => 0, setInterval: () => 0, console, Math, JSON, Object, Array, Map, Set, Int32Array, Number, String, Symbol, Proxy, Error
   });
   if (opts.touch) ctx.ontouchstart = null;
   ctx.window = ctx; ctx.globalThis = ctx;

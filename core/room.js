@@ -27,7 +27,7 @@ const HB = isNode ? require('./hitbox.js') : root.SDHitbox;
 const PR = isNode ? require('./protocol.js') : root.SDProto;
 
 const RULES = { killsToWin: 10, hp: 100, respawnMs: 3000, countdownMs: 3000, regenDelayMs: 5000, regenPerSec: 22,
-  reconnectMs: 60000, lobbySeatMs: 60000, snapHz: 20, maxShotDev: 0.3, maxOriginDist: 0.9 };
+  reconnectMs: 60000, lobbySeatMs: 60000, silentMs: 6000, idleRoomMs: 15 * 60000, snapHz: 20, maxShotDev: 0.3, maxOriginDist: 0.9 };
 const DT = 1 / PR.LIMITS.tickHz;
 const GUN = CFG.rifles.halcon, KNIFE = CFG.knives.tactica;
 
@@ -37,7 +37,7 @@ function create(opts) {
   const R = {
     code: opts.code, phase: 'lobby', match: 0, startAt: 0, tickN: 0, now: opts.now || 0,
     seats: { A: null, B: null }, conns: new Map(), evSeq: 0, bullets: [], bulletId: 0, winner: undefined,
-    pausedAt: 0, lastSnap: 0, lastActive: opts.now || 0, closed: false, rematch: { A: false, B: false }, log: [],
+    pausedAt: 0, lastSnap: 0, lastActive: opts.now || 0, lastPlay: opts.now || 0, closed: false, rematch: { A: false, B: false }, log: [],
     send: opts.send || (() => {}), close: opts.close || (() => {}), randBytes: opts.randBytes, persist: opts.persist || null
   };
 
@@ -120,7 +120,7 @@ function create(opts) {
   /* ---------- connections ---------- */
   function connect(conn, now) {
     R.now = now; R.lastActive = now;
-    R.conns.set(conn, { seat: null, msgs: 0, winStart: now, strikes: 0 });
+    R.conns.set(conn, { seat: null, msgs: 0, winStart: now, strikes: 0, lastMsg: now });
   }
   function disconnect(conn, now) {
     R.now = now; R.lastActive = now;
@@ -180,6 +180,7 @@ function create(opts) {
   function message(conn, text, now) {
     R.now = now; R.lastActive = now;
     const c = R.conns.get(conn); if (!c) return;
+    c.lastMsg = now;
     // rate limit per connection
     if (now - c.winStart >= 1000) { c.winStart = now; c.msgs = 0; }
     if (++c.msgs > PR.LIMITS.maxMsgPerSec) { if (c.msgs > PR.LIMITS.maxMsgPerSec * 3) R.close(conn, 4008, 'flood'); return; }
@@ -190,7 +191,7 @@ function create(opts) {
     if (m.t === 'hello') { if (!c.seat) hello(conn, c, m); return; }
     const s = c.seat && R.seats[c.seat]; if (!s || s.conn !== conn) return;
     switch (m.t) {
-      case 'ready': if (R.phase === 'lobby') { s.ready = m.on; sendAll(lobbyMsg()); maybeStart(); } break;
+      case 'ready': R.lastPlay = now; if (R.phase === 'lobby') { s.ready = m.on; sendAll(lobbyMsg()); maybeStart(); } break;
       case 'rematch':
         if (R.phase === 'over' && !R.seats[other(s.id)]) {   // the rival is gone: back to the lobby to wait for someone
           R.phase = 'lobby'; R.winner = undefined; R.rematch = { A: false, B: false }; s.ready = false; s.kills = s.deaths = 0;
@@ -207,7 +208,7 @@ function create(opts) {
         { const o = R.seats[other(s.id)]; if (o) o.ready = false; }
         if (!R.seats.A && !R.seats.B) { R.phase = 'lobby'; R.winner = undefined; }
         sendAll(lobbyMsg()); save(); break;
-      case 'in': commands(s, m); break;
+      case 'in': R.lastPlay = now; commands(s, m); break;
     }
   }
   function commands(s, m) {
@@ -332,6 +333,14 @@ function create(opts) {
         if (gone.length === 2) { R.phase = 'over'; R.winner = null; save(); }
         else endMatch(other(gone[0]), 'abandono');
       }
+    }
+    // a socket that went silent (phone locked, network gone without a goodbye): treat it as
+    // disconnected now, so the match pauses for the rival instead of leaving a sitting target
+    for (const [conn, c] of R.conns) if (now - c.lastMsg > RULES.silentMs) { R.close(conn, 4006, 'silent'); disconnect(conn, now); log('silent'); }
+    // a room left open with nobody playing for a long time is closed (frees the server)
+    if ((R.phase === 'lobby' || R.phase === 'over') && R.conns.size && now - R.lastPlay > RULES.idleRoomMs) {
+      for (const conn of [...R.conns.keys()]) { R.send(conn, JSON.stringify({ t: 'error', code: 'idle' })); R.close(conn, 4005, 'idle'); disconnect(conn, now); }
+      log('idle close');
     }
     if (R.phase === 'lobby') {
       for (const id of ['A', 'B']) { const s = R.seats[id]; if (s && s.conn == null && now - s.leftAt > RULES.lobbySeatMs) { R.seats[id] = null; sendAll(lobbyMsg()); save(); } }
