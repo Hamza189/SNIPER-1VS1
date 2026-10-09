@@ -1,0 +1,22 @@
+# After every publication of the game page, plays a short online match from two browsers on
+# GitHub's machines: public page (GitHub Pages) + public server (Cloudflare). The result is
+# shown as annotations of the run.
+name: Prueba pública online
+on:
+  workflow_run:
+    workflows: ['pages-build-deployment']
+    types: [completed]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm install --no-save playwright@1.56.0 && npx playwright install --with-deps chromium
+      - name: Partida con dos navegadores
+        run: sleep 20 && node test/public.browser.test.js
