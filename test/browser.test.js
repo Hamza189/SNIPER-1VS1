@@ -46,8 +46,22 @@ const shown = page => page.evaluate(ids => ids.filter(id => { const e = document
       const ov = await shown(page);
       check('en el menú no se ve ninguna pantalla que debería estar oculta', ov.length === 0, ov.join(', ') || 'ninguna');
       check('el botón JUGAR se ve', st.play);
-      await page.evaluate(() => { __SD.setMode('range'); __SD.startMatch(); });
-      await page.waitForTimeout(2500);
+      const dup = await page.evaluate(() => { const c = {}; document.querySelectorAll('[id]').forEach(e => c[e.id] = (c[e.id] || 0) + 1); return Object.keys(c).filter(k => c[k] > 1); });
+      check('ningún id repetido en la página (si se repite, un dato se escribe en el sitio equivocado)', dup.length === 0, dup.join(', ') || 'ninguno');
+      // real mouse click on JUGAR → the browser really captures the mouse (Pointer Lock)
+      await page.evaluate(() => __SD.setMode('range'));
+      await page.getByRole('button', { name: 'JUGAR', exact: true }).click();
+      await page.waitForTimeout(1500);
+      const locked = await page.evaluate(() => document.pointerLockElement === document.querySelector('canvas'));
+      check('clic real en JUGAR: el navegador captura el ratón (Pointer Lock)', locked);
+      // with the mouse captured, keep moving it the same way: the view must keep turning (no screen edge)
+      const turn = await page.evaluate(async () => {
+        const y0 = __SD.P.yaw;
+        for (let i = 0; i < 40; i++) { window.dispatchEvent(new MouseEvent('mousemove', { movementX: 120, movementY: 0 })); await new Promise(r => requestAnimationFrame(r)); }
+        return (y0 - __SD.P.yaw) * 180 / Math.PI;
+      });
+      check('ratón capturado: sigue girando sin tope (más de 360° hacia el mismo lado)', turn > 360, turn.toFixed(0) + '°');
+      await page.waitForTimeout(1000);
       const res = await page.evaluate(() => __SD.aimSelfTest());
       const head = res[0] || '';
       check('autotest de puntería con el motor real: 0 fallidas', /✔ AUTOTEST/.test(head), head.replace(/^. /, ''));

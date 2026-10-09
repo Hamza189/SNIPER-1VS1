@@ -83,6 +83,13 @@ console.log('\nAJUSTES');
   const sc = ST.lookDelta(10, 0, ST.sanitize({ adsSens: 0.5 }), { scoped: true, fovRatio: 0.125, touch: false });
   const hip = ST.lookDelta(10, 0, ST.sanitize({ adsSens: 0.5 }), { scoped: false, fovRatio: 1, touch: false });
   check('sensibilidad con mira solo se aplica con la mira puesta', Math.abs(sc.yaw - hip.yaw * 0.125 * 0.5) < 1e-12);
+  const dPc = ST.load(fakeStore(), false), dMob = ST.load(fakeStore(), true);
+  check('PC sin cambios: dedo 1, mira 1, horizontal/vertical 1', dPc.touchLook === 1 && dPc.adsSens === 1 && dPc.sensH === 1 && dPc.sensV === 1);
+  check('móvil nuevo: dedo 1,6, mira 1,3, horizontal/vertical 1', dMob.touchLook === 1.6 && dMob.adsSens === 1.3 && dMob.sensH === 1 && dMob.sensV === 1);
+  check('máximo del dedo 4,0', ST.RANGES.touchLook[1] === 4 && ST.sanitize({ touchLook: 9 }, true).touchLook === 4);
+  const own = fakeStore(); ST.save(own, { touchLook: 2.2, adsSens: 0.9 }, true);
+  check('un móvil con ajustes ya guardados conserva los suyos', ST.load(own, true).touchLook === 2.2 && ST.load(own, true).adsSens === 0.9);
+  check('disparo al soltar se guarda', (() => { const st = fakeStore(); ST.save(st, { releaseFire: false }, true); return ST.load(st, true).releaseFire === false; })());
   const tch = ST.lookDelta(10, 0, ST.sanitize({ touchLook: 2 }), { scoped: false, fovRatio: 1, touch: true });
   check('sensibilidad táctil propia', Math.abs(tch.yaw - (-10 * 0.0042 * 2)) < 1e-12);
 }

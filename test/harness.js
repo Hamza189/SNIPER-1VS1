@@ -46,7 +46,7 @@ function boot(opts) {
     ctx, SD: ctx.__SD, listeners, el, storage, errors, clock,
     frames(n, ms, each) { for (let i = 0; i < n; i++) { clock.now += ms; if (each) each(i); try { rafCb(clock.now); } catch (e) { errors.push(e); if (errors.length < 3) console.log(e.stack); break; } } },
     key(code, down) { (listeners['window:' + (down ? 'keydown' : 'keyup')] || []).forEach(f => f({ code, preventDefault() {} })); },
-    fire(sel, type, ev) { (listeners[sel + ':' + type] || []).forEach(f => f(Object.assign({ preventDefault() {} }, ev || {}))); },
+    fire(sel, type, ev) { (listeners[sel + ':' + type] || []).forEach(f => f(Object.assign({ type, preventDefault() {} }, ev || {}))); },
     // pointer events on the touch layer; btn = button name under the finger (or null)
     pointer(type, id, x, y, btn) {
       const target = { closest: () => (btn ? { dataset: { btn } } : null) };

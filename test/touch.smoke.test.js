@@ -92,6 +92,33 @@ console.log('\nMANTENER FUEGO = MIRA, SOLTAR = DISPARO (opción por defecto)');
   H.pointer('pointerdown', 3, 779, 325, 'fire'); H.frames(3, 16); H.pointer('pointerup', 3, 779, 325, 'fire'); H.frames(2, 16);
   H.pointer('pointerdown', 3, 779, 325, 'fire'); H.frames(3, 16); H.pointer('pointerup', 3, 779, 325, 'fire'); H.frames(120, 16);
   check('soltar otra vez con el cerrojo a medias: ni disparo tardío ni mira atascada', SD.STATS.shots - s3 === 1 && SD.WCORE.ads === 0, (SD.STATS.shots - s3) + ' disparo(s)');
+  // the system cancels the finger (incoming call, notification, edge swipe): no shot
+  H.frames(120, 16); const s4 = SD.STATS.shots;
+  H.pointer('pointerdown', 3, 779, 325, 'fire'); H.frames(20, 16); H.pointer('pointercancel', 3, 779, 325, 'fire'); H.frames(30, 16);
+  check('toque cancelado por el sistema: no dispara y la mira baja', SD.STATS.shots === s4 && SD.WCORE.ads === 0);
+  // change weapon while holding FIRE, then come back to the rifle and lift: no shot
+  H.pointer('pointerdown', 3, 779, 325, 'fire'); H.frames(10, 16);
+  H.pointer('pointerdown', 8, 642, 200, 'swap'); H.pointer('pointerup', 8, 642, 200, 'swap'); H.frames(40, 16);
+  H.pointer('pointerdown', 8, 642, 200, 'swap'); H.pointer('pointerup', 8, 642, 200, 'swap'); H.frames(60, 16);
+  const sw0 = SD.STATS.meleeSwings || 0;
+  H.pointer('pointerup', 3, 779, 325, 'fire'); H.frames(30, 16);
+  check('cambiar de arma con FUEGO pulsado: al soltar no dispara ni ataca', SD.LOAD.active === 'rifle' && SD.STATS.shots === s4 && (SD.STATS.meleeSwings || 0) === sw0);
+  // reload: hold FIRE, start the reload, lift during it → no shot, the reload finishes
+  H.frames(60, 16); SD.WCORE.ammo = 2;
+  H.pointer('pointerdown', 3, 779, 325, 'fire'); H.frames(5, 16);
+  H.pointer('pointerdown', 6, 711, 254, 'reload'); H.pointer('pointerup', 6, 711, 254, 'reload'); H.frames(30, 16);
+  const inReload = SD.WCORE.state === 'reload';
+  H.pointer('pointerup', 3, 779, 325, 'fire'); H.frames(200, 16);
+  check('soltar FUEGO durante la recarga: no dispara y la recarga termina', inReload && SD.STATS.shots === s4 && SD.WCORE.ammo === 5, 'balas ' + SD.WCORE.ammo);
+  // rotating the phone to portrait while holding FIRE pauses the game: no shot on return
+  H.pointer('pointerdown', 3, 779, 325, 'fire'); H.frames(10, 16);
+  const s5 = SD.STATS.shots;
+  H.ctx.innerWidth = 390; H.ctx.innerHeight = 844; H.fire('window', 'resize'); H.frames(5, 16);
+  H.pointer('pointerup', 3, 779, 325, 'fire');
+  H.ctx.innerWidth = 844; H.ctx.innerHeight = 390; H.fire('window', 'resize'); H.frames(5, 16);
+  if (SD.state === 'paused') SD.resume();
+  H.frames(30, 16);
+  check('girar el móvil con FUEGO pulsado: no dispara al volver', SD.STATS.shots === s5 && SD.state === 'playing', SD.state);
 }
 
 console.log('\nRIFLE Y NAVAJA EN MÓVIL');

@@ -343,7 +343,7 @@ body.touch #top{width:min(300px,46vw)}
       <label class="sens"><span class="lbl">Sensib. horizontal</span><input id="sH" type="range" min="0.2" max="3" step="0.05"><output id="sHo"></output></label>
       <label class="sens"><span class="lbl">Sensib. vertical</span><input id="sV" type="range" min="0.2" max="3" step="0.05"><output id="sVo"></output></label>
       <label class="sens"><span class="lbl">Con mira</span><input id="sA" type="range" min="0.3" max="2" step="0.05"><output id="sAo"></output></label>
-      <label class="sens"><span class="lbl">Dedo (móvil)</span><input id="sT" type="range" min="0.3" max="3" step="0.05"><output id="sTo"></output></label>
+      <label class="sens"><span class="lbl">Dedo (móvil)</span><input id="sT" type="range" min="0.3" max="4" step="0.05"><output id="sTo"></output></label>
       <label class="chk"><input type="checkbox" id="sInv"> Invertir eje vertical</label>
       <label class="chk"><input type="checkbox" id="sLeft"> Botón FUEGO también a la izquierda (móvil)</label>
       <label class="chk"><input type="checkbox" id="sRel"> Móvil: mantener FUEGO apunta con la mira, soltar dispara</label>
@@ -453,12 +453,12 @@ body.touch #top{width:min(300px,46vw)}
     <div class="eyebrow" id="overEyebrow">Fin de la partida</div>
     <h2 id="overTitle" class="win">VICTORIA</h2>
     <div class="grid3">
-      <div><span class="lbl">Bajas</span><b id="sK">0</b></div>
-      <div><span class="lbl">Muertes</span><b id="sD">0</b></div>
-      <div><span class="lbl">Headshots</span><b id="sH">0</b></div>
-      <div><span class="lbl">Precisión</span><b id="sA">0%</b></div>
-      <div><span class="lbl">Tiro más largo</span><b id="sL">0 m</b></div>
-      <div><span class="lbl">Tiempo</span><b id="sT">0:00</b></div>
+      <div><span class="lbl">Bajas</span><b id="oK">0</b></div>
+      <div><span class="lbl">Muertes</span><b id="oD">0</b></div>
+      <div><span class="lbl">Headshots</span><b id="oH">0</b></div>
+      <div><span class="lbl">Precisión</span><b id="oA">0%</b></div>
+      <div><span class="lbl">Tiro más largo</span><b id="oL">0 m</b></div>
+      <div><span class="lbl">Tiempo</span><b id="oT">0:00</b></div>
     </div>
     <div class="row"><button class="btn" id="again" type="button">REVANCHA</button><button class="btn ghost" id="toMenu2" type="button">MENÚ</button></div>
   </div>
@@ -1205,16 +1205,20 @@ const DEFAULTS = {
   sensH: 1,        // horizontal look sensitivity
   sensV: 1,        // vertical look sensitivity
   adsSens: 1,      // extra multiplier while the scope is up (on top of the automatic zoom scaling)
-  touchLook: 1,    // extra multiplier for finger dragging
+  touchLook: 1,    // extra multiplier for finger dragging (only used on touch screens)
   invertY: false,
   leftFire: false, // second FIRE button on the left side (3-4 finger play)
   releaseFire: true // touch, rifle: holding FIRE raises the scope, lifting the finger fires
 };
-const RANGES = { sensH: [0.2, 3], sensV: [0.2, 3], adsSens: [0.3, 2], touchLook: [0.3, 3] };
+// Phones start from different values (agreed after testing on iPhone); PC defaults are unchanged.
+// A device that already saved its settings keeps them; RESTAURAR goes back to these.
+const TOUCH_DEFAULTS = { touchLook: 1.6, adsSens: 1.3 };
+function defaults(touch) { return Object.assign({}, DEFAULTS, touch ? TOUCH_DEFAULTS : {}); }
+const RANGES = { sensH: [0.2, 3], sensV: [0.2, 3], adsSens: [0.3, 2], touchLook: [0.3, 4] };
 
 // any stored object → a complete, valid settings object (unknown keys dropped, numbers clamped)
-function sanitize(o) {
-  const s = Object.assign({}, DEFAULTS);
+function sanitize(o, touch) {
+  const s = defaults(touch);
   if (!o || typeof o !== 'object') return s;
   for (const k of Object.keys(RANGES)) {
     const v = Number(o[k]);
@@ -1224,13 +1228,13 @@ function sanitize(o) {
   return s;
 }
 // reads from a store with get(key, default); migrates the old single "sens" value
-function load(store) {
+function load(store, touch) {
   const saved = store.get('settings', null);
-  if (saved) return sanitize(saved);
+  if (saved) return sanitize(saved, touch);
   const old = Number(store.get('sens', 1));
-  return sanitize(isFinite(old) ? { sensH: old, sensV: old } : {});
+  return sanitize(isFinite(old) ? { sensH: old, sensV: old } : {}, touch);
 }
-function save(store, s) { store.set('settings', sanitize(s)); }
+function save(store, s, touch) { store.set('settings', sanitize(s, touch)); }
 
 /* Converts a pointer movement in pixels into a yaw/pitch change in radians.
    ctx = { scoped, fovRatio (tan(fov/2)/tan(baseFov/2)), touch } */
@@ -1240,7 +1244,7 @@ function lookDelta(dx, dy, s, ctx) {
   return { yaw: -dx * k * s.sensH, pitch: -dy * k * s.sensV * (s.invertY ? -1 : 1) };
 }
 
-const SDSettings = { DEFAULTS, RANGES, sanitize, load, save, lookDelta };
+const SDSettings = { DEFAULTS, TOUCH_DEFAULTS, defaults, RANGES, sanitize, load, save, lookDelta };
 if (typeof module !== 'undefined' && module.exports) module.exports = SDSettings; else root.SDSettings = SDSettings;
 })(typeof window !== 'undefined' ? window : globalThis);
 
@@ -2407,14 +2411,14 @@ function applyLayout(){
   for(const name in SDLayout.BUTTONS){const el=btnEl(name);if(!el)continue;const r=SDLayout.rect(name,LAYOUT.buttons[name],W,H);
     el.style.left=r.left.toFixed(1)+'px';el.style.top=r.top.toFixed(1)+'px';el.style.width=el.style.height=r.size+'px';el.style.right=el.style.bottom='auto';}
 }
-function btnPress(name,down){
+function btnPress(name,down,cancel){ // cancel: the system took the finger (call, notification, edge swipe) — never a shot
   const el=btnEl(name);if(el)el.classList.toggle('press',down);
   if(!down){
     if(name==='breath')input.breath=false;
     if(name==='fire'||name==='fire2'){
       input.fireHeld=false;
       // release-to-fire: the shot goes when the finger lifts, still with the rifle in hand
-      if(input.fireAim){input.fireAim=false;if(LOAD.active==='rifle'&&!LOAD.pending){input.firePressed=true;input.fireAimShot=GUNCFG.fireBuffer+0.02;}}
+      if(input.fireAim){input.fireAim=false;if(!cancel&&LOAD.active==='rifle'&&!LOAD.pending){input.firePressed=true;input.fireAimShot=GUNCFG.fireBuffer+0.02;}}
     }
     return;
   }
@@ -2430,7 +2434,7 @@ function btnPress(name,down){
     case 'breath':input.breath=true;break;
     case 'zoom':WS.zoom=WS.zoom===8?4:8;SFX.click(0,3000,0.15);break;
     case 'pause':pause();break;
-    case 'swap':input.select=(LOAD.pending||LOAD.active)==='rifle'?'knife':'rifle';break;
+    case 'swap':input.fireAim=false;input.select=(LOAD.pending||LOAD.active)==='rifle'?'knife':'rifle';break;
     case 'inspect':input.inspect=true;break;
   }
 }
@@ -2440,7 +2444,7 @@ function touchFeed(){ // touch state → the same input fields the keyboard/mous
   stickKnob.style.transform='translate('+TOUCH.knobX.toFixed(1)+'px,'+TOUCH.knobY.toFixed(1)+'px)';
   stickBase.classList.toggle('sprint',TOUCH.sprint);
 }
-function releaseAllTouches(){for(const name of new Set(TOUCH.held.values()))btnPress(name,false);SDTouch.reset(TOUCH);stickBase.hidden=true;input.joyX=input.joyY=0;input.joySprint=false;}
+function releaseAllTouches(){for(const name of new Set(TOUCH.held.values()))btnPress(name,false,true);SDTouch.reset(TOUCH);stickBase.hidden=true;input.joyX=input.joyY=0;input.joySprint=false;}
 touchEl.addEventListener('pointerdown',e=>{
   e.preventDefault();
   try{touchEl.setPointerCapture(e.pointerId);}catch(err){}
@@ -2465,7 +2469,7 @@ function touchUp(e){
   e.preventDefault();
   if(EDIT.on){if(e.pointerId===EDIT.dragId)EDIT.dragId=null;return;}
   const r=SDTouch.up(TOUCH,e.pointerId);
-  if(r.release)btnPress(r.release,false);
+  if(r.release)btnPress(r.release,false,e.type==='pointercancel');
   if(r.stickEnd)stickBase.hidden=true;
 }
 touchEl.addEventListener('pointerup',touchUp,{passive:false});
@@ -2505,11 +2509,11 @@ $('#edCancel').addEventListener('click',()=>closeEditor(false));
 $('#edReset').addEventListener('click',()=>{LAYOUT=SDLayout.defaults();$('#edOp').value=LAYOUT.opacity;$('#edOpOut').textContent=LAYOUT.opacity.toFixed(2);editorSelect(EDIT.sel);applyLayout();});
 
 /* ---- settings panel ---- */
-let SETTINGS=SDSettings.load(store);
+let SETTINGS=SDSettings.load(store,isTouch);
 const SET_UI=[['sH','sensH'],['sV','sensV'],['sA','adsSens'],['sT','touchLook']];
 function settingsToUI(){for(const [id,k] of SET_UI){$('#'+id).value=SETTINGS[k];$('#'+id+'o').textContent=(+SETTINGS[k]).toFixed(2);}$('#sInv').checked=SETTINGS.invertY;$('#sLeft').checked=SETTINGS.leftFire;$('#sRel').checked=SETTINGS.releaseFire;
   const g=(SETTINGS.sensH+SETTINGS.sensV)/2;$('#sens').value=g;$('#sensOut').textContent=g.toFixed(2);}
-function settingsChanged(){SETTINGS=SDSettings.sanitize(SETTINGS);SDSettings.save(store,SETTINGS);settingsToUI();}
+function settingsChanged(){SETTINGS=SDSettings.sanitize(SETTINGS,isTouch);SDSettings.save(store,SETTINGS,isTouch);settingsToUI();}
 for(const [id,k] of SET_UI)$('#'+id).addEventListener('input',()=>{SETTINGS[k]=+$('#'+id).value;settingsChanged();});
 $('#sInv').addEventListener('change',()=>{SETTINGS.invertY=$('#sInv').checked;settingsChanged();});
 $('#sLeft').addEventListener('change',()=>{SETTINGS.leftFire=$('#sLeft').checked;settingsChanged();});
@@ -2519,7 +2523,7 @@ function openSettings(from){settingsFrom=from;settingsToUI();$('#settings').hidd
 $('#openSettings').addEventListener('click',()=>{audioInit();SFX.ui();openSettings('menu');});
 $('#pauseSettings').addEventListener('click',()=>{SFX.ui();openSettings('pause');});
 $('#setClose').addEventListener('click',()=>{$('#settings').hidden=true;SFX.ui();});
-$('#setReset').addEventListener('click',()=>{SETTINGS=SDSettings.sanitize({});settingsChanged();});
+$('#setReset').addEventListener('click',()=>{SETTINGS=SDSettings.defaults(isTouch);settingsChanged();});
 $('#openEditor').addEventListener('click',()=>{SFX.ui();openEditor();});
 settingsToUI();
 
@@ -2596,10 +2600,10 @@ function endMatch(win){
   state='over';
   $('#overTitle').textContent=win?'VICTORIA':'DERROTA';$('#overTitle').className=win?'win':'lose';
   $('#overEyebrow').textContent='Fin de la partida · '+DIFFS[diff].name;
-  $('#sK').textContent=STATS.kills;$('#sD').textContent=STATS.deaths;$('#sH').textContent=STATS.hs;
-  $('#sA').textContent=(STATS.shots?Math.round(STATS.hits/STATS.shots*100):0)+'%';
-  $('#sL').textContent=Math.round(STATS.longest)+' m';
-  const secs=Math.round(gameTime-STATS.start);$('#sT').textContent=Math.floor(secs/60)+':'+String(secs%60).padStart(2,'0');
+  $('#oK').textContent=STATS.kills;$('#oD').textContent=STATS.deaths;$('#oH').textContent=STATS.hs;
+  $('#oA').textContent=(STATS.shots?Math.round(STATS.hits/STATS.shots*100):0)+'%';
+  $('#oL').textContent=Math.round(STATS.longest)+' m';
+  const secs=Math.round(gameTime-STATS.start);$('#oT').textContent=Math.floor(secs/60)+':'+String(secs%60).padStart(2,'0');
   $('#over').hidden=false;$('#scope').hidden=true;$('#death').hidden=true;$('#touch').hidden=true;
   if(document.exitPointerLock&&pointerLocked)document.exitPointerLock();
 }
