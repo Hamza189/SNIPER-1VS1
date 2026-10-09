@@ -17,7 +17,12 @@ import subprocess
 try: rev = subprocess.run(["git", "rev-parse", "--short", "HEAD"], cwd=root, capture_output=True, text=True).stdout.strip() or "dev"
 except Exception: rev = "dev"
 build_id = rev  # the commit the page was built on (shown in F3)
-fragment = page.replace("/*@@CORE@@*/", code + "\nconst BUILD_ID=" + repr(build_id).replace("'", '"') + ";", 1)
+import hashlib, json
+# content hash: changes whenever the game itself changes; the page compares it with version.json
+# to tell an open tab that a newer version has been published
+build_hash = hashlib.sha1((code + page).encode()).hexdigest()[:10]
+fragment = page.replace("/*@@CORE@@*/", code + "\nconst BUILD_ID=" + repr(build_id).replace("'", '"') + ";const BUILD_HASH=" + json.dumps(build_hash) + ";", 1)
+(root / "version.json").write_text(json.dumps({"hash": build_hash, "rev": build_id}) + "\n")
 
 # split the fragment: everything up to the end of the first <style> belongs in <head>
 cut = fragment.index("</style>") + len("</style>")

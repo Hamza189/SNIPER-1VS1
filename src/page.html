@@ -212,6 +212,8 @@ h1 span{display:block;color:var(--sand)}
 #netStat i{display:inline-block;width:7px;height:7px;border-radius:50%;background:#5bd16b;margin-right:6px;vertical-align:1px}
 #netStat.warn i{background:var(--gold)}#netStat.bad i{background:var(--blood)}
 #fpsBox{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(4px + env(safe-area-inset-bottom));z-index:25;pointer-events:none;font:600 11px/1 'IBM Plex Mono',monospace;color:#f3e9d6;background:rgba(15,13,10,.6);padding:3px 6px;letter-spacing:.06em}
+#updBanner{position:fixed;top:calc(8px + env(safe-area-inset-top));left:50%;transform:translateX(-50%);z-index:60;display:flex;gap:12px;align-items:center;padding:8px 10px 8px 14px;background:var(--ink-2);border:1px solid var(--signal);font:600 12px/1.2 var(--f-mono);letter-spacing:.06em;color:var(--hud);white-space:nowrap}
+#updBanner button{font:500 18px/1 var(--f-display);letter-spacing:.06em;padding:7px 12px 4px;border:0;background:var(--signal);color:var(--ink);cursor:pointer}
 #lockHint{position:fixed;top:14%;left:50%;transform:translateX(-50%);z-index:30;pointer-events:none;padding:8px 14px;background:rgba(15,13,10,.82);border:1px solid var(--amber,#ff9a3c);color:#f3e9d6;font:600 13px/1.3 'IBM Plex Mono',monospace;letter-spacing:.06em;text-align:center}
 #loadErr{position:fixed;inset:0;display:grid;place-items:center;padding:24px;text-align:center;z-index:50;background:var(--ink)}
 
@@ -516,6 +518,7 @@ body.touch #score .side span{max-width:11vw;overflow:hidden;text-overflow:ellips
 <div id="countdown" hidden>3</div>
 <div id="netBanner" hidden></div>
 <div id="netStat" hidden><i></i><span id="netStatTxt">–</span></div>
+<div id="updBanner" hidden><span>HAY UNA VERSIÓN NUEVA DEL JUEGO</span><button type="button" id="updBtn">ACTUALIZAR</button></div>
 <div id="lockHint" hidden>HAZ CLIC EN LA PANTALLA PARA CONTROLAR LA CÁMARA CON EL RATÓN</div>
 <div id="loadErr" hidden><p>No se ha podido cargar el motor 3D. Revisa la conexión y vuelve a abrir la página.</p></div>
 
@@ -2459,6 +2462,16 @@ function netFrame(rdt){
 }
 // connection upkeep, also in the lobby (the server drops sockets silent for 6 s): ping,
 // reconnect when due, replace a socket that stays open but brings nothing
+// a newer version published while this tab is open (GitHub Pages): offer a reload, never mid-match
+async function checkUpdate(){
+  if(location.protocol==='file:'||typeof BUILD_HASH==='undefined')return;
+  try{const r=await fetch('version.json?t='+Date.now(),{cache:'no-store'});if(!r.ok)return;const j=await r.json();
+    NET.newVersion=!!(j&&j.hash&&j.hash!==BUILD_HASH);}catch(e){}
+  updShow();
+}
+function updShow(){const busy=state==='playing'||state==='dead'||(NET.N&&(NET.N.phase==='playing'||NET.N.phase==='countdown'));$('#updBanner').hidden=!NET.newVersion||busy;}
+$('#updBtn').addEventListener('click',()=>{location.reload();});
+setTimeout(checkUpdate,4000);setInterval(checkUpdate,60000);setInterval(updShow,1000);
 // the rival dropped out: the banner counts down the 60 s the server waits for them
 function netGoneBanner(){const left=Math.max(0,Math.ceil(60-(performance.now()-NET.goneAt)/1000));netBanner('RIVAL DESCONECTADO · esperando a que vuelva ('+left+' s)');}
 setInterval(()=>{

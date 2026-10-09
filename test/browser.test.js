@@ -90,6 +90,15 @@ const shown = page => page.evaluate(ids => ids.filter(id => { const e = document
       check('en pausa el aviso desaparece', !(await page.evaluate(() => document.getElementById('lockHint').checkVisibility())));
       await ctx.close();
     }
+    console.log('\nVERSIÓN NUEVA PUBLICADA');
+    { const { ctx, page } = await open({ viewport: { width: 1280, height: 720 } });
+      await page.waitForTimeout(5000);
+      check('con la versión al día no sale ningún aviso', await page.evaluate(() => document.getElementById('updBanner').hidden));
+      await ctx.route(/version\.json/, r => r.fulfill({ contentType: 'application/json', body: '{"hash":"0000000000"}' }));
+      await page.waitForTimeout(61500);   // the page checks every 60 s
+      check('si se publica otra versión, el menú ofrece ACTUALIZAR', await page.evaluate(() => !document.getElementById('updBanner').hidden));
+      await ctx.close();
+    }
     console.log('\nGRÁFICOS');
     { const { ctx, page } = await open({ viewport: { width: 1280, height: 720 }, deviceScaleFactor: 2 });
       const q = await page.evaluate(async () => {
