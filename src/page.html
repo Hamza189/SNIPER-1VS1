@@ -4,6 +4,8 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Teko:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
 <style>
+/* the hidden attribute must win over any display rule below (the claude.ai host adds this itself; a normal page does not) */
+[hidden]{display:none!important}
 /* Layout: full-bleed WebGL scene; HUD pinned to the corners like the data plate of a rifle optic; menus are a field card laid over the live town. Single dark look by choice. */
 :root{
   --ink:#0f0d0a;
@@ -2022,10 +2024,13 @@ function aimSelfTest(){
         const dir=tp.clone().sub(origin).normalize();
         const h=simulateShot(origin,dir);
         if(h&&h.object.userData.bot&&h.object.userData.bot!==d){out.push('· '+d.name+' '+part+' → se cruzó otra diana, repite el autotest');continue;}
-        const got=h&&h.object.userData.bot===d?h.object.userData.part:(h?'cobertura/escenario':'nada');
+        const got=h&&h.object.userData.bot===d?h.object.userData.part:(h?'cobertura/escenario a '+h.point.distanceTo(origin).toFixed(1)+' m (x '+h.point.x.toFixed(1)+', y '+h.point.y.toFixed(2)+', z '+h.point.z.toFixed(1)+')':'nada');
         const err=h&&h.object.userData.bot===d?((h.point.y-tp.y)*100).toFixed(1)+' cm':'';
-        const covered=got==='cobertura/escenario';
+        const covered=got.startsWith('cobertura/escenario');
         if(covered&&d.slot.note){out.push('· '+d.name+' '+dist.toFixed(0)+' m '+part+' → tapado por la cobertura (correcto)');continue;}
+        // something of the scenery in the straight line of sight too (e.g. another target's cover): the
+        // part is simply not visible from here, so it is not a shooting error
+        if(covered&&!losClear(origin.x,origin.y,origin.z,tp.x,tp.y,tp.z)){out.push('· '+d.name+' '+dist.toFixed(0)+' m '+part+' → no se ve desde aquí, lo tapa el escenario (correcto)');continue;}
         mark(got===part,d.name+' '+dist.toFixed(0)+' m · '+part+' → '+got+(err?' ('+err+')':''));
       }
       const over=parts.head.getWorldPosition(new T.Vector3()).add(new T.Vector3(0,0.35,0));

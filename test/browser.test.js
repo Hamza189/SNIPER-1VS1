@@ -1,0 +1,79 @@
+/* Real-browser test: opens index.html in headless Chromium (Playwright, WebGL by software)
+   exactly as GitHub Pages serves it, and checks what the player actually sees.
+   It is a real engine + real DOM + real CSS test, but NOT a test of Safari, Android or of
+   real performance (software rendering on a server).
+   Run: node test/browser.test.js   (needs the playwright package; skipped if missing) */
+'use strict';
+const http = require('http'), fs = require('fs'), path = require('path');
+let chromium;
+try { ({ chromium } = require('playwright')); } catch (e) { console.log('\nNAVEGADOR REAL: playwright no está instalado, se omite'); process.exit(0); }
+
+const root = path.join(__dirname, '..');
+const TYPES = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript', '.webmanifest': 'application/manifest+json', '.png': 'image/png' };
+const server = http.createServer((req, res) => {
+  let p = decodeURIComponent(req.url.split('?')[0]); if (p.endsWith('/')) p += 'index.html';
+  const f = path.join(root, path.normalize(p));
+  if (!f.startsWith(root) || !fs.existsSync(f) || fs.statSync(f).isDirectory()) { res.writeHead(404); return res.end(); }
+  res.writeHead(200, { 'Content-Type': TYPES[path.extname(f)] || 'application/octet-stream' }); fs.createReadStream(f).pipe(res);
+});
+
+let pass = 0, fail = 0;
+const check = (n, c, i) => { (c ? pass++ : fail++); console.log((c ? '  ok   ' : '  FAIL ') + n + (i !== undefined ? '  (' + i + ')' : '')); };
+// ids of the overlays that must only appear when the game asks for them
+const OVERLAYS = ['loadErr', 'rotate', 'settings', 'editPanel', 'pause', 'over', 'death', 'selfTestOut', 'dbg'];
+const shown = page => page.evaluate(ids => ids.filter(id => { const e = document.getElementById(id); return e && e.checkVisibility && e.checkVisibility(); }), OVERLAYS);
+
+(async () => {
+  await new Promise(r => server.listen(0, '127.0.0.1', r));
+  const url = 'http://127.0.0.1:' + server.address().port + '/';
+  const browser = await chromium.launch({ args: ['--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist'] });
+  const errors = [];
+  const open = async (opts) => {
+    const ctx = await browser.newContext(opts);
+    // fonts come from Google; the test machine has no internet, the game must not depend on them
+    await ctx.route(/fonts\.(googleapis|gstatic)\.com/, r => r.abort());
+    const page = await ctx.newPage();
+    page.on('pageerror', e => errors.push(e.message));
+    await page.goto(url, { waitUntil: 'load' }); await page.waitForTimeout(1500);
+    return { ctx, page };
+  };
+  try {
+    console.log('\nPC (1280×720, ratón)');
+    { const { ctx, page } = await open({ viewport: { width: 1280, height: 720 } });
+      const st = await page.evaluate(() => ({ three: window.THREE && THREE.REVISION, sd: !!window.__SD, menu: document.querySelector('#menu, .menu, #start') ? 1 : 0, play: !!Array.from(document.querySelectorAll('button')).find(b => /JUGAR/.test(b.textContent) && b.checkVisibility()) }));
+      check('Three.js r128 cargado desde el propio sitio (sin CDN)', st.three === '128');
+      check('el juego arranca', st.sd);
+      const ov = await shown(page);
+      check('en el menú no se ve ninguna pantalla que debería estar oculta', ov.length === 0, ov.join(', ') || 'ninguna');
+      check('el botón JUGAR se ve', st.play);
+      await page.evaluate(() => { __SD.setMode('range'); __SD.startMatch(); });
+      await page.waitForTimeout(2500);
+      const res = await page.evaluate(() => __SD.aimSelfTest());
+      const head = res[0] || '';
+      check('autotest de puntería con el motor real: 0 fallidas', /✔ AUTOTEST/.test(head), head.replace(/^. /, ''));
+      if (!/✔ AUTOTEST/.test(head)) res.filter(l => l.startsWith('✘')).forEach(l => console.log('       ' + l));
+      const ov2 = await shown(page);
+      check('jugando no tapa nada ninguna pantalla oculta', ov2.length === 0, ov2.join(', ') || 'ninguna');
+      await ctx.close();
+    }
+    console.log('\nMÓVIL (emulación de pantalla táctil 844×390; NO es Safari ni Android reales)');
+    { const { ctx, page } = await open({ viewport: { width: 844, height: 390 }, hasTouch: true, isMobile: true, deviceScaleFactor: 3 });
+      const ov = await shown(page);
+      check('horizontal: menú sin pantallas indebidas (sin aviso de girar)', ov.length === 0, ov.join(', ') || 'ninguna');
+      await page.evaluate(() => { __SD.setMode('range'); __SD.startMatch(); }); await page.waitForTimeout(1200);
+      const t = await page.evaluate(() => { const e = document.getElementById('touch'); return e && e.checkVisibility(); });
+      check('al jugar aparecen los controles táctiles', t);
+      await page.setViewportSize({ width: 390, height: 844 }); await page.waitForTimeout(600);
+      const ov2 = await shown(page);
+      check('en vertical sale el aviso GIRA EL MÓVIL', ov2.includes('rotate'), ov2.join(', '));
+      await page.setViewportSize({ width: 844, height: 390 }); await page.waitForTimeout(600);
+      const ov3 = await shown(page);
+      check('al volver a horizontal el aviso desaparece', !ov3.includes('rotate'), ov3.join(', ') || 'ninguna');
+      await ctx.close();
+    }
+    check('sin errores de JavaScript en la página', errors.length === 0, errors.slice(0, 3).join(' | ') || 'ninguno');
+  } catch (e) { fail++; console.log('  FAIL ' + e.message); }
+  await browser.close(); server.close();
+  console.log('\n' + pass + ' correctas, ' + fail + ' fallidas');
+  process.exit(fail ? 1 : 0);
+})();
