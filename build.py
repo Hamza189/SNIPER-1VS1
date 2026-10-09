@@ -13,7 +13,11 @@ code = "\n".join((root / "core" / f).read_text() for f in CORE) + "\n" + \
        "\n".join((root / "client" / f).read_text() for f in CLIENT)
 page = (root / "src" / "page.html").read_text()
 assert "/*@@CORE@@*/" in page
-fragment = page.replace("/*@@CORE@@*/", code, 1)
+import subprocess
+try: rev = subprocess.run(["git", "rev-parse", "--short", "HEAD"], cwd=root, capture_output=True, text=True).stdout.strip() or "dev"
+except Exception: rev = "dev"
+build_id = rev  # the commit the page was built on (shown in F3)
+fragment = page.replace("/*@@CORE@@*/", code + "\nconst BUILD_ID=" + repr(build_id).replace("'", '"') + ";", 1)
 
 # split the fragment: everything up to the end of the first <style> belongs in <head>
 cut = fragment.index("</style>") + len("</style>")

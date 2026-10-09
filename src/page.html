@@ -1409,7 +1409,8 @@ function doFire(e){
   const muzzleW=origin.clone().addScaledVector(fwd,1.1).addScaledVector(up,-0.16).addScaledVector(right,0.16);
   const vis=scoped?origin.clone().addScaledVector(up,-0.12).addScaledVector(fwd,1.5):muzzleW;
   spawnBullet(origin,dir,vis);
-  if(mode==='online')NET.fire={o:[origin.x,origin.y,origin.z],d:[dir.x,dir.y,dir.z]};
+  if(mode==='online')NET.fire={o:[origin.x,origin.y,origin.z],d:[dir.x,dir.y,dir.z],ads:WCORE.ads,sp,scoped};
+  if(mode==='online')NET.lastFire=NET.fire;
   // feedback (visual / audio only)
   SFX.shot();vibrate(28);
   const rc=GUNCFG.recoil;SDWeapon.kickRecoil(RECOIL,scoped?rc.pitch:rc.pitchHip,rand(-1,1)*rc.yaw,rc);
@@ -2024,7 +2025,7 @@ function updateDebug(rdt){
   _ae.set(AIM.pitch,AIM.yaw,0,'YXZ');_aq.setFromEuler(_ae);
   RAY.set(camera.position,new T.Vector3(0,0,-1).applyQuaternion(_aq));RAY.near=0;RAY.far=500;
   const h=RAY.intersectObjects(shotTargets(),false);
-  const tgt=h.length?(h[0].distance.toFixed(1)+' m'+(h[0].object.userData.part?' ['+h[0].object.userData.bot.name+' '+h[0].object.userData.part+']':'')):'---';
+  const tgt=h.length?(h[0].distance.toFixed(1)+' m'+(h[0].object.userData.part?' ['+(h[0].object.userData.bot?h[0].object.userData.bot.name:'RIVAL')+' '+h[0].object.userData.part+']':'')):'---';
   let parts=0;for(const p of PARTS)if(p.s.visible)parts++;
   let trc=0;for(const t of TRACERS)if(t.m.visible)trc++;
   const sp=SDWeapon.spread(WCORE,moveCtx());
@@ -2040,7 +2041,18 @@ function updateDebug(rdt){
     'objetivo     '+tgt+'\n'+
     'proyectiles  '+BULLETS.length+'   trazadoras bots '+trc+'\n'+
     'partículas   '+parts+'/'+PARTS.length+'   eventos '+EVENTS.length+'\n'+
-    'bots vivos   '+activeBots().filter(b=>b.alive).length+'/'+activeBots().length;
+    'bots vivos   '+activeBots().filter(b=>b.alive).length+'/'+activeBots().length+
+    (NET.N?'\n--- RED ---\n'+
+    'versión      '+BUILD_ID+'  protocolo v'+SDProto.VERSION+'\n'+
+    'conexión     '+NET.status+(NET.ws?' (ws '+NET.ws.readyState+')':'')+(NET.retries?'  reintentos '+NET.retries:'')+'\n'+
+    'sala         '+(NET.code||'–')+'  soy '+(NET.N.you||'–')+'  partida '+NET.N.match+'  fase '+NET.N.phase+'\n'+
+    'ping         '+Math.round(NET.N.rtt)+' ms   instantáneas '+NET.N.snapRate+'/s\n'+
+    'comandos     enviados '+NET.N.seq+'  confirmados '+NET.N.lastAck+'  pendientes '+NET.N.pending.length+'\n'+
+    'predicción   corrección '+(NET.N.corr*100).toFixed(1)+' cm  (máx '+(NET.N.corrMax*100).toFixed(1)+' cm)\n'+
+    'último tiro  '+(NET.N.lastShot?'#'+NET.N.lastShot.id+' '+NET.N.lastShot.by+(NET.N.lastShot.corrected?' CORREGIDO':''):'–')+'\n'+
+    'rechazado    '+(NET.N.lastReject?NET.N.lastReject.what+': '+NET.N.lastReject.why:'–')+'\n'+
+    'tráfico      ↓'+(NET.bytesIn/1024).toFixed(0)+' kB ↑'+(NET.bytesOut/1024).toFixed(0)+' kB\n'+
+    'errores      '+(NET.errors.length?NET.errors.join(' · '):'–'):'');
 }
 window.addEventListener('keydown',e=>{if(e.code==='F3'){e.preventDefault();toggleDebug();}});
 $('#dbgBtn').addEventListener('click',toggleDebug);

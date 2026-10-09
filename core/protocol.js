@@ -20,7 +20,8 @@ const LIMITS = {
   maxMsgPerSec: 90,        // per connection; more is dropped, far more closes the socket
   maxCmdsPerMsg: 24,
   nameLen: 16,
-  cmdBurst: 60,            // commands the server accepts ahead of real time (0.5 s at 120 Hz)
+  cmdBurst: 120,           // commands the server accepts ahead of real time (1 s at 120 Hz: a phone that
+                           // stalls and catches up is not corrected; a speed hack gains at most 1 s once)
   tickHz: 120              // one command = one simulation tick of 1/120 s (same as the client)
 };
 // command bits

@@ -212,7 +212,7 @@ function create(opts) {
     for (let i = 0; i < m.c.length; i++) {
       const seq = m.s + i;
       if (seq <= s.lastSeq) continue;                         // duplicate or old: never applied twice
-      if (s.budget < 1) break;                                // too fast: the rest is dropped
+      if (s.budget < 1) { s.dropped = (s.dropped || 0) + (m.c.length - i); if (!s.dropLogged) { log('cmds dropped ' + s.id); s.dropLogged = true; } break; } // too fast: the rest is dropped
       s.budget -= 1; s.lastSeq = seq;
       const cmd = m.c[i];
       if (R.phase !== 'playing' || !s.alive) continue;        // acknowledged but not simulated

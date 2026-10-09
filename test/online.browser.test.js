@@ -59,9 +59,17 @@ async function until(page, fn, arg, ms) { try { await page.waitForFunction(fn, a
     const sa2 = await seen(A), real = room.seats.B.p.ms;
     check('B se mueve y A lo ve moverse', sa2 && Math.hypot(sa2.x - sa.x, sa2.z - sa.z) > 1 && Math.hypot(sa2.x - real.x, sa2.z - real.z) < 0.6, sa2 && Math.hypot(sa2.x - sa.x, sa2.z - sa.z).toFixed(2) + ' m');
     const predOk = await B.evaluate(() => __SD.NET.N.corrMax);
-    check('la predicción de B no tuvo que corregir', predOk < 0.01, predOk.toFixed(4) + ' m');
+    check('la predicción de B no tuvo que corregir', predOk < 0.01, predOk.toFixed(4) + ' m · comandos descartados por el servidor: ' + (room.seats.B.dropped || 0));
     // A aims at B's chest with the scope and fires through the real input path
     const aimAndFire = async (pg, y) => {
+      const who = pg === A ? 'A' : 'B', s0 = room.seats[who].shots, h0 = room.seats[who].hits;
+      await aim(pg, y);
+      if (room.seats[who].shots === s0 || room.seats[who].hits === h0) {
+        const R = await pg.evaluate(() => { const R = __SD.REMOTE, ls = __SD.NET.N.lastShot; return { lf: __SD.NET.lastFire, shot: ls && { o: ls.o, d: ls.d, c: ls.corrected }, aim: [__SD.AIM.yaw, __SD.AIM.pitch, __SD.AIM.ox, __SD.AIM.oy, __SD.AIM.oz], rx: R.g.position.x, rz: R.g.position.z, x: __SD.P.pos.x, z: __SD.P.pos.z, yaw: __SD.P.yaw, pitch: __SD.P.pitch, ads: __SD.WCORE.ads, st: __SD.WCORE.state, ammo: __SD.WCORE.ammo, alive: __SD.P.alive, ph: __SD.NET.N.phase, gst: __SD.state }; });
+        console.log('       diagnóstico ' + who + ': disparos ' + (room.seats[who].shots - s0) + ' impactos ' + (room.seats[who].hits - h0) + ' · ' + JSON.stringify(R) + ' · servidor rival ' + JSON.stringify((({ x, z }) => ({ x, z }))(room.seats[who === 'A' ? 'B' : 'A'].p.ms)) + ' · ' + room.log.slice(-4).join(' | '));
+      }
+    };
+    const aim = async (pg, y) => {
       await pg.evaluate(() => { __SD.input.scope = true; }); await sleep(600);
       await pg.evaluate((yy) => { const R = __SD.REMOTE, P = __SD.P, eye = P.pos.y + __SD.PM.eye;
         const dx = R.g.position.x - P.pos.x, dy = R.g.position.y + yy - eye, dz = R.g.position.z - P.pos.z, d = Math.hypot(dx, dz);
@@ -86,6 +94,9 @@ async function until(page, fn, arg, ms) { try { await page.waitForFunction(fn, a
     // last kill: 9 → 10
     room.debug.set('A', 'kills', 9); room.debug.set('B', 'hp', 10); await sleep(1500);
     await aimAndFire(A, 1.17);
+    const vic = await until(A, () => !document.getElementById('over').hidden, null, 4000);
+    if (!vic) { console.log('       diagnóstico: fase ' + room.phase + ' · disparos A ' + room.seats.A.shots + ' impactos ' + room.seats.A.hits + ' · vida B ' + Math.round(room.seats.B.hp) + ' viva ' + room.seats.B.alive + ' · arma A ' + room.seats.A.p.w.state + ' balas ' + room.seats.A.p.w.ammo);
+      console.log('       ' + room.log.slice(-6).join(' | ')); }
     check('décima baja: A ve VICTORIA', await until(A, () => !document.getElementById('over').hidden && document.getElementById('overTitle').textContent === 'VICTORIA', null, 4000));
     check('B ve DERROTA', await until(B, () => !document.getElementById('over').hidden && document.getElementById('overTitle').textContent === 'DERROTA', null, 4000));
     await A.click('#again'); await sleep(300);
