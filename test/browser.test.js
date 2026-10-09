@@ -121,6 +121,16 @@ const shown = page => page.evaluate(ids => ids.filter(id => { const e = document
       check('al volver a horizontal el aviso desaparece', !ov3.includes('rotate'), ov3.join(', ') || 'ninguna');
       await ctx.close();
     }
+    { // narrow phones: the health block must not run into the score
+      const bad = [];
+      for (const [w, h] of [[568, 320], [667, 375]]) {
+        const { ctx, page } = await open({ viewport: { width: w, height: h }, hasTouch: true, isMobile: true });
+        await page.evaluate(() => { __SD.setMode('duel'); __SD.startMatch(); }); await page.waitForTimeout(800);
+        const o = await page.evaluate(() => { const v = document.getElementById('vitals').getBoundingClientRect(), t = document.getElementById('score').getBoundingClientRect(); return v.right > t.left && v.top < t.bottom; });
+        if (o) bad.push(w + '×' + h); await ctx.close();
+      }
+      check('móviles estrechos (568 y 667 px): la vida no tapa el marcador', bad.length === 0, bad.join(', ') || 'sin solapes');
+    }
     check('sin errores de JavaScript en la página', errors.length === 0, errors.slice(0, 3).join(' | ') || 'ninguno');
   } catch (e) { fail++; console.log('  FAIL ' + e.message); }
   await browser.close(); server.close();
