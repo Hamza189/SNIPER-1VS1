@@ -258,6 +258,19 @@ body.touch #top{width:min(300px,46vw)}
   .menuInner{padding-top:calc(16px + env(safe-area-inset-top,0px));gap:18px 32px}
   .ctrlBlock{margin-top:12px;gap:12px}
   #score .side b{font-size:26px}
+  /* multiplayer on a phone in landscape: compact, and the lobby in two columns so LISTO is
+     always on screen (code + invitation on the left, players + LISTO on the right) */
+  .mpPanel{width:min(780px,calc(100% - 24px));padding:12px 18px;gap:8px;margin-block:6px}
+  .mpPanel h2{font-size:32px}
+  .mpPanel .btn{font-size:18px!important;padding:9px 16px 6px}
+  .mpPanel input[type=text]{font-size:17px;padding:8px 10px}
+  #mpHome{gap:8px!important}
+  #mpCodeBig{font-size:44px}
+  #mpLobby{grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px 18px!important;align-items:start}
+  #mpLobby>:nth-child(1){grid-area:1/1}#mpLobby>:nth-child(2){grid-area:2/1}#mpLobby>:nth-child(3){grid-area:3/1}
+  #mpLobby>:nth-child(4){grid-area:1/2}#mpLobby>:nth-child(5){grid-area:2/2}#mpLobby>:nth-child(6){grid-area:3/2}
+  #mpLobby .row{flex-wrap:wrap;gap:8px}
+  #mpPlayers li{padding:6px 10px}
 }
 @media (prefers-reduced-motion:reduce){
   #callout.on{animation-duration:1.2s}

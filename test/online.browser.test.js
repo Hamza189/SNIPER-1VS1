@@ -21,7 +21,7 @@ async function until(page, fn, arg, ms) { try { await page.waitForFunction(fn, a
   const browser = await chromium.launch({ args: ['--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist'] });
   const errors = [];
   const open = async (q) => {
-    const ctx = await browser.newContext({ viewport: { width: 480, height: 270 } });
+    const ctx = await browser.newContext({ viewport: { width: 667, height: 375 } });   // iPhone 8 landscape
     await ctx.route(/fonts\.(googleapis|gstatic)\.com/, r => r.abort());
     const page = await ctx.newPage();
     page.on('pageerror', e => errors.push(e.message));
@@ -41,6 +41,8 @@ async function until(page, fn, arg, ms) { try { await page.waitForFunction(fn, a
     check('B abre el enlace: el código ya está puesto', await until(B, c => document.getElementById('mpCode').value === c, code));
     await B.fill('#mpName', 'Novia'); await B.click('#mpJoin');
     check('los dos ven a los dos jugadores en el lobby', await until(A, () => document.querySelectorAll('#mpPlayers li').length === 2) && await until(B, () => document.querySelectorAll('#mpPlayers li').length === 2));
+    const vis = await B.evaluate(() => { const r = document.getElementById('mpReady').getBoundingClientRect(); return r.bottom <= innerHeight && r.top >= 0 && r.width > 0; });
+    check('en una pantalla de móvil apaisado el botón LISTO se ve sin desplazar', vis);
     await A.click('#mpReady'); await B.click('#mpReady');
     check('cuenta atrás en los dos', await until(A, () => !document.getElementById('countdown').hidden) && await until(B, () => __SD.NET.N.phase === 'countdown' || __SD.NET.N.phase === 'playing'));
     check('empieza la partida en los dos', await until(A, () => __SD.NET.N.phase === 'playing' && __SD.state === 'playing', null, 9000) && await until(B, () => __SD.NET.N.phase === 'playing', null, 9000));
