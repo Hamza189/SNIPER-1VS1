@@ -1195,6 +1195,45 @@ const SDTrainer = { createBrain, think, toLocal };
 if (typeof module !== 'undefined' && module.exports) module.exports = SDTrainer; else root.SDTrainer = SDTrainer;
 })(typeof window !== 'undefined' ? window : globalThis);
 
+/* SNIPER DUEL — one player's gameplay tick: loadout → movement → rifle, in that order.
+   Pure (no Three.js). The browser runs it for the local player every 1/120 s, and the
+   multiplayer server runs the very same function with the same commands, so the player's
+   predicted position, ammo and bolt match the server's.
+
+   cmd = { mx, mz, yaw, sprint, crouch, crouchPressed, jump, fire, adsHeld, reload,
+           select ('rifle'|'knife'|null), inspect } */
+(function (root) {
+'use strict';
+const isNode = typeof module !== 'undefined' && module.exports;
+const CFG = isNode ? require('./config.js') : root.SD_CONFIG;
+const M = isNode ? require('./movement.js') : root.SDMovement;
+const Wp = isNode ? require('./weapon.js') : root.SDWeapon;
+const Me = isNode ? require('./melee.js') : root.SDMelee;
+
+function create(x, y, z, rifle, knife) {
+  const rc = rifle || CFG.rifles.halcon, kc = knife || CFG.knives.tactica;
+  return { ms: M.createState(x, y, z), w: Wp.createState(rc), load: Me.createLoadout(kc, CFG.loadout) };
+}
+// put a player back at a spawn point with a fresh rifle (multiplayer respawn / rematch)
+function respawn(p, x, y, z) {
+  Object.assign(p.ms, M.createState(x, y, z));
+  Wp.resetForSpawn(p.w); Me.resetLoadout(p.load);
+}
+function step(p, cmd, dt, world, moveCfg) {
+  const L = p.load, w = p.w;
+  const lev = Me.tickLoadout(L, { select: cmd.select || null, attack: !!cmd.fire && L.active === 'knife', inspect: !!cmd.inspect }, dt);
+  const hol = Me.rifleHolstered(L);
+  const mc = { mx: cmd.mx, mz: cmd.mz, yaw: cmd.yaw, sprint: !!cmd.sprint, crouch: !!cmd.crouch, crouchPressed: !!cmd.crouchPressed,
+    jump: !!cmd.jump, ads: w.ads, reloading: w.state === 'reload', speedMul: Me.speedMul(L) };
+  const mev = M.step(p.ms, mc, dt, world, moveCfg || CFG.move);
+  const wev = Wp.tick(w, { fire: !!cmd.fire && L.active === 'rifle', ads: !!cmd.adsHeld, reload: !!cmd.reload }, dt,
+    { sprinting: p.ms.sprinting, alive: true, holstered: hol });
+  return { mev, lev, wev, hol };
+}
+const SDPlayer = { create, respawn, step };
+if (isNode) module.exports = SDPlayer; else root.SDPlayer = SDPlayer;
+})(typeof window !== 'undefined' ? window : globalThis);
+
 /* SNIPER DUEL — player settings (sensitivity, invert Y, touch options).
    Pure: no DOM. The page loads/saves them through a small storage adapter. */
 (function (root) {
@@ -1910,6 +1949,8 @@ const WCORE=SDWeapon.createState(GUNCFG);
 const RECOIL=SDWeapon.createRecoil();
 const KCFG=SD_CONFIG.knives.tactica;
 const LOAD=SDMelee.createLoadout(KCFG,SD_CONFIG.loadout);
+// the local player as the shared tick sees it (the same objects, not copies)
+const LOCAL={ms:PM,w:WCORE,load:LOAD};
 // shooting-range options (remembered per browser)
 const TRAIN={level:['off','easy','normal','hard'].includes(store.get('trainLevel','off'))?store.get('trainLevel','off'):'off',infAmmo:!!store.get('infAmmo',false)};
 // ... and presentation state mirrored from it each tick (read by bots, HUD, camera)
@@ -2698,12 +2739,9 @@ function simTick(dt){
   if(P.alive&&(state==='playing')){
     const cmd=buildCmd();
     PMprev.x=PM.x;PMprev.y=PM.y;PMprev.z=PM.z;
-    const lev=SDMelee.tickLoadout(LOAD,{select:input.select,attack:cmd.fire&&LOAD.active==='knife',inspect:input.inspect},dt);
-    input.select=null;input.inspect=false;
-    const hol=SDMelee.rifleHolstered(LOAD);
-    cmd.speedMul=SDMelee.speedMul(LOAD);
-    const mev=SDMovement.step(PM,cmd,dt,W,MOVE);
-    const wev=SDWeapon.tick(WCORE,{fire:cmd.fire&&LOAD.active==='rifle',ads:cmd.adsHeld,reload:cmd.reload},dt,{sprinting:PM.sprinting,alive:true,holstered:hol});
+    cmd.select=input.select;cmd.inspect=input.inspect;input.select=null;input.inspect=false;
+    if(typeof netOnCmd==='function')netOnCmd(cmd); // multiplayer: the same command goes to the server
+    const {mev,lev,wev,hol}=SDPlayer.step(LOCAL,cmd,dt,W,MOVE);
     syncFromSim();
     for(const e of mev)onMoveEvent(e);
     for(const e of lev)onLoadoutEvent(e);
@@ -3019,7 +3057,7 @@ function frame(now){
 }
 resize();
 requestAnimationFrame(frame);
-window.__SD={TOUCH,EDIT,openEditor,get SETTINGS(){return SETTINGS;},get LAYOUT(){return LAYOUT;},checkOrientation,MAT,LOAD,TRAINERS,get RANGE_BOTS(){return RANGE_BOTS;},TRAIN,setTrain,impactFX,surfaceOf,soundDelay,aimSelfTest,P,PM,WS,WCORE,RECOIL,AIM,BOTS,DUMMIES,BULLETS,EVENTS,PARTS,STATS,get state(){return state;},get mode(){return mode;},setMode,input,startMatch,simTick,frame,toMenu,pause,resume};
+window.__SD={W,NAV:typeof NAV!=="undefined"?NAV:null,TOUCH,EDIT,openEditor,get SETTINGS(){return SETTINGS;},get LAYOUT(){return LAYOUT;},checkOrientation,MAT,LOAD,TRAINERS,get RANGE_BOTS(){return RANGE_BOTS;},TRAIN,setTrain,impactFX,surfaceOf,soundDelay,aimSelfTest,P,PM,WS,WCORE,RECOIL,AIM,BOTS,DUMMIES,BULLETS,EVENTS,PARTS,STATS,get state(){return state;},get mode(){return mode;},setMode,input,startMatch,simTick,frame,toMenu,pause,resume};
 })();
 </script>
 

@@ -7,7 +7,7 @@
 """
 import pathlib
 root = pathlib.Path(__file__).parent
-CORE = ["config.js", "movement.js", "weapon.js", "melee.js", "trainer.js"]
+CORE = ["config.js", "movement.js", "weapon.js", "melee.js", "trainer.js", "player.js"]
 CLIENT = ["settings.js", "layout.js", "touch.js"]
 code = "\n".join((root / "core" / f).read_text() for f in CORE) + "\n" + \
        "\n".join((root / "client" / f).read_text() for f in CLIENT)
