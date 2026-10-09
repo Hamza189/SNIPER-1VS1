@@ -5,6 +5,7 @@
 const SDRoom = require('../core/room.js'), SDNet = require('../client/netcore.js'), SDP = require('../core/player.js');
 const PR = require('../core/protocol.js'), MAP = require('../core/mapdata.js'), G = require('../core/geom.js'), CFG = require('../core/config.js');
 const INDEX = G.createMapIndex(MAP);
+const IXS = { pueblo: INDEX }; for (const id in MAP.maps) if (!IXS[id]) IXS[id] = G.createMapIndex(MAP.maps[id]);
 const DT = 1 / 120;
 
 function rng(seed) { let s = seed >>> 0 || 1; return () => ((s = (s * 1664525 + 1013904223) >>> 0) / 4294967296); }
@@ -32,9 +33,10 @@ function createSim(o) {
   let nextConn = 1;
   S.addClient = (name, ai) => {
     const local = SDP.create(0, 0, 0);
-    const c = { name, local, ai: ai || null, open: true, conn: nextConn++, events: [], fireLog: [] };
-    c.N = SDNet.create({ send: text => { if (c.open) wire('c' + c.conn, () => c.open && room.message(c.conn, text, S.t), text); }, now: () => S.t, world: INDEX.world, local });
-    c.recv = text => { for (const e of c.N.onMessage(text)) { c.events.push(e); if (e.k === 'start' || e.k === 'respawn' && e.id === c.N.you) {} } };
+    // the client's world follows the room's map (swapped when a match starts), like the page
+    const c = { name, local, ai: ai || null, open: true, conn: nextConn++, events: [], fireLog: [], world: { colliders: INDEX.world.colliders, ramps: INDEX.world.ramps } };
+    c.N = SDNet.create({ send: text => { if (c.open) wire('c' + c.conn, () => c.open && room.message(c.conn, text, S.t), text); }, now: () => S.t, world: c.world, local });
+    c.recv = text => { for (const e of c.N.onMessage(text)) { if (e.k === 'start' && e.m.map) { const w = (IXS[e.m.map] || INDEX).world; c.world.colliders = w.colliders; c.world.ramps = w.ramps; } c.events.push(e); if (e.k === 'start' || e.k === 'respawn' && e.id === c.N.you) {} } };
     S.byConn[c.conn] = c; room.connect(c.conn, S.t);
     S.clients[name] = c;
     return c;
@@ -50,7 +52,7 @@ function createSim(o) {
     const N = c.N;
     if (N.phase !== 'playing' || !N.alive || !c.ai) return;
     const cmd = PR.quantize(Object.assign({ mx: 0, mz: 0, yaw: 0, pitch: 0 }, c.ai(c, S)));
-    const r = SDP.step(c.local, cmd, DT, INDEX.world, CFG.move);
+    const r = SDP.step(c.local, cmd, DT, c.world, CFG.move);
     for (const e of r.wev) if (e.type === 'fire') {
       const ms = c.local.ms, eye = [ms.x, ms.y + ms.eye, ms.z];
       const cp = Math.cos(cmd.pitch);

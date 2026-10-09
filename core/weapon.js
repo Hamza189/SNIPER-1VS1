@@ -18,7 +18,7 @@ const bump = (p, a, b) => { const t = clamp((p - a) / (b - a), 0, 1); return Mat
    tick() returns events: fire, dry, boltLift, boltBack, eject, boltFwd, boltLock, ready,
                           reloadStart, magOut, magIn, reloadEnd                          */
 function createState(cfg) {
-  return { cfg, ammo: cfg.mag, state: 'raise', t: 0, ads: 0, fireBuf: 0, sprintRecover: 0, fired: {}, magIn: false, shots: 0 };
+  return { cfg, ammo: cfg.mag, state: 'raise', t: 0, ads: 0, fireBuf: 0, sprintRecover: 0, fired: {}, magIn: false, shots: 0, bloom: 0 };
 }
 function setState(w, st) { w.state = st; w.t = 0; w.fired = {}; w.magIn = false; }
 function once(w, key, cond, ev, e) { if (cond && !w.fired[key]) { w.fired[key] = true; ev.push(e); } }
@@ -26,13 +26,14 @@ function startReload(w, ev) {
   if (w.state === 'reload') return;
   setState(w, 'reload'); ev.push({ type: 'reloadStart' });
 }
-function resetForSpawn(w) { w.ammo = w.cfg.mag; setState(w, 'raise'); w.ads = 0; w.fireBuf = 0; w.sprintRecover = 0; }
+function resetForSpawn(w) { w.ammo = w.cfg.mag; setState(w, 'raise'); w.ads = 0; w.fireBuf = 0; w.sprintRecover = 0; w.bloom = 0; }
 
 function tick(w, cmd, dt, ctx) {
   const c = w.cfg, ev = [];
   const hol = !!ctx.holstered;
   if (!(hol && w.state === 'reload')) w.t += dt;
   w.fireBuf = Math.max(0, w.fireBuf - dt);
+  if (c.bloomDecay) w.bloom = Math.max(0, (w.bloom || 0) - c.bloomDecay * dt);   // rapid-fire spread calms down
   if (ctx.sprinting) w.sprintRecover = c.sprintOut; else w.sprintRecover = Math.max(0, w.sprintRecover - dt);
   if (cmd.fire) w.fireBuf = c.fireBuffer + (ctx.sprinting ? 0 : w.sprintRecover);
 
@@ -77,6 +78,7 @@ function tick(w, cmd, dt, ctx) {
   if (w.fireBuf > 0 && ctx.alive && w.state === 'ready' && w.sprintRecover <= 0) {
     if (w.ammo > 0) {
       w.ammo--; w.shots++; w.fireBuf = 0;
+      if (c.bloomPerShot) w.bloom = Math.min(c.bloomMax, (w.bloom || 0) + c.bloomPerShot);
       ev.push({ type: 'fire', ads: w.ads, scoped: w.ads >= c.scopeAt });
       setState(w, 'bolt');
     } else if (cmd.fire) { w.fireBuf = 0; ev.push({ type: 'dry' }); startReload(w, ev); }
@@ -92,7 +94,9 @@ function tick(w, cmd, dt, ctx) {
 function spread(w, m) {
   const c = w.cfg;
   if (w.ads >= c.scopeAt) return 0;
-  let s = c.hipSpread * (1 + (c.adsSpreadMin - 1) * (w.ads / c.scopeAt));
+  // iron sights (scopeAt > 1): full ADS reaches adsSpreadMin; a scope reaches it right before the picture
+  const t = c.scopeAt > 1 ? w.ads : w.ads / c.scopeAt;
+  let s = c.hipSpread * (1 + (c.adsSpreadMin - 1) * t) + (w.bloom || 0);
   s += Math.min(m.speed / 7, 1.3) * c.moveSpread;
   if (m.airborne) s += c.airSpread;
   if (m.crouch && !m.sliding) s *= c.crouchSpreadMul;

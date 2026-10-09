@@ -32,7 +32,7 @@ const RULES = { killsToWin: 10, hp: 100, respawnMs: 3000, countdownMs: 3000, reg
   // (half the round trip + the client's interpolation delay), never more than maxRewindMs back
   maxRewindMs: 250 };
 const DT = 1 / PR.LIMITS.tickHz;
-const GUN = CFG.rifles.halcon, KNIFE = CFG.knives.tactica;
+const GUN = CFG.rifles.halcon, PISTOL = CFG.pistols.vibora, KNIFE = CFG.knives.tactica;
 
 function create(opts) {
   // maps: opts.maps = { id: map data } (opts.map alone = one map called 'pueblo'); the creator
@@ -244,7 +244,8 @@ function create(opts) {
   function simulate(s, cmd) {
     s.yaw = cmd.yaw; s.pitch = Math.max(-1.45, Math.min(1.45, cmd.pitch));
     const r = SDP.step(s.p, cmd, DT, ix.world, CFG.move);
-    for (const e of r.wev) if (e.type === 'fire') fire(s, cmd);
+    for (const e of r.wev) if (e.type === 'fire') fire(s, cmd, GUN, 'rifle');
+    for (const e of r.pev || []) if (e.type === 'fire') fire(s, cmd, PISTOL, 'pistol');
     for (const e of r.lev) if (e.type === 'knifeHit') knife(s);
   }
 
@@ -274,7 +275,7 @@ function create(opts) {
     const cp = Math.cos(pitch);
     return [-Math.sin(yaw) * cp, Math.sin(pitch), -Math.cos(yaw) * cp];
   }
-  function fire(s, cmd) {
+  function fire(s, cmd, gun, kind) {
     const ms = s.p.ms, eye = [ms.x, ms.y + ms.eye, ms.z];
     const a = aimDir(s.yaw, s.pitch);
     let d = a, o = eye, why = null;
@@ -290,15 +291,17 @@ function create(opts) {
     }
     if (why) { sendTo(s, { t: 'ev', m: R.match, e: [{ k: 'rejected', what: 'shot', why }] }); log('shot rejected ' + s.id + ' ' + why); }
     s.shots++;
-    const b = Wp.createBullet(o[0], o[1], o[2], d[0], d[1], d[2], GUN);
+    const b = Wp.createBullet(o[0], o[1], o[2], d[0], d[1], d[2], gun);
+    b.cfg = gun; b.kind = kind;
     b.id = ++R.bulletId; b.by = s.id; b.ox = o[0]; b.oy = o[1]; b.oz = o[2]; b.rewind = typeof cmd.ft === 'number' ? Math.max(0, Math.min(RULES.maxRewindMs, R.now - cmd.ft)) : rewindOf(s);
     R.bullets.push(b);
-    sendAll({ t: 'ev', m: R.match, e: [{ k: 'shot', id: b.id, by: s.id, o: o.map(v => Math.round(v * 1000) / 1000), d: d.map(v => Math.round(v * 1e5) / 1e5), corrected: !!why }] });
+    sendAll({ t: 'ev', m: R.match, e: [{ k: 'shot', id: b.id, by: s.id, w: kind, o: o.map(v => Math.round(v * 1000) / 1000), d: d.map(v => Math.round(v * 1e5) / 1e5), corrected: !!why }] });
   }
   function stepBullets(dt, at) {
     for (const b of R.bullets) {
       if (b.done) continue;
-      const sg = Wp.stepBullet(b, dt, GUN);
+      const gun = b.cfg || GUN;
+      const sg = Wp.stepBullet(b, dt, gun);
       const mh = G.segMap(ix, sg.x0, sg.y0, sg.z0, sg.dx, sg.dy, sg.dz, sg.len);
       let lim = mh ? mh.t : sg.len, hitP = null;
       const tgt = R.seats[other(b.by)];
@@ -307,23 +310,29 @@ function create(opts) {
         const h = HB.segPlayer(G, pose, sg.x0, sg.y0, sg.z0, sg.dx, sg.dy, sg.dz, lim);
         if (h) hitP = h;
       }
-      if (hitP) { b.done = true; damage(R.seats[b.by], tgt, hitP.part, GUN.dmg[hitP.part], b, [sg.x0 + sg.dx * hitP.t, sg.y0 + sg.dy * hitP.t, sg.z0 + sg.dz * hitP.t]); }
+      if (hitP) { b.done = true; damage(R.seats[b.by], tgt, hitP.part, dmgAt(gun, hitP.part, b.dist + hitP.t), b, [sg.x0 + sg.dx * hitP.t, sg.y0 + sg.dy * hitP.t, sg.z0 + sg.dz * hitP.t]); }
       else if (mh) { b.done = true; }
-      else { b.dist += sg.len; if (b.dist > GUN.maxRange || b.y < -5) b.done = true; }
+      else { b.dist += sg.len; if (b.dist > gun.maxRange || b.y < -5) b.done = true; }
       if (R.phase !== 'playing') return;
     }
     R.bullets = R.bullets.filter(b => !b.done);
+  }
+  // damage of a gun at a distance (the pistol loses punch with range; the rifle does not)
+  function dmgAt(gun, part, dist) {
+    const f = gun.falloff; let k = 1;
+    if (f) k = dist <= f.from ? 1 : dist >= f.to ? f.min : 1 - (1 - f.min) * (dist - f.from) / (f.to - f.from);
+    return Math.round(gun.dmg[part] * k);
   }
   function damage(att, vic, part, dmg, b, pt) {
     if (!vic.alive) return;
     vic.hp -= dmg; vic.lastHit = R.now;
     if (att) { att.hits++; if (part === 'head') att.hs++; }
     const dist = b ? Math.hypot(pt[0] - b.ox, pt[2] - b.oz) : 0;
-    const e = [{ k: 'hit', by: att ? att.id : null, to: vic.id, part, dmg, hp: Math.max(0, Math.round(vic.hp)), pt: pt.map(v => Math.round(v * 100) / 100), dist: Math.round(dist), weapon: b ? 'rifle' : 'knife' }];
+    const e = [{ k: 'hit', by: att ? att.id : null, to: vic.id, part, dmg, hp: Math.max(0, Math.round(vic.hp)), pt: pt.map(v => Math.round(v * 100) / 100), dist: Math.round(dist), weapon: b ? (b.kind || 'rifle') : 'knife' }];
     if (vic.hp <= 0) {
       vic.hp = 0; vic.alive = false; vic.diedAt = R.now; vic.deaths++;
       if (att) att.kills++;
-      e.push({ k: 'kill', by: att ? att.id : null, to: vic.id, part, dist: Math.round(dist), weapon: b ? 'rifle' : 'knife', sc: score() });
+      e.push({ k: 'kill', by: att ? att.id : null, to: vic.id, part, dist: Math.round(dist), weapon: b ? (b.kind || 'rifle') : 'knife', sc: score() });
       R.pendingWin = R.pendingWin || [];
       if (att && att.kills >= RULES.killsToWin) R.pendingWin.push(att.id);
     }
@@ -393,7 +402,7 @@ function create(opts) {
     if (!s) return null;
     const ms = s.p.ms, L = s.p.load;
     return { x: r3(ms.x), y: r3(ms.y), z: r3(ms.z), vx: r3(ms.vx), vz: r3(ms.vz), yaw: r4(s.yaw), pitch: r4(s.pitch), eye: r3(ms.eye),
-      mode: ms.mode, g: ms.onGround ? 1 : 0, alive: s.alive ? 1 : 0, wpn: L.active, ks: L.knife.state, ads: r3(s.p.w.ads), ws: s.p.w.state, hp: Math.round(s.hp),
+      mode: ms.mode, g: ms.onGround ? 1 : 0, alive: s.alive ? 1 : 0, wpn: L.active, ks: L.knife.state, ads: r3(SDP.activeGun(s.p).ads), ws: SDP.activeGun(s.p).state, hp: Math.round(s.hp),
       name: s.name, on: s.conn != null ? 1 : 0 };
   }
   function sendSnap(s) {

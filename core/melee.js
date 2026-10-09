@@ -11,14 +11,14 @@ const ss = t => { t = clamp(t, 0, 1); return t * t * (3 - 2 * t); };
 const seg = (p, a, b) => ss((p - a) / (b - a));
 
 /* ---------------- loadout + knife state ----------------
-   cmd = { select: 'rifle' | 'knife' | null, attack (edge), inspect (edge) }
+   cmd = { select: 'rifle' | 'pistol' | 'knife' | null, attack (edge), inspect (edge) }
    events: holster, draw, drawn, swing, knifeHit, inspect */
-function createLoadout(knifeCfg, loadCfg) {
-  return { kc: knifeCfg, lc: loadCfg, active: 'rifle', phase: 'ready', t: 0, pending: null,
+function createLoadout(knifeCfg, loadCfg, pistolCfg) {
+  return { kc: knifeCfg, lc: loadCfg, pc: pistolCfg || null, active: 'rifle', phase: 'ready', t: 0, pending: null,
     knife: { state: 'idle', t: 0, side: 1, hitDone: false, buf: 0, swings: 0 } };
 }
-function holsterTime(L) { return L.active === 'rifle' ? L.lc.rifleHolster : L.kc.holster; }
-function drawTime(L) { return L.active === 'rifle' ? L.lc.rifleDraw : L.kc.draw; }
+function holsterTime(L) { return L.active === 'rifle' ? L.lc.rifleHolster : L.active === 'pistol' ? L.lc.pistolHolster : L.kc.holster; }
+function drawTime(L) { return L.active === 'rifle' ? L.lc.rifleDraw : L.active === 'pistol' ? L.lc.pistolDraw : L.kc.draw; }
 function resetLoadout(L) { L.active = 'rifle'; L.phase = 'ready'; L.t = 0; L.pending = null; Object.assign(L.knife, { state: 'idle', t: 0, hitDone: false, buf: 0 }); }
 
 function tickLoadout(L, cmd, dt) {
@@ -60,7 +60,9 @@ function tickLoadout(L, cmd, dt) {
   return ev;
 }
 function rifleHolstered(L) { return !(L.active === 'rifle' && L.phase === 'ready'); }
-function speedMul(L) { return L.active === 'knife' && L.phase !== 'holster' ? L.kc.moveMul : 1; }
+// any gun (rifle | pistol): true unless it is the one fully drawn
+function holstered(L, name) { return !(L.active === name && L.phase === 'ready'); }
+function speedMul(L) { if (L.phase === 'holster') return 1; return L.active === 'knife' ? L.kc.moveMul : L.active === 'pistol' && L.pc ? (L.pc.moveMul || 1) : 1; }
 
 /* ---------------- melee hit resolution ----------------
    attacker = { x, z, eyeY, fx, fz }           (fx,fz = horizontal facing, unit length)
@@ -116,6 +118,6 @@ function inspectPose(p) {
   return o;
 }
 
-const SDMelee = { createLoadout, resetLoadout, tickLoadout, rifleHolstered, speedMul, resolve, slashPose, drawPose, inspectPose };
+const SDMelee = { createLoadout, resetLoadout, tickLoadout, rifleHolstered, holstered, speedMul, resolve, slashPose, drawPose, inspectPose };
 if (typeof module !== 'undefined' && module.exports) module.exports = SDMelee; else root.SDMelee = SDMelee;
 })(typeof window !== 'undefined' ? window : globalThis);

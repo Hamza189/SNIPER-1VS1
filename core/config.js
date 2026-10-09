@@ -110,9 +110,43 @@ const SD_CONFIG = {
     }
   },
 
+  // secondary weapon. Same state machine as the rifle (core/weapon.js): 'bolt' is the slide
+  // cycle, the scope never appears (scopeAt > 1: iron sights, ADS only tightens the spread)
+  pistols: {
+    vibora: {
+      name: 'VÍBORA 9',
+      mag: 12,
+      raise: 0.3,
+      bolt: 0.17,          // s slide cycle = fastest semi-auto rate (~5.9 shots/s, one per press)
+      reload: 1.45,        // s (much quicker than switching back and reloading the rifle)
+      adsTime: 0.12, adsOutTime: 0.08,
+      scopeAt: 2,          // never: iron sights
+      ironZoom: 1.3,       // FOV divided by this at full ADS
+      sprintOut: 0.06, fireBuffer: 0.1,
+      hipSpread: 0.026,    // rad
+      adsSpreadMin: 0.3,   // full ADS: 30 % of the hip cone
+      moveSpread: 0.014, airSpread: 0.045, crouchSpreadMul: 0.8,
+      bloomPerShot: 0.012, // rad added to the cone by each shot (mechanical recoil: spamming spreads)
+      bloomMax: 0.04, bloomDecay: 0.03,  // rad/s back to calm: a shot every 0.4 s stays accurate, spamming does not
+      climb: 0.026,        // rad the muzzle (and your view) climbs per shot; you pull it back down
+      dmg: { head: 90, torso: 34, legs: 26 },   // 2 to the head or 3 to the body
+      falloff: { from: 18, to: 55, min: 0.6 },  // damage × 1 up to 18 m, × 0.6 from 55 m
+      speed: 380, gravity: 9.8, zero: 20, maxRange: 150,
+      moveMul: 1.04,       // a touch quicker on your feet than with the rifle
+      sway: 0.0028, swayMoveMul: 0.3, swayCrouchMul: 0.6, swayAirMul: 2.5,
+      breathHold: 3.5, breathRecover: 3.2, exhaustTime: 2.6, exhaustMul: 2.4, holdMul: 1,
+      recoil: { pitch: 0.03, pitchHip: 0.04, yaw: 0.014, stiffness: 600, damping: 0.85, viewKick: 0.8 },
+      zooms: [1],
+      boltKeys: { lift: [0, 0.01], back: [0.0, 0.35], eject: 0.18, fwd: [0.35, 0.85], down: [0.01, 0.02] },
+      reloadKeys: { magOut: [0.08, 0.3], magIn: [0.42, 0.62], bolt: [0.74, 0.94] }
+    }
+  },
+
   loadout: {
     rifleDraw: 0.35,       // s to bring the rifle back up after switching
-    rifleHolster: 0.1      // s to put the rifle away
+    rifleHolster: 0.1,     // s to put the rifle away
+    pistolDraw: 0.28,      // the sidearm comes out fast: quicker than reloading the rifle
+    pistolHolster: 0.08
   },
 
   // free training in the shooting range: unarmed bots that move like players

@@ -27,7 +27,7 @@ const LIMITS = {
   interpMs: 110            // the client draws the rival this far in the past (the server rewinds by it)
 };
 // command bits
-const B = { sprint: 1, crouch: 2, crouchPressed: 4, jump: 8, fire: 16, adsHeld: 32, reload: 64, inspect: 128, selKnife: 256, selRifle: 512, breath: 1024 };
+const B = { sprint: 1, crouch: 2, crouchPressed: 4, jump: 8, fire: 16, adsHeld: 32, reload: 64, inspect: 128, selKnife: 256, selRifle: 512, breath: 1024, selPistol: 2048 };
 
 // the values the server will see: the client must simulate with exactly these (prediction = server)
 function quantize(c) {
@@ -40,7 +40,7 @@ function quantize(c) {
 function packCmd(c) {
   let b = 0;
   for (const k of ['sprint', 'crouch', 'crouchPressed', 'jump', 'fire', 'adsHeld', 'reload', 'inspect', 'breath']) if (c[k]) b |= B[k];
-  if (c.select === 'knife') b |= B.selKnife; else if (c.select === 'rifle') b |= B.selRifle;
+  if (c.select === 'knife') b |= B.selKnife; else if (c.select === 'rifle') b |= B.selRifle; else if (c.select === 'pistol') b |= B.selPistol;
   const r = (x, n) => Math.round(x * n) / n;
   const a = [r(c.mx || 0, 1000), r(c.mz || 0, 1000), r(c.yaw || 0, 1e5), r(c.pitch || 0, 1e5), b];
   if (c.fd && c.fo) { a.push(r(c.fd[0], 1e5), r(c.fd[1], 1e5), r(c.fd[2], 1e5), r(c.fo[0], 1000), r(c.fo[1], 1000), r(c.fo[2], 1000));
@@ -56,7 +56,7 @@ function unpackCmd(a) {
   const c = { mx: Math.max(-1, Math.min(1, a[0])), mz: Math.max(-1, Math.min(1, a[1])), yaw: a[2], pitch: a[3],
     sprint: !!(b & B.sprint), crouch: !!(b & B.crouch), crouchPressed: !!(b & B.crouchPressed), jump: !!(b & B.jump),
     fire: !!(b & B.fire), adsHeld: !!(b & B.adsHeld), reload: !!(b & B.reload), inspect: !!(b & B.inspect), breath: !!(b & B.breath),
-    select: b & B.selKnife ? 'knife' : b & B.selRifle ? 'rifle' : null };
+    select: b & B.selKnife ? 'knife' : b & B.selRifle ? 'rifle' : b & B.selPistol ? 'pistol' : null };
   if (a.length >= 11) {
     for (let i = 5; i < 8; i++) if (!num(a[i], -1.01, 1.01)) return null;
     for (let i = 8; i < 11; i++) if (!num(a[i], -1e4, 1e4)) return null;

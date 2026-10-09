@@ -341,6 +341,35 @@ console.log('\nMAPAS: ARENA DE PRUEBAS');
   check('el bloque central para las balas', evs(A, 'hit').length === h0 && evs(A, 'shot').length >= 2);
 }
 
+console.log('\nPISTOLA VÍBORA 9 ONLINE');
+{ const S = createSim({ maps: 'arena', latency: 30 });
+  let shoot = false, sel = null, part = 1.63;
+  const { A, B } = S.setupMatch((c, S) => { const s = S.room.seats.B.p.ms; return Object.assign(lookAt(c, [s.x, s.y + part, s.z]), { fire: shoot, adsHeld: true, select: sel }); }, () => ({ yaw: Math.PI / 2 }));
+  S.room.debug.place('A', -6, -14, -Math.PI / 2); S.room.debug.place('B', 6, -14, Math.PI / 2); S.run(600);
+  sel = 'pistol'; S.run(20); sel = null; S.run(600); A.N.corrMax = 0;   // (the test teleport above is a legitimate correction)
+  check('cambio a pistola sincronizado (servidor y cliente)', S.room.seats.A.p.load.active === 'pistol' && A.local.load.active === 'pistol');
+  shoot = true; S.run(9); shoot = false; S.run(400);
+  const h1 = evs(A, 'hit')[0];
+  check('pistola a 12 m en la cabeza: 90 de daño (no mata de un tiro)', h1 && h1.weapon === 'pistol' && h1.part === 'head' && h1.dmg === 90 && S.room.seats.B.alive, h1 && h1.dmg);
+  shoot = true; S.run(9); shoot = false; S.run(400);
+  check('segundo tiro a la cabeza: muere', evs(A, 'kill').length === 1 && evs(A, 'kill')[0].weapon === 'pistol');
+  check('el disparo de pistola llega marcado como pistola (para el sonido del rival)', evs(B, 'shot').some(e => e.w === 'pistol'));
+  check('munición de la pistola igual en cliente y servidor', A.local.pw.ammo === S.room.seats.A.p.pw.ammo && A.local.pw.ammo === 10, A.local.pw.ammo);
+  check('el rifle sigue con sus 5 balas', S.room.seats.A.p.w.ammo === 5);
+  check('sin correcciones de predicción usando la pistola', A.N.corrMax < 1e-6, A.N.corrMax.toExponential(1));
+  // damage falls off with distance: 40 m to the body
+  S.run(3300); part = 1.17;
+  S.room.debug.place('A', -20, -3, -Math.PI / 2); S.room.debug.place('B', 20, -3, Math.PI / 2); S.run(800);
+  sel = 'pistol'; S.run(20); sel = null; S.run(800);   // (placing a player resets the loadout to the rifle)
+  const k0 = evs(A, 'hit').length; shoot = true; S.run(9); shoot = false; S.run(600);
+  const h2 = evs(A, 'hit')[k0];
+  check('a 40 m la pistola pega menos (34 → ' + (h2 && h2.dmg) + ')', h2 && h2.part === 'torso' && h2.dmg < 34 && h2.dmg >= 20, h2 && h2.dmg + ' de daño');
+  // holding the trigger: the server never lets it fire faster than the slide
+  const s0 = evs(A, 'shot').length; shoot = true; S.run(1000); shoot = false; S.run(200);
+  const n = evs(A, 'shot').length - s0;
+  check('gatillo mantenido 1 s: como mucho ' + (Math.floor(1 / CFG.pistols.vibora.bolt) + 1) + ' disparos', n >= 4 && n <= Math.floor(1 / CFG.pistols.vibora.bolt) + 1, n);
+}
+
 console.log('\nCOMPENSACIÓN DE LATENCIA (rival en movimiento)');
 // an open lane where the rival can strafe ±4 m and stay in plain sight the whole time
 const lane = (() => { for (const [x, z] of MAP.nav) { const x2 = x + 36;

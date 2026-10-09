@@ -652,9 +652,43 @@ const SD_CONFIG = {
     }
   },
 
+  // secondary weapon. Same state machine as the rifle (core/weapon.js): 'bolt' is the slide
+  // cycle, the scope never appears (scopeAt > 1: iron sights, ADS only tightens the spread)
+  pistols: {
+    vibora: {
+      name: 'VÍBORA 9',
+      mag: 12,
+      raise: 0.3,
+      bolt: 0.17,          // s slide cycle = fastest semi-auto rate (~5.9 shots/s, one per press)
+      reload: 1.45,        // s (much quicker than switching back and reloading the rifle)
+      adsTime: 0.12, adsOutTime: 0.08,
+      scopeAt: 2,          // never: iron sights
+      ironZoom: 1.3,       // FOV divided by this at full ADS
+      sprintOut: 0.06, fireBuffer: 0.1,
+      hipSpread: 0.026,    // rad
+      adsSpreadMin: 0.3,   // full ADS: 30 % of the hip cone
+      moveSpread: 0.014, airSpread: 0.045, crouchSpreadMul: 0.8,
+      bloomPerShot: 0.012, // rad added to the cone by each shot (mechanical recoil: spamming spreads)
+      bloomMax: 0.04, bloomDecay: 0.03,  // rad/s back to calm: a shot every 0.4 s stays accurate, spamming does not
+      climb: 0.026,        // rad the muzzle (and your view) climbs per shot; you pull it back down
+      dmg: { head: 90, torso: 34, legs: 26 },   // 2 to the head or 3 to the body
+      falloff: { from: 18, to: 55, min: 0.6 },  // damage × 1 up to 18 m, × 0.6 from 55 m
+      speed: 380, gravity: 9.8, zero: 20, maxRange: 150,
+      moveMul: 1.04,       // a touch quicker on your feet than with the rifle
+      sway: 0.0028, swayMoveMul: 0.3, swayCrouchMul: 0.6, swayAirMul: 2.5,
+      breathHold: 3.5, breathRecover: 3.2, exhaustTime: 2.6, exhaustMul: 2.4, holdMul: 1,
+      recoil: { pitch: 0.03, pitchHip: 0.04, yaw: 0.014, stiffness: 600, damping: 0.85, viewKick: 0.8 },
+      zooms: [1],
+      boltKeys: { lift: [0, 0.01], back: [0.0, 0.35], eject: 0.18, fwd: [0.35, 0.85], down: [0.01, 0.02] },
+      reloadKeys: { magOut: [0.08, 0.3], magIn: [0.42, 0.62], bolt: [0.74, 0.94] }
+    }
+  },
+
   loadout: {
     rifleDraw: 0.35,       // s to bring the rifle back up after switching
-    rifleHolster: 0.1      // s to put the rifle away
+    rifleHolster: 0.1,     // s to put the rifle away
+    pistolDraw: 0.28,      // the sidearm comes out fast: quicker than reloading the rifle
+    pistolHolster: 0.08
   },
 
   // free training in the shooting range: unarmed bots that move like players
@@ -895,7 +929,7 @@ const bump = (p, a, b) => { const t = clamp((p - a) / (b - a), 0, 1); return Mat
    tick() returns events: fire, dry, boltLift, boltBack, eject, boltFwd, boltLock, ready,
                           reloadStart, magOut, magIn, reloadEnd                          */
 function createState(cfg) {
-  return { cfg, ammo: cfg.mag, state: 'raise', t: 0, ads: 0, fireBuf: 0, sprintRecover: 0, fired: {}, magIn: false, shots: 0 };
+  return { cfg, ammo: cfg.mag, state: 'raise', t: 0, ads: 0, fireBuf: 0, sprintRecover: 0, fired: {}, magIn: false, shots: 0, bloom: 0 };
 }
 function setState(w, st) { w.state = st; w.t = 0; w.fired = {}; w.magIn = false; }
 function once(w, key, cond, ev, e) { if (cond && !w.fired[key]) { w.fired[key] = true; ev.push(e); } }
@@ -903,13 +937,14 @@ function startReload(w, ev) {
   if (w.state === 'reload') return;
   setState(w, 'reload'); ev.push({ type: 'reloadStart' });
 }
-function resetForSpawn(w) { w.ammo = w.cfg.mag; setState(w, 'raise'); w.ads = 0; w.fireBuf = 0; w.sprintRecover = 0; }
+function resetForSpawn(w) { w.ammo = w.cfg.mag; setState(w, 'raise'); w.ads = 0; w.fireBuf = 0; w.sprintRecover = 0; w.bloom = 0; }
 
 function tick(w, cmd, dt, ctx) {
   const c = w.cfg, ev = [];
   const hol = !!ctx.holstered;
   if (!(hol && w.state === 'reload')) w.t += dt;
   w.fireBuf = Math.max(0, w.fireBuf - dt);
+  if (c.bloomDecay) w.bloom = Math.max(0, (w.bloom || 0) - c.bloomDecay * dt);   // rapid-fire spread calms down
   if (ctx.sprinting) w.sprintRecover = c.sprintOut; else w.sprintRecover = Math.max(0, w.sprintRecover - dt);
   if (cmd.fire) w.fireBuf = c.fireBuffer + (ctx.sprinting ? 0 : w.sprintRecover);
 
@@ -954,6 +989,7 @@ function tick(w, cmd, dt, ctx) {
   if (w.fireBuf > 0 && ctx.alive && w.state === 'ready' && w.sprintRecover <= 0) {
     if (w.ammo > 0) {
       w.ammo--; w.shots++; w.fireBuf = 0;
+      if (c.bloomPerShot) w.bloom = Math.min(c.bloomMax, (w.bloom || 0) + c.bloomPerShot);
       ev.push({ type: 'fire', ads: w.ads, scoped: w.ads >= c.scopeAt });
       setState(w, 'bolt');
     } else if (cmd.fire) { w.fireBuf = 0; ev.push({ type: 'dry' }); startReload(w, ev); }
@@ -969,7 +1005,9 @@ function tick(w, cmd, dt, ctx) {
 function spread(w, m) {
   const c = w.cfg;
   if (w.ads >= c.scopeAt) return 0;
-  let s = c.hipSpread * (1 + (c.adsSpreadMin - 1) * (w.ads / c.scopeAt));
+  // iron sights (scopeAt > 1): full ADS reaches adsSpreadMin; a scope reaches it right before the picture
+  const t = c.scopeAt > 1 ? w.ads : w.ads / c.scopeAt;
+  let s = c.hipSpread * (1 + (c.adsSpreadMin - 1) * t) + (w.bloom || 0);
   s += Math.min(m.speed / 7, 1.3) * c.moveSpread;
   if (m.airborne) s += c.airSpread;
   if (m.crouch && !m.sliding) s *= c.crouchSpreadMul;
@@ -1043,14 +1081,14 @@ const ss = t => { t = clamp(t, 0, 1); return t * t * (3 - 2 * t); };
 const seg = (p, a, b) => ss((p - a) / (b - a));
 
 /* ---------------- loadout + knife state ----------------
-   cmd = { select: 'rifle' | 'knife' | null, attack (edge), inspect (edge) }
+   cmd = { select: 'rifle' | 'pistol' | 'knife' | null, attack (edge), inspect (edge) }
    events: holster, draw, drawn, swing, knifeHit, inspect */
-function createLoadout(knifeCfg, loadCfg) {
-  return { kc: knifeCfg, lc: loadCfg, active: 'rifle', phase: 'ready', t: 0, pending: null,
+function createLoadout(knifeCfg, loadCfg, pistolCfg) {
+  return { kc: knifeCfg, lc: loadCfg, pc: pistolCfg || null, active: 'rifle', phase: 'ready', t: 0, pending: null,
     knife: { state: 'idle', t: 0, side: 1, hitDone: false, buf: 0, swings: 0 } };
 }
-function holsterTime(L) { return L.active === 'rifle' ? L.lc.rifleHolster : L.kc.holster; }
-function drawTime(L) { return L.active === 'rifle' ? L.lc.rifleDraw : L.kc.draw; }
+function holsterTime(L) { return L.active === 'rifle' ? L.lc.rifleHolster : L.active === 'pistol' ? L.lc.pistolHolster : L.kc.holster; }
+function drawTime(L) { return L.active === 'rifle' ? L.lc.rifleDraw : L.active === 'pistol' ? L.lc.pistolDraw : L.kc.draw; }
 function resetLoadout(L) { L.active = 'rifle'; L.phase = 'ready'; L.t = 0; L.pending = null; Object.assign(L.knife, { state: 'idle', t: 0, hitDone: false, buf: 0 }); }
 
 function tickLoadout(L, cmd, dt) {
@@ -1092,7 +1130,9 @@ function tickLoadout(L, cmd, dt) {
   return ev;
 }
 function rifleHolstered(L) { return !(L.active === 'rifle' && L.phase === 'ready'); }
-function speedMul(L) { return L.active === 'knife' && L.phase !== 'holster' ? L.kc.moveMul : 1; }
+// any gun (rifle | pistol): true unless it is the one fully drawn
+function holstered(L, name) { return !(L.active === name && L.phase === 'ready'); }
+function speedMul(L) { if (L.phase === 'holster') return 1; return L.active === 'knife' ? L.kc.moveMul : L.active === 'pistol' && L.pc ? (L.pc.moveMul || 1) : 1; }
 
 /* ---------------- melee hit resolution ----------------
    attacker = { x, z, eyeY, fx, fz }           (fx,fz = horizontal facing, unit length)
@@ -1148,7 +1188,7 @@ function inspectPose(p) {
   return o;
 }
 
-const SDMelee = { createLoadout, resetLoadout, tickLoadout, rifleHolstered, speedMul, resolve, slashPose, drawPose, inspectPose };
+const SDMelee = { createLoadout, resetLoadout, tickLoadout, rifleHolstered, holstered, speedMul, resolve, slashPose, drawPose, inspectPose };
 if (typeof module !== 'undefined' && module.exports) module.exports = SDMelee; else root.SDMelee = SDMelee;
 })(typeof window !== 'undefined' ? window : globalThis);
 
@@ -1279,39 +1319,47 @@ const M = isNode ? require('./movement.js') : root.SDMovement;
 const Wp = isNode ? require('./weapon.js') : root.SDWeapon;
 const Me = isNode ? require('./melee.js') : root.SDMelee;
 
-function create(x, y, z, rifle, knife) {
-  const rc = rifle || CFG.rifles.halcon, kc = knife || CFG.knives.tactica;
-  return { ms: M.createState(x, y, z), w: Wp.createState(rc), load: Me.createLoadout(kc, CFG.loadout) };
+function create(x, y, z, rifle, knife, pistol) {
+  const rc = rifle || CFG.rifles.halcon, kc = knife || CFG.knives.tactica, pc = pistol || CFG.pistols.vibora;
+  return { ms: M.createState(x, y, z), w: Wp.createState(rc), pw: Wp.createState(pc), load: Me.createLoadout(kc, CFG.loadout, pc) };
 }
+// the gun in hand (rifle or pistol); with the knife out, the rifle (for ADS/reload flags: never set)
+function activeGun(p) { return p.load.active === 'pistol' ? p.pw : p.w; }
 // put a player back at a spawn point with a fresh rifle (multiplayer respawn / rematch)
 function respawn(p, x, y, z) {
   Object.assign(p.ms, M.createState(x, y, z));
-  Wp.resetForSpawn(p.w); Me.resetLoadout(p.load);
+  Wp.resetForSpawn(p.w); if (p.pw) Wp.resetForSpawn(p.pw); Me.resetLoadout(p.load);
 }
 function step(p, cmd, dt, world, moveCfg) {
-  const L = p.load, w = p.w;
+  const L = p.load, w = p.w, pw = p.pw;
   const lev = Me.tickLoadout(L, { select: cmd.select || null, attack: !!cmd.fire && L.active === 'knife', inspect: !!cmd.inspect }, dt);
-  const hol = Me.rifleHolstered(L);
+  const hol = Me.rifleHolstered(L), holP = Me.holstered(L, 'pistol');
+  const g = L.active === 'pistol' ? pw : w;
   const mc = { mx: cmd.mx, mz: cmd.mz, yaw: cmd.yaw, sprint: !!cmd.sprint, crouch: !!cmd.crouch, crouchPressed: !!cmd.crouchPressed,
-    jump: !!cmd.jump, ads: w.ads, reloading: w.state === 'reload', speedMul: Me.speedMul(L) };
+    jump: !!cmd.jump, ads: g.ads, reloading: g.state === 'reload', speedMul: Me.speedMul(L) };
   const mev = M.step(p.ms, mc, dt, world, moveCfg || CFG.move);
   const wev = Wp.tick(w, { fire: !!cmd.fire && L.active === 'rifle', ads: !!cmd.adsHeld, reload: !!cmd.reload }, dt,
     { sprinting: p.ms.sprinting, alive: true, holstered: hol });
-  return { mev, lev, wev, hol };
+  // the sidearm: same rules, its own magazine and slide; it only acts while it is the one drawn
+  const pev = pw ? Wp.tick(pw, { fire: !!cmd.fire && L.active === 'pistol', ads: !!cmd.adsHeld, reload: !!cmd.reload }, dt,
+    { sprinting: p.ms.sprinting, alive: true, holstered: holP }) : [];
+  return { mev, lev, wev, pev, hol, holP };
 }
 // full state as plain data (for the server snapshot) and back (client reconciliation)
+function saveGun(g) { const w = Object.assign({}, g); delete w.cfg; w.fired = Object.assign({}, g.fired); return w; }
+function restoreGun(g, s) { const cfg = g.cfg; Object.assign(g, s); g.cfg = cfg; g.fired = Object.assign({}, s.fired); }
 function save(p) {
-  const w = Object.assign({}, p.w); delete w.cfg; w.fired = Object.assign({}, p.w.fired);
-  const L = Object.assign({}, p.load); delete L.kc; delete L.lc; L.knife = Object.assign({}, p.load.knife);
-  return { ms: Object.assign({}, p.ms), w, load: L };
+  const w = saveGun(p.w);
+  const L = Object.assign({}, p.load); delete L.kc; delete L.lc; delete L.pc; L.knife = Object.assign({}, p.load.knife);
+  return { ms: Object.assign({}, p.ms), w, pw: p.pw ? saveGun(p.pw) : undefined, load: L };
 }
 function restore(p, s) {
   Object.assign(p.ms, s.ms);
-  const cfg = p.w.cfg; Object.assign(p.w, s.w); p.w.cfg = cfg; p.w.fired = Object.assign({}, s.w.fired);
-  const kc = p.load.kc, lc = p.load.lc, knife = p.load.knife;
-  Object.assign(p.load, s.load); p.load.kc = kc; p.load.lc = lc; p.load.knife = Object.assign(knife, s.load.knife);
+  restoreGun(p.w, s.w); if (p.pw && s.pw) restoreGun(p.pw, s.pw);
+  const kc = p.load.kc, lc = p.load.lc, pc = p.load.pc, knife = p.load.knife;
+  Object.assign(p.load, s.load); p.load.kc = kc; p.load.lc = lc; p.load.pc = pc; p.load.knife = Object.assign(knife, s.load.knife);
 }
-const SDPlayer = { create, respawn, step, save, restore };
+const SDPlayer = { create, respawn, step, save, restore, activeGun };
 if (isNode) module.exports = SDPlayer; else root.SDPlayer = SDPlayer;
 })(typeof window !== 'undefined' ? window : globalThis);
 
@@ -1344,7 +1392,7 @@ const LIMITS = {
   interpMs: 110            // the client draws the rival this far in the past (the server rewinds by it)
 };
 // command bits
-const B = { sprint: 1, crouch: 2, crouchPressed: 4, jump: 8, fire: 16, adsHeld: 32, reload: 64, inspect: 128, selKnife: 256, selRifle: 512, breath: 1024 };
+const B = { sprint: 1, crouch: 2, crouchPressed: 4, jump: 8, fire: 16, adsHeld: 32, reload: 64, inspect: 128, selKnife: 256, selRifle: 512, breath: 1024, selPistol: 2048 };
 
 // the values the server will see: the client must simulate with exactly these (prediction = server)
 function quantize(c) {
@@ -1357,7 +1405,7 @@ function quantize(c) {
 function packCmd(c) {
   let b = 0;
   for (const k of ['sprint', 'crouch', 'crouchPressed', 'jump', 'fire', 'adsHeld', 'reload', 'inspect', 'breath']) if (c[k]) b |= B[k];
-  if (c.select === 'knife') b |= B.selKnife; else if (c.select === 'rifle') b |= B.selRifle;
+  if (c.select === 'knife') b |= B.selKnife; else if (c.select === 'rifle') b |= B.selRifle; else if (c.select === 'pistol') b |= B.selPistol;
   const r = (x, n) => Math.round(x * n) / n;
   const a = [r(c.mx || 0, 1000), r(c.mz || 0, 1000), r(c.yaw || 0, 1e5), r(c.pitch || 0, 1e5), b];
   if (c.fd && c.fo) { a.push(r(c.fd[0], 1e5), r(c.fd[1], 1e5), r(c.fd[2], 1e5), r(c.fo[0], 1000), r(c.fo[1], 1000), r(c.fo[2], 1000));
@@ -1373,7 +1421,7 @@ function unpackCmd(a) {
   const c = { mx: Math.max(-1, Math.min(1, a[0])), mz: Math.max(-1, Math.min(1, a[1])), yaw: a[2], pitch: a[3],
     sprint: !!(b & B.sprint), crouch: !!(b & B.crouch), crouchPressed: !!(b & B.crouchPressed), jump: !!(b & B.jump),
     fire: !!(b & B.fire), adsHeld: !!(b & B.adsHeld), reload: !!(b & B.reload), inspect: !!(b & B.inspect), breath: !!(b & B.breath),
-    select: b & B.selKnife ? 'knife' : b & B.selRifle ? 'rifle' : null };
+    select: b & B.selKnife ? 'knife' : b & B.selRifle ? 'rifle' : b & B.selPistol ? 'pistol' : null };
   if (a.length >= 11) {
     for (let i = 5; i < 8; i++) if (!num(a[i], -1.01, 1.01)) return null;
     for (let i = 8; i < 11; i++) if (!num(a[i], -1e4, 1e4)) return null;
@@ -1842,7 +1890,7 @@ const SDNet = { create };
 if (isNode) module.exports = SDNet; else root.SDNet = SDNet;
 })(typeof window !== 'undefined' ? window : globalThis);
 
-const BUILD_ID="65f2649";const BUILD_HASH="787f180c3d";
+const BUILD_ID="9cf047f";const BUILD_HASH="38ef06eb0d";
 </script>
 <script>
 (function(){
