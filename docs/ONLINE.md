@@ -10,7 +10,7 @@
 6. Los dos pulsáis **LISTO**. El servidor hace una cuenta atrás de 3 s y empieza la partida, cada uno en un lado del pueblo.
 7. Gana el primero que llegue a **10 bajas**. Al terminar: **REVANCHA** (los dos) y empieza otra partida sin recargar.
 
-Reglas: 100 de vida, regeneración tras 5 s sin daño, reaparición a los 3 s con el cargador lleno, cabeza 250 / torso 85 / piernas 55, navaja 50 de frente y 100 por la espalda. Si los dos llegáis a 10 en el mismo instante es **EMPATE**.
+Reglas: 100 de vida, regeneración tras 5 s sin daño, reaparición a los 3 s con el cargador lleno, rifle HALCÓN: cabeza 250 / torso 85 / piernas 55; pistola VÍBORA 9 (tecla 2, o ARMA en el móvil): 12 balas, semiautomática, cabeza 90 / torso 34 / piernas 26, con menos daño a partir de 18 m (60 % a 55 m o más); navaja 50 de frente y 100 por la espalda. El servidor comprueba la munición, la cadencia, los impactos y el daño de las tres armas. Si los dos llegáis a 10 en el mismo instante es **EMPATE**.
 
 ## Lo que pasa cuando algo falla
 
@@ -62,6 +62,7 @@ El panel **F3** (en PC; en móvil desde Pausa → PANEL TÉCNICO) muestra la ver
 | 10 | Marcador | Los dos veis el mismo resultado arriba |
 | 11 | Bloquea un iPhone 10 s y vuelve | El otro ve RECONECTANDO; al volver sigue la partida |
 | 12 | Hasta 10 bajas | Los dos veis el ganador correcto (VICTORIA / DERROTA) |
+| 12b | Saca la pistola (2 / ARMA) y dispara | El rival ve la pistola en tu mano y oye un disparo más seco; quita mucho menos que el rifle; recarga con R |
 | 13 | REVANCHA los dos | Empieza otra partida 0–0 sin recargar |
 | 14 | Juega 10 minutos | Sin tirones fuertes; anota el ping del panel y si el móvil se calienta |
 

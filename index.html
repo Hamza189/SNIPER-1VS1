@@ -466,7 +466,7 @@ body.touch #score .side span{max-width:11vw;overflow:hidden;text-overflow:ellips
         <kbd>RUEDA</kbd><span>Zoom 4× / 8×</span>
         <kbd>CLIC IZQ.</kbd><span>Disparar</span>
         <kbd>R</kbd><span>Recargar</span>
-        <kbd>1 / 3</kbd><span>Rifle / navaja</span>
+        <kbd>1 / 2 / 3</kbd><span>Rifle / pistola / navaja</span>
         <kbd>F</kbd><span>Inspeccionar navaja</span>
       </div>
       <div class="keys" id="keysTouch" hidden>
@@ -1890,7 +1890,7 @@ const SDNet = { create };
 if (isNode) module.exports = SDNet; else root.SDNet = SDNet;
 })(typeof window !== 'undefined' ? window : globalThis);
 
-const BUILD_ID="9cf047f";const BUILD_HASH="38ef06eb0d";
+const BUILD_ID="6333033";const BUILD_HASH="0915d77c6b";
 </script>
 <script>
 (function(){
@@ -2258,6 +2258,14 @@ const SFX={
   shot(){SFX.click(0,3400,0.2);nz(0,0.07,{type:'bandpass',f:2600,q:0.6,g:1.0});nz(0,0.5,{f:2400,f2:220,g:0.95,verb:0.7});tone(0,0.32,{f:110,f2:36,g:1.0});tone(0,0.5,{f:58,f2:32,g:0.55});nz(0.02,1.1,{f:600,f2:120,g:0.25,verb:1.0});
     nz(0.075,0.25,{f:1300,f2:400,g:0.22,pan:-0.4});nz(0.14,0.35,{f:900,f2:250,g:0.13,pan:0.5,verb:0.6});},
   dry(){nz(0,0.03,{type:'bandpass',f:2400,q:5,g:0.4});},
+  // VÍBORA 9: a sharp, shorter crack with less low end than the rifle, and its own small mechanics
+  pistolShot(){SFX.click(0,4200,0.18);nz(0,0.05,{type:'bandpass',f:3200,q:0.7,g:0.9});nz(0,0.22,{f:3000,f2:400,g:0.7,verb:0.5});tone(0,0.12,{f:180,f2:70,g:0.6});nz(0.01,0.5,{f:900,f2:200,g:0.14,verb:0.9});},
+  pMagOut(){SFX.click(0,2600,0.35);nz(0.03,0.08,{type:'bandpass',f:1500,q:2,g:0.15});},
+  pMagIn(){nz(0,0.06,{f:1100,g:0.45});SFX.click(0.03,2800,0.5);},
+  pSlide(){nz(0,0.06,{type:'bandpass',f:2000,q:2,g:0.25});SFX.click(0.05,3000,0.5);},
+  pDraw(){nz(0,0.12,{type:'bandpass',f:1600,q:1,g:0.12});SFX.click(0.1,2600,0.25);},
+  pHolster(){nz(0,0.08,{type:'bandpass',f:1300,q:1,g:0.1});},
+  distantPistol(dist,pan,at){const g=clamp(1.1-dist/80,0.12,0.7);nz(at,0.05,{type:'bandpass',f:2600,q:0.8,g:g*0.6,pan});nz(at,0.45,{f:1500,f2:300,g:g*0.8,pan,verb:1});tone(at,0.15,{f:140,f2:60,g:g*0.4,pan});},
   click(at,f,g){nz(at,0.03,{type:'bandpass',f:f||2000,q:6,g:g||0.5});tone(at,0.02,{f:(f||2000)*0.5,type:'square',g:0.03});},
   slide(at,f1,f2){nz(at,0.09,{type:'bandpass',f:f1,f2:f2,q:3,g:0.25});},
   bolt(at){at=at||0;SFX.click(at+0.15,2300,0.45);SFX.slide(at+0.3,1600,900);SFX.click(at+0.42,1700,0.5);SFX.slide(at+0.5,900,1800);SFX.click(at+0.64,2700,0.55);SFX.click(at+0.78,1400,0.7);},
@@ -2465,11 +2473,87 @@ const KNIFE=new T.Group();KROOT.add(KNIFE);       // spins around the blade duri
   B(0.022,0.03,0.05,glove,-0.012,-0.012,0.05,KROOT);
   const sl=B(0.09,0.09,0.36,sleeve,0.04,-0.05,0.25,KROOT);sl.rotation.set(0.45,-0.1,0);
 })();
+/* VÍBORA 9 — the sidearm in first person. Origin = bore line; sights on top of the slide, so the
+   ADS pose only has to bring the sight line onto the centre of the screen. -z = forward. */
+const PROOT=new T.Group();wScene.add(PROOT);PROOT.visible=false;
+const PIS={};
+(function buildPistol(){
+  const slideM=new T.MeshStandardMaterial({color:0x2a2d31,metalness:.7,roughness:.32,envMap:ENV,envMapIntensity:1.1});
+  const frameM=new T.MeshStandardMaterial({color:0x3b3c36,roughness:.8});
+  const darkM=new T.MeshStandardMaterial({color:0x17181a,roughness:.7});
+  const steelM=new T.MeshStandardMaterial({color:0x8a8e93,metalness:.85,roughness:.22,envMap:ENV,envMapIntensity:1.3});
+  const viper=new T.MeshStandardMaterial({color:0xe07a2a,roughness:.6,emissive:0x3a1400});
+  const dotM=new T.MeshBasicMaterial({color:0xffe08a});
+  const glove=new T.MeshStandardMaterial({color:0x34302a,roughness:.9}),sleeve=new T.MeshStandardMaterial({color:0x4a4636,roughness:.95});
+  const B=(w,h,d,m,x,y,z,par)=>{const o=new T.Mesh(new T.BoxGeometry(w,h,d),m);o.position.set(x,y,z);(par||PIS.gun).add(o);return o;};
+  PIS.gun=new T.Group();PROOT.add(PIS.gun);
+  // slide (moves back on every shot) with both sights, serrations, ejection port and the orange "viper" line
+  PIS.slide=new T.Group();PIS.gun.add(PIS.slide);
+  B(0.03,0.032,0.192,slideM,0,0.004,-0.078,PIS.slide);
+  B(0.031,0.006,0.192,slideM,0,0.023,-0.078,PIS.slide).scale.set(0.82,1,1);
+  for(let i=0;i<5;i++)B(0.032,0.022,0.003,darkM,0,0.006,0.006-i*0.007,PIS.slide);
+  B(0.002,0.012,0.04,darkM,0.0155,0.008,-0.05,PIS.slide);
+  for(const sx of [-1,1])B(0.0012,0.004,0.12,viper,sx*0.0156,-0.006,-0.09,PIS.slide);
+  for(const sx of [-1,1])B(0.006,0.008,0.008,darkM,sx*0.007,0.03,0.01,PIS.slide);      // rear sight (notch)
+  for(const sx of [-1,1])B(0.0022,0.0022,0.001,dotM,sx*0.007,0.032,0.0055,PIS.slide);
+  B(0.004,0.009,0.008,darkM,0,0.03,-0.165,PIS.slide);                                    // front sight post
+  B(0.0026,0.0026,0.001,dotM,0,0.033,-0.1609,PIS.slide);
+  const muz=new T.Mesh(new T.CylinderGeometry(0.0065,0.0065,0.012,12),steelM);muz.rotation.x=Math.PI/2;muz.position.set(0,0.004,-0.176);PIS.slide.add(muz);
+  // frame, rail, trigger guard, trigger, raked grip with texture panels, magazine
+  B(0.028,0.02,0.16,frameM,0,-0.02,-0.07);
+  for(let i=0;i<3;i++)B(0.022,0.004,0.006,darkM,0,-0.032,-0.11-i*0.014);
+  B(0.004,0.004,0.05,frameM,0,-0.052,-0.045);B(0.004,0.03,0.004,frameM,0,-0.038,-0.07);
+  const trig=B(0.004,0.016,0.005,steelM,0,-0.037,-0.042);trig.rotation.x=0.3;
+  PIS.grip=new T.Group();PIS.grip.position.set(0,-0.03,0.008);PIS.grip.rotation.x=0.28;PIS.gun.add(PIS.grip);
+  B(0.03,0.11,0.048,frameM,0,-0.05,0,PIS.grip);
+  for(const sx of [-1,1])B(0.002,0.07,0.036,darkM,sx*0.0158,-0.05,0,PIS.grip);
+  PIS.mag=B(0.024,0.11,0.036,darkM,0,-0.052,0,PIS.grip);PIS.magY=-0.052;
+  B(0.032,0.008,0.05,frameM,0,-0.107,0,PIS.mag).position.set(0,-0.055,0);
+  // hands: right hand on the grip, left hand cupping it, sleeves
+  const rh=B(0.04,0.06,0.07,glove,0.004,-0.06,0.012,PIS.grip);rh.rotation.x=-0.05;
+  B(0.012,0.012,0.05,glove,0.012,-0.022,-0.03,PIS.gun);                                  // trigger finger
+  const lh=B(0.038,0.05,0.07,glove,-0.02,-0.07,0.0,PIS.grip);lh.rotation.z=0.2;
+  const rs=B(0.05,0.05,0.3,sleeve,0.04,-0.19,0.21,PIS.gun);rs.rotation.set(0.95,-0.15,0);
+  const ls=B(0.05,0.05,0.3,sleeve,-0.055,-0.2,0.2,PIS.gun);ls.rotation.set(1.0,0.35,0);
+  // muzzle flash + where the casing leaves
+  PIS.flash=new T.Sprite(new T.SpriteMaterial({map:flashTex,transparent:true,depthWrite:false,blending:T.AdditiveBlending,color:0xffcf8a}));
+  PIS.flash.position.set(0,0.004,-0.2);PIS.flash.scale.set(0.15,0.15,1);PIS.flash.visible=false;PIS.gun.add(PIS.flash);
+  PIS.muzzle=new T.Vector3(0,0.004,-0.18);PIS.eject=new T.Vector3(0.018,0.012,-0.05);
+})();
+const PHIP={x:0.105,y:-0.105,z:-0.34,rx:0.03,ry:0.06,rz:0.02},PADS={x:0,y:-0.032,z:-0.42};
+function updatePistolVM(dt){
+  PROOT.visible=LOAD.active==='pistol'&&(state==='playing'||state==='dead'||state==='paused');
+  if(!PROOT.visible)return;
+  const ads=ss(PCORE.ads),free=1-ads;
+  let x=lerp(PHIP.x,PADS.x,ads),y=lerp(PHIP.y,PADS.y,ads),z=lerp(PHIP.z,PADS.z,ads),rx=PHIP.rx*free,ry=PHIP.ry*free,rz=0;
+  const sw=VM.sprintW*free;x-=0.04*sw;y-=0.09*sw;rx-=0.7*sw;ry+=0.3*sw;
+  const bob=P.bob*free*MOTION,bm=PM.sprinting?1.8:1;
+  x+=Math.cos(P.stepPhase)*0.011*bob*bm*FEEL.vmBob;y+=-Math.abs(Math.sin(P.stepPhase))*0.012*bob*bm*FEEL.vmBob+Math.sin(P.swayT*1.6)*0.0025*free;
+  x+=WS.swayX*(1-ads*0.8);y+=WS.swayY*(1-ads*0.8);ry+=WS.swayX*1.4;rx+=WS.swayY*1.2;rz+=0.3*VM.slideW*free-P.lean*0.08;
+  y+=0.012*VM.airW*free+VM.land*0.45-0.45*VM.deadW;
+  // recoil: snaps back and up, quicker than the rifle
+  z+=WS.kick*0.06;rx+=WS.kick*0.45;y+=WS.kick*0.01;
+  // draw / holster / raise after spawn: comes up from below, turned
+  let dp=0;
+  if(LOAD.phase==='draw')dp=1-ss(LOAD.t/SD_CONFIG.loadout.pistolDraw);else if(LOAD.phase==='holster')dp=ss(LOAD.t/SD_CONFIG.loadout.pistolHolster);
+  if(PCORE.state==='raise')dp=Math.max(dp,1-ss(PCORE.t/PCFG.raise));
+  y-=dp*0.25;rx-=dp*0.8;rz+=dp*0.5;
+  // slide: back on each shot (same keys as the sounds); reload: tilt, magazine out and in, slide release
+  let back=0;
+  if(PCORE.state==='bolt'){back=SDWeapon.boltPose(PCORE.t/PCFG.bolt,PCFG.boltKeys).back;}
+  if(PCORE.state==='reload'){const rp=SDWeapon.reloadPose(PCORE.t/PCFG.reload,PCFG);rz+=rp.tilt*0.5;rx+=rp.tilt*0.45;y+=rp.tilt*0.055;x-=rp.tilt*0.045;z+=rp.tilt*0.03;
+    PIS.mag.position.y=PIS.magY-rp.magDrop*0.16;PIS.mag.visible=rp.magVisible;back=Math.max(back,rp.back);}
+  else{PIS.mag.position.y=PIS.magY;PIS.mag.visible=true;}
+  if(PCORE.ammo<=0&&PCORE.state!=='reload')back=1;   // empty: the slide locks open
+  PIS.slide.position.z=back*0.034;
+  PROOT.position.set(x,y,z);PROOT.rotation.set(rx,ry,rz);
+  PIS.flash.visible=WS.flashT>0;
+}
 const wFlashLight=new T.PointLight(0xffb060,0,2,2);wFlashLight.position.set(0.1,-0.05,-0.7);wScene.add(wFlashLight);
 // casings
 const CASINGS=[];{const cm=new T.MeshStandardMaterial({color:0xc9a04a,metalness:.85,roughness:.3});const cg=new T.CylinderGeometry(0.0055,0.0055,0.05,8);for(let i=0;i<4;i++){const m=new T.Mesh(cg,cm);m.visible=false;wScene.add(m);CASINGS.push({m,v:new T.Vector3(),t:0,spin:new T.Vector3()});}}
 let casingIdx=0;
-function ejectCasing(){const c=CASINGS[casingIdx];casingIdx=(casingIdx+1)%CASINGS.length;GUN.updateMatrixWorld(true);c.m.position.copy(RIF.eject).applyMatrix4(GUN.matrixWorld);c.v.set(rand(1.0,1.6),rand(0.9,1.4),rand(0.1,0.5));c.spin.set(rand(-20,20),rand(-20,20),rand(-20,20));c.t=0.75;c.m.visible=true;}
+function ejectCasing(pistol){const c=CASINGS[casingIdx];casingIdx=(casingIdx+1)%CASINGS.length;const G0=pistol?PIS.gun:GUN;G0.updateMatrixWorld(true);c.m.position.copy(pistol?PIS.eject:RIF.eject).applyMatrix4(G0.matrixWorld);c.m.scale.setScalar(pistol?0.6:1);c.v.set(rand(1.0,1.6),rand(0.9,1.4),rand(0.1,0.5));c.spin.set(rand(-20,20),rand(-20,20),rand(-20,20));c.t=0.75;c.m.visible=true;}
 function updateCasings(dt){for(const c of CASINGS){if(!c.m.visible)continue;c.t-=dt;if(c.t<=0){c.m.visible=false;continue;}c.v.y-=7*dt;c.m.position.addScaledVector(c.v,dt);c.m.rotation.x+=c.spin.x*dt;c.m.rotation.y+=c.spin.y*dt;c.m.rotation.z+=c.spin.z*dt;}}
 
 /* =================== GAME STATE =================== */
@@ -2489,9 +2573,13 @@ const PM=SDMovement.createState();const PMprev={x:0,y:0,z:0};
 const WCORE=SDWeapon.createState(GUNCFG);
 const RECOIL=SDWeapon.createRecoil();
 const KCFG=SD_CONFIG.knives.tactica;
-const LOAD=SDMelee.createLoadout(KCFG,SD_CONFIG.loadout);
+const PCFG=SD_CONFIG.pistols.vibora;
+const PCORE=SDWeapon.createState(PCFG);
+const LOAD=SDMelee.createLoadout(KCFG,SD_CONFIG.loadout,PCFG);
+// the gun in hand (rifle or pistol) and its config: what the camera, HUD and crosshair follow
+const AG=()=>LOAD.active==='pistol'?PCORE:WCORE,ACFG=()=>LOAD.active==='pistol'?PCFG:GUNCFG;
 // the local player as the shared tick sees it (the same objects, not copies)
-const LOCAL={ms:PM,w:WCORE,load:LOAD};
+const LOCAL={ms:PM,w:WCORE,pw:PCORE,load:LOAD};
 // shooting-range options (remembered per browser)
 const TRAIN={level:['off','easy','normal','hard'].includes(store.get('trainLevel','off'))?store.get('trainLevel','off'):'off',infAmmo:!!store.get('infAmmo',false)};
 // ... and presentation state mirrored from it each tick (read by bots, HUD, camera)
@@ -2745,7 +2833,7 @@ function respawnPlayer(){
   P.yaw=mode==='range'?Math.PI:Math.atan2(n.x,n.z);P.pitch=0;P.hp=100;P.alive=true;P.deadT=0;P.roll=0;
   P.breath=1;P.exhausted=0;P.holding=false;
   Object.assign(RECOIL,SDWeapon.createRecoil());
-  SDWeapon.resetForSpawn(WCORE);SDMelee.resetLoadout(LOAD);if(typeof updateWeaponHud==='function')updateWeaponHud();VM.deadW=0;VM.eye=MOVE.eyeStand;
+  SDWeapon.resetForSpawn(WCORE);SDWeapon.resetForSpawn(PCORE);SDMelee.resetLoadout(LOAD);if(typeof updateWeaponHud==='function')updateWeaponHud();VM.deadW=0;VM.eye=MOVE.eyeStand;
   syncFromSim();
   input.scope=false;input.scopeToggle=false;input.crouchHeld=false;input.fireAim=false;input.fireAimShot=0;
   $('#death').hidden=true;updateAmmoUI();updateHpUI();SFX.raise();
@@ -2805,10 +2893,11 @@ function impactFX(hit,dist){
 const BULLETS=[];const BTR=[];
 for(let i=0;i<4;i++){const m=new T.Mesh(tracerGeo,new T.MeshBasicMaterial({color:0xfff0c8,transparent:true,opacity:.95,blending:T.AdditiveBlending,depthWrite:false,fog:false}));m.visible=false;scene.add(m);BTR.push(m);}
 let btrIdx=0;
-function spawnBullet(origin,dir,visStart){
+function spawnBullet(origin,dir,visStart,cfg){
+  cfg=cfg||GUNCFG;
   const m=BTR[btrIdx];btrIdx=(btrIdx+1)%BTR.length;
   for(let i=BULLETS.length-1;i>=0;i--)if(BULLETS[i].m===m)BULLETS.splice(i,1);
-  const b=SDWeapon.createBullet(origin.x,origin.y,origin.z,dir.x,dir.y,dir.z,GUNCFG);
+  const b=SDWeapon.createBullet(origin.x,origin.y,origin.z,dir.x,dir.y,dir.z,cfg);b.cfg=cfg;
   b.m=m;b.off=visStart.clone().sub(origin);b.dx=dir.x;b.dy=dir.y;b.dz=dir.z;
   BULLETS.push(b);
 }
@@ -2818,12 +2907,12 @@ function updateBullets(dt){
   const targets=shotTargets();
   for(let i=BULLETS.length-1;i>=0;i--){
     const b=BULLETS[i];
-    const sg=SDWeapon.stepBullet(b,dt,GUNCFG);
+    const sg=SDWeapon.stepBullet(b,dt,b.cfg||GUNCFG);
     _bo.set(sg.x0,sg.y0,sg.z0);_bd.set(sg.dx,sg.dy,sg.dz);
     RAY.set(_bo,_bd);RAY.near=0;RAY.far=sg.len;
     const hits=RAY.intersectObjects(targets,false);
     if(hits.length){const h=hits[0];b.dist+=h.distance;b.x=h.point.x;b.y=h.point.y;b.z=h.point.z;bulletHit(h,b);b.done=true;}
-    else{b.dist+=sg.len;if(b.dist>GUNCFG.maxRange||b.y<-3)b.done=true;}
+    else{b.dist+=sg.len;if(b.dist>(b.cfg||GUNCFG).maxRange||b.y<-3)b.done=true;}
     // tracer: starts at the muzzle and converges onto the real path within 18 m
     _bv.set(b.x,b.y,b.z).addScaledVector(b.off,Math.max(0,1-b.dist/18));
     const tail=Math.min(8,b.dist);_bt.copy(_bv).addScaledVector(_bd,-tail);
@@ -2836,7 +2925,8 @@ function bulletHit(h,b){
   if(ud.remote)return; // online: a predicted hit is not a confirmed one (the server sends the hit)
   if(ud.bot&&ud.bot.alive){
     const bot=ud.bot,part=ud.part;STATS.hits++;
-    const dmg=GUNCFG.dmg[part];STATS.damage+=Math.min(dmg,Math.max(0,bot.hp));
+    const bc=b.cfg||GUNCFG,f=bc.falloff,fk=!f||dist<=f.from?1:dist>=f.to?f.min:1-(1-f.min)*(dist-f.from)/(f.to-f.from);
+    const dmg=Math.round(bc.dmg[part]*fk);STATS.damage+=Math.min(dmg,Math.max(0,bot.hp));
     const killed=bot.damage(dmg,part,dist,{x:b.vx,z:b.vz});
     emit(h.point,{n:3,color:0xffb070,size:0.09,life:0.22,spread:2.5,add:true,op:0.9,drag:2});
     emit(h.point,{n:2,color:0x7a5a46,size:0.2,grow:0.6,life:0.45,spread:0.6,op:0.45});
@@ -2848,29 +2938,35 @@ function bulletHit(h,b){
   updateRangeHud();
 }
 /* ---- shot: direction from the last rendered aim (reticle), never from recoil or shake ---- */
-function doFire(e){
+function doFire(e,kind){
+  const pistol=kind==='pistol',cfg=pistol?PCFG:GUNCFG,core=pistol?PCORE:WCORE;
   STATS.shots++;if(STATS.firstShot<0)STATS.firstShot=gameTime;
-  const scoped=e.scoped;
+  const scoped=!pistol&&e.scoped;
   _ae.set(AIM.pitch,AIM.yaw,0,'YXZ');_aq.setFromEuler(_ae);
   const fwd=new T.Vector3(0,0,-1).applyQuaternion(_aq),up=new T.Vector3(0,1,0).applyQuaternion(_aq),right=new T.Vector3(1,0,0).applyQuaternion(_aq);
   const dir=fwd.clone();
-  const sp=SDWeapon.spread(WCORE,moveCtx());
+  // the cone of the shot that just left (spread before this shot's own bloom)
+  const sp=Math.max(0,SDWeapon.spread(core,moveCtx())-(pistol?Math.min(cfg.bloomPerShot,core.bloom):0));
   if(sp>0){const r=sp*Math.sqrt(Math.random()),a=Math.random()*Math.PI*2;dir.addScaledVector(right,Math.cos(a)*r).addScaledVector(up,Math.sin(a)*r).normalize();}
-  dir.addScaledVector(up,Math.tan(SDWeapon.zeroLift(GUNCFG))).normalize();
+  dir.addScaledVector(up,Math.tan(SDWeapon.zeroLift(cfg))).normalize();
   const origin=new T.Vector3(AIM.ox,AIM.oy,AIM.oz);
-  const muzzleW=origin.clone().addScaledVector(fwd,1.1).addScaledVector(up,-0.16).addScaledVector(right,0.16);
+  const muzzleW=pistol?origin.clone().addScaledVector(fwd,0.55).addScaledVector(up,-0.06*(1-core.ads)-0.03).addScaledVector(right,0.12*(1-core.ads)):origin.clone().addScaledVector(fwd,1.1).addScaledVector(up,-0.16).addScaledVector(right,0.16);
   const vis=scoped?origin.clone().addScaledVector(up,-0.12).addScaledVector(fwd,1.5):muzzleW;
-  spawnBullet(origin,dir,vis);
-  if(mode==='online')NET.fire={o:[origin.x,origin.y,origin.z],d:[dir.x,dir.y,dir.z],ads:WCORE.ads,sp,scoped};
+  spawnBullet(origin,dir,vis,cfg);
+  if(mode==='online')NET.fire={o:[origin.x,origin.y,origin.z],d:[dir.x,dir.y,dir.z],ads:core.ads,sp,scoped,w:kind||'rifle'};
   if(mode==='online')NET.lastFire=NET.fire;
   // feedback (visual / audio only)
-  SFX.shot();vibrate(28);
-  const rc=GUNCFG.recoil;SDWeapon.kickRecoil(RECOIL,scoped?rc.pitch:rc.pitchHip,rand(-1,1)*rc.yaw,rc);
-  P.shake=Math.max(P.shake,scoped?0.3:0.7);
-  WS.kick=rc.viewKick;WS.flashT=0.055;RIF.flash.material.rotation=Math.random()*6;const fs=rand(0.28,0.4);RIF.flash.scale.set(fs,fs,1);
+  if(pistol)SFX.pistolShot();else SFX.shot();vibrate(pistol?16:28);
+  const rc=cfg.recoil;SDWeapon.kickRecoil(RECOIL,scoped?rc.pitch:rc.pitchHip,rand(-1,1)*rc.yaw,rc);
+  // the pistol's muzzle really climbs: your aim goes up a little with each shot (pull it back down)
+  if(pistol){P.pitch=clamp(P.pitch+cfg.climb*(1-0.35*core.ads),-1.45,1.45);P.yaw+=rand(-1,1)*cfg.climb*0.18;}
+  P.shake=Math.max(P.shake,scoped?0.3:pistol?0.25:0.7);
+  WS.kick=rc.viewKick;WS.flashT=pistol?0.045:0.055;
+  if(pistol){PIS.flash.material.rotation=Math.random()*6;const fs=rand(0.12,0.18);PIS.flash.scale.set(fs,fs,1);}
+  else{RIF.flash.material.rotation=Math.random()*6;const fs=rand(0.28,0.4);RIF.flash.scale.set(fs,fs,1);}
   camLight.position.copy(muzzleW);camLight.intensity=3.2;
   if(scoped){const sf=$('#scopeFlash');sf.classList.remove('on');void sf.offsetWidth;sf.classList.add('on');}
-  else emitVM(0.8);
+  else emitVM(pistol?0.35:0.8,pistol);
   if(mode==='duel')for(const b of BOTS)if(b.alive&&b.g.position.distanceTo(P.pos)<85){b.alertT=3.5;if(b.state==='watch')b.lookYaw=Math.atan2(P.pos.x-b.g.position.x,P.pos.z-b.g.position.z);b.spot=Math.max(b.spot,0.5);}
   updateAmmoUI();updateRangeHud();
 }
@@ -2880,8 +2976,8 @@ const _ae=new T.Euler(),_aq=new T.Quaternion();
 const VMSMOKE=[];
 for(let i=0;i<10;i++){const s=new T.Sprite(new T.SpriteMaterial({map:softTex,transparent:true,depthWrite:false,opacity:0,color:0xd8cbb4}));s.visible=false;wScene.add(s);VMSMOKE.push({s,t:0,max:1,v:new T.Vector3(),size:0.1});}
 let vmsIdx=0;
-function emitVM(strength){
-  GUN.updateMatrixWorld(true);const base=RIF.muzzle.clone().applyMatrix4(GUN.matrixWorld);
+function emitVM(strength,pistol){
+  const G0=pistol?PIS.gun:GUN;G0.updateMatrixWorld(true);const base=(pistol?PIS.muzzle:RIF.muzzle).clone().applyMatrix4(G0.matrixWorld);
   for(let i=0;i<4;i++){const p=VMSMOKE[vmsIdx];vmsIdx=(vmsIdx+1)%VMSMOKE.length;
     p.s.visible=true;p.s.position.copy(base);p.t=0;p.max=rand(0.5,0.9);p.size=rand(0.05,0.09)*strength;
     p.v.set(rand(0.05,0.25),rand(0.15,0.35),rand(-0.6,-0.2));p.s.material.rotation=Math.random()*6;}
@@ -2925,9 +3021,10 @@ function updateAmmoUI(){
   $('#ammoNum').innerHTML=WS.ammo+'<small>/∞</small>';
 }
 function updateWeaponHud(){
-  const kn=LOAD.active==='knife';
-  $('#ammo').classList.toggle('melee',kn);
-  $('#wname').textContent=kn?KCFG.name+' · 3':GUNCFG.name+' · CERROJO · 1';
+  const kn=LOAD.active==='knife',pi=LOAD.active==='pistol';
+  $('#ammo').classList.toggle('melee',kn);$('#ammo').classList.toggle('sidearm',pi);
+  $('#wname').textContent=kn?KCFG.name+' · 3':pi?PCFG.name+' · SEMIAUTO · 2':GUNCFG.name+' · CERROJO · 1';
+  {const g=AG();WS.mag=g.cfg.mag;WS.ammo=g.ammo;}
 }
 function updateHpUI(){const hp=Math.max(0,Math.round(P.hp));$('#hpNum').textContent=hp;const b=$('#hpBar');b.style.width=hp+'%';b.classList.toggle('low',hp<40);$('#vignette').style.opacity=hp<100?((100-hp)/100*0.9).toFixed(2):0;}
 (function buildCompass(){const s=$('#compassStrip');const PX=3;const names={0:'N',45:'NE',90:'E',135:'SE',180:'S',225:'SO',270:'O',315:'NO'};let html='';
@@ -2952,6 +3049,7 @@ window.addEventListener('keydown',e=>{
     if(e.code==='KeyR')input.reloadPressed=true;
     if(e.code==='KeyP')pause();
     if(e.code==='Digit1'||e.code==='Numpad1')input.select='rifle';
+    if(e.code==='Digit2'||e.code==='Numpad2')input.select='pistol';
     if(e.code==='Digit3'||e.code==='Numpad3')input.select='knife';
     if(e.code==='KeyF')input.inspect=true;
   }
@@ -3019,7 +3117,7 @@ function btnPress(name,down,cancel){ // cancel: the system took the finger (call
     case 'breath':input.breath=true;break;
     case 'zoom':WS.zoom=WS.zoom===8?4:8;SFX.click(0,3000,0.15);break;
     case 'pause':pause();break;
-    case 'swap':input.fireAim=false;input.select=(LOAD.pending||LOAD.active)==='rifle'?'knife':'rifle';break;
+    case 'swap':{input.fireAim=false;const cur=LOAD.pending||LOAD.active;input.select=cur==='rifle'?'pistol':cur==='pistol'?'knife':'rifle';break;}
     case 'inspect':input.inspect=true;break;
   }
 }
@@ -3220,7 +3318,7 @@ const VM={sprintW:0,slideW:0,airW:0,crouchW:0,deadW:0,land:0,landV:0,eye:MOVE.ey
 function syncFromSim(){
   P.pos.set(PM.x,PM.y,PM.z);P.vel.set(PM.vx,PM.vy,PM.vz);P.onGround=PM.onGround;P.crouch=PM.crouch;
   P.slideT=PM.sliding?1:0;P.sprinting=PM.sprinting;P.eye=PM.eye;
-  WS.ads=WCORE.ads;WS.ammo=WCORE.ammo;WS.state=WCORE.state;WS.t=WCORE.t;
+  {const g=AG();WS.ads=g.ads;WS.ammo=g.ammo;WS.state=g.state;WS.t=g.t;WS.mag=g.cfg.mag;}
 }
 function buildCmd(){
   const k=input.keys;let mx=0,mz=0;
@@ -3260,10 +3358,23 @@ function onWeaponEvent(e,hol){
     case 'ready':updateAmmoUI();break;
   }
 }
+function onPistolEvent(e,hol){
+  if(hol&&e.type!=='fire')return;
+  switch(e.type){
+    case 'fire':if(mode==='range'&&TRAIN.infAmmo)PCORE.ammo=PCFG.mag;doFire(e,'pistol');break;
+    case 'dry':SFX.dry();break;
+    case 'eject':ejectCasing(true);SFX.casing(0.12);break;
+    case 'reloadStart':nz(0,0.14,{type:'bandpass',f:1700,q:1,g:0.08});break;
+    case 'magOut':SFX.pMagOut();break;
+    case 'magIn':SFX.pMagIn();updateAmmoUI();break;
+    case 'boltFwd':if(PCORE.state==='reload')SFX.pSlide();break;
+    case 'ready':updateAmmoUI();break;
+  }
+}
 function onLoadoutEvent(e){
   switch(e.type){
-    case 'holster':if(e.weapon==='rifle'){input.scopeToggle=false;SFX.holsterRifle();}else SFX.knifeHolster();break;
-    case 'draw':if(e.weapon==='knife')SFX.knifeDraw();else SFX.raise();updateWeaponHud();break;
+    case 'holster':if(e.weapon==='rifle'){input.scopeToggle=false;SFX.holsterRifle();}else if(e.weapon==='pistol')SFX.pHolster();else SFX.knifeHolster();break;
+    case 'draw':if(e.weapon==='knife')SFX.knifeDraw();else if(e.weapon==='pistol')SFX.pDraw();else SFX.raise();updateWeaponHud();updateAmmoUI();break;
     case 'swing':SFX.swing();SDWeapon.kickRecoil(RECOIL,0.006,e.side*0.018,GUNCFG.recoil);STATS.meleeSwings=(STATS.meleeSwings||0)+1;break;
     case 'knifeHit':doKnifeHit();break;
     case 'inspect':SFX.knifeFlick();break;
@@ -3308,11 +3419,12 @@ function simTick(dt){
     if(online){cmd.pitch=P.pitch;if(state==='paused'){cmd.mx=cmd.mz=0;cmd.fire=cmd.jump=cmd.reload=cmd.sprint=cmd.crouchPressed=false;cmd.adsHeld=false;}SDProto.quantize(cmd);NET.fire=null;}
     PMprev.x=PM.x;PMprev.y=PM.y;PMprev.z=PM.z;
     cmd.select=input.select;cmd.inspect=input.inspect;input.select=null;input.inspect=false;
-    const {mev,lev,wev,hol}=SDPlayer.step(LOCAL,cmd,dt,W,MOVE);
+    const {mev,lev,wev,pev,hol,holP}=SDPlayer.step(LOCAL,cmd,dt,W,MOVE);
     syncFromSim();
     for(const e of mev)onMoveEvent(e);
     for(const e of lev)onLoadoutEvent(e);
     for(const e of wev)onWeaponEvent(e,hol);
+    for(const e of pev)onPistolEvent(e,holP);
     if(online){if(NET.fire){cmd.fo=NET.fire.o;cmd.fd=NET.fire.d;cmd.ft=NET.N.serverNow()-NET.N.interpMs;}NET.N.queueCmd(cmd);} // the same command goes to the server (ft: when the rival on screen was there, for lag compensation)
     // breath (only while the scope picture is up)
     const scoped=WCORE.ads>=GUNCFG.scopeAt;
@@ -3329,7 +3441,7 @@ function simTick(dt){
     P.deadT+=dt;
     if(P.deadT>=3&&state==='dead'){state='playing';respawnPlayer();}
   }
-  SDWeapon.stepRecoil(RECOIL,dt,GUNCFG.recoil);
+  SDWeapon.stepRecoil(RECOIL,dt,ACFG().recoil);
   for(const b of activeBots())b.update(dt);
   updateBullets(dt);
 }
@@ -3347,7 +3459,8 @@ function applyLook(){
   input.lookDX=0;input.lookDY=0;
 }
 function updateCamera(dt,alpha){
-  const ads=WCORE.ads,adsE=ss(ads),scoped=ads>=GUNCFG.scopeAt,free=1-adsE;
+  const G0=AG(),C0=ACFG(),pistolOut=LOAD.active==='pistol';
+  const ads=G0.ads,adsE=ss(ads),scoped=!pistolOut&&ads>=GUNCFG.scopeAt,free=1-adsE;
   // smooth presentation weights (no snaps between sprint / slide / air / ADS / death)
   VM.sprintW=damp(VM.sprintW,PM.sprinting?1:0,10,dt);
   VM.slideW=damp(VM.slideW,PM.sliding?1:0,12,dt);
@@ -3367,8 +3480,8 @@ function updateCamera(dt,alpha){
   // aim sway (this IS where the bullet goes; it is visible in the reticle)
   P.swayT+=dt;
   const hs=Math.hypot(PM.vx,PM.vz);
-  let amp=GUNCFG.sway*(PM.crouch?GUNCFG.swayCrouchMul:1)*(1+hs*GUNCFG.swayMoveMul)*(P.holding?GUNCFG.holdMul:1)*(P.exhausted>0?GUNCFG.exhaustMul:1);
-  if(!PM.onGround)amp*=GUNCFG.swayAirMul;
+  let amp=C0.sway*(PM.crouch?C0.swayCrouchMul:1)*(1+hs*C0.swayMoveMul)*(P.holding?C0.holdMul:1)*(P.exhausted>0?C0.exhaustMul:1);
+  if(!PM.onGround)amp*=C0.swayAirMul;
   const t=P.swayT;
   const swY=(Math.sin(t*0.9)*0.7+Math.sin(t*2.13+1)*0.3)*amp*adsE;
   const swP=(Math.sin(t*1.31+2)*0.55+Math.cos(t*0.71)*0.45+Math.sin(t*1.6)*0.35)*amp*0.8*adsE;
@@ -3386,7 +3499,8 @@ function updateCamera(dt,alpha){
   // fov: fully zoomed by the time the scope picture appears, so the reticle never "breathes"
   WS.zoomCur=damp(WS.zoomCur,WS.zoom,10,dt);
   let fov=BASE_FOV+VM.sprintW*FEEL.sprintFov+VM.slideW*FEEL.slideFov;
-  fov=lerp(fov,BASE_FOV/WS.zoomCur,seg(ads,0.3,GUNCFG.scopeAt));
+  if(pistolOut)fov=lerp(fov,BASE_FOV/PCFG.ironZoom,adsE);   // iron sights: a light zoom
+  else fov=lerp(fov,BASE_FOV/WS.zoomCur,seg(ads,0.3,GUNCFG.scopeAt));
   fov*=1-P.fovPunch;
   if(Math.abs(camera.fov-fov)>0.001){camera.fov=fov;camera.updateProjectionMatrix();}
   // scope overlay
@@ -3410,10 +3524,10 @@ function updateCamera(dt,alpha){
   const cr=$('#cross');
   const knife=LOAD.active==='knife';
   cr.classList.toggle('dot',knife);
-  const showCross=knife?(P.alive&&!PM.sprinting):(ads<0.3&&!PM.sprinting&&P.alive&&WCORE.state!=='reload'&&LOAD.phase==='ready');
+  const showCross=knife?(P.alive&&!PM.sprinting):(ads<0.3&&!PM.sprinting&&P.alive&&AG().state!=='reload'&&LOAD.phase==='ready');
   cr.style.opacity=showCross?1:0;
-  if(showCross&&!knife){const sp=SDWeapon.spread(WCORE,moveCtx());const gap=Math.tan(sp)/Math.tan(camera.fov*Math.PI/360)*window.innerHeight/2;cr.style.setProperty('--gap',(clamp(gap,4,120)+3).toFixed(0)+'px');}
-  const st=WCORE.state==='reload'?'RECARGANDO':'';const stEl=$('#status');if(stEl.textContent!==st)stEl.textContent=st;
+  if(showCross&&!knife){const sp=SDWeapon.spread(AG(),moveCtx());const gap=Math.tan(sp)/Math.tan(camera.fov*Math.PI/360)*window.innerHeight/2;cr.style.setProperty('--gap',(clamp(gap,4,120)+3).toFixed(0)+'px');}
+  const st=AG().state==='reload'&&LOAD.active!=='knife'?'RECARGANDO':'';const stEl=$('#status');if(stEl.textContent!==st)stEl.textContent=st;
   if(hpDirty){hpDirty=false;updateHpUI();}
   if(!P.alive){const left=Math.max(0,3-P.deadT);$('#deathCount').textContent=STATS.botKills>=GOAL?'':'Reapareces en '+Math.ceil(left);}
 }
@@ -3457,7 +3571,7 @@ function updateViewmodel(dt){
   WROOT.position.copy(pos);WROOT.rotation.set(rx,ry,rz);
   // hidden exactly when the scope picture appears: the rifle can never cover the sight
   WROOT.visible=LOAD.active==='rifle'&&WCORE.ads<GUNCFG.scopeAt;
-  updateKnifeVM(dt);
+  updateKnifeVM(dt);updatePistolVM(dt);
   if(WS.flashT>0)WS.flashT-=dt;
   RIF.flash.visible=WS.flashT>0&&WROOT.visible;
   wFlashLight.intensity=WS.flashT>0?2.5:0;
@@ -3627,6 +3741,9 @@ class RemotePlayer{
     const sc=new T.Mesh(new T.CylinderGeometry(0.025,0.03,0.3,8),M.gun);sc.rotation.x=Math.PI/2;sc.position.set(0.1,0.09,0.36);this.aim.add(sc);
     this.knife=new T.Mesh(new T.BoxGeometry(0.03,0.03,0.25),M.gun);this.knife.position.set(0.18,-0.05,0.42);this.knife.visible=false;this.aim.add(this.knife);
     this.rifleParts=[rb,sc];
+    // sidearm: a short dark pistol held forward in both hands
+    this.pistol=new T.Group();this.pistol.position.set(0.04,0.0,0.42);this.aim.add(this.pistol);this.pistol.visible=false;
+    {const ps=new T.Mesh(new T.BoxGeometry(0.035,0.04,0.2),M.gun);this.pistol.add(ps);const pg=new T.Mesh(new T.BoxGeometry(0.03,0.11,0.045),M.gun);pg.position.set(0,-0.06,0.06);pg.rotation.x=0.28;this.pistol.add(pg);}
     this.flash=new T.Sprite(new T.SpriteMaterial({map:softTex,color:0xffd08a,transparent:true,depthWrite:false,blending:T.AdditiveBlending}));this.flash.position.set(0.1,0.02,1.0);this.flash.scale.set(0.5,0.5,1);this.flash.visible=false;this.aim.add(this.flash);
     // invisible hit zones, exactly the server's: only used to stop our own predicted tracer
     const hm=new T.MeshBasicMaterial({visible:false});
@@ -3644,7 +3761,7 @@ class RemotePlayer{
     this.boltT=pose.ws==='bolt'?(this.boltT||0)+dt:0;
     this.aim.rotation.x=-clamp(pose.pitch,-1.2,1.2)/k*0.9+this.relW*0.55;
     this.aim.rotation.z=this.relW*0.35+(this.boltT>0?Math.sin(Math.min(1,this.boltT/0.95)*Math.PI)*0.12:0);
-    const knife=pose.wpn==='knife';this.knife.visible=knife;for(const m of this.rifleParts)m.visible=!knife;
+    const knife=pose.wpn==='knife',pist=pose.wpn==='pistol';this.knife.visible=knife;this.pistol.visible=pist;for(const m of this.rifleParts)m.visible=!knife&&!pist;
     // knife attack: a quick forward thrust of the arms
     this.stabT=knife&&pose.ks==='attack'?(this.stabT||0)+dt:0;
     this.aim.position.z=this.stabT>0?Math.sin(Math.min(1,this.stabT/0.3)*Math.PI)*0.28:0;
@@ -3664,7 +3781,7 @@ class RemotePlayer{
     if(pose.alive){this.alive=true;this.deadT=0;this.g.rotation.x=0;this.g.visible=true;}
     else{this.alive=false;this.deadT+=dt;this.g.rotation.x=-Math.min(1,this.deadT/0.45)*Math.PI/2;this.g.visible=this.deadT<2.6;}
   }
-  shoot(){this.flashT=0.06;this.flash.material.rotation=Math.random()*6;}
+  shoot(w){this.flashT=0.06;this.flash.material.rotation=Math.random()*6;const pi=w==='pistol';this.flash.position.z=pi?0.66:1.0;this.flash.scale.setScalar(pi?0.18:0.35);}
 }
 let REMOTE=null;
 const NET={ws:null,N:null,code:null,url:null,want:false,retries:0,retryAt:0,status:'off',fire:null,leaving:false,closeWhy:null,lastMsgAt:0,lastSeenOver:null,bytesIn:0,bytesOut:0,errors:[],prevMode:'duel',view:'home'};
@@ -3781,9 +3898,9 @@ function netEvent(e){
       break;
     case 'shot':
       if(e.by===N.you){if(e.corrected)netErr('disparo corregido por el servidor');break;}
-      {const o=new T.Vector3(e.o[0],e.o[1],e.o[2]),d=new T.Vector3(e.d[0],e.d[1],e.d[2]);spawnBullet(o,d,o.clone().addScaledVector(d,1.0));
+      {const o=new T.Vector3(e.o[0],e.o[1],e.o[2]),d=new T.Vector3(e.d[0],e.d[1],e.d[2]);spawnBullet(o,d,o.clone().addScaledVector(d,e.w==='pistol'?0.6:1.0),e.w==='pistol'?PCFG:GUNCFG);
        const dist=o.distanceTo(P.pos);const pan=clamp(Math.sin((bearingDeg(o.x,o.z)-heading())*Math.PI/180),-1,1);
-       SFX.distant(dist,pan,Math.min(0.25,dist/343));if(REMOTE)REMOTE.shoot();
+       if(e.w==='pistol')SFX.distantPistol(dist,pan,Math.min(0.25,dist/343));else SFX.distant(dist,pan,Math.min(0.25,dist/343));if(REMOTE)REMOTE.shoot(e.w);
        // the bullet passes close to us: crack
        const v=P.pos.clone().setY(P.pos.y+1.5).sub(o);const along=v.dot(d);if(along>0){const miss=v.clone().addScaledVector(d,-along).length();if(miss<2.5)later(Math.min(0.2,along/600),()=>{SFX.whizz(pan);P.shake=Math.max(P.shake,0.25);});}}
       break;
@@ -3956,7 +4073,7 @@ function frame(now){
     camera.position.set(Math.cos(menuAng)*44,13+Math.sin(menuAng*2)*2,Math.sin(menuAng)*44);
     camera.lookAt(0,3,0);
     if(Math.abs(camera.fov-BASE_FOV)>0.01){camera.fov=BASE_FOV;camera.updateProjectionMatrix();}
-    WROOT.visible=false;KROOT.visible=false;
+    WROOT.visible=false;KROOT.visible=false;PROOT.visible=false;
   }
   if(state!=='paused'){updateParts(fxdt);updateTracers(fxdt);for(const f of FLASHES){if(f.s.visible){f.t-=fxdt;if(f.t<=0)f.s.visible=false;}}}
   if(mode==='online')netFrame(rdt);
@@ -3970,11 +4087,11 @@ function frame(now){
     if(SETTINGS.showFps&&GFX.adapt.frames===0)$('#fpsBox').textContent=Math.round(GFX.adapt.fps)+' FPS · '+Math.round(renderer.getPixelRatio()*100)/100+'×';}
   renderer.clear();
   renderer.render(scene,camera);
-  if((WROOT.visible||KROOT.visible)&&(state==='playing'||state==='dead')){renderer.clearDepth();renderer.render(wScene,wCam);}
+  if((WROOT.visible||KROOT.visible||PROOT.visible)&&(state==='playing'||state==='dead')){renderer.clearDepth();renderer.render(wScene,wCam);}
 }
 resize();
 requestAnimationFrame(frame);
-window.__SD={setWorld,WORLDS,get WORLD_ID(){return WORLD_ID;},renderer,GFX,gfxApply,get NET(){return NET;},get REMOTE(){return REMOTE;},W,NAV:typeof NAV!=="undefined"?NAV:null,TOUCH,EDIT,openEditor,get SETTINGS(){return SETTINGS;},get LAYOUT(){return LAYOUT;},checkOrientation,MAT,LOAD,TRAINERS,get RANGE_BOTS(){return RANGE_BOTS;},TRAIN,setTrain,impactFX,surfaceOf,soundDelay,aimSelfTest,P,PM,WS,WCORE,RECOIL,AIM,BOTS,DUMMIES,BULLETS,EVENTS,PARTS,STATS,get state(){return state;},get mode(){return mode;},setMode,input,startMatch,simTick,frame,toMenu,pause,resume};
+window.__SD={PCORE,PCFG,setWorld,WORLDS,get WORLD_ID(){return WORLD_ID;},renderer,GFX,gfxApply,get NET(){return NET;},get REMOTE(){return REMOTE;},W,NAV:typeof NAV!=="undefined"?NAV:null,TOUCH,EDIT,openEditor,get SETTINGS(){return SETTINGS;},get LAYOUT(){return LAYOUT;},checkOrientation,MAT,LOAD,TRAINERS,get RANGE_BOTS(){return RANGE_BOTS;},TRAIN,setTrain,impactFX,surfaceOf,soundDelay,aimSelfTest,P,PM,WS,WCORE,RECOIL,AIM,BOTS,DUMMIES,BULLETS,EVENTS,PARTS,STATS,get state(){return state;},get mode(){return mode;},setMode,input,startMatch,simTick,frame,toMenu,pause,resume};
 })();
 </script>
 

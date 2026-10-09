@@ -72,6 +72,19 @@ const shown = page => page.evaluate(ids => ids.filter(id => { const e = document
       const res = await page.evaluate(() => __SD.aimSelfTest());
       const head = res[0] || '';
       check('autotest de puntería con el motor real: 0 fallidas', /✔ AUTOTEST/.test(head), head.replace(/^. /, ''));
+      // VÍBORA 9 with the real keyboard and mouse (waits on the game state: without a GPU the frames are slow)
+      const wf = (fn, ms) => page.waitForFunction(fn, null, { timeout: ms || 8000, polling: 50 }).then(() => true, () => false);
+      await page.keyboard.press('Digit2');
+      await wf(() => __SD.LOAD.active === 'pistol' && __SD.LOAD.phase === 'ready' && __SD.PCORE.state === 'ready');
+      const pv = await page.evaluate(() => ({ a: __SD.LOAD.active, ph: __SD.LOAD.phase, name: document.getElementById('wname').textContent, ammo: document.getElementById('ammoNum').textContent }));
+      check('tecla 2: sale la pistola VÍBORA 9 (HUD con su nombre y 12 balas)', pv.a === 'pistol' && pv.ph === 'ready' && /VÍBORA 9/.test(pv.name) && /^12/.test(pv.ammo), pv.name + ' · ' + pv.ammo);
+      for (let i = 0; i < 3; i++) { await page.mouse.down(); await page.waitForFunction(n => __SD.PCORE.ammo === n, 11 - i, { timeout: 4000, polling: 30 }).catch(() => {}); await page.mouse.up(); await wf(() => __SD.PCORE.state === 'ready', 4000); }
+      const pf = await page.evaluate(() => ({ ammo: __SD.PCORE.ammo, rifle: __SD.WCORE.ammo }));
+      check('tres clics: tres disparos de pistola, el rifle conserva sus balas', pf.ammo === 9 && pf.rifle === 5, JSON.stringify(pf));
+      await page.keyboard.press('KeyR');
+      check('R recarga la pistola (12 otra vez)', await wf(() => __SD.PCORE.ammo === 12 && __SD.PCORE.state === 'ready', 12000));
+      await page.keyboard.press('Digit1');
+      check('tecla 1: vuelve el rifle', await wf(() => __SD.LOAD.active === 'rifle' && __SD.LOAD.phase === 'ready'));
       if (!/✔ AUTOTEST/.test(head)) res.filter(l => l.startsWith('✘')).forEach(l => console.log('       ' + l));
       const ov2 = await shown(page);
       check('jugando no tapa nada ninguna pantalla oculta', ov2.length === 0, ov2.join(', ') || 'ninguna');

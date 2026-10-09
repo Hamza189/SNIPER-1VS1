@@ -98,8 +98,8 @@ console.log('\nMANTENER FUEGO = MIRA, SOLTAR = DISPARO (opción por defecto)');
   check('toque cancelado por el sistema: no dispara y la mira baja', SD.STATS.shots === s4 && SD.WCORE.ads === 0);
   // change weapon while holding FIRE, then come back to the rifle and lift: no shot
   H.pointer('pointerdown', 3, 779, 325, 'fire'); H.frames(10, 16);
-  H.pointer('pointerdown', 8, 642, 200, 'swap'); H.pointer('pointerup', 8, 642, 200, 'swap'); H.frames(40, 16);
-  H.pointer('pointerdown', 8, 642, 200, 'swap'); H.pointer('pointerup', 8, 642, 200, 'swap'); H.frames(60, 16);
+  for (let k = 0; k < 3; k++) { H.pointer('pointerdown', 8, 642, 200, 'swap'); H.pointer('pointerup', 8, 642, 200, 'swap'); H.frames(40, 16); }   // rifle → pistol → knife → rifle
+  H.frames(20, 16);
   const sw0 = SD.STATS.meleeSwings || 0;
   H.pointer('pointerup', 3, 779, 325, 'fire'); H.frames(30, 16);
   check('cambiar de arma con FUEGO pulsado: al soltar no dispara ni ataca', SD.LOAD.active === 'rifle' && SD.STATS.shots === s4 && (SD.STATS.meleeSwings || 0) === sw0);
@@ -126,10 +126,17 @@ console.log('\nMANTENER FUEGO = MIRA, SOLTAR = DISPARO (opción por defecto)');
   check('el navegador pierde el foco con FUEGO pulsado: pausa y no dispara', pausedOnBlur && SD.STATS.shots === s6);
 }
 
-console.log('\nRIFLE Y NAVAJA EN MÓVIL');
+console.log('\nRIFLE, PISTOLA Y NAVAJA EN MÓVIL');
 { H.frames(80, 16);
   H.pointer('pointerdown', 8, 642, 200, 'swap'); H.pointer('pointerup', 8, 642, 200, 'swap'); H.frames(30, 16);
-  check('ARMA saca la navaja', SD.LOAD.active === 'knife' && SD.LOAD.phase === 'ready');
+  check('ARMA saca la pistola', SD.LOAD.active === 'pistol' && SD.LOAD.phase === 'ready');
+  check('con pistola: MIRA sigue (alzas) y el botón dice FUEGO', H.el('#tbScope').hidden === false && H.el('#tbFire').textContent === 'FUEGO');
+  { const s0 = SD.STATS.shots;
+    H.pointer('pointerdown', 3, 779, 325, 'fire'); H.frames(1, 16); H.pointer('pointerup', 3, 779, 325, 'fire'); H.frames(15, 16);
+    H.pointer('pointerdown', 3, 779, 325, 'fire'); H.frames(1, 16); H.pointer('pointerup', 3, 779, 325, 'fire'); H.frames(15, 16);
+    check('con pistola, FUEGO dispara al tocar (semiautomática): dos toques, dos disparos', SD.STATS.shots - s0 === 2 && SD.PCORE.ammo === 10, (SD.STATS.shots - s0) + ' disparos, quedan ' + SD.PCORE.ammo); }
+  H.pointer('pointerdown', 8, 642, 200, 'swap'); H.pointer('pointerup', 8, 642, 200, 'swap'); H.frames(30, 16);
+  check('ARMA otra vez saca la navaja', SD.LOAD.active === 'knife' && SD.LOAD.phase === 'ready');
   check('con navaja: MIRA se oculta e INSP aparece', H.el('#tbScope').hidden === true && H.el('#tbInspect').hidden === false);
   const sw = SD.STATS.meleeSwings || 0;
   H.pointer('pointerdown', 3, 779, 325, 'fire'); H.pointer('pointerup', 3, 779, 325, 'fire'); H.frames(30, 16);

@@ -2,7 +2,7 @@
 
 Shooter PvP de francotiradores en el navegador, hecho con Three.js. Sin Unity ni Godot: se abre `index.html` y se juega.
 
-**Estado:** alfa privada del **1v1 online** (sala privada con código o enlace, servidor autoritativo en Cloudflare) + modo offline completo (duelo contra bots y campo de tiro). Rifle HALCÓN R7 + navaja táctica. PC y móvil.
+**Estado:** alfa privada del **1v1 online** (sala privada con código o enlace, servidor autoritativo en Cloudflare) + modo offline completo (duelo contra bots y campo de tiro). Rifle HALCÓN R7 + pistola VÍBORA 9 + navaja táctica. PC y móvil.
 
 - Juego: https://hamza189.github.io/SNIPER-1VS1/
 - Servidor online: la dirección está en [`server.json`](server.json). Cómo se juega online, las pruebas con dos móviles y cómo revertir: [`docs/ONLINE.md`](docs/ONLINE.md).
@@ -22,7 +22,7 @@ Abre `index.html` en el navegador (ordenador o móvil). Pulsa **F3** durante la 
 | Rueda | Zoom 4× / 8× |
 | Clic izquierdo | Disparar |
 | R | Recargar |
-| 1 / 3 | Rifle / navaja |
+| 1 / 2 / 3 | Rifle / pistola / navaja |
 | F | Inspeccionar navaja |
 
 En móvil (iPhone con Safari, Android con Chrome, en horizontal): joystick a la izquierda (al fondo = sprint), arrastra a la derecha para apuntar, y botones FUEGO, MIRA, AIRE, AGACH (slide), SALTO, R, ARMA e INSP. En Ajustes se cambian la sensibilidad (horizontal, vertical, con mira, dedo), se invierte el eje vertical y se pueden mover y redimensionar los botones. En iPhone, «Añadir a pantalla de inicio» lo abre a pantalla completa.
@@ -35,7 +35,7 @@ core/            Lógica pura y determinista (sin Three.js): la usan el navegado
   movement.js    Movimiento: aceleración, sprint, crouch, slide, salto, colisiones, rampas
   weapon.js      Estados del arma, precisión, balística con caída de bala, retroceso
   melee.js       Cambio de arma, navaja (alcance, paredes, espalda), animaciones
-  player.js      El tick de un jugador (navaja → movimiento → rifle), idéntico en cliente y servidor
+  player.js      El tick de un jugador (navaja → movimiento → rifle → pistola), idéntico en cliente y servidor
   trainer.js     Cerebro de los bots de entrenamiento
   mapdata.js     Los mapas (PUEBLO y ARENA DE PRUEBAS) exportados del navegador para el servidor
   geom.js        Rayos/segmentos contra el mapa y el cuerpo (mismo resultado que Three.js)
@@ -68,11 +68,11 @@ python3 build.py        # genera index.html
 npm test                # build + pruebas automáticas
 ```
 
-- `test/core.test.js` (69) movimiento, arma, balística y retroceso · `test/phase2.test.js` (58) navaja y bots de entrenamiento.
-- `test/mobile.test.js` (54) joystick, varios dedos, ajustes, botones y perfiles gráficos · `test/touch.smoke.test.js` (50) el juego completo como móvil.
+- `test/core.test.js` (69) movimiento, arma, balística y retroceso · `test/phase2.test.js` (58) navaja y bots de entrenamiento · `test/pistol.test.js` (15) pistola: cadencia, cargador, recarga, dispersión y velocidad.
+- `test/mobile.test.js` (54) joystick, varios dedos, ajustes, botones y perfiles gráficos · `test/touch.smoke.test.js` (53) el juego completo como móvil.
 - `test/smoke.test.js` (57) el juego completo con Three.js imitado.
-- `test/room.test.js` (77) la sala 1v1 con dos clientes reales sobre red simulada: latencia 20–250 ms, jitter, picos de pérdida, duplicados, reconexión, compensación de latencia, estrés.
-- `test/net.test.js` (13) servidor Node real + dos WebSocket · `test/browser.test.js` (20) Chromium real · `test/online.browser.test.js` (29) dos navegadores jugando una partida contra el servidor.
+- `test/room.test.js` (96) la sala 1v1 con dos clientes reales sobre red simulada: latencia 20–250 ms, jitter, picos de pérdida, duplicados, reconexión, compensación de latencia, estrés.
+- `test/net.test.js` (13) servidor Node real + dos WebSocket · `test/browser.test.js` (29) Chromium real · `test/online.browser.test.js` (38) dos navegadores jugando una partida contra el servidor.
 - En GitHub, tras cada publicación: `public.test.js` y `public.browser.test.js` contra la página y el servidor públicos.
 
 Edita `core/` o `src/page.html`, nunca `index.html` directamente: se regenera con `build.py`.
