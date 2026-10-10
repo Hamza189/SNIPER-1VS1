@@ -87,7 +87,16 @@ frames(120, 16);
 check('esprintar hacia delante mueve al jugador', Math.hypot(SD.PM.vx, SD.PM.vz) > 6.5 && SD.PM.sprinting, Math.hypot(SD.PM.vx, SD.PM.vz).toFixed(2) + ' m/s');
 key('KeyC', true); frames(10, 16);
 check('C esprintando inicia slide', SD.PM.sliding || SD.PM.mode === 'slide', SD.PM.mode);
-key('KeyC', false); key('ShiftLeft', false); key('KeyW', false); frames(60, 16);
+key('KeyC', false); frames(90, 16);
+{ // FIRE while sprinting: the sprint drops for a moment and the shot goes off (it used to be swallowed)
+  check('vuelve a esprintar tras el slide', SD.PM.sprinting, SD.PM.mode);
+  const n0 = SD.STATS.shots; SD.input.firePressed = true; frames(20, 16);
+  check('FUEGO esprintando: deja de esprintar y dispara (tras el tiempo normal de salida del sprint)', SD.STATS.shots === n0 + 1 && !SD.PM.sprinting, (SD.STATS.shots - n0) + ' disparo · ' + SD.PM.mode);
+  frames(60, 16);
+  check('poco después, con SHIFT aún pulsado, vuelve a esprintar solo', SD.PM.sprinting, SD.PM.mode);
+}
+key('ShiftLeft', false); key('KeyW', false); frames(60, 16);
+SD.WCORE.ammo = 5;
 SD.input.scope = true; frames(30, 16);
 check('ADS con clic derecho llega a 100 %', SD.WCORE.ads === 1);
 const shots0 = SD.STATS.shots;

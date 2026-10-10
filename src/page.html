@@ -1721,7 +1721,7 @@ const WS={state:'raise',t:0,ammo:GUNCFG.mag,mag:GUNCFG.mag,kick:0,ads:0,swayX:0,
 const AIM={ox:0,oy:0,oz:0,yaw:0,pitch:0};
 const STATS={damage:0,meleeHits:0,firstShot:-1,firstKill:0,lastKill:0,rangeHs:0,kills:0,deaths:0,hs:0,shots:0,hits:0,longest:0,start:0,botKills:0};
 let state='menu';
-const input={keys:{},fireHeld:false,firePressed:false,fireAim:false,fireAimShot:0,scope:false,scopeToggle:false,scopeHeld:false,crouchHeld:false,crouchPressed:false,jumpPressed:false,reloadPressed:false,breath:false,select:null,inspect:false,lookDX:0,lookDY:0,joyX:0,joyY:0,joySprint:false};
+const input={keys:{},fireHeld:false,firePressed:false,fireAim:false,fireAimShot:0,scope:false,scopeToggle:false,scopeHeld:false,crouchHeld:false,crouchPressed:false,jumpPressed:false,reloadPressed:false,breath:false,select:null,inspect:false,lookDX:0,lookDY:0,joyX:0,joyY:0,joySprint:false,noSprintT:0};
 let pointerLocked=false,lockFailed=false;
 const compassMarks=[];
 
@@ -2705,8 +2705,13 @@ function buildCmd(){
   mx+=input.joyX;mz+=input.joyY;
   const shift=!isTouch&&!!(k.ShiftLeft||k.ShiftRight);
   const adsWanted=!!(input.scope||input.scopeToggle||input.scopeHeld||input.fireAim||input.fireAimShot>0);
+  // pressing FIRE with a gun while sprinting drops the sprint for a moment, so the shot goes off after the
+  // normal sprint-out time instead of being swallowed (only the sprint input changes: the rules are the server's)
+  if(input.firePressed&&LOAD.active!=='knife')input.noSprintT=0.35;
+  const noSprint=adsWanted||input.noSprintT>0;
+  input.noSprintT=Math.max(0,(input.noSprintT||0)-TICK_DT);
   const cmd={mx,mz,yaw:P.yaw,
-    sprint:(shift&&!adsWanted)||(input.joySprint&&!adsWanted),
+    sprint:(shift||input.joySprint)&&!noSprint,
     crouch:isTouch?input.crouchHeld:!!(k.KeyC||k.ControlLeft),
     crouchPressed:input.crouchPressed,jump:input.jumpPressed,
     ads:WCORE.ads,reloading:WCORE.state==='reload',

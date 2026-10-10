@@ -30,6 +30,22 @@ console.log('\nJOYSTICK');
   const u = TS.up(c, 1);
   check('al levantar el dedo el joystick vuelve a cero', u.stickEnd && c.jx === 0 && c.jy === 0 && !c.sprint && c.stickId === null);
 }
+{ // full walking speed before the sprint rim; the sprint does not flicker at the rim
+  const c = TS.create(); TS.down(c, { id: 1, x: 150, y: 250, button: null, W });
+  TS.move(c, { id: 1, x: 150, y: 250 - R * 0.86 });
+  check('al 86% hacia delante: velocidad normal completa sin esprintar', Math.abs(c.jy + 1) < 1e-9 && !c.sprint, c.jy.toFixed(2));
+  TS.move(c, { id: 1, x: 150, y: 250 - R * 0.3 });
+  const slow = -c.jy;
+  check('cerca del centro: control fino (más lento que lineal)', slow > 0 && slow < (0.3 - 0.12) / (0.8 - 0.12), slow.toFixed(3));
+  TS.move(c, { id: 1, x: 150, y: 250 - R });
+  check('al borde hacia delante: esprinta', c.sprint);
+  TS.move(c, { id: 1, x: 150, y: 250 - R * 0.9 });
+  check('el dedo baila un poco en el borde: sigue esprintando', c.sprint);
+  TS.move(c, { id: 1, x: 150, y: 250 - R * 0.8 });
+  check('el dedo vuelve claramente: deja de esprintar', !c.sprint);
+  TS.move(c, { id: 1, x: 150, y: 250 - R * 0.9 });
+  check('y no vuelve a esprintar hasta llegar otra vez al borde', !c.sprint);
+}
 { // joystick output fed to the real movement module
   const c = TS.create(); TS.down(c, { id: 1, x: 100, y: 250, button: null, W });
   const run = (x, y) => { TS.move(c, { id: 1, x, y }); const s = M.createState(); for (let i = 0; i < 240; i++) M.step(s, { mx: c.jx, mz: c.jy, yaw: 0, sprint: c.sprint }, 1 / 120, { colliders: [], ramps: [] }, CFG.move); return Math.hypot(s.vx, s.vz); };

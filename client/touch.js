@@ -12,7 +12,11 @@
    - A look finger only starts turning once it has travelled c.cfg.dead px (no jitter on touch-down). */
 (function (root) {
 'use strict';
-const CFG = { stickZone: 0.42, radius: 56, deadzone: 0.12, sprintAt: 0.95, sprintForward: -0.5, lookGain: 1.35, dead: 0 };
+// walkFull: from this share of the radius on, the stick gives full walking speed (a band before the sprint rim,
+// so you can walk at full speed without sprinting). curve > 1: finer control of slow movement near the centre.
+// sprintAt / sprintExit: hysteresis, so the sprint does not flicker on and off at the rim.
+const CFG = { stickZone: 0.42, radius: 56, deadzone: 0.12, walkFull: 0.8, curve: 1.3, sprintAt: 0.95, sprintExit: 0.85, sprintForward: -0.5,
+  lookGain: 1.35, dead: 0 };
 
 function create(cfg) {
   return { cfg: Object.assign({}, CFG, cfg || {}), stickId: null, ox: 0, oy: 0, jx: 0, jy: 0, sprint: false, knobX: 0, knobY: 0,
@@ -38,11 +42,13 @@ function move(c, p) {
     if (d > R) { dx *= R / d; dy *= R / d; }
     c.knobX = dx; c.knobY = dy;
     const raw = Math.min(1, d / R);
-    // dead zone in the middle, then rescale so the edge of the dead zone is 0 and the rim is 1
-    const m = raw <= c.cfg.deadzone ? 0 : (raw - c.cfg.deadzone) / (1 - c.cfg.deadzone);
+    // dead zone in the middle, then a soft curve that reaches 1 (full walking speed) at walkFull
+    const lin = raw <= c.cfg.deadzone ? 0 : Math.min(1, (raw - c.cfg.deadzone) / (c.cfg.walkFull - c.cfg.deadzone));
+    const m = Math.pow(lin, c.cfg.curve || 1);
     const nx = d > 0 ? dx / Math.min(d, R) : 0, ny = d > 0 ? dy / Math.min(d, R) : 0;
     c.jx = nx * m; c.jy = ny * m;
-    c.sprint = raw >= c.cfg.sprintAt && ny < c.cfg.sprintForward;   // stick pushed to the rim, forward
+    // stick pushed to the rim, forward = sprint; once sprinting it holds until the finger clearly backs off
+    c.sprint = c.sprint ? raw >= c.cfg.sprintExit && ny < c.cfg.sprintForward + 0.1 : raw >= c.cfg.sprintAt && ny < c.cfg.sprintForward;
     return;
   }
   const l = c.look.get(p.id);
