@@ -194,6 +194,28 @@ console.log('\nFASE 2A: NAVAJA Y CAMBIO DE ARMA (juego completo)');
   SD.P.hp = 100;
 }
 
+console.log('\nINSPECCIÓN DE ARMAS (solo visual)');
+{ SD.toMenu(); frames(3, 16); SD.setMode('range'); SD.setTrain('off'); SD.startMatch(); frames(50, 16);
+  key('Digit2', true); key('Digit2', false); frames(60, 16);
+  const st0 = JSON.stringify([SD.PCORE.state, SD.PCORE.ammo, SD.WCORE.state, SD.WCORE.ammo]);
+  key('KeyF', true); key('KeyF', false); frames(20, 16);
+  check('F con la pistola: empieza la inspección', SD.GINS.w === 'pistol' && SD.GINS.u > 0, SD.GINS.w + ' ' + SD.GINS.u.toFixed(2));
+  frames(200, 16);
+  check('la inspección termina sola y no toca el arma (estado, munición)', SD.GINS.w === null && JSON.stringify([SD.PCORE.state, SD.PCORE.ammo, SD.WCORE.state, SD.WCORE.ammo]) === st0, st0);
+  key('KeyF', true); key('KeyF', false); frames(30, 16);
+  const n0 = SD.STATS.shots; SD.input.firePressed = true; frames(4, 16);
+  check('disparar cancela la inspección al momento y el disparo sale', SD.GINS.w === null && SD.STATS.shots === n0 + 1, (SD.STATS.shots - n0) + ' disparo');
+  frames(40, 16); key('KeyF', true); key('KeyF', false); frames(10, 16);
+  SD.input.scope = true; frames(3, 16);
+  check('apuntar cancela la inspección', SD.GINS.w === null); SD.input.scope = false; frames(30, 16);
+  key('Digit1', true); key('Digit1', false); frames(80, 16);
+  key('KeyF', true); key('KeyF', false); frames(20, 16);
+  check('F con el rifle: también se inspecciona', SD.GINS.w === 'rifle');
+  key('Digit3', true); key('Digit3', false); frames(4, 16);
+  check('cambiar de arma cancela la inspección', SD.GINS.w === null);
+  SD.toMenu(); frames(3, 16);
+}
+
 console.log('\nFASE 2A: ENTRENAMIENTO LIBRE (juego completo)');
 for (const lvl of ['easy', 'normal', 'hard']) {
   SD.toMenu(); frames(3, 16); SD.setMode('range'); SD.setTrain(lvl); SD.TRAIN.infAmmo = true; SD.startMatch(); frames(30, 16);

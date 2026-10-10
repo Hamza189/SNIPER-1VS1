@@ -352,7 +352,7 @@ body.touch #score .side span{max-width:11vw;overflow:hidden;text-overflow:ellips
   <button class="tb" id="tbBreath" data-btn="breath" aria-label="Aguantar respiración" hidden>AIRE</button>
   <button class="tb" id="tbZoom" data-btn="zoom" aria-label="Cambiar zoom" hidden>8×</button>
   <button class="tb" id="tbSwap" data-btn="swap" aria-label="Cambiar arma">ARMA</button>
-  <button class="tb" id="tbInspect" data-btn="inspect" aria-label="Inspeccionar navaja" hidden>INSP</button>
+  <button class="tb" id="tbInspect" data-btn="inspect" aria-label="Inspeccionar arma" hidden>INSP</button>
   <button class="tb" id="tbFire2" data-btn="fire2" aria-label="Disparar (izquierda)" hidden>FUEGO</button>
   <button class="tb" id="tbPause" data-btn="pause" aria-label="Pausa">II</button>
 </div>
@@ -477,16 +477,17 @@ body.touch #score .side span{max-width:11vw;overflow:hidden;text-overflow:ellips
         <kbd>CLIC IZQ.</kbd><span>Disparar</span>
         <kbd>R</kbd><span>Recargar</span>
         <kbd>1 / 2 / 3</kbd><span>Arma principal / pistola / navaja</span>
-        <kbd>F</kbd><span>Inspeccionar navaja</span>
+        <kbd>F</kbd><span>Inspeccionar el arma</span>
       </div>
       <div class="keys" id="keysTouch" hidden>
         <kbd>IZQUIERDA</kbd><span>Joystick · al fondo esprintas</span>
         <kbd>DERECHA</kbd><span>Arrastra para apuntar</span>
-        <kbd>MIRA</kbd><span>Entrar y salir de la mira</span>
+        <kbd>MIRA</kbd><span>Mantén para apuntar y arrastra ese dedo (cámbialo en AJUSTES)</span>
         <kbd>FUEGO</kbd><span>Disparar · arrástralo para corregir</span>
         <kbd>AGACH</kbd><span>Agacharse · esprintando: deslizar</span>
         <kbd>AIRE</kbd><span>Con mira: aguantar respiración</span>
-        <kbd>ARMA</kbd><span>Cambiar rifle / navaja</span>
+        <kbd>ARMA</kbd><span>Cambiar de arma</span>
+        <kbd>INSP</kbd><span>Inspeccionar el arma</span>
       </div>
     </div>
   </div>
@@ -1405,7 +1406,7 @@ function setupViewmodels(g){
   for(const R of SOLDIERS)soldierUseModels(R);
 }
 // hand pose helpers: a spec (vmrig ARMPOSE format) → wrist position + rotation in camera space
-const _hp=[0,1,2,3,4,5].map(()=>({p:new T.Vector3(),q:new T.Quaternion(),f:null}));
+const _hp=[0,1,2,3,4,5,6].map(()=>({p:new T.Vector3(),q:new T.Quaternion(),f:null}));
 const _wmat=new T.Matrix4(),_wm2=new T.Matrix4();
 function handAt(spec,world,o){SDVM.handTarget(spec,world,null,o.p,o.q);o.f=SDVM.HANDSETS[spec.f]||SDVM.HANDSETS.relaxed;return o;}
 function handMix(a,b,w,o){o.p.copy(a.p).lerp(b.p,w);o.q.copy(a.q).slerp(b.q,w);o.f=SDVM.mixFingers(a.f,b.f,w,o.fm||(o.fm={}));return o;}
@@ -1420,7 +1421,7 @@ const P_RL2=[[0,[0,0,0,0,0,0]],[0.1,[-0.05,0.058,-0.1,0.58,0.2,-0.45]],[0.55,[-0
   [0.95,[-0.004,0.004,0,0,0,0.02]],[1,[0,0,0,0,0,0]]];
 // new magazine path in the grip-axis frame (y = up the grip; 0 = seated) [x,y,z,rx,ry,rz]
 const P_MAG=[[0.27,[-0.07,-0.25,0.05,0.45,0,0.5]],[0.42,[-0.012,-0.075,0.004,0.14,0,0.12]],[0.52,[0,-0.04,0,0.03,0,0.02]],[0.6,[0,-0.005,0,0,0,0]],[0.62,[0,0,0,0,0,0]]];
-function updatePistolArms(u,rl){
+function updatePistolArms(u,rl,ins){
   const rig=VMA.rig,A=SDVM.ARMPOSE.pistol;rig.root.visible=true;
   const G=VMA.P.root;G.updateMatrixWorld(true);const W=G.matrixWorld;
   const R=handAt(A.R,W,_hp[0]);
@@ -1442,6 +1443,10 @@ function updatePistolArms(u,rl){
     else if(u<0.73)L=handMix(onMag,rack,ss((u-0.645)/0.085),out);
     else if(u<0.84)L=rack;
     else L=handMix(rack,L,ss((u-0.84)/0.12),out);
+  }
+  if(ins){ // press check: the support hand pinches the slide serrations and eases it back
+    const wr=ins.k*seg(ins.u,0.64,0.71)*(1-seg(ins.u,0.85,0.94));
+    if(wr>0.001){const rack=handAt(PL.rack,W,_hp[4]);const o=_lv.set(0,0,PIS.slide.position.z).applyQuaternion(G.getWorldQuaternion(_hp[5].q));rack.p.add(o);L=handMix(L,rack,wr,_hp[6]);}
   }
   SDVM.poseArm(rig.sides.R,_sR.fromArray(A.shoulder.R),R.p,R.q,_pR.fromArray(A.pole.R).normalize(),R.f);
   SDVM.poseArm(rig.sides.L,_sL.fromArray(A.shoulder.L),L.p,L.q,_pL.fromArray(A.pole.L).normalize(),L.f);
@@ -1537,6 +1542,10 @@ function updatePistolVM(dt){
     }
     slideBack=u<0.745?0:u<0.79?ss((u-0.745)/0.045):u<0.81?1:1-ss((u-0.81)/0.018);
   }
+  // inspect: turned to show each side, then a press check (slide eased back a little and let go)
+  const PI_=gunInspect('pistol');
+  if(PI_&&!rl){const g=trk(PI_.u,P_INS),o=[x,y,z,rx,ry,rz];addTrk(o,g,PI_.k);x=o[0];y=o[1];z=o[2];rx=o[3];ry=o[4];rz=o[5];
+    const u=PI_.u;slideBack=Math.max(slideBack,PI_.k*0.4*seg(u,0.72,0.76)*(1-seg(u,0.82,0.845)));}
   // slide: snaps back on the shot and returns; locks open on an empty magazine
   if(PCORE.state==='bolt'){const t=PCORE.t;slideBack=Math.max(slideBack,t<0.018?ss(t/0.018):1-ss((t-0.03)/0.05));}
   if(PCORE.ammo<=0&&!rl)slideBack=1;
@@ -1553,7 +1562,7 @@ function updatePistolVM(dt){
   if(dbg&&dbg.root){const r=dbg.root;x=r[0];y=r[1];z=r[2];rx=r[3];ry=r[4];rz=r[5];}
   PROOT.position.set(x,y,z);PROOT.rotation.set(rx,ry,rz);
   PROOT.updateMatrixWorld(true);
-  if(glb){updatePistolArms(u,rl);}
+  if(glb){updatePistolArms(u,rl,PI_&&!rl?PI_:null);}
   else{PIS.arms.visible=true;
   placeArm(PIS.armR,_wr.copy(PIS.wristR).applyMatrix4(PIS.gun.matrixWorld),0.21,-0.4,0.16);
   placeArm(PIS.armL,_wl.copy(PIS.wristL).applyMatrix4(PIS.lh.matrixWorld),-0.17,-0.42,0.14);}
@@ -1637,6 +1646,10 @@ function updateShotgunVM(dt){
   // pump: back then forward on the same keys as the sounds, the gun rocks with it
   let back=0;
   if(SCORE.state==='bolt'){const bp=SDWeapon.boltPose(SCORE.t/SCFG.bolt,SCFG.boltKeys);back=bp.back;rz-=bp.tilt*0.08*free;rx-=back*0.035;}
+  // inspect: rolled to show the shells on the side saddle, then a short pull of the pump (chamber check)
+  const SI=gunInspect('shotgun');
+  if(SI){const g=trk(SI.u,S_INS),o=[x,y,z,rx,ry,rz];addTrk(o,g,SI.k);x=o[0];y=o[1];z=o[2];rx=o[3];ry=o[4];rz=o[5];
+    back=Math.max(back,SI.k*0.32*seg(SI.u,0.75,0.79)*(1-seg(SI.u,0.84,0.88)));}
   SHO.pump.position.z=-0.27+back*0.085;
   // reload: the gun rolls to show the loading port and the left hand pushes the shells in one by one
   let rw=0,u=0,ending=false;
@@ -2817,6 +2830,7 @@ function simTick(dt){
     if(online){cmd.pitch=P.pitch;if(state==='paused'){cmd.mx=cmd.mz=0;cmd.fire=cmd.jump=cmd.reload=cmd.sprint=cmd.crouchPressed=false;cmd.adsHeld=false;}SDProto.quantize(cmd);NET.fire=null;}
     PMprev.x=PM.x;PMprev.y=PM.y;PMprev.z=PM.z;
     cmd.select=input.select;cmd.inspect=input.inspect;input.select=null;input.inspect=false;
+    gunInspectInput(cmd);
     const {mev,lev,wev,pev,sev,hol,holP,holS}=SDPlayer.step(LOCAL,cmd,dt,W,MOVE);
     syncFromSim();
     for(const e of mev)onMoveEvent(e);
@@ -2921,7 +2935,7 @@ function updateCamera(dt,alpha){
     $('#airVig').style.opacity=P.exhausted>0?(0.55+Math.sin(P.swayT*7)*0.2).toFixed(2):P.holding?(0.15*clamp(1-P.breath,0,1)+0.08).toFixed(2):0;
   }
   {const lh=document.getElementById('lockHint'),want=!isTouch&&!pointerLocked&&state==='playing';if(lh.hidden===want)lh.hidden=!want;}
-  if(isTouch&&!EDIT.on){const bz=$('#tbZoom'),bb=$('#tbBreath'),kn=LOAD.active==='knife';$('#tbScope').hidden=kn;$('#tbInspect').hidden=!kn;$('#tbFire2').hidden=!SETTINGS.leftFire;$('#tbFire').textContent=$('#tbFire2').textContent=kn?'ATACAR':'FUEGO';if(bz.hidden===showScope){bz.hidden=!showScope;bb.hidden=!showScope;}bz.textContent=WS.zoom+'×';bb.classList.toggle('on',P.holding);$('#tbScope').classList.toggle('on',input.scopeToggle||input.scopeHeld);$('#tbCrouch').classList.toggle('on',input.crouchHeld);}
+  if(isTouch&&!EDIT.on){const bz=$('#tbZoom'),bb=$('#tbBreath'),kn=LOAD.active==='knife';$('#tbScope').hidden=kn;{const ih=!kn&&(ads>0.05||PM.sprinting);if($('#tbInspect').hidden!==ih)$('#tbInspect').hidden=ih;}$('#tbFire2').hidden=!SETTINGS.leftFire;$('#tbFire').textContent=$('#tbFire2').textContent=kn?'ATACAR':'FUEGO';if(bz.hidden===showScope){bz.hidden=!showScope;bb.hidden=!showScope;}bz.textContent=WS.zoom+'×';bb.classList.toggle('on',P.holding);$('#tbScope').classList.toggle('on',input.scopeToggle||input.scopeHeld);$('#tbCrouch').classList.toggle('on',input.crouchHeld);}
   // hip crosshair shows the real spread cone
   const cr=$('#cross');
   const knife=LOAD.active==='knife';
@@ -2934,11 +2948,54 @@ function updateCamera(dt,alpha){
   if(!P.alive){const left=Math.max(0,3-P.deadT);$('#deathCount').textContent=STATS.botKills>=GOAL?'':'Reapareces en '+Math.ceil(left);}
 }
 
+/* =================== GUN INSPECT (client-only presentation) ===================
+   F / INSP with a gun: you turn it to look at it and check the chamber. Purely visual and local: it
+   never changes the weapon state the server sees, and anything you do (fire, aim, reload, switch,
+   sprint) cancels it at once. Tracks are offsets of the whole gun [x,y,z,rx,ry,rz] over u = 0..1. */
+const GINS={w:null,last:null,t:0,u:1,k:0,debug:null};
+const GINS_DUR={pistol:2.3,rifle:2.7,shotgun:2.5};
+const P_INS=[[0,[0,0,0,0,0,0]],[0.16,[-0.035,0.04,0.02,0.1,0.85,0.5]],[0.4,[-0.036,0.042,0.02,0.08,0.92,0.55]],
+  [0.52,[-0.005,0.03,0.01,0.3,-1.2,0.25]],[0.6,[-0.005,0.031,0.01,0.31,-1.22,0.26]],[0.69,[-0.025,0.03,-0.01,0.12,0.06,0.12]],
+  [0.86,[-0.025,0.03,-0.01,0.12,0.06,0.12]],[1,[0,0,0,0,0,0]]];
+const R_INS=[[0,[0,0,0,0,0,0]],[0.18,[-0.055,0.06,0.03,0.2,0.42,-0.5]],[0.42,[-0.058,0.062,0.03,0.22,0.46,-0.55]],
+  [0.55,[-0.03,0.03,0.02,0.1,0.1,0.25]],[0.64,[-0.03,0.031,0.02,0.1,0.1,0.26]],[0.71,[-0.02,0.01,0,0.04,0.04,0.22]],
+  [0.9,[-0.02,0.01,0,0.04,0.04,0.22]],[1,[0,0,0,0,0,0]]];
+const S_INS=[[0,[0,0,0,0,0,0]],[0.18,[-0.07,0.06,0.03,0.18,0.35,-0.55]],[0.45,[-0.072,0.062,0.03,0.2,0.38,-0.6]],
+  [0.58,[-0.02,0.03,0.01,0.1,-0.1,0.3]],[0.66,[-0.02,0.03,0.01,0.1,-0.1,0.3]],[0.74,[-0.01,0.0,0,0.02,0.02,0.08]],[0.9,[-0.01,0,0,0.02,0.02,0.08]],[1,[0,0,0,0,0,0]]];
+GINS.tracks={pistol:P_INS,rifle:R_INS,shotgun:S_INS};
+function gunInspectInput(cmd){
+  const a=LOAD.active,g=AG();
+  const busy=LOAD.phase!=='ready'||g.state!=='ready'||g.ads>0.05||PM.sprinting||PM.sliding;
+  if(cmd.inspect&&a!=='knife'&&!GINS.w&&!busy){GINS.w=GINS.last=a;GINS.t=0;GINS.u=0;}
+  if(GINS.w&&(cmd.fire||cmd.adsHeld||cmd.reload||cmd.select||a!==GINS.w||busy))GINS.w=null;
+}
+// weight and progress of the inspect for weapon w (0 when it is not that weapon's inspect)
+function gunInspect(w,dt){
+  if(GINS.debug&&GINS.debug.w===w)return {u:GINS.debug.u,k:1};
+  if(GINS.last!==w||LOAD.active!==w)return null;
+  return GINS.k>0.001?{u:GINS.u,k:GINS.k}:null;
+}
+// sounds on the inspect's own timeline (played as it passes them, so a cancelled inspect stays silent)
+const rustle=g=>nz(0,0.22,{type:'bandpass',f:900,q:0.8,g:g||0.05});
+const GINS_SFX={
+  pistol:[[0.02,()=>rustle()],[0.44,()=>rustle(0.04)],[0.72,()=>SFX.slide(0,2200,1500)],[0.835,()=>SFX.click(0,3000,0.35)]],
+  rifle:[[0.02,()=>rustle(0.06)],[0.45,()=>rustle(0.05)],[0.735,()=>SFX.click(0,2300,0.4)],[0.775,()=>SFX.slide(0,1600,1100)],[0.835,()=>SFX.slide(0,1100,1700)],[0.87,()=>SFX.click(0,2600,0.45)]],
+  shotgun:[[0.02,()=>rustle(0.06)],[0.48,()=>rustle(0.05)],[0.76,()=>nz(0,0.07,{type:'bandpass',f:1100,f2:800,q:2,g:0.22})],[0.85,()=>SFX.click(0,2000,0.4)]]
+};
+function gunInspectTick(dt){
+  if(GINS.w){const u0=GINS.u;GINS.t+=dt;GINS.u=Math.min(1,GINS.t/GINS_DUR[GINS.w]);
+    for(const [at,f] of GINS_SFX[GINS.w])if(u0<at&&GINS.u>=at)f();
+    if(GINS.u>=1)GINS.w=null;}
+  GINS.k=damp(GINS.k,GINS.w?1:0,GINS.w?40:16,dt);
+}
+const addTrk=(o,g,k)=>{o[0]+=g[0]*k;o[1]+=g[1]*k;o[2]+=g[2]*k;o[3]+=g[3]*k;o[4]+=g[4]*k;o[5]+=g[5]*k;};
+
 /* =================== VIEWMODEL (per rendered frame) =================== */
 const _hip=new T.Vector3(0.15,-0.143,-0.395),_adsP=new T.Vector3(0,-0.068,-0.27);
 const R_RELOAD=[[0,[0,0,0,0,0,0]],[0.1,[-0.09,0.1,-0.11,0.3,0.22,-0.72]],[0.55,[-0.092,0.102,-0.11,0.32,0.23,-0.74]],[0.58,[-0.092,0.108,-0.106,0.35,0.23,-0.7]],
   [0.65,[-0.045,0.015,0,0.06,0.06,0.3]],[0.92,[-0.045,0.015,0,0.06,0.06,0.3]],[1,[0,0,0,0,0,0]]];
 function updateViewmodel(dt){
+  gunInspectTick(dt);
   if(VMA.ready){VMA.rig.root.visible=false;VMA.rig.sides.L.arm.visible=true;}
   const ads=ss(WCORE.ads),free=1-ads;
   const pos=_hip.clone().lerp(_adsP,ads);
@@ -2975,11 +3032,16 @@ function updateViewmodel(dt){
   const RD=RIF.debug;
   if(RD&&RD.bolt!==undefined){const bp=SDWeapon.boltPose(RD.bolt,GUNCFG.boltKeys);lift=bp.lift;back=bp.back;}
   if(RD&&RD.reload!==undefined){const rp=SDWeapon.reloadPose(RD.reload,GUNCFG);const g=trk(RD.reload,R_RELOAD);pos.x+=g[0];pos.y+=g[1];pos.z+=g[2];rx+=g[3];ry+=g[4];rz+=g[5];RIF.mag.position.y=RIF.magY-rp.magDrop*0.26;RIF.mag.visible=rp.magVisible;lift=rp.lift;back=rp.back;}
+  // inspect: turned to look at its left side, then the bolt is lifted and eased back to check the chamber
+  const RI=gunInspect('rifle');let insW=0;
+  if(RI){const g=trk(RI.u,R_INS),k=RI.k,o=[pos.x,pos.y,pos.z,rx,ry,rz];addTrk(o,g,k);pos.set(o[0],o[1],o[2]);rx=o[3];ry=o[4];rz=o[5];
+    const u=RI.u;lift=Math.max(lift,k*seg(u,0.73,0.77)*(1-seg(u,0.86,0.9)));back=Math.max(back,k*0.3*seg(u,0.77,0.8)*(1-seg(u,0.83,0.86)));
+    insW=k*seg(u,0.66,0.72)*(1-seg(u,0.9,0.96));}
   RIF.bolt.rotation.z=lift*1.15;RIF.bolt.position.z=0.08+back*0.085;
   // right hand: off the grip onto the bolt knob for the cycle (and for the reload's bolt), then back
   {const bolting=WCORE.state==='bolt'||(RD&&RD.bolt!==undefined),reloading=WCORE.state==='reload'||(RD&&RD.reload!==undefined);
    const p=RD&&RD.bolt!==undefined?RD.bolt:RD&&RD.reload!==undefined?RD.reload:bolting?WCORE.t/GUNCFG.bolt:reloading?WCORE.t/GUNCFG.reload:0;
-   let w=0;if(bolting)w=seg(p,0,0.1)*(1-seg(p,0.84,1));else if(reloading)w=seg(p,0.55,0.62)*(1-seg(p,0.94,1));
+   let w=0;if(bolting)w=seg(p,0,0.1)*(1-seg(p,0.84,1));else if(reloading)w=seg(p,0.55,0.62)*(1-seg(p,0.94,1));else w=insW;
    const a=lift*1.15,K=RIF.knob.set(0.024+0.064*Math.cos(a)+0.004*Math.sin(a),0.012+0.064*Math.sin(a)-0.004*Math.cos(a),0.08+back*0.085);
    const R=RIF.rhP;R.position.set(lerp(0,K.x+RIF.KH[0],w),lerp(-0.03,K.y+RIF.KH[1],w),lerp(0.104,K.z+RIF.KH[2],w));R.rotation.set(lerp(-0.35,RIF.KH[3],w),lerp(0,RIF.KH[4],w),lerp(0,RIF.KH[5]+a*0.5,w));
    // left hand: down to the magazine, rides it out and back in with the new one, back to the handguard
@@ -3523,6 +3585,6 @@ function frameBody(now){
 }
 resize();
 requestAnimationFrame(frame);
-window.__SD={freeze(on){SIM_FREEZE=!!on;},VMA,makeSoldier,animateSoldier,BOT_MAT,scene,camera,RemotePlayer,PMprev,PIS,PROOT,RIF,WROOT,SHO_:null,MANUAL,advance(ms){frameBody(last+ms);},get LAST_PELLETS(){return LAST_PELLETS;},SCORE,SCFG,SROOT,SHO,setPrimaryChoice,get PRIMARY(){return PRIMARY;},PCORE,PCFG,setWorld,WORLDS,get WORLD_ID(){return WORLD_ID;},renderer,GFX,gfxApply,get NET(){return NET;},get REMOTE(){return REMOTE;},W,get NAV(){return NAV;},setOffMap,get OFFMAP(){return OFFMAP;},TOUCH,EDIT,openEditor,get SETTINGS(){return SETTINGS;},get LAYOUT(){return LAYOUT;},checkOrientation,MAT,LOAD,TRAINERS,get RANGE_BOTS(){return RANGE_BOTS;},TRAIN,setTrain,setLethal,kitNote,impactFX,bodyFX,get DECALS(){return DECALS;},surfaceOf,soundDelay,aimSelfTest,P,PM,WS,WCORE,RECOIL,AIM,BOTS,DUMMIES,BULLETS,EVENTS,PARTS,STATS,get state(){return state;},get mode(){return mode;},setMode,input,startMatch,simTick,frame,toMenu,pause,resume};
+window.__SD={freeze(on){SIM_FREEZE=!!on;},VMA,makeSoldier,animateSoldier,BOT_MAT,scene,camera,RemotePlayer,PMprev,PIS,PROOT,RIF,WROOT,SHO_:null,MANUAL,advance(ms){frameBody(last+ms);},get LAST_PELLETS(){return LAST_PELLETS;},SCORE,SCFG,SROOT,SHO,setPrimaryChoice,get PRIMARY(){return PRIMARY;},PCORE,PCFG,setWorld,WORLDS,get WORLD_ID(){return WORLD_ID;},renderer,GFX,gfxApply,get NET(){return NET;},get REMOTE(){return REMOTE;},W,get NAV(){return NAV;},setOffMap,get OFFMAP(){return OFFMAP;},TOUCH,EDIT,openEditor,get SETTINGS(){return SETTINGS;},get LAYOUT(){return LAYOUT;},checkOrientation,MAT,LOAD,TRAINERS,get RANGE_BOTS(){return RANGE_BOTS;},TRAIN,setTrain,setLethal,kitNote,GINS,impactFX,bodyFX,get DECALS(){return DECALS;},surfaceOf,soundDelay,aimSelfTest,P,PM,WS,WCORE,RECOIL,AIM,BOTS,DUMMIES,BULLETS,EVENTS,PARTS,STATS,get state(){return state;},get mode(){return mode;},setMode,input,startMatch,simTick,frame,toMenu,pause,resume};
 })();
 </script>
