@@ -138,7 +138,23 @@ button{font:inherit;color:inherit}
 
 /* ---------- Overlays ---------- */
 .overlay{position:fixed;inset:0;z-index:20;overflow:auto;-webkit-overflow-scrolling:touch;touch-action:pan-y}
-#settings{z-index:22;background:rgba(12,10,8,.96)}   /* opened from the menu or the pause screen: always on top of them */
+#settings{z-index:22;background:rgba(12,10,8,.96)}
+#settings .setPanel{width:min(720px,calc(100% - 32px));gap:10px}
+.setPanel .sens{display:grid;grid-template-columns:minmax(110px,36%) 1fr 46px;gap:12px}
+.setPanel .sens .lbl{line-height:1.3}
+.setPane{display:grid;gap:10px}.setPane[hidden]{display:none}
+@media (max-height:520px){#setTitle{display:none}#settings .setPanel{margin-block:10px;padding:16px 18px}}
+.setTabs{display:grid;grid-template-columns:repeat(auto-fit,minmax(118px,1fr));border-bottom:1px solid var(--line);margin:2px 0 6px;position:sticky;top:0;z-index:2;background:rgba(20,18,15,.98)}
+.setTabs::-webkit-scrollbar{display:none}
+.setTabs button{background:none;border:0;border-bottom:2px solid transparent;padding:11px 12px;font:600 12px/1 var(--f-mono);letter-spacing:.14em;color:var(--dust);cursor:pointer;min-height:44px}
+.setTabs button[aria-selected="true"]{color:var(--hud);border-bottom-color:var(--signal)}
+.setTabs button:focus-visible{outline:2px solid var(--signal);outline-offset:-2px}
+.setHelp{margin:8px 0 0;font-size:12px;line-height:1.45;color:var(--sand);opacity:.8}
+.setFoot{flex-wrap:wrap;margin-top:16px}
+#setReset.confirm{border-color:var(--blood);color:var(--hud)}
+body.noHit #hitmark{display:none}
+body.noDmgDir #dmgdir{display:none}
+body.lowFlash #flashRed{background:rgba(200,30,20,.12)}   /* opened from the menu or the pause screen: always on top of them */
 .under{visibility:hidden!important}   /* screen hidden while the settings panel is open over it (iOS draws scrolled overlays above higher z-index) */
 #menu{background:linear-gradient(90deg,rgba(12,10,8,.92) 0%,rgba(12,10,8,.78) 46%,rgba(12,10,8,.15) 100%)}
 .menuInner{box-sizing:border-box;min-height:100%;padding:calc(28px + env(safe-area-inset-top,0px)) max(20px,env(safe-area-inset-right,0px)) calc(28px + env(safe-area-inset-bottom,0px)) max(20px,env(safe-area-inset-left,0px));display:grid;grid-template-columns:minmax(0,1fr) minmax(0,380px);gap:28px 48px;align-content:center;max-width:1100px}
@@ -369,35 +385,71 @@ body.touch #score .side span{max-width:11vw;overflow:hidden;text-overflow:ellips
 </div>
 
 <div id="settings" class="overlay center" hidden>
-  <div class="panel">
+  <div class="panel setPanel">
     <div class="eyebrow">Ajustes</div>
-    <h2 style="font-size:clamp(40px,7vw,60px)">CONTROLES</h2>
-    <div class="setGrid">
-      <label class="sens"><span class="lbl">Sensib. horizontal</span><input id="sH" type="range" min="0.2" max="3" step="0.05"><output id="sHo"></output></label>
-      <label class="sens"><span class="lbl">Sensib. vertical</span><input id="sV" type="range" min="0.2" max="3" step="0.05"><output id="sVo"></output></label>
-      <label class="sens"><span class="lbl">Visor francotirador</span><input id="sA" type="range" min="0.3" max="2" step="0.05"><output id="sAo"></output></label>
-      <label class="sens"><span class="lbl">Mira horizontal</span><input id="sAH" type="range" min="0.3" max="2" step="0.05"><output id="sAHo"></output></label>
-      <label class="sens"><span class="lbl">Mira vertical</span><input id="sAV" type="range" min="0.3" max="2" step="0.05"><output id="sAVo"></output></label>
-      <label class="sens"><span class="lbl">Dedo (móvil)</span><input id="sT" type="range" min="0.3" max="4" step="0.05"><output id="sTo"></output></label>
-      <label class="sens"><span class="lbl">Zona muerta dedo (px)</span><input id="sDZ" type="range" min="0" max="12" step="1"><output id="sDZo"></output></label>
-      <label class="sens"><span class="lbl">Suavizado</span><input id="sSM" type="range" min="0" max="0.8" step="0.05"><output id="sSMo"></output></label>
-      <label class="chk"><input type="checkbox" id="sInv"> Invertir eje vertical</label>
-      <label class="chk"><input type="checkbox" id="sLeft"> Botón FUEGO también a la izquierda (móvil)</label>
-      <label class="chk"><input type="checkbox" id="sRel"> Móvil: mantener FUEGO apunta con la mira, soltar dispara</label>
-      <label class="chk"><input type="checkbox" id="sCalm"> Reducir el movimiento visual del arma</label>
-      <label class="chk"><input type="checkbox" id="sDiag"> Diagnóstico táctil (dedos y MIRA en pantalla)</label>
-    </div>
-    <div class="lbl" style="margin:14px 0 6px">Botón MIRA (móvil)</div>
-    <div class="seg" id="adsSeg" role="group" aria-label="Botón MIRA"><button type="button" data-a="holdDrag">MANTENER Y ARRASTRAR</button><button type="button" data-a="hold">MANTENER</button><button type="button" data-a="toggle">PULSAR</button></div>
-    <div class="lbl" style="margin:14px 0 6px">Gráficos</div>
-    <div class="seg" id="qSeg" role="group" aria-label="Calidad gráfica"><button type="button" data-q="auto">AUTO</button><button type="button" data-q="bajo">BAJO</button><button type="button" data-q="medio">MEDIO</button><button type="button" data-q="alto">ALTO</button></div>
-    <div class="setGrid" style="margin-top:10px">
-      <label class="chk"><input type="checkbox" id="sFps30"> Limitar a 30 FPS (ahorra batería y calor)</label>
-      <label class="chk"><input type="checkbox" id="sShowFps"> Mostrar FPS en pantalla</label>
-    </div>
-    <p class="note" id="qNote" style="margin:8px 0 0;font-size:12px;opacity:.75"></p>
-    <div class="row"><button class="btn ghost" id="openEditor" type="button" style="font-size:20px">EDITAR BOTONES TÁCTILES</button><button class="btn ghost" id="setReset" type="button" style="font-size:20px">RESTAURAR</button></div>
-    <div class="row"><button class="btn" id="setClose" type="button">LISTO</button></div>
+    <h2 style="font-size:clamp(34px,6vw,54px)" id="setTitle">CONTROLES</h2>
+    <nav class="setTabs" role="tablist" aria-label="Secciones de ajustes">
+      <button type="button" role="tab" data-tab="controles" aria-selected="true">CONTROLES</button><button type="button" role="tab" data-tab="sensibilidad">SENSIBILIDAD</button><button type="button" role="tab" data-tab="graficos">GRÁFICOS</button><button type="button" role="tab" data-tab="audio">AUDIO</button><button type="button" role="tab" data-tab="jugabilidad">JUGABILIDAD</button><button type="button" role="tab" data-tab="accesibilidad">ACCESIBILIDAD</button>
+    </nav>
+    <section class="setPane" data-pane="controles" role="tabpanel">
+      <div class="lbl" style="margin:4px 0 6px">Botón MIRA (móvil)</div>
+      <div class="seg" id="adsSeg" role="group" aria-label="Botón MIRA"><button type="button" data-a="holdDrag">MANTENER Y ARRASTRAR</button><button type="button" data-a="hold">MANTENER</button><button type="button" data-a="toggle">PULSAR</button></div>
+      <p class="setHelp" id="adsHelp"></p>
+      <div class="setGrid">
+        <label class="chk"><input type="checkbox" id="sRel"> Mantener FUEGO apunta con la mira y al soltar dispara (rifle, móvil)</label>
+        <label class="chk"><input type="checkbox" id="sLeft"> Botón FUEGO también a la izquierda (móvil)</label>
+        <label class="chk"><input type="checkbox" id="sDiag"> Diagnóstico táctil (dedos y MIRA en pantalla)</label>
+      </div>
+      <div class="row"><button class="btn ghost" id="openEditor" type="button" style="font-size:18px">EDITAR BOTONES TÁCTILES</button></div>
+      <p class="setHelp">En el editor puedes mover cada botón, cambiar su tamaño y la transparencia de todos.</p>
+    </section>
+    <section class="setPane" data-pane="sensibilidad" role="tabpanel" hidden>
+      <div class="setGrid">
+        <label class="sens"><span class="lbl">Horizontal</span><input id="sH" type="range" min="0.2" max="3" step="0.05"><output id="sHo"></output></label>
+        <label class="sens"><span class="lbl">Vertical</span><input id="sV" type="range" min="0.2" max="3" step="0.05"><output id="sVo"></output></label>
+        <label class="sens"><span class="lbl">Dedo (móvil)</span><input id="sT" type="range" min="0.3" max="4" step="0.05"><output id="sTo"></output></label>
+        <label class="sens"><span class="lbl">Al apuntar · horizontal</span><input id="sAH" type="range" min="0.3" max="2" step="0.05"><output id="sAHo"></output></label>
+        <label class="sens"><span class="lbl">Al apuntar · vertical</span><input id="sAV" type="range" min="0.3" max="2" step="0.05"><output id="sAVo"></output></label>
+        <label class="sens"><span class="lbl">Visor francotirador</span><input id="sA" type="range" min="0.3" max="2" step="0.05"><output id="sAo"></output></label>
+        <label class="sens"><span class="lbl">Zona muerta dedo (px)</span><input id="sDZ" type="range" min="0" max="12" step="1"><output id="sDZo"></output></label>
+        <label class="sens"><span class="lbl">Suavizado</span><input id="sSM" type="range" min="0" max="0.8" step="0.05"><output id="sSMo"></output></label>
+        <label class="chk"><input type="checkbox" id="sInv"> Invertir eje vertical</label>
+      </div>
+      <p class="setHelp">Cómo se combinan: giro = movimiento × horizontal/vertical × dedo (móvil) × «al apuntar» (cualquier arma con la mira) × «visor francotirador» (solo con el visor del rifle). El zoom ya se compensa solo y no hay aceleración: la misma distancia de dedo gira siempre lo mismo.</p>
+    </section>
+    <section class="setPane" data-pane="graficos" role="tabpanel" hidden>
+      <div class="seg" id="qSeg" role="group" aria-label="Calidad gráfica"><button type="button" data-q="auto">AUTO</button><button type="button" data-q="bajo">BAJO</button><button type="button" data-q="medio">MEDIO</button><button type="button" data-q="alto">ALTO</button></div>
+      <p class="setHelp" id="qNote"></p>
+      <div class="setGrid">
+        <label class="chk"><input type="checkbox" id="sFps30"> Limitar a 30 FPS (ahorra batería y calor)</label>
+        <label class="chk"><input type="checkbox" id="sShowFps"> Mostrar FPS en pantalla</label>
+      </div>
+    </section>
+    <section class="setPane" data-pane="audio" role="tabpanel" hidden>
+      <div class="setGrid">
+        <label class="sens"><span class="lbl">Volumen general</span><input id="vM" type="range" min="0" max="1" step="0.05"><output id="vMo"></output></label>
+        <label class="sens"><span class="lbl">Disparos</span><input id="vS" type="range" min="0" max="1" step="0.05"><output id="vSo"></output></label>
+        <label class="sens"><span class="lbl">Efectos (recargas, impactos, menús)</span><input id="vF" type="range" min="0" max="1" step="0.05"><output id="vFo"></output></label>
+        <label class="sens"><span class="lbl">Pasos</span><input id="vP" type="range" min="0" max="1" step="0.05"><output id="vPo"></output></label>
+        <label class="sens"><span class="lbl">Ambiente (viento)</span><input id="vA" type="range" min="0" max="1" step="0.05"><output id="vAo"></output></label>
+        <label class="chk"><input type="checkbox" id="sMute"> Silenciar todo</label>
+      </div>
+    </section>
+    <section class="setPane" data-pane="jugabilidad" role="tabpanel" hidden>
+      <div class="setGrid">
+        <label class="chk"><input type="checkbox" id="sHit"> Mostrar marcador de impacto (la X al acertar)</label>
+        <label class="chk"><input type="checkbox" id="sDmg"> Mostrar de dónde viene el daño recibido</label>
+      </div>
+      <p class="setHelp">Solo cambian lo que ves: el daño, el retroceso y las reglas son siempre las del juego (y online, las del servidor).</p>
+    </section>
+    <section class="setPane" data-pane="accesibilidad" role="tabpanel" hidden>
+      <div class="setGrid">
+        <label class="chk"><input type="checkbox" id="sCalm"> Reducir el movimiento visual del arma</label>
+        <label class="chk"><input type="checkbox" id="sFlash"> Reducir destellos y sacudidas (flash rojo al recibir daño, temblor de cámara)</label>
+      </div>
+      <p class="setHelp">No cambian la puntería ni el retroceso real: solo lo que se mueve o parpadea en pantalla.</p>
+    </section>
+    <div class="row setFoot"><button class="btn ghost" id="setResetTab" type="button" style="font-size:16px">RESTAURAR ESTA SECCIÓN</button><button class="btn ghost" id="setReset" type="button" style="font-size:16px">RESTAURAR TODO</button><button class="btn" id="setClose" type="button">LISTO</button></div>
   </div>
 </div>
 
@@ -891,6 +943,9 @@ function audioInit(){
   AU.ctx=ctx;
   const comp=ctx.createDynamicsCompressor();comp.threshold.value=-12;comp.ratio.value=5;comp.attack.value=0.002;comp.release.value=0.2;comp.connect(ctx.destination);
   AU.master=ctx.createGain();AU.master.gain.value=0.85;AU.master.connect(comp);
+  // channels (AJUSTES → AUDIO): every sound goes through one of these on its way to the master
+  AU.bus={};for(const k of ['shots','fx','steps','amb'])(AU.bus[k]=ctx.createGain()).connect(AU.master);
+  audioLevels();
   const len=ctx.sampleRate*2;const buf=ctx.createBuffer(1,len,ctx.sampleRate);const d=buf.getChannelData(0);for(let i=0;i<len;i++)d[i]=Math.random()*2-1;AU.noise=buf;
   const rl=Math.floor(ctx.sampleRate*2.4);const ir=ctx.createBuffer(2,rl,ctx.sampleRate);
   for(let ch=0;ch<2;ch++){const dd=ir.getChannelData(ch);for(let i=0;i<rl;i++){dd[i]=(Math.random()*2-1)*Math.pow(1-i/rl,3.4)*(i<ctx.sampleRate*0.01?i/(ctx.sampleRate*0.01):1);}}
@@ -899,14 +954,21 @@ function audioInit(){
   // wind bed
   const ws=ctx.createBufferSource();ws.buffer=buf;ws.loop=true;const wf=ctx.createBiquadFilter();wf.type='lowpass';wf.frequency.value=380;const wg=ctx.createGain();wg.gain.value=0.035;
   const lfo=ctx.createOscillator();lfo.frequency.value=0.08;const lg=ctx.createGain();lg.gain.value=0.022;lfo.connect(lg);lg.connect(wg.gain);lfo.start();
-  ws.connect(wf);wf.connect(wg);wg.connect(AU.master);ws.start();
+  ws.connect(wf);wf.connect(wg);wg.connect(AU.bus.amb);ws.start();
+}
+// applies the AJUSTES → AUDIO levels (master × channel; mute silences everything)
+function audioLevels(){
+  if(!AU.ctx||typeof SETTINGS==='undefined')return;const S=SETTINGS,t=AU.ctx.currentTime;
+  AU.master.gain.setTargetAtTime(S.mute?0:0.85*S.volMaster,t,0.02);
+  const v={shots:S.volShots,fx:S.volFx,steps:S.volSteps,amb:S.volAmb};for(const k in v)AU.bus[k].gain.setTargetAtTime(v[k],t,0.02);
 }
 function outNode(pan,verb){
   const ctx=AU.ctx;const g=ctx.createGain();
   let head=g;
   if(pan&&ctx.createStereoPanner){const p=ctx.createStereoPanner();p.pan.value=clamp(pan,-1,1);g.connect(p);head=p;}
-  head.connect(AU.master);
-  if(verb){const s=ctx.createGain();s.gain.value=verb;head.connect(s);s.connect(AU.verb);}
+  const bus=AU.bus[AU.ch||'fx'];head.connect(bus);
+  // the reverb send follows the channel level too
+  if(verb){const s=ctx.createGain();s.gain.value=verb*bus.gain.value;head.connect(s);s.connect(AU.verb);}
   return g;
 }
 function nz(at,dur,o){
@@ -986,6 +1048,10 @@ const SFX={
   impact(){nz(0,0.06,{type:'bandpass',f:1800,q:1.2,g:0.2});},
   ui(){tone(0,0.05,{f:880,type:'triangle',g:0.08});}
 };
+// each sound's channel (the outermost call decides: a shot's own clicks stay in «disparos»)
+{const CH={shot:'shots',pistolShot:'shots',shotgunShot:'shots',distant:'shots',distantPistol:'shots',distantShotgun:'shots',whizz:'shots',step:'steps'};
+ for(const k of Object.keys(SFX)){const f=SFX[k];if(typeof f!=='function')continue;const ch=CH[k]||'fx';
+   SFX[k]=function(){if(AU.ch)return f.apply(this,arguments);AU.ch=ch;try{return f.apply(this,arguments);}finally{AU.ch=null;}};}}
 function vibrate(ms){try{if(navigator.vibrate)navigator.vibrate(ms);}catch(e){}}
 
 /* =================== EFFECTS =================== */
@@ -2639,11 +2705,15 @@ $('#edReset').addEventListener('click',()=>{LAYOUT=SDLayout.defaults();$('#edOp'
 /* ---- settings panel ---- */
 let SETTINGS=SDSettings.load(store,isTouch);
 gfxApply();
-const SET_UI=[['sH','sensH'],['sV','sensV'],['sA','adsSens'],['sAH','adsH'],['sAV','adsV'],['sT','touchLook'],['sDZ','touchDead'],['sSM','smooth']];
-function settingsToUI(){for(const [id,k] of SET_UI){$('#'+id).value=SETTINGS[k];$('#'+id+'o').textContent=(+SETTINGS[k]).toFixed(2);}$('#sInv').checked=SETTINGS.invertY;$('#sLeft').checked=SETTINGS.leftFire;$('#sRel').checked=SETTINGS.releaseFire;$('#sFps30').checked=SETTINGS.fpsCap===30;$('#sShowFps').checked=SETTINGS.showFps;$('#sCalm').checked=SETTINGS.calmVM;$('#sDiag').checked=TDIAG.on;document.querySelectorAll('#adsSeg button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.a===SETTINGS.adsMode)));document.querySelectorAll('#qSeg button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.q===SETTINGS.quality)));gfxNote();
+const SET_UI=[['sH','sensH'],['sV','sensV'],['sA','adsSens'],['sAH','adsH'],['sAV','adsV'],['sT','touchLook'],['sDZ','touchDead'],['sSM','smooth'],['vM','volMaster'],['vS','volShots'],['vF','volFx'],['vP','volSteps'],['vA','volAmb']];
+// on/off settings: checkbox id → setting
+const SET_CHK=[['sInv','invertY'],['sLeft','leftFire'],['sRel','releaseFire'],['sShowFps','showFps'],['sCalm','calmVM'],['sMute','mute'],['sHit','hitmarkers'],['sDmg','dmgDir'],['sFlash','lowFlash']];
+const ADS_HELP={holdDrag:'Mantén MIRA para apuntar y arrastra ese mismo dedo para mover la mira. Al soltar sales del visor.',hold:'Mantén MIRA para apuntar; la cámara se mueve con otro dedo. Al soltar sales del visor.',toggle:'Toca MIRA una vez para entrar en el visor y otra para salir. Mueve la cámara con cualquier dedo libre.'};
+function settingsToUI(){for(const [id,k] of SET_UI){$('#'+id).value=SETTINGS[k];$('#'+id+'o').textContent=/^vol/.test(k)?Math.round(SETTINGS[k]*100)+'%':(+SETTINGS[k]).toFixed(2);}for(const [id,k] of SET_CHK)$('#'+id).checked=!!SETTINGS[k];$('#sFps30').checked=SETTINGS.fpsCap===30;$('#sDiag').checked=TDIAG.on;$('#adsHelp').textContent=ADS_HELP[SETTINGS.adsMode]||'';document.querySelectorAll('#adsSeg button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.a===SETTINGS.adsMode)));document.querySelectorAll('#qSeg button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.q===SETTINGS.quality)));gfxNote();
   const g=(SETTINGS.sensH+SETTINGS.sensV)/2;$('#sens').value=g;$('#sensOut').textContent=g.toFixed(2);}
-function applyControlSettings(){TOUCH.dragScope=SETTINGS.adsMode!=='hold';TOUCH.cfg.dead=SETTINGS.touchDead;MOTION=(reduceMotion||SETTINGS.calmVM)?0.35:1;if(SETTINGS.adsMode!=='toggle')input.scopeToggle=false;}
-function settingsChanged(){SETTINGS=SDSettings.sanitize(SETTINGS,isTouch);SDSettings.save(store,SETTINGS,isTouch);gfxApply();applyControlSettings();settingsToUI();}
+function applyControlSettings(){TOUCH.dragScope=SETTINGS.adsMode!=='hold';TOUCH.cfg.dead=SETTINGS.touchDead;MOTION=(reduceMotion||SETTINGS.calmVM)?0.35:1;if(SETTINGS.adsMode!=='toggle')input.scopeToggle=false;
+  const B=document.body.classList;B.toggle('noHit',!SETTINGS.hitmarkers);B.toggle('noDmgDir',!SETTINGS.dmgDir);B.toggle('lowFlash',!!SETTINGS.lowFlash);}
+function settingsChanged(){SETTINGS=SDSettings.sanitize(SETTINGS,isTouch);SDSettings.save(store,SETTINGS,isTouch);gfxApply();applyControlSettings();audioLevels();settingsToUI();}
 // graphics: profile, adaptive resolution and FPS cap applied live (antialiasing only on reload)
 function gfxApply(){
   if(PERF_LOW)return;
@@ -2659,24 +2729,30 @@ function gfxApply(){
 function gfxNote(){const n=$('#qNote');if(!n)return;const prof=SDQuality.resolve(SETTINGS.quality,isTouch);
   n.textContent=(SETTINGS.quality==='auto'?'AUTO → '+SDQuality.PROFILES[prof].label+', la resolución se ajusta sola a los FPS reales. ':'')+'Resolución interna '+Math.round(renderer.getPixelRatio()*100)/100+'×'+(GFX.adapt&&GFX.adapt.fps?' · '+Math.round(GFX.adapt.fps)+' FPS':'')+'. El suavizado de bordes cambia al recargar la página.';}
 for(const [id,k] of SET_UI)$('#'+id).addEventListener('input',()=>{SETTINGS[k]=+$('#'+id).value;settingsChanged();});
-$('#sInv').addEventListener('change',()=>{SETTINGS.invertY=$('#sInv').checked;settingsChanged();});
-$('#sLeft').addEventListener('change',()=>{SETTINGS.leftFire=$('#sLeft').checked;settingsChanged();});
-$('#sRel').addEventListener('change',()=>{SETTINGS.releaseFire=$('#sRel').checked;settingsChanged();});
+for(const [id,k] of SET_CHK)$('#'+id).addEventListener('change',()=>{SETTINGS[k]=$('#'+id).checked;settingsChanged();});
 $('#sFps30').addEventListener('change',()=>{SETTINGS.fpsCap=$('#sFps30').checked?30:60;settingsChanged();});
-$('#sShowFps').addEventListener('change',()=>{SETTINGS.showFps=$('#sShowFps').checked;settingsChanged();});
 document.querySelectorAll('#qSeg button').forEach(b=>b.addEventListener('click',()=>{SETTINGS.quality=b.dataset.q;settingsChanged();SFX.ui();}));
 document.querySelectorAll('#adsSeg button').forEach(b=>b.addEventListener('click',()=>{SETTINGS.adsMode=b.dataset.a;settingsChanged();SFX.ui();}));
-$('#sCalm').addEventListener('change',()=>{SETTINGS.calmVM=$('#sCalm').checked;settingsChanged();});
 $('#sDiag').addEventListener('change',()=>{TDIAG.set($('#sDiag').checked);TDIAG.reset();});
 let settingsFrom='menu';
-function openSettings(from){settingsFrom=from;settingsToUI();$('#settings').hidden=false;$('#settings').scrollTop=0;for(const id of ['menu','pause'])$('#'+id).classList.add('under');}
+// tabs: one section at a time; the last one opened is remembered on this device
+const SET_TABS={controles:'CONTROLES',sensibilidad:'SENSIBILIDAD',graficos:'GRÁFICOS',audio:'AUDIO',jugabilidad:'JUGABILIDAD',accesibilidad:'ACCESIBILIDAD'};
+let setTab=SET_TABS[store.get('setTab','')]?store.get('setTab',''):'controles';
+function showSetTab(t){if(!SET_TABS[t])return;setTab=t;store.set('setTab',t);$('#setTitle').textContent=SET_TABS[t];
+  document.querySelectorAll('.setTabs button').forEach(b=>b.setAttribute('aria-selected',String(b.dataset.tab===t)));
+  document.querySelectorAll('.setPane').forEach(p=>p.hidden=p.dataset.pane!==t);resetConfirm(false);}
+document.querySelectorAll('.setTabs button').forEach(b=>b.addEventListener('click',()=>{showSetTab(b.dataset.tab);SFX.ui();$('#settings').scrollTop=0;}));
+let resetArm=0;function resetConfirm(on){resetArm=on?performance.now():0;const b=$('#setReset');b.classList.toggle('confirm',on);b.textContent=on?'¿SEGURO? TOCA OTRA VEZ':'RESTAURAR TODO';}
+function openSettings(from){settingsFrom=from;settingsToUI();showSetTab(setTab);$('#settings').hidden=false;$('#settings').scrollTop=0;for(const id of ['menu','pause'])$('#'+id).classList.add('under');}
 function closeSettings(){$('#settings').hidden=true;for(const id of ['menu','pause'])$('#'+id).classList.remove('under');}
 $('#openSettings').addEventListener('click',()=>{audioInit();SFX.ui();openSettings('menu');});
 $('#pauseSettings').addEventListener('click',()=>{SFX.ui();openSettings('pause');});
 $('#setClose').addEventListener('click',()=>{closeSettings();SFX.ui();});
-$('#setReset').addEventListener('click',()=>{SETTINGS=SDSettings.defaults(isTouch);settingsChanged();});
+// RESTAURAR TODO asks for a second tap (within 4 s) so a stray touch never wipes the settings
+$('#setReset').addEventListener('click',()=>{SFX.ui();if(!resetArm||performance.now()-resetArm>4000){resetConfirm(true);return;}resetConfirm(false);SETTINGS=SDSettings.defaults(isTouch);settingsChanged();});
+$('#setResetTab').addEventListener('click',()=>{SFX.ui();SETTINGS=SDSettings.resetCategory(SETTINGS,setTab,isTouch);settingsChanged();});
 $('#openEditor').addEventListener('click',()=>{SFX.ui();openEditor();});
-settingsToUI();applyControlSettings();
+settingsToUI();applyControlSettings();showSetTab(setTab);
 
 /* ---- portrait warning (a web page cannot always force landscape) ---- */
 function checkOrientation(){
@@ -2979,7 +3055,7 @@ function updateCamera(dt,alpha){
   // what the player aims with (no recoil, no shake)
   AIM.ox=camera.position.x;AIM.oy=camera.position.y;AIM.oz=camera.position.z;AIM.yaw=P.yaw+swY;AIM.pitch=P.pitch+swP;
   // visual-only layers on top
-  const shk=P.shake*FEEL.shake*MOTION*free;
+  const shk=P.shake*FEEL.shake*MOTION*free*(SETTINGS.lowFlash?0.35:1);
   P.roll=P.alive?damp(P.roll,-P.lean*0.13+VM.slideW*0.07*free,10,dt):damp(P.roll,0.5,3,dt);
   camera.rotation.set(AIM.pitch+RECOIL.p+rand(-shk,shk),AIM.yaw+RECOIL.y+rand(-shk,shk),P.roll);
   // fov: fully zoomed by the time the scope picture appears, so the reticle never "breathes"
@@ -3320,7 +3396,7 @@ class RemotePlayer{
     if(dist<30&&pose.alive&&AU.ctx){
       const att=Math.pow(Math.max(0,1-dist/30),1.5),pan=clamp(Math.sin((bearingDeg(pose.x,pose.z)-heading())*Math.PI/180),-1,1);
       if(pose.g&&sp>1&&pose.mode!=='slide'&&pose.mode!=='agachado'){const prev=this.stepPh||0;this.stepPh=prev+sp*dt*1.6;
-        if(Math.floor(prev/Math.PI)!==Math.floor(this.stepPh/Math.PI))nz(0,0.07,{f:pose.mode==='sprint'?720:520,g:(pose.mode==='sprint'?0.16:0.09)*att,rate:rand(.8,1.2),pan});}
+        if(Math.floor(prev/Math.PI)!==Math.floor(this.stepPh/Math.PI)){AU.ch='steps';nz(0,0.07,{f:pose.mode==='sprint'?720:520,g:(pose.mode==='sprint'?0.16:0.09)*att,rate:rand(.8,1.2),pan});AU.ch=null;}}
       if(pose.ws!==this.lastWs){if(pose.ws==='bolt')nz(0.08,0.08,{type:'bandpass',f:1600,q:3,g:0.25*att,pan});else if(pose.ws==='reload')nz(0,0.2,{type:'bandpass',f:1400,q:1,g:0.12*att,pan});}
     }
     this.lastWs=pose.ws;
@@ -3655,6 +3731,6 @@ function frameBody(now){
 }
 resize();
 requestAnimationFrame(frame);
-window.__SD={freeze(on){SIM_FREEZE=!!on;},VMA,makeSoldier,animateSoldier,BOT_MAT,scene,camera,RemotePlayer,PMprev,PIS,PROOT,RIF,WROOT,SHO_:null,MANUAL,advance(ms){frameBody(last+ms);},get LAST_PELLETS(){return LAST_PELLETS;},SCORE,SCFG,SROOT,SHO,setPrimaryChoice,get PRIMARY(){return PRIMARY;},PCORE,PCFG,setWorld,WORLDS,get WORLD_ID(){return WORLD_ID;},renderer,GFX,gfxApply,get NET(){return NET;},get REMOTE(){return REMOTE;},W,get NAV(){return NAV;},setOffMap,get OFFMAP(){return OFFMAP;},TOUCH,EDIT,openEditor,get SETTINGS(){return SETTINGS;},get LAYOUT(){return LAYOUT;},checkOrientation,MAT,LOAD,TRAINERS,get RANGE_BOTS(){return RANGE_BOTS;},TRAIN,setTrain,setLethal,kitNote,GINS,TDIAG,get TOUCH_EVENTS(){return TOUCH_EVENTS;},impactFX,bodyFX,get DECALS(){return DECALS;},surfaceOf,soundDelay,aimSelfTest,P,PM,WS,WCORE,RECOIL,AIM,BOTS,DUMMIES,BULLETS,EVENTS,PARTS,STATS,get state(){return state;},get mode(){return mode;},setMode,input,startMatch,simTick,frame,toMenu,pause,resume};
+window.__SD={freeze(on){SIM_FREEZE=!!on;},VMA,makeSoldier,animateSoldier,BOT_MAT,scene,camera,RemotePlayer,PMprev,PIS,PROOT,RIF,WROOT,SHO_:null,MANUAL,advance(ms){frameBody(last+ms);},get LAST_PELLETS(){return LAST_PELLETS;},SCORE,SCFG,SROOT,SHO,setPrimaryChoice,get PRIMARY(){return PRIMARY;},PCORE,PCFG,setWorld,WORLDS,get WORLD_ID(){return WORLD_ID;},renderer,GFX,gfxApply,get NET(){return NET;},get REMOTE(){return REMOTE;},W,get NAV(){return NAV;},setOffMap,get OFFMAP(){return OFFMAP;},TOUCH,EDIT,openEditor,get SETTINGS(){return SETTINGS;},get LAYOUT(){return LAYOUT;},checkOrientation,MAT,LOAD,TRAINERS,get RANGE_BOTS(){return RANGE_BOTS;},TRAIN,setTrain,setLethal,kitNote,GINS,TDIAG,AU,get TOUCH_EVENTS(){return TOUCH_EVENTS;},impactFX,bodyFX,get DECALS(){return DECALS;},surfaceOf,soundDelay,aimSelfTest,P,PM,WS,WCORE,RECOIL,AIM,BOTS,DUMMIES,BULLETS,EVENTS,PARTS,STATS,get state(){return state;},get mode(){return mode;},setMode,input,startMatch,simTick,frame,toMenu,pause,resume};
 })();
 </script>

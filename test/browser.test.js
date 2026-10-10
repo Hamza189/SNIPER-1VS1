@@ -49,6 +49,30 @@ const shown = page => page.evaluate(ids => ids.filter(id => { const e = document
       await page.click('#openSettings');
       check('AJUSTES desde el menú se ve por encima del menú (no detrás)', await page.evaluate(() => { const e = document.elementFromPoint(innerWidth / 2, innerHeight / 2); return !!(e && e.closest('#settings')); }));
       check('con AJUSTES abierto el menú queda oculto (en iPhone se pintaba encima)', await page.evaluate(() => getComputedStyle(document.getElementById('menu')).visibility === 'hidden'));
+      { // tabs, real audio channels, per-section reset and the two-tap RESTAURAR TODO
+        const r = await page.evaluate(async () => {
+          const S = __SD, o = {}, q = s => document.querySelector(s), wait = ms => new Promise(f => setTimeout(f, ms));
+          q('.setTabs button[data-tab="audio"]').click(); await wait(30);
+          o.tab = [...document.querySelectorAll('.setPane')].filter(p => !p.hidden).map(p => p.dataset.pane).join(',');
+          o.tabsAll = document.querySelectorAll('.setTabs button').length;
+          const vs = q('#vS'); vs.value = '0.2'; vs.dispatchEvent(new Event('input')); await wait(200);
+          o.shots = S.AU && S.AU.bus ? +S.AU.bus.shots.gain.value.toFixed(2) : null; o.fx = S.AU && S.AU.bus ? +S.AU.bus.fx.gain.value.toFixed(2) : null;
+          q('#sMute').click(); await wait(200); o.master = S.AU && S.AU.master ? +S.AU.master.gain.value.toFixed(2) : null;
+          o.saved = JSON.parse(localStorage.getItem('sniperduel_settings')).volShots;
+          S.SETTINGS.sensH = 2.2;
+          q('#setResetTab').click(); await wait(50);
+          o.afterTab = [S.SETTINGS.volShots, S.SETTINGS.mute, S.SETTINGS.sensH];
+          q('#setReset').click(); await wait(30); o.firstTap = S.SETTINGS.sensH; o.label = q('#setReset').textContent;
+          q('#setReset').click(); await wait(30); o.secondTap = S.SETTINGS.sensH;
+          q('.setTabs button[data-tab="controles"]').click();
+          return o;
+        });
+        check('AJUSTES por pestañas: 6 secciones, se ve solo la elegida', r.tabsAll === 6 && r.tab === 'audio', JSON.stringify([r.tabsAll, r.tab]));
+        check('AUDIO: el volumen de disparos cambia de verdad su canal (y se guarda); los efectos no', r.shots === 0.2 && r.fx === 1 && r.saved === 0.2, JSON.stringify([r.shots, r.fx, r.saved]));
+        check('AUDIO: silenciar todo pone el volumen general a 0', r.master === 0, String(r.master));
+        check('RESTAURAR ESTA SECCIÓN solo toca su sección', r.afterTab[0] === 1 && r.afterTab[1] === false && r.afterTab[2] === 2.2, JSON.stringify(r.afterTab));
+        check('RESTAURAR TODO pide un segundo toque antes de borrar', r.firstTap === 2.2 && /SEGURO/.test(r.label) && r.secondTap === 1, JSON.stringify([r.firstTap, r.label, r.secondTap]));
+      }
       await page.click('#setClose');
       check('al cerrar AJUSTES vuelve el menú', await page.evaluate(() => getComputedStyle(document.getElementById('menu')).visibility === 'visible' && document.getElementById('settings').hidden));
       // the server's copy of the map (core/mapdata.js) is exactly the world the page builds

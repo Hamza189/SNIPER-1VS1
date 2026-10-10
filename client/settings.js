@@ -21,13 +21,29 @@ const DEFAULTS = {
   adsV: 1,          // vertical multiplier while aiming (any weapon)
   touchDead: 2,     // px a finger must travel before it starts turning the camera (stops jitter on touch-down)
   smooth: 0,        // 0 = direct; up to 0.8 = softer turning (adds a little delay)
-  calmVM: false     // reduce the weapon's visual bob and sway (accessibility); never changes the aim
+  calmVM: false,    // reduce the weapon's visual bob and sway (accessibility); never changes the aim
+  // audio (0..1 per channel; the final level is master × channel)
+  volMaster: 1, volShots: 1, volFx: 1, volSteps: 1, volAmb: 1, mute: false,
+  // gameplay info (only what the player sees; never the rules)
+  hitmarkers: true, dmgDir: true,
+  // accessibility
+  lowFlash: false   // softer red damage flash and screen shake (visual only)
+};
+// which settings each tab of AJUSTES owns (its RESTAURAR resets only these)
+const CATEGORIES = {
+  controles: ['adsMode', 'leftFire', 'releaseFire'],
+  sensibilidad: ['sensH', 'sensV', 'adsSens', 'adsH', 'adsV', 'touchLook', 'touchDead', 'smooth', 'invertY'],
+  graficos: ['quality', 'fpsCap', 'showFps'],
+  audio: ['volMaster', 'volShots', 'volFx', 'volSteps', 'volAmb', 'mute'],
+  jugabilidad: ['hitmarkers', 'dmgDir'],
+  accesibilidad: ['calmVM', 'lowFlash']
 };
 // Phones start from different values (agreed after testing on iPhone); PC defaults are unchanged.
 // A device that already saved its settings keeps them; RESTAURAR goes back to these.
 const TOUCH_DEFAULTS = { touchLook: 1.6, adsSens: 1.3 };
 function defaults(touch) { return Object.assign({}, DEFAULTS, touch ? TOUCH_DEFAULTS : {}, { v: 2 }); }
-const RANGES = { sensH: [0.2, 3], sensV: [0.2, 3], adsSens: [0.3, 2], touchLook: [0.3, 4], adsH: [0.3, 2], adsV: [0.3, 2], touchDead: [0, 12], smooth: [0, 0.8] };
+const RANGES = { sensH: [0.2, 3], sensV: [0.2, 3], adsSens: [0.3, 2], touchLook: [0.3, 4], adsH: [0.3, 2], adsV: [0.3, 2], touchDead: [0, 12], smooth: [0, 0.8],
+  volMaster: [0, 1], volShots: [0, 1], volFx: [0, 1], volSteps: [0, 1], volAmb: [0, 1] };
 const ADS_MODES = ['holdDrag', 'hold', 'toggle'];
 
 // any stored object → a complete, valid settings object (unknown keys dropped, numbers clamped)
@@ -40,7 +56,7 @@ function sanitize(o, touch) {
     const v = Number(o[k]);
     if (o[k] !== undefined && o[k] !== null && o[k] !== '' && isFinite(v)) s[k] = clamp(v, RANGES[k][0], RANGES[k][1]);
   }
-  for (const k of ['invertY', 'leftFire', 'releaseFire', 'showFps', 'calmVM']) if (typeof o[k] === 'boolean') s[k] = o[k];
+  for (const k of ['invertY', 'leftFire', 'releaseFire', 'showFps', 'calmVM', 'mute', 'hitmarkers', 'dmgDir', 'lowFlash']) if (typeof o[k] === 'boolean') s[k] = o[k];
   if (ADS_MODES.includes(o.adsMode)) s.adsMode = o.adsMode;
   if (['auto', 'bajo', 'medio', 'alto'].includes(o.quality)) s.quality = o.quality;
   if (o.fpsCap === 30 || o.fpsCap === 60) s.fpsCap = o.fpsCap;
@@ -55,6 +71,12 @@ function load(store, touch) {
   return sanitize(isFinite(old) ? { sensH: old, sensV: old } : {}, touch);
 }
 function save(store, s, touch) { store.set('settings', sanitize(s, touch)); }
+// one tab back to its defaults, the rest untouched
+function resetCategory(s, cat, touch) {
+  const d = defaults(touch), o = Object.assign({}, s);
+  for (const k of CATEGORIES[cat] || []) o[k] = d[k];
+  return sanitize(o, touch);
+}
 
 /* Converts a pointer movement in pixels into a yaw/pitch change in radians.
    ctx = { scoped (rifle scope up), ads (0..1, any weapon), fovRatio (tan(fov/2)/tan(baseFov/2)), touch }
@@ -77,6 +99,6 @@ function smoothLook(st, dx, dy, smooth, dt) {
   return o;
 }
 
-const SDSettings = { VERSION, DEFAULTS, TOUCH_DEFAULTS, ADS_MODES, defaults, RANGES, sanitize, load, save, lookDelta, smoothLook };
+const SDSettings = { VERSION, CATEGORIES, resetCategory, DEFAULTS, TOUCH_DEFAULTS, ADS_MODES, defaults, RANGES, sanitize, load, save, lookDelta, smoothLook };
 if (typeof module !== 'undefined' && module.exports) module.exports = SDSettings; else root.SDSettings = SDSettings;
 })(typeof window !== 'undefined' ? window : globalThis);
