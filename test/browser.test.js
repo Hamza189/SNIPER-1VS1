@@ -97,6 +97,9 @@ const shown = page => page.evaluate(ids => ids.filter(id => { const e = document
         const at = (u, f) => { PI.debug = { reload: u }; S.advance(16); const o = f(); PI.debug = null; return o; };
         const wy = o => { o.updateMatrixWorld(true); return V.setFromMatrixPosition(o.matrixWorld).y; };
         const glb = S.VMA.ready; r.glb = glb; r.all = !!(S.VMA.R && S.VMA.K && S.VMA.S);
+        // third person: the soldiers carry the low-detail copies (the full first-person rifle is ~19k triangles)
+        if (glb) { const tri = o => { let t = 0; o.traverse(m => { if (m.isMesh) t += (m.geometry.index ? m.geometry.index.count : m.geometry.attributes.position.count) / 3; }); return t; };
+          r.tp = ['HALCON', 'FURIA12', 'VIBORA9', 'NAVAJA'].map(n => S.VMA.src[n] ? [S.VMA.src[n].name, Math.round(tri(S.VMA.src[n]))] : [n, -1]); }
         r.arms = glb ? S.VMA.rig.root.visible : PI.arms.visible;
         r.drop = at(0.12, () => [PI.oldMag.visible, wy(PI.oldMag)]); r.drop2 = at(0.3, () => [PI.oldMag.visible, wy(PI.oldMag)]);
         r.carry = at(0.45, () => { PI.lh.updateMatrixWorld(true); PI.mag.updateMatrixWorld(true);
@@ -113,6 +116,7 @@ const shown = page => page.evaluate(ids => ids.filter(id => { const e = document
       });
       check('pistola: los brazos se dibujan y los codos quedan por debajo y detrás (modelos ' + (an.glb ? 'GLB' : 'procedurales') + ')', an.arms && an.elbowBelow, JSON.stringify({ arms: an.arms, elbow: an.elbow }));
       check('se usan los modelos 3D (assets/viewmodels.glb) de la pistola, el rifle, la escopeta y la navaja', an.glb === true && an.all === true);
+      check('tercera persona: las armas del rival y de los bots son las copias ligeras (TP_, < 2000 triángulos)', !!an.tp && an.tp.every(([n, t]) => /^TP_/.test(n) && t > 100 && t < 2000), JSON.stringify(an.tp));
       check('recarga: el cargador vacío sale y cae', an.drop[0] && an.drop2[0] && an.drop2[1] < an.drop[1] - 0.03, an.drop.map(x => +(+x).toFixed(3)) + ' → ' + an.drop2.map(x => +(+x).toFixed(3)));
       check('recarga: la mano izquierda trae el cargador nuevo pegado a la mano', an.carry[0] && an.carry[1] < 0.12, (+an.carry[1]).toFixed(3) + ' m');
       check('recarga: el cargador queda metido y la corredera se acciona', an.inserted === 0 && an.rack > 0.025 && an.rest === 0, JSON.stringify({ inserted: an.inserted, rack: an.rack }));

@@ -5,13 +5,14 @@ Every mesh is generated here from code, so the result is original work with no t
 license. Output nodes (game frame after export: x right, y up, -z forward):
   VIBORA9  (slide, trigger, mag, slidestop, frame + sockets)
   ...
+  TP_<weapon>  low-detail copies for the third person (see lod.py)
 """
 import sys, os, pathlib, math
 HERE = pathlib.Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE))
 import bpy
 from common import *
-import pistol, rifle, rifle2, knife, shotgun
+import pistol, rifle, rifle2, knife, shotgun, lod
 
 ROOT = HERE.parent.parent
 OUT = ROOT / 'assets' / 'viewmodels.glb'
@@ -36,6 +37,10 @@ def main():
         r = empty('FURIA12')
         parts = shotgun.build(r)
         stats['FURIA12'] = sum(tri_count(o) for o in parts.values())
+    # third-person copies (low detail) for the rival and the bots
+    for n in ('HALCON', 'FURIA12', 'VIBORA9', 'NAVAJA'):
+        if n in bpy.data.objects:
+            stats['TP_' + n] = lod.build(n)
     try:
         import arms
         if not ONLY or 'arms' in ONLY:

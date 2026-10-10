@@ -1362,7 +1362,8 @@ function loadViewmodels(){
 function setupViewmodels(g){
   SDVM.refine(g.scene,T,ENV,{low:GFX.profile==='bajo'});
   // pristine copies for the third-person weapons (before the first-person ones get their own rigs)
-  VMA.src={};for(const n of ['HALCON','FURIA12','VIBORA9','NAVAJA']){const o=g.scene.getObjectByName(n);if(o)VMA.src[n]=o.clone(true);}
+  // (the low-detail TP_ copies when the file has them: a soldier is seen from metres away)
+  VMA.src={};for(const n of ['HALCON','FURIA12','VIBORA9','NAVAJA']){const o=g.scene.getObjectByName('TP_'+n)||g.scene.getObjectByName(n);if(o)VMA.src[n]=o.clone(true);}
   const rig=SDVM.createArms(g.scene,T);if(!rig)return;
   rig.root.visible=false;wScene.add(rig.root);
   const pis=g.scene.getObjectByName('VIBORA9');if(!pis)return;
@@ -1847,7 +1848,7 @@ function soldierUseModels(R){
     const w=new T.Group();w.rotation.y=Math.PI;w.position.set(TP_FIT[k][1],TP_FIT[k][2],TP_FIT[k][3]);
     const m=src.clone(true);m.position.set(0,0,0);m.rotation.set(0,0,0);w.add(m);g.add(w);
     m.traverse(o=>{if(o.isMesh){o.castShadow=true;o.frustumCulled=true;}});
-    R.tp[k]=m;if(k==='shotgun')R.tpPump=m.getObjectByName('s_pump');
+    R.tp[k]=m;if(k==='shotgun')R.tpPump=m.getObjectByName('ts_pump')||m.getObjectByName('s_pump');
     const sh=m.getObjectByName('s_shell');if(sh)sh.visible=false;}
 }
 const _sv=new T.Vector3(),_sAM=new T.Matrix4(),_sTg=new T.Vector3(),_sHip=new T.Vector3(),_sFoot=new T.Vector3(),_sPoleK=new T.Vector3(),_sPoleA=new T.Vector3(),_sM=new T.Matrix4();
