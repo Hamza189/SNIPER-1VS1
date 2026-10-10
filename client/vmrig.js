@@ -29,6 +29,23 @@
     P_dotY: { basic: 0xffe066 },
     P_brass: { c: 0xd9a650, m: 1.0, r: 0.26, env: 1.3 },
     P_black: { c: 0x101113, m: 0.2, r: 0.65, env: 0.4 },
+    // HALCÓN R7
+    R_chassis: { c: 0x5e5241, m: 0.25, r: 0.55, env: 0.6, detail: 'brushed', ns: 0.08 },
+    R_black: { c: 0x1d1f22, m: 0.55, r: 0.42, env: 0.8 },
+    R_barrel: { c: 0x26282b, m: 0.8, r: 0.36, env: 1.0 },
+    R_steel: { c: 0x9a9ea4, m: 0.95, r: 0.26, env: 1.3 },
+    R_rubber: { c: 0x141414, m: 0.0, r: 0.9, env: 0.3 },
+    R_scope: { c: 0x22252a, m: 0.5, r: 0.36, env: 0.9 },
+    R_lens: { c: 0x1d4a63, m: 0.3, r: 0.04, env: 1.6, e: 0x0c2233 },
+    R_eye: { c: 0x080b0e, m: 0.2, r: 0.08, env: 0.35, e: 0x010304 },
+    R_accent: { c: 0xe0702a, m: 0.0, r: 0.5, env: 0.4, e: 0x2a0d00 },
+    R_grip: { c: 0x1e1e1d, m: 0.0, r: 0.9, env: 0.35, detail: 'stipple', ns: 0.9 },
+    // NAVAJA TÁCTICA
+    K_blade: { c: 0x3a3e44, m: 0.85, r: 0.3, env: 1.2, detail: 'brushed', ns: 0.06 },
+    K_edge: { c: 0xd2d6dc, m: 1.0, r: 0.14, env: 1.5 },
+    K_steel: { c: 0x1e2023, m: 0.7, r: 0.4, env: 0.8 },
+    K_g10: { c: 0x353a2a, m: 0.0, r: 0.75, env: 0.4, detail: 'stipple', ns: 0.6 },
+    K_screw: { c: 0x9a9ea4, m: 1.0, r: 0.3, env: 1.2 },
     // arms
     A_glove: { c: 0x1c1c1b, m: 0.0, r: 0.9, env: 0.35, detail: 'weave', ns: 0.45 },
     A_pad: { c: 0x2e2d2a, m: 0.0, r: 0.55, env: 0.5 },
@@ -240,12 +257,32 @@
     pistolL: { index: [1.25, 1.3, 0.5], middle: [1.3, 1.35, 0.55], ring: [1.35, 1.35, 0.55], pinky: [1.35, 1.35, 0.55], thumb: [0.1, 0.05, 0.05], spread: [0.04, 0, -0.03, -0.08], thumbYaw: 0.15 },
     magHold: { index: [0.55, 0.6, 0.3], middle: [0.9, 0.95, 0.4], ring: [1.0, 1.0, 0.45], pinky: [1.05, 1.05, 0.45], thumb: [0.55, 0.35, 0.2], thumbYaw: 0.6 },
     slap: { index: [0.15, 0.15, 0.1], middle: [0.15, 0.15, 0.1], ring: [0.2, 0.2, 0.1], pinky: [0.25, 0.25, 0.1], thumb: [0.05, 0.05, 0.05] },
+    guardL: { index: [0.9, 0.9, 0.4], middle: [0.95, 0.95, 0.45], ring: [1.0, 1.0, 0.45], pinky: [1.05, 1.0, 0.45], thumb: [0.2, 0.15, 0.1], thumbYaw: 0.3 },
+    knob: { index: [1.0, 1.1, 0.6], middle: [1.1, 1.2, 0.6], ring: [1.2, 1.2, 0.6], pinky: [1.25, 1.2, 0.6], thumb: [0.6, 0.5, 0.3], thumbYaw: 0.6 },
+    fist: { index: [1.45, 1.5, 0.7], middle: [1.5, 1.55, 0.7], ring: [1.55, 1.55, 0.7], pinky: [1.55, 1.5, 0.7], thumb: [0.7, 0.5, 0.3], thumbYaw: 0.9, spread: [0.06, 0, -0.05, -0.12] },
     rack: { index: [1.1, 1.2, 0.5], middle: [1.2, 1.25, 0.5], ring: [1.25, 1.25, 0.5], pinky: [1.25, 1.25, 0.5], thumb: [0.5, 0.4, 0.2], thumbYaw: 0.5 },
   };
 
   // where each hand holds each weapon (weapon space), the shoulders and elbow directions (camera space)
   const D19 = [0, -0.946, 0.326], F19 = [0, -0.326, -0.946];
+  const D16 = [0, -0.961, 0.276];
   const ARMPOSE = {
+    knife: {
+      shoulder: { R: [0.24, -0.42, 0.15], L: [-0.22, -0.46, 0.1] },
+      pole: { R: [0.8, -1, 0.2], L: [-0.8, -1, 0.2] },
+      lean: 0.75,
+      R: { f: 'fist', at: [0.017, -0.02, 0.05], b: [[0, 0, 1], [1, 0, 0]], r: [0, 0.6, 0] },
+    },
+    rifle: {
+      shoulder: { R: [0.27, -0.42, 0.12], L: [-0.18, -0.46, 0.0] },
+      pole: { R: [0.8, -1, 0.2], L: [-0.8, -1, 0.2] },
+      R: { f: 'pistolR', at: [0.028, -0.080, 0.105], b: [D16, [1, 0, 0]], r: [0, 0.6, 0] },
+      L: { f: 'guardL', left: true, anchor: [0, -0.014, -0.045], at: [0.004, -0.042, -0.28], b: [[-0.7, 0, -0.7], [0, -1, 0]] },
+      // right hand on the bolt knob (bolt space: origin = the bolt pivot)
+      bolt: { f: 'knob', at: [0.062, 0.006, 0.008], b: [[0, 0, 1], [0.2, 1, 0]], r: [0.5, 0, 0] },
+      // left hand under the magazine (magazine space)
+      mag: { f: 'magHold', left: true, anchor: [0, -0.016, -0.048], at: [0, -0.07, -0.027], b: [[-1, 0, 0], [0, -1, 0]] },
+    },
     pistol: {
       shoulder: { R: [0.22, -0.45, 0.1], L: [-0.22, -0.47, 0.1] },
       pole: { R: [0.8, -1, 0.2], L: [-0.8, -1, 0.2] },
@@ -254,5 +291,39 @@
     },
   };
 
-  G.SDVM = { ARMPOSE, refine, createArms, poseArm, curl, mixFingers, handTarget, HANDSETS, LOOK };
+  // ------------------------------------------------------------------ knife motion (modelled knife)
+  // offsets {x,y,z,rx,ry,rz} added to the knife's rest pose; p = 0..1 through the action
+  const sm = t => { t = Math.max(0, Math.min(1, t)); return t * t * (3 - 2 * t); };
+  const outC = t => { t = Math.max(0, Math.min(1, t)); return 1 - Math.pow(1 - t, 3); };
+  const mixO = (a, b, t) => { const o = {}; for (const k in a) o[k] = a[k] + (b[k] - a[k]) * t; return o; };
+  const Z0 = () => ({ x: 0, y: 0, z: 0, rx: 0, ry: 0, rz: 0 });
+  function knifeSlash(p, side) {
+    side = -(side || -1);   // the first cut goes from right to left
+    // wind-up up and out, a fast cut across the centre (the hit is checked at p = 0.3), follow-through, recover
+    const W = { x: 0.035 * side, y: 0.055, z: -0.01, rx: 0.35, ry: -0.35 * side, rz: 0.55 * side };
+    const C = { x: -0.17 * side, y: -0.02, z: -0.09, rx: -0.3, ry: 0.65 * side, rz: -0.85 * side };
+    const F = { x: -0.19 * side, y: -0.04, z: -0.07, rx: -0.38, ry: 0.72 * side, rz: -0.95 * side };
+    if (p < 0.2) return mixO(Z0(), W, sm(p / 0.2));
+    if (p < 0.36) return mixO(W, C, outC((p - 0.2) / 0.16));
+    if (p < 0.5) return mixO(C, F, sm((p - 0.36) / 0.14));
+    return mixO(F, Z0(), sm((p - 0.5) / 0.5));
+  }
+  function knifeInspect(p) {
+    // brought in to the centre, turned to show the flat and the edge, rolled to the other flat, back
+    const A = { x: -0.08, y: 0.045, z: -0.02, rx: -0.15, ry: 1.0, rz: 0.25 };
+    const B = { x: -0.07, y: 0.04, z: -0.02, rx: 0.5, ry: 0.85, rz: 1.2 };
+    const C = { x: -0.075, y: 0.035, z: -0.03, rx: 0.1, ry: -0.6, rz: -0.25 };
+    if (p < 0.18) return mixO(Z0(), A, sm(p / 0.18));
+    if (p < 0.4) return mixO(A, B, sm((p - 0.18) / 0.22));
+    if (p < 0.62) return mixO(B, C, sm((p - 0.4) / 0.22));
+    if (p < 0.78) return C;
+    return mixO(C, Z0(), sm((p - 0.78) / 0.22));
+  }
+  function knifeDraw(p) {
+    // from below the screen, the blade flips up into the hand
+    const q = 1 - outC(p);
+    return { x: 0.03 * q, y: -0.24 * q, z: 0.02 * q, rx: -1.1 * q, ry: 0.3 * q, rz: 0.9 * q };
+  }
+
+  G.SDVM = { knifeSlash, knifeInspect, knifeDraw, ARMPOSE, refine, createArms, poseArm, curl, mixFingers, handTarget, HANDSETS, LOOK };
 })(typeof window !== 'undefined' ? window : globalThis);

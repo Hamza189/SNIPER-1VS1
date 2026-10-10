@@ -2033,6 +2033,23 @@ if (isNode) module.exports = SDNet; else root.SDNet = SDNet;
     P_dotY: { basic: 0xffe066 },
     P_brass: { c: 0xd9a650, m: 1.0, r: 0.26, env: 1.3 },
     P_black: { c: 0x101113, m: 0.2, r: 0.65, env: 0.4 },
+    // HALCÓN R7
+    R_chassis: { c: 0x5e5241, m: 0.25, r: 0.55, env: 0.6, detail: 'brushed', ns: 0.08 },
+    R_black: { c: 0x1d1f22, m: 0.55, r: 0.42, env: 0.8 },
+    R_barrel: { c: 0x26282b, m: 0.8, r: 0.36, env: 1.0 },
+    R_steel: { c: 0x9a9ea4, m: 0.95, r: 0.26, env: 1.3 },
+    R_rubber: { c: 0x141414, m: 0.0, r: 0.9, env: 0.3 },
+    R_scope: { c: 0x22252a, m: 0.5, r: 0.36, env: 0.9 },
+    R_lens: { c: 0x1d4a63, m: 0.3, r: 0.04, env: 1.6, e: 0x0c2233 },
+    R_eye: { c: 0x080b0e, m: 0.2, r: 0.08, env: 0.35, e: 0x010304 },
+    R_accent: { c: 0xe0702a, m: 0.0, r: 0.5, env: 0.4, e: 0x2a0d00 },
+    R_grip: { c: 0x1e1e1d, m: 0.0, r: 0.9, env: 0.35, detail: 'stipple', ns: 0.9 },
+    // NAVAJA TÁCTICA
+    K_blade: { c: 0x3a3e44, m: 0.85, r: 0.3, env: 1.2, detail: 'brushed', ns: 0.06 },
+    K_edge: { c: 0xd2d6dc, m: 1.0, r: 0.14, env: 1.5 },
+    K_steel: { c: 0x1e2023, m: 0.7, r: 0.4, env: 0.8 },
+    K_g10: { c: 0x353a2a, m: 0.0, r: 0.75, env: 0.4, detail: 'stipple', ns: 0.6 },
+    K_screw: { c: 0x9a9ea4, m: 1.0, r: 0.3, env: 1.2 },
     // arms
     A_glove: { c: 0x1c1c1b, m: 0.0, r: 0.9, env: 0.35, detail: 'weave', ns: 0.45 },
     A_pad: { c: 0x2e2d2a, m: 0.0, r: 0.55, env: 0.5 },
@@ -2244,12 +2261,32 @@ if (isNode) module.exports = SDNet; else root.SDNet = SDNet;
     pistolL: { index: [1.25, 1.3, 0.5], middle: [1.3, 1.35, 0.55], ring: [1.35, 1.35, 0.55], pinky: [1.35, 1.35, 0.55], thumb: [0.1, 0.05, 0.05], spread: [0.04, 0, -0.03, -0.08], thumbYaw: 0.15 },
     magHold: { index: [0.55, 0.6, 0.3], middle: [0.9, 0.95, 0.4], ring: [1.0, 1.0, 0.45], pinky: [1.05, 1.05, 0.45], thumb: [0.55, 0.35, 0.2], thumbYaw: 0.6 },
     slap: { index: [0.15, 0.15, 0.1], middle: [0.15, 0.15, 0.1], ring: [0.2, 0.2, 0.1], pinky: [0.25, 0.25, 0.1], thumb: [0.05, 0.05, 0.05] },
+    guardL: { index: [0.9, 0.9, 0.4], middle: [0.95, 0.95, 0.45], ring: [1.0, 1.0, 0.45], pinky: [1.05, 1.0, 0.45], thumb: [0.2, 0.15, 0.1], thumbYaw: 0.3 },
+    knob: { index: [1.0, 1.1, 0.6], middle: [1.1, 1.2, 0.6], ring: [1.2, 1.2, 0.6], pinky: [1.25, 1.2, 0.6], thumb: [0.6, 0.5, 0.3], thumbYaw: 0.6 },
+    fist: { index: [1.45, 1.5, 0.7], middle: [1.5, 1.55, 0.7], ring: [1.55, 1.55, 0.7], pinky: [1.55, 1.5, 0.7], thumb: [0.7, 0.5, 0.3], thumbYaw: 0.9, spread: [0.06, 0, -0.05, -0.12] },
     rack: { index: [1.1, 1.2, 0.5], middle: [1.2, 1.25, 0.5], ring: [1.25, 1.25, 0.5], pinky: [1.25, 1.25, 0.5], thumb: [0.5, 0.4, 0.2], thumbYaw: 0.5 },
   };
 
   // where each hand holds each weapon (weapon space), the shoulders and elbow directions (camera space)
   const D19 = [0, -0.946, 0.326], F19 = [0, -0.326, -0.946];
+  const D16 = [0, -0.961, 0.276];
   const ARMPOSE = {
+    knife: {
+      shoulder: { R: [0.24, -0.42, 0.15], L: [-0.22, -0.46, 0.1] },
+      pole: { R: [0.8, -1, 0.2], L: [-0.8, -1, 0.2] },
+      lean: 0.75,
+      R: { f: 'fist', at: [0.017, -0.02, 0.05], b: [[0, 0, 1], [1, 0, 0]], r: [0, 0.6, 0] },
+    },
+    rifle: {
+      shoulder: { R: [0.27, -0.42, 0.12], L: [-0.18, -0.46, 0.0] },
+      pole: { R: [0.8, -1, 0.2], L: [-0.8, -1, 0.2] },
+      R: { f: 'pistolR', at: [0.028, -0.080, 0.105], b: [D16, [1, 0, 0]], r: [0, 0.6, 0] },
+      L: { f: 'guardL', left: true, anchor: [0, -0.014, -0.045], at: [0.004, -0.042, -0.28], b: [[-0.7, 0, -0.7], [0, -1, 0]] },
+      // right hand on the bolt knob (bolt space: origin = the bolt pivot)
+      bolt: { f: 'knob', at: [0.062, 0.006, 0.008], b: [[0, 0, 1], [0.2, 1, 0]], r: [0.5, 0, 0] },
+      // left hand under the magazine (magazine space)
+      mag: { f: 'magHold', left: true, anchor: [0, -0.016, -0.048], at: [0, -0.07, -0.027], b: [[-1, 0, 0], [0, -1, 0]] },
+    },
     pistol: {
       shoulder: { R: [0.22, -0.45, 0.1], L: [-0.22, -0.47, 0.1] },
       pole: { R: [0.8, -1, 0.2], L: [-0.8, -1, 0.2] },
@@ -2258,10 +2295,44 @@ if (isNode) module.exports = SDNet; else root.SDNet = SDNet;
     },
   };
 
-  G.SDVM = { ARMPOSE, refine, createArms, poseArm, curl, mixFingers, handTarget, HANDSETS, LOOK };
+  // ------------------------------------------------------------------ knife motion (modelled knife)
+  // offsets {x,y,z,rx,ry,rz} added to the knife's rest pose; p = 0..1 through the action
+  const sm = t => { t = Math.max(0, Math.min(1, t)); return t * t * (3 - 2 * t); };
+  const outC = t => { t = Math.max(0, Math.min(1, t)); return 1 - Math.pow(1 - t, 3); };
+  const mixO = (a, b, t) => { const o = {}; for (const k in a) o[k] = a[k] + (b[k] - a[k]) * t; return o; };
+  const Z0 = () => ({ x: 0, y: 0, z: 0, rx: 0, ry: 0, rz: 0 });
+  function knifeSlash(p, side) {
+    side = -(side || -1);   // the first cut goes from right to left
+    // wind-up up and out, a fast cut across the centre (the hit is checked at p = 0.3), follow-through, recover
+    const W = { x: 0.035 * side, y: 0.055, z: -0.01, rx: 0.35, ry: -0.35 * side, rz: 0.55 * side };
+    const C = { x: -0.17 * side, y: -0.02, z: -0.09, rx: -0.3, ry: 0.65 * side, rz: -0.85 * side };
+    const F = { x: -0.19 * side, y: -0.04, z: -0.07, rx: -0.38, ry: 0.72 * side, rz: -0.95 * side };
+    if (p < 0.2) return mixO(Z0(), W, sm(p / 0.2));
+    if (p < 0.36) return mixO(W, C, outC((p - 0.2) / 0.16));
+    if (p < 0.5) return mixO(C, F, sm((p - 0.36) / 0.14));
+    return mixO(F, Z0(), sm((p - 0.5) / 0.5));
+  }
+  function knifeInspect(p) {
+    // brought in to the centre, turned to show the flat and the edge, rolled to the other flat, back
+    const A = { x: -0.08, y: 0.045, z: -0.02, rx: -0.15, ry: 1.0, rz: 0.25 };
+    const B = { x: -0.07, y: 0.04, z: -0.02, rx: 0.5, ry: 0.85, rz: 1.2 };
+    const C = { x: -0.075, y: 0.035, z: -0.03, rx: 0.1, ry: -0.6, rz: -0.25 };
+    if (p < 0.18) return mixO(Z0(), A, sm(p / 0.18));
+    if (p < 0.4) return mixO(A, B, sm((p - 0.18) / 0.22));
+    if (p < 0.62) return mixO(B, C, sm((p - 0.4) / 0.22));
+    if (p < 0.78) return C;
+    return mixO(C, Z0(), sm((p - 0.78) / 0.22));
+  }
+  function knifeDraw(p) {
+    // from below the screen, the blade flips up into the hand
+    const q = 1 - outC(p);
+    return { x: 0.03 * q, y: -0.24 * q, z: 0.02 * q, rx: -1.1 * q, ry: 0.3 * q, rz: 0.9 * q };
+  }
+
+  G.SDVM = { knifeSlash, knifeInspect, knifeDraw, ARMPOSE, refine, createArms, poseArm, curl, mixFingers, handTarget, HANDSETS, LOOK };
 })(typeof window !== 'undefined' ? window : globalThis);
 
-const BUILD_ID="2bee1f1";const BUILD_HASH="0c754fa0fd";
+const BUILD_ID="37d0201";const BUILD_HASH="f133d2561a";
 </script>
 <script>
 (function(){
@@ -3086,7 +3157,20 @@ function setupViewmodels(g){
   PIS.slide=slide;PIS.trig=trig;PIS.mag=wrap(mag);PIS.oldMag=wrap(old);PIS.oldMag.visible=false;PIS.magA=A;
   // PIS.lh follows the left hand bone (tests and effects look at it)
   PIS.lh=new T.Group();wScene.add(PIS.lh);
-  VMA.rig=rig;VMA.P={root:pis,slide,mag,A};VMA.ready=true;
+  VMA.rig=rig;VMA.P={root:pis,slide,mag,A};
+  const hal=g.scene.getObjectByName('HALCON');
+  if(hal){hal.position.set(0,0,0);hal.rotation.set(0,0,0);
+    for(const c of [...GUN.children])c.visible=false;
+    GUN.add(hal);GUN.add(RIF.flash);RIF.flash.visible=false;
+    const hp=n=>hal.getObjectByName(n);
+    RIF.bolt=hp('r_bolt');RIF.mag=hp('r_mag');RIF.magY=RIF.mag.position.y;RIF.trig=hp('r_trigger');
+    VMA.R={root:hal};}
+  const nav=g.scene.getObjectByName('NAVAJA');
+  if(nav){nav.position.set(0,0,0);nav.rotation.set(0,0,0);
+    for(const c of [...KNIFE.children])c.visible=false;
+    for(const c of [...KROOT.children])if(c!==KNIFE)c.visible=false;
+    KNIFE.add(nav);VMA.K={root:nav};}
+  VMA.ready=true;
 }
 // hand pose helpers: a spec (vmrig ARMPOSE format) → wrist position + rotation in camera space
 const _hp=[0,1,2,3,4,5].map(()=>({p:new T.Vector3(),q:new T.Quaternion(),f:null}));
@@ -3132,6 +3216,16 @@ function updatePistolArms(u,rl){
   PIS.lh.position.setFromMatrixPosition(rig.sides.L.bones.hand.matrixWorld);
 }
 const _sR=new T.Vector3(),_sL=new T.Vector3(),_pR=new T.Vector3(),_pL=new T.Vector3();
+// HALCÓN R7: right hand grip ↔ bolt knob (w), left hand handguard ↔ magazine (wl)
+function updateRifleArms(w,wl){
+  const rig=VMA.rig,A=SDVM.ARMPOSE.rifle;rig.root.visible=true;
+  const G=VMA.R.root;G.updateMatrixWorld(true);
+  let R=handAt(A.R,G.matrixWorld,_hp[0]),L=handAt(A.L,G.matrixWorld,_hp[1]);
+  if(w>0.001){const b=handAt(A.bolt,RIF.bolt.matrixWorld,_hp[2]);R=handMix(R,b,w,_hp[4]);}
+  if(wl>0.001){const m=handAt(A.mag,RIF.mag.matrixWorld,_hp[3]);L=handMix(L,m,wl,_hp[5]);}
+  SDVM.poseArm(rig.sides.R,_sR.fromArray(A.shoulder.R),R.p,R.q,_pR.fromArray(A.pole.R).normalize(),R.f);
+  SDVM.poseArm(rig.sides.L,_sL.fromArray(A.shoulder.L),L.p,L.q,_pL.fromArray(A.pole.L).normalize(),L.f);
+}
 loadViewmodels();
 // called by doFire: the gun jumps in the hands (muzzle flip around the wrists, push back, a little roll)
 function pistolKick(ads){const s=1-0.45*ads;PIS.k.vrx+=10.5*s;PIS.k.vz+=1.5*s;PIS.k.vy+=0.25*s;PIS.k.vrz+=rand(-1,1)*2.2*s;}
@@ -3158,7 +3252,6 @@ function placeArm(A,wrist,ex,ey,ez){
 function updatePistolVM(dt){
   PROOT.visible=LOAD.active==='pistol'&&(state==='playing'||state==='dead'||state==='paused');
   PIS.arms.visible=false;
-  if(VMA.ready)VMA.rig.root.visible=PROOT.visible&&false;
   if(!PROOT.visible)return;
   const glb=VMA.ready;
   const ads=ss(PCORE.ads),free=1-ads,dbg=PIS.debug;
@@ -4557,6 +4650,7 @@ const _hip=new T.Vector3(0.15,-0.143,-0.395),_adsP=new T.Vector3(0,-0.068,-0.27)
 const R_RELOAD=[[0,[0,0,0,0,0,0]],[0.1,[-0.11,0.123,-0.125,0.35,0.25,-0.9]],[0.55,[-0.112,0.125,-0.125,0.37,0.26,-0.92]],[0.58,[-0.112,0.13,-0.12,0.4,0.26,-0.88]],
   [0.65,[-0.045,0.015,0,0.06,0.06,0.3]],[0.92,[-0.045,0.015,0,0.06,0.06,0.3]],[1,[0,0,0,0,0,0]]];
 function updateViewmodel(dt){
+  if(VMA.ready){VMA.rig.root.visible=false;VMA.rig.sides.L.arm.visible=true;}
   const ads=ss(WCORE.ads),free=1-ads;
   const pos=_hip.clone().lerp(_adsP,ads);
   let rx=0,ry=0,rz=0;
@@ -4601,13 +4695,15 @@ function updateViewmodel(dt){
    const R=RIF.rhP;R.position.set(lerp(0,K.x+RIF.KH[0],w),lerp(-0.03,K.y+RIF.KH[1],w),lerp(0.104,K.z+RIF.KH[2],w));R.rotation.set(lerp(-0.35,RIF.KH[3],w),lerp(0,RIF.KH[4],w),lerp(0,RIF.KH[5]+a*0.5,w));
    // left hand: down to the magazine, rides it out and back in with the new one, back to the handguard
    let wl=0;if(reloading)wl=seg(p,0.04,0.12)*(1-seg(p,0.55,0.63));
-   const my=RIF.mag.position.y-0.04;const Lh=RIF.lhP;Lh.position.set(0,lerp(-0.045,my,wl),lerp(-0.19,-0.03,wl));Lh.rotation.set(0,0,lerp(0,-0.15,wl));}
+   const my=RIF.mag.position.y-0.04;const Lh=RIF.lhP;Lh.position.set(0,lerp(-0.045,my,wl),lerp(-0.19,-0.03,wl));Lh.rotation.set(0,0,lerp(0,-0.15,wl));
+   RIF.wR=w;RIF.wL=wl;}
   pos.y-=0.45*VM.deadW;
   if(RD&&RD.root){pos.set(RD.root[0],RD.root[1],RD.root[2]);rx=RD.root[3];ry=RD.root[4];rz=RD.root[5];}
   WROOT.position.copy(pos);WROOT.rotation.set(rx,ry,rz);
   // hidden exactly when the scope picture appears: the rifle can never cover the sight
   WROOT.visible=LOAD.active==='rifle'&&WCORE.ads<GUNCFG.scopeAt;
   RIF.arms.grp.visible=WROOT.visible&&(state==='playing'||state==='dead'||state==='paused');
+  if(RIF.arms.grp.visible&&VMA.R){RIF.arms.grp.visible=false;WROOT.updateMatrixWorld(true);updateRifleArms(RIF.wR||0,RIF.wL||0);}
   if(RIF.arms.grp.visible){WROOT.updateMatrixWorld(true);HANDS.place(RIF.arms.R,RIF.rh.g,RIF.rh.wrist,0.26,-0.42,0.08);HANDS.place(RIF.arms.L,RIF.lh.g,RIF.lh.wrist,-0.15,-0.46,-0.18);}
   updateKnifeVM(dt);updatePistolVM(dt);updateShotgunVM(dt);
   if(WS.flashT>0)WS.flashT-=dt;
@@ -4622,10 +4718,11 @@ function updateKnifeVM(dt){
   KROOT.visible=LOAD.active==='knife';
   if(!KROOT.visible)return;
   const k=LOAD.knife;let o={x:0,y:0,z:0,rx:0,ry:0,rz:0},tw=0;
-  if(LOAD.phase==='draw')o=SDMelee.drawPose(LOAD.t/KCFG.draw);
-  else if(LOAD.phase==='holster')o=SDMelee.drawPose(1-LOAD.t/KCFG.holster);
-  else if(k.state==='attack')o=SDMelee.slashPose(k.t/KCFG.interval,k.side);
-  else if(k.state==='inspect'){o=SDMelee.inspectPose(k.t/KCFG.inspect);tw=o.twirl;}
+  const M=VMA.K?SDVM:null;
+  if(LOAD.phase==='draw')o=M?M.knifeDraw(LOAD.t/KCFG.draw):SDMelee.drawPose(LOAD.t/KCFG.draw);
+  else if(LOAD.phase==='holster')o=M?M.knifeDraw(1-LOAD.t/KCFG.holster):SDMelee.drawPose(1-LOAD.t/KCFG.holster);
+  else if(k.state==='attack')o=M?M.knifeSlash(k.t/KCFG.interval,k.side):SDMelee.slashPose(k.t/KCFG.interval,k.side);
+  else if(k.state==='inspect'){if(M)o=M.knifeInspect(k.t/KCFG.inspect);else{o=SDMelee.inspectPose(k.t/KCFG.inspect);tw=o.twirl;}}
   const sw=VM.sprintW,sl=VM.slideW,bob=P.bob*MOTION*FEEL.vmBob,bm=PM.sprinting?1.8:1;
   KROOT.position.set(
     KBASE.x+o.x-0.03*sw+Math.cos(P.stepPhase)*0.012*bob*bm+WS.swayX,
@@ -4633,6 +4730,11 @@ function updateKnifeVM(dt){
     KBASE.z+o.z+0.03*sw);
   KROOT.rotation.set(KBASE.rx+o.rx-0.35*sw+WS.swayY*1.2,KBASE.ry+o.ry+WS.swayX*1.4,KBASE.rz+o.rz+0.2*sw+0.3*sl-P.lean*0.08);
   KNIFE.rotation.z=tw;
+  if(VMA.K){KROOT.position.y+=0.03;KROOT.position.x-=0.01;KROOT.updateMatrixWorld(true);
+    // the fist stays on the handle (the knife spins in the fingers during the inspect, the hand does not)
+    const rig=VMA.rig,A=SDVM.ARMPOSE.knife;rig.root.visible=true;rig.sides.L.arm.visible=false;rig.sides.R.lean=A.lean;
+    const H=handAt(A.R,KROOT.matrixWorld,_hp[0]);
+    SDVM.poseArm(rig.sides.R,_sR.fromArray(A.shoulder.R),H.p,H.q,_pR.fromArray(A.pole.R).normalize(),H.f);rig.sides.R.lean=null;}
 }
 
 /* =================== DEBUG PANEL (F3) =================== */

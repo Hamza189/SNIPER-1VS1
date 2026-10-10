@@ -1367,7 +1367,20 @@ function setupViewmodels(g){
   PIS.slide=slide;PIS.trig=trig;PIS.mag=wrap(mag);PIS.oldMag=wrap(old);PIS.oldMag.visible=false;PIS.magA=A;
   // PIS.lh follows the left hand bone (tests and effects look at it)
   PIS.lh=new T.Group();wScene.add(PIS.lh);
-  VMA.rig=rig;VMA.P={root:pis,slide,mag,A};VMA.ready=true;
+  VMA.rig=rig;VMA.P={root:pis,slide,mag,A};
+  const hal=g.scene.getObjectByName('HALCON');
+  if(hal){hal.position.set(0,0,0);hal.rotation.set(0,0,0);
+    for(const c of [...GUN.children])c.visible=false;
+    GUN.add(hal);GUN.add(RIF.flash);RIF.flash.visible=false;
+    const hp=n=>hal.getObjectByName(n);
+    RIF.bolt=hp('r_bolt');RIF.mag=hp('r_mag');RIF.magY=RIF.mag.position.y;RIF.trig=hp('r_trigger');
+    VMA.R={root:hal};}
+  const nav=g.scene.getObjectByName('NAVAJA');
+  if(nav){nav.position.set(0,0,0);nav.rotation.set(0,0,0);
+    for(const c of [...KNIFE.children])c.visible=false;
+    for(const c of [...KROOT.children])if(c!==KNIFE)c.visible=false;
+    KNIFE.add(nav);VMA.K={root:nav};}
+  VMA.ready=true;
 }
 // hand pose helpers: a spec (vmrig ARMPOSE format) → wrist position + rotation in camera space
 const _hp=[0,1,2,3,4,5].map(()=>({p:new T.Vector3(),q:new T.Quaternion(),f:null}));
@@ -1413,6 +1426,16 @@ function updatePistolArms(u,rl){
   PIS.lh.position.setFromMatrixPosition(rig.sides.L.bones.hand.matrixWorld);
 }
 const _sR=new T.Vector3(),_sL=new T.Vector3(),_pR=new T.Vector3(),_pL=new T.Vector3();
+// HALCÓN R7: right hand grip ↔ bolt knob (w), left hand handguard ↔ magazine (wl)
+function updateRifleArms(w,wl){
+  const rig=VMA.rig,A=SDVM.ARMPOSE.rifle;rig.root.visible=true;
+  const G=VMA.R.root;G.updateMatrixWorld(true);
+  let R=handAt(A.R,G.matrixWorld,_hp[0]),L=handAt(A.L,G.matrixWorld,_hp[1]);
+  if(w>0.001){const b=handAt(A.bolt,RIF.bolt.matrixWorld,_hp[2]);R=handMix(R,b,w,_hp[4]);}
+  if(wl>0.001){const m=handAt(A.mag,RIF.mag.matrixWorld,_hp[3]);L=handMix(L,m,wl,_hp[5]);}
+  SDVM.poseArm(rig.sides.R,_sR.fromArray(A.shoulder.R),R.p,R.q,_pR.fromArray(A.pole.R).normalize(),R.f);
+  SDVM.poseArm(rig.sides.L,_sL.fromArray(A.shoulder.L),L.p,L.q,_pL.fromArray(A.pole.L).normalize(),L.f);
+}
 loadViewmodels();
 // called by doFire: the gun jumps in the hands (muzzle flip around the wrists, push back, a little roll)
 function pistolKick(ads){const s=1-0.45*ads;PIS.k.vrx+=10.5*s;PIS.k.vz+=1.5*s;PIS.k.vy+=0.25*s;PIS.k.vrz+=rand(-1,1)*2.2*s;}
@@ -1439,7 +1462,6 @@ function placeArm(A,wrist,ex,ey,ez){
 function updatePistolVM(dt){
   PROOT.visible=LOAD.active==='pistol'&&(state==='playing'||state==='dead'||state==='paused');
   PIS.arms.visible=false;
-  if(VMA.ready)VMA.rig.root.visible=PROOT.visible&&false;
   if(!PROOT.visible)return;
   const glb=VMA.ready;
   const ads=ss(PCORE.ads),free=1-ads,dbg=PIS.debug;
@@ -2838,6 +2860,7 @@ const _hip=new T.Vector3(0.15,-0.143,-0.395),_adsP=new T.Vector3(0,-0.068,-0.27)
 const R_RELOAD=[[0,[0,0,0,0,0,0]],[0.1,[-0.11,0.123,-0.125,0.35,0.25,-0.9]],[0.55,[-0.112,0.125,-0.125,0.37,0.26,-0.92]],[0.58,[-0.112,0.13,-0.12,0.4,0.26,-0.88]],
   [0.65,[-0.045,0.015,0,0.06,0.06,0.3]],[0.92,[-0.045,0.015,0,0.06,0.06,0.3]],[1,[0,0,0,0,0,0]]];
 function updateViewmodel(dt){
+  if(VMA.ready){VMA.rig.root.visible=false;VMA.rig.sides.L.arm.visible=true;}
   const ads=ss(WCORE.ads),free=1-ads;
   const pos=_hip.clone().lerp(_adsP,ads);
   let rx=0,ry=0,rz=0;
@@ -2882,13 +2905,15 @@ function updateViewmodel(dt){
    const R=RIF.rhP;R.position.set(lerp(0,K.x+RIF.KH[0],w),lerp(-0.03,K.y+RIF.KH[1],w),lerp(0.104,K.z+RIF.KH[2],w));R.rotation.set(lerp(-0.35,RIF.KH[3],w),lerp(0,RIF.KH[4],w),lerp(0,RIF.KH[5]+a*0.5,w));
    // left hand: down to the magazine, rides it out and back in with the new one, back to the handguard
    let wl=0;if(reloading)wl=seg(p,0.04,0.12)*(1-seg(p,0.55,0.63));
-   const my=RIF.mag.position.y-0.04;const Lh=RIF.lhP;Lh.position.set(0,lerp(-0.045,my,wl),lerp(-0.19,-0.03,wl));Lh.rotation.set(0,0,lerp(0,-0.15,wl));}
+   const my=RIF.mag.position.y-0.04;const Lh=RIF.lhP;Lh.position.set(0,lerp(-0.045,my,wl),lerp(-0.19,-0.03,wl));Lh.rotation.set(0,0,lerp(0,-0.15,wl));
+   RIF.wR=w;RIF.wL=wl;}
   pos.y-=0.45*VM.deadW;
   if(RD&&RD.root){pos.set(RD.root[0],RD.root[1],RD.root[2]);rx=RD.root[3];ry=RD.root[4];rz=RD.root[5];}
   WROOT.position.copy(pos);WROOT.rotation.set(rx,ry,rz);
   // hidden exactly when the scope picture appears: the rifle can never cover the sight
   WROOT.visible=LOAD.active==='rifle'&&WCORE.ads<GUNCFG.scopeAt;
   RIF.arms.grp.visible=WROOT.visible&&(state==='playing'||state==='dead'||state==='paused');
+  if(RIF.arms.grp.visible&&VMA.R){RIF.arms.grp.visible=false;WROOT.updateMatrixWorld(true);updateRifleArms(RIF.wR||0,RIF.wL||0);}
   if(RIF.arms.grp.visible){WROOT.updateMatrixWorld(true);HANDS.place(RIF.arms.R,RIF.rh.g,RIF.rh.wrist,0.26,-0.42,0.08);HANDS.place(RIF.arms.L,RIF.lh.g,RIF.lh.wrist,-0.15,-0.46,-0.18);}
   updateKnifeVM(dt);updatePistolVM(dt);updateShotgunVM(dt);
   if(WS.flashT>0)WS.flashT-=dt;
@@ -2903,10 +2928,11 @@ function updateKnifeVM(dt){
   KROOT.visible=LOAD.active==='knife';
   if(!KROOT.visible)return;
   const k=LOAD.knife;let o={x:0,y:0,z:0,rx:0,ry:0,rz:0},tw=0;
-  if(LOAD.phase==='draw')o=SDMelee.drawPose(LOAD.t/KCFG.draw);
-  else if(LOAD.phase==='holster')o=SDMelee.drawPose(1-LOAD.t/KCFG.holster);
-  else if(k.state==='attack')o=SDMelee.slashPose(k.t/KCFG.interval,k.side);
-  else if(k.state==='inspect'){o=SDMelee.inspectPose(k.t/KCFG.inspect);tw=o.twirl;}
+  const M=VMA.K?SDVM:null;
+  if(LOAD.phase==='draw')o=M?M.knifeDraw(LOAD.t/KCFG.draw):SDMelee.drawPose(LOAD.t/KCFG.draw);
+  else if(LOAD.phase==='holster')o=M?M.knifeDraw(1-LOAD.t/KCFG.holster):SDMelee.drawPose(1-LOAD.t/KCFG.holster);
+  else if(k.state==='attack')o=M?M.knifeSlash(k.t/KCFG.interval,k.side):SDMelee.slashPose(k.t/KCFG.interval,k.side);
+  else if(k.state==='inspect'){if(M)o=M.knifeInspect(k.t/KCFG.inspect);else{o=SDMelee.inspectPose(k.t/KCFG.inspect);tw=o.twirl;}}
   const sw=VM.sprintW,sl=VM.slideW,bob=P.bob*MOTION*FEEL.vmBob,bm=PM.sprinting?1.8:1;
   KROOT.position.set(
     KBASE.x+o.x-0.03*sw+Math.cos(P.stepPhase)*0.012*bob*bm+WS.swayX,
@@ -2914,6 +2940,11 @@ function updateKnifeVM(dt){
     KBASE.z+o.z+0.03*sw);
   KROOT.rotation.set(KBASE.rx+o.rx-0.35*sw+WS.swayY*1.2,KBASE.ry+o.ry+WS.swayX*1.4,KBASE.rz+o.rz+0.2*sw+0.3*sl-P.lean*0.08);
   KNIFE.rotation.z=tw;
+  if(VMA.K){KROOT.position.y+=0.03;KROOT.position.x-=0.01;KROOT.updateMatrixWorld(true);
+    // the fist stays on the handle (the knife spins in the fingers during the inspect, the hand does not)
+    const rig=VMA.rig,A=SDVM.ARMPOSE.knife;rig.root.visible=true;rig.sides.L.arm.visible=false;rig.sides.R.lean=A.lean;
+    const H=handAt(A.R,KROOT.matrixWorld,_hp[0]);
+    SDVM.poseArm(rig.sides.R,_sR.fromArray(A.shoulder.R),H.p,H.q,_pR.fromArray(A.pole.R).normalize(),H.f);rig.sides.R.lean=null;}
 }
 
 /* =================== DEBUG PANEL (F3) =================== */

@@ -105,7 +105,7 @@ def armour(s, M, prefix):
     sol = c.modifiers.new('sol', 'SOLIDIFY'); sol.thickness = 0.002
     apply_mods(c)
     smooth(c, 60)
-    out.append((c, 'hand'))
+    out.append((c, 'fore'))
     return out
 
 def sleeve(prefix, M, y0, y1, r0, r1, folds, name):
