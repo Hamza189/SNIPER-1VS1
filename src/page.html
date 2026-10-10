@@ -1026,6 +1026,70 @@ const RIF={};
 const ENV=(()=>{const face=(top,mid,bot)=>{const c=document.createElement('canvas');c.width=c.height=64;const g=c.getContext('2d');if(g){const gr=g.createLinearGradient(0,0,0,64);gr.addColorStop(0,top);gr.addColorStop(0.5,mid);gr.addColorStop(1,bot);g.fillStyle=gr;g.fillRect(0,0,64,64);}return c;};
   const side=()=>face('#7d8fb0','#f1c08e','#b08a5e');
   const t=new T.CubeTexture([side(),side(),face('#9fb4d8','#9fb4d8','#9fb4d8'),face('#9a7a52','#9a7a52','#9a7a52'),side(),side()]);t.needsUpdate=true;return t;})();
+/* ---- hands for the viewmodels: gloved hands built from rounded pieces (palm, finger segments,
+   thumb, wrist) and forearms that are NOT glued to the gun: every frame each sleeve runs from the
+   wrist to an elbow that stays below the screen (HANDS.place), so turning the weapon never swings
+   a stiff sleeve across the view. Shared by the rifle, the shotgun and the pistol. ---- */
+const HANDS=(()=>{
+  const glove=new T.MeshStandardMaterial({color:0x2f2b26,roughness:.85}),gloveK=new T.MeshStandardMaterial({color:0x3a3530,roughness:.9});
+  const sleeve=new T.MeshStandardMaterial({color:0x4d4a37,roughness:.95}),cuff=new T.MeshStandardMaterial({color:0x23211d,roughness:.9});
+  const _u=new T.Vector3(0,1,0),sph=new T.SphereGeometry(1,14,10);
+  const E=(rx,ry,rz,m,x,y,z,par)=>{const o=new T.Mesh(sph,m);o.scale.set(rx,ry,rz);o.position.set(x,y,z);par.add(o);return o;};
+  const L=(a,b,r1,r2,m,par)=>{const A=new T.Vector3(...a),Bv=new T.Vector3(...b),d=Bv.clone().sub(A),len=d.length();
+    const o=new T.Mesh(new T.CylinderGeometry(r2,r1,len,10),m);o.position.copy(A).addScaledVector(d,0.5);o.quaternion.setFromUnitVectors(_u,d.normalize());par.add(o);
+    E(r1,r1,r1,m,A.x,A.y,A.z,par);E(r2,r2,r2,m,Bv.x,Bv.y,Bv.z,par);return o;};
+  // right hand round a pistol grip. Local frame: origin = top centre of the grip, the grip runs down -y,
+  // -z = its front. hw/hd = half width / half depth of the grip. trig = trigger point in this frame.
+  function grip(par,hw,hd,trig){
+    const g=new T.Group();par.add(g);
+    E(0.017,0.043,0.031,glove,hw*0.65,-0.05,hd*0.5,g);
+    E(0.014,0.017,0.017,glove,0.004,-0.008,hd+0.002,g);
+    for(const [y,r] of [[-0.044,0.0092],[-0.065,0.009],[-0.085,0.008]]){
+      L([hw+0.002,y,-hd*0.4],[-hw+0.004,y,-hd-0.006],r,r*0.95,glove,g);
+      L([-hw+0.004,y,-hd-0.006],[-hw-0.004,y-0.002,-hd*0.25],r*0.95,r*0.85,gloveK,g);
+    }
+    L([-hw+0.002,-0.026,hd*0.7],[-hw-0.002,-0.01,-hd-0.015],0.009,0.0078,glove,g);                       // thumb over the left side
+    if(trig){L([hw+0.002,-0.024,-hd*0.3],[hw+0.002,trig[1]+0.002,trig[2]+0.012],0.0082,0.0076,glove,g);
+      L([hw+0.002,trig[1]+0.002,trig[2]+0.012],[trig[0]+0.004,trig[1],trig[2]],0.0076,0.007,gloveK,g);}
+    L([0.004,-0.088,hd*0.8],[0.01,-0.104,hd+0.03],0.022,0.024,glove,g);
+    return {g,wrist:new T.Vector3(0.01,-0.104,hd+0.03)};
+  }
+  // left hand under a handguard / pump: palm under it, fingers up its right side, thumb up its left
+  // side. Local frame: origin = bottom centre of the handguard, -z = forward, hw = half width.
+  function support(par,hw){
+    const g=new T.Group();par.add(g);
+    E(0.031,0.014,0.046,glove,-0.004,-0.013,0.004,g);
+    for(const [z,r] of [[-0.03,0.0086],[-0.011,0.0088],[0.008,0.0086],[0.025,0.0076]]){
+      L([0.016,-0.015,z],[hw+0.006,0.002,z],r,r*0.95,glove,g);
+      L([hw+0.006,0.002,z],[hw+0.003,0.022,z-0.002],r*0.95,r*0.85,gloveK,g);
+    }
+    L([-0.018,-0.012,0.03],[-hw-0.007,0.008,0.0],0.0095,0.0085,glove,g);
+    L([-hw-0.007,0.008,0.0],[-hw-0.004,0.024,-0.024],0.0085,0.0075,gloveK,g);
+    L([-0.008,-0.02,0.046],[-0.012,-0.028,0.07],0.022,0.024,glove,g);
+    return {g,wrist:new T.Vector3(-0.012,-0.028,0.07)};
+  }
+  // a hand holding a small round thing (a shotgun shell) between thumb and fingers
+  function pinch(par){
+    const g=new T.Group();par.add(g);
+    E(0.03,0.016,0.036,glove,0,-0.03,0.03,g);
+    for(const [x,r] of [[-0.018,0.0084],[-0.004,0.0088],[0.01,0.0086],[0.023,0.0076]]){L([x,-0.026,0.004],[x*0.8,-0.016,-0.018],r,r*0.92,glove,g);L([x*0.8,-0.016,-0.018],[x*0.6,-0.004,-0.022],r*0.92,r*0.82,gloveK,g);}
+    L([-0.026,-0.03,0.03],[-0.02,-0.008,0.006],0.0095,0.0085,glove,g);
+    L([0.0,-0.04,0.06],[0.004,-0.048,0.085],0.022,0.024,glove,g);
+    return {g,wrist:new T.Vector3(0.004,-0.048,0.085)};
+  }
+  function arms(){const grp=new T.Group();wScene.add(grp);grp.visible=false;
+    const one=()=>{const g=new T.Group();grp.add(g);const sg=new T.CylinderGeometry(0.037,0.027,1,12);sg.translate(0,0.5,0);const s=new T.Mesh(sg,sleeve);g.add(s);
+      const cg=new T.CylinderGeometry(0.029,0.026,0.05,12);cg.translate(0,0.028,0);g.add(new T.Mesh(cg,cuff));return {g,s};};
+    return {grp,R:one(),L:one()};}
+  const _w=new T.Vector3(),_e=new T.Vector3(),_d=new T.Vector3();
+  // one forearm from a wrist point (local to obj) to an elbow anchor (viewmodel camera space)
+  function place(A,obj,wrist,ex,ey,ez){
+    _w.copy(wrist).applyMatrix4(obj.matrixWorld);
+    _e.set(ex+_w.x*0.35,ey+(_w.y+0.1)*0.3,ez+_w.z*0.15);_d.copy(_e).sub(_w);const len=_d.length();
+    A.g.position.copy(_w);A.g.quaternion.setFromUnitVectors(_u,_d.divideScalar(len));A.s.scale.y=len;
+  }
+  return {glove,gloveK,sleeve,cuff,grip,support,pinch,arms,place};
+})();
 (function buildRifle(){
   const metal=new T.MeshStandardMaterial({color:0x474b50,metalness:.55,roughness:.36,envMap:ENV,envMapIntensity:.9});
   const metal2=new T.MeshStandardMaterial({color:0x5c6168,metalness:.45,roughness:.45,envMap:ENV,envMapIntensity:.8});
@@ -1091,12 +1155,13 @@ const ENV=(()=>{const face=(top,mid,bot)=>{const c=document.createElement('canva
   const bh=new T.Mesh(new T.CylinderGeometry(0.0055,0.0055,0.06,8),metal);bh.rotation.z=Math.PI/2;bh.position.set(0.03,0,0);bolt.add(bh);
   const bk=new T.Mesh(new T.SphereGeometry(0.015,14,10),metal2);bk.position.set(0.064,-0.004,0);bolt.add(bk);
   const bb=new T.Mesh(new T.CylinderGeometry(0.009,0.009,0.1,10),metal);bb.rotation.x=Math.PI/2;bb.position.set(-0.012,0,0.02);bolt.add(bb);
-  // hands & sleeves
-  B(0.075,0.05,0.11,glove,0,-0.062,-0.30);
-  const lfa=B(0.085,0.085,0.42,sleeve,-0.07,-0.17,-0.1);lfa.rotation.set(0.45,0.3,0);
-  B(0.062,0.09,0.08,glove,0.004,-0.088,0.135);
-  B(0.02,0.018,0.04,glove,0.012,-0.05,0.07);
-  const rfa=B(0.09,0.09,0.38,sleeve,0.05,-0.17,0.33);rfa.rotation.set(0.55,-0.1,0);
+  // hands: right hand on the grip (it leaves to work the bolt), left hand under the handguard
+  // (it goes down for the magazine in the reload); forearms are placed every frame (HANDS.place)
+  RIF.rhP=new T.Group();RIF.rhP.position.set(0,-0.03,0.104);RIF.rhP.rotation.x=-0.35;GUN.add(RIF.rhP);RIF.rh=HANDS.grip(RIF.rhP,0.019,0.025,[0,0.001,-0.046]);
+  RIF.lhP=new T.Group();RIF.lhP.position.set(0,-0.045,-0.19);GUN.add(RIF.lhP);RIF.lh=HANDS.support(RIF.lhP,0.032);
+  RIF.arms=HANDS.arms();
+  RIF.knob=new T.Vector3();
+  RIF.KH=[0.012,0.05,0.02,0.1,0,-0.45];   // hand on the bolt knob: offset from the knob + rotation
   // muzzle flash
   RIF.flash=new T.Sprite(new T.SpriteMaterial({map:flashTex,transparent:true,depthWrite:false,blending:T.AdditiveBlending,color:0xffd5a0}));
   RIF.flash.position.set(0,0.004,-0.8);RIF.flash.scale.set(0.32,0.32,1);RIF.flash.visible=false;GUN.add(RIF.flash);
@@ -1389,18 +1454,15 @@ const SHO={};
   B(0.054,0.05,0.18,woodDk,0,0,0,SHO.pump);
   for(let i=0;i<7;i++)B(0.056,0.006,0.008,dark,0,-0.006,-0.07+i*0.023,SHO.pump);
   SHO.lh=new T.Group();SHO.pump.add(SHO.lh);
-  B(0.07,0.05,0.1,glove,0,-0.035,0,SHO.lh);
-  const lfa=B(0.07,0.07,0.4,sleeve,-0.07,-0.16,0.2,SHO.lh);lfa.rotation.set(0.5,0.3,0);
-  // right hand on the grip, trigger finger, sleeve
-  B(0.062,0.09,0.08,glove,0.004,-0.088,0.15);
-  B(0.02,0.018,0.04,glove,0.012,-0.05,0.08);
-  const rfa=B(0.075,0.075,0.36,sleeve,0.06,-0.18,0.35);rfa.rotation.set(0.6,-0.1,0);
-  // the loading hand (only while reloading): glove with a shell, pushes it into the port
+  {const s=new T.Group();s.position.y=-0.025;SHO.lh.add(s);SHO.lhH=HANDS.support(s,0.027);}
+  // right hand on the grip, index finger on the trigger
+  {const s=new T.Group();s.position.set(0,-0.029,0.1206);s.rotation.x=-0.4;SHO.gun.add(s);SHO.rh=HANDS.grip(s,0.018,0.025,[0,0.006,-0.05]);}
+  // the loading hand (only while reloading): a shell between thumb and fingers, pushed into the port
   SHO.load=new T.Group();SHO.gun.add(SHO.load);SHO.load.visible=false;
-  B(0.065,0.045,0.08,glove,0,-0.032,0.01,SHO.load);
+  SHO.loadH=HANDS.pinch(SHO.load);
   SHO.shell=new T.Group();SHO.load.add(SHO.shell);
   C(0.0105,0.0105,0.065,shellM,0,0,-0.02,SHO.shell,10);C(0.011,0.011,0.012,brass,0,0,0.017,SHO.shell,10);
-  const lfa2=B(0.085,0.085,0.42,sleeve,-0.06,-0.14,0.2,SHO.load);lfa2.rotation.set(0.6,0.35,0);
+  SHO.arms=HANDS.arms();
   SHO.flash=new T.Sprite(new T.SpriteMaterial({map:flashTex,transparent:true,depthWrite:false,blending:T.AdditiveBlending,color:0xffc27a}));
   SHO.flash.position.set(0,0.018,-0.69);SHO.flash.scale.set(0.42,0.42,1);SHO.flash.visible=false;SHO.gun.add(SHO.flash);
   SHO.muzzle=new T.Vector3(0,0.018,-0.64);SHO.eject=new T.Vector3(0.03,0.01,-0.02);
@@ -1408,6 +1470,7 @@ const SHO={};
 const SHIP={x:0.15,y:-0.15,z:-0.43,rx:0.02,ry:0.05},SADS={x:0,y:-0.04,z:-0.5};
 function updateShotgunVM(dt){
   SROOT.visible=LOAD.active==='shotgun'&&(state==='playing'||state==='dead'||state==='paused');
+  SHO.arms.grp.visible=false;
   if(!SROOT.visible)return;
   const ads=ss(SCORE.ads),free=1-ads;
   let x=lerp(SHIP.x,SADS.x,ads),y=lerp(SHIP.y,SADS.y,ads),z=lerp(SHIP.z,SADS.z,ads),rx=SHIP.rx*free,ry=SHIP.ry*free,rz=0;
@@ -1441,6 +1504,9 @@ function updateShotgunVM(dt){
   SHO.stock.position.y=-0.09*ads;SHO.stock.rotation.x=0.25*ads;SHO.stock.visible=ads<0.95;
   SROOT.position.set(x,y,z);SROOT.rotation.set(rx,ry,rz);
   SHO.flash.visible=WS.flashT>0;
+  SHO.arms.grp.visible=true;SROOT.updateMatrixWorld(true);
+  HANDS.place(SHO.arms.R,SHO.rh.g,SHO.rh.wrist,0.26,-0.42,0.08);
+  if(rw<0.5)HANDS.place(SHO.arms.L,SHO.lhH.g,SHO.lhH.wrist,-0.15,-0.46,-0.18);else HANDS.place(SHO.arms.L,SHO.loadH.g,SHO.loadH.wrist,-0.15,-0.46,-0.1);
 }
 // the empty shells the pump throws out (red, brass base)
 const SHELLS=[];{const sm=new T.MeshStandardMaterial({color:0xb3261e,roughness:.55}),bm=new T.MeshStandardMaterial({color:0xc9a04a,metalness:.85,roughness:.3});
@@ -2492,6 +2558,8 @@ function updateCamera(dt,alpha){
 
 /* =================== VIEWMODEL (per rendered frame) =================== */
 const _hip=new T.Vector3(0.15,-0.143,-0.395),_adsP=new T.Vector3(0,-0.068,-0.27);
+const R_RELOAD=[[0,[0,0,0,0,0,0]],[0.1,[-0.11,0.123,-0.125,0.35,0.25,-0.9]],[0.55,[-0.112,0.125,-0.125,0.37,0.26,-0.92]],[0.58,[-0.112,0.13,-0.12,0.4,0.26,-0.88]],
+  [0.65,[-0.045,0.015,0,0.06,0.06,0.3]],[0.92,[-0.045,0.015,0,0.06,0.06,0.3]],[1,[0,0,0,0,0,0]]];
 function updateViewmodel(dt){
   const ads=ss(WCORE.ads),free=1-ads;
   const pos=_hip.clone().lerp(_adsP,ads);
@@ -2518,17 +2586,33 @@ function updateViewmodel(dt){
   if(LOAD.active==='rifle'&&LOAD.phase==='draw'){const p=1-ss(LOAD.t/SD_CONFIG.loadout.rifleDraw);pos.y-=p*0.32;rx-=p*0.9;rz+=p*0.3;}
   // bolt and reload follow the exact weapon timeline (same keys as the sounds)
   let lift=0,back=0;
-  if(WCORE.state==='bolt'){const bp=SDWeapon.boltPose(WCORE.t/GUNCFG.bolt,GUNCFG.boltKeys);lift=bp.lift;back=bp.back;const tl=bp.tilt*free;rz+=tl*0.28;rx+=tl*0.06;pos.x-=tl*0.02;}
+  if(WCORE.state==='bolt'){const bp=SDWeapon.boltPose(WCORE.t/GUNCFG.bolt,GUNCFG.boltKeys);lift=bp.lift;back=bp.back;const tl=bp.tilt*free;rz+=tl*0.3;rx+=tl*0.06;pos.x-=tl*0.045;pos.y+=tl*0.015;ry+=tl*0.06;}
   if(WCORE.state==='reload'){
-    const rp=SDWeapon.reloadPose(WCORE.t/GUNCFG.reload,GUNCFG);const tl=rp.tilt;
-    rz+=tl*0.42;rx+=tl*0.1;pos.y-=tl*0.06;pos.x-=tl*0.05;ry+=tl*0.12;
+    const rp=SDWeapon.reloadPose(WCORE.t/GUNCFG.reload,GUNCFG);
+    // rolled up and in to show the magazine well, then back to the bolt pose for the bolt
+    const g=trk(WCORE.t/GUNCFG.reload,R_RELOAD);pos.x+=g[0];pos.y+=g[1];pos.z+=g[2];rx+=g[3];ry+=g[4];rz+=g[5];
     RIF.mag.position.y=RIF.magY-rp.magDrop*0.26;RIF.mag.visible=rp.magVisible;lift=rp.lift;back=rp.back;
   }else{RIF.mag.position.y=RIF.magY;RIF.mag.visible=true;}
+  const RD=RIF.debug;
+  if(RD&&RD.bolt!==undefined){const bp=SDWeapon.boltPose(RD.bolt,GUNCFG.boltKeys);lift=bp.lift;back=bp.back;}
+  if(RD&&RD.reload!==undefined){const rp=SDWeapon.reloadPose(RD.reload,GUNCFG);const g=trk(RD.reload,R_RELOAD);pos.x+=g[0];pos.y+=g[1];pos.z+=g[2];rx+=g[3];ry+=g[4];rz+=g[5];RIF.mag.position.y=RIF.magY-rp.magDrop*0.26;RIF.mag.visible=rp.magVisible;lift=rp.lift;back=rp.back;}
   RIF.bolt.rotation.z=lift*1.15;RIF.bolt.position.z=0.08+back*0.085;
+  // right hand: off the grip onto the bolt knob for the cycle (and for the reload's bolt), then back
+  {const bolting=WCORE.state==='bolt'||(RD&&RD.bolt!==undefined),reloading=WCORE.state==='reload'||(RD&&RD.reload!==undefined);
+   const p=RD&&RD.bolt!==undefined?RD.bolt:RD&&RD.reload!==undefined?RD.reload:bolting?WCORE.t/GUNCFG.bolt:reloading?WCORE.t/GUNCFG.reload:0;
+   let w=0;if(bolting)w=seg(p,0,0.1)*(1-seg(p,0.84,1));else if(reloading)w=seg(p,0.55,0.62)*(1-seg(p,0.94,1));
+   const a=lift*1.15,K=RIF.knob.set(0.024+0.064*Math.cos(a)+0.004*Math.sin(a),0.012+0.064*Math.sin(a)-0.004*Math.cos(a),0.08+back*0.085);
+   const R=RIF.rhP;R.position.set(lerp(0,K.x+RIF.KH[0],w),lerp(-0.03,K.y+RIF.KH[1],w),lerp(0.104,K.z+RIF.KH[2],w));R.rotation.set(lerp(-0.35,RIF.KH[3],w),lerp(0,RIF.KH[4],w),lerp(0,RIF.KH[5]+a*0.5,w));
+   // left hand: down to the magazine, rides it out and back in with the new one, back to the handguard
+   let wl=0;if(reloading)wl=seg(p,0.04,0.12)*(1-seg(p,0.55,0.63));
+   const my=RIF.mag.position.y-0.04;const Lh=RIF.lhP;Lh.position.set(0,lerp(-0.045,my,wl),lerp(-0.19,-0.03,wl));Lh.rotation.set(0,0,lerp(0,-0.15,wl));}
   pos.y-=0.45*VM.deadW;
+  if(RD&&RD.root){pos.set(RD.root[0],RD.root[1],RD.root[2]);rx=RD.root[3];ry=RD.root[4];rz=RD.root[5];}
   WROOT.position.copy(pos);WROOT.rotation.set(rx,ry,rz);
   // hidden exactly when the scope picture appears: the rifle can never cover the sight
   WROOT.visible=LOAD.active==='rifle'&&WCORE.ads<GUNCFG.scopeAt;
+  RIF.arms.grp.visible=WROOT.visible&&(state==='playing'||state==='dead'||state==='paused');
+  if(RIF.arms.grp.visible){WROOT.updateMatrixWorld(true);HANDS.place(RIF.arms.R,RIF.rh.g,RIF.rh.wrist,0.26,-0.42,0.08);HANDS.place(RIF.arms.L,RIF.lh.g,RIF.lh.wrist,-0.15,-0.46,-0.18);}
   updateKnifeVM(dt);updatePistolVM(dt);updateShotgunVM(dt);
   if(WS.flashT>0)WS.flashT-=dt;
   RIF.flash.visible=WS.flashT>0&&WROOT.visible;
@@ -3067,6 +3151,6 @@ function frameBody(now){
 }
 resize();
 requestAnimationFrame(frame);
-window.__SD={freeze(on){SIM_FREEZE=!!on;},PIS,PROOT,MANUAL,advance(ms){frameBody(last+ms);},get LAST_PELLETS(){return LAST_PELLETS;},SCORE,SCFG,SROOT,SHO,setPrimaryChoice,get PRIMARY(){return PRIMARY;},PCORE,PCFG,setWorld,WORLDS,get WORLD_ID(){return WORLD_ID;},renderer,GFX,gfxApply,get NET(){return NET;},get REMOTE(){return REMOTE;},W,get NAV(){return NAV;},setOffMap,get OFFMAP(){return OFFMAP;},TOUCH,EDIT,openEditor,get SETTINGS(){return SETTINGS;},get LAYOUT(){return LAYOUT;},checkOrientation,MAT,LOAD,TRAINERS,get RANGE_BOTS(){return RANGE_BOTS;},TRAIN,setTrain,impactFX,surfaceOf,soundDelay,aimSelfTest,P,PM,WS,WCORE,RECOIL,AIM,BOTS,DUMMIES,BULLETS,EVENTS,PARTS,STATS,get state(){return state;},get mode(){return mode;},setMode,input,startMatch,simTick,frame,toMenu,pause,resume};
+window.__SD={freeze(on){SIM_FREEZE=!!on;},PIS,PROOT,RIF,WROOT,SHO_:null,MANUAL,advance(ms){frameBody(last+ms);},get LAST_PELLETS(){return LAST_PELLETS;},SCORE,SCFG,SROOT,SHO,setPrimaryChoice,get PRIMARY(){return PRIMARY;},PCORE,PCFG,setWorld,WORLDS,get WORLD_ID(){return WORLD_ID;},renderer,GFX,gfxApply,get NET(){return NET;},get REMOTE(){return REMOTE;},W,get NAV(){return NAV;},setOffMap,get OFFMAP(){return OFFMAP;},TOUCH,EDIT,openEditor,get SETTINGS(){return SETTINGS;},get LAYOUT(){return LAYOUT;},checkOrientation,MAT,LOAD,TRAINERS,get RANGE_BOTS(){return RANGE_BOTS;},TRAIN,setTrain,impactFX,surfaceOf,soundDelay,aimSelfTest,P,PM,WS,WCORE,RECOIL,AIM,BOTS,DUMMIES,BULLETS,EVENTS,PARTS,STATS,get state(){return state;},get mode(){return mode;},setMode,input,startMatch,simTick,frame,toMenu,pause,resume};
 })();
 </script>
