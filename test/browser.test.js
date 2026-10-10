@@ -80,7 +80,7 @@ const shown = page => page.evaluate(ids => ids.filter(id => { const e = document
       const head = res[0] || '';
       check('autotest de puntería con el motor real: 0 fallidas', /✔ AUTOTEST/.test(head), head.replace(/^. /, ''));
       // VÍBORA 9 with the real keyboard and mouse (waits on the game state: without a GPU the frames are slow)
-      const wf = (fn, ms) => page.waitForFunction(fn, null, { timeout: ms || 8000, polling: 50 }).then(() => true, () => false);
+      const wf = (fn, ms) => page.waitForFunction(fn, null, { timeout: ms || 20000, polling: 50 }).then(() => true, () => false);
       await page.keyboard.press('Digit2');
       await wf(() => __SD.LOAD.active === 'pistol' && __SD.LOAD.phase === 'ready' && __SD.PCORE.state === 'ready');
       const pv = await page.evaluate(() => ({ a: __SD.LOAD.active, ph: __SD.LOAD.phase, name: document.getElementById('wname').textContent, ammo: document.getElementById('ammoNum').textContent }));
@@ -190,12 +190,12 @@ const shown = page => page.evaluate(ids => ids.filter(id => { const e = document
       check('R: carga cartucho a cartucho (5 → 6, uno cada ' + 0.4 + ' s)', await wf(() => __SD.SCORE.state === 'reload', 8000) && await wf(() => __SD.SCORE.ammo === 6 && __SD.SCORE.state === 'ready', 20000));
       // empty it, start a reload, shoot after two shells: it stops and fires
       await page.evaluate(() => { __SD.SCORE.ammo = 0; });
-      await page.keyboard.press('KeyR'); await wf(() => __SD.SCORE.state === 'reload' && __SD.SCORE.ammo === 1, 4000); await snap('furia-recarga');
-      await wf(() => __SD.SCORE.ammo === 2, 4000);
+      await page.keyboard.press('KeyR'); await wf(() => __SD.SCORE.state === 'reload' && __SD.SCORE.ammo === 1, 10000); await snap('furia-recarga');
+      await wf(() => __SD.SCORE.ammo === 2, 10000);
       const sh0 = await page.evaluate(() => __SD.STATS.shots);
       const dbg0 = await page.evaluate(() => ({ lock: !!document.pointerLockElement, st: __SD.SCORE.state, ammo: __SD.SCORE.ammo, state: __SD.state }));
       await page.mouse.down(); const dbg1 = await page.evaluate(() => ({ fp: __SD.input.firePressed, stop: __SD.SCORE.stop, ammo: __SD.SCORE.ammo })); await page.waitForTimeout(80); await page.mouse.up();
-      const cut = await wf(n => __SD.STATS.shots === n + 1, 3000, sh0), left = await page.evaluate(() => ({ ammo: __SD.SCORE.ammo, st: __SD.SCORE.state }));
+      const cut = await page.waitForFunction(n => __SD.STATS.shots === n + 1, sh0, { timeout: 10000, polling: 50 }).then(() => true, () => false), left = await page.evaluate(() => ({ ammo: __SD.SCORE.ammo, st: __SD.SCORE.state }));
       check('a media recarga, un clic la corta y dispara (sin esperar al tubo lleno)', cut && left.ammo < 5 && left.st !== 'reload', JSON.stringify(left));
       if (!(cut && left.ammo < 5)) console.log('       diagnóstico: antes ' + JSON.stringify(dbg0) + ' · al pulsar ' + JSON.stringify(dbg1));
       await page.keyboard.press('Digit2'); await wf(() => __SD.LOAD.active === 'pistol' && __SD.LOAD.phase === 'ready');
@@ -239,6 +239,33 @@ const shown = page => page.evaluate(ids => ids.filter(id => { const e = document
       await page.evaluate(() => { __SD.setMode('range'); __SD.startMatch(); }); await page.waitForTimeout(1200);
       const t = await page.evaluate(() => { const e = document.getElementById('touch'); return e && e.checkVisibility(); });
       check('al jugar aparecen los controles táctiles', t);
+      // real multi-touch (Chromium touch events → pointer events): hold MIRA and drag that same finger,
+      // fire with a second finger, keep aiming, lift MIRA
+      { const cdp = await ctx.newCDPSession(page);
+        const c = await page.evaluate(() => { const r = n => { const b = document.querySelector('[data-btn="' + n + '"]').getBoundingClientRect(); return [b.left + b.width / 2, b.top + b.height / 2]; }; return { m: r('scope'), f: r('fire') }; });
+        const wf = (fn, ms) => page.waitForFunction(fn, null, { timeout: ms || 15000, polling: 50 }).then(() => true, () => false);
+        const T1 = (x, y) => ({ x, y, id: 1, radiusX: 4, radiusY: 4 }), T2 = { x: c.f[0], y: c.f[1], id: 2, radiusX: 4, radiusY: 4 };
+        await page.waitForTimeout(800);
+        await cdp.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: [T1(c.m[0], c.m[1])] });
+        const inScope = await wf(() => __SD.WCORE.ads >= 0.99);
+        const y0 = await page.evaluate(() => __SD.P.yaw);
+        for (let i = 1; i <= 8; i++) { await cdp.send('Input.dispatchTouchEvent', { type: 'touchMove', touchPoints: [T1(c.m[0] - 30 + i * 5, c.m[1] - i)] }); await page.waitForTimeout(40); }
+        await wf(() => true); await page.waitForTimeout(300);
+        const y1 = await page.evaluate(() => __SD.P.yaw);
+        check('móvil real: mantener MIRA entra en el visor y arrastrar ese dedo gira la cámara', inScope && y1 !== y0, ((y1 - y0) * 1000).toFixed(1) + ' mrad');
+        const s0 = await page.evaluate(() => __SD.STATS.shots);
+        await cdp.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: [T1(c.m[0] + 10, c.m[1] - 8), T2] });
+        await page.waitForTimeout(250);
+        await cdp.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [T2] });   // (CDP: touchEnd lists the fingers that lift)
+        const shot = await wf(() => __SD.STATS.shots > 0, 8000) && (await page.evaluate(() => __SD.STATS.shots)) - s0 === 1;
+        const y2 = await page.evaluate(() => __SD.P.yaw);
+        for (let i = 1; i <= 5; i++) { await cdp.send('Input.dispatchTouchEvent', { type: 'touchMove', touchPoints: [T1(c.m[0] + 10 + i * 6, c.m[1] - 8)] }); await page.waitForTimeout(40); }
+        await page.waitForTimeout(300);
+        const y3 = await page.evaluate(() => __SD.P.yaw), stillScoped = await page.evaluate(() => __SD.WCORE.ads > 0.5 || __SD.WCORE.state === 'bolt');
+        check('móvil real: disparar con otro dedo sin soltar MIRA, y seguir apuntando después', shot && y3 < y2 && stillScoped, JSON.stringify({ shot, turn: +((y3 - y2) * 1000).toFixed(1) }));
+        await cdp.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [T1(c.m[0] + 40, c.m[1] - 8)] });
+        check('móvil real: soltar MIRA sale del visor', await wf(() => __SD.WCORE.ads === 0));
+      }
       await page.setViewportSize({ width: 390, height: 844 }); await page.waitForTimeout(600);
       const ov2 = await shown(page);
       check('en vertical sale el aviso GIRA EL MÓVIL', ov2.includes('rotate'), ov2.join(', '));

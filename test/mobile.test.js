@@ -142,5 +142,31 @@ console.log('\nGRÁFICOS (etapa C)');
   check('ajustes de gráficos: valores raros vuelven al defecto (AUTO, 60, sin contador)', st.quality === 'auto' && st.fpsCap === 60 && st.showFps === false);
 }
 
+console.log('\nMIRA MANTENIDA: EL MISMO DEDO APUNTA');
+{ const c = TS.create();
+  TS.down(c, { id: 5, x: 700, y: 300, button: 'scope', W: 844 }); TS.move(c, { id: 5, x: 720, y: 290 });
+  let d = TS.drain(c);
+  check('el dedo que mantiene MIRA gira la cámara al arrastrarlo', d.dx > 0 && d.dy < 0, d.dx.toFixed(1) + ',' + d.dy.toFixed(1));
+  TS.down(c, { id: 6, x: 780, y: 320, button: 'fire', W: 844 }); TS.move(c, { id: 5, x: 740, y: 290 }); TS.up(c, 6);
+  d = TS.drain(c);
+  check('un segundo dedo en FUEGO no le roba el apuntado', Math.abs(d.dx - 20 * c.cfg.lookGain) < 1e-9, d.dx.toFixed(2));
+  const r = TS.up(c, 5); TS.move(c, { id: 5, x: 800, y: 290 });
+  check('al soltar MIRA se libera el botón y ese dedo deja de girar', r.release === 'scope' && TS.drain(c).dx === 0);
+  const c2 = TS.create(); c2.dragScope = false;
+  TS.down(c2, { id: 1, x: 700, y: 300, button: 'scope', W: 844 }); TS.move(c2, { id: 1, x: 740, y: 300 });
+  check('modo MANTENER: el dedo de MIRA no gira', TS.drain(c2).dx === 0);
+  const c3 = TS.create({ dead: 4 });
+  TS.down(c3, { id: 1, x: 600, y: 200, button: null, W: 844 }); TS.move(c3, { id: 1, x: 602, y: 201 });
+  check('zona muerta: un temblor al apoyar el dedo no gira', TS.drain(c3).dx === 0);
+  TS.move(c3, { id: 1, x: 610, y: 200 }); d = TS.drain(c3);
+  check('pasada la zona muerta solo cuenta lo recorrido de más (sin salto)', Math.abs(d.dx - 6 * c3.cfg.lookGain) < 1e-9, d.dx.toFixed(2));
+  const SS = require('../client/settings.js');
+  const st = SS.sanitize({ adsMode: 'raro', adsH: 9, smooth: -1, touchDead: 99 }, true);
+  check('ajustes de mira: valores raros se corrigen', st.adsMode === 'holdDrag' && st.adsH === 2 && st.smooth === 0 && st.touchDead === 12);
+  const base = SS.lookDelta(10, 0, SS.defaults(true), { fovRatio: 1, touch: true, ads: 0 }).yaw;
+  const aim = SS.lookDelta(10, 0, Object.assign(SS.defaults(true), { adsH: 1.5 }), { fovRatio: 1, touch: true, ads: 1 }).yaw;
+  check('MIRA HORIZONTAL solo cuenta al apuntar', Math.abs(aim / base - 1.5) < 1e-9);
+}
+
 console.log('\n' + pass + ' correctas, ' + fail + ' fallidas');
 process.exit(fail ? 1 : 0);

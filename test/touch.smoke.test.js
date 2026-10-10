@@ -44,6 +44,7 @@ console.log('\nCÁMARA Y DISPARO');
   SD.SETTINGS.sensH = 1;
 }
 { SD.SETTINGS.releaseFire = false; // classic mode: FIRE shoots on press
+  SD.SETTINGS.adsMode = 'toggle';   // MIRA as a switch (one of the three modes in Ajustes)
   H.frames(30, 16); const s0 = SD.STATS.shots;
   H.pointer('pointerdown', 3, 779, 325, 'fire'); H.frames(2, 16); H.pointer('pointerup', 3, 779, 325, 'fire'); H.frames(5, 16);
   check('tocar FUEGO dispara una vez', SD.STATS.shots - s0 === 1);
@@ -63,7 +64,7 @@ console.log('\nCÁMARA Y DISPARO');
 }
 
 console.log('\nMANTENER FUEGO = MIRA, SOLTAR = DISPARO (opción por defecto)');
-{ SD.SETTINGS.releaseFire = true;
+{ SD.SETTINGS.releaseFire = true; SD.SETTINGS.adsMode = 'toggle';
   check('la opción viene activada por defecto', require('../client/settings.js').DEFAULTS.releaseFire === true);
   H.frames(90, 16);
   const s0 = SD.STATS.shots, y0 = SD.P.yaw;
@@ -124,6 +125,65 @@ console.log('\nMANTENER FUEGO = MIRA, SOLTAR = DISPARO (opción por defecto)');
   H.fire('window', 'blur'); H.pointer('pointerup', 3, 779, 325, 'fire'); const pausedOnBlur = SD.state === 'paused';
   SD.resume(); H.frames(30, 16);
   check('el navegador pierde el foco con FUEGO pulsado: pausa y no dispara', pausedOnBlur && SD.STATS.shots === s6);
+}
+
+console.log('\nMIRA MANTENIDA Y ARRASTRAR (modo por defecto: MANTENER Y ARRASTRAR)');
+{ SD.SETTINGS.adsMode = require('../client/settings.js').DEFAULTS.adsMode; SD.SETTINGS.releaseFire = false;
+  check('el modo por defecto del botón MIRA es mantener y arrastrar', SD.SETTINGS.adsMode === 'holdDrag');
+  H.frames(90, 16);
+  // finger 4 holds MIRA: the scope comes up and stays while the finger is down
+  H.pointer('pointerdown', 4, 689, 327, 'scope'); H.frames(25, 16);
+  check('mantener MIRA: entra el visor', SD.WCORE.ads === 1, 'ads ' + SD.WCORE.ads.toFixed(2));
+  // the same finger, without lifting: drag right and up → the view turns right and up
+  const y0 = SD.P.yaw, p0 = SD.P.pitch;
+  H.pointer('pointermove', 4, 709, 317, 'scope'); H.frames(2, 16);
+  check('sin soltar MIRA, arrastrar a la derecha gira a la derecha', SD.P.yaw < y0, ((SD.P.yaw - y0) * 1000).toFixed(2) + ' mrad');
+  check('y arrastrar hacia arriba sube la mira', SD.P.pitch > p0, ((SD.P.pitch - p0) * 1000).toFixed(2) + ' mrad');
+  // the turn while scoped is fine (scaled by the zoom), linear and frame-rate independent
+  const y1 = SD.P.yaw; H.pointer('pointermove', 4, 719, 317, 'scope'); H.frames(1, 16); const a = SD.P.yaw - y1;
+  const y2 = SD.P.yaw; H.pointer('pointermove', 4, 729, 317, 'scope'); H.frames(4, 33); const b = SD.P.yaw - y2;
+  check('la misma distancia de dedo gira lo mismo (sin aceleración, sin depender de los FPS)', Math.abs(a - b) < 1e-9 && a < 0, (a * 1000).toFixed(3) + ' / ' + (b * 1000).toFixed(3) + ' mrad');
+  // a second finger fires while the first keeps aiming; the joystick works at the same time
+  const s0 = SD.STATS.shots;
+  H.pointer('pointerdown', 1, 150, 250, null); H.pointer('pointermove', 1, 150, 210, null);
+  H.pointer('pointerdown', 3, 779, 325, 'fire'); H.frames(2, 16); H.pointer('pointerup', 3, 779, 325, 'fire');
+  const y3 = SD.P.yaw; H.pointer('pointermove', 4, 739, 317, 'scope'); H.frames(2, 16);
+  check('disparar con otro dedo mientras se mantiene MIRA', SD.STATS.shots - s0 === 1 && SD.WCORE.ads === 1);
+  check('después del disparo el dedo de MIRA sigue apuntando', SD.P.yaw < y3);
+  H.frames(20, 16);
+  check('el joystick sigue moviendo a la vez', hs() > 0.5, hs().toFixed(2) + ' m/s');
+  H.pointer('pointerup', 1, 150, 210, null);
+  // lifting MIRA leaves the scope; a system cancel too
+  H.pointer('pointerup', 4, 739, 317, 'scope'); H.frames(25, 16);
+  check('soltar MIRA: sale del visor', SD.WCORE.ads === 0);
+  H.frames(80, 16);
+  H.pointer('pointerdown', 4, 689, 327, 'scope'); H.frames(20, 16); H.pointer('pointercancel', 4, 689, 327, 'scope'); H.frames(25, 16);
+  const y4 = SD.P.yaw; H.frames(10, 16);
+  check('toque de MIRA cancelado por el sistema: sale del visor y la cámara no sigue girando', SD.WCORE.ads === 0 && SD.P.yaw === y4);
+  // MANTENER mode: the scope comes up but that finger does not turn the camera
+  SD.SETTINGS.adsMode = 'hold';
+  H.pointer('pointerdown', 4, 689, 327, 'scope'); H.frames(25, 16); const y5 = SD.P.yaw;
+  H.pointer('pointermove', 4, 729, 327, 'scope'); H.frames(2, 16);
+  check('modo MANTENER: visor sí, pero ese dedo no gira la cámara', SD.WCORE.ads === 1 && SD.P.yaw === y5);
+  H.pointer('pointerup', 4, 729, 327, 'scope'); H.frames(25, 16);
+  check('modo MANTENER: soltar sale del visor', SD.WCORE.ads === 0);
+  SD.SETTINGS.adsMode = 'holdDrag';
+  // sensitivity while aiming: double horizontal aim multiplier → double turn
+  H.frames(60, 16);
+  H.pointer('pointerdown', 4, 689, 327, 'scope'); H.frames(25, 16);
+  H.pointer('pointermove', 4, 699, 327, 'scope'); H.frames(1, 16);
+  const y6 = SD.P.yaw; H.pointer('pointermove', 4, 709, 327, 'scope'); H.frames(1, 16); const c1 = SD.P.yaw - y6;
+  SD.SETTINGS.adsH = 2; const y7 = SD.P.yaw; H.pointer('pointermove', 4, 719, 327, 'scope'); H.frames(1, 16); const c2 = SD.P.yaw - y7;
+  check('MIRA HORIZONTAL ×2 = el doble de giro al apuntar', Math.abs(c2 / c1 - 2) < 0.02, (c2 / c1).toFixed(3) + '×');
+  SD.SETTINGS.adsH = 1;
+  H.pointer('pointerup', 4, 719, 327, 'scope'); H.frames(25, 16);
+  // smoothing: the full turn still arrives (nothing lost), just spread over a few frames
+  SD.SETTINGS.smooth = 0.5;
+  const y8 = SD.P.yaw; H.pointer('pointerdown', 2, 600, 150, null); H.pointer('pointermove', 2, 650, 150, null); H.frames(1, 16); const part = SD.P.yaw - y8;
+  H.frames(40, 16); H.pointer('pointerup', 2, 650, 150, null); const full = SD.P.yaw - y8;
+  SD.SETTINGS.smooth = 0;
+  const y9 = SD.P.yaw; H.pointer('pointerdown', 2, 600, 150, null); H.pointer('pointermove', 2, 650, 150, null); H.frames(2, 16); H.pointer('pointerup', 2, 650, 150, null); const direct = SD.P.yaw - y9;
+  check('suavizado: el giro completo llega igual, repartido en unos fotogramas', Math.abs(full / direct - 1) < 0.01 && Math.abs(part) < Math.abs(full) * 0.9, (part / full).toFixed(2) + ' en el primer fotograma');
 }
 
 console.log('\nRIFLE, PISTOLA Y NAVAJA EN MÓVIL');

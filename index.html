@@ -384,12 +384,19 @@ body.touch #score .side span{max-width:11vw;overflow:hidden;text-overflow:ellips
     <div class="setGrid">
       <label class="sens"><span class="lbl">Sensib. horizontal</span><input id="sH" type="range" min="0.2" max="3" step="0.05"><output id="sHo"></output></label>
       <label class="sens"><span class="lbl">Sensib. vertical</span><input id="sV" type="range" min="0.2" max="3" step="0.05"><output id="sVo"></output></label>
-      <label class="sens"><span class="lbl">Con mira</span><input id="sA" type="range" min="0.3" max="2" step="0.05"><output id="sAo"></output></label>
+      <label class="sens"><span class="lbl">Visor francotirador</span><input id="sA" type="range" min="0.3" max="2" step="0.05"><output id="sAo"></output></label>
+      <label class="sens"><span class="lbl">Mira horizontal</span><input id="sAH" type="range" min="0.3" max="2" step="0.05"><output id="sAHo"></output></label>
+      <label class="sens"><span class="lbl">Mira vertical</span><input id="sAV" type="range" min="0.3" max="2" step="0.05"><output id="sAVo"></output></label>
       <label class="sens"><span class="lbl">Dedo (móvil)</span><input id="sT" type="range" min="0.3" max="4" step="0.05"><output id="sTo"></output></label>
+      <label class="sens"><span class="lbl">Zona muerta dedo (px)</span><input id="sDZ" type="range" min="0" max="12" step="1"><output id="sDZo"></output></label>
+      <label class="sens"><span class="lbl">Suavizado</span><input id="sSM" type="range" min="0" max="0.8" step="0.05"><output id="sSMo"></output></label>
       <label class="chk"><input type="checkbox" id="sInv"> Invertir eje vertical</label>
       <label class="chk"><input type="checkbox" id="sLeft"> Botón FUEGO también a la izquierda (móvil)</label>
       <label class="chk"><input type="checkbox" id="sRel"> Móvil: mantener FUEGO apunta con la mira, soltar dispara</label>
+      <label class="chk"><input type="checkbox" id="sCalm"> Reducir el movimiento visual del arma</label>
     </div>
+    <div class="lbl" style="margin:14px 0 6px">Botón MIRA (móvil)</div>
+    <div class="seg" id="adsSeg" role="group" aria-label="Botón MIRA"><button type="button" data-a="holdDrag">MANTENER Y ARRASTRAR</button><button type="button" data-a="hold">MANTENER</button><button type="button" data-a="toggle">PULSAR</button></div>
     <div class="lbl" style="margin:14px 0 6px">Gráficos</div>
     <div class="seg" id="qSeg" role="group" aria-label="Calidad gráfica"><button type="button" data-q="auto">AUTO</button><button type="button" data-q="bajo">BAJO</button><button type="button" data-q="medio">MEDIO</button><button type="button" data-q="alto">ALTO</button></div>
     <div class="setGrid" style="margin-top:10px">
@@ -1627,13 +1634,21 @@ const DEFAULTS = {
   releaseFire: true, // touch, rifle: holding FIRE raises the scope, lifting the finger fires
   quality: 'auto',  // graphics: auto | bajo | medio | alto
   fpsCap: 60,       // 60 or 30 (30 saves battery and heat on phones)
-  showFps: false    // small FPS counter on screen
+  showFps: false,   // small FPS counter on screen
+  // aiming (ADS)
+  adsMode: 'holdDrag', // touch MIRA button: holdDrag (hold = aim, drag the same finger to turn) | hold | toggle
+  adsH: 1,          // horizontal multiplier while aiming (any weapon)
+  adsV: 1,          // vertical multiplier while aiming (any weapon)
+  touchDead: 2,     // px a finger must travel before it starts turning the camera (stops jitter on touch-down)
+  smooth: 0,        // 0 = direct; up to 0.8 = softer turning (adds a little delay)
+  calmVM: false     // reduce the weapon's visual bob and sway (accessibility); never changes the aim
 };
 // Phones start from different values (agreed after testing on iPhone); PC defaults are unchanged.
 // A device that already saved its settings keeps them; RESTAURAR goes back to these.
 const TOUCH_DEFAULTS = { touchLook: 1.6, adsSens: 1.3 };
 function defaults(touch) { return Object.assign({}, DEFAULTS, touch ? TOUCH_DEFAULTS : {}); }
-const RANGES = { sensH: [0.2, 3], sensV: [0.2, 3], adsSens: [0.3, 2], touchLook: [0.3, 4] };
+const RANGES = { sensH: [0.2, 3], sensV: [0.2, 3], adsSens: [0.3, 2], touchLook: [0.3, 4], adsH: [0.3, 2], adsV: [0.3, 2], touchDead: [0, 12], smooth: [0, 0.8] };
+const ADS_MODES = ['holdDrag', 'hold', 'toggle'];
 
 // any stored object → a complete, valid settings object (unknown keys dropped, numbers clamped)
 function sanitize(o, touch) {
@@ -1643,7 +1658,8 @@ function sanitize(o, touch) {
     const v = Number(o[k]);
     if (o[k] !== undefined && o[k] !== null && o[k] !== '' && isFinite(v)) s[k] = clamp(v, RANGES[k][0], RANGES[k][1]);
   }
-  for (const k of ['invertY', 'leftFire', 'releaseFire', 'showFps']) if (typeof o[k] === 'boolean') s[k] = o[k];
+  for (const k of ['invertY', 'leftFire', 'releaseFire', 'showFps', 'calmVM']) if (typeof o[k] === 'boolean') s[k] = o[k];
+  if (ADS_MODES.includes(o.adsMode)) s.adsMode = o.adsMode;
   if (['auto', 'bajo', 'medio', 'alto'].includes(o.quality)) s.quality = o.quality;
   if (o.fpsCap === 30 || o.fpsCap === 60) s.fpsCap = o.fpsCap;
   return s;
@@ -1658,14 +1674,27 @@ function load(store, touch) {
 function save(store, s, touch) { store.set('settings', sanitize(s, touch)); }
 
 /* Converts a pointer movement in pixels into a yaw/pitch change in radians.
-   ctx = { scoped, fovRatio (tan(fov/2)/tan(baseFov/2)), touch } */
+   ctx = { scoped (rifle scope up), ads (0..1, any weapon), fovRatio (tan(fov/2)/tan(baseFov/2)), touch }
+   Linear (no acceleration): the same finger travel always turns the same amount. */
 function lookDelta(dx, dy, s, ctx) {
   const base = ctx.touch ? 0.0042 : 0.0022;
   const k = base * ctx.fovRatio * (ctx.scoped ? s.adsSens : 1) * (ctx.touch ? s.touchLook : 1);
-  return { yaw: -dx * k * s.sensH, pitch: -dy * k * s.sensV * (s.invertY ? -1 : 1) };
+  const a = Math.max(0, Math.min(1, ctx.ads || 0));
+  const h = 1 + ((s.adsH == null ? 1 : s.adsH) - 1) * a, v = 1 + ((s.adsV == null ? 1 : s.adsV) - 1) * a;
+  return { yaw: -dx * k * s.sensH * h, pitch: -dy * k * s.sensV * v * (s.invertY ? -1 : 1) };
+}
+/* Frame-rate independent smoothing of the look input (0 = off). Returns the part to apply now;
+   the rest stays in st (a small reservoir that empties within ~0.1-0.3 s). */
+function smoothLook(st, dx, dy, smooth, dt) {
+  st.x = (st.x || 0) + dx; st.y = (st.y || 0) + dy;
+  if (!(smooth > 0)) { const o = { dx: st.x, dy: st.y }; st.x = st.y = 0; return o; }
+  const k = 1 - Math.pow(smooth * 0.5, Math.max(0, dt) * 60 * 0.6);
+  const o = { dx: st.x * k, dy: st.y * k }; st.x -= o.dx; st.y -= o.dy;
+  if (Math.abs(st.x) < 0.01 && Math.abs(st.y) < 0.01) { o.dx += st.x; o.dy += st.y; st.x = st.y = 0; }
+  return o;
 }
 
-const SDSettings = { DEFAULTS, TOUCH_DEFAULTS, defaults, RANGES, sanitize, load, save, lookDelta };
+const SDSettings = { DEFAULTS, TOUCH_DEFAULTS, ADS_MODES, defaults, RANGES, sanitize, load, save, lookDelta, smoothLook };
 if (typeof module !== 'undefined' && module.exports) module.exports = SDSettings; else root.SDSettings = SDSettings;
 })(typeof window !== 'undefined' ? window : globalThis);
 
@@ -1740,27 +1769,30 @@ if (typeof module !== 'undefined' && module.exports) module.exports = SDLayout; 
    - A finger that lands on a button presses that button (one finger per button).
    - A finger in the left part of the screen (not on a button) becomes the joystick,
      centred where it landed (floating stick). Only one joystick finger at a time.
-   - Any other finger, and the finger holding FIRE, turns the camera when it moves. */
+   - Any other finger, the finger holding FIRE, and the finger holding MIRA (when c.dragScope)
+     turn the camera when they move. Each finger is tracked by its own pointer id, so moving,
+     aiming and shooting with three fingers never steal from each other.
+   - A look finger only starts turning once it has travelled c.cfg.dead px (no jitter on touch-down). */
 (function (root) {
 'use strict';
-const CFG = { stickZone: 0.42, radius: 56, deadzone: 0.12, sprintAt: 0.95, sprintForward: -0.5, lookGain: 1.35 };
+const CFG = { stickZone: 0.42, radius: 56, deadzone: 0.12, sprintAt: 0.95, sprintForward: -0.5, lookGain: 1.35, dead: 0 };
 
 function create(cfg) {
   return { cfg: Object.assign({}, CFG, cfg || {}), stickId: null, ox: 0, oy: 0, jx: 0, jy: 0, sprint: false, knobX: 0, knobY: 0,
-    look: new Map(), held: new Map(), dx: 0, dy: 0 };
+    look: new Map(), held: new Map(), dx: 0, dy: 0, dragScope: true };
 }
 function down(c, p) {
   // p = { id, x, y, button (name or null), W }
   if (p.button) {
     c.held.set(p.id, p.button);
-    if (p.button === 'fire' || p.button === 'fire2') c.look.set(p.id, { x: p.x, y: p.y });
+    if (p.button === 'fire' || p.button === 'fire2' || (p.button === 'scope' && c.dragScope)) c.look.set(p.id, { x: p.x, y: p.y, x0: p.x, y0: p.y, live: !(c.cfg.dead > 0) });
     return { press: p.button };
   }
   if (p.x < p.W * c.cfg.stickZone && c.stickId === null) {
     c.stickId = p.id; c.ox = p.x; c.oy = p.y; c.jx = c.jy = 0; c.sprint = false; c.knobX = c.knobY = 0;
     return { stickStart: { x: p.x, y: p.y } };
   }
-  c.look.set(p.id, { x: p.x, y: p.y });
+  c.look.set(p.id, { x: p.x, y: p.y, x0: p.x, y0: p.y, live: !(c.cfg.dead > 0) });
   return {};
 }
 function move(c, p) {
@@ -1777,7 +1809,15 @@ function move(c, p) {
     return;
   }
   const l = c.look.get(p.id);
-  if (l) { c.dx += (p.x - l.x) * c.cfg.lookGain; c.dy += (p.y - l.y) * c.cfg.lookGain; l.x = p.x; l.y = p.y; }
+  if (l) {
+    if (!l.live) {   // dead zone: once past it, only the travel beyond it turns (no jump, nothing lost)
+      const d = Math.hypot(p.x - l.x0, p.y - l.y0);
+      if (d < c.cfg.dead) return;
+      l.live = true; const k = 1 - c.cfg.dead / d;
+      c.dx += (p.x - l.x0) * k * c.cfg.lookGain; c.dy += (p.y - l.y0) * k * c.cfg.lookGain; l.x = p.x; l.y = p.y; return;
+    }
+    c.dx += (p.x - l.x) * c.cfg.lookGain; c.dy += (p.y - l.y) * c.cfg.lookGain; l.x = p.x; l.y = p.y;
+  }
 }
 function up(c, id) {
   const out = {};
@@ -2350,7 +2390,7 @@ if (isNode) module.exports = SDNet; else root.SDNet = SDNet;
   G.SDVM = { knifeSlash, knifeInspect, knifeDraw, ARMPOSE, refine, createArms, poseArm, curl, mixFingers, handTarget, HANDSETS, LOOK };
 })(typeof window !== 'undefined' ? window : globalThis);
 
-const BUILD_ID="8c79283";const BUILD_HASH="52c56d07e5";
+const BUILD_ID="d6690c6";const BUILD_HASH="438aea58ba";
 </script>
 <script>
 (function(){
@@ -2367,7 +2407,7 @@ const seg=(p,a,b)=>ss((p-a)/(b-a));
 const bump=(p,a,b)=>{const t=clamp((p-a)/(b-a),0,1);return Math.sin(t*Math.PI);};
 const isTouch=window.matchMedia?matchMedia('(pointer: coarse)').matches:('ontouchstart' in window&&navigator.maxTouchPoints>0);
 const reduceMotion=window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches;
-const MOTION=reduceMotion?0.35:1;
+let MOTION=reduceMotion?0.35:1;   // weapon bob/sway strength (Ajustes → reducir movimiento del arma)
 const store={get(k,d){try{const v=localStorage.getItem('sniperduel_'+k);return v==null?d:JSON.parse(v);}catch(e){return d;}},set(k,v){try{localStorage.setItem('sniperduel_'+k,JSON.stringify(v));}catch(e){}}};
 if(isTouch)document.body.classList.add('touch');
 
@@ -3519,7 +3559,7 @@ const WS={state:'raise',t:0,ammo:GUNCFG.mag,mag:GUNCFG.mag,kick:0,ads:0,swayX:0,
 const AIM={ox:0,oy:0,oz:0,yaw:0,pitch:0};
 const STATS={damage:0,meleeHits:0,firstShot:-1,firstKill:0,lastKill:0,rangeHs:0,kills:0,deaths:0,hs:0,shots:0,hits:0,longest:0,start:0,botKills:0};
 let state='menu';
-const input={keys:{},fireHeld:false,firePressed:false,fireAim:false,fireAimShot:0,scope:false,scopeToggle:false,crouchHeld:false,crouchPressed:false,jumpPressed:false,reloadPressed:false,breath:false,select:null,inspect:false,lookDX:0,lookDY:0,joyX:0,joyY:0,joySprint:false};
+const input={keys:{},fireHeld:false,firePressed:false,fireAim:false,fireAimShot:0,scope:false,scopeToggle:false,scopeHeld:false,crouchHeld:false,crouchPressed:false,jumpPressed:false,reloadPressed:false,breath:false,select:null,inspect:false,lookDX:0,lookDY:0,joyX:0,joyY:0,joySprint:false};
 let pointerLocked=false,lockFailed=false;
 const compassMarks=[];
 
@@ -3939,7 +3979,7 @@ function respawnPlayer(){
   Object.assign(RECOIL,SDWeapon.createRecoil());
   SDMelee.setPrimary(LOAD,PRIMARY);SDWeapon.resetForSpawn(WCORE);SDWeapon.resetForSpawn(PCORE);SDWeapon.resetForSpawn(SCORE);SDMelee.resetLoadout(LOAD);if(typeof updateWeaponHud==='function')updateWeaponHud();VM.deadW=0;VM.eye=MOVE.eyeStand;
   syncFromSim();
-  input.scope=false;input.scopeToggle=false;input.crouchHeld=false;input.fireAim=false;input.fireAimShot=0;
+  input.scope=false;input.scopeToggle=false;input.scopeHeld=false;input.crouchHeld=false;input.fireAim=false;input.fireAimShot=0;
   $('#death').hidden=true;updateAmmoUI();updateHpUI();SFX.raise();
 }
 function damagePlayer(dmg,bot,head){
@@ -3955,7 +3995,7 @@ function damagePlayer(dmg,bot,head){
 }
 function killPlayer(bot,head){
   P.alive=false;P.deadT=0;STATS.deaths++;STATS.botKills++;
-  input.scope=false;input.scopeToggle=false;input.fireAim=false;input.fireAimShot=0;
+  input.scope=false;input.scopeToggle=false;input.scopeHeld=false;input.fireAim=false;input.fireAimShot=0;
   $('#kBots').textContent=STATS.botKills;
   addFeed(bot.name+' ▸ TÚ'+(head?' · <em>HEADSHOT</em>':'')+' · '+Math.round(bot.dist)+' m','dead');
   $('#deathBy').textContent=bot.name+' · '+Math.round(bot.dist)+' m'+(head?' · HEADSHOT':'');
@@ -4243,6 +4283,7 @@ function btnPress(name,down,cancel){ // cancel: the system took the finger (call
   const el=btnEl(name);if(el)el.classList.toggle('press',down);
   if(!down){
     if(name==='breath')input.breath=false;
+    if(name==='scope'&&SETTINGS.adsMode!=='toggle')input.scopeHeld=false;   // MIRA held: lifting the finger leaves the sight
     if(name==='fire'||name==='fire2'){
       input.fireHeld=false;
       // release-to-fire: the shot goes when the finger lifts, still with the rifle in hand
@@ -4255,7 +4296,7 @@ function btnPress(name,down,cancel){ // cancel: the system took the finger (call
     case 'fire':case 'fire2':
       if(SETTINGS.releaseFire&&LOAD.active==='rifle'&&!LOAD.pending){input.fireAim=true;break;} // hold: scope up, aim with the same finger
       input.fireHeld=true;input.firePressed=true;break;
-    case 'scope':input.scopeToggle=!input.scopeToggle;break;
+    case 'scope':if(SETTINGS.adsMode==='toggle')input.scopeToggle=!input.scopeToggle;else input.scopeHeld=true;break;   // holdDrag: the same finger now turns the camera
     case 'crouch':input.crouchHeld=!input.crouchHeld;input.crouchPressed=true;break;
     case 'jump':input.jumpPressed=true;break;
     case 'reload':input.reloadPressed=true;break;
@@ -4283,6 +4324,7 @@ touchEl.addEventListener('pointerdown',e=>{
     const r=SDLayout.rect(name,LAYOUT.buttons[name],window.innerWidth,window.innerHeight);
     EDIT.sel=name;EDIT.dragId=e.pointerId;EDIT.offX=e.clientX-r.cx;EDIT.offY=e.clientY-r.cy;editorSelect(name);return;
   }
+  TOUCH.dragScope=SETTINGS.adsMode!=='hold';TOUCH.cfg.dead=SETTINGS.touchDead;
   const r=SDTouch.down(TOUCH,{id:e.pointerId,x:e.clientX,y:e.clientY,button:name,W:window.innerWidth});
   if(r.press)btnPress(r.press,true);
   if(r.stickStart){stickBase.hidden=false;stickBase.style.left=r.stickStart.x+'px';stickBase.style.top=r.stickStart.y+'px';stickKnob.style.transform='';}
@@ -4339,10 +4381,11 @@ $('#edReset').addEventListener('click',()=>{LAYOUT=SDLayout.defaults();$('#edOp'
 /* ---- settings panel ---- */
 let SETTINGS=SDSettings.load(store,isTouch);
 gfxApply();
-const SET_UI=[['sH','sensH'],['sV','sensV'],['sA','adsSens'],['sT','touchLook']];
-function settingsToUI(){for(const [id,k] of SET_UI){$('#'+id).value=SETTINGS[k];$('#'+id+'o').textContent=(+SETTINGS[k]).toFixed(2);}$('#sInv').checked=SETTINGS.invertY;$('#sLeft').checked=SETTINGS.leftFire;$('#sRel').checked=SETTINGS.releaseFire;$('#sFps30').checked=SETTINGS.fpsCap===30;$('#sShowFps').checked=SETTINGS.showFps;document.querySelectorAll('#qSeg button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.q===SETTINGS.quality)));gfxNote();
+const SET_UI=[['sH','sensH'],['sV','sensV'],['sA','adsSens'],['sAH','adsH'],['sAV','adsV'],['sT','touchLook'],['sDZ','touchDead'],['sSM','smooth']];
+function settingsToUI(){for(const [id,k] of SET_UI){$('#'+id).value=SETTINGS[k];$('#'+id+'o').textContent=(+SETTINGS[k]).toFixed(2);}$('#sInv').checked=SETTINGS.invertY;$('#sLeft').checked=SETTINGS.leftFire;$('#sRel').checked=SETTINGS.releaseFire;$('#sFps30').checked=SETTINGS.fpsCap===30;$('#sShowFps').checked=SETTINGS.showFps;$('#sCalm').checked=SETTINGS.calmVM;document.querySelectorAll('#adsSeg button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.a===SETTINGS.adsMode)));document.querySelectorAll('#qSeg button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.q===SETTINGS.quality)));gfxNote();
   const g=(SETTINGS.sensH+SETTINGS.sensV)/2;$('#sens').value=g;$('#sensOut').textContent=g.toFixed(2);}
-function settingsChanged(){SETTINGS=SDSettings.sanitize(SETTINGS,isTouch);SDSettings.save(store,SETTINGS,isTouch);gfxApply();settingsToUI();}
+function applyControlSettings(){TOUCH.dragScope=SETTINGS.adsMode!=='hold';TOUCH.cfg.dead=SETTINGS.touchDead;MOTION=(reduceMotion||SETTINGS.calmVM)?0.35:1;if(SETTINGS.adsMode!=='toggle')input.scopeToggle=false;}
+function settingsChanged(){SETTINGS=SDSettings.sanitize(SETTINGS,isTouch);SDSettings.save(store,SETTINGS,isTouch);gfxApply();applyControlSettings();settingsToUI();}
 // graphics: profile, adaptive resolution and FPS cap applied live (antialiasing only on reload)
 function gfxApply(){
   if(PERF_LOW)return;
@@ -4364,6 +4407,8 @@ $('#sRel').addEventListener('change',()=>{SETTINGS.releaseFire=$('#sRel').checke
 $('#sFps30').addEventListener('change',()=>{SETTINGS.fpsCap=$('#sFps30').checked?30:60;settingsChanged();});
 $('#sShowFps').addEventListener('change',()=>{SETTINGS.showFps=$('#sShowFps').checked;settingsChanged();});
 document.querySelectorAll('#qSeg button').forEach(b=>b.addEventListener('click',()=>{SETTINGS.quality=b.dataset.q;settingsChanged();SFX.ui();}));
+document.querySelectorAll('#adsSeg button').forEach(b=>b.addEventListener('click',()=>{SETTINGS.adsMode=b.dataset.a;settingsChanged();SFX.ui();}));
+$('#sCalm').addEventListener('change',()=>{SETTINGS.calmVM=$('#sCalm').checked;settingsChanged();});
 let settingsFrom='menu';
 function openSettings(from){settingsFrom=from;settingsToUI();$('#settings').hidden=false;$('#settings').scrollTop=0;for(const id of ['menu','pause'])$('#'+id).classList.add('under');}
 function closeSettings(){$('#settings').hidden=true;for(const id of ['menu','pause'])$('#'+id).classList.remove('under');}
@@ -4372,7 +4417,7 @@ $('#pauseSettings').addEventListener('click',()=>{SFX.ui();openSettings('pause')
 $('#setClose').addEventListener('click',()=>{closeSettings();SFX.ui();});
 $('#setReset').addEventListener('click',()=>{SETTINGS=SDSettings.defaults(isTouch);settingsChanged();});
 $('#openEditor').addEventListener('click',()=>{SFX.ui();openEditor();});
-settingsToUI();
+settingsToUI();applyControlSettings();
 
 /* ---- portrait warning (a web page cannot always force landscape) ---- */
 function checkOrientation(){
@@ -4480,7 +4525,7 @@ function buildCmd(){
   if(k.KeyW||k.ArrowUp)mz-=1;if(k.KeyS||k.ArrowDown)mz+=1;if(k.KeyA||k.ArrowLeft)mx-=1;if(k.KeyD||k.ArrowRight)mx+=1;
   mx+=input.joyX;mz+=input.joyY;
   const shift=!isTouch&&!!(k.ShiftLeft||k.ShiftRight);
-  const adsWanted=!!(input.scope||input.scopeToggle||input.fireAim||input.fireAimShot>0);
+  const adsWanted=!!(input.scope||input.scopeToggle||input.scopeHeld||input.fireAim||input.fireAimShot>0);
   const cmd={mx,mz,yaw:P.yaw,
     sprint:(shift&&!adsWanted)||(input.joySprint&&!adsWanted),
     crouch:isTouch?input.crouchHeld:!!(k.KeyC||k.ControlLeft),
@@ -4620,13 +4665,15 @@ let SIM_FREEZE=false;   // test hook: hold the player's weapon in a pose to look
 
 /* =================== CAMERA (per rendered frame) =================== */
 const _rt=new T.Vector3();
+const LOOKSM={x:0,y:0};let lookDt=1/60;
 function applyLook(){
   const fovRatio=Math.tan(camera.fov*Math.PI/360)/Math.tan(BASE_FOV*Math.PI/360);
   if(isTouch)touchFeed();
-  const ld=SDSettings.lookDelta(input.lookDX,input.lookDY,SETTINGS,{scoped:WCORE.ads>=GUNCFG.scopeAt,fovRatio,touch:isTouch});
+  const sm=SDSettings.smoothLook(LOOKSM,input.lookDX,input.lookDY,SETTINGS.smooth,lookDt);
+  const ld=SDSettings.lookDelta(sm.dx,sm.dy,SETTINGS,{scoped:LOAD.active==='rifle'&&WCORE.ads>=GUNCFG.scopeAt,ads:ss(AG().ads),fovRatio,touch:isTouch});
   if(P.alive){P.yaw+=ld.yaw;P.pitch=clamp(P.pitch+ld.pitch,-1.45,1.45);}
-  WS.swayX=clamp(-input.lookDX*0.0009,-0.05,0.05)*0.25+WS.swayX*0.75;
-  WS.swayY=clamp(input.lookDY*0.0009,-0.05,0.05)*0.25+WS.swayY*0.75;
+  WS.swayX=clamp(-input.lookDX*0.0009,-0.05,0.05)*0.25*MOTION+WS.swayX*0.75;
+  WS.swayY=clamp(input.lookDY*0.0009,-0.05,0.05)*0.25*MOTION+WS.swayY*0.75;
   input.lookDX=0;input.lookDY=0;
 }
 function updateCamera(dt,alpha){
@@ -4690,7 +4737,7 @@ function updateCamera(dt,alpha){
     $('#airVig').style.opacity=P.exhausted>0?(0.55+Math.sin(P.swayT*7)*0.2).toFixed(2):P.holding?(0.15*clamp(1-P.breath,0,1)+0.08).toFixed(2):0;
   }
   {const lh=document.getElementById('lockHint'),want=!isTouch&&!pointerLocked&&state==='playing';if(lh.hidden===want)lh.hidden=!want;}
-  if(isTouch&&!EDIT.on){const bz=$('#tbZoom'),bb=$('#tbBreath'),kn=LOAD.active==='knife';$('#tbScope').hidden=kn;$('#tbInspect').hidden=!kn;$('#tbFire2').hidden=!SETTINGS.leftFire;$('#tbFire').textContent=$('#tbFire2').textContent=kn?'ATACAR':'FUEGO';if(bz.hidden===showScope){bz.hidden=!showScope;bb.hidden=!showScope;}bz.textContent=WS.zoom+'×';bb.classList.toggle('on',P.holding);$('#tbScope').classList.toggle('on',input.scopeToggle);$('#tbCrouch').classList.toggle('on',input.crouchHeld);}
+  if(isTouch&&!EDIT.on){const bz=$('#tbZoom'),bb=$('#tbBreath'),kn=LOAD.active==='knife';$('#tbScope').hidden=kn;$('#tbInspect').hidden=!kn;$('#tbFire2').hidden=!SETTINGS.leftFire;$('#tbFire').textContent=$('#tbFire2').textContent=kn?'ATACAR':'FUEGO';if(bz.hidden===showScope){bz.hidden=!showScope;bb.hidden=!showScope;}bz.textContent=WS.zoom+'×';bb.classList.toggle('on',P.holding);$('#tbScope').classList.toggle('on',input.scopeToggle||input.scopeHeld);$('#tbCrouch').classList.toggle('on',input.crouchHeld);}
   // hip crosshair shows the real spread cone
   const cr=$('#cross');
   const knife=LOAD.active==='knife';
@@ -5117,7 +5164,7 @@ function netEvent(e){
         STATS.deaths++;P.alive=false;P.deadT=0;P.hp=0;updateHpUI();
         addFeed(escapeHtml(names[other]||'RIVAL')+' ▸ TÚ'+tag+(e.weapon==='knife'?'':' · '+e.dist+' m'),'dead');
         $('#deathBy').textContent=(names[other]||'RIVAL')+(e.weapon==='knife'?' · NAVAJA':e.part==='head'?' · HEADSHOT':'')+(e.weapon==='knife'?'':' · '+e.dist+' m');
-        $('#death').hidden=false;$('#scope').hidden=true;input.scope=false;input.scopeToggle=false;input.fireAim=false;input.fireAimShot=0;
+        $('#death').hidden=false;$('#scope').hidden=true;input.scope=false;input.scopeToggle=false;input.scopeHeld=false;input.fireAim=false;input.fireAimShot=0;
         if(state==='playing')state='dead';else if(state==='paused')pausedFrom='dead';
         SFX.hurt();vibrate([60,40,120]);
       }
@@ -5257,7 +5304,7 @@ function frameBody(now){
   const fxdt=rdt*(slowmo>0?0.35:1); // slow motion touches only particles and tracers
   if(calloutTimer>0)calloutTimer-=rdt;
   if(state==='playing'||state==='dead'||(mode==='online'&&state==='paused')){
-    if(state!=='paused')applyLook();
+    if(state!=='paused'){lookDt=rdt;applyLook();}
     simAcc+=rdt;let n=0;
     const maxN=PERF_LOW?41:12;
     while(simAcc>=TICK_DT&&n<maxN){simTick(TICK_DT);simAcc-=TICK_DT;n++;DBG.ticks++;}
