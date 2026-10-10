@@ -1380,6 +1380,16 @@ function setupViewmodels(g){
     for(const c of [...KNIFE.children])c.visible=false;
     for(const c of [...KROOT.children])if(c!==KNIFE)c.visible=false;
     KNIFE.add(nav);VMA.K={root:nav};}
+  const fur=g.scene.getObjectByName('FURIA12');
+  if(fur){fur.position.set(0,0,0);fur.rotation.set(0,0,0);
+    for(const c of [...SHO.gun.children])c.visible=false;
+    for(const c of [...SHO.shell.children])c.visible=false;
+    SHO.gun.add(fur);
+    const fp=n=>fur.getObjectByName(n);
+    SHO.pump=fp('s_pump');SHO.stock=fp('s_stock');
+    const shell=fp('s_shell');shell.position.set(0,0,-0.004);shell.rotation.set(0,0,0);SHO.shell.add(shell);
+    SHO.gun.add(SHO.load,SHO.flash);SHO.load.visible=false;SHO.loadH.g.visible=false;
+    VMA.S={root:fur};}
   VMA.ready=true;
 }
 // hand pose helpers: a spec (vmrig ARMPOSE format) → wrist position + rotation in camera space
@@ -1630,7 +1640,17 @@ function updateShotgunVM(dt){
   SHO.stock.position.y=-0.09*ads;SHO.stock.rotation.x=0.25*ads;SHO.stock.visible=ads<0.95;
   SROOT.position.set(x,y,z);SROOT.rotation.set(rx,ry,rz);
   SHO.flash.visible=WS.flashT>0;
-  SHO.arms.grp.visible=true;SROOT.updateMatrixWorld(true);
+  SROOT.updateMatrixWorld(true);
+  if(VMA.S){
+    const rig=VMA.rig,A=SDVM.ARMPOSE.shotgun;rig.root.visible=true;
+    const R=handAt(A.R,VMA.S.root.matrixWorld,_hp[0]);
+    let L=handAt(A.L,SHO.pump.matrixWorld,_hp[1]);
+    if(rw>0.001){SHO.load.updateMatrixWorld(true);const ld=handAt(A.load,SHO.shell.matrixWorld,_hp[2]);L=handMix(L,ld,clamp(rw*1.4,0,1),_hp[3]);}
+    SDVM.poseArm(rig.sides.R,_sR.fromArray(A.shoulder.R),R.p,R.q,_pR.fromArray(A.pole.R).normalize(),R.f);
+    SDVM.poseArm(rig.sides.L,_sL.fromArray(A.shoulder.L),L.p,L.q,_pL.fromArray(A.pole.L).normalize(),L.f);
+    return;
+  }
+  SHO.arms.grp.visible=true;
   HANDS.place(SHO.arms.R,SHO.rh.g,SHO.rh.wrist,0.26,-0.42,0.08);
   if(rw<0.5)HANDS.place(SHO.arms.L,SHO.lhH.g,SHO.lhH.wrist,-0.15,-0.46,-0.18);else HANDS.place(SHO.arms.L,SHO.loadH.g,SHO.loadH.wrist,-0.15,-0.46,-0.1);
 }

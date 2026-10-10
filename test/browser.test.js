@@ -96,7 +96,7 @@ const shown = page => page.evaluate(ids => ids.filter(id => { const e = document
         const S = __SD, PI = S.PIS, V = new THREE.Vector3(), r = {};
         const at = (u, f) => { PI.debug = { reload: u }; S.advance(16); const o = f(); PI.debug = null; return o; };
         const wy = o => { o.updateMatrixWorld(true); return V.setFromMatrixPosition(o.matrixWorld).y; };
-        const glb = S.VMA.ready; r.glb = glb; r.all = !!(S.VMA.R && S.VMA.K);
+        const glb = S.VMA.ready; r.glb = glb; r.all = !!(S.VMA.R && S.VMA.K && S.VMA.S);
         r.arms = glb ? S.VMA.rig.root.visible : PI.arms.visible;
         r.drop = at(0.12, () => [PI.oldMag.visible, wy(PI.oldMag)]); r.drop2 = at(0.3, () => [PI.oldMag.visible, wy(PI.oldMag)]);
         r.carry = at(0.45, () => { PI.lh.updateMatrixWorld(true); PI.mag.updateMatrixWorld(true);
@@ -112,7 +112,7 @@ const shown = page => page.evaluate(ids => ids.filter(id => { const e = document
         return r;
       });
       check('pistola: los brazos se dibujan y los codos quedan por debajo y detrás (modelos ' + (an.glb ? 'GLB' : 'procedurales') + ')', an.arms && an.elbowBelow, JSON.stringify({ arms: an.arms, elbow: an.elbow }));
-      check('se usan los modelos 3D (assets/viewmodels.glb) de la pistola, el rifle y la navaja', an.glb === true && an.all === true);
+      check('se usan los modelos 3D (assets/viewmodels.glb) de la pistola, el rifle, la escopeta y la navaja', an.glb === true && an.all === true);
       check('recarga: el cargador vacío sale y cae', an.drop[0] && an.drop2[0] && an.drop2[1] < an.drop[1] - 0.03, an.drop.map(x => +(+x).toFixed(3)) + ' → ' + an.drop2.map(x => +(+x).toFixed(3)));
       check('recarga: la mano izquierda trae el cargador nuevo pegado a la mano', an.carry[0] && an.carry[1] < 0.12, (+an.carry[1]).toFixed(3) + ' m');
       check('recarga: el cargador queda metido y la corredera se acciona', an.inserted === 0 && an.rack > 0.025 && an.rest === 0, JSON.stringify({ inserted: an.inserted, rack: an.rack }));

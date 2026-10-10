@@ -2050,6 +2050,14 @@ if (isNode) module.exports = SDNet; else root.SDNet = SDNet;
     K_steel: { c: 0x1e2023, m: 0.7, r: 0.4, env: 0.8 },
     K_g10: { c: 0x353a2a, m: 0.0, r: 0.75, env: 0.4, detail: 'stipple', ns: 0.6 },
     K_screw: { c: 0x9a9ea4, m: 1.0, r: 0.3, env: 1.2 },
+    // FURIA 12
+    S_recv: { c: 0x1c1e21, m: 0.55, r: 0.45, env: 0.8, detail: 'brushed', ns: 0.06 },
+    S_barrel: { c: 0x232528, m: 0.8, r: 0.36, env: 1.0 },
+    S_poly: { c: 0x202020, m: 0.0, r: 0.7, env: 0.4 },
+    S_grip: { c: 0x1d1d1c, m: 0.0, r: 0.9, env: 0.35, detail: 'stipple', ns: 0.9 },
+    S_red: { c: 0xd8442a, m: 0.0, r: 0.5, env: 0.4, e: 0x3a0c04 },
+    S_shell: { c: 0xb3261e, m: 0.0, r: 0.5, env: 0.5 },
+    S_bead: { basic: 0xfff1c0 },
     // arms
     A_glove: { c: 0x1c1c1b, m: 0.0, r: 0.9, env: 0.35, detail: 'weave', ns: 0.45 },
     A_pad: { c: 0x2e2d2a, m: 0.0, r: 0.55, env: 0.5 },
@@ -2270,7 +2278,17 @@ if (isNode) module.exports = SDNet; else root.SDNet = SDNet;
   // where each hand holds each weapon (weapon space), the shoulders and elbow directions (camera space)
   const D19 = [0, -0.946, 0.326], F19 = [0, -0.326, -0.946];
   const D16 = [0, -0.961, 0.276];
+  const D23 = [0, -0.921, 0.389];
   const ARMPOSE = {
+    shotgun: {
+      shoulder: { R: [0.27, -0.42, 0.12], L: [-0.18, -0.46, 0.0] },
+      pole: { R: [0.8, -1, 0.2], L: [-0.8, -1, 0.2] },
+      R: { f: 'pistolR', at: [0.028, -0.069, 0.116], b: [D23, [1, 0, 0]], r: [0, 0.6, 0] },
+      // pump space (origin = the pump's centre)
+      L: { f: 'guardL', left: true, anchor: [0, -0.014, -0.045], at: [0.004, -0.03, 0.01], b: [[-0.7, 0, -0.7], [0, -1, 0]] },
+      // loading hand (space of the shell it carries)
+      load: { f: 'magHold', left: true, anchor: [0, -0.014, -0.045], at: [0, -0.022, 0.012], b: [[-1, 0, 0], [0, -1, 0]] },
+    },
     knife: {
       shoulder: { R: [0.24, -0.42, 0.15], L: [-0.22, -0.46, 0.1] },
       pole: { R: [0.8, -1, 0.2], L: [-0.8, -1, 0.2] },
@@ -2332,7 +2350,7 @@ if (isNode) module.exports = SDNet; else root.SDNet = SDNet;
   G.SDVM = { knifeSlash, knifeInspect, knifeDraw, ARMPOSE, refine, createArms, poseArm, curl, mixFingers, handTarget, HANDSETS, LOOK };
 })(typeof window !== 'undefined' ? window : globalThis);
 
-const BUILD_ID="37d0201";const BUILD_HASH="f133d2561a";
+const BUILD_ID="7517d64";const BUILD_HASH="f731328108";
 </script>
 <script>
 (function(){
@@ -3170,6 +3188,16 @@ function setupViewmodels(g){
     for(const c of [...KNIFE.children])c.visible=false;
     for(const c of [...KROOT.children])if(c!==KNIFE)c.visible=false;
     KNIFE.add(nav);VMA.K={root:nav};}
+  const fur=g.scene.getObjectByName('FURIA12');
+  if(fur){fur.position.set(0,0,0);fur.rotation.set(0,0,0);
+    for(const c of [...SHO.gun.children])c.visible=false;
+    for(const c of [...SHO.shell.children])c.visible=false;
+    SHO.gun.add(fur);
+    const fp=n=>fur.getObjectByName(n);
+    SHO.pump=fp('s_pump');SHO.stock=fp('s_stock');
+    const shell=fp('s_shell');shell.position.set(0,0,-0.004);shell.rotation.set(0,0,0);SHO.shell.add(shell);
+    SHO.gun.add(SHO.load,SHO.flash);SHO.load.visible=false;SHO.loadH.g.visible=false;
+    VMA.S={root:fur};}
   VMA.ready=true;
 }
 // hand pose helpers: a spec (vmrig ARMPOSE format) → wrist position + rotation in camera space
@@ -3420,7 +3448,17 @@ function updateShotgunVM(dt){
   SHO.stock.position.y=-0.09*ads;SHO.stock.rotation.x=0.25*ads;SHO.stock.visible=ads<0.95;
   SROOT.position.set(x,y,z);SROOT.rotation.set(rx,ry,rz);
   SHO.flash.visible=WS.flashT>0;
-  SHO.arms.grp.visible=true;SROOT.updateMatrixWorld(true);
+  SROOT.updateMatrixWorld(true);
+  if(VMA.S){
+    const rig=VMA.rig,A=SDVM.ARMPOSE.shotgun;rig.root.visible=true;
+    const R=handAt(A.R,VMA.S.root.matrixWorld,_hp[0]);
+    let L=handAt(A.L,SHO.pump.matrixWorld,_hp[1]);
+    if(rw>0.001){SHO.load.updateMatrixWorld(true);const ld=handAt(A.load,SHO.shell.matrixWorld,_hp[2]);L=handMix(L,ld,clamp(rw*1.4,0,1),_hp[3]);}
+    SDVM.poseArm(rig.sides.R,_sR.fromArray(A.shoulder.R),R.p,R.q,_pR.fromArray(A.pole.R).normalize(),R.f);
+    SDVM.poseArm(rig.sides.L,_sL.fromArray(A.shoulder.L),L.p,L.q,_pL.fromArray(A.pole.L).normalize(),L.f);
+    return;
+  }
+  SHO.arms.grp.visible=true;
   HANDS.place(SHO.arms.R,SHO.rh.g,SHO.rh.wrist,0.26,-0.42,0.08);
   if(rw<0.5)HANDS.place(SHO.arms.L,SHO.lhH.g,SHO.lhH.wrist,-0.15,-0.46,-0.18);else HANDS.place(SHO.arms.L,SHO.loadH.g,SHO.loadH.wrist,-0.15,-0.46,-0.1);
 }

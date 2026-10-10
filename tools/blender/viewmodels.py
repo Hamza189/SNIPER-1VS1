@@ -11,7 +11,7 @@ HERE = pathlib.Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE))
 import bpy
 from common import *
-import pistol, rifle, knife
+import pistol, rifle, knife, shotgun
 
 ROOT = HERE.parent.parent
 OUT = ROOT / 'assets' / 'viewmodels.glb'
@@ -32,6 +32,10 @@ def main():
         r = empty('NAVAJA')
         parts = knife.build(r)
         stats['NAVAJA'] = sum(tri_count(o) for o in parts.values())
+    if not ONLY or 'shotgun' in ONLY:
+        r = empty('FURIA12')
+        parts = shotgun.build(r)
+        stats['FURIA12'] = sum(tri_count(o) for o in parts.values())
     try:
         import arms
         if not ONLY or 'arms' in ONLY:

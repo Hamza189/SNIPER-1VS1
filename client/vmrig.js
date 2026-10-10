@@ -46,6 +46,14 @@
     K_steel: { c: 0x1e2023, m: 0.7, r: 0.4, env: 0.8 },
     K_g10: { c: 0x353a2a, m: 0.0, r: 0.75, env: 0.4, detail: 'stipple', ns: 0.6 },
     K_screw: { c: 0x9a9ea4, m: 1.0, r: 0.3, env: 1.2 },
+    // FURIA 12
+    S_recv: { c: 0x1c1e21, m: 0.55, r: 0.45, env: 0.8, detail: 'brushed', ns: 0.06 },
+    S_barrel: { c: 0x232528, m: 0.8, r: 0.36, env: 1.0 },
+    S_poly: { c: 0x202020, m: 0.0, r: 0.7, env: 0.4 },
+    S_grip: { c: 0x1d1d1c, m: 0.0, r: 0.9, env: 0.35, detail: 'stipple', ns: 0.9 },
+    S_red: { c: 0xd8442a, m: 0.0, r: 0.5, env: 0.4, e: 0x3a0c04 },
+    S_shell: { c: 0xb3261e, m: 0.0, r: 0.5, env: 0.5 },
+    S_bead: { basic: 0xfff1c0 },
     // arms
     A_glove: { c: 0x1c1c1b, m: 0.0, r: 0.9, env: 0.35, detail: 'weave', ns: 0.45 },
     A_pad: { c: 0x2e2d2a, m: 0.0, r: 0.55, env: 0.5 },
@@ -266,7 +274,17 @@
   // where each hand holds each weapon (weapon space), the shoulders and elbow directions (camera space)
   const D19 = [0, -0.946, 0.326], F19 = [0, -0.326, -0.946];
   const D16 = [0, -0.961, 0.276];
+  const D23 = [0, -0.921, 0.389];
   const ARMPOSE = {
+    shotgun: {
+      shoulder: { R: [0.27, -0.42, 0.12], L: [-0.18, -0.46, 0.0] },
+      pole: { R: [0.8, -1, 0.2], L: [-0.8, -1, 0.2] },
+      R: { f: 'pistolR', at: [0.028, -0.069, 0.116], b: [D23, [1, 0, 0]], r: [0, 0.6, 0] },
+      // pump space (origin = the pump's centre)
+      L: { f: 'guardL', left: true, anchor: [0, -0.014, -0.045], at: [0.004, -0.03, 0.01], b: [[-0.7, 0, -0.7], [0, -1, 0]] },
+      // loading hand (space of the shell it carries)
+      load: { f: 'magHold', left: true, anchor: [0, -0.014, -0.045], at: [0, -0.022, 0.012], b: [[-1, 0, 0], [0, -1, 0]] },
+    },
     knife: {
       shoulder: { R: [0.24, -0.42, 0.15], L: [-0.22, -0.46, 0.1] },
       pole: { R: [0.8, -1, 0.2], L: [-0.8, -1, 0.2] },
