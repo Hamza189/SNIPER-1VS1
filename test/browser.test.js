@@ -48,7 +48,9 @@ const shown = page => page.evaluate(ids => ids.filter(id => { const e = document
       check('el botón JUGAR se ve', st.play);
       await page.click('#openSettings');
       check('AJUSTES desde el menú se ve por encima del menú (no detrás)', await page.evaluate(() => { const e = document.elementFromPoint(innerWidth / 2, innerHeight / 2); return !!(e && e.closest('#settings')); }));
+      check('con AJUSTES abierto el menú queda oculto (en iPhone se pintaba encima)', await page.evaluate(() => getComputedStyle(document.getElementById('menu')).visibility === 'hidden'));
       await page.click('#setClose');
+      check('al cerrar AJUSTES vuelve el menú', await page.evaluate(() => getComputedStyle(document.getElementById('menu')).visibility === 'visible' && document.getElementById('settings').hidden));
       // the server's copy of the map (core/mapdata.js) is exactly the world the page builds
       const { dumpWorld } = require('../tools/export-map.js'), MAPF = require('../core/mapdata.js');
       const world0 = await page.evaluate(() => __SD.WORLD_ID);

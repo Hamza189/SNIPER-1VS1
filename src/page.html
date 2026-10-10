@@ -136,7 +136,8 @@ button{font:inherit;color:inherit}
 
 /* ---------- Overlays ---------- */
 .overlay{position:fixed;inset:0;z-index:20;overflow:auto;-webkit-overflow-scrolling:touch;touch-action:pan-y}
-#settings{z-index:22}   /* opened from the menu or the pause screen: always on top of them */
+#settings{z-index:22;background:rgba(12,10,8,.96)}   /* opened from the menu or the pause screen: always on top of them */
+.under{visibility:hidden!important}   /* screen hidden while the settings panel is open over it (iOS draws scrolled overlays above higher z-index) */
 #menu{background:linear-gradient(90deg,rgba(12,10,8,.92) 0%,rgba(12,10,8,.78) 46%,rgba(12,10,8,.15) 100%)}
 .menuInner{box-sizing:border-box;min-height:100%;padding:calc(28px + env(safe-area-inset-top,0px)) max(20px,env(safe-area-inset-right,0px)) calc(28px + env(safe-area-inset-bottom,0px)) max(20px,env(safe-area-inset-left,0px));display:grid;grid-template-columns:minmax(0,1fr) minmax(0,380px);gap:28px 48px;align-content:center;max-width:1100px}
 .eyebrow{font-size:11px;letter-spacing:.28em;color:var(--signal);text-transform:uppercase}
@@ -261,7 +262,9 @@ body.touch #score .side span{max-width:11vw;overflow:hidden;text-overflow:ellips
   #menu{background:rgba(12,10,8,.86)}
 }
 @media (max-height:480px){
-  h1{font-size:clamp(48px,10vw,84px)}
+  h1{font-size:clamp(38px,7vw,56px);line-height:.9;margin:4px 0 6px}
+  h1 span{display:inline;margin-left:.25em}
+  .sub{font-size:12px;line-height:1.45;margin:0}
   .menuInner{padding-top:calc(16px + env(safe-area-inset-top,0px));gap:18px 32px}
   .ctrlBlock{margin-top:12px;gap:12px}
   #score .side b{font-size:26px}
@@ -2403,10 +2406,11 @@ $('#sFps30').addEventListener('change',()=>{SETTINGS.fpsCap=$('#sFps30').checked
 $('#sShowFps').addEventListener('change',()=>{SETTINGS.showFps=$('#sShowFps').checked;settingsChanged();});
 document.querySelectorAll('#qSeg button').forEach(b=>b.addEventListener('click',()=>{SETTINGS.quality=b.dataset.q;settingsChanged();SFX.ui();}));
 let settingsFrom='menu';
-function openSettings(from){settingsFrom=from;settingsToUI();$('#settings').hidden=false;}
+function openSettings(from){settingsFrom=from;settingsToUI();$('#settings').hidden=false;$('#settings').scrollTop=0;for(const id of ['menu','pause'])$('#'+id).classList.add('under');}
+function closeSettings(){$('#settings').hidden=true;for(const id of ['menu','pause'])$('#'+id).classList.remove('under');}
 $('#openSettings').addEventListener('click',()=>{audioInit();SFX.ui();openSettings('menu');});
 $('#pauseSettings').addEventListener('click',()=>{SFX.ui();openSettings('pause');});
-$('#setClose').addEventListener('click',()=>{$('#settings').hidden=true;SFX.ui();});
+$('#setClose').addEventListener('click',()=>{closeSettings();SFX.ui();});
 $('#setReset').addEventListener('click',()=>{SETTINGS=SDSettings.defaults(isTouch);settingsChanged();});
 $('#openEditor').addEventListener('click',()=>{SFX.ui();openEditor();});
 settingsToUI();
