@@ -35,6 +35,8 @@ async function until(p, fn, arg, ms) { try { await p.waitForFunction(fn, arg, { 
     check('predicción sin correcciones', await B.evaluate(() => __SD.NET.N.corrMax) < 0.05, await B.evaluate(() => __SD.NET.N.corrMax.toFixed(4)));
     await A.evaluate(() => __SD.toMenu()); await sleep(800);
     check('A sale: B ve la victoria por abandono', await until(B, () => !document.getElementById('over').hidden, null, 8000));
+    const C = await open('&vm=1');
+    check('la página pública carga los modelos 3D de las armas y las manos (assets/viewmodels.glb)', await until(C, () => __SD.VMA.ready && !!(__SD.VMA.R && __SD.VMA.K && __SD.VMA.S), null, 30000));
     check('sin errores de JavaScript', errors.length === 0, errors.slice(0, 3).join(' | ') || 'ninguno');
   } catch (e) { check('sin excepciones', false, e && e.message); }
   await browser.close();
