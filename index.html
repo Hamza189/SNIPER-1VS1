@@ -2350,7 +2350,7 @@ if (isNode) module.exports = SDNet; else root.SDNet = SDNet;
   G.SDVM = { knifeSlash, knifeInspect, knifeDraw, ARMPOSE, refine, createArms, poseArm, curl, mixFingers, handTarget, HANDSETS, LOOK };
 })(typeof window !== 'undefined' ? window : globalThis);
 
-const BUILD_ID="7517d64";const BUILD_HASH="f731328108";
+const BUILD_ID="e059e43";const BUILD_HASH="8ddce5ef92";
 </script>
 <script>
 (function(){
@@ -3157,6 +3157,8 @@ function loadViewmodels(){
 }
 function setupViewmodels(g){
   SDVM.refine(g.scene,T,ENV,{low:GFX.profile==='bajo'});
+  // pristine copies for the third-person weapons (before the first-person ones get their own rigs)
+  VMA.src={};for(const n of ['HALCON','FURIA12','VIBORA9','NAVAJA']){const o=g.scene.getObjectByName(n);if(o)VMA.src[n]=o.clone(true);}
   const rig=SDVM.createArms(g.scene,T);if(!rig)return;
   rig.root.visible=false;wScene.add(rig.root);
   const pis=g.scene.getObjectByName('VIBORA9');if(!pis)return;
@@ -3199,6 +3201,7 @@ function setupViewmodels(g){
     SHO.gun.add(SHO.load,SHO.flash);SHO.load.visible=false;SHO.loadH.g.visible=false;
     VMA.S={root:fur};}
   VMA.ready=true;
+  for(const R of SOLDIERS)soldierUseModels(R);
 }
 // hand pose helpers: a spec (vmrig ARMPOSE format) → wrist position + rotation in camera space
 const _hp=[0,1,2,3,4,5].map(()=>({p:new T.Vector3(),q:new T.Quaternion(),f:null}));
@@ -3580,6 +3583,7 @@ const SOLDIER_MERGED=(()=>{const G=SOLDIER_GEO,H=Math.PI/2;return {
   shotGun:mergeGeo([[new T.BoxGeometry(0.05,0.07,0.5),0.1,-0.02,0.4],[new T.CylinderGeometry(0.016,0.016,0.4,8),0.1,0.0,0.7,H]]),
   pistol:mergeGeo([[new T.BoxGeometry(0.035,0.045,0.2),0.03,0.0,0.48],[new T.BoxGeometry(0.03,0.1,0.045),0.03,-0.06,0.42,0.28]]),
   knife:mergeGeo([[new T.BoxGeometry(0.012,0.035,0.22),0.2,-0.02,0.48],[new T.BoxGeometry(0.03,0.04,0.1),0.2,-0.03,0.34]])};})();
+const SOLDIERS=[];
 function makeSoldier(M,opts){
   opts=opts||{};const G=SOLDIER_GEO,MG=SOLDIER_MERGED,R={},mesh=(geo,mat,par,x,y,z,sx,sy,sz,shadow)=>{const m=new T.Mesh(geo,mat);m.position.set(x||0,y||0,z||0);if(sx)m.scale.set(sx,sy,sz);m.castShadow=!!shadow;par.add(m);return m;};
   R.root=new T.Group();
@@ -3612,7 +3616,21 @@ function makeSoldier(M,opts){
   {const g=W('knife');mesh(MG.knife,M.gun,g);g.userData.grips={r:[0.2,-0.04,0.33],l:null};}
   R.phase=0;R.flinch=0;R.wpn=opts.unarmed?null:'rifle';R.dead=0;
   R.shL=new T.Vector3(-0.22,0.47,0.0);R.shR=new T.Vector3(0.22,0.47,0.0);
+  SOLDIERS.push(R);if(VMA.ready)soldierUseModels(R);
   return R;
+}
+/* the rival's weapons: the same modelled weapons as in first person (shared geometry), turned to
+   the soldier's +z and placed so the grips, the pump and the muzzles stay where they were */
+const TP_FIT={rifle:['HALCON',0.1,-0.014,0.2],shotgun:['FURIA12',0.1,-0.018,0.26],pistol:['VIBORA9',0.03,-0.0015,0.43],knife:['NAVAJA',0.2,-0.03,0.36]};
+function soldierUseModels(R){
+  if(R.tp||!VMA.src)return;R.tp={};
+  for(const k in TP_FIT){const g=R.w[k],src=VMA.src[TP_FIT[k][0]];if(!g||!src)continue;
+    for(const c of g.children)c.visible=false;
+    const w=new T.Group();w.rotation.y=Math.PI;w.position.set(TP_FIT[k][1],TP_FIT[k][2],TP_FIT[k][3]);
+    const m=src.clone(true);m.position.set(0,0,0);m.rotation.set(0,0,0);w.add(m);g.add(w);
+    m.traverse(o=>{if(o.isMesh){o.castShadow=true;o.frustumCulled=true;}});
+    R.tp[k]=m;if(k==='shotgun')R.tpPump=m.getObjectByName('s_pump');
+    const sh=m.getObjectByName('s_shell');if(sh)sh.visible=false;}
 }
 const _sv=new T.Vector3(),_sAM=new T.Matrix4(),_sTg=new T.Vector3(),_sHip=new T.Vector3(),_sFoot=new T.Vector3(),_sPoleK=new T.Vector3(),_sPoleA=new T.Vector3(),_sM=new T.Matrix4();
 /* st: {vx,vz (local, m/s), crouch 0..1, slide, air, pitch (rad, + = up), wpn, reload 0..1, bolt 0..1,
@@ -3668,6 +3686,7 @@ function animateSoldier(R,st,dt){
       if(side>0&&st.bolt&&grips.bolt){const k=Math.sin(Math.PI*st.bolt);g=[lerp(g[0],grips.bolt[0],k),lerp(g[1],grips.bolt[1],k),lerp(g[2],grips.bolt[2],k)];}
       if(side<0&&g&&st.reload){const k=Math.sin(Math.PI*clamp(st.relPh||0,0,1))*st.reload;g=[g[0]-0.06*k,g[1]-0.22*k,g[2]-0.25*k];}
       if(side<0&&g&&R.pump&&st.wpn==='shotgun')g=[g[0],g[1],R.pump.position.z];
+      if(R.tpPump&&R.pump)R.tpPump.position.z=-0.27+(0.56-R.pump.position.z);
       if(g)tgt=_sTg.set(g[0],g[1],g[2]).applyMatrix4(am);
     }
     if(!tgt){   // hanging or swinging (unarmed runner, knife's free hand, dead)
@@ -5269,7 +5288,7 @@ function frameBody(now){
 }
 resize();
 requestAnimationFrame(frame);
-window.__SD={freeze(on){SIM_FREEZE=!!on;},VMA,RemotePlayer,PMprev,PIS,PROOT,RIF,WROOT,SHO_:null,MANUAL,advance(ms){frameBody(last+ms);},get LAST_PELLETS(){return LAST_PELLETS;},SCORE,SCFG,SROOT,SHO,setPrimaryChoice,get PRIMARY(){return PRIMARY;},PCORE,PCFG,setWorld,WORLDS,get WORLD_ID(){return WORLD_ID;},renderer,GFX,gfxApply,get NET(){return NET;},get REMOTE(){return REMOTE;},W,get NAV(){return NAV;},setOffMap,get OFFMAP(){return OFFMAP;},TOUCH,EDIT,openEditor,get SETTINGS(){return SETTINGS;},get LAYOUT(){return LAYOUT;},checkOrientation,MAT,LOAD,TRAINERS,get RANGE_BOTS(){return RANGE_BOTS;},TRAIN,setTrain,impactFX,bodyFX,get DECALS(){return DECALS;},surfaceOf,soundDelay,aimSelfTest,P,PM,WS,WCORE,RECOIL,AIM,BOTS,DUMMIES,BULLETS,EVENTS,PARTS,STATS,get state(){return state;},get mode(){return mode;},setMode,input,startMatch,simTick,frame,toMenu,pause,resume};
+window.__SD={freeze(on){SIM_FREEZE=!!on;},VMA,makeSoldier,animateSoldier,BOT_MAT,scene,camera,RemotePlayer,PMprev,PIS,PROOT,RIF,WROOT,SHO_:null,MANUAL,advance(ms){frameBody(last+ms);},get LAST_PELLETS(){return LAST_PELLETS;},SCORE,SCFG,SROOT,SHO,setPrimaryChoice,get PRIMARY(){return PRIMARY;},PCORE,PCFG,setWorld,WORLDS,get WORLD_ID(){return WORLD_ID;},renderer,GFX,gfxApply,get NET(){return NET;},get REMOTE(){return REMOTE;},W,get NAV(){return NAV;},setOffMap,get OFFMAP(){return OFFMAP;},TOUCH,EDIT,openEditor,get SETTINGS(){return SETTINGS;},get LAYOUT(){return LAYOUT;},checkOrientation,MAT,LOAD,TRAINERS,get RANGE_BOTS(){return RANGE_BOTS;},TRAIN,setTrain,impactFX,bodyFX,get DECALS(){return DECALS;},surfaceOf,soundDelay,aimSelfTest,P,PM,WS,WCORE,RECOIL,AIM,BOTS,DUMMIES,BULLETS,EVENTS,PARTS,STATS,get state(){return state;},get mode(){return mode;},setMode,input,startMatch,simTick,frame,toMenu,pause,resume};
 })();
 </script>
 
