@@ -206,7 +206,26 @@ for (const lvl of ['easy', 'normal', 'hard']) {
   check(lvl + ': ningún bot se queda quieto sin querer más de 1 s', maxStill.every(t => t < 1), 'máx ' + Math.max(...maxStill).toFixed(2) + ' s');
   check(lvl + ': munición infinita (dispara sin recargar)', SD.STATS.shots >= 20 && SD.WCORE.ammo === 5, SD.STATS.shots + ' disparos, munición ' + SD.WCORE.ammo);
   check(lvl + ': sin fugas (proyectiles ≤ 4, eventos < 40)', maxB <= 4 && maxE < 40, 'máx ' + maxB + ' proyectiles, ' + maxE + ' eventos');
-  check(lvl + ': el jugador no recibe daño', SD.P.hp === 100);
+  check(lvl + ': los bots te disparan, pero con BOTS PUEDEN MATARTE = NO el jugador no recibe daño', SD.P.hp === 100 && SD.P.alive && (SD.STATS.botShots || 0) > 0, (SD.STATS.botShots || 0) + ' disparos de bots, avisos ' + (SD.STATS.wouldHit || 0));
+}
+{ // BOTS PUEDEN MATARTE = SÍ: the same bots hurt, you can die, the training goes on (no end screen)
+  SD.toMenu(); frames(3, 16); SD.setMode('range'); SD.setTrain('hard'); SD.setLethal(true); SD.startMatch(); frames(30, 16);
+  let minHp = 100, died = false;
+  frames(Math.round(60 / 0.016), 16, () => { minHp = Math.min(minHp, SD.P.hp); if (!SD.P.alive) died = true; });
+  check('BOTS PUEDEN MATARTE = SÍ: los bots hacen daño', minHp < 100, 'vida mínima ' + Math.round(minHp) + (died ? ', muerto ' + SD.STATS.deaths + ' vez/veces' : ''));
+  check('… y el entrenamiento sigue (no hay pantalla de fin aunque mueras)', SD.state !== 'over');
+  SD.setLethal(false);
+  check('la opción se guarda y vuelve a NO', SD.TRAIN.lethal === false);
+}
+{ // the primary chosen during a life is for the next spawn, and the pause menu says so
+  SD.toMenu(); frames(3, 16); SD.setPrimaryChoice('rifle'); SD.setMode('range'); SD.setTrain('off'); SD.startMatch(); frames(20, 16);
+  SD.pause(); SD.setPrimaryChoice('shotgun');
+  const note = el('#kitNote').textContent;
+  check('cambiar el arma principal en plena vida no la cambia en la mano', SD.LOAD.active === 'rifle' && SD.LOAD.primary === 'rifle');
+  check('la pausa avisa: SE APLICARÁ EN EL PRÓXIMO RESPAWN', /PRÓXIMO RESPAWN/.test(note) && /HALCÓN R7/.test(note), note);
+  SD.setPrimaryChoice('rifle');
+  check('si vuelves a elegir la que llevas, el aviso desaparece', el('#kitNote').textContent === '');
+  SD.resume(); frames(5, 16);
 }
 SD.TRAIN.infAmmo = false; SD.setTrain('off');
 check('fase 2A sin errores', errors.length === 0, errors[0] && errors[0].message);

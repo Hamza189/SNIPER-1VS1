@@ -149,7 +149,7 @@ h1 span{display:block;color:var(--sand)}
 .seg button{flex:1;background:none;border:0;padding:10px 6px;font-size:11px;letter-spacing:.16em;cursor:pointer;color:var(--dust)}
 .seg button+button{border-left:1px solid var(--line)}
 .seg button[aria-pressed="true"]{background:var(--hud);color:var(--ink)}
-.kitRow{display:grid;gap:6px;justify-items:center;margin:4px 0 2px}.kitRow .seg button{font-size:15px}.kitSeg button{white-space:nowrap}
+.kitRow{display:grid;gap:6px;justify-items:center;margin:4px 0 2px}.kitNote{color:var(--signal);min-height:1em;text-align:center}.kitRow .seg button{font-size:15px}.kitSeg button{white-space:nowrap}
 @media (max-height:480px){.kitRow{margin:0;gap:3px}.kitRow .seg button{font-size:13px;padding-top:6px;padding-bottom:6px}}
 .seg button:disabled{cursor:default}.seg button:disabled:not([aria-pressed="true"]){opacity:.45}
 .seg button:focus-visible,.btn:focus-visible{outline:2px solid var(--signal);outline-offset:2px}
@@ -421,13 +421,15 @@ body.touch #score .side span{max-width:11vw;overflow:hidden;text-overflow:ellips
           <div class="seg" id="mapSeg" role="group" aria-label="Mapa"><button type="button" data-map="arena">ARENA DE PRUEBAS</button><button type="button" data-map="pueblo">PUEBLO</button></div>
         </div>
         <div id="rangeBlock" hidden>
-          <div class="lbl" style="margin-bottom:6px">Bots de entrenamiento (desarmados)</div>
+          <div class="lbl" style="margin-bottom:6px">Bots de entrenamiento (se mueven y disparan)</div>
           <div class="seg" id="trainSeg">
             <button type="button" data-t="off" aria-pressed="true">NO</button>
             <button type="button" data-t="easy" aria-pressed="false">FÁCIL</button>
             <button type="button" data-t="normal" aria-pressed="false">NORMAL</button>
             <button type="button" data-t="hard" aria-pressed="false">DIFÍCIL</button>
           </div>
+          <div class="lbl" style="margin:10px 0 6px">Bots pueden matarte</div>
+          <div class="seg" id="lethalSeg" role="group" aria-label="Bots pueden matarte"><button type="button" data-l="0">NO</button><button type="button" data-l="1">SÍ</button></div>
           <label class="chk"><input type="checkbox" id="infAmmo"> Munición infinita</label>
         </div>
         <div id="diffBlock">
@@ -495,7 +497,7 @@ body.touch #score .side span{max-width:11vw;overflow:hidden;text-overflow:ellips
     <div class="eyebrow">Pausa</div>
     <h2>EN ESPERA</h2>
     <div class="row"><button class="btn" id="resume" type="button">REANUDAR</button><button class="btn ghost" id="toMenu1" type="button">MENÚ</button></div>
-    <div class="kitRow"><span class="lbl">Arma principal · al reaparecer</span><div class="seg kitSeg" role="group" aria-label="Arma principal"><button type="button" data-kit="rifle">HALCÓN R7</button><button type="button" data-kit="shotgun">FURIA 12</button></div></div>
+    <div class="kitRow"><span class="lbl">Arma principal · al reaparecer</span><div class="seg kitSeg" role="group" aria-label="Arma principal"><button type="button" data-kit="rifle">HALCÓN R7</button><button type="button" data-kit="shotgun">FURIA 12</button></div><span class="lbl kitNote" id="kitNote"></span></div>
     <div class="row"><button class="btn ghost" id="pauseSettings" type="button" style="font-size:18px">AJUSTES</button><button class="btn ghost" id="dbgBtn" type="button" style="font-size:18px">PANEL TÉCNICO (F3)</button><button class="btn ghost" id="rangeReset" type="button" style="font-size:18px">REINICIAR ESTADÍSTICAS</button><button class="btn ghost" id="selfTestBtn" type="button" style="font-size:18px">AUTOTEST DE PUNTERÍA</button></div>
     <pre id="selfTestOut" hidden></pre>
   </div>
@@ -1708,7 +1710,8 @@ const IRON=()=>LOAD.active==='pistol'||LOAD.active==='shotgun';   // iron sights
 // the local player as the shared tick sees it (the same objects, not copies)
 const LOCAL={ms:PM,w:WCORE,pw:PCORE,sw:SCORE,load:LOAD};
 // shooting-range options (remembered per browser)
-const TRAIN={level:['off','easy','normal','hard'].includes(store.get('trainLevel','off'))?store.get('trainLevel','off'):'off',infAmmo:!!store.get('infAmmo',false)};
+const TRAIN_DIFF={easy:0,normal:1,hard:2};
+const TRAIN={level:['off','easy','normal','hard'].includes(store.get('trainLevel','off'))?store.get('trainLevel','off'):'off',infAmmo:!!store.get('infAmmo',false),lethal:store.get('trainLethal',false)===true};
 // ... and presentation state mirrored from it each tick (read by bots, HUD, camera)
 const P={pos:new T.Vector3(),vel:new T.Vector3(),yaw:0,pitch:0,onGround:true,crouch:false,slideT:0,sprinting:false,
   eye:MOVE.eyeStand,hp:100,lastHit:-99,alive:true,deadT:0,lean:0,leanOff:0,bob:0,stepPhase:0,
@@ -1911,19 +1914,14 @@ class Bot{
     add(new T.BoxGeometry(0.17,0.86,0.2),BM.cloth,0.1,0.43,0,'legs');
     add(new T.BoxGeometry(0.44,0.62,0.26),BM.cloth,0,1.17,0,'torso');
     add(new T.BoxGeometry(0.47,0.4,0.3),BM.vest,0,1.24,0,'torso');
-    if(this.trainer){
-      // unarmed: arms down at the sides
-      add(new T.BoxGeometry(0.11,0.55,0.12),BM.cloth,0.29,1.14,0,'torso');
-      add(new T.BoxGeometry(0.11,0.55,0.12),BM.cloth,-0.29,1.14,0,'torso');
-      add(new T.BoxGeometry(0.13,0.07,0.14),BM.band,-0.29,1.3,0,null);
-    }else{
+    {   // armed (duel bots and, now, the training bots): arms forward on the rifle
       add(new T.BoxGeometry(0.11,0.48,0.12),BM.cloth,0.24,1.24,0.2,'torso',-1.15);
       const la=add(new T.BoxGeometry(0.11,0.5,0.12),BM.cloth,-0.17,1.24,0.28,'torso',-1.3);la.rotation.y=0.45;
       add(new T.BoxGeometry(0.12,0.07,0.13),BM.band,-0.17,1.38,0.12,null,-1.3);
     }
     add(new T.SphereGeometry(0.13,14,10),BM.skin,0,1.62,0,'head');
     add(new T.SphereGeometry(0.15,14,8,0,Math.PI*2,0,Math.PI/2),BM.helmet,0,1.65,0,'head');
-    this.rig=makeSoldier(BM,{unarmed:this.trainer});this.g.add(this.rig.root);this.rig.wpn=this.trainer?null:'rifle';
+    this.rig=makeSoldier(BM,{});this.g.add(this.rig.root);this.rig.wpn='rifle';
     // the scope glint sits on the rifle's scope and follows the aim
     this.glint=new T.Sprite(glintMatBase.clone());this.glint.position.set(0.1,0.06,0.43);this.glint.scale.set(0.05,0.05,1);this.glint.visible=false;this.rig.aim.add(this.glint);
     this.lastX=0;this.lastZ=0;this.lvx=0;this.lvz=0;
@@ -1931,7 +1929,7 @@ class Bot{
     scene.add(this.g);this.g.visible=false;this.alive=false;this.hp=100;
     this.reset();
   }
-  reset(){this.crouchW=0;this.flinch=0;this.fallV=new T.Vector3();this.spin=0;this.state='move';this.path=[];this.spot=0;this.aimT=0;this.cool=0;this.lostT=0;this.lastDamage=-99;this.yaw=0;this.deadT=0;this.watchT=0;this.lookYaw=0;this.losT=0;this.canSee=false;this.dist=999;this.alertT=0;this.reaction=1;this.stepT=0;}
+  reset(){this.aiming=false;this.crouchW=0;this.flinch=0;this.fallV=new T.Vector3();this.spin=0;this.state='move';this.path=[];this.spot=0;this.aimT=0;this.cool=0;this.lostT=0;this.lastDamage=-99;this.yaw=0;this.deadT=0;this.watchT=0;this.lookYaw=0;this.losT=0;this.canSee=false;this.dist=999;this.alertT=0;this.reaction=1;this.stepT=0;}
   spawn(){
     this.reset();this.hp=100;this.alive=true;this.g.visible=true;this.g.rotation.x=0;this.g.rotation.z=0;
     this.g.scale.set(1,1,1);
@@ -1972,7 +1970,7 @@ class Bot{
     this.lvx=damp(this.lvx,vx,10,dt);this.lvz=damp(this.lvz,vz,10,dt);
     const r=g.rotation.y,c=Math.cos(r),s=Math.sin(r);
     let pitch=0;
-    if(this.alive&&this.state==='aim'){const dy=(P.pos.y+P.eye)-(g.position.y+1.5),dd=Math.hypot(P.pos.x-g.position.x,P.pos.z-g.position.z);pitch=Math.atan2(dy,dd);}
+    if(this.alive&&(this.state==='aim'||this.aiming)){const dy=(P.pos.y+P.eye)-(g.position.y+1.5),dd=Math.hypot(P.pos.x-g.position.x,P.pos.z-g.position.z);pitch=Math.atan2(dy,dd);}
     this.rig.flinch=this.flinch||0;
     animateSoldier(this.rig,{far:g.position.distanceToSquared(camera.position)>900,vx:this.alive?this.lvx*c-this.lvz*s:0,vz:this.alive?this.lvx*s+this.lvz*c:0,pitch,wpn:this.rig.wpn,
       sprint:Math.hypot(this.lvx,this.lvz)>4.5,crouch:0,slide:this.trainer&&this.ms&&this.ms.sliding,air:this.trainer&&this.ms&&!this.ms.onGround,dead:this.alive?0:Math.min(1,this.deadT/0.5)},dt);
@@ -2004,6 +2002,7 @@ class Bot{
       this.crouchW=damp(this.crouchW,this.ms.crouch?1:0,12,dt);g.scale.y=1-0.3*this.crouchW;
       g.rotation.x+=this.ms.sliding?-0.3:0;
       if(this.ms.onGround&&!this.ms.sliding){this.stepT+=dt*Math.hypot(this.ms.vx,this.ms.vz)/3;g.position.y+=Math.abs(Math.sin(this.stepT*9))*0.035;}
+      this.trainerCombat(dt);
       return;
     }
     if(this.slot){
@@ -2060,9 +2059,24 @@ class Bot{
     }
     g.rotation.y=this.yaw;
   }
+  // training bots: while they keep moving (core/trainer.js), they turn to you, aim and shoot when
+  // they can see you. Whether that hurts is the range option BOTS PUEDEN MATARTE (damagePlayer).
+  trainerCombat(dt){
+    const g=this.g,ex=g.position.x,ez=g.position.z,tx=P.pos.x,tz=P.pos.z,ty=P.pos.y+P.eye-0.05;
+    this.cool-=dt;this.losT-=dt;this.dist=Math.hypot(tx-ex,tz-ez);
+    if(this.losT<=0){this.losT=0.15;this.canSee=P.alive&&state==='playing'&&this.dist<95&&losClear(ex,1.6,ez,tx,ty,tz);}
+    const toP=Math.atan2(tx-ex,tz-ez);
+    if(this.canSee){
+      if(!this.aiming){this.aiming=true;this.aimT=0;const r=DIFFS[TRAIN_DIFF[TRAIN.level]||1].react;this.reaction=rand(r[0],r[1])*1.25;this.glint.visible=true;}
+      this.aimT+=dt;this.yaw=turnTo(this.yaw,toP,8*dt);g.rotation.y=this.yaw;
+      if(this.aimT>=this.reaction&&this.cool<=0&&Math.abs(angDiff(toP,this.yaw))<0.15)this.shoot();
+      if(this.glint.visible){const pul=0.02+Math.sin(gameTime*14)*0.005;this.glint.scale.set(pul,pul,1);}
+    }else if(this.aiming){this.aiming=false;this.glint.visible=false;}
+  }
   enterAim(){this.state='aim';this.aimT=0;this.lostT=0;const r=DIFFS[diff].react;this.reaction=rand(r[0],r[1])*(this.alertT>0?0.8:1);this.glint.visible=true;this.path=[];}
   shoot(){
-    const df=DIFFS[diff];
+    STATS.botShots=(STATS.botShots||0)+1;
+    const df=this.trainer?DIFFS[TRAIN_DIFF[TRAIN.level]||1]:DIFFS[diff];
     this.g.updateMatrixWorld(true);
     const mz=this.muzzle.clone().applyMatrix4(this.g.matrixWorld);
     worldFlash(mz,1.3);emit(mz,{n:4,color:0xb8a890,size:0.5,grow:1.6,life:1.4,spread:0.3,up:0.4,op:0.45});
@@ -2088,7 +2102,7 @@ class Bot{
       const sidePan=clamp(side.dot(new T.Vector3(Math.cos(P.yaw),0,-Math.sin(P.yaw))),-1,1);
       later(Math.min(0.2,this.dist/760),()=>{if(!P.alive)return;SFX.whizz(sidePan);P.shake=Math.max(P.shake,0.25);if(hits.length){impactFX(hits[0],hits[0].distance);}});
     }
-    if(Math.random()<0.4){this.glint.visible=false;if(!this.pickDest()){this.state='watch';this.watchT=2;}this.spot=0.6;}
+    if(!this.trainer&&Math.random()<0.4){this.glint.visible=false;if(!this.pickDest()){this.state='watch';this.watchT=2;}this.spot=0.6;}
   }
   damage(dmg,part,dist,vel){
     this.hp-=dmg;this.lastDamage=gameTime;
@@ -2143,6 +2157,9 @@ function respawnPlayer(){
 }
 function damagePlayer(dmg,bot,head){
   if(!P.alive||state!=='playing')return;
+  if(mode==='range'&&!TRAIN.lethal){   // BOTS PUEDEN MATARTE: NO — you see where it came from, nothing else
+    const rel=bearingDeg(bot.g.position.x,bot.g.position.z)-heading();const dd=$('#dmgdir div');dd.style.transform='rotate('+rel+'deg)';dd.classList.remove('on');void dd.offsetWidth;dd.classList.add('on');
+    P.shake=Math.max(P.shake,0.25);STATS.wouldHit=(STATS.wouldHit||0)+1;return;}
   P.hp-=dmg;P.lastHit=gameTime;P.shake=Math.max(P.shake,0.9);
   SFX.hurt();vibrate(head?120:60);
   const fr=$('#flashRed');fr.classList.remove('on');void fr.offsetWidth;fr.classList.add('on');
@@ -2160,7 +2177,7 @@ function killPlayer(bot,head){
   $('#deathBy').textContent=bot.name+' · '+Math.round(bot.dist)+' m'+(head?' · HEADSHOT':'');
   $('#death').hidden=false;
   bot.state='watch';bot.watchT=rand(2,4);bot.glint.visible=false;bot.spot=0;
-  if(STATS.botKills>=GOAL){later(1.6,()=>endMatch(false));}
+  if(STATS.botKills>=GOAL&&mode!=='range'){later(1.6,()=>endMatch(false));}   // training never ends by deaths
   state='dead';
 }
 
@@ -2605,6 +2622,9 @@ function setTrain(t){TRAIN.level=t;store.set('trainLevel',t);document.querySelec
 document.querySelectorAll('#trainSeg button').forEach(b=>b.addEventListener('click',()=>{setTrain(b.dataset.t);audioInit();SFX.ui();}));
 setTrain(TRAIN.level);
 $('#infAmmo').checked=TRAIN.infAmmo;
+function setLethal(on){TRAIN.lethal=!!on;store.set('trainLethal',TRAIN.lethal);document.querySelectorAll('#lethalSeg button').forEach(b=>b.setAttribute('aria-pressed',String((b.dataset.l==='1')===TRAIN.lethal)));}
+document.querySelectorAll('#lethalSeg button').forEach(b=>b.addEventListener('click',()=>{setLethal(b.dataset.l==='1');audioInit();SFX.ui();}));
+setLethal(TRAIN.lethal);
 $('#infAmmo').addEventListener('change',()=>{TRAIN.infAmmo=$('#infAmmo').checked;store.set('infAmmo',TRAIN.infAmmo);});
 function updateRangeHud(){if(mode!=='range')return;$('#rK').textContent=STATS.kills;$('#rD').textContent=Math.round(STATS.damage);$('#rN').textContent=STATS.meleeHits+'/'+(STATS.meleeSwings||0);$('#rT').textContent=STATS.kills>=2?((STATS.lastKill-STATS.firstKill)/(STATS.kills-1)).toFixed(2):'–';$('#rS').textContent=STATS.shots;$('#rH').textContent=STATS.hits;$('#rC').textContent=STATS.rangeHs;$('#rA').textContent=(STATS.shots?Math.round(STATS.hits/STATS.shots*100):0)+'%';}
 const sensEl=$('#sens');
@@ -2651,7 +2671,7 @@ function startMatch(){
 // one-shot inputs (clicks, key presses) that have not been used yet are thrown away whenever
 // the game is interrupted, so nothing fires, jumps or switches on its own afterwards
 function clearPendingInput(){if(typeof releaseAllTouches==='function')releaseAllTouches();input.firePressed=input.jumpPressed=input.crouchPressed=input.reloadPressed=false;input.fireAim=false;input.fireAimShot=0;input.select=null;input.inspect=false;input.lookDX=input.lookDY=0;}
-function pause(){if(state!=='playing'&&state!=='dead')return;pausedFrom=state;state='paused';$('#pause').hidden=false;$('#lockHint').hidden=true;if(pointerLocked&&document.exitPointerLock)document.exitPointerLock();input.fireHeld=false;input.scope=false;input.keys={};clearPendingInput();}
+function pause(){if(state!=='playing'&&state!=='dead')return;pausedFrom=state;state='paused';$('#pause').hidden=false;kitNote();$('#lockHint').hidden=true;if(pointerLocked&&document.exitPointerLock)document.exitPointerLock();input.fireHeld=false;input.scope=false;input.keys={};clearPendingInput();}
 let pausedFrom='playing';
 function resume(){if(state!=='paused')return;clearPendingInput();state=pausedFrom;$('#pause').hidden=true;audioInit();if(!isTouch)requestLock();}
 function toMenu(){if(mode==='online'){netLeave(true);return;}state='menu';setWorld(offWorld());$('#pause').hidden=true;$('#lockHint').hidden=true;$('#over').hidden=true;$('#hud').hidden=true;$('#scope').hidden=true;$('#death').hidden=true;$('#touch').hidden=true;$('#menu').hidden=false;BOTS.concat(DUMMIES,TRAINERS).forEach(b=>{b.alive=false;b.g.visible=false;b.trainerActive=false;});BULLETS.length=0;BTR.forEach(m=>m.visible=false);scene.fog.near=45;scene.fog.far=175;if(document.exitPointerLock&&pointerLocked)document.exitPointerLock();}
@@ -3432,7 +3452,10 @@ document.querySelectorAll('#mpMapSeg button').forEach(b=>b.addEventListener('cli
 // It never swaps the gun in your hands: it is used from your next spawn (offline and online).
 function setPrimaryChoice(id){if(id!=='rifle'&&id!=='shotgun')return;PRIMARY=id;store.set('primary',id);
   document.querySelectorAll('.kitSeg button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.kit===id)));
-  if(NET.N&&NET.N.you)NET.N.chooseKit(id);}
+  if(NET.N&&NET.N.you)NET.N.chooseKit(id);kitNote();}
+// in a match: say clearly that the choice is for the next life, and what you carry now
+function kitNote(){const el=$('#kitNote');if(!el)return;const inMatch=state==='playing'||state==='dead'||state==='paused';const now=LOAD.primary||'rifle';
+  el.textContent=inMatch&&now!==PRIMARY?'SE APLICARÁ EN EL PRÓXIMO RESPAWN · AHORA LLEVAS '+(now==='shotgun'?'FURIA 12':'HALCÓN R7'):'';}
 document.querySelectorAll('.kitSeg button').forEach(b=>b.addEventListener('click',()=>{setPrimaryChoice(b.dataset.kit);audioInit();SFX.ui();}));
 setPrimaryChoice(PRIMARY);
 $('#mpBack').addEventListener('click',()=>{$('#mp').hidden=true;$('#menu').hidden=false;SFX.ui();});
@@ -3495,6 +3518,6 @@ function frameBody(now){
 }
 resize();
 requestAnimationFrame(frame);
-window.__SD={freeze(on){SIM_FREEZE=!!on;},VMA,makeSoldier,animateSoldier,BOT_MAT,scene,camera,RemotePlayer,PMprev,PIS,PROOT,RIF,WROOT,SHO_:null,MANUAL,advance(ms){frameBody(last+ms);},get LAST_PELLETS(){return LAST_PELLETS;},SCORE,SCFG,SROOT,SHO,setPrimaryChoice,get PRIMARY(){return PRIMARY;},PCORE,PCFG,setWorld,WORLDS,get WORLD_ID(){return WORLD_ID;},renderer,GFX,gfxApply,get NET(){return NET;},get REMOTE(){return REMOTE;},W,get NAV(){return NAV;},setOffMap,get OFFMAP(){return OFFMAP;},TOUCH,EDIT,openEditor,get SETTINGS(){return SETTINGS;},get LAYOUT(){return LAYOUT;},checkOrientation,MAT,LOAD,TRAINERS,get RANGE_BOTS(){return RANGE_BOTS;},TRAIN,setTrain,impactFX,bodyFX,get DECALS(){return DECALS;},surfaceOf,soundDelay,aimSelfTest,P,PM,WS,WCORE,RECOIL,AIM,BOTS,DUMMIES,BULLETS,EVENTS,PARTS,STATS,get state(){return state;},get mode(){return mode;},setMode,input,startMatch,simTick,frame,toMenu,pause,resume};
+window.__SD={freeze(on){SIM_FREEZE=!!on;},VMA,makeSoldier,animateSoldier,BOT_MAT,scene,camera,RemotePlayer,PMprev,PIS,PROOT,RIF,WROOT,SHO_:null,MANUAL,advance(ms){frameBody(last+ms);},get LAST_PELLETS(){return LAST_PELLETS;},SCORE,SCFG,SROOT,SHO,setPrimaryChoice,get PRIMARY(){return PRIMARY;},PCORE,PCFG,setWorld,WORLDS,get WORLD_ID(){return WORLD_ID;},renderer,GFX,gfxApply,get NET(){return NET;},get REMOTE(){return REMOTE;},W,get NAV(){return NAV;},setOffMap,get OFFMAP(){return OFFMAP;},TOUCH,EDIT,openEditor,get SETTINGS(){return SETTINGS;},get LAYOUT(){return LAYOUT;},checkOrientation,MAT,LOAD,TRAINERS,get RANGE_BOTS(){return RANGE_BOTS;},TRAIN,setTrain,setLethal,kitNote,impactFX,bodyFX,get DECALS(){return DECALS;},surfaceOf,soundDelay,aimSelfTest,P,PM,WS,WCORE,RECOIL,AIM,BOTS,DUMMIES,BULLETS,EVENTS,PARTS,STATS,get state(){return state;},get mode(){return mode;},setMode,input,startMatch,simTick,frame,toMenu,pause,resume};
 })();
 </script>
