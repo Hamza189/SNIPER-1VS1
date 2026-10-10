@@ -1481,7 +1481,8 @@ function updatePistolVM(dt){
   // hip: low right, canted a touch, muzzle towards the crosshair; ADS: sight line on the screen centre
   let x=lerp(glb?0.102:0.074,0,ads),y=lerp(glb?-0.053:-0.088,-0.0262,ads),z=lerp(glb?-0.266:-0.29,-0.335,ads),rx=(glb?0.12:0.04)*free,ry=(glb?0.35:0.1)*free,rz=(glb?-0.15:-0.06)*free;
   // sprint: lowered and turned in; slide / air / landing / lean / death
-  const sw=VM.sprintW*free;x-=0.02*sw;y-=0.022*sw;z+=0.02*sw;rx-=0.42*sw;ry+=0.38*sw;rz+=0.3*sw;
+  const sw=VM.sprintW*free;
+  if(glb){x-=0.035*sw;y-=0.05*sw;z+=0.03*sw;rx-=0.62*sw;ry+=0.42*sw;rz+=0.45*sw;}else{x-=0.02*sw;y-=0.022*sw;z+=0.02*sw;rx-=0.42*sw;ry+=0.38*sw;rz+=0.3*sw;}
   const bob=P.bob*MOTION,bm=PM.sprinting?1.8:1;
   x+=Math.cos(P.stepPhase)*0.011*bob*bm*FEEL.vmBob*(1-ads*0.85);y+=-Math.abs(Math.sin(P.stepPhase))*0.012*bob*bm*FEEL.vmBob*(1-ads*0.85);
   rz+=Math.cos(P.stepPhase)*0.03*bob*bm*free;

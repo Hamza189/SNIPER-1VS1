@@ -22,10 +22,13 @@ const [out, key, action, frames, step] = process.argv.slice(2);
   if (process.env.PRE === 'shoot') { await p.mouse.down(); for (let i = 0; i < 4; i++) await p.evaluate(() => __SD.advance(60)); await p.mouse.up(); for (let i = 0; i < 25; i++) await p.evaluate(() => __SD.advance(80)); }
   if (action === 'click') { await p.mouse.down(); }
   else if (action && action !== 'none') await p.keyboard.down(action);
+  const HOLD = (process.env.HOLD || '').split(',').filter(Boolean);
+  for (const k of HOLD) await p.keyboard.down(k);
   const shots = [];
   const N = +frames || 12, dt = +step || 50;
   for (let i = 0; i < N; i++) {
     await p.evaluate(ms => __SD.advance(ms), dt);
+    if (process.env.TAP && i === +(process.env.TAPAT || 4)) await p.keyboard.press(process.env.TAP);
     if (i === 1) { if (action === 'click') await p.mouse.up(); else if (action && action !== 'none') await p.keyboard.up(action); }
     const f = out.replace(/\.png$/, '') + '-' + String(i).padStart(2, '0') + '.png';
     await p.screenshot({ path: f }); shots.push(f);

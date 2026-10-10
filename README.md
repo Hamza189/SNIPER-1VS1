@@ -47,12 +47,16 @@ client/          Lógica del cliente sin DOM (probada en Node)
   layout.js      Disposición de los botones táctiles      touch.js   Joystick y varios dedos
   quality.js     Perfiles gráficos y resolución automática
   netcore.js     Multijugador: predicción, reconciliación, interpolación del rival, ping
+  vmrig.js       Modelos 3D: materiales, brazos con guantes (colocación de manos y dedos), poses
 server/
   worker.js      Servidor en Cloudflare (Worker + Durable Object por sala)
   node.js        El mismo servidor en Node (pruebas locales)
 src/page.html    Cliente: render, cámara, arma, efectos, audio, bots, interfaz, controles, online
 build.py         Une core/ + client/ + src/page.html en index.html
-tools/           export-map.js (mapa del servidor), static-server.js
+assets/          viewmodels.glb: armas y brazos modelados (generado, ver abajo)
+vendor/          three.min.js y GLTFLoader.js (r128 oficiales)
+tools/           export-map.js (mapa del servidor), static-server.js, blender/ (modelos),
+                 viewer.html + pose-lab.js (visor), capture-weapons.js y film.js (capturas)
 test/            Pruebas automáticas (Node y navegador real)
 docs/            Pruebas manuales, ajustes, protocolo, online
 ```
@@ -82,3 +86,15 @@ Las pruebas que hay que hacer jugando están en [`docs/PRUEBAS-Y-AJUSTES.md`](do
 ## Hoja de ruta
 
 1. Gunplay ✔ · 2A. Navaja y entrenamiento ✔ · 2B. Controles móviles ✔ · 2C. Calidad gráfica (básica ✔: perfiles y resolución automática) · **3. 1v1 online con sala privada (alfa, actual)** · 4. Salas 2v2 / 3v3 · después: ranked, cuentas, cosméticos
+
+## Modelos 3D (armas y brazos)
+
+Las cuatro armas (HALCÓN R7, FURIA 12, VÍBORA 9, navaja) y los brazos con guantes están **generados por código con Blender** (`tools/blender/*.py`), sin modelos descargados: son diseño propio y no tienen licencias de terceros. Para regenerarlos:
+
+```
+pip install bpy            # Blender como módulo de Python
+python3 tools/blender/viewmodels.py      # escribe assets/viewmodels.glb
+python3 build.py
+```
+
+El juego carga `assets/viewmodels.glb` en segundo plano; si no llega, usa los modelos simples de antes (`?vm=0` los fuerza). Las manos se colocan cada fotograma sobre el arma (`client/vmrig.js`, tablas `ARMPOSE` y `HANDSETS`). Para ajustar poses: `tools/viewer.html?lab=pistol&fp=1` (con un servidor estático) y `node tools/film.js` para ver una acción fotograma a fotograma.
