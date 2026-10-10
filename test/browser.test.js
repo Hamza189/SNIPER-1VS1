@@ -46,13 +46,18 @@ const shown = page => page.evaluate(ids => ids.filter(id => { const e = document
       const ov = await shown(page);
       check('en el menú no se ve ninguna pantalla que debería estar oculta', ov.length === 0, ov.join(', ') || 'ninguna');
       check('el botón JUGAR se ve', st.play);
+      await page.click('#openSettings');
+      check('AJUSTES desde el menú se ve por encima del menú (no detrás)', await page.evaluate(() => { const e = document.elementFromPoint(innerWidth / 2, innerHeight / 2); return !!(e && e.closest('#settings')); }));
+      await page.click('#setClose');
       // the server's copy of the map (core/mapdata.js) is exactly the world the page builds
       const { dumpWorld } = require('../tools/export-map.js'), MAPF = require('../core/mapdata.js');
+      const world0 = await page.evaluate(() => __SD.WORLD_ID);
+      check('el menú enseña la ARENA DE PRUEBAS por defecto (mapa del duelo contra bots)', world0 === 'arena', world0);
       for (const id of ['pueblo', 'arena']) {
         const d = await dumpWorld(page, id), M = MAPF.maps[id];
         check('mapa ' + id + ': el del servidor coincide con el del juego (si cambias un mapa: node tools/export-map.js)', !!M && JSON.stringify(d.tris) === JSON.stringify(M.tris) && JSON.stringify(d.ds) === JSON.stringify(M.ds) && JSON.stringify(d.colliders) === JSON.stringify(M.colliders) && JSON.stringify(d.ramps) === JSON.stringify(M.ramps) && JSON.stringify(d.nav) === JSON.stringify(M.nav), (d.tris.length / 9) + ' triángulos');
       }
-      check('después de comprobar los mapas la página sigue en el pueblo', await page.evaluate(() => __SD.WORLD_ID === 'pueblo'));
+      check('después de comprobar los mapas la página sigue en el mismo mapa', await page.evaluate(w => __SD.WORLD_ID === w, world0));
       const dup = await page.evaluate(() => { const c = {}; document.querySelectorAll('[id]').forEach(e => c[e.id] = (c[e.id] || 0) + 1); return Object.keys(c).filter(k => c[k] > 1); });
       check('ningún id repetido en la página (si se repite, un dato se escribe en el sitio equivocado)', dup.length === 0, dup.join(', ') || 'ninguno');
       // real mouse click on JUGAR → the browser really captures the mouse (Pointer Lock)
@@ -83,6 +88,26 @@ const shown = page => page.evaluate(ids => ids.filter(id => { const e = document
       check('tres clics: tres disparos de pistola, el rifle conserva sus balas', pf.ammo === 9 && pf.rifle === 5, JSON.stringify(pf));
       await page.keyboard.press('KeyR');
       check('R recarga la pistola (12 otra vez)', await wf(() => __SD.PCORE.ammo === 12 && __SD.PCORE.state === 'ready', 12000));
+      // the pistol animation, posed frame by frame (debug hook): magazine out and falling, the left hand
+      // bringing the new one up the grip, slide racked, forearms always reaching to below the screen
+      const an = await page.evaluate(() => {
+        const S = __SD, PI = S.PIS, V = new THREE.Vector3(), r = {};
+        const at = (u, f) => { PI.debug = { reload: u }; S.advance(16); const o = f(); PI.debug = null; return o; };
+        const wy = o => { o.updateMatrixWorld(true); return V.setFromMatrixPosition(o.matrixWorld).y; };
+        r.arms = PI.arms.visible;
+        r.drop = at(0.12, () => [PI.oldMag.visible, wy(PI.oldMag)]); r.drop2 = at(0.3, () => [PI.oldMag.visible, wy(PI.oldMag)]);
+        r.carry = at(0.45, () => { PI.lh.updateMatrixWorld(true); PI.mag.updateMatrixWorld(true); return [PI.mag.visible, new THREE.Vector3().setFromMatrixPosition(PI.lh.matrixWorld).distanceTo(new THREE.Vector3().setFromMatrixPosition(PI.mag.matrixWorld))]; });
+        r.inserted = at(0.65, () => PI.mag.position.y);
+        r.rack = at(0.79, () => PI.slide.position.z);
+        r.rest = at(0, () => PI.slide.position.z);
+        const elb = PI.armR.g.position.clone().add(new THREE.Vector3(0, 1, 0).applyQuaternion(PI.armR.g.quaternion).multiplyScalar(PI.armR.s.scale.y));
+        r.elbowBelow = elb.y < -0.3;
+        return r;
+      });
+      check('pistola: los antebrazos se dibujan y llegan por debajo de la pantalla', an.arms && an.elbowBelow, JSON.stringify({ arms: an.arms, elbowBelow: an.elbowBelow }));
+      check('recarga: el cargador vacío sale y cae', an.drop[0] && an.drop2[0] && an.drop2[1] < an.drop[1] - 0.03, an.drop.map(x => +(+x).toFixed(3)) + ' → ' + an.drop2.map(x => +(+x).toFixed(3)));
+      check('recarga: la mano izquierda trae el cargador nuevo pegado a la mano', an.carry[0] && an.carry[1] < 0.12, (+an.carry[1]).toFixed(3) + ' m');
+      check('recarga: el cargador queda metido y la corredera se acciona', an.inserted === 0 && an.rack > 0.025 && an.rest === 0, JSON.stringify({ inserted: an.inserted, rack: an.rack }));
       await page.keyboard.press('Digit1');
       check('tecla 1: vuelve el rifle', await wf(() => __SD.LOAD.active === 'rifle' && __SD.LOAD.phase === 'ready'));
       if (!/✔ AUTOTEST/.test(head)) res.filter(l => l.startsWith('✘')).forEach(l => console.log('       ' + l));

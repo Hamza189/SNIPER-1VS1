@@ -75,7 +75,11 @@ check('el menú se renderiza 60 fotogramas sin errores', errors.length === 0 && 
 
 console.log('\nDUELO');
 SD.setMode('duel'); SD.startMatch();
-check('empieza la partida', SD.state === 'playing' && SD.BOTS.filter(b => b.alive).length === 3, SD.BOTS.filter(b => b.alive).length + ' bots');
+check('duelo contra bots en la ARENA DE PRUEBAS (por defecto): 2 bots dentro del patio', SD.state === 'playing' && SD.WORLD_ID === 'arena' && SD.BOTS.filter(b => b.alive).length === 2 && SD.BOTS.filter(b => b.alive).every(b => Math.abs(b.g.position.x) < 24 && Math.abs(b.g.position.z) < 16), SD.BOTS.filter(b => b.alive).length + ' bots');
+frames(120, 16);
+check('los bots se mueven por la arena sin errores', errors.length === 0 && SD.BOTS.filter(b => b.alive).every(b => Math.abs(b.g.position.x) < 24 && Math.abs(b.g.position.z) < 16));
+SD.toMenu(); SD.setOffMap('pueblo'); SD.startMatch();
+check('empieza la partida en el pueblo (3 bots)', SD.state === 'playing' && SD.WORLD_ID === 'pueblo' && SD.BOTS.filter(b => b.alive).length === 3, SD.BOTS.filter(b => b.alive).length + ' bots');
 SD.P.hp = 1e9; // stand-in raycasts give bots perfect sight: keep the player alive for the scripted part
 Object.assign(SD.PM, { x: 2.5, y: 0, z: 40, vx: 0, vz: 0 }); SD.P.yaw = 0; // open street, facing north
 key('KeyW', true); key('ShiftLeft', true);

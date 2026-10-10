@@ -146,6 +146,7 @@ button{font:inherit;color:inherit}
 
 /* ---------- Overlays ---------- */
 .overlay{position:fixed;inset:0;z-index:20;overflow:auto;-webkit-overflow-scrolling:touch;touch-action:pan-y}
+#settings{z-index:22}   /* opened from the menu or the pause screen: always on top of them */
 #menu{background:linear-gradient(90deg,rgba(12,10,8,.92) 0%,rgba(12,10,8,.78) 46%,rgba(12,10,8,.15) 100%)}
 .menuInner{box-sizing:border-box;min-height:100%;padding:calc(28px + env(safe-area-inset-top,0px)) max(20px,env(safe-area-inset-right,0px)) calc(28px + env(safe-area-inset-bottom,0px)) max(20px,env(safe-area-inset-left,0px));display:grid;grid-template-columns:minmax(0,1fr) minmax(0,380px);gap:28px 48px;align-content:center;max-width:1100px}
 .eyebrow{font-size:11px;letter-spacing:.28em;color:var(--signal);text-transform:uppercase}
@@ -417,6 +418,10 @@ body.touch #score .side span{max-width:11vw;overflow:hidden;text-overflow:ellips
         <div>
           <div class="lbl" style="margin-bottom:6px">Arma principal</div>
           <div class="seg kitSeg" role="group" aria-label="Arma principal"><button type="button" data-kit="rifle">HALCÓN R7</button><button type="button" data-kit="shotgun">FURIA 12</button></div>
+        </div>
+        <div id="mapBlock">
+          <div class="lbl" style="margin-bottom:6px">Mapa</div>
+          <div class="seg" id="mapSeg" role="group" aria-label="Mapa"><button type="button" data-map="arena">ARENA DE PRUEBAS</button><button type="button" data-map="pueblo">PUEBLO</button></div>
         </div>
         <div id="rangeBlock" hidden>
           <div class="lbl" style="margin-bottom:6px">Bots de entrenamiento (desarmados)</div>
@@ -1993,7 +1998,7 @@ const SDNet = { create };
 if (isNode) module.exports = SDNet; else root.SDNet = SDNet;
 })(typeof window !== 'undefined' ? window : globalThis);
 
-const BUILD_ID="b56f36a";const BUILD_HASH="be0c93d684";
+const BUILD_ID="7da4af9";const BUILD_HASH="e754bbcc0e";
 </script>
 <script>
 (function(){
@@ -2244,7 +2249,7 @@ const RANGE_SLOTS=[
 ];
 
 /* =================== NAV GRID =================== */
-const NAV=[];const NAVMAP=new Map();
+let NAV=[];const NAVMAP=new Map();
 function blockedPt(x,z,inf){for(const c of W.colliders){if(x>c.minX-inf&&x<c.maxX+inf&&z>c.minZ-inf&&z<c.maxZ+inf)return true;}for(const c of (W.ramps||[])){if(x>c.minX-inf&&x<c.maxX+inf&&z>c.minZ-inf&&z<c.maxZ+inf)return true;}return false;}
 function segClear(ax,az,bx,bz,inf){const d=Math.hypot(bx-ax,bz-az);const n=Math.ceil(d/0.3);for(let i=1;i<n;i++){const t=i/n;if(blockedPt(lerp(ax,bx,t),lerp(az,bz,t),inf))return false;}return true;}
 {const S=3;for(let gx=-46;gx<=46;gx+=S)for(let gz=-46;gz<=46;gz+=S){if(!blockedPt(gx,gz,1.0)){NAVMAP.set(gx+','+gz,NAV.length);NAV.push({x:gx,z:gz,n:[]});}}
@@ -2301,6 +2306,9 @@ const WORLDS={pueblo:{colliders:W.colliders,ray:W.ray,ramps:W.ramps,objs:scene.c
   }
   // spawn candidates: open floor points (A spawns west, B east; respawns far from the rival)
   const nav=[];for(let x=-22;x<=22;x+=2)for(let z=-14;z<=14;z+=2)if(!blockedPt(x,z,1.0))nav.push({x,z,n:[]});
+  // the same points linked for the offline bots (walkable straight lines between neighbours)
+  {const ix=new Map();nav.forEach((n,i)=>ix.set(n.x+','+n.z,i));
+   for(const nd of nav)for(const [dx,dz] of [[2,0],[-2,0],[0,2],[0,-2],[2,2],[2,-2],[-2,2],[-2,-2]]){const j=ix.get((nd.x+dx)+','+(nd.z+dz));if(j!==undefined&&segClear(nd.x,nd.z,nd.x+dx,nd.z+dz,0.55))nd.n.push(j);}}
   WORLDS.arena={colliders:W.colliders,ray:W.ray,ramps:W.ramps,objs:scene.children.slice(from),nav,label:'ARENA DE PRUEBAS'};
   for(const o of WORLDS.arena.objs)o.visible=false;
   W.colliders=WORLDS.pueblo.colliders;W.ray=WORLDS.pueblo.ray;W.ramps=WORLDS.pueblo.ramps;
@@ -2311,7 +2319,7 @@ function setWorld(id){
   if(!WORLDS[id]||id===WORLD_ID)return;
   for(const o of WORLDS[WORLD_ID].objs)o.visible=false;
   const w=WORLDS[id];for(const o of w.objs)o.visible=true;
-  W.colliders=w.colliders;W.ray=w.ray;W.ramps=w.ramps;WORLD_ID=id;
+  W.colliders=w.colliders;W.ray=w.ray;W.ramps=w.ramps;NAV=w.nav;WORLD_ID=id;
 }
 
 /* =================== AUDIO =================== */
@@ -2362,7 +2370,7 @@ const SFX={
     nz(0.075,0.25,{f:1300,f2:400,g:0.22,pan:-0.4});nz(0.14,0.35,{f:900,f2:250,g:0.13,pan:0.5,verb:0.6});},
   dry(){nz(0,0.03,{type:'bandpass',f:2400,q:5,g:0.4});},
   // VÍBORA 9: a sharp, shorter crack with less low end than the rifle, and its own small mechanics
-  pistolShot(){SFX.click(0,4200,0.18);nz(0,0.05,{type:'bandpass',f:3200,q:0.7,g:0.9});nz(0,0.22,{f:3000,f2:400,g:0.7,verb:0.5});tone(0,0.12,{f:180,f2:70,g:0.6});nz(0.01,0.5,{f:900,f2:200,g:0.14,verb:0.9});},
+  pistolShot(){SFX.click(0,4200,0.18);nz(0,0.05,{type:'bandpass',f:3200,q:0.7,g:0.9});nz(0,0.22,{f:3000,f2:400,g:0.7,verb:0.5});tone(0,0.12,{f:180,f2:70,g:0.6});tone(0,0.07,{f:96,f2:44,g:0.55});nz(0.01,0.5,{f:900,f2:200,g:0.14,verb:0.9});SFX.click(0.045,2300,0.2);SFX.click(0.075,3100,0.16);},
   pMagOut(){SFX.click(0,2600,0.35);nz(0.03,0.08,{type:'bandpass',f:1500,q:2,g:0.15});},
   pMagIn(){nz(0,0.06,{f:1100,g:0.45});SFX.click(0.03,2800,0.5);},
   pSlide(){nz(0,0.06,{type:'bandpass',f:2000,q:2,g:0.25});SFX.click(0.05,3000,0.5);},
@@ -2584,81 +2592,219 @@ const KNIFE=new T.Group();KROOT.add(KNIFE);       // spins around the blade duri
   B(0.022,0.03,0.05,glove,-0.012,-0.012,0.05,KROOT);
   const sl=B(0.09,0.09,0.36,sleeve,0.04,-0.05,0.25,KROOT);sl.rotation.set(0.45,-0.1,0);
 })();
-/* VÍBORA 9 — the sidearm in first person. Origin = bore line; sights on top of the slide, so the
-   ADS pose only has to bring the sight line onto the centre of the screen. -z = forward. */
+/* VÍBORA 9 — the sidearm in first person.
+   Gun-local space: origin = bore line, -z = forward, sights on top of the slide (sight line y = 0.0262),
+   so the ADS pose only has to bring the sight line onto the centre of the screen.
+   Rig: PROOT (pose) → PIS.kick (recoil, pivots at the hands) → PIS.body → PIS.gun (gun + right hand)
+                                                               → PIS.lh (left hand, moves on its own)
+   Shapes are side profiles extruded across the gun (bevelled), not boxes, so the silhouette reads
+   as a real pistol: raked grip, trigger guard with a hole, chamfered slide, sights with dots. */
 const PROOT=new T.Group();wScene.add(PROOT);PROOT.visible=false;
 const PIS={};
 (function buildPistol(){
-  const slideM=new T.MeshStandardMaterial({color:0x2a2d31,metalness:.7,roughness:.32,envMap:ENV,envMapIntensity:1.1});
-  const frameM=new T.MeshStandardMaterial({color:0x3b3c36,roughness:.8});
-  const darkM=new T.MeshStandardMaterial({color:0x17181a,roughness:.7});
-  const steelM=new T.MeshStandardMaterial({color:0x8a8e93,metalness:.85,roughness:.22,envMap:ENV,envMapIntensity:1.3});
-  const viper=new T.MeshStandardMaterial({color:0xe07a2a,roughness:.6,emissive:0x3a1400});
-  const dotM=new T.MeshBasicMaterial({color:0xffe08a});
-  const glove=new T.MeshStandardMaterial({color:0x34302a,roughness:.9}),sleeve=new T.MeshStandardMaterial({color:0x4a4636,roughness:.95});
-  const B=(w,h,d,m,x,y,z,par)=>{const o=new T.Mesh(new T.BoxGeometry(w,h,d),m);o.position.set(x,y,z);(par||PIS.gun).add(o);return o;};
-  PIS.gun=new T.Group();PROOT.add(PIS.gun);
-  // slide (moves back on every shot) with both sights, serrations, ejection port and the orange "viper" line
-  PIS.slide=new T.Group();PIS.gun.add(PIS.slide);
-  B(0.03,0.032,0.192,slideM,0,0.004,-0.078,PIS.slide);
-  B(0.031,0.006,0.192,slideM,0,0.023,-0.078,PIS.slide).scale.set(0.82,1,1);
-  for(let i=0;i<5;i++)B(0.032,0.022,0.003,darkM,0,0.006,0.006-i*0.007,PIS.slide);
-  B(0.002,0.012,0.04,darkM,0.0155,0.008,-0.05,PIS.slide);
-  for(const sx of [-1,1])B(0.0012,0.004,0.12,viper,sx*0.0156,-0.006,-0.09,PIS.slide);
-  for(const sx of [-1,1])B(0.006,0.008,0.008,darkM,sx*0.007,0.03,0.01,PIS.slide);      // rear sight (notch)
-  for(const sx of [-1,1])B(0.0022,0.0022,0.001,dotM,sx*0.007,0.032,0.0055,PIS.slide);
-  B(0.004,0.009,0.008,darkM,0,0.03,-0.165,PIS.slide);                                    // front sight post
-  B(0.0026,0.0026,0.001,dotM,0,0.033,-0.1609,PIS.slide);
-  const muz=new T.Mesh(new T.CylinderGeometry(0.0065,0.0065,0.012,12),steelM);muz.rotation.x=Math.PI/2;muz.position.set(0,0.004,-0.176);PIS.slide.add(muz);
-  // frame, rail, trigger guard, trigger, raked grip with texture panels, magazine
-  B(0.028,0.02,0.16,frameM,0,-0.02,-0.07);
-  for(let i=0;i<3;i++)B(0.022,0.004,0.006,darkM,0,-0.032,-0.11-i*0.014);
-  B(0.004,0.004,0.05,frameM,0,-0.052,-0.045);B(0.004,0.03,0.004,frameM,0,-0.038,-0.07);
-  const trig=B(0.004,0.016,0.005,steelM,0,-0.037,-0.042);trig.rotation.x=0.3;
-  PIS.grip=new T.Group();PIS.grip.position.set(0,-0.03,0.008);PIS.grip.rotation.x=0.28;PIS.gun.add(PIS.grip);
-  B(0.03,0.11,0.048,frameM,0,-0.05,0,PIS.grip);
-  for(const sx of [-1,1])B(0.002,0.07,0.036,darkM,sx*0.0158,-0.05,0,PIS.grip);
-  PIS.mag=B(0.024,0.11,0.036,darkM,0,-0.052,0,PIS.grip);PIS.magY=-0.052;
-  B(0.032,0.008,0.05,frameM,0,-0.107,0,PIS.mag).position.set(0,-0.055,0);
-  // hands: right hand on the grip, left hand cupping it, sleeves
-  const rh=B(0.04,0.06,0.07,glove,0.004,-0.06,0.012,PIS.grip);rh.rotation.x=-0.05;
-  B(0.012,0.012,0.05,glove,0.012,-0.022,-0.03,PIS.gun);                                  // trigger finger
-  const lh=B(0.038,0.05,0.07,glove,-0.02,-0.07,0.0,PIS.grip);lh.rotation.z=0.2;
-  const rs=B(0.05,0.05,0.3,sleeve,0.04,-0.19,0.21,PIS.gun);rs.rotation.set(0.95,-0.15,0);
-  const ls=B(0.05,0.05,0.3,sleeve,-0.055,-0.2,0.2,PIS.gun);ls.rotation.set(1.0,0.35,0);
-  // muzzle flash + where the casing leaves
+  const slideM=new T.MeshStandardMaterial({color:0x34373c,metalness:.6,roughness:.34,envMap:ENV,envMapIntensity:1.0});
+  const frameM=new T.MeshStandardMaterial({color:0x2f2c27,roughness:.75,metalness:.08});           // dark polymer
+  const gripTex=canvasTex(64,64,(g,w,h)=>{g.fillStyle='#2c2924';g.fillRect(0,0,w,h);speckle(g,w,h,900,['#1f1d1a','#3a362f','#171512','#413c33'],1,2);});
+  gripTex.repeat.set(1.5,2.5);
+  const gripM=new T.MeshStandardMaterial({color:0xffffff,map:gripTex,roughness:.95});
+  const darkM=new T.MeshStandardMaterial({color:0x141518,roughness:.7});
+  const steelM=new T.MeshStandardMaterial({color:0x9a9ea4,metalness:.85,roughness:.25,envMap:ENV,envMapIntensity:1.3});
+  const viper=new T.MeshStandardMaterial({color:0xe8772a,roughness:.55,emissive:0x4a1a00});
+  const dotM=new T.MeshBasicMaterial({color:0x9dff6a}),dotF=new T.MeshBasicMaterial({color:0xffe066});
+  const boreM=new T.MeshBasicMaterial({color:0x050505});
+  const glove=new T.MeshStandardMaterial({color:0x2f2b26,roughness:.85});
+  const gloveK=new T.MeshStandardMaterial({color:0x3a3530,roughness:.9});
+  const sleeve=new T.MeshStandardMaterial({color:0x4d4a37,roughness:.95});
+  const cuff=new T.MeshStandardMaterial({color:0x23211d,roughness:.9});
+  // side profile [z,y] → mesh extruded across x, centred on x = 0
+  const prof=(pts,w,m,par,holes,bev)=>{
+    const s=new T.Shape();s.moveTo(-pts[0][0],pts[0][1]);for(let i=1;i<pts.length;i++)s.lineTo(-pts[i][0],pts[i][1]);
+    for(const h of holes||[]){const p=new T.Path();p.moveTo(-h[0][0],h[0][1]);for(let i=1;i<h.length;i++)p.lineTo(-h[i][0],h[i][1]);s.holes.push(p);}
+    const b=bev===undefined?0.0018:bev;
+    const g=new T.ExtrudeGeometry(s,{depth:w-2*b,bevelEnabled:b>0,bevelThickness:b,bevelSize:b,bevelSegments:2,curveSegments:4});
+    g.rotateY(Math.PI/2);g.translate(-(w-2*b)/2,0,0);g.computeVertexNormals();
+    const o=new T.Mesh(g,m);par.add(o);return o;
+  };
+  const B=(w,h,d,m,x,y,z,par)=>{const o=new T.Mesh(new T.BoxGeometry(w,h,d),m);o.position.set(x,y,z);par.add(o);return o;};
+  const E=(rx,ry,rz,m,x,y,z,par)=>{const o=new T.Mesh(new T.SphereGeometry(1,14,10),m);o.scale.set(rx,ry,rz);o.position.set(x,y,z);par.add(o);return o;};
+  const _u=new T.Vector3(0,1,0);
+  // a tapered limb from a to b (fingers, thumbs, forearms), with round ends
+  const L=(a,b,r1,r2,m,par,caps)=>{
+    const A=new T.Vector3(...a),Bv=new T.Vector3(...b),d=Bv.clone().sub(A),len=d.length();
+    const o=new T.Mesh(new T.CylinderGeometry(r2,r1,len,10),m);o.position.copy(A).addScaledVector(d,0.5);o.quaternion.setFromUnitVectors(_u,d.normalize());par.add(o);
+    if(caps!==false){const s1=new T.Mesh(new T.SphereGeometry(r1,10,8),m);s1.position.copy(A);par.add(s1);const s2=new T.Mesh(new T.SphereGeometry(r2,10,8),m);s2.position.copy(Bv);par.add(s2);}
+    return o;
+  };
+  PIS.kick=new T.Group();PROOT.add(PIS.kick);
+  PIS.pivot=new T.Vector3(0.004,-0.075,0.04);           // recoil turns around the wrists, not the barrel
+  PIS.kick.position.copy(PIS.pivot);
+  PIS.body=new T.Group();PIS.body.position.copy(PIS.pivot).multiplyScalar(-1);PIS.kick.add(PIS.body);
+  PIS.gun=new T.Group();PIS.body.add(PIS.gun);
+  const G=PIS.gun;
+  // ---- slide: chamfered profile, serrations, ejection port, sights, muzzle; moves back on each shot
+  PIS.slide=new T.Group();G.add(PIS.slide);
+  prof([[0.022,-0.0105],[-0.168,-0.0105],[-0.168,0.0105],[-0.161,0.018],[0.017,0.018],[0.022,0.012]],0.028,slideM,PIS.slide);
+  for(const sx of [-1,1]){
+    for(let i=0;i<6;i++)B(0.0016,0.019,0.0022,darkM,sx*0.0143,0.004,0.016-i*0.0042,PIS.slide);   // rear serrations
+    for(let i=0;i<4;i++)B(0.0016,0.015,0.0022,darkM,sx*0.0143,0.006,-0.128-i*0.0042,PIS.slide);  // front serrations
+    B(0.0012,0.0035,0.07,viper,sx*0.0144,-0.0055,-0.075,PIS.slide);                               // the viper line
+  }
+  B(0.0016,0.012,0.048,darkM,0.0142,0.008,-0.04,PIS.slide);                                         // ejection port
+  B(0.012,0.004,0.044,steelM,0.004,0.0165,-0.04,PIS.slide);                                         // barrel hood in the port
+  // sights: rear notch with two green dots, front post with a yellow dot (the picture you aim with)
+  for(const sx of [-1,1]){B(0.0085,0.0085,0.009,darkM,sx*0.00625,0.0222,0.011,PIS.slide);E(0.0014,0.0014,0.0006,dotM,sx*0.0062,0.0235,0.0064,PIS.slide);}
+  B(0.0036,0.0086,0.008,darkM,0,0.0222,-0.153,PIS.slide);E(0.0014,0.0014,0.0006,dotF,0,0.0242,-0.1488,PIS.slide);
+  const muz=new T.Mesh(new T.CylinderGeometry(0.0058,0.0058,0.006,16),steelM);muz.rotation.x=Math.PI/2;muz.position.set(0,0.0015,-0.1695);PIS.slide.add(muz);
+  const bore=new T.Mesh(new T.CircleGeometry(0.0034,14),boreM);bore.rotation.y=Math.PI;bore.position.set(0,0.0015,-0.1727);PIS.slide.add(bore);
+  // ---- frame: dust cover with rail, trigger guard (real hole), raked grip with beavertail
+  prof([[0.03,-0.0105],[-0.15,-0.0105],[-0.15,-0.027],[-0.146,-0.031],[-0.092,-0.031],[-0.089,-0.052],[-0.082,-0.059],[-0.034,-0.059],[-0.018,-0.05],[-0.013,-0.044],
+        [0.011,-0.139],[0.06,-0.136],[0.039,-0.046],[0.052,-0.026],[0.046,-0.016],[0.03,-0.0105]],0.026,frameM,G,
+       [[[-0.081,-0.035],[-0.028,-0.035],[-0.022,-0.047],[-0.03,-0.0525],[-0.077,-0.0525],[-0.083,-0.047]]]);
+  for(let i=0;i<3;i++)B(0.02,0.003,0.005,darkM,0,-0.0315,-0.105-i*0.013,G);                         // rail slots
+  for(const sx of [-1,1])B(0.0012,0.0025,0.1,viper,sx*0.0132,-0.0215,-0.085,G);
+  B(0.004,0.006,0.012,darkM,-0.0138,-0.007,-0.035,G);                                                // slide stop
+  PIS.trig=new T.Group();PIS.trig.position.set(0,-0.036,-0.05);G.add(PIS.trig);
+  {const t=B(0.0045,0.016,0.0045,steelM,0,-0.007,0,PIS.trig);t.rotation.x=0.35;}
+  // grip axis (magazine, texture panels, the right hand all follow the rake)
+  PIS.axis=new T.Group();PIS.axis.position.set(0,-0.035,0.012);PIS.axis.rotation.x=-0.24;G.add(PIS.axis);
+  for(const sx of [-1,1])B(0.0016,0.07,0.04,gripM,sx*0.0136,-0.055,0.001,PIS.axis);
+  const mkMag=()=>{const m=new T.Group();B(0.021,0.1,0.034,darkM,0,-0.053,0,m);B(0.026,0.008,0.042,frameM,0,-0.106,0.002,m);
+    B(0.017,0.004,0.026,steelM,0,-0.0015,-0.002,m);   // top round
+    const r=new T.Mesh(new T.CylinderGeometry(0.0045,0.0045,0.012,10),new T.MeshStandardMaterial({color:0xc9a04a,metalness:.8,roughness:.3}));r.rotation.x=Math.PI/2;r.position.set(0,0.002,-0.005);m.add(r);return m;};
+  PIS.mag=mkMag();PIS.axis.add(PIS.mag);
+  PIS.oldMag=mkMag();PIS.axis.add(PIS.oldMag);PIS.oldMag.visible=false;
+  // ---- right hand: palm round the back strap, three fingers across the front, thumb forward on the
+  //      left side, index finger along the frame onto the trigger; forearm out to the bottom right
+  const RA=PIS.axis;
+  E(0.0165,0.042,0.03,glove,0.011,-0.05,0.014,RA);
+  E(0.013,0.016,0.016,glove,0.004,-0.008,0.026,RA);                                                  // web of the hand on the beavertail
+  for(const [y,r] of [[-0.042,0.0088],[-0.062,0.0086],[-0.081,0.0076]]){
+    L([0.017,y,-0.012],[-0.011,y,-0.031],r,r*0.95,glove,RA);
+    L([-0.011,y,-0.031],[-0.019,y-0.002,-0.013],r*0.95,r*0.85,gloveK,RA);
+  }
+  L([-0.014,-0.024,0.022],[-0.0175,-0.02,-0.03],0.0085,0.0075,glove,G);                             // thumb
+  L([0.0165,-0.034,-0.008],[0.0165,-0.036,-0.04],0.0078,0.0072,glove,G);                             // index finger…
+  L([0.0165,-0.036,-0.04],[0.006,-0.043,-0.051],0.0072,0.0066,gloveK,G);                             // …onto the trigger
+  L([0.004,-0.083,0.042],[0.012,-0.1,0.062],0.021,0.023,glove,G);                                   // wrist
+  // ---- left hand (support): its own group so the reload can take it away and bring it back
+  PIS.lh=new T.Group();PIS.body.add(PIS.lh);
+  const LH=new T.Group();LH.rotation.x=-0.24;PIS.lh.add(LH);
+  E(0.013,0.04,0.031,glove,0,0,0,LH);
+  for(const [y,r] of [[0.01,0.0086],[-0.009,0.0085],[-0.027,0.0078],[-0.043,0.007]]){
+    L([0.004,y,-0.031],[0.022,y,-0.036],r,r*0.95,glove,LH);
+    L([0.022,y,-0.036],[0.027,y-0.002,-0.02],r*0.95,r*0.85,gloveK,LH);
+  }
+  L([0.004,0.03,-0.012],[0.006,0.045,-0.062],0.0085,0.0075,glove,PIS.lh);                            // thumb forward under the slide
+  L([0.0,-0.03,0.02],[-0.004,-0.045,0.035],0.021,0.023,glove,PIS.lh);                             // wrist
+  PIS.LHREST={x:-0.026,y:-0.075,z:-0.004,rx:0,ry:0,rz:0};
+  // forearms are not glued to the gun: each frame they run from the wrist to an elbow that stays
+  // put below the screen, so turning the pistol in the reload never swings a sleeve across the view
+  PIS.arms=new T.Group();wScene.add(PIS.arms);PIS.arms.visible=false;
+  const arm=()=>{const g=new T.Group();PIS.arms.add(g);
+    const sg=new T.CylinderGeometry(0.037,0.027,1,12);sg.translate(0,0.5,0);const s=new T.Mesh(sg,sleeve);g.add(s);
+    const cg=new T.CylinderGeometry(0.029,0.026,0.05,12);cg.translate(0,0.028,0);g.add(new T.Mesh(cg,cuff));
+    return {g,s};};
+  PIS.armR=arm();PIS.armL=arm();
+  PIS.wristR=new T.Vector3(0.012,-0.1,0.062);PIS.wristL=new T.Vector3(-0.004,-0.045,0.035);
+  // ---- muzzle flash: a camera-facing burst plus two crossed flames along the barrel
   PIS.flash=new T.Sprite(new T.SpriteMaterial({map:flashTex,transparent:true,depthWrite:false,blending:T.AdditiveBlending,color:0xffcf8a}));
-  PIS.flash.position.set(0,0.004,-0.2);PIS.flash.scale.set(0.15,0.15,1);PIS.flash.visible=false;PIS.gun.add(PIS.flash);
-  PIS.muzzle=new T.Vector3(0,0.004,-0.18);PIS.eject=new T.Vector3(0.018,0.012,-0.05);
+  PIS.flash.position.set(0,0.0015,-0.2);PIS.flash.scale.set(0.15,0.15,1);PIS.flash.visible=false;G.add(PIS.flash);
+  PIS.flame=new T.Group();PIS.flame.position.set(0,0.0015,-0.215);PIS.flame.visible=false;G.add(PIS.flame);
+  {const fm=new T.MeshBasicMaterial({map:flashTex,transparent:true,depthWrite:false,blending:T.AdditiveBlending,color:0xffb860,side:T.DoubleSide});
+   const g1=new T.PlaneGeometry(0.05,0.11).rotateX(Math.PI/2);PIS.flame.add(new T.Mesh(g1,fm),new T.Mesh(g1.clone().rotateZ(Math.PI/2),fm));}
+  PIS.muzzle=new T.Vector3(0,0.0015,-0.18);PIS.eject=new T.Vector3(0.016,0.012,-0.04);
+  // recoil spring state (visual only; the real aim kick is in RECOIL / climb)
+  PIS.k={rx:0,vrx:0,z:0,vz:0,rz:0,vrz:0,y:0,vy:0};
+  PIS.lhPose={x:0,y:0,z:0,rx:0,ry:0,rz:0};
 })();
-const PHIP={x:0.105,y:-0.105,z:-0.34,rx:0.03,ry:0.06,rz:0.02},PADS={x:0,y:-0.032,z:-0.42};
+// called by doFire: the gun jumps in the hands (muzzle flip around the wrists, push back, a little roll)
+function pistolKick(ads){const s=1-0.45*ads;PIS.k.vrx+=10.5*s;PIS.k.vz+=1.5*s;PIS.k.vy+=0.25*s;PIS.k.vrz+=rand(-1,1)*2.2*s;}
+// key-framed tracks: [[u, value], …] eased between keys
+function trk(u,keys){
+  if(u<=keys[0][0])return keys[0][1];
+  for(let i=1;i<keys.length;i++){const a=keys[i-1],b=keys[i];if(u<=b[0]){const t=ss((u-a[0])/(b[0]-a[0]));
+    if(typeof a[1]==='number')return lerp(a[1],b[1],t);const o=[];for(let j=0;j<a[1].length;j++)o.push(lerp(a[1][j],b[1][j],t));return o;}}
+  return keys[keys.length-1][1];
+}
+const backOut=t=>{t=clamp(t,0,1);const c=1.6;return 1+(c+1)*Math.pow(t-1,3)+c*Math.pow(t-1,2);};
+// reload, as offsets of the whole gun [x,y,z,rx,ry,rz] over u = 0..1 (keys match the sounds:
+// magOut 0.08, magIn 0.62, slide forward 0.81)
+const P_RELOAD=[[0,[0,0,0,0,0,0]],[0.1,[-0.05,0.095,-0.065,0.6,-0.5,-0.6]],[0.56,[-0.052,0.097,-0.065,0.62,-0.52,-0.62]],
+  [0.6,[-0.052,0.1,-0.065,0.66,-0.52,-0.6]],[0.63,[-0.052,0.11,-0.062,0.74,-0.5,-0.57]],[0.7,[-0.04,0.05,-0.015,0.12,-0.05,0.3]],
+  [0.79,[-0.04,0.045,-0.005,0.1,-0.05,0.32]],[0.83,[-0.035,0.055,-0.015,0.2,-0.04,0.25]],[0.9,[-0.012,0.012,0,0.05,0,0.05]],[1,[0,0,0,0,0,0]]];
+const _lv=new T.Vector3();
+const _wr=new T.Vector3(),_wl=new T.Vector3(),_el=new T.Vector3(),_ad=new T.Vector3(),_up=new T.Vector3(0,1,0);
+// one forearm: from the wrist (follows the hand) to an elbow below the screen that drifts a little with it
+function placeArm(A,wrist,ex,ey,ez){
+  _el.set(ex+wrist.x*0.35,ey+(wrist.y+0.1)*0.3,ez+wrist.z*0.15);_ad.copy(_el).sub(wrist);const len=_ad.length();
+  A.g.position.copy(wrist);A.g.quaternion.setFromUnitVectors(_up,_ad.divideScalar(len));A.s.scale.y=len;
+}
 function updatePistolVM(dt){
   PROOT.visible=LOAD.active==='pistol'&&(state==='playing'||state==='dead'||state==='paused');
+  PIS.arms.visible=false;
   if(!PROOT.visible)return;
-  const ads=ss(PCORE.ads),free=1-ads;
-  let x=lerp(PHIP.x,PADS.x,ads),y=lerp(PHIP.y,PADS.y,ads),z=lerp(PHIP.z,PADS.z,ads),rx=PHIP.rx*free,ry=PHIP.ry*free,rz=0;
-  const sw=VM.sprintW*free;x-=0.04*sw;y-=0.09*sw;rx-=0.7*sw;ry+=0.3*sw;
-  const bob=P.bob*free*MOTION,bm=PM.sprinting?1.8:1;
-  x+=Math.cos(P.stepPhase)*0.011*bob*bm*FEEL.vmBob;y+=-Math.abs(Math.sin(P.stepPhase))*0.012*bob*bm*FEEL.vmBob+Math.sin(P.swayT*1.6)*0.0025*free;
+  const ads=ss(PCORE.ads),free=1-ads,dbg=PIS.debug;
+  // hip: low right, canted a touch, muzzle towards the crosshair; ADS: sight line on the screen centre
+  let x=lerp(0.074,0,ads),y=lerp(-0.088,-0.0262,ads),z=lerp(-0.29,-0.335,ads),rx=0.04*free,ry=0.1*free,rz=-0.06*free;
+  // sprint: lowered and turned in; slide / air / landing / lean / death
+  const sw=VM.sprintW*free;x-=0.02*sw;y-=0.022*sw;z+=0.02*sw;rx-=0.42*sw;ry+=0.38*sw;rz+=0.3*sw;
+  const bob=P.bob*MOTION,bm=PM.sprinting?1.8:1;
+  x+=Math.cos(P.stepPhase)*0.011*bob*bm*FEEL.vmBob*(1-ads*0.85);y+=-Math.abs(Math.sin(P.stepPhase))*0.012*bob*bm*FEEL.vmBob*(1-ads*0.85);
+  rz+=Math.cos(P.stepPhase)*0.03*bob*bm*free;
+  y+=Math.sin(P.swayT*1.5)*0.0022*free;rx+=Math.sin(P.swayT*1.5+0.6)*0.006*free;   // breathing
   x+=WS.swayX*(1-ads*0.8);y+=WS.swayY*(1-ads*0.8);ry+=WS.swayX*1.4;rx+=WS.swayY*1.2;rz+=0.3*VM.slideW*free-P.lean*0.08;
   y+=0.012*VM.airW*free+VM.land*0.45-0.45*VM.deadW;
-  // recoil: snaps back and up, quicker than the rifle
-  z+=WS.kick*0.06;rx+=WS.kick*0.45;y+=WS.kick*0.01;
-  // draw / holster / raise after spawn: comes up from below, turned
+  // draw / holster / raise after spawn: swings up from the bottom right with a small overshoot
   let dp=0;
-  if(LOAD.phase==='draw')dp=1-ss(LOAD.t/SD_CONFIG.loadout.pistolDraw);else if(LOAD.phase==='holster')dp=ss(LOAD.t/SD_CONFIG.loadout.pistolHolster);
-  if(PCORE.state==='raise')dp=Math.max(dp,1-ss(PCORE.t/PCFG.raise));
-  y-=dp*0.25;rx-=dp*0.8;rz+=dp*0.5;
-  // slide: back on each shot (same keys as the sounds); reload: tilt, magazine out and in, slide release
-  let back=0;
-  if(PCORE.state==='bolt'){back=SDWeapon.boltPose(PCORE.t/PCFG.bolt,PCFG.boltKeys).back;}
-  if(PCORE.state==='reload'){const rp=SDWeapon.reloadPose(PCORE.t/PCFG.reload,PCFG);rz+=rp.tilt*0.5;rx+=rp.tilt*0.45;y+=rp.tilt*0.055;x-=rp.tilt*0.045;z+=rp.tilt*0.03;
-    PIS.mag.position.y=PIS.magY-rp.magDrop*0.16;PIS.mag.visible=rp.magVisible;back=Math.max(back,rp.back);}
-  else{PIS.mag.position.y=PIS.magY;PIS.mag.visible=true;}
-  if(PCORE.ammo<=0&&PCORE.state!=='reload')back=1;   // empty: the slide locks open
-  PIS.slide.position.z=back*0.034;
+  if(LOAD.phase==='draw')dp=1-backOut(LOAD.t/SD_CONFIG.loadout.pistolDraw);else if(LOAD.phase==='holster')dp=ss(LOAD.t/SD_CONFIG.loadout.pistolHolster);
+  if(PCORE.state==='raise'&&LOAD.phase!=='draw')dp=Math.max(dp,1-backOut(PCORE.t/PCFG.raise));
+  if(dbg&&dbg.draw!==undefined)dp=dbg.draw;
+  x+=dp*0.05;y-=dp*0.2;z+=dp*0.05;rx-=dp*0.95;ry-=dp*0.25;rz-=dp*0.7;
+  // reload
+  const rl=PCORE.state==='reload'||(dbg&&dbg.reload!==undefined);
+  const u=dbg&&dbg.reload!==undefined?dbg.reload:rl?clamp(PCORE.t/PCFG.reload,0,1):0;
+  let slideBack=0;
+  const LR=PIS.LHREST,lh=PIS.lhPose;lh.x=LR.x;lh.y=LR.y;lh.z=LR.z;lh.rx=lh.ry=lh.rz=0;
+  PIS.mag.position.set(0,0,0);PIS.mag.visible=true;PIS.oldMag.visible=false;
+  if(rl){
+    const g=trk(u,P_RELOAD),rw=1-0.6*ads;x+=g[0]*rw;y+=g[1]*rw;z+=g[2]*rw;rx+=g[3];ry+=g[4];rz+=g[5];
+    // old magazine: pops out (0.08) and drops away out of the picture
+    if(u>=0.08&&u<0.42){const t=(u-0.08)*PCFG.reload;PIS.oldMag.visible=true;PIS.oldMag.position.set(-t*0.05,-(Math.min(t,0.06)*0.7+Math.max(0,t-0.06)*Math.max(0,t-0.06)*4.5),0);PIS.oldMag.rotation.set(0,0,-Math.max(0,t-0.08)*2.5);}
+    // new magazine: hidden until the left hand brings it up, pushed in by 0.62 (the click)
+    const md=u<0.3?0.4:trk(u,[[0.3,0.32],[0.44,0.06],[0.58,0.022],[0.62,0]]);
+    PIS.mag.visible=u>=0.3||u<0.08;PIS.mag.position.y=u<0.08?0:-md;
+    if(u>=0.3&&u<0.62){PIS.axis.updateMatrix();_lv.set(-0.022,-0.112-md,0.004).applyMatrix4(PIS.axis.matrix);
+      const w=u<0.36?ss((u-0.3)/0.06):1;
+      lh.x=lerp(-0.05,_lv.x,w);lh.y=lerp(-0.3,_lv.y+0.035,w);lh.z=lerp(0.08,_lv.z,w);lh.rx=0.15;lh.rz=0.25;}
+    else{
+      // away (0.05-0.3) · over the slide to rack it (0.66-0.84) · back on the grip (0.9-1)
+      const k=trk(u,[[0.04,[0,0,0,0,0,0]],[0.2,[-0.03,-0.24,0.08,0.4,0,0.3]],[0.3,[-0.03,-0.24,0.08,0.4,0,0.3]],
+        [0.62,[0,0,0,0.15,0,0.25]],[0.7,[0,0.062,0.018,0,0,0.65]],[0.745,[0,0.064,0.012,0,0,0.7]],[0.79,[0,0.064,0.046,0,0,0.7]],
+        [0.84,[-0.01,0.05,0.08,0.2,0.1,0.5]],[0.92,[0,0,0.01,0,0,0]],[1,[0,0,0,0,0,0]]]);
+      lh.x+=k[0];lh.y+=k[1];lh.z+=k[2];lh.rx=k[3];lh.ry=k[4];lh.rz=k[5];
+    }
+    slideBack=u<0.745?0:u<0.79?ss((u-0.745)/0.045):u<0.81?1:1-ss((u-0.81)/0.018);
+  }
+  // slide: snaps back on the shot and returns; locks open on an empty magazine
+  if(PCORE.state==='bolt'){const t=PCORE.t;slideBack=Math.max(slideBack,t<0.018?ss(t/0.018):1-ss((t-0.03)/0.05));}
+  if(PCORE.ammo<=0&&!rl)slideBack=1;
+  if(dbg&&dbg.slide!==undefined)slideBack=dbg.slide;
+  PIS.slide.position.z=slideBack*0.032;
+  PIS.trig.rotation.x=PCORE.state==='bolt'&&PCORE.t<0.05?0.25:0;
+  // recoil spring (critically damped with a small overshoot)
+  const K=PIS.k,st=Math.min(dt,1/30);
+  K.vrx+=(-320*K.rx-24*K.vrx)*st;K.rx+=K.vrx*st;K.vz+=(-380*K.z-30*K.vz)*st;K.z+=K.vz*st;
+  K.vrz+=(-260*K.rz-22*K.vrz)*st;K.rz+=K.vrz*st;K.vy+=(-300*K.y-26*K.vy)*st;K.y+=K.vy*st;
+  PIS.kick.rotation.set(K.rx,0,K.rz);PIS.kick.position.set(PIS.pivot.x,PIS.pivot.y+K.y,PIS.pivot.z+K.z);
+  if(dbg&&dbg.lh){const q=dbg.lh;lh.x=LR.x+q[0];lh.y=LR.y+q[1];lh.z=LR.z+q[2];lh.rx=q[3];lh.ry=q[4];lh.rz=q[5];}
+  PIS.lh.position.set(lh.x,lh.y,lh.z);PIS.lh.rotation.set(lh.rx,lh.ry,lh.rz);
+  if(dbg&&dbg.root){const r=dbg.root;x=r[0];y=r[1];z=r[2];rx=r[3];ry=r[4];rz=r[5];}
   PROOT.position.set(x,y,z);PROOT.rotation.set(rx,ry,rz);
-  PIS.flash.visible=WS.flashT>0;
+  PIS.arms.visible=true;PROOT.updateMatrixWorld(true);
+  placeArm(PIS.armR,_wr.copy(PIS.wristR).applyMatrix4(PIS.gun.matrixWorld),0.21,-0.4,0.16);
+  placeArm(PIS.armL,_wl.copy(PIS.wristL).applyMatrix4(PIS.lh.matrixWorld),-0.17,-0.42,0.14);
+  const fl=WS.flashT>0||!!(dbg&&dbg.flash);PIS.flash.visible=fl;PIS.flame.visible=fl&&ads<0.6;
+  if(fl)PIS.flame.rotation.z=Math.random()*3;
 }
 /* ---- FURIA 12 viewmodel (pump-action: receiver, barrel over the tube, sliding pump, bead sight) ---- */
 const SROOT=new T.Group();wScene.add(SROOT);SROOT.visible=false;
@@ -3208,9 +3354,9 @@ function doFire(e,kind){
   P.shake=Math.max(P.shake,scoped?0.3:shotgun?0.85:pistol?0.25:0.7);
   WS.kick=rc.viewKick;WS.flashT=pistol?0.045:shotgun?0.06:0.055;
   if(shotgun){SHO.flash.material.rotation=Math.random()*6;const fs=rand(0.36,0.5);SHO.flash.scale.set(fs,fs,1);}
-  else if(pistol){PIS.flash.material.rotation=Math.random()*6;const fs=rand(0.12,0.18);PIS.flash.scale.set(fs,fs,1);}
+  else if(pistol){PIS.flash.material.rotation=Math.random()*6;const fs=rand(0.1,0.15);PIS.flash.scale.set(fs,fs,1);PIS.flame.scale.setScalar(rand(0.8,1.15));pistolKick(core.ads);}
   else{RIF.flash.material.rotation=Math.random()*6;const fs=rand(0.28,0.4);RIF.flash.scale.set(fs,fs,1);}
-  camLight.position.copy(muzzleW);camLight.intensity=3.2;
+  camLight.position.copy(muzzleW);camLight.intensity=pistol?0.9:3.2;
   if(scoped){const sf=$('#scopeFlash');sf.classList.remove('on');void sf.offsetWidth;sf.classList.add('on');}
   else emitVM(shotgun?1.1:pistol?0.35:0.8,kind);
   if(mode==='duel')for(const b of BOTS)if(b.alive&&b.g.position.distanceTo(P.pos)<85){b.alertT=3.5;if(b.state==='watch')b.lookYaw=Math.atan2(P.pos.x-b.g.position.x,P.pos.z-b.g.position.z);b.spot=Math.max(b.spot,0.5);}
@@ -3488,10 +3634,16 @@ function setDiff(d){diff=d;store.set('diff',d);document.querySelectorAll('#diffS
 document.querySelectorAll('#diffSeg button').forEach(b=>b.addEventListener('click',()=>{setDiff(+b.dataset.d);audioInit();SFX.ui();}));
 setDiff(diff);
 const MODE_SUB={duel:'Pueblo abandonado. Tú contra bots francotiradores. Gana el primero que llegue a 10 bajas. Fíjate en el destello de sus miras: es lo único que te avisa antes del disparo.',
+  duelArena:'ARENA DE PRUEBAS: un patio cerrado de 48 × 32 m, el mapa del 1v1 online. Tú contra bots, distancias cortas, coberturas bajas y un bloque central con tejado. Gana el primero que llegue a 10 bajas.',
   range:'Galería de tiro con dianas a 20, 50 y 100 m, fijas y en movimiento. Añade bots de entrenamiento desarmados que corren, esquivan y se cubren, y prueba el rifle y la navaja (tecla 3) sin que te maten.'};
-function setMode(m){mode=m;store.set('mode',m);$('#rangeBlock').hidden=m!=='range';document.querySelectorAll('#modeSeg button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.m===m)));$('#modeSub').textContent=MODE_SUB[m];$('#diffBlock').hidden=m==='range';}
+// offline map (duel vs bots): ARENA DE PRUEBAS by default; the shooting range lives in the town
+let OFFMAP=store.get('offMap','arena');if(OFFMAP!=='arena'&&OFFMAP!=='pueblo')OFFMAP='arena';
+const offWorld=()=>mode==='range'?'pueblo':OFFMAP;
+function setOffMap(id){OFFMAP=id;store.set('offMap',id);document.querySelectorAll('#mapSeg button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.map===id)));if(mode!=='online')$('#modeSub').textContent=MODE_SUB[mode==='duel'&&id==='arena'?'duelArena':mode];if(state==='menu')setWorld(offWorld());}
+function setMode(m){mode=m;store.set('mode',m);$('#rangeBlock').hidden=m!=='range';$('#mapBlock').hidden=m==='range';document.querySelectorAll('#modeSeg button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.m===m)));$('#modeSub').textContent=MODE_SUB[m==='duel'&&OFFMAP==='arena'?'duelArena':m];$('#diffBlock').hidden=m==='range';if(state==='menu')setWorld(offWorld());}
+document.querySelectorAll('#mapSeg button').forEach(b=>b.addEventListener('click',()=>{setOffMap(b.dataset.map);audioInit();SFX.ui();}));
 document.querySelectorAll('#modeSeg button').forEach(b=>b.addEventListener('click',()=>{setMode(b.dataset.m);audioInit();SFX.ui();}));
-setMode(mode);
+setMode(mode);setOffMap(OFFMAP);
 function setTrain(t){TRAIN.level=t;store.set('trainLevel',t);document.querySelectorAll('#trainSeg button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.t===t)));}
 document.querySelectorAll('#trainSeg button').forEach(b=>b.addEventListener('click',()=>{setTrain(b.dataset.t);audioInit();SFX.ui();}));
 setTrain(TRAIN.level);
@@ -3511,7 +3663,10 @@ function startMatch(){
   clearPendingInput();
   audioInit();SFX.ui();
   const df=DIFFS[diff];
-  while(BOTS.length<df.bots)BOTS.push(new Bot(BOTS.length));
+  setWorld(offWorld());
+  // the arena is small: fewer bots (2, or 3 on ÉLITE)
+  const nBots=WORLD_ID==='arena'?Math.min(df.bots,diff===2?3:2):df.bots;
+  while(BOTS.length<nBots)BOTS.push(new Bot(BOTS.length));
   while(DUMMIES.length<RANGE_SLOTS.length)DUMMIES.push(new Bot(DUMMIES.length,RANGE_SLOTS[DUMMIES.length]));
   const tcount=TRAIN.level==='off'?0:SD_CONFIG.training[TRAIN.level].count;
   while(TRAINERS.length<tcount)TRAINERS.push(new Bot(TRAINERS.length,null,{trainer:true}));
@@ -3527,7 +3682,7 @@ function startMatch(){
   EVENTS.length=0;compassMarks.length=0;$('#feed').innerHTML='';
   $('#kYou').textContent='0';$('#kBots').textContent='0';
   respawnPlayer();
-  if(isRange)RANGE_BOTS.forEach(b=>b.spawn());else BOTS.forEach((b,i)=>{if(i<df.bots)b.spawn();});
+  if(isRange)RANGE_BOTS.forEach(b=>b.spawn());else BOTS.forEach((b,i)=>{if(i<nBots)b.spawn();});
   STATS.start=gameTime;updateWeaponHud();updateAmmoUI();
   $('#menu').hidden=true;$('#over').hidden=true;$('#pause').hidden=true;$('#hud').hidden=false;
   $('#touch').hidden=!isTouch;
@@ -3542,7 +3697,7 @@ function clearPendingInput(){if(typeof releaseAllTouches==='function')releaseAll
 function pause(){if(state!=='playing'&&state!=='dead')return;pausedFrom=state;state='paused';$('#pause').hidden=false;$('#lockHint').hidden=true;if(pointerLocked&&document.exitPointerLock)document.exitPointerLock();input.fireHeld=false;input.scope=false;input.keys={};clearPendingInput();}
 let pausedFrom='playing';
 function resume(){if(state!=='paused')return;clearPendingInput();state=pausedFrom;$('#pause').hidden=true;audioInit();if(!isTouch)requestLock();}
-function toMenu(){if(mode==='online'){netLeave(true);return;}state='menu';$('#pause').hidden=true;$('#lockHint').hidden=true;$('#over').hidden=true;$('#hud').hidden=true;$('#scope').hidden=true;$('#death').hidden=true;$('#touch').hidden=true;$('#menu').hidden=false;BOTS.concat(DUMMIES,TRAINERS).forEach(b=>{b.alive=false;b.g.visible=false;b.trainerActive=false;});BULLETS.length=0;BTR.forEach(m=>m.visible=false);scene.fog.near=45;scene.fog.far=175;if(document.exitPointerLock&&pointerLocked)document.exitPointerLock();}
+function toMenu(){if(mode==='online'){netLeave(true);return;}state='menu';setWorld(offWorld());$('#pause').hidden=true;$('#lockHint').hidden=true;$('#over').hidden=true;$('#hud').hidden=true;$('#scope').hidden=true;$('#death').hidden=true;$('#touch').hidden=true;$('#menu').hidden=false;BOTS.concat(DUMMIES,TRAINERS).forEach(b=>{b.alive=false;b.g.visible=false;b.trainerActive=false;});BULLETS.length=0;BTR.forEach(m=>m.visible=false);scene.fog.near=45;scene.fog.far=175;if(document.exitPointerLock&&pointerLocked)document.exitPointerLock();}
 function endMatch(win){
   if(state==='over'||state==='menu')return;
   state='over';
@@ -4119,12 +4274,12 @@ function netLeave(toMainMenu){
   history.replaceState(null,'',location.pathname);
 }
 function netEndOnline(){
-  setWorld('pueblo');
   if(mode==='online'){mode=NET.prevMode||'duel';}
   if(REMOTE)REMOTE.update(null,0);
   $('#netStat').hidden=true;$('#countdown').hidden=true;
   if(state!=='menu'){state='menu';$('#pause').hidden=true;$('#lockHint').hidden=true;$('#over').hidden=true;$('#hud').hidden=true;$('#scope').hidden=true;$('#death').hidden=true;$('#touch').hidden=true;if(document.exitPointerLock&&pointerLocked)document.exitPointerLock();}
   $('#kBotsLbl')&&($('#kBotsLbl').textContent='BOTS');
+  setWorld(offWorld());
 }
 function renderLobby(){
   const N=NET.N;if(!N)return;
@@ -4328,8 +4483,13 @@ $('#mpShare').addEventListener('click',async()=>{const url=inviteLink(NET.code);
 
 /* =================== LOOP =================== */
 let last=performance.now();let menuAng=0;let rangeT=0;let simAcc=0;
+// test hook: MANUAL.on stops the clock-driven loop so a recorder can step exact 1/30 s frames (__SD.advance)
+const MANUAL={on:false};
 function frame(now){
   requestAnimationFrame(frame);
+  if(!MANUAL.on)frameBody(now);
+}
+function frameBody(now){
   const rdt=Math.min(PERF_LOW?0.34:0.1,(now-last)/1000);last=now; // test mode: very low FPS still simulates in real time
   if(slowmo>0)slowmo-=rdt;
   const fxdt=rdt*(slowmo>0?0.35:1); // slow motion touches only particles and tracers
@@ -4367,7 +4527,7 @@ function frame(now){
 }
 resize();
 requestAnimationFrame(frame);
-window.__SD={freeze(on){SIM_FREEZE=!!on;},get LAST_PELLETS(){return LAST_PELLETS;},SCORE,SCFG,SROOT,SHO,setPrimaryChoice,get PRIMARY(){return PRIMARY;},PCORE,PCFG,setWorld,WORLDS,get WORLD_ID(){return WORLD_ID;},renderer,GFX,gfxApply,get NET(){return NET;},get REMOTE(){return REMOTE;},W,NAV:typeof NAV!=="undefined"?NAV:null,TOUCH,EDIT,openEditor,get SETTINGS(){return SETTINGS;},get LAYOUT(){return LAYOUT;},checkOrientation,MAT,LOAD,TRAINERS,get RANGE_BOTS(){return RANGE_BOTS;},TRAIN,setTrain,impactFX,surfaceOf,soundDelay,aimSelfTest,P,PM,WS,WCORE,RECOIL,AIM,BOTS,DUMMIES,BULLETS,EVENTS,PARTS,STATS,get state(){return state;},get mode(){return mode;},setMode,input,startMatch,simTick,frame,toMenu,pause,resume};
+window.__SD={freeze(on){SIM_FREEZE=!!on;},PIS,PROOT,MANUAL,advance(ms){frameBody(last+ms);},get LAST_PELLETS(){return LAST_PELLETS;},SCORE,SCFG,SROOT,SHO,setPrimaryChoice,get PRIMARY(){return PRIMARY;},PCORE,PCFG,setWorld,WORLDS,get WORLD_ID(){return WORLD_ID;},renderer,GFX,gfxApply,get NET(){return NET;},get REMOTE(){return REMOTE;},W,get NAV(){return NAV;},setOffMap,get OFFMAP(){return OFFMAP;},TOUCH,EDIT,openEditor,get SETTINGS(){return SETTINGS;},get LAYOUT(){return LAYOUT;},checkOrientation,MAT,LOAD,TRAINERS,get RANGE_BOTS(){return RANGE_BOTS;},TRAIN,setTrain,impactFX,surfaceOf,soundDelay,aimSelfTest,P,PM,WS,WCORE,RECOIL,AIM,BOTS,DUMMIES,BULLETS,EVENTS,PARTS,STATS,get state(){return state;},get mode(){return mode;},setMode,input,startMatch,simTick,frame,toMenu,pause,resume};
 })();
 </script>
 
