@@ -487,7 +487,7 @@ body.touch #score .side span{max-width:11vw;overflow:hidden;text-overflow:ellips
       <div class="keys" id="keysTouch" hidden>
         <kbd>IZQUIERDA</kbd><span>Joystick · al fondo esprintas</span>
         <kbd>DERECHA</kbd><span>Arrastra para apuntar</span>
-        <kbd>MIRA</kbd><span>Mantén para apuntar y arrastra ese dedo (cámbialo en AJUSTES)</span>
+        <kbd>MIRA</kbd><span>Mantén para apuntar y arrastra ese dedo (o modo PULSAR en AJUSTES)</span>
         <kbd>FUEGO</kbd><span>Disparar · arrástralo para corregir</span>
         <kbd>AGACH</kbd><span>Agacharse · esprintando: deslizar</span>
         <kbd>AIRE</kbd><span>Con mira: aguantar respiración</span>
@@ -2513,7 +2513,7 @@ function btnPress(name,down,cancel){ // cancel: the system took the finger (call
   audioInit();
   switch(name){
     case 'fire':case 'fire2':
-      if(SETTINGS.releaseFire&&LOAD.active==='rifle'&&!LOAD.pending){input.fireAim=true;break;} // hold: scope up, aim with the same finger
+      if(SETTINGS.releaseFire&&LOAD.active==='rifle'&&!LOAD.pending&&!input.scopeToggle&&!input.scopeHeld){input.fireAim=true;break;} // hold: scope up, aim with the same finger (already aiming with MIRA: shoots at once)
       input.fireHeld=true;input.firePressed=true;break;
     case 'scope':if(SETTINGS.adsMode==='toggle')input.scopeToggle=!input.scopeToggle;else input.scopeHeld=true;break;   // holdDrag: the same finger now turns the camera
     case 'crouch':input.crouchHeld=!input.crouchHeld;input.crouchPressed=true;break;
@@ -2754,7 +2754,7 @@ function startMatch(){
 // one-shot inputs (clicks, key presses) that have not been used yet are thrown away whenever
 // the game is interrupted, so nothing fires, jumps or switches on its own afterwards
 function clearPendingInput(){if(typeof releaseAllTouches==='function')releaseAllTouches();input.firePressed=input.jumpPressed=input.crouchPressed=input.reloadPressed=false;input.fireAim=false;input.fireAimShot=0;input.select=null;input.inspect=false;input.lookDX=input.lookDY=0;}
-function pause(){if(state!=='playing'&&state!=='dead')return;pausedFrom=state;state='paused';$('#pause').hidden=false;kitNote();$('#lockHint').hidden=true;if(pointerLocked&&document.exitPointerLock)document.exitPointerLock();input.fireHeld=false;input.scope=false;input.keys={};clearPendingInput();}
+function pause(){if(state!=='playing'&&state!=='dead')return;pausedFrom=state;state='paused';$('#pause').hidden=false;kitNote();$('#lockHint').hidden=true;if(pointerLocked&&document.exitPointerLock)document.exitPointerLock();input.fireHeld=false;input.scope=false;input.scopeToggle=false;input.keys={};clearPendingInput();}
 let pausedFrom='playing';
 function resume(){if(state!=='paused')return;clearPendingInput();state=pausedFrom;$('#pause').hidden=true;audioInit();if(!isTouch)requestLock();}
 function toMenu(){if(mode==='online'){netLeave(true);return;}state='menu';setWorld(offWorld());$('#pause').hidden=true;$('#lockHint').hidden=true;$('#over').hidden=true;$('#hud').hidden=true;$('#scope').hidden=true;$('#death').hidden=true;$('#touch').hidden=true;$('#menu').hidden=false;BOTS.concat(DUMMIES,TRAINERS).forEach(b=>{b.alive=false;b.g.visible=false;b.trainerActive=false;});BULLETS.length=0;BTR.forEach(m=>m.visible=false);scene.fog.near=45;scene.fog.far=175;if(document.exitPointerLock&&pointerLocked)document.exitPointerLock();}
@@ -2854,7 +2854,7 @@ function onShotgunEvent(e,hol){
 }
 function onLoadoutEvent(e){
   switch(e.type){
-    case 'holster':if(e.weapon==='rifle'||e.weapon==='shotgun'){input.scopeToggle=false;SFX.holsterRifle();}else if(e.weapon==='pistol')SFX.pHolster();else SFX.knifeHolster();break;
+    case 'holster':input.scopeToggle=false;if(e.weapon==='rifle'||e.weapon==='shotgun')SFX.holsterRifle();else if(e.weapon==='pistol')SFX.pHolster();else SFX.knifeHolster();break;
     case 'draw':if(e.weapon==='knife')SFX.knifeDraw();else if(e.weapon==='pistol')SFX.pDraw();else if(e.weapon==='shotgun')SFX.sDraw();else SFX.raise();updateWeaponHud();updateAmmoUI();break;
     case 'swing':SFX.swing();SDWeapon.kickRecoil(RECOIL,0.006,e.side*0.018,GUNCFG.recoil);STATS.meleeSwings=(STATS.meleeSwings||0)+1;break;
     case 'knifeHit':doKnifeHit();break;

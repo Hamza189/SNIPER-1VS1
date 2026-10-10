@@ -500,7 +500,7 @@ body.touch #score .side span{max-width:11vw;overflow:hidden;text-overflow:ellips
       <div class="keys" id="keysTouch" hidden>
         <kbd>IZQUIERDA</kbd><span>Joystick · al fondo esprintas</span>
         <kbd>DERECHA</kbd><span>Arrastra para apuntar</span>
-        <kbd>MIRA</kbd><span>Mantén para apuntar y arrastra ese dedo (cámbialo en AJUSTES)</span>
+        <kbd>MIRA</kbd><span>Mantén para apuntar y arrastra ese dedo (o modo PULSAR en AJUSTES)</span>
         <kbd>FUEGO</kbd><span>Disparar · arrástralo para corregir</span>
         <kbd>AGACH</kbd><span>Agacharse · esprintando: deslizar</span>
         <kbd>AIRE</kbd><span>Con mira: aguantar respiración</span>
@@ -1644,7 +1644,7 @@ const DEFAULTS = {
   fpsCap: 60,       // 60 or 30 (30 saves battery and heat on phones)
   showFps: false,   // small FPS counter on screen
   // aiming (ADS)
-  adsMode: 'holdDrag', // touch MIRA button: holdDrag (hold = aim, drag the same finger to turn) | hold | toggle
+  adsMode: 'holdDrag', // touch MIRA button: holdDrag (hold = aim, drag the same finger) | hold | toggle (tap in, tap out; turn with any free finger)
   adsH: 1,          // horizontal multiplier while aiming (any weapon)
   adsV: 1,          // vertical multiplier while aiming (any weapon)
   touchDead: 2,     // px a finger must travel before it starts turning the camera (stops jitter on touch-down)
@@ -1654,11 +1654,13 @@ const DEFAULTS = {
 // Phones start from different values (agreed after testing on iPhone); PC defaults are unchanged.
 // A device that already saved its settings keeps them; RESTAURAR goes back to these.
 const TOUCH_DEFAULTS = { touchLook: 1.6, adsSens: 1.3 };
-function defaults(touch) { return Object.assign({}, DEFAULTS, touch ? TOUCH_DEFAULTS : {}); }
+function defaults(touch) { return Object.assign({}, DEFAULTS, touch ? TOUCH_DEFAULTS : {}, { v: 2 }); }
 const RANGES = { sensH: [0.2, 3], sensV: [0.2, 3], adsSens: [0.3, 2], touchLook: [0.3, 4], adsH: [0.3, 2], adsV: [0.3, 2], touchDead: [0, 12], smooth: [0, 0.8] };
 const ADS_MODES = ['holdDrag', 'hold', 'toggle'];
 
 // any stored object → a complete, valid settings object (unknown keys dropped, numbers clamped)
+// settings format version (stored as v), for future migrations
+const VERSION = 2;
 function sanitize(o, touch) {
   const s = defaults(touch);
   if (!o || typeof o !== 'object') return s;
@@ -1670,6 +1672,7 @@ function sanitize(o, touch) {
   if (ADS_MODES.includes(o.adsMode)) s.adsMode = o.adsMode;
   if (['auto', 'bajo', 'medio', 'alto'].includes(o.quality)) s.quality = o.quality;
   if (o.fpsCap === 30 || o.fpsCap === 60) s.fpsCap = o.fpsCap;
+  s.v = VERSION;
   return s;
 }
 // reads from a store with get(key, default); migrates the old single "sens" value
@@ -1702,7 +1705,7 @@ function smoothLook(st, dx, dy, smooth, dt) {
   return o;
 }
 
-const SDSettings = { DEFAULTS, TOUCH_DEFAULTS, ADS_MODES, defaults, RANGES, sanitize, load, save, lookDelta, smoothLook };
+const SDSettings = { VERSION, DEFAULTS, TOUCH_DEFAULTS, ADS_MODES, defaults, RANGES, sanitize, load, save, lookDelta, smoothLook };
 if (typeof module !== 'undefined' && module.exports) module.exports = SDSettings; else root.SDSettings = SDSettings;
 })(typeof window !== 'undefined' ? window : globalThis);
 
@@ -2405,7 +2408,7 @@ if (isNode) module.exports = SDNet; else root.SDNet = SDNet;
   G.SDVM = { knifeSlash, knifeInspect, knifeDraw, ARMPOSE, refine, createArms, poseArm, curl, mixFingers, handTarget, HANDSETS, LOOK };
 })(typeof window !== 'undefined' ? window : globalThis);
 
-const BUILD_ID="c312f5e";const BUILD_HASH="1f6e2e3550";
+const BUILD_ID="30716c0";const BUILD_HASH="29f562e5a7";
 </script>
 <script>
 (function(){
@@ -4361,7 +4364,7 @@ function btnPress(name,down,cancel){ // cancel: the system took the finger (call
   audioInit();
   switch(name){
     case 'fire':case 'fire2':
-      if(SETTINGS.releaseFire&&LOAD.active==='rifle'&&!LOAD.pending){input.fireAim=true;break;} // hold: scope up, aim with the same finger
+      if(SETTINGS.releaseFire&&LOAD.active==='rifle'&&!LOAD.pending&&!input.scopeToggle&&!input.scopeHeld){input.fireAim=true;break;} // hold: scope up, aim with the same finger (already aiming with MIRA: shoots at once)
       input.fireHeld=true;input.firePressed=true;break;
     case 'scope':if(SETTINGS.adsMode==='toggle')input.scopeToggle=!input.scopeToggle;else input.scopeHeld=true;break;   // holdDrag: the same finger now turns the camera
     case 'crouch':input.crouchHeld=!input.crouchHeld;input.crouchPressed=true;break;
@@ -4602,7 +4605,7 @@ function startMatch(){
 // one-shot inputs (clicks, key presses) that have not been used yet are thrown away whenever
 // the game is interrupted, so nothing fires, jumps or switches on its own afterwards
 function clearPendingInput(){if(typeof releaseAllTouches==='function')releaseAllTouches();input.firePressed=input.jumpPressed=input.crouchPressed=input.reloadPressed=false;input.fireAim=false;input.fireAimShot=0;input.select=null;input.inspect=false;input.lookDX=input.lookDY=0;}
-function pause(){if(state!=='playing'&&state!=='dead')return;pausedFrom=state;state='paused';$('#pause').hidden=false;kitNote();$('#lockHint').hidden=true;if(pointerLocked&&document.exitPointerLock)document.exitPointerLock();input.fireHeld=false;input.scope=false;input.keys={};clearPendingInput();}
+function pause(){if(state!=='playing'&&state!=='dead')return;pausedFrom=state;state='paused';$('#pause').hidden=false;kitNote();$('#lockHint').hidden=true;if(pointerLocked&&document.exitPointerLock)document.exitPointerLock();input.fireHeld=false;input.scope=false;input.scopeToggle=false;input.keys={};clearPendingInput();}
 let pausedFrom='playing';
 function resume(){if(state!=='paused')return;clearPendingInput();state=pausedFrom;$('#pause').hidden=true;audioInit();if(!isTouch)requestLock();}
 function toMenu(){if(mode==='online'){netLeave(true);return;}state='menu';setWorld(offWorld());$('#pause').hidden=true;$('#lockHint').hidden=true;$('#over').hidden=true;$('#hud').hidden=true;$('#scope').hidden=true;$('#death').hidden=true;$('#touch').hidden=true;$('#menu').hidden=false;BOTS.concat(DUMMIES,TRAINERS).forEach(b=>{b.alive=false;b.g.visible=false;b.trainerActive=false;});BULLETS.length=0;BTR.forEach(m=>m.visible=false);scene.fog.near=45;scene.fog.far=175;if(document.exitPointerLock&&pointerLocked)document.exitPointerLock();}
@@ -4702,7 +4705,7 @@ function onShotgunEvent(e,hol){
 }
 function onLoadoutEvent(e){
   switch(e.type){
-    case 'holster':if(e.weapon==='rifle'||e.weapon==='shotgun'){input.scopeToggle=false;SFX.holsterRifle();}else if(e.weapon==='pistol')SFX.pHolster();else SFX.knifeHolster();break;
+    case 'holster':input.scopeToggle=false;if(e.weapon==='rifle'||e.weapon==='shotgun')SFX.holsterRifle();else if(e.weapon==='pistol')SFX.pHolster();else SFX.knifeHolster();break;
     case 'draw':if(e.weapon==='knife')SFX.knifeDraw();else if(e.weapon==='pistol')SFX.pDraw();else if(e.weapon==='shotgun')SFX.sDraw();else SFX.raise();updateWeaponHud();updateAmmoUI();break;
     case 'swing':SFX.swing();SDWeapon.kickRecoil(RECOIL,0.006,e.side*0.018,GUNCFG.recoil);STATS.meleeSwings=(STATS.meleeSwings||0)+1;break;
     case 'knifeHit':doKnifeHit();break;

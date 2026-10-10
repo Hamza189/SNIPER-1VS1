@@ -184,6 +184,8 @@ console.log('\nMIRA MANTENIDA: EL MISMO DEDO APUNTA');
   const SS = require('../client/settings.js');
   const st = SS.sanitize({ adsMode: 'raro', adsH: 9, smooth: -1, touchDead: 99 }, true);
   check('ajustes de mira: valores raros se corrigen', st.adsMode === 'holdDrag' && st.adsH === 2 && st.smooth === 0 && st.touchDead === 12);
+  { const keep = SS.sanitize({ adsMode: 'toggle', sensH: 1.7 }, true);
+    check('por defecto MIRA es MANTENER Y ARRASTRAR (validado en iPhone); la elección guardada se respeta', SS.defaults(true).adsMode === 'holdDrag' && keep.adsMode === 'toggle' && keep.sensH === 1.7); }
   const base = SS.lookDelta(10, 0, SS.defaults(true), { fovRatio: 1, touch: true, ads: 0 }).yaw;
   const aim = SS.lookDelta(10, 0, Object.assign(SS.defaults(true), { adsH: 1.5 }), { fovRatio: 1, touch: true, ads: 1 }).yaw;
   check('MIRA HORIZONTAL solo cuenta al apuntar', Math.abs(aim / base - 1.5) < 1e-9);

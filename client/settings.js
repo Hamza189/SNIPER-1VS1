@@ -16,7 +16,7 @@ const DEFAULTS = {
   fpsCap: 60,       // 60 or 30 (30 saves battery and heat on phones)
   showFps: false,   // small FPS counter on screen
   // aiming (ADS)
-  adsMode: 'holdDrag', // touch MIRA button: holdDrag (hold = aim, drag the same finger to turn) | hold | toggle
+  adsMode: 'holdDrag', // touch MIRA button: holdDrag (hold = aim, drag the same finger) | hold | toggle (tap in, tap out; turn with any free finger)
   adsH: 1,          // horizontal multiplier while aiming (any weapon)
   adsV: 1,          // vertical multiplier while aiming (any weapon)
   touchDead: 2,     // px a finger must travel before it starts turning the camera (stops jitter on touch-down)
@@ -26,11 +26,13 @@ const DEFAULTS = {
 // Phones start from different values (agreed after testing on iPhone); PC defaults are unchanged.
 // A device that already saved its settings keeps them; RESTAURAR goes back to these.
 const TOUCH_DEFAULTS = { touchLook: 1.6, adsSens: 1.3 };
-function defaults(touch) { return Object.assign({}, DEFAULTS, touch ? TOUCH_DEFAULTS : {}); }
+function defaults(touch) { return Object.assign({}, DEFAULTS, touch ? TOUCH_DEFAULTS : {}, { v: 2 }); }
 const RANGES = { sensH: [0.2, 3], sensV: [0.2, 3], adsSens: [0.3, 2], touchLook: [0.3, 4], adsH: [0.3, 2], adsV: [0.3, 2], touchDead: [0, 12], smooth: [0, 0.8] };
 const ADS_MODES = ['holdDrag', 'hold', 'toggle'];
 
 // any stored object → a complete, valid settings object (unknown keys dropped, numbers clamped)
+// settings format version (stored as v), for future migrations
+const VERSION = 2;
 function sanitize(o, touch) {
   const s = defaults(touch);
   if (!o || typeof o !== 'object') return s;
@@ -42,6 +44,7 @@ function sanitize(o, touch) {
   if (ADS_MODES.includes(o.adsMode)) s.adsMode = o.adsMode;
   if (['auto', 'bajo', 'medio', 'alto'].includes(o.quality)) s.quality = o.quality;
   if (o.fpsCap === 30 || o.fpsCap === 60) s.fpsCap = o.fpsCap;
+  s.v = VERSION;
   return s;
 }
 // reads from a store with get(key, default); migrates the old single "sens" value
@@ -74,6 +77,6 @@ function smoothLook(st, dx, dy, smooth, dt) {
   return o;
 }
 
-const SDSettings = { DEFAULTS, TOUCH_DEFAULTS, ADS_MODES, defaults, RANGES, sanitize, load, save, lookDelta, smoothLook };
+const SDSettings = { VERSION, DEFAULTS, TOUCH_DEFAULTS, ADS_MODES, defaults, RANGES, sanitize, load, save, lookDelta, smoothLook };
 if (typeof module !== 'undefined' && module.exports) module.exports = SDSettings; else root.SDSettings = SDSettings;
 })(typeof window !== 'undefined' ? window : globalThis);

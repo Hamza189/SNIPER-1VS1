@@ -127,9 +127,9 @@ console.log('\nMANTENER FUEGO = MIRA, SOLTAR = DISPARO (opción por defecto)');
   check('el navegador pierde el foco con FUEGO pulsado: pausa y no dispara', pausedOnBlur && SD.STATS.shots === s6);
 }
 
-console.log('\nMIRA MANTENIDA Y ARRASTRAR (modo por defecto: MANTENER Y ARRASTRAR)');
-{ SD.SETTINGS.adsMode = require('../client/settings.js').DEFAULTS.adsMode; SD.SETTINGS.releaseFire = false;
-  check('el modo por defecto del botón MIRA es mantener y arrastrar', SD.SETTINGS.adsMode === 'holdDrag');
+console.log('\nMIRA MANTENIDA Y ARRASTRAR (modo por defecto)');
+{ check('el modo por defecto del botón MIRA es mantener y arrastrar', require('../client/settings.js').DEFAULTS.adsMode === 'holdDrag');
+  SD.SETTINGS.adsMode = 'holdDrag'; SD.SETTINGS.releaseFire = false;
   H.frames(90, 16);
   // finger 4 holds MIRA: the scope comes up and stays while the finger is down
   H.pointer('pointerdown', 4, 689, 327, 'scope'); H.frames(25, 16);
@@ -269,6 +269,35 @@ console.log('\nMIRA CON TOUCH EVENTS (el camino que usa Safari en iPhone)');
   const txt = H.el('#tdiag').textContent || '';
   check('diagnóstico táctil: muestra el dedo de MIRA, sus movimientos y el giro', /MIRA/.test(txt) && /#t13/.test(txt) && /mov/.test(txt) && /giro/.test(txt), txt.split('\n').slice(0, 3).join(' | '));
   send('touchend', T(13, 700, 327, 'scope')); SD.TDIAG.set(false); H.frames(25, 16);
+}
+
+console.log('\nMIRA PULSAR (TOGGLE, opcional en AJUSTES): toca para entrar, mueve la cámara con cualquier dedo libre');
+{ const T = (id, x, y, btn) => ({ identifier: id, clientX: x, clientY: y, target: { closest: () => (btn ? { dataset: { btn } } : null) } });
+  const live = new Map();
+  const send = (type, t) => { if (type === 'touchstart' || type === 'touchmove') live.set(t.identifier, t); else live.delete(t.identifier); H.fire('#touch', type, { changedTouches: [t], touches: [...live.values()] }); };
+  const tap = (id, x, y, btn) => { send('touchstart', T(id, x, y, btn)); H.frames(2, 16); send('touchend', T(id, x, y, btn)); };
+  SD.SETTINGS.adsMode = 'toggle'; SD.SETTINGS.invertY = false; SD.SETTINGS.releaseFire = true; H.frames(60, 16);
+  if (SD.LOAD.active !== 'rifle') { SD.input.select = 'rifle'; H.frames(60, 16); }
+  tap(20, 689, 327, 'scope'); H.frames(25, 16);
+  check('toggle: un toque en MIRA entra en el visor y sigue dentro al levantar el dedo', SD.WCORE.ads === 1 && SD.TOUCH.held.size === 0, 'ads ' + SD.WCORE.ads);
+  const y0 = SD.P.yaw, p0 = SD.P.pitch;
+  send('touchstart', T(21, 560, 200, null)); send('touchmove', T(21, 585, 188, null)); H.frames(2, 16);
+  check('toggle: un dedo en la zona libre derecha mueve la cámara con el visor puesto', SD.P.yaw < y0 && SD.P.pitch > p0 && SD.WCORE.ads === 1, ((SD.P.yaw - y0) * 1000).toFixed(2) + ' mrad');
+  const s0 = SD.STATS.shots;
+  tap(22, 779, 325, 'fire'); H.frames(4, 16);
+  check('toggle: FUEGO dispara al momento (también con «mantener FUEGO apunta») y no saca del visor', SD.STATS.shots === s0 + 1 && SD.WCORE.ads === 1, (SD.STATS.shots - s0) + ' disparo · ads ' + SD.WCORE.ads);
+  const y1 = SD.P.yaw; send('touchmove', T(21, 600, 188, null)); H.frames(2, 16);
+  check('toggle: después del disparo se sigue corrigiendo la mira', SD.P.yaw < y1);
+  send('touchend', T(21, 600, 188, null));
+  tap(23, 689, 327, 'scope'); H.frames(25, 16);
+  check('toggle: otro toque en MIRA sale del visor', SD.WCORE.ads === 0);
+  tap(24, 689, 327, 'scope'); H.frames(25, 16);
+  SD.input.select = 'pistol'; H.frames(60, 16);
+  check('toggle: cambiar de arma quita el visor', SD.input.scopeToggle === false && SD.PCORE.ads === 0);
+  SD.input.select = 'rifle'; H.frames(60, 16);
+  tap(25, 689, 327, 'scope'); H.frames(10, 16); SD.pause(); SD.resume(); H.frames(25, 16);
+  check('toggle: al pausar y volver no se queda apuntando', SD.input.scopeToggle === false && SD.WCORE.ads === 0);
+  SD.SETTINGS.releaseFire = false;
 }
 
 console.log('\nEDITOR DE BOTONES');
