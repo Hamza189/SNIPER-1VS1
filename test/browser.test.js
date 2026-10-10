@@ -118,6 +118,21 @@ const shown = page => page.evaluate(ids => ids.filter(id => { const e = document
         return { holes: d.length, tex: d.length ? !!d[d.length - 1].material.map : false, parts, after };
       });
       check('impacto: agujero con textura, polvo, trozos y fogonazo; al cambiar de mapa se borran los agujeros', fx.holes >= 1 && fx.tex && fx.parts >= 8 && fx.after === 0, JSON.stringify(fx));
+      // E4: the rival's jointed body: hands on the rifle, head where the server's head is (standing and
+      // crouched), the weapon dropped on death
+      const sol = await page.evaluate(() => {
+        const RP = new __SD.RemotePlayer(), V = () => new THREE.Vector3(), base = { x: 0, y: 0, z: 70, yaw: 0, pitch: 0, eye: 1.62, alive: true, g: true, vx: 0, vz: 0, wpn: 'rifle', ws: 'ready', mode: 'walk' };
+        const run = (p, n) => { for (let i = 0; i < (n || 5); i++) RP.update(Object.assign({}, base, p), 1 / 30); RP.g.updateMatrixWorld(true); };
+        const headY = () => { const v = V(); RP.rig.head.getWorldPosition(v); return v.y; };
+        run({}); const r = RP.rig, hand = V(), grip = V();
+        r.armR.hand.getWorldPosition(hand); const gr = r.w.rifle.userData.grips.r; grip.set(gr[0], gr[1], gr[2]).applyMatrix4(r.w.rifle.matrixWorld);
+        const out = { handGap: +hand.distanceTo(grip).toFixed(3), headStand: +headY().toFixed(2) };
+        run({ eye: 1.0, mode: 'agachado' }, 30); out.headCrouch = +headY().toFixed(2);
+        run({ alive: false }, 40); out.gunDead = r.w.rifle.visible;
+        RP.g.parent.remove(RP.g); return out;
+      });
+      check('rival: la mano en la empuñadura, la cabeza donde la del servidor (de pie 1,63 y agachado 1,01) y suelta el arma al morir',
+        sol.handGap < 0.03 && Math.abs(sol.headStand - 1.63) < 0.06 && Math.abs(sol.headCrouch - 1.01) < 0.12 && sol.gunDead === false, JSON.stringify(sol));
       await page.keyboard.press('Digit1');
       check('tecla 1: vuelve el rifle', await wf(() => __SD.LOAD.active === 'rifle' && __SD.LOAD.phase === 'ready'));
       if (!/✔ AUTOTEST/.test(head)) res.filter(l => l.startsWith('✘')).forEach(l => console.log('       ' + l));
