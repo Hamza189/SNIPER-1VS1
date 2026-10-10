@@ -228,6 +228,49 @@ console.log('\nPAUSA, ORIENTACIÓN Y GUARDADO');
   check('invertir eje vertical se guarda', JSON.parse(H.storage['sniperduel_settings']).invertY === true);
 }
 
+console.log('\nMIRA CON TOUCH EVENTS (el camino que usa Safari en iPhone)');
+{ // iOS Safari: every finger arrives as a Touch with its own identifier and keeps reporting to the element it started on
+  const T = (id, x, y, btn) => ({ identifier: id, clientX: x, clientY: y, target: { closest: () => (btn ? { dataset: { btn } } : null) } });
+  const live = new Map();
+  const send = (type, touch) => {
+    if (type === 'touchstart' || type === 'touchmove') live.set(touch.identifier, touch); else live.delete(touch.identifier);
+    H.fire('#touch', type, { changedTouches: [touch], touches: [...live.values()] });
+  };
+  check('en un dispositivo con touch events el juego los usa', SD.TOUCH_EVENTS === true);
+  SD.SETTINGS.adsMode = 'holdDrag'; SD.SETTINGS.releaseFire = false; SD.SETTINGS.invertY = false; H.frames(60, 16);   // (an earlier section left the Y axis inverted)
+  // a pointer event of type 'touch' for the same finger must be ignored (iOS sends both)
+  send('touchstart', T(7, 689, 327, 'scope'));
+  H.fire('#touch', 'pointerdown', { pointerId: 99, pointerType: 'touch', clientX: 689, clientY: 327, target: { closest: () => ({ dataset: { btn: 'scope' } }) } });
+  H.frames(25, 16);
+  check('touch: mantener MIRA entra el visor (el dedo cuenta una sola vez)', SD.WCORE.ads === 1 && SD.TOUCH.held.size === 1, 'ads ' + SD.WCORE.ads + ' · botones ' + SD.TOUCH.held.size);
+  const y0 = SD.P.yaw, p0 = SD.P.pitch;
+  send('touchmove', T(7, 712, 316, 'scope')); H.frames(2, 16);
+  check('touch: arrastrar ese mismo dedo gira y sube la mira', SD.P.yaw < y0 && SD.P.pitch > p0, ((SD.P.yaw - y0) * 1000).toFixed(2) + ' / ' + ((SD.P.pitch - p0) * 1000).toFixed(2) + ' mrad');
+  // second finger fires, third finger walks, MIRA keeps aiming
+  const s0 = SD.STATS.shots;
+  send('touchstart', T(8, 150, 250, null)); send('touchmove', T(8, 150, 205, null));
+  send('touchstart', T(9, 779, 325, 'fire')); H.frames(2, 16); send('touchend', T(9, 779, 325, 'fire'));
+  const y1 = SD.P.yaw; send('touchmove', T(7, 730, 316, 'scope')); H.frames(20, 16);
+  check('touch: disparo con otro dedo, joystick a la vez y MIRA sigue apuntando', SD.STATS.shots - s0 === 1 && SD.P.yaw < y1 && SD.WCORE.ads === 1 && hs() > 0.5, (SD.STATS.shots - s0) + ' disparo · ' + hs().toFixed(2) + ' m/s');
+  send('touchend', T(8, 150, 205, null));
+  send('touchend', T(7, 730, 316, 'scope')); H.frames(25, 16);
+  check('touch: soltar MIRA sale del visor', SD.WCORE.ads === 0 && SD.TOUCH.held.size === 0 && SD.TOUCH.look.size === 0);
+  // the system swallows a touchend (edge swipe…): the next touch event closes the lost finger
+  send('touchstart', T(10, 689, 327, 'scope')); H.frames(25, 16);
+  live.delete(10);                                                  // finger gone, no touchend delivered
+  send('touchstart', T(11, 600, 200, null)); H.frames(25, 16);
+  check('touch: un dedo perdido sin touchend no deja MIRA pegada', SD.WCORE.ads === 0 && !SD.TOUCH.held.size, 'ads ' + SD.WCORE.ads);
+  send('touchend', T(11, 600, 200, null));
+  send('touchstart', T(12, 689, 327, 'scope')); H.frames(20, 16); send('touchcancel', T(12, 689, 327, 'scope')); H.frames(25, 16);
+  check('touch: touchcancel sale del visor', SD.WCORE.ads === 0);
+  // diagnostics panel shows the fingers
+  SD.TDIAG.set(true); SD.TDIAG.reset();
+  send('touchstart', T(13, 689, 327, 'scope')); send('touchmove', T(13, 700, 327, 'scope')); H.frames(12, 16);
+  const txt = H.el('#tdiag').textContent || '';
+  check('diagnóstico táctil: muestra el dedo de MIRA, sus movimientos y el giro', /MIRA/.test(txt) && /#t13/.test(txt) && /mov/.test(txt) && /giro/.test(txt), txt.split('\n').slice(0, 3).join(' | '));
+  send('touchend', T(13, 700, 327, 'scope')); SD.TDIAG.set(false); H.frames(25, 16);
+}
+
 console.log('\nEDITOR DE BOTONES');
 { SD.pause(); SD.openEditor();
   check('el editor se abre y muestra los botones', SD.EDIT.on && H.el('#touch').hidden === false);

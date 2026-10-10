@@ -228,6 +228,7 @@ h1 span{display:block;color:var(--sand)}
 #netStat{position:fixed;top:calc(env(safe-area-inset-top,0px) + 6px);right:calc(env(safe-area-inset-right,0px) + 10px);z-index:8;pointer-events:none;font:500 11px/1 var(--f-mono);letter-spacing:.08em;color:var(--sand);text-shadow:0 1px 2px #000}
 #netStat i{display:inline-block;width:7px;height:7px;border-radius:50%;background:#5bd16b;margin-right:6px;vertical-align:1px}
 #netStat.warn i{background:var(--gold)}#netStat.bad i{background:var(--blood)}
+#tdiag{position:fixed;left:calc(8px + env(safe-area-inset-left,0px));top:calc(56px + env(safe-area-inset-top,0px));z-index:26;pointer-events:none;margin:0;font:500 10px/1.3 'IBM Plex Mono',monospace;color:#f3e9d6;background:rgba(10,9,7,.78);padding:6px 8px;border:1px solid rgba(255,138,43,.6);max-width:46vw;white-space:pre-wrap}
 #fpsBox{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(4px + env(safe-area-inset-bottom));z-index:25;pointer-events:none;font:600 11px/1 'IBM Plex Mono',monospace;color:#f3e9d6;background:rgba(15,13,10,.6);padding:3px 6px;letter-spacing:.06em}
 #updBanner{position:fixed;top:calc(8px + env(safe-area-inset-top));left:50%;transform:translateX(-50%);z-index:60;display:flex;gap:12px;align-items:center;padding:8px 10px 8px 14px;background:var(--ink-2);border:1px solid var(--signal);font:600 12px/1.2 var(--f-mono);letter-spacing:.06em;color:var(--hud);white-space:nowrap}
 #updBanner button{font:500 18px/1 var(--f-display);letter-spacing:.06em;padding:7px 12px 4px;border:0;background:var(--signal);color:var(--ink);cursor:pointer}
@@ -354,6 +355,7 @@ body.touch #score .side span{max-width:11vw;overflow:hidden;text-overflow:ellips
 </div>
 
 <div id="dbg" hidden><pre id="dbgTxt"></pre></div>
+<pre id="tdiag" hidden></pre>
 <div id="fpsBox" hidden>– FPS</div>
 <div id="death" hidden><div class="box"><h3>ELIMINADO</h3><p id="deathBy">BOT-2 · 48 m</p><p id="deathCount">Reapareces en 3</p></div></div>
 
@@ -396,6 +398,7 @@ body.touch #score .side span{max-width:11vw;overflow:hidden;text-overflow:ellips
       <label class="chk"><input type="checkbox" id="sLeft"> Botón FUEGO también a la izquierda (móvil)</label>
       <label class="chk"><input type="checkbox" id="sRel"> Móvil: mantener FUEGO apunta con la mira, soltar dispara</label>
       <label class="chk"><input type="checkbox" id="sCalm"> Reducir el movimiento visual del arma</label>
+      <label class="chk"><input type="checkbox" id="sDiag"> Diagnóstico táctil (dedos y MIRA en pantalla)</label>
     </div>
     <div class="lbl" style="margin:14px 0 6px">Botón MIRA (móvil)</div>
     <div class="seg" id="adsSeg" role="group" aria-label="Botón MIRA"><button type="button" data-a="holdDrag">MANTENER Y ARRASTRAR</button><button type="button" data-a="hold">MANTENER</button><button type="button" data-a="toggle">PULSAR</button></div>
@@ -2402,7 +2405,7 @@ if (isNode) module.exports = SDNet; else root.SDNet = SDNet;
   G.SDVM = { knifeSlash, knifeInspect, knifeDraw, ARMPOSE, refine, createArms, poseArm, curl, mixFingers, handTarget, HANDSETS, LOOK };
 })(typeof window !== 'undefined' ? window : globalThis);
 
-const BUILD_ID="2a8ee57";const BUILD_HASH="fd45d56d8f";
+const BUILD_ID="c312f5e";const BUILD_HASH="1f6e2e3550";
 </script>
 <script>
 (function(){
@@ -4307,6 +4310,30 @@ document.addEventListener('pointerlockchange',()=>{
   if(!pointerLocked&&(state==='playing'||state==='dead')&&!isTouch)pause();
 });
 
+/* =================== TOUCH DIAGNOSTICS (AJUSTES → Diagnóstico táctil, or ?diag=touch) ===================
+   Shows on screen what the game receives from each finger, so a real phone can be checked: which finger
+   owns which button, how many moves each one reported, what reached the camera this frame, and every
+   down / up / cancel. Purely informative. */
+const TDIAG={on:/[?&]diag=touch\b/.test(location.search)||store.get('touchDiag',false)===true,log:[],moves:new Map(),src:new Map(),yaw0:0,pitch0:0,look:[0,0],acc:[0,0],t:0,
+  ev(m){if(!this.on)return;this.log.unshift(((performance.now()/1000)%100).toFixed(2)+' '+m);if(this.log.length>8)this.log.length=8;},
+  move(id,src){if(!this.on)return;this.moves.set(id,(this.moves.get(id)||0)+1);this.src.set(id,src);},
+  set(on){this.on=!!on;store.set('touchDiag',this.on);const el=document.getElementById('tdiag');if(el)el.hidden=!this.on;},
+  frame(d){if(!this.on)return;this.look=[d.dx,d.dy];this.acc[0]+=d.dx;this.acc[1]+=d.dy;
+    this.t+=1;if(this.t%6)return;   // ~10 updates a second is enough to read
+    const el=document.getElementById('tdiag');if(!el)return;el.hidden=false;
+    const L=[];L.push('ENTRADA: '+(TOUCH_EVENTS?'touch events':'pointer events')+' · dedos '+(TOUCH.held.size+TOUCH.look.size+(TOUCH.stickId!==null?1:0)));
+    const ids=new Set([...TOUCH.held.keys(),...TOUCH.look.keys()]);if(TOUCH.stickId!==null)ids.add(TOUCH.stickId);
+    for(const id of ids){const b=TOUCH.held.get(id),l=TOUCH.look.get(id);
+      L.push(' #'+id+' '+(id===TOUCH.stickId?'JOYSTICK':b?b.toUpperCase():'cámara')+(l?(l.live?' · mueve cámara':' · zona muerta'):'')+' · '+(this.moves.get(id)||0)+' mov ('+(this.src.get(id)||'-')+')');}
+    const g=AG();
+    L.push('MIRA modo '+SETTINGS.adsMode+' · pulsada '+(input.scopeHeld?'SÍ':'no')+' · arrastre '+(TOUCH.dragScope?'SÍ':'no')+' · ADS '+(g.ads*100|0)+'%');
+    L.push('cámara este fotograma dx '+this.look[0].toFixed(1)+' dy '+this.look[1].toFixed(1)+' · total '+this.acc[0].toFixed(0)+','+this.acc[1].toFixed(0));
+    L.push('giro '+((P.yaw-this.yaw0)*57.3).toFixed(1)+'° · '+((P.pitch-this.pitch0)*57.3).toFixed(1)+'° (desde que se activó)');
+    L.push('— eventos —');for(const m of this.log)L.push(m);
+    el.textContent=L.join('\n');}
+};
+TDIAG.reset=function(){this.yaw0=P.yaw;this.pitch0=P.pitch;this.acc=[0,0];this.moves.clear();};
+
 /* =================== INPUT: TOUCH (Pointer Events + client/touch.js) =================== */
 const touchEl=$('#touch');const stickBase=$('#stickBase'),stickKnob=$('#stickKnob');
 const TOUCH=SDTouch.create();
@@ -4349,41 +4376,80 @@ function btnPress(name,down,cancel){ // cancel: the system took the finger (call
 }
 function touchFeed(){ // touch state → the same input fields the keyboard/mouse use
   input.joyX=TOUCH.jx;input.joyY=TOUCH.jy;input.joySprint=TOUCH.sprint;
-  const d=SDTouch.drain(TOUCH);input.lookDX+=d.dx;input.lookDY+=d.dy;
+  const d=SDTouch.drain(TOUCH);input.lookDX+=d.dx;input.lookDY+=d.dy;TDIAG.frame(d);
   stickKnob.style.transform='translate('+TOUCH.knobX.toFixed(1)+'px,'+TOUCH.knobY.toFixed(1)+'px)';
   stickBase.classList.toggle('sprint',TOUCH.sprint);
 }
 function releaseAllTouches(){for(const name of new Set(TOUCH.held.values()))btnPress(name,false,true);SDTouch.reset(TOUCH);stickBase.hidden=true;input.joyX=input.joyY=0;input.joySprint=false;}
-touchEl.addEventListener('pointerdown',e=>{
-  e.preventDefault();
-  try{touchEl.setPointerCapture(e.pointerId);}catch(err){}
-  const b=e.target&&e.target.closest?e.target.closest('.tb'):null;
+/* One finger = one id, from either source:
+   - Touch Events on phones/tablets (iOS Safari's native model: each touch keeps reporting to the element
+     it started on, with its own identifier — the most reliable way to follow a finger that starts on MIRA
+     and then drags across the screen)
+   - Pointer Events for everything else (mouse, pen, browsers without touch events).
+   When touch events exist, pointer events of type 'touch' are ignored so a finger is never counted twice. */
+const TOUCH_EVENTS='ontouchstart' in window;
+function fingerDown(id,x,y,target,src){
+  const b=target&&target.closest?target.closest('.tb'):null;
   const name=b&&b.dataset?b.dataset.btn:null;
+  TDIAG.ev(src+' down #'+id+' '+(name||'—'));
   if(EDIT.on){ // layout editor: pick and drag buttons
     if(!name||name==='pause')return;
     const r=SDLayout.rect(name,LAYOUT.buttons[name],window.innerWidth,window.innerHeight);
-    EDIT.sel=name;EDIT.dragId=e.pointerId;EDIT.offX=e.clientX-r.cx;EDIT.offY=e.clientY-r.cy;editorSelect(name);return;
+    EDIT.sel=name;EDIT.dragId=id;EDIT.offX=x-r.cx;EDIT.offY=y-r.cy;editorSelect(name);return;
   }
   TOUCH.dragScope=SETTINGS.adsMode!=='hold';TOUCH.cfg.dead=SETTINGS.touchDead;
-  const r=SDTouch.down(TOUCH,{id:e.pointerId,x:e.clientX,y:e.clientY,button:name,W:window.innerWidth});
+  const r=SDTouch.down(TOUCH,{id,x,y,button:name,W:window.innerWidth});
   if(r.press)btnPress(r.press,true);
   if(r.stickStart){stickBase.hidden=false;stickBase.style.left=r.stickStart.x+'px';stickBase.style.top=r.stickStart.y+'px';stickKnob.style.transform='';}
-},{passive:false});
-touchEl.addEventListener('pointermove',e=>{
-  e.preventDefault();
-  if(EDIT.on){if(e.pointerId!==EDIT.dragId||!EDIT.sel)return;const b=LAYOUT.buttons[EDIT.sel];
-    const m=SDLayout.moveTo(EDIT.sel,b,e.clientX-EDIT.offX,e.clientY-EDIT.offY,window.innerWidth,window.innerHeight);b.dx=m.dx;b.dy=m.dy;applyLayout();return;}
-  SDTouch.move(TOUCH,{id:e.pointerId,x:e.clientX,y:e.clientY});
-},{passive:false});
-function touchUp(e){
-  e.preventDefault();
-  if(EDIT.on){if(e.pointerId===EDIT.dragId)EDIT.dragId=null;return;}
-  const r=SDTouch.up(TOUCH,e.pointerId);
-  if(r.release)btnPress(r.release,false,e.type==='pointercancel');
+}
+function fingerMove(id,x,y,src){
+  if(EDIT.on){if(id!==EDIT.dragId||!EDIT.sel)return;const b=LAYOUT.buttons[EDIT.sel];
+    const m=SDLayout.moveTo(EDIT.sel,b,x-EDIT.offX,y-EDIT.offY,window.innerWidth,window.innerHeight);b.dx=m.dx;b.dy=m.dy;applyLayout();return;}
+  TDIAG.move(id,src);
+  SDTouch.move(TOUCH,{id,x,y});
+}
+function fingerUp(id,cancel,src){
+  TDIAG.ev(src+(cancel?' CANCEL #':' up #')+id);
+  if(EDIT.on){if(id===EDIT.dragId)EDIT.dragId=null;return;}
+  const r=SDTouch.up(TOUCH,id);
+  if(r.release)btnPress(r.release,false,cancel);
   if(r.stickEnd)stickBase.hidden=true;
 }
+const ptrSkip=e=>TOUCH_EVENTS&&e.pointerType==='touch';
+touchEl.addEventListener('pointerdown',e=>{
+  if(ptrSkip(e))return;
+  e.preventDefault();
+  try{touchEl.setPointerCapture(e.pointerId);}catch(err){}
+  fingerDown(e.pointerId,e.clientX,e.clientY,e.target,'ptr');
+},{passive:false});
+touchEl.addEventListener('pointermove',e=>{if(ptrSkip(e))return;e.preventDefault();fingerMove(e.pointerId,e.clientX,e.clientY,'ptr');},{passive:false});
+function touchUp(e){if(ptrSkip(e))return;e.preventDefault();fingerUp(e.pointerId,e.type==='pointercancel','ptr');}
 touchEl.addEventListener('pointerup',touchUp,{passive:false});
 touchEl.addEventListener('pointercancel',touchUp,{passive:false});
+touchEl.addEventListener('lostpointercapture',e=>{if(!ptrSkip(e))TDIAG.ev('ptr lostcapture #'+e.pointerId);});
+// touch events: 't' + identifier keeps them apart from any pointer id
+const tid=t=>'t'+t.identifier;
+// a finger the system ended without telling us (an edge swipe, a notification): close it so it never sticks
+function touchReconcile(e){
+  if(!e.touches)return;const live=new Set();for(let i=0;i<e.touches.length;i++)live.add(tid(e.touches[i]));
+  const ids=new Set([...TOUCH.held.keys(),...TOUCH.look.keys()]);if(TOUCH.stickId!==null)ids.add(TOUCH.stickId);
+  for(const id of ids)if(typeof id==='string'&&!live.has(id))fingerUp(id,true,'tch-lost');
+}
+touchEl.addEventListener('touchstart',e=>{
+  e.preventDefault();touchReconcile(e);
+  for(let i=0;i<e.changedTouches.length;i++){const t=e.changedTouches[i];fingerDown(tid(t),t.clientX,t.clientY,t.target,'tch');}
+},{passive:false});
+touchEl.addEventListener('touchmove',e=>{
+  e.preventDefault();
+  for(let i=0;i<e.changedTouches.length;i++){const t=e.changedTouches[i];fingerMove(tid(t),t.clientX,t.clientY,'tch');}
+},{passive:false});
+function touchEnd(e){
+  e.preventDefault();
+  for(let i=0;i<e.changedTouches.length;i++)fingerUp(tid(e.changedTouches[i]),e.type==='touchcancel','tch');
+  touchReconcile(e);
+}
+touchEl.addEventListener('touchend',touchEnd,{passive:false});
+touchEl.addEventListener('touchcancel',touchEnd,{passive:false});
 touchEl.addEventListener('contextmenu',e=>e.preventDefault());
 // iOS Safari: no pinch-zoom or double-tap zoom while playing
 document.addEventListener('gesturestart',e=>{if(state!=='menu')e.preventDefault();},{passive:false});
@@ -4422,7 +4488,7 @@ $('#edReset').addEventListener('click',()=>{LAYOUT=SDLayout.defaults();$('#edOp'
 let SETTINGS=SDSettings.load(store,isTouch);
 gfxApply();
 const SET_UI=[['sH','sensH'],['sV','sensV'],['sA','adsSens'],['sAH','adsH'],['sAV','adsV'],['sT','touchLook'],['sDZ','touchDead'],['sSM','smooth']];
-function settingsToUI(){for(const [id,k] of SET_UI){$('#'+id).value=SETTINGS[k];$('#'+id+'o').textContent=(+SETTINGS[k]).toFixed(2);}$('#sInv').checked=SETTINGS.invertY;$('#sLeft').checked=SETTINGS.leftFire;$('#sRel').checked=SETTINGS.releaseFire;$('#sFps30').checked=SETTINGS.fpsCap===30;$('#sShowFps').checked=SETTINGS.showFps;$('#sCalm').checked=SETTINGS.calmVM;document.querySelectorAll('#adsSeg button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.a===SETTINGS.adsMode)));document.querySelectorAll('#qSeg button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.q===SETTINGS.quality)));gfxNote();
+function settingsToUI(){for(const [id,k] of SET_UI){$('#'+id).value=SETTINGS[k];$('#'+id+'o').textContent=(+SETTINGS[k]).toFixed(2);}$('#sInv').checked=SETTINGS.invertY;$('#sLeft').checked=SETTINGS.leftFire;$('#sRel').checked=SETTINGS.releaseFire;$('#sFps30').checked=SETTINGS.fpsCap===30;$('#sShowFps').checked=SETTINGS.showFps;$('#sCalm').checked=SETTINGS.calmVM;$('#sDiag').checked=TDIAG.on;document.querySelectorAll('#adsSeg button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.a===SETTINGS.adsMode)));document.querySelectorAll('#qSeg button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.q===SETTINGS.quality)));gfxNote();
   const g=(SETTINGS.sensH+SETTINGS.sensV)/2;$('#sens').value=g;$('#sensOut').textContent=g.toFixed(2);}
 function applyControlSettings(){TOUCH.dragScope=SETTINGS.adsMode!=='hold';TOUCH.cfg.dead=SETTINGS.touchDead;MOTION=(reduceMotion||SETTINGS.calmVM)?0.35:1;if(SETTINGS.adsMode!=='toggle')input.scopeToggle=false;}
 function settingsChanged(){SETTINGS=SDSettings.sanitize(SETTINGS,isTouch);SDSettings.save(store,SETTINGS,isTouch);gfxApply();applyControlSettings();settingsToUI();}
@@ -4449,6 +4515,7 @@ $('#sShowFps').addEventListener('change',()=>{SETTINGS.showFps=$('#sShowFps').ch
 document.querySelectorAll('#qSeg button').forEach(b=>b.addEventListener('click',()=>{SETTINGS.quality=b.dataset.q;settingsChanged();SFX.ui();}));
 document.querySelectorAll('#adsSeg button').forEach(b=>b.addEventListener('click',()=>{SETTINGS.adsMode=b.dataset.a;settingsChanged();SFX.ui();}));
 $('#sCalm').addEventListener('change',()=>{SETTINGS.calmVM=$('#sCalm').checked;settingsChanged();});
+$('#sDiag').addEventListener('change',()=>{TDIAG.set($('#sDiag').checked);TDIAG.reset();});
 let settingsFrom='menu';
 function openSettings(from){settingsFrom=from;settingsToUI();$('#settings').hidden=false;$('#settings').scrollTop=0;for(const id of ['menu','pause'])$('#'+id).classList.add('under');}
 function closeSettings(){$('#settings').hidden=true;for(const id of ['menu','pause'])$('#'+id).classList.remove('under');}
@@ -5436,7 +5503,7 @@ function frameBody(now){
 }
 resize();
 requestAnimationFrame(frame);
-window.__SD={freeze(on){SIM_FREEZE=!!on;},VMA,makeSoldier,animateSoldier,BOT_MAT,scene,camera,RemotePlayer,PMprev,PIS,PROOT,RIF,WROOT,SHO_:null,MANUAL,advance(ms){frameBody(last+ms);},get LAST_PELLETS(){return LAST_PELLETS;},SCORE,SCFG,SROOT,SHO,setPrimaryChoice,get PRIMARY(){return PRIMARY;},PCORE,PCFG,setWorld,WORLDS,get WORLD_ID(){return WORLD_ID;},renderer,GFX,gfxApply,get NET(){return NET;},get REMOTE(){return REMOTE;},W,get NAV(){return NAV;},setOffMap,get OFFMAP(){return OFFMAP;},TOUCH,EDIT,openEditor,get SETTINGS(){return SETTINGS;},get LAYOUT(){return LAYOUT;},checkOrientation,MAT,LOAD,TRAINERS,get RANGE_BOTS(){return RANGE_BOTS;},TRAIN,setTrain,setLethal,kitNote,GINS,impactFX,bodyFX,get DECALS(){return DECALS;},surfaceOf,soundDelay,aimSelfTest,P,PM,WS,WCORE,RECOIL,AIM,BOTS,DUMMIES,BULLETS,EVENTS,PARTS,STATS,get state(){return state;},get mode(){return mode;},setMode,input,startMatch,simTick,frame,toMenu,pause,resume};
+window.__SD={freeze(on){SIM_FREEZE=!!on;},VMA,makeSoldier,animateSoldier,BOT_MAT,scene,camera,RemotePlayer,PMprev,PIS,PROOT,RIF,WROOT,SHO_:null,MANUAL,advance(ms){frameBody(last+ms);},get LAST_PELLETS(){return LAST_PELLETS;},SCORE,SCFG,SROOT,SHO,setPrimaryChoice,get PRIMARY(){return PRIMARY;},PCORE,PCFG,setWorld,WORLDS,get WORLD_ID(){return WORLD_ID;},renderer,GFX,gfxApply,get NET(){return NET;},get REMOTE(){return REMOTE;},W,get NAV(){return NAV;},setOffMap,get OFFMAP(){return OFFMAP;},TOUCH,EDIT,openEditor,get SETTINGS(){return SETTINGS;},get LAYOUT(){return LAYOUT;},checkOrientation,MAT,LOAD,TRAINERS,get RANGE_BOTS(){return RANGE_BOTS;},TRAIN,setTrain,setLethal,kitNote,GINS,TDIAG,get TOUCH_EVENTS(){return TOUCH_EVENTS;},impactFX,bodyFX,get DECALS(){return DECALS;},surfaceOf,soundDelay,aimSelfTest,P,PM,WS,WCORE,RECOIL,AIM,BOTS,DUMMIES,BULLETS,EVENTS,PARTS,STATS,get state(){return state;},get mode(){return mode;},setMode,input,startMatch,simTick,frame,toMenu,pause,resume};
 })();
 </script>
 
