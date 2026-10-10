@@ -107,6 +107,20 @@ Para jugar en el móvil hace falta la web en Netlify (o GitHub Pages): la págin
 | 60 | Móvil: con MIRA ya puesta, mantén y suelta FUEGO. | Dispara al soltar y la mira se queda puesta. |
 | 61 | Móvil: Ajustes → desmarca «mantener FUEGO apunta…». | FUEGO vuelve a disparar al tocar (modo clásico). |
 
+### Fase E — armas, efectos y personajes
+
+| # | Qué hacer | Resultado esperado |
+|---|---|---|
+| 62 | Menú → MAPA: ARENA DE PRUEBAS → JUGAR (duelo vs bots). | Partida en el patio pequeño contra 2 bots (3 en ÉLITE); los bots se mueven por la arena. PUEBLO vuelve al mapa grande. |
+| 63 | Menú → AJUSTES, y Pausa → AJUSTES. | El panel de ajustes sale encima del menú y de la pausa, nunca detrás. |
+| 64 | Tecla 2 / ARMA: saca la VÍBORA 9 y dispara varias veces. | Sube con un pequeño rebote; en cada disparo la corredera va atrás y vuelve, la pistola salta desde las muñecas, sale el casquillo. Sin balas la corredera se queda abierta. |
+| 65 | Recarga la pistola (R). | La giras, cae el cargador vacío, la mano izquierda trae el nuevo y lo mete (clic), accionas la corredera. |
+| 66 | Con el HALCÓN R7: dispara y recarga. | La mano derecha deja la empuñadura y acciona el cerrojo; en la recarga el rifle se gira, la izquierda saca el cargador y mete el nuevo. |
+| 67 | Con la FURIA 12: bombea y recarga. | Mano izquierda en el corredero; en la recarga la mano mete los cartuchos de uno en uno. |
+| 68 | Dispara a una pared, al suelo, a una caja y a un coche. | Fogonazo, polvo, trozos, chispas en metal; agujero distinto según la superficie. Al cambiar de mapa no quedan agujeros flotando. |
+| 69 | Dispara a un bot o al rival. | Chispa y nube roja en la dirección de la bala; más grande en la cabeza. |
+| 70 | Online o contra bots: mira cómo se mueve el otro. | Anda y corre moviendo las piernas, se agacha doblando las rodillas, se desliza, apunta arriba y abajo, recarga, acciona el cerrojo; al morir le ceden las rodillas, cae hacia atrás y suelta el arma. |
+
 Si algo no cumple lo esperado, apunta el número de la prueba y lo que muestra F3 en ese momento.
 
 ## Parámetros para afinar las sensaciones (`core/config.js`)
