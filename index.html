@@ -1998,7 +1998,7 @@ const SDNet = { create };
 if (isNode) module.exports = SDNet; else root.SDNet = SDNet;
 })(typeof window !== 'undefined' ? window : globalThis);
 
-const BUILD_ID="32432da";const BUILD_HASH="604d74d0e8";
+const BUILD_ID="8249046";const BUILD_HASH="2222769f1b";
 </script>
 <script>
 (function(){
@@ -2320,6 +2320,7 @@ function setWorld(id){
   for(const o of WORLDS[WORLD_ID].objs)o.visible=false;
   const w=WORLDS[id];for(const o of w.objs)o.visible=true;
   W.colliders=w.colliders;W.ray=w.ray;W.ramps=w.ramps;NAV=w.nav;WORLD_ID=id;
+  if(typeof clearDecals==='function')clearDecals();
 }
 
 /* =================== AUDIO =================== */
@@ -2430,7 +2431,7 @@ function vibrate(ms){try{if(navigator.vibrate)navigator.vibrate(ms);}catch(e){}}
 
 /* =================== EFFECTS =================== */
 const PARTS=[];
-for(let i=0;i<140;i++){const s=new T.Sprite(new T.SpriteMaterial({map:softTex,transparent:true,depthWrite:false,opacity:0}));s.visible=false;scene.add(s);PARTS.push({s,life:0,max:1,v:new T.Vector3(),g:0,size:1,grow:0,op:1,drag:0});}
+for(let i=0;i<240;i++){const s=new T.Sprite(new T.SpriteMaterial({map:softTex,transparent:true,depthWrite:false,opacity:0}));s.visible=false;scene.add(s);PARTS.push({s,life:0,max:1,v:new T.Vector3(),g:0,size:1,grow:0,op:1,drag:0});}
 let partIdx=0;
 function emit(pos,o){
   for(let i=0;i<(o.n||1);i++){
@@ -2449,11 +2450,22 @@ function updateParts(dt){
     p.v.multiplyScalar(Math.exp(-p.drag*dt));p.v.y+=p.g*dt;p.s.position.addScaledVector(p.v,dt);
     const k=p.life/p.max;const sz=p.size+p.grow*p.life;p.s.scale.set(sz,sz,1);p.s.material.opacity=p.op*(1-k)*(k<0.08?k/0.08:1);}
 }
-// decals
-const DECALS=[];const decalMat=new T.MeshBasicMaterial({color:0x1d1712,transparent:true,opacity:0.8,depthWrite:false,polygonOffset:true,polygonOffsetFactor:-2});
-const decalGeo=new T.CircleGeometry(0.07,10);let decalIdx=0;
-for(let i=0;i<50;i++){const m=new T.Mesh(decalGeo,decalMat);m.visible=false;scene.add(m);DECALS.push(m);}
-function decal(point,normal){const m=DECALS[decalIdx];decalIdx=(decalIdx+1)%DECALS.length;m.visible=true;m.position.copy(point).addScaledVector(normal,0.012);m.lookAt(point.clone().add(normal));const s=rand(.7,1.3);m.scale.set(s,s,s);}
+// decals: bullet holes drawn per surface (dark hole, torn rim, scorch / bright dent on metal /
+// splinters on wood / a soft crater in dirt), random size and turn, cleared when the map changes
+const DECALS=[];
+const decalTex=kind=>canvasTex(64,64,(g,w,h)=>{const c=w/2;
+  const rad=(r0,r1,stops)=>{const gr=g.createRadialGradient(c,c,r0,c,c,r1);for(const [k,col] of stops)gr.addColorStop(k,col);g.fillStyle=gr;g.fillRect(0,0,w,h);};
+  if(kind==='dirt'){rad(0,30,[[0,'rgba(30,22,14,.85)'],[.35,'rgba(60,45,30,.6)'],[.7,'rgba(80,62,42,.25)'],[1,'rgba(80,62,42,0)']]);return;}
+  if(kind==='metal'){rad(0,26,[[0,'rgba(10,10,12,1)'],[.22,'rgba(15,15,18,1)'],[.3,'rgba(210,214,220,.95)'],[.5,'rgba(150,152,158,.6)'],[.75,'rgba(60,58,55,.25)'],[1,'rgba(0,0,0,0)']]);return;}
+  rad(0,30,[[0,'rgba(8,6,5,1)'],[.2,'rgba(15,12,10,.95)'],[.32,'rgba(45,36,28,.7)'],[.6,'rgba(40,32,24,.25)'],[1,'rgba(0,0,0,0)']]);
+  g.strokeStyle=kind==='wood'?'rgba(70,45,25,.8)':'rgba(30,24,18,.55)';g.lineWidth=kind==='wood'?2:1.2;
+  for(let i=0;i<(kind==='wood'?7:9);i++){const a=Math.random()*6.28,r0=6,r1=kind==='wood'?rand(14,26):rand(10,19);g.beginPath();g.moveTo(c+Math.cos(a)*r0,c+Math.sin(a)*r0);g.lineTo(c+Math.cos(a)*r1,c+Math.sin(a)*r1);g.stroke();}
+});
+const DECALMAT={};for(const k of ['dirt','metal','wood','concrete','plaster'])DECALMAT[k]=new T.MeshBasicMaterial({map:decalTex(k==='plaster'?'concrete':k),transparent:true,depthWrite:false,polygonOffset:true,polygonOffsetFactor:-2,polygonOffsetUnits:-2});
+const decalGeo=new T.PlaneGeometry(0.16,0.16);let decalIdx=0;
+for(let i=0;i<80;i++){const m=new T.Mesh(decalGeo,DECALMAT.concrete);m.visible=false;scene.add(m);DECALS.push(m);}
+function decal(point,normal,kind,size){const m=DECALS[decalIdx];decalIdx=(decalIdx+1)%DECALS.length;m.material=DECALMAT[kind]||DECALMAT.concrete;m.visible=true;m.position.copy(point).addScaledVector(normal,0.012);m.lookAt(point.clone().add(normal));m.rotateZ(Math.random()*6.28);const s=(size||1)*rand(.75,1.25)*(kind==='dirt'?1.6:1);m.scale.set(s,s,s);}
+function clearDecals(){for(const m of DECALS)m.visible=false;}
 // tracers
 const TRACERS=[];const tracerGeo=new T.BoxGeometry(0.018,0.018,1);tracerGeo.translate(0,0,0.5);
 for(let i=0;i<12;i++){const m=new T.Mesh(tracerGeo,new T.MeshBasicMaterial({color:0xffe1a0,transparent:true,opacity:.9,blending:T.AdditiveBlending,depthWrite:false,fog:false}));m.visible=false;scene.add(m);TRACERS.push({m,a:new T.Vector3(),d:new T.Vector3(),len:0,t:0,speed:700,tail:7});}
@@ -3303,21 +3315,34 @@ function surfaceOf(obj){
   return 'plaster';
 }
 const SURF={
-  dirt:{dust:0xc9ab80,n:5,size:0.34,sparks:0,snd:'impDirt'},
-  wood:{dust:0x8a6a42,n:4,size:0.22,sparks:1,snd:'impWood'},
-  metal:{dust:0x9a958c,n:2,size:0.16,sparks:5,snd:'impMetal'},
-  concrete:{dust:0xc8c2b6,n:4,size:0.26,sparks:2,snd:'impConcrete'},
-  plaster:{dust:0xe2d6c0,n:4,size:0.28,sparks:1,snd:'impConcrete'}
+  dirt:{dust:0xc9ab80,n:5,size:0.34,sparks:0,snd:'impDirt',chunks:5,chunk:0x6e5a3e},
+  wood:{dust:0x8a6a42,n:4,size:0.22,sparks:1,snd:'impWood',chunks:5,chunk:0x5a3e24},
+  metal:{dust:0x9a958c,n:2,size:0.16,sparks:7,snd:'impMetal',chunks:1,chunk:0x3a3a3a},
+  concrete:{dust:0xc8c2b6,n:4,size:0.26,sparks:2,snd:'impConcrete',chunks:5,chunk:0x7c776d},
+  plaster:{dust:0xe2d6c0,n:4,size:0.28,sparks:1,snd:'impConcrete',chunks:4,chunk:0xa89c88}
 };
 // sound reaches you later the further away the impact is (speed of sound), capped so it stays readable
 function soundDelay(dist){return Math.min(0.35,dist/343);}
-function impactFX(hit,dist){
+function impactFX(hit,dist,size){
   const n=hit.face?hit.face.normal.clone().transformDirection(hit.object.matrixWorld):new T.Vector3(0,1,0);
-  const sf=SURF[surfaceOf(hit.object)];
-  emit(hit.point,{n:sf.n,color:sf.dust,size:sf.size,grow:1.1,life:0.7,spread:0.5,dir:n,speed:1.8,g:-1.5,op:0.5});
-  if(sf.sparks)emit(hit.point,{n:sf.sparks,color:0xffc070,size:0.05,life:0.14,spread:2,dir:n,speed:4,add:true,op:0.95,g:-9,drag:0.5});
-  decal(hit.point,n);
+  const kind=surfaceOf(hit.object),sf=SURF[kind],s=size||1;
+  const few=s<0.7,N=k=>few?Math.max(1,Math.round(k/2)):k;   // shotgun pellets: half the bits each
+  // flash, dust burst, a slow plume that hangs in the air, chunks that fall, sparks off metal and stone
+  emit(hit.point,{n:1,color:kind==='metal'?0xfff4d8:0xffe2b0,size:0.3*s,life:0.06,spread:0,add:true,op:0.9});
+  emit(hit.point,{n:N(sf.n),color:sf.dust,size:sf.size*s,grow:1.1,life:0.7,spread:0.5,dir:n,speed:1.8,g:-1.5,op:0.5});
+  if(!few)emit(hit.point,{n:2,color:sf.dust,size:sf.size*1.5*s,grow:0.7,life:1.7,spread:0.25,dir:n,speed:0.6,g:0.15,op:0.28,drag:2.5});
+  emit(hit.point,{n:N(sf.chunks),color:sf.chunk,size:0.045,life:0.7,spread:1.6,dir:n,speed:3.2,g:-9.8,op:1,drag:0.4});
+  if(sf.sparks)emit(hit.point,{n:N(sf.sparks),color:0xffc070,size:0.05,life:0.16,spread:2.2,dir:n,speed:4.5,add:true,op:0.95,g:-9,drag:0.5});
+  decal(hit.point,n,kind,s);
   if(dist!==undefined&&dist<95)SFX[sf.snd](soundDelay(dist),clamp(1.2-dist/80,0.25,1));
+}
+// a hit on a body (bots, and the rival online): a spark, a red mist sprayed along the bullet and a
+// few drops; bigger on the head
+function bodyFX(pt,dir,head,dist){
+  const k=clamp((dist||10)/16,1,3);   // far away it would be a dot: a bit bigger with distance
+  emit(pt,{n:2,color:0xffc080,size:0.08*k,life:0.12,spread:2.5,add:true,op:0.9,drag:2});
+  emit(pt,{n:head?4:2,color:0x7a140e,size:(head?0.34:0.24)*k,grow:1.0,life:head?0.7:0.5,spread:0.35,dir,speed:1.4,g:-0.6,op:0.6,drag:2.2});
+  emit(pt,{n:head?7:4,color:0x4e0b07,size:0.035*k,life:0.55,spread:1.4,dir,speed:2.4,g:-9.8,op:0.95,drag:0.6});
 }
 /* ---- bullets: SDWeapon ballistics (exact parabola per fixed tick) + a swept ray per step ---- */
 const BULLETS=[];const BTR=[];
@@ -3373,7 +3398,7 @@ function bulletHit(h,b){
     const bot=ud.bot,part=ud.part,bc=b.cfg,f=bc.falloff,fk=!f||dist<=f.from?1:dist>=f.to?f.min:1-(1-f.min)*(dist-f.from)/(f.to-f.from);
     const key=b.shot.id+':'+bot.name,dmg=Math.round(bc.dmg[part]*fk),q=PELLET_HITS.get(key);
     if(!q)PELLET_HITS.set(key,{bot,part,dmg,dist,n:1,dir:{x:b.vx,z:b.vz}});else{q.dmg+=dmg;q.n++;if(PART_RANK[part]>PART_RANK[q.part])q.part=part;}
-    emit(h.point,{n:2,color:0xffb070,size:0.07,life:0.2,spread:2.5,add:true,op:0.9,drag:2});emit(h.point,{n:1,color:0x7a5a46,size:0.16,grow:0.6,life:0.4,spread:0.6,op:0.45});
+    bodyFX(h.point,_bd,part==='head',dist);
     return;
   }
   if(ud.bot&&ud.bot.alive){
@@ -3381,13 +3406,12 @@ function bulletHit(h,b){
     const bc=b.cfg||GUNCFG,f=bc.falloff,fk=!f||dist<=f.from?1:dist>=f.to?f.min:1-(1-f.min)*(dist-f.from)/(f.to-f.from);
     const dmg=Math.round(bc.dmg[part]*fk);STATS.damage+=Math.min(dmg,Math.max(0,bot.hp));
     const killed=bot.damage(dmg,part,dist,{x:b.vx,z:b.vz});
-    emit(h.point,{n:3,color:0xffb070,size:0.09,life:0.22,spread:2.5,add:true,op:0.9,drag:2});
-    emit(h.point,{n:2,color:0x7a5a46,size:0.2,grow:0.6,life:0.45,spread:0.6,op:0.45});
+    bodyFX(h.point,_bd,part==='head',dist);
     if(part==='head')STATS.rangeHs++;
     SFX.thwack(soundDelay(dist));
     if(killed)onKill(bot,part==='head',dist);
     else{hitmarker('body');SFX.hitTick();callout('IMPACTO','−'+dmg+' · '+Math.round(dist)+' m',false,true);}
-  }else impactFX(h,b.shot&&(b.shot.snd=(b.shot.snd||0)+1)>2?undefined:dist);   // pellets: only the first two make a sound
+  }else impactFX(h,b.shot&&(b.shot.snd=(b.shot.snd||0)+1)>2?undefined:dist,b.shot?0.6:(b.cfg===PCFG?0.8:1));   // pellets: only the first two make a sound
   updateRangeHud();
 }
 /* ---- shot: direction from the last rendered aim (reticle), never from recoil or shake ---- */
@@ -4416,7 +4440,7 @@ function netEvent(e){
       if(e.by===N.you){
         STATS.hits++;if(e.part==='head')STATS.hs++;
         const pt=new T.Vector3(e.pt[0],e.pt[1],e.pt[2]);
-        emit(pt,{n:3,color:0xffb070,size:0.09,life:0.22,spread:2.5,add:true,op:0.9,drag:2});emit(pt,{n:2,color:0x7a5a46,size:0.2,grow:0.6,life:0.45,spread:0.6,op:0.45});
+        bodyFX(pt,pt.clone().sub(camera.position).normalize(),e.part==='head',pt.distanceTo(camera.position));
         if(e.hp>0){hitmarker(e.part==='head'?'hs':'body');SFX.hitTick();callout(e.weapon==='knife'?'NAVAJA':e.part==='head'?'CABEZA':e.part==='torso'?'TORSO':'PIERNAS','−'+e.dmg+(e.pellets?' · '+e.pellets+(e.pellets===1?' perdigón':' perdigones'):''),e.part==='head',true);}
       }else if(e.to===N.you){
         P.hp=e.hp;P.lastHit=gameTime;P.shake=Math.max(P.shake,0.9);SFX.hurt();vibrate(e.part==='head'?120:60);
@@ -4611,7 +4635,7 @@ function frameBody(now){
 }
 resize();
 requestAnimationFrame(frame);
-window.__SD={freeze(on){SIM_FREEZE=!!on;},PIS,PROOT,RIF,WROOT,SHO_:null,MANUAL,advance(ms){frameBody(last+ms);},get LAST_PELLETS(){return LAST_PELLETS;},SCORE,SCFG,SROOT,SHO,setPrimaryChoice,get PRIMARY(){return PRIMARY;},PCORE,PCFG,setWorld,WORLDS,get WORLD_ID(){return WORLD_ID;},renderer,GFX,gfxApply,get NET(){return NET;},get REMOTE(){return REMOTE;},W,get NAV(){return NAV;},setOffMap,get OFFMAP(){return OFFMAP;},TOUCH,EDIT,openEditor,get SETTINGS(){return SETTINGS;},get LAYOUT(){return LAYOUT;},checkOrientation,MAT,LOAD,TRAINERS,get RANGE_BOTS(){return RANGE_BOTS;},TRAIN,setTrain,impactFX,surfaceOf,soundDelay,aimSelfTest,P,PM,WS,WCORE,RECOIL,AIM,BOTS,DUMMIES,BULLETS,EVENTS,PARTS,STATS,get state(){return state;},get mode(){return mode;},setMode,input,startMatch,simTick,frame,toMenu,pause,resume};
+window.__SD={freeze(on){SIM_FREEZE=!!on;},PIS,PROOT,RIF,WROOT,SHO_:null,MANUAL,advance(ms){frameBody(last+ms);},get LAST_PELLETS(){return LAST_PELLETS;},SCORE,SCFG,SROOT,SHO,setPrimaryChoice,get PRIMARY(){return PRIMARY;},PCORE,PCFG,setWorld,WORLDS,get WORLD_ID(){return WORLD_ID;},renderer,GFX,gfxApply,get NET(){return NET;},get REMOTE(){return REMOTE;},W,get NAV(){return NAV;},setOffMap,get OFFMAP(){return OFFMAP;},TOUCH,EDIT,openEditor,get SETTINGS(){return SETTINGS;},get LAYOUT(){return LAYOUT;},checkOrientation,MAT,LOAD,TRAINERS,get RANGE_BOTS(){return RANGE_BOTS;},TRAIN,setTrain,impactFX,bodyFX,get DECALS(){return DECALS;},surfaceOf,soundDelay,aimSelfTest,P,PM,WS,WCORE,RECOIL,AIM,BOTS,DUMMIES,BULLETS,EVENTS,PARTS,STATS,get state(){return state;},get mode(){return mode;},setMode,input,startMatch,simTick,frame,toMenu,pause,resume};
 })();
 </script>
 

@@ -108,6 +108,16 @@ const shown = page => page.evaluate(ids => ids.filter(id => { const e = document
       check('recarga: el cargador vacío sale y cae', an.drop[0] && an.drop2[0] && an.drop2[1] < an.drop[1] - 0.03, an.drop.map(x => +(+x).toFixed(3)) + ' → ' + an.drop2.map(x => +(+x).toFixed(3)));
       check('recarga: la mano izquierda trae el cargador nuevo pegado a la mano', an.carry[0] && an.carry[1] < 0.12, (+an.carry[1]).toFixed(3) + ' m');
       check('recarga: el cargador queda metido y la corredera se acciona', an.inserted === 0 && an.rack > 0.025 && an.rest === 0, JSON.stringify({ inserted: an.inserted, rack: an.rack }));
+      // E3: a hit on the ground leaves a dirt-type hole and particles; changing map clears the holes
+      const fx = await page.evaluate(() => {
+        const S = __SD, g = S.W.ray[0], before = S.PARTS.filter(q => q.s.visible).length;
+        S.impactFX({ point: new THREE.Vector3(0, 0.01, 60), face: { normal: new THREE.Vector3(0, 1, 0) }, object: g }, 10);
+        const d = S.DECALS.filter(m => m.visible), parts = S.PARTS.filter(q => q.s.visible).length - before;
+        S.bodyFX(new THREE.Vector3(0, 1.2, 62), new THREE.Vector3(0, 0, 1), true, 40);
+        const w0 = S.WORLD_ID; S.setWorld(w0 === 'pueblo' ? 'arena' : 'pueblo'); const after = S.DECALS.filter(m => m.visible).length; S.setWorld(w0);
+        return { holes: d.length, tex: d.length ? !!d[d.length - 1].material.map : false, parts, after };
+      });
+      check('impacto: agujero con textura, polvo, trozos y fogonazo; al cambiar de mapa se borran los agujeros', fx.holes >= 1 && fx.tex && fx.parts >= 8 && fx.after === 0, JSON.stringify(fx));
       await page.keyboard.press('Digit1');
       check('tecla 1: vuelve el rifle', await wf(() => __SD.LOAD.active === 'rifle' && __SD.LOAD.phase === 'ready'));
       if (!/✔ AUTOTEST/.test(head)) res.filter(l => l.startsWith('✘')).forEach(l => console.log('       ' + l));
