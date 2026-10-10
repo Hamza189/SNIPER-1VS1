@@ -8,7 +8,7 @@
 import pathlib
 root = pathlib.Path(__file__).parent
 CORE = ["config.js", "movement.js", "weapon.js", "melee.js", "trainer.js", "player.js", "protocol.js", "hitbox.js"]
-CLIENT = ["settings.js", "layout.js", "touch.js", "quality.js", "netcore.js"]
+CLIENT = ["settings.js", "layout.js", "touch.js", "quality.js", "netcore.js", "vmrig.js"]
 code = "\n".join((root / "core" / f).read_text() for f in CORE) + "\n" + \
        "\n".join((root / "client" / f).read_text() for f in CLIENT)
 page = (root / "src" / "page.html").read_text()
@@ -20,7 +20,8 @@ build_id = rev  # the commit the page was built on (shown in F3)
 import hashlib, json
 # content hash: changes whenever the game itself changes; the page compares it with version.json
 # to tell an open tab that a newer version has been published
-build_hash = hashlib.sha1((code + page).encode()).hexdigest()[:10]
+glb = root / "assets" / "viewmodels.glb"
+build_hash = hashlib.sha1((code + page).encode() + (glb.read_bytes() if glb.exists() else b"")).hexdigest()[:10]
 fragment = page.replace("/*@@CORE@@*/", code + "\nconst BUILD_ID=" + repr(build_id).replace("'", '"') + ";const BUILD_HASH=" + json.dumps(build_hash) + ";", 1)
 (root / "version.json").write_text(json.dumps({"hash": build_hash, "rev": build_id}) + "\n")
 
@@ -49,6 +50,10 @@ LOCAL = (
     '<script data-loader>window.THREE||document.write(\'<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"><\\/script>\')</script>'
 )
 standalone = standalone.replace(CDN, LOCAL)
+# the GLTF loader (official r128 example script, vendored) loads the modelled weapons and arms
+GLTF_CDN = '<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>'
+assert standalone.count(GLTF_CDN) == 1
+standalone = standalone.replace(GLTF_CDN, '<script src="vendor/GLTFLoader.js"></script>')
 (root / "index.html").write_text(standalone)
 (root / "build").mkdir(exist_ok=True)
 (root / "build" / "artifact.html").write_text(fragment)

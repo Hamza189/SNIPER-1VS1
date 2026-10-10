@@ -540,6 +540,7 @@ body.touch #score .side span{max-width:11vw;overflow:hidden;text-overflow:ellips
 <div id="loadErr" hidden><p>No se ha podido cargar el motor 3D. Revisa la conexión y vuelve a abrir la página.</p></div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
 <script>
 /*@@CORE@@*/
 </script>
@@ -1337,6 +1338,82 @@ const PIS={};
   PIS.k={rx:0,vrx:0,z:0,vz:0,rz:0,vrz:0,y:0,vy:0};
   PIS.lhPose={x:0,y:0,z:0,rx:0,ry:0,rz:0};
 })();
+/* ---- modelled viewmodels (assets/viewmodels.glb, built by tools/blender/viewmodels.py): the
+   VÍBORA 9 and gloved arms on a skeleton. Loaded in the background; until (or unless) it arrives
+   the procedural models above are used, so the game never waits for it. Purely visual. ---- */
+const VMA={ready:false,rig:null,P:null,loading:false};
+const PD=new T.Vector3(0,-0.946,0.326);                 // VÍBORA 9 grip axis (down), gun space
+function loadViewmodels(){
+  if(VMA.loading||!T.GLTFLoader||/[?&]vm=0\b/.test(location.search)||PERF_LOW&&!/[?&]vm=1\b/.test(location.search))return;VMA.loading=true;
+  try{new T.GLTFLoader().load('assets/viewmodels.glb?v='+BUILD_HASH,g=>{try{setupViewmodels(g);}catch(e){console.warn('viewmodels',e);}},undefined,()=>{});}catch(e){}
+}
+function setupViewmodels(g){
+  SDVM.refine(g.scene,T,ENV,{low:GFX.profile==='bajo'});
+  const rig=SDVM.createArms(g.scene,T);if(!rig)return;
+  rig.root.visible=false;wScene.add(rig.root);
+  const pis=g.scene.getObjectByName('VIBORA9');if(!pis)return;
+  pis.position.set(0,0,0);pis.rotation.set(0,0,0);
+  const part=n=>pis.getObjectByName(n);
+  // procedural pistol and hands off; the modelled one goes in the same place of the same rig
+  for(const c of [...PIS.gun.children])c.visible=false;
+  PIS.lh.visible=false;PIS.flash.visible=false;PIS.flame.visible=false;
+  PIS.gun.add(pis);PIS.gun.add(PIS.flash,PIS.flame);
+  const slide=part('slide'),mag=part('mag'),trig=part('trigger');
+  // magazines ride along the grip axis: anchor (fixed, at the top of the grip, axis = its -y) →
+  // PIS.mag (moves: position 0 = seated) → the model
+  const A=new T.Group();A.position.copy(mag.position);A.rotation.x=-Math.atan2(PD.z,-PD.y);pis.add(A);
+  const wrap=m=>{const o=new T.Group();A.add(o);m.position.set(0,0,0);m.rotation.set(A.rotation.x*-1,0,0);o.add(m);return o;};
+  const old=mag.clone();
+  PIS.slide=slide;PIS.trig=trig;PIS.mag=wrap(mag);PIS.oldMag=wrap(old);PIS.oldMag.visible=false;PIS.magA=A;
+  // PIS.lh follows the left hand bone (tests and effects look at it)
+  PIS.lh=new T.Group();wScene.add(PIS.lh);
+  VMA.rig=rig;VMA.P={root:pis,slide,mag,A};VMA.ready=true;
+}
+// hand pose helpers: a spec (vmrig ARMPOSE format) → wrist position + rotation in camera space
+const _hp=[0,1,2,3,4,5].map(()=>({p:new T.Vector3(),q:new T.Quaternion(),f:null}));
+const _wmat=new T.Matrix4(),_wm2=new T.Matrix4();
+function handAt(spec,world,o){SDVM.handTarget(spec,world,null,o.p,o.q);o.f=SDVM.HANDSETS[spec.f]||SDVM.HANDSETS.relaxed;return o;}
+function handMix(a,b,w,o){o.p.copy(a.p).lerp(b.p,w);o.q.copy(a.q).slerp(b.q,w);o.f=SDVM.mixFingers(a.f,b.f,w,o.fm||(o.fm={}));return o;}
+// the left hand's places during the reload (VÍBORA 9 gun space); see updatePistolArms
+const PL={
+  away:{f:'relaxed',left:true,at:[-0.1,-0.34,0.16],b:[[-0.5,0.2,-1],[-1,-0.4,0]]},
+  mag:{f:'magHold',left:true,anchor:[0,-0.016,-0.048],at:[0,-0.139,0.041],b:[[-1,0,0],[0,-0.946,0.326]]},
+  rack:{f:'rack',left:true,at:[-0.011,0.03,0.004],b:[[0,0,1],[0,1,0]],r:[0.6,0,0.15]},
+};
+const P_RL2=[[0,[0,0,0,0,0,0]],[0.1,[-0.05,0.058,-0.1,0.58,0.2,-0.45]],[0.55,[-0.052,0.06,-0.1,0.6,0.2,-0.47]],[0.6,[-0.052,0.055,-0.1,0.58,0.2,-0.45]],
+  [0.625,[-0.052,0.068,-0.1,0.74,0.2,-0.42]],[0.7,[-0.035,0.03,-0.05,0.15,-0.05,0.25]],[0.79,[-0.035,0.03,-0.042,0.17,-0.05,0.27]],[0.83,[-0.035,0.034,-0.06,0.08,-0.04,0.2]],
+  [0.95,[-0.004,0.004,0,0,0,0.02]],[1,[0,0,0,0,0,0]]];
+// new magazine path in the grip-axis frame (y = up the grip; 0 = seated) [x,y,z,rx,ry,rz]
+const P_MAG=[[0.27,[-0.07,-0.25,0.05,0.45,0,0.5]],[0.42,[-0.012,-0.075,0.004,0.14,0,0.12]],[0.52,[0,-0.04,0,0.03,0,0.02]],[0.6,[0,-0.005,0,0,0,0]],[0.62,[0,0,0,0,0,0]]];
+function updatePistolArms(u,rl){
+  const rig=VMA.rig,A=SDVM.ARMPOSE.pistol;rig.root.visible=true;
+  const G=VMA.P.root;G.updateMatrixWorld(true);const W=G.matrixWorld;
+  const R=handAt(A.R,W,_hp[0]);
+  let L=handAt(A.L,W,_hp[1]);
+  if(rl){
+    // left hand: away (0.06-0.27) · brings the new magazine (0.27-0.62) · slaps it home · racks the slide (0.66-0.83) · back
+    const away=handAt(PL.away,W,_hp[2]);
+    PIS.mag.updateMatrixWorld(true);_wm2.copy(PIS.magA.matrix).invert();_wmat.multiplyMatrices(PIS.mag.matrixWorld,_wm2);
+    const onMag=handAt(PL.mag,_wmat,_hp[3]);
+    if(u>0.6&&u<0.66){const k=bump(u,0.6,0.66);onMag.p.addScaledVector(_up,0.006*k);}
+    const rack=handAt(PL.rack,W,_hp[4]);const back=Math.min(1.6,seg(u,0.745,0.79)+seg(u,0.79,0.86)*0.6);
+    if(u>0.7){const o=_lv.set(0,0,0.034*back).applyQuaternion(G.getWorldQuaternion(_hp[5].q));rack.p.add(o);}
+    const out=_hp[5];
+    if(u<0.06){}
+    else if(u<0.16)L=handMix(L,away,ss((u-0.06)/0.1),out);
+    else if(u<0.27)L=away;
+    else if(u<0.36)L=handMix(away,onMag,ss((u-0.27)/0.09),out);
+    else if(u<0.645)L=onMag;
+    else if(u<0.73)L=handMix(onMag,rack,ss((u-0.645)/0.085),out);
+    else if(u<0.84)L=rack;
+    else L=handMix(rack,L,ss((u-0.84)/0.12),out);
+  }
+  SDVM.poseArm(rig.sides.R,_sR.fromArray(A.shoulder.R),R.p,R.q,_pR.fromArray(A.pole.R).normalize(),R.f);
+  SDVM.poseArm(rig.sides.L,_sL.fromArray(A.shoulder.L),L.p,L.q,_pL.fromArray(A.pole.L).normalize(),L.f);
+  PIS.lh.position.setFromMatrixPosition(rig.sides.L.bones.hand.matrixWorld);
+}
+const _sR=new T.Vector3(),_sL=new T.Vector3(),_pR=new T.Vector3(),_pL=new T.Vector3();
+loadViewmodels();
 // called by doFire: the gun jumps in the hands (muzzle flip around the wrists, push back, a little roll)
 function pistolKick(ads){const s=1-0.45*ads;PIS.k.vrx+=10.5*s;PIS.k.vz+=1.5*s;PIS.k.vy+=0.25*s;PIS.k.vrz+=rand(-1,1)*2.2*s;}
 // key-framed tracks: [[u, value], …] eased between keys
@@ -1362,10 +1439,12 @@ function placeArm(A,wrist,ex,ey,ez){
 function updatePistolVM(dt){
   PROOT.visible=LOAD.active==='pistol'&&(state==='playing'||state==='dead'||state==='paused');
   PIS.arms.visible=false;
+  if(VMA.ready)VMA.rig.root.visible=PROOT.visible&&false;
   if(!PROOT.visible)return;
+  const glb=VMA.ready;
   const ads=ss(PCORE.ads),free=1-ads,dbg=PIS.debug;
   // hip: low right, canted a touch, muzzle towards the crosshair; ADS: sight line on the screen centre
-  let x=lerp(0.074,0,ads),y=lerp(-0.088,-0.0262,ads),z=lerp(-0.29,-0.335,ads),rx=0.04*free,ry=0.1*free,rz=-0.06*free;
+  let x=lerp(glb?0.102:0.074,0,ads),y=lerp(glb?-0.053:-0.088,-0.0262,ads),z=lerp(glb?-0.266:-0.29,-0.335,ads),rx=(glb?0.12:0.04)*free,ry=(glb?0.35:0.1)*free,rz=(glb?-0.15:-0.06)*free;
   // sprint: lowered and turned in; slide / air / landing / lean / death
   const sw=VM.sprintW*free;x-=0.02*sw;y-=0.022*sw;z+=0.02*sw;rx-=0.42*sw;ry+=0.38*sw;rz+=0.3*sw;
   const bob=P.bob*MOTION,bm=PM.sprinting?1.8:1;
@@ -1385,8 +1464,16 @@ function updatePistolVM(dt){
   const u=dbg&&dbg.reload!==undefined?dbg.reload:rl?clamp(PCORE.t/PCFG.reload,0,1):0;
   let slideBack=0;
   const LR=PIS.LHREST,lh=PIS.lhPose;lh.x=LR.x;lh.y=LR.y;lh.z=LR.z;lh.rx=lh.ry=lh.rz=0;
-  PIS.mag.position.set(0,0,0);PIS.mag.visible=true;PIS.oldMag.visible=false;
-  if(rl){
+  PIS.mag.position.set(0,0,0);PIS.mag.rotation.set(0,0,0);PIS.mag.visible=true;PIS.oldMag.visible=false;
+  if(rl&&glb){
+    const g=trk(u,P_RL2),rw=1-0.6*ads;x+=g[0]*rw;y+=g[1]*rw;z+=g[2]*rw;rx+=g[3];ry+=g[4];rz+=g[5];
+    // old magazine: drops out of the grip (0.08) and falls out of the picture
+    if(u>=0.08&&u<0.42){const t=(u-0.08)*PCFG.reload;PIS.oldMag.visible=true;PIS.oldMag.position.set(-t*0.03,-(Math.min(t,0.05)*0.9+Math.max(0,t-0.05)*Math.max(0,t-0.05)*4.9),t*0.02);PIS.oldMag.rotation.set(-Math.max(0,t-0.06)*1.5,0,-Math.max(0,t-0.06)*2);}
+    // new magazine: arrives in the left hand and is pushed home by 0.62 (the click)
+    PIS.mag.visible=u<0.08||u>=0.27;
+    if(u>=0.27){const m=trk(u,P_MAG);PIS.mag.position.set(m[0],m[1],m[2]);PIS.mag.rotation.set(m[3],m[4],m[5]);}else{PIS.mag.position.set(0,u<0.08?0:-0.4,0);PIS.mag.rotation.set(0,0,0);}
+    slideBack=u<0.745?0:u<0.79?ss((u-0.745)/0.045):u<0.81?1:1-ss((u-0.81)/0.018);
+  }else if(rl){
     const g=trk(u,P_RELOAD),rw=1-0.6*ads;x+=g[0]*rw;y+=g[1]*rw;z+=g[2]*rw;rx+=g[3];ry+=g[4];rz+=g[5];
     // old magazine: pops out (0.08) and drops away out of the picture
     if(u>=0.08&&u<0.42){const t=(u-0.08)*PCFG.reload;PIS.oldMag.visible=true;PIS.oldMag.position.set(-t*0.05,-(Math.min(t,0.06)*0.7+Math.max(0,t-0.06)*Math.max(0,t-0.06)*4.5),0);PIS.oldMag.rotation.set(0,0,-Math.max(0,t-0.08)*2.5);}
@@ -1410,7 +1497,7 @@ function updatePistolVM(dt){
   if(PCORE.ammo<=0&&!rl)slideBack=1;
   if(dbg&&dbg.slide!==undefined)slideBack=dbg.slide;
   PIS.slide.position.z=slideBack*0.032;
-  PIS.trig.rotation.x=PCORE.state==='bolt'&&PCORE.t<0.05?0.25:0;
+  PIS.trig.rotation.x=(PCORE.state==='bolt'&&PCORE.t<0.05?0.25:0)*(glb?-1:1);
   // recoil spring (critically damped with a small overshoot)
   const K=PIS.k,st=Math.min(dt,1/30);
   K.vrx+=(-320*K.rx-24*K.vrx)*st;K.rx+=K.vrx*st;K.vz+=(-380*K.z-30*K.vz)*st;K.z+=K.vz*st;
@@ -1420,9 +1507,11 @@ function updatePistolVM(dt){
   PIS.lh.position.set(lh.x,lh.y,lh.z);PIS.lh.rotation.set(lh.rx,lh.ry,lh.rz);
   if(dbg&&dbg.root){const r=dbg.root;x=r[0];y=r[1];z=r[2];rx=r[3];ry=r[4];rz=r[5];}
   PROOT.position.set(x,y,z);PROOT.rotation.set(rx,ry,rz);
-  PIS.arms.visible=true;PROOT.updateMatrixWorld(true);
+  PROOT.updateMatrixWorld(true);
+  if(glb){updatePistolArms(u,rl);}
+  else{PIS.arms.visible=true;
   placeArm(PIS.armR,_wr.copy(PIS.wristR).applyMatrix4(PIS.gun.matrixWorld),0.21,-0.4,0.16);
-  placeArm(PIS.armL,_wl.copy(PIS.wristL).applyMatrix4(PIS.lh.matrixWorld),-0.17,-0.42,0.14);
+  placeArm(PIS.armL,_wl.copy(PIS.wristL).applyMatrix4(PIS.lh.matrixWorld),-0.17,-0.42,0.14);}
   const fl=WS.flashT>0||!!(dbg&&dbg.flash);PIS.flash.visible=fl;PIS.flame.visible=fl&&ads<0.6;
   if(fl)PIS.flame.rotation.z=Math.random()*3;
 }
@@ -3321,6 +3410,6 @@ function frameBody(now){
 }
 resize();
 requestAnimationFrame(frame);
-window.__SD={freeze(on){SIM_FREEZE=!!on;},RemotePlayer,PMprev,PIS,PROOT,RIF,WROOT,SHO_:null,MANUAL,advance(ms){frameBody(last+ms);},get LAST_PELLETS(){return LAST_PELLETS;},SCORE,SCFG,SROOT,SHO,setPrimaryChoice,get PRIMARY(){return PRIMARY;},PCORE,PCFG,setWorld,WORLDS,get WORLD_ID(){return WORLD_ID;},renderer,GFX,gfxApply,get NET(){return NET;},get REMOTE(){return REMOTE;},W,get NAV(){return NAV;},setOffMap,get OFFMAP(){return OFFMAP;},TOUCH,EDIT,openEditor,get SETTINGS(){return SETTINGS;},get LAYOUT(){return LAYOUT;},checkOrientation,MAT,LOAD,TRAINERS,get RANGE_BOTS(){return RANGE_BOTS;},TRAIN,setTrain,impactFX,bodyFX,get DECALS(){return DECALS;},surfaceOf,soundDelay,aimSelfTest,P,PM,WS,WCORE,RECOIL,AIM,BOTS,DUMMIES,BULLETS,EVENTS,PARTS,STATS,get state(){return state;},get mode(){return mode;},setMode,input,startMatch,simTick,frame,toMenu,pause,resume};
+window.__SD={freeze(on){SIM_FREEZE=!!on;},VMA,RemotePlayer,PMprev,PIS,PROOT,RIF,WROOT,SHO_:null,MANUAL,advance(ms){frameBody(last+ms);},get LAST_PELLETS(){return LAST_PELLETS;},SCORE,SCFG,SROOT,SHO,setPrimaryChoice,get PRIMARY(){return PRIMARY;},PCORE,PCFG,setWorld,WORLDS,get WORLD_ID(){return WORLD_ID;},renderer,GFX,gfxApply,get NET(){return NET;},get REMOTE(){return REMOTE;},W,get NAV(){return NAV;},setOffMap,get OFFMAP(){return OFFMAP;},TOUCH,EDIT,openEditor,get SETTINGS(){return SETTINGS;},get LAYOUT(){return LAYOUT;},checkOrientation,MAT,LOAD,TRAINERS,get RANGE_BOTS(){return RANGE_BOTS;},TRAIN,setTrain,impactFX,bodyFX,get DECALS(){return DECALS;},surfaceOf,soundDelay,aimSelfTest,P,PM,WS,WCORE,RECOIL,AIM,BOTS,DUMMIES,BULLETS,EVENTS,PARTS,STATS,get state(){return state;},get mode(){return mode;},setMode,input,startMatch,simTick,frame,toMenu,pause,resume};
 })();
 </script>

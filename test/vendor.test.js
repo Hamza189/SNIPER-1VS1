@@ -16,5 +16,11 @@ let rev = null;
 try { vm.runInNewContext(fs.readFileSync(file, 'utf8'), win); rev = win.THREE && win.THREE.REVISION; } catch (e) { console.log(e.message); }
 check('el archivo define window.THREE r128', rev === '128', 'REVISION ' + rev);
 check('trae lo que usa el juego', !!(win.THREE && win.THREE.WebGLRenderer && win.THREE.ExtrudeGeometry && win.THREE.CubeTexture));
+// the GLTF loader for the modelled weapons (official r128 example script)
+const gl = path.join(root, 'vendor', 'GLTFLoader.js');
+check('index.html carga vendor/GLTFLoader.js después de Three.js', html.indexOf('<script src="vendor/GLTFLoader.js">') > html.indexOf('vendor/three.min.js'));
+let okL = false; try { const w2 = {}; w2.window = w2; vm.runInNewContext(fs.readFileSync(file, 'utf8'), w2); vm.runInNewContext(fs.readFileSync(gl, 'utf8'), Object.assign(w2, { THREE: w2.THREE })); okL = typeof w2.THREE.GLTFLoader === 'function'; } catch (e) { console.log(e.message); }
+check('GLTFLoader define THREE.GLTFLoader', okL);
+check('existe assets/viewmodels.glb (modelos 3D de las armas y los brazos)', fs.existsSync(path.join(root, 'assets', 'viewmodels.glb')) && fs.readFileSync(path.join(root, 'assets', 'viewmodels.glb')).slice(0, 4).toString() === 'glTF');
 console.log('\n' + pass + ' correctas, ' + fail + ' fallidas');
 process.exit(fail ? 1 : 0);

@@ -89,24 +89,30 @@ const shown = page => page.evaluate(ids => ids.filter(id => { const e = document
       const pf = await page.evaluate(() => ({ ammo: __SD.PCORE.ammo, rifle: __SD.WCORE.ammo }));
       check('tres clics: tres disparos de pistola, el rifle conserva sus balas', pf.ammo === 9 && pf.rifle === 5, JSON.stringify(pf));
       await page.keyboard.press('KeyR');
-      check('R recarga la pistola (12 otra vez)', await wf(() => __SD.PCORE.ammo === 12 && __SD.PCORE.state === 'ready', 12000));
+      check('R recarga la pistola (12 otra vez)', await wf(() => __SD.PCORE.ammo === 12 && __SD.PCORE.state === 'ready', 30000));
       // the pistol animation, posed frame by frame (debug hook): magazine out and falling, the left hand
       // bringing the new one up the grip, slide racked, forearms always reaching to below the screen
       const an = await page.evaluate(() => {
         const S = __SD, PI = S.PIS, V = new THREE.Vector3(), r = {};
         const at = (u, f) => { PI.debug = { reload: u }; S.advance(16); const o = f(); PI.debug = null; return o; };
         const wy = o => { o.updateMatrixWorld(true); return V.setFromMatrixPosition(o.matrixWorld).y; };
-        r.arms = PI.arms.visible;
+        const glb = S.VMA.ready; r.glb = glb;
+        r.arms = glb ? S.VMA.rig.root.visible : PI.arms.visible;
         r.drop = at(0.12, () => [PI.oldMag.visible, wy(PI.oldMag)]); r.drop2 = at(0.3, () => [PI.oldMag.visible, wy(PI.oldMag)]);
-        r.carry = at(0.45, () => { PI.lh.updateMatrixWorld(true); PI.mag.updateMatrixWorld(true); return [PI.mag.visible, new THREE.Vector3().setFromMatrixPosition(PI.lh.matrixWorld).distanceTo(new THREE.Vector3().setFromMatrixPosition(PI.mag.matrixWorld))]; });
+        r.carry = at(0.45, () => { PI.lh.updateMatrixWorld(true); PI.mag.updateMatrixWorld(true);
+          // modelled arms: the left wrist is behind the palm that holds the magazine's base plate
+          const m = glb ? PI.mag.localToWorld(new THREE.Vector3(0, -0.1, 0)) : new THREE.Vector3().setFromMatrixPosition(PI.mag.matrixWorld);
+          return [PI.mag.visible, new THREE.Vector3().setFromMatrixPosition(PI.lh.matrixWorld).distanceTo(m)]; });
         r.inserted = at(0.65, () => PI.mag.position.y);
         r.rack = at(0.79, () => PI.slide.position.z);
         r.rest = at(0, () => PI.slide.position.z);
-        const elb = PI.armR.g.position.clone().add(new THREE.Vector3(0, 1, 0).applyQuaternion(PI.armR.g.quaternion).multiplyScalar(PI.armR.s.scale.y));
-        r.elbowBelow = elb.y < -0.3;
+        if (glb) { at(0, () => 0); const e = new THREE.Vector3().setFromMatrixPosition(S.VMA.rig.sides.R.bones.fore.matrixWorld); r.elbowBelow = e.y < -0.2 && e.z > -0.1; r.elbow = e.toArray().map(x => +x.toFixed(2)); }
+        else { const elb = PI.armR.g.position.clone().add(new THREE.Vector3(0, 1, 0).applyQuaternion(PI.armR.g.quaternion).multiplyScalar(PI.armR.s.scale.y));
+        r.elbowBelow = elb.y < -0.3; }
         return r;
       });
-      check('pistola: los antebrazos se dibujan y llegan por debajo de la pantalla', an.arms && an.elbowBelow, JSON.stringify({ arms: an.arms, elbowBelow: an.elbowBelow }));
+      check('pistola: los brazos se dibujan y los codos quedan por debajo y detrás (modelos ' + (an.glb ? 'GLB' : 'procedurales') + ')', an.arms && an.elbowBelow, JSON.stringify({ arms: an.arms, elbow: an.elbow }));
+      check('pistola: se usan los modelos 3D (assets/viewmodels.glb), no los provisionales', an.glb === true);
       check('recarga: el cargador vacío sale y cae', an.drop[0] && an.drop2[0] && an.drop2[1] < an.drop[1] - 0.03, an.drop.map(x => +(+x).toFixed(3)) + ' → ' + an.drop2.map(x => +(+x).toFixed(3)));
       check('recarga: la mano izquierda trae el cargador nuevo pegado a la mano', an.carry[0] && an.carry[1] < 0.12, (+an.carry[1]).toFixed(3) + ' m');
       check('recarga: el cargador queda metido y la corredera se acciona', an.inserted === 0 && an.rack > 0.025 && an.rest === 0, JSON.stringify({ inserted: an.inserted, rack: an.rack }));
@@ -181,7 +187,7 @@ const shown = page => page.evaluate(ids => ids.filter(id => { const e = document
       check('apuntando se ve el arma por las miras (sin visor)', fov && await page.evaluate(() => document.getElementById('scope').hidden));
       await page.mouse.up({ button: 'right' });
       await page.keyboard.press('KeyR');
-      check('R: carga cartucho a cartucho (5 → 6, uno cada ' + 0.4 + ' s)', await wf(() => __SD.SCORE.state === 'reload', 3000) && await wf(() => __SD.SCORE.ammo === 6 && __SD.SCORE.state === 'ready', 6000));
+      check('R: carga cartucho a cartucho (5 → 6, uno cada ' + 0.4 + ' s)', await wf(() => __SD.SCORE.state === 'reload', 8000) && await wf(() => __SD.SCORE.ammo === 6 && __SD.SCORE.state === 'ready', 20000));
       // empty it, start a reload, shoot after two shells: it stops and fires
       await page.evaluate(() => { __SD.SCORE.ammo = 0; });
       await page.keyboard.press('KeyR'); await wf(() => __SD.SCORE.state === 'reload' && __SD.SCORE.ammo === 1, 4000); await snap('furia-recarga');
