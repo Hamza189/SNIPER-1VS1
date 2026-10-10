@@ -97,6 +97,8 @@ button{font:inherit;color:inherit}
 #hitmark .ring{position:absolute;left:-20px;top:-20px;width:40px;height:40px;border:2px solid var(--gold);border-radius:50%;opacity:0;box-sizing:border-box}
 #hitmark.hs .ring{opacity:1}
 #hud.scoped #callout{top:9%}
+#hud.scoped #rangeHud{opacity:.28}   /* the range statistics must not cover the top of the sight */
+#rangeHud{transition:opacity .15s}
 #hud.scoped #calloutMain{font-size:clamp(24px,3.6vw,40px)}
 @keyframes hm{0%{opacity:1;transform:scale(1.5)}25%{opacity:1;transform:scale(1)}100%{opacity:0;transform:scale(1)}}
 

@@ -117,13 +117,18 @@ console.log('\nDISPOSICIÓN DE BOTONES');
     check('por defecto todos los botones caben en ' + name + ' (' + w + '×' + h + ')', off === 0, off + ' fuera');
   }
   // the buttons visible at the same time must not overlap on a typical phone
-  const groups = [['fire', 'scope', 'crouch', 'jump', 'reload', 'swap'], ['fire', 'crouch', 'jump', 'reload', 'swap', 'inspect'], ['fire', 'scope', 'crouch', 'jump', 'reload', 'swap', 'breath', 'zoom']];
+  const groups = [['fire', 'scope', 'crouch', 'jump', 'reload', 'swap'], ['fire', 'crouch', 'jump', 'reload', 'swap', 'inspect'], ['fire', 'scope', 'crouch', 'jump', 'reload', 'swap', 'inspect'], ['fire', 'scope', 'crouch', 'jump', 'reload', 'swap', 'breath', 'zoom']];
   let overl = [];
   for (const g of groups) for (let i = 0; i < g.length; i++) for (let j = i + 1; j < g.length; j++) {
     const a = LY.rect(g[i], L.buttons[g[i]], 844, 390), b = LY.rect(g[j], L.buttons[g[j]], 844, 390);
     if (Math.hypot(a.cx - b.cx, a.cy - b.cy) < (a.size + b.size) / 2) overl.push(g[i] + '/' + g[j]);
   }
   check('los botones que se ven a la vez no se solapan', overl.length === 0, overl.join(', ') || 'ninguno');
+  // INSP (hip only) also stays out of the middle of the right half, where the look thumb lands
+  { const r = LY.rect('inspect', L.buttons.inspect, 844, 390);
+    check('INSP por defecto en una esquina (no en la zona donde cae el pulgar de la cámara)', r.cx > 844 - 110 && r.cy < 390 - 180, 'centro ' + Math.round(r.cx) + ',' + Math.round(r.cy)); }
+  { const m = LY.sanitize({ buttons: { inspect: { dx: 262, dy: 124, size: 46 }, fire: { dx: 80, dy: 70, size: 90 } } });
+    check('disposición guardada antigua: INSP pasa a su sitio nuevo y lo demás se respeta', m.buttons.inspect.dx === LY.BUTTONS.inspect.dx && m.buttons.fire.dx === 80 && m.buttons.fire.size === 90); }
   const moved = LY.moveTo('fire', L.buttons.fire, 2000, -50, 844, 390);
   check('arrastrar un botón fuera de la pantalla lo deja en el borde', moved.dx === 47 && moved.dy === 390 - 47, 'dx ' + moved.dx + ' dy ' + moved.dy);
   const m2 = LY.moveTo('fire2', L.buttons.fire2, 100, 200, 844, 390);

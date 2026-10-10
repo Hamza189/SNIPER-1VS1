@@ -107,6 +107,8 @@ button{font:inherit;color:inherit}
 #hitmark .ring{position:absolute;left:-20px;top:-20px;width:40px;height:40px;border:2px solid var(--gold);border-radius:50%;opacity:0;box-sizing:border-box}
 #hitmark.hs .ring{opacity:1}
 #hud.scoped #callout{top:9%}
+#hud.scoped #rangeHud{opacity:.28}   /* the range statistics must not cover the top of the sight */
+#rangeHud{transition:opacity .15s}
 #hud.scoped #calloutMain{font-size:clamp(24px,3.6vw,40px)}
 @keyframes hm{0%{opacity:1;transform:scale(1.5)}25%{opacity:1;transform:scale(1)}100%{opacity:0;transform:scale(1)}}
 
@@ -1718,7 +1720,7 @@ const BUTTONS = {
   breath:  { label: 'AIRE',   anchor: 'br', dx: 200, dy: 124, size: 56 },
   zoom:    { label: '8×',     anchor: 'br', dx: 63,  dy: 219, size: 46 },
   swap:    { label: 'ARMA',   anchor: 'br', dx: 202, dy: 190, size: 48 },
-  inspect: { label: 'INSP',   anchor: 'br', dx: 262, dy: 124, size: 46 },
+  inspect: { label: 'INSP',   anchor: 'br', dx: 63,  dy: 219, size: 46 },   // same spot as the zoom: INSP hides while aiming, the zoom only shows then
   fire2:   { label: 'FUEGO',  anchor: 'bl', dx: 70,  dy: 232, size: 70 }
 };
 const SIZE = [36, 140], OPACITY = [0.3, 1];
@@ -1735,6 +1737,7 @@ function sanitize(o) {
   if (isFinite(op)) d.opacity = clamp(op, OPACITY[0], OPACITY[1]);
   if (o.buttons && typeof o.buttons === 'object') for (const k in BUTTONS) {
     const s = o.buttons[k]; if (!s) continue;
+    if (k === 'inspect' && s.dx === 262 && s.dy === 124) continue;   // the old default spot (knife only then): take the new one
     for (const f of ['dx', 'dy', 'size']) { const v = Number(s[f]); if (isFinite(v)) d.buttons[k][f] = v; }
     d.buttons[k].size = clamp(d.buttons[k].size, SIZE[0], SIZE[1]);
     d.buttons[k].dx = Math.max(0, d.buttons[k].dx); d.buttons[k].dy = Math.max(0, d.buttons[k].dy);
@@ -2399,7 +2402,7 @@ if (isNode) module.exports = SDNet; else root.SDNet = SDNet;
   G.SDVM = { knifeSlash, knifeInspect, knifeDraw, ARMPOSE, refine, createArms, poseArm, curl, mixFingers, handTarget, HANDSETS, LOOK };
 })(typeof window !== 'undefined' ? window : globalThis);
 
-const BUILD_ID="b4d8fa1";const BUILD_HASH="8cf016a56e";
+const BUILD_ID="ef7a269";const BUILD_HASH="c04c2a2cc4";
 </script>
 <script>
 (function(){
@@ -4879,7 +4882,7 @@ function updateViewmodel(dt){
   const RD=RIF.debug;
   if(RD&&RD.bolt!==undefined){const bp=SDWeapon.boltPose(RD.bolt,GUNCFG.boltKeys);lift=bp.lift;back=bp.back;}
   if(RD&&RD.reload!==undefined){const rp=SDWeapon.reloadPose(RD.reload,GUNCFG);const g=trk(RD.reload,R_RELOAD);pos.x+=g[0];pos.y+=g[1];pos.z+=g[2];rx+=g[3];ry+=g[4];rz+=g[5];RIF.mag.position.y=RIF.magY-rp.magDrop*0.26;RIF.mag.visible=rp.magVisible;lift=rp.lift;back=rp.back;}
-  // inspect: turned to look at both sides, then the bolt is lifted and eased back to check the chamber
+  // inspect: turned to look at its left side, then the bolt is lifted and eased back to check the chamber
   const RI=gunInspect('rifle');let insW=0;
   if(RI){const g=trk(RI.u,R_INS),k=RI.k,o=[pos.x,pos.y,pos.z,rx,ry,rz];addTrk(o,g,k);pos.set(o[0],o[1],o[2]);rx=o[3];ry=o[4];rz=o[5];
     const u=RI.u;lift=Math.max(lift,k*seg(u,0.73,0.77)*(1-seg(u,0.86,0.9)));back=Math.max(back,k*0.3*seg(u,0.77,0.8)*(1-seg(u,0.83,0.86)));

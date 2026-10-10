@@ -15,7 +15,7 @@ const BUTTONS = {
   breath:  { label: 'AIRE',   anchor: 'br', dx: 200, dy: 124, size: 56 },
   zoom:    { label: '8×',     anchor: 'br', dx: 63,  dy: 219, size: 46 },
   swap:    { label: 'ARMA',   anchor: 'br', dx: 202, dy: 190, size: 48 },
-  inspect: { label: 'INSP',   anchor: 'br', dx: 262, dy: 124, size: 46 },
+  inspect: { label: 'INSP',   anchor: 'br', dx: 63,  dy: 219, size: 46 },   // same spot as the zoom: INSP hides while aiming, the zoom only shows then
   fire2:   { label: 'FUEGO',  anchor: 'bl', dx: 70,  dy: 232, size: 70 }
 };
 const SIZE = [36, 140], OPACITY = [0.3, 1];
@@ -32,6 +32,7 @@ function sanitize(o) {
   if (isFinite(op)) d.opacity = clamp(op, OPACITY[0], OPACITY[1]);
   if (o.buttons && typeof o.buttons === 'object') for (const k in BUTTONS) {
     const s = o.buttons[k]; if (!s) continue;
+    if (k === 'inspect' && s.dx === 262 && s.dy === 124) continue;   // the old default spot (knife only then): take the new one
     for (const f of ['dx', 'dy', 'size']) { const v = Number(s[f]); if (isFinite(v)) d.buttons[k][f] = v; }
     d.buttons[k].size = clamp(d.buttons[k].size, SIZE[0], SIZE[1]);
     d.buttons[k].dx = Math.max(0, d.buttons[k].dx); d.buttons[k].dy = Math.max(0, d.buttons[k].dy);
