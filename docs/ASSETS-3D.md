@@ -207,10 +207,45 @@ por piezas serían miles de objetos. Las piezas 3D se reservan para lo que tiene
    - **altura máxima 0,09 m** (los pies no suben escalones: el suelo de colisión es plano);
    - nada del suelo por encima de 0,12 m.
    - LOD0, LOD1 y LOD2, con normales.
-5. **Presupuesto:** todo el suelo en ALTO, como máximo 10 MB de GPU en texturas y un material por tipo de superficie.
-6. **Ficha:** lista de archivos, escala de cada textura, dónde va cada material (plaza, calle norte, calle
-   transversal, aceras, afueras) y licencia (original, o CC0 con su fuente).
+5. **Presupuesto (corregido con lo medido).** El suelo actual ya usa 18 MB de GPU (color a 512²; normal y rugosidad a
+   256²) y el iPhone va a 60 FPS. El límite anterior de 10 MB era demasiado bajo y no cabía con texturas de 1024²: una
+   textura de 1024² ocupa 5,3 MB con mipmaps. Queda así:
+   - ChatGPT entrega **originales de 1024²** y el juego carga versiones reducidas:
 
+     | Perfil | Color | Normal | Rugosidad |
+     |---|---|---|---|
+     | ALTO | 512² | 512² en plaza y adoquín, 256² en el resto | 256² |
+     | MEDIO | 512² | 256² | — |
+     | BAJO | 256² | — | — |
+
+     A 1,6 m de altura, una losa de 2 m en 512² da 256 píxeles por metro, que es suficiente.
+   - **Suelo nuevo en ALTO: 20 MB como máximo**, sustituyendo al actual (unos 2 MB más que hoy como mucho).
+6. **Ficha:** lista de archivos, escala de cada textura, dónde va cada material y licencia (original, o CC0 con su
+   fuente). Mapa de zonas: `docs/mapa-suelo-p0.png`.
+
+**Detalles que fija la integración (P0, especificación de ChatGPT del 12-10-2026):**
+- **Normales:** convención OpenGL (+Y, verde hacia arriba).
+- **Repetición:** con losas o adoquines de 2 m sobre una plaza de 22 × 22 m se notaría el patrón. Nada llamativo y
+  único dentro de la textura (una piedra muy distinta, una mancha): la variación grande la ponen las calcas y el color
+  por zona del juego.
+- **Brillo:** media del color base entre ~140 y ~190 (sRGB) y casi nada por encima de 220. Lo que hoy tiñe el suelo
+  (color por vértice) pasará a blanco con las texturas nuevas: el color de la textura es el que se verá.
+- **Calcas:** atlas de 1024² en rejilla de 4 × 4 celdas de 256 px.
+  - **16 px de margen transparente** dentro de cada celda; si no, al alejarse se mezclan las vecinas (mipmaps).
+  - Tabla con celda, nombre y tamaño real en metros.
+  - Alcantarillas, rejillas, tapas y grietas: borde nítido (MASK).
+  - Manchas, humedad, arena suelta y suciedad de esquina: borde suave permitido, porque son pequeñas y planas y se
+    dibujan mezcladas sin coste apreciable.
+- **Transición arena–pavimento (1024 × 256):** borde irregular y suave, sin efecto spray. Tiene que repetirse a lo
+  largo (los extremos izquierdo y derecho encajan) y cubrir 1 m de ancho de tira.
+- **Bordillos: un solo GLB** `sd_ground_curb_kit_01.glb` con un nodo por pieza (`sd_curb_straight_1m`, …), mejor que
+  siete archivos.
+  - Origen en el suelo (y = 0), al principio de la arista que da a la calle.
+  - Largo hacia +X, cara vista hacia +Z (la calle) y fondo hacia −Z (la acera).
+  - Rebaje: de 0,09 m a 0 m a lo largo de +X.
+  - Esquinas: giro hacia −Z.
+  - Basta con LOD0 y un LOD1 de caja simple; con normales.
+  - Los bordillos se funden en pocas mallas por zona: muchas piezas repetidas no suman llamadas de dibujo.
 **Integración:** detrás de `?pueblo=3`, con `&suelo=0` para comparar. Capturas con las mismas cámaras en ALTO, MEDIO y
 BAJO, coste en memoria y llamadas de dibujo, y prueba en iPhone antes de darlo por bueno.
 
