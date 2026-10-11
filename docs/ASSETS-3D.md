@@ -333,3 +333,46 @@ claro para esta luz: mejor una media de ~120–160.
    - Las esquinas «outer» e «inner» son la misma L reflejada.
    - Para sustituir a los bordillos actuales necesitarían UV en metros, un material `sd_ground_curb_01` con textura de
      piedra y biseles.
+
+## 11. P0 Ground Pack v2 (ChatGPT, 12-10-2026): resultado
+
+- **Entrega:** `assets/3d/imports/2026-10-12_p0_ground_pack_v2/`, guardada tal cual. La v1 se conserva al lado.
+- **Copias del juego:** `tools/p0/make_p0_textures.py`, que ahora usa la v2 por defecto.
+
+**Corregido respecto a la v1 (medido):**
+- **Relieve:** z media de la normal entre 0,937 y 0,963 (antes 0,992).
+- **Adoquín:** 9 × 10 piedras por cada 2 × 2 m (unos 22 × 20 cm).
+- **Plaza:** losas de 50 cm con juntas rectas.
+- **Costuras:** la diferencia en el borde es como la del interior (como mucho ~2 veces en acera y plaza, invisible a
+  escala real).
+- **Brillo:** medias de 136 a 164.
+- **Bordillos (GLB):** pasa el validador. Normales planas correctas (cada cara con sus vértices), UV, material
+  `sd_ground_curb_01`, 9,8 cm de alto como máximo.
+
+**Comparado en el juego** (mismas cámaras a la altura de los ojos, ALTO/MEDIO/BAJO), material por material:
+
+| Material | Veredicto | Motivo |
+|---|---|---|
+| Plaza | **Se queda como opción** (`&suelo=p0`) | Ni mejor ni peor: más grano y variación por losa, pero tono frío (verdes y lilas); el actual es piedra caliza cálida y limpia |
+| Adoquín | Se mantiene el actual | Rectángulos pastel (rosa, verde, lila) que parecen adoquín moderno; el actual es canto rodado irregular y cálido con relieve |
+| Acera | Se mantiene la actual | Gris frío; la actual es ocre |
+| Explanada (patch) | Se mantiene la actual | Rejilla gris; la actual, espiga cálida |
+| Arena | Se mantiene la actual | Equivalente; sin mejora apreciable |
+| Tapas y rejilla | **Se quedan como opción** | Se leen bien (dos tapas en la plaza y dos alcantarillas en la calle norte, en una tira propia de 512 × 128) |
+| Resto de calcas | Fuera | Las grietas siguen siendo líneas negras de 1 px a distancia de juego; suciedad, humedad y arena siguen siendo puntos |
+| Tira de arena | Fuera | En el juego se ve como una mancha blanquecina sobre la acera |
+| Bordillos | No se integran | Textura de 64 × 64 px y UV de 0 a 1 por pieza (en la de 2 m se estira el doble): a los pies se ve peor que el bordillo actual |
+
+- **Coste de la selección** (navegador de escritorio):
+  - texturas de la escena: ALTO 78,4 → 81,7 MB (+3,3), MEDIO +2,3 MB, BAJO +0,4 MB;
+  - +2 llamadas de dibujo y +8 triángulos;
+  - descarga: ALTO y MEDIO ~0,2 MB, BAJO ~24 KB.
+- **Pruebas:** `test/p0.browser.test.js` (26) verifica, en cada perfil, que solo se usan los materiales elegidos.
+- **Estado:** opción en `?pueblo=3&suelo=p0`; el suelo por defecto no cambia. PENDIENTE DE VALIDACIÓN EN IPHONE.
+
+**Para la v3 (si se quiere seguir):**
+1. **Color:** paleta cálida mediterránea. Variación por piedra dentro de ocres, cremas y arenas, sin verdes, lilas ni
+   azulados.
+2. **Adoquín:** canto rodado irregular y abombado (no rectángulos), con juntas de arena oscura.
+3. **Calcas:** manchas orgánicas (ruido suave), no círculos; grietas de 4–8 px con borde oscuro y variación de ancho.
+4. **Bordillo:** textura de 512 × 128 como mínimo, con UV en metros (1 m de bordillo = una repetición) y un bisel visible.

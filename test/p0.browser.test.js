@@ -28,7 +28,7 @@ async function load(b, url, q) {
       if (/^kit_p0/.test(m.name)) mats[m.name] = { map: !!(m.map && m.map.image && m.map.image.width), normal: !!(m.normalMap && m.normalMap.image && m.normalMap.image.width), rough: !!(m.roughnessMap && m.roughnessMap.image && m.roughnessMap.image.width), r: m.roughness };
       if (/^p0_/.test(o.name)) { o.geometry.computeBoundingBox(); maxY = Math.max(maxY, o.geometry.boundingBox.max.y); } });
     const col = S.W.colliders.map(c => [c.minX, c.minY, c.minZ, c.maxX, c.maxY, c.maxZ].map(v => +v.toFixed(3)).join(',')).join(';');
-    return { on: S.P0.on, decals: S.P0.decals, strips: S.P0.strips, meshes: S.P0.meshes.map(m => m.name), mats, maxY, colliders: col };
+    return { on: S.P0.on, use: S.P0.use, decals: S.P0.decals, strips: S.P0.strips, meshes: S.P0.meshes.map(m => m.name), mats, maxY, colliders: col };
   });
   await ctx.close();
   return Object.assign(r, { bad, p0files, errs });
@@ -46,12 +46,14 @@ async function load(b, url, q) {
     console.log('\nP0 · ' + q.toUpperCase());
     const r = await load(b, srv.url + '?vm=1&pueblo=3&suelo=p0', q);
     check('todas las texturas que pide la página existen (ningún 404)', r.bad.length === 0, r.bad.slice(0, 4).join(' | ') || r.p0files.length + ' archivos P0');
-    const names = ['kit_p0plaza', 'kit_p0cobble', 'kit_p0side', 'kit_p0patch'];
+    const names = [['plaza', 'kit_p0plaza'], ['cobble', 'kit_p0cobble'], ['sidewalk', 'kit_p0side'], ['patch', 'kit_p0patch']].filter(([k]) => r.use[k]).map(([, n]) => n);
+    const unused = ['kit_p0plaza', 'kit_p0cobble', 'kit_p0side', 'kit_p0patch'].filter(n => !names.includes(n));
     const full = q !== 'bajo';
+    check('solo se usan los materiales del pack elegidos (' + names.join(', ') + ')', names.length > 0 && unused.every(n => !r.mats[n]), Object.keys(r.mats).join(', '));
     check('materiales del pack: color' + (full ? ', normal y rugosidad' : ' (BAJO sin normal ni rugosidad)'),
       names.every(n => r.mats[n] && r.mats[n].map && r.mats[n].normal === full && r.mats[n].rough === full), JSON.stringify(r.mats));
     check('ninguna rugosidad a 0 (espejo)', names.every(n => r.mats[n] && (r.mats[n].rough || r.mats[n].r >= 0.6)));
-    check('calcas' + (q === 'bajo' ? ' (solo las de borde nítido)' : ' y arena acumulada') + ' colocadas', r.decals > 0 && (q === 'bajo' ? r.strips === 0 && !r.meshes.includes('p0_decals_soft') : r.strips > 0), r.decals + ' calcas · ' + r.strips + ' tiras · ' + r.meshes.join(', '));
+    check('calcas colocadas según lo elegido (' + (r.use.decals ? 'todas' : 'solo tapas y rejillas') + (r.use.drifts && q !== 'bajo' ? ', con arena acumulada' : ', sin arena acumulada') + ')', r.decals > 0 && (r.use.drifts && q !== 'bajo' ? r.strips > 0 : r.strips === 0) && (r.use.decals && q !== 'bajo' || !r.meshes.includes('p0_decals_soft')), r.decals + ' calcas · ' + r.strips + ' tiras · ' + r.meshes.join(', '));
     check('calcas y tiras planas sobre el suelo (≤ 5 cm)', r.maxY >= 0 && r.maxY <= 0.05, r.maxY.toFixed(3) + ' m');
     check('las cajas de colisión son las mismas que sin el pack', r.colliders === base.colliders);
     check('sin errores en la página', r.errs.length === 0, r.errs.slice(0, 2).join(' | '));

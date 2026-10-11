@@ -1,13 +1,13 @@
 """P0 ground pack → the game's textures (assets/tex/), one size per graphics profile.
-   Source: the 1024² originals as delivered (assets/3d/imports/2026-10-12_p0_ground_pack_v1/textures/), never changed.
+   Source: the 1024² originals as delivered (assets/3d/imports/2026-10-12_p0_ground_pack_v*/textures/), never changed.
    ALTO  p0_<n>_c 512 · p0_<n>_n 512 (plaza, cobble) or 256 · p0_<n>_r 256
    MEDIO p0m_<n>_c 512 · p0m_<n>_n 256 · p0m_<n>_r 256 (plaza, cobble; the rest share the ALTO files)
    BAJO  p0b_<n>_c 256 (no normal / roughness in BAJO)
    decals: p0_decals.png 512² (BAJO p0b_decals.png 256²); sand→pavement strip: p0_transition.png 512×128
-   python3 tools/p0/make_p0_textures.py"""
-import os
+   python3 tools/p0/make_p0_textures.py [carpeta de texturas de la entrega]   (por defecto, la v2)"""
+import os, sys
 from PIL import Image
-SRC = 'assets/3d/imports/2026-10-12_p0_ground_pack_v1/textures'
+SRC = sys.argv[1] if len(sys.argv) > 1 else 'assets/3d/imports/2026-10-12_p0_ground_pack_v2/textures'
 OUT = 'assets/tex'
 def save(img, name, size, q=88):
     im = img.resize(size, Image.LANCZOS)
@@ -29,6 +29,9 @@ for n in ['plaza', 'cobble', 'sidewalk', 'sand', 'patch']:
         tot += save(c, f'p0m_{n}_c.jpg', (512, 512)); tot += save(nm, f'p0m_{n}_n.jpg', (256, 256), 92); tot += save(r, f'p0m_{n}_r.jpg', (256, 256))
 a = Image.open(f'{SRC}/sd_ground_decal_atlas_01.png').convert('RGBA')
 tot += save(a, 'p0_decals.png', (512, 512)); tot += save(a, 'p0b_decals.png', (256, 256))
+# the covers only (row 3 of the atlas: manhole, grate, service cover, + the 4th cell): a 4:1 strip
+cov = a.crop((0, 512, 1024, 768))
+tot += save(cov, 'p0_covers.png', (512, 128)); tot += save(cov, 'p0b_covers.png', (256, 64))
 t = Image.open(f'{SRC}/sd_ground_transition_sand_stone_01.png').convert('RGBA')
 tot += save(t, 'p0_transition.png', (512, 128))
 print('archivos P0: %.2f MB en disco' % (tot / 1048576))

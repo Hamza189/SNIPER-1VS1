@@ -1,0 +1,32 @@
+{
+  "plaza": {
+    "mean_srgb": 155.0,
+    "mean_normal_z": 0.9565,
+    "border_x_difference": 2.67,
+    "border_y_difference": 2.77
+  },
+  "cobble": {
+    "mean_srgb": 135.3,
+    "mean_normal_z": 0.9468,
+    "border_x_difference": 1.53,
+    "border_y_difference": 2.31
+  },
+  "sidewalk": {
+    "mean_srgb": 159.2,
+    "mean_normal_z": 0.9409,
+    "border_x_difference": 3.46,
+    "border_y_difference": 3.47
+  },
+  "sand": {
+    "mean_srgb": 146.4,
+    "mean_normal_z": 0.9673,
+    "border_x_difference": 1.82,
+    "border_y_difference": 1.87
+  },
+  "patch": {
+    "mean_srgb": 137.9,
+    "mean_normal_z": 0.9529,
+    "border_x_difference": 2.36,
+    "border_y_difference": 2.69
+  }
+}

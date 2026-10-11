@@ -411,8 +411,10 @@ function ground(opt) {
   // opt.p0: the P0 ground pack's materials (plaza, cobbles, pavements, worn patches) instead of the old ones; same layout
   // (the zone tints stay as they were: measured in the game, the pack's textures burn to white under this sun
   // with a white vertex colour)
-  const p0 = !!opt.p0;
-  const M_SET = p0 ? 'p0cobble' : 'setts', M_PLAZA = p0 ? 'p0plaza' : 'slabs', M_SIDE = p0 ? 'p0side' : 'slabs', M_FORE = p0 ? 'p0patch' : 'herring';
+  // opt.p0 = { plaza, cobble, sidewalk, patch }: which of the pack's materials replace the current ones (each one only if
+  // it improves on it in the game)
+  const p0 = opt.p0 || {};
+  const M_SET = p0.cobble ? 'p0cobble' : 'setts', M_PLAZA = p0.plaza ? 'p0plaza' : 'slabs', M_SIDE = p0.sidewalk ? 'p0side' : 'slabs', M_FORE = p0.patch ? 'p0patch' : 'herring';
   const C_SET = hex(0xcbc5bb), C_SLAB = hex(0xd6cab6);
   // north street: irregular cobbles with a stone gutter down the middle
   flat(B, M_SET, -4.5, 3.5 + KERB, -0.22, S.z1, 0.012, C_SET);

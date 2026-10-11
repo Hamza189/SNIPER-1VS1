@@ -3705,8 +3705,10 @@ function ground(opt) {
   // opt.p0: the P0 ground pack's materials (plaza, cobbles, pavements, worn patches) instead of the old ones; same layout
   // (the zone tints stay as they were: measured in the game, the pack's textures burn to white under this sun
   // with a white vertex colour)
-  const p0 = !!opt.p0;
-  const M_SET = p0 ? 'p0cobble' : 'setts', M_PLAZA = p0 ? 'p0plaza' : 'slabs', M_SIDE = p0 ? 'p0side' : 'slabs', M_FORE = p0 ? 'p0patch' : 'herring';
+  // opt.p0 = { plaza, cobble, sidewalk, patch }: which of the pack's materials replace the current ones (each one only if
+  // it improves on it in the game)
+  const p0 = opt.p0 || {};
+  const M_SET = p0.cobble ? 'p0cobble' : 'setts', M_PLAZA = p0.plaza ? 'p0plaza' : 'slabs', M_SIDE = p0.sidewalk ? 'p0side' : 'slabs', M_FORE = p0.patch ? 'p0patch' : 'herring';
   const C_SET = hex(0xcbc5bb), C_SLAB = hex(0xd6cab6);
   // north street: irregular cobbles with a stone gutter down the middle
   flat(B, M_SET, -4.5, 3.5 + KERB, -0.22, S.z1, 0.012, C_SET);
@@ -3906,7 +3908,7 @@ const SDTown3 = { REVEAL, MATS, OPEN, FAMILIES, SLICE_FAMILIES, SHOP_NAMES, buil
 if (typeof module !== 'undefined' && module.exports) module.exports = SDTown3; else root.SDTown3 = SDTown3;
 })(typeof window !== 'undefined' ? window : globalThis);
 
-const BUILD_ID="f68bfb8";const BUILD_HASH="a4bc3811b0";
+const BUILD_ID="fae146e";const BUILD_HASH="c29dbbdf21";
 </script>
 <script>
 (function(){
@@ -4268,11 +4270,13 @@ const inSlice3=b=>P3ON&&!!SDTown3.SLICE_FAMILIES[b[0]+','+b[1]];
    GLB has loaded (never an empty slot with an invisible wall); the collision box and the server do not change. */
 const E10={on:P3ON&&!/[?&]e10=0\b/.test(location.search),x:13,z:-25,old:[],root:null,levels:null,ready:false,failed:false,lod:-1,tris:[0,0,0]};
 const isE10=b=>E10.on&&b[0]===E10.x&&b[1]===E10.z;
-/* PUEBLO 3.0 · P0 ground pack (ChatGPT, 12-10-2026; textures in assets/tex/p0*, made by tools/p0/make_p0_textures.py from
-   the originals in assets/3d/imports/2026-10-12_p0_ground_pack_v1/): plaza, cobbles, pavements, worn forecourts and
+/* PUEBLO 3.0 · P0 ground pack (ChatGPT, v2 12-10-2026; textures in assets/tex/p0*, made by tools/p0/make_p0_textures.py from
+   the originals in assets/3d/imports/2026-10-12_p0_ground_pack_v2/): plaza, cobbles, pavements, worn forecourts and
    sand, plus decals and sand drifts. Only with ?pueblo=3&suelo=p0 (until a version improves on the current ground).
    Collisions do not change. */
-const P0={on:P3ON&&/[?&]suelo=p0\b/.test(location.search),decals:0,strips:0,meshes:[]};   // opt-in: v1 does not improve the ground yet (docs/ASSETS-3D.md §10)
+// opt-in, and per material: v2 (docs/ASSETS-3D.md §11) only the plaza and the covers hold up against the current ground;
+// the cobbles, pavements, forecourts, sand, the other decals and the sand drifts stay as they were
+const P0={on:P3ON&&/[?&]suelo=p0\b/.test(location.search),use:{plaza:true,cobble:false,sidewalk:false,patch:false,sand:false,covers:true,decals:false,drifts:false},decals:0,strips:0,meshes:[]};
 if(P3ON){   // old visuals the slice redraws differently: sandbag walls → stone planters, the fountain
   for(const o of scene.children.slice(TOWN_FROM)){
     if(!o.isMesh||o.geometry.type!=='BoxGeometry')continue;const p=o.position;
@@ -4305,8 +4309,9 @@ if(TOWN.on&&typeof SDTown!=='undefined'){
   // what is left of the old plain concrete (the ramps): the same concrete texture
   {const c=texLoad('concrete',false,true);c.repeat.set(2,1);MAT.concrete.map=c;MAT.concrete.color.setHex(0xb9b2a6);MAT.concrete.needsUpdate=true;}
   // the sand: generated texture with relief (4 m per repeat over the 400 m ground)
-  const sc=P0.on?texLoad(GFX.profile==='bajo'?'p0b_sand':'p0_sand',false,true):texLoad('sand',false,true);
-  if(sc){sc.repeat.set(P0.on?400/3:100,P0.on?400/3:100);MAT.sand.map=sc;MAT.sand.color.setHex(P0.on?0xe6dccb:0xd2c0a6);
+  const P0SAND=P0.on&&P0.use.sand;
+  const sc=P0SAND?texLoad(GFX.profile==='bajo'?'p0b_sand':'p0_sand',false,true):texLoad('sand',false,true);
+  if(sc){sc.repeat.set(P0SAND?400/3:100,P0SAND?400/3:100);MAT.sand.map=sc;MAT.sand.color.setHex(P0SAND?0xe6dccb:0xd2c0a6);
     MAT.sand.needsUpdate=true;}   // no normal map on the ground: it fills half the screen (fill-rate) and its relief is in the colour already
 }
 
@@ -4319,9 +4324,11 @@ function p0Details(foot){
   const pf=GFX.profile,R=(()=>{let a=0x5eed2026;return()=>{a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;};})();
   const keep=pf==='alto'?1:pf==='medio'?0.7:0.5;
   const G={hard:{pos:[],uv:[],idx:[]},soft:{pos:[],uv:[],idx:[]}};
-  const put=(cell,x,z,y,rot,scale)=>{const c=P0_CELLS[cell],hard=c[2]===1;if(pf==='bajo'&&!hard)return;
+  const COVERS=[8,9,10];
+  const put=(cell,x,z,y,rot,scale)=>{const c=P0_CELLS[cell],hard=c[2]===1,cover=COVERS.includes(cell);if(pf==='bajo'&&!hard)return;
+    if(cover?!P0.use.covers:!P0.use.decals)return;
     const g=hard?G.hard:G.soft,h=c[1]*(scale||1)/2,cs=Math.cos(rot),sn=Math.sin(rot),i0=g.pos.length/3;
-    const col=cell%4,row=cell/4|0,u0=col/4,u1=(col+1)/4,v1=1-row/4,v0=1-(row+1)/4;
+    const col=cell%4,row=cell/4|0,u0=col/4,u1=(col+1)/4,v1=P0.use.decals?1-row/4:1,v0=P0.use.decals?1-(row+1)/4:0;   // covers only: the strip p0_covers.png (row 3 of the atlas)
     for(const [a,b2,u,v] of [[-h,-h,u0,v0],[h,-h,u1,v0],[h,h,u1,v1],[-h,h,u0,v1]]){g.pos.push(x+a*cs-b2*sn,y,z+a*sn+b2*cs);g.uv.push(u,v);}
     g.idx.push(i0,i0+2,i0+1,i0,i0+3,i0+2);P0.decals++;};
   const pick=a=>a[Math.floor(R()*a.length)];
@@ -4337,7 +4344,8 @@ function p0Details(foot){
     scatter(Math.round(per/9),()=>{const t=R()*per,o=0.35+R()*0.8;let x,z,rot;
       if(t<x1-x0){x=x0+t;z=z0-o;rot=0;}else if(t<2*(x1-x0)){x=x0+t-(x1-x0);z=z1+o;rot=Math.PI;}else if(t<2*(x1-x0)+(z1-z0)){x=x0-o;z=z0+t-2*(x1-x0);rot=-Math.PI/2;}else{x=x1+o;z=z0+t-2*(x1-x0)-(z1-z0);rot=Math.PI/2;}
       put(pick([6,6,7,2,14,0,12]),x,z,0.03,rot+R()*0.3-0.15,0.8);});}
-  const atlas=new T.TextureLoader().load('assets/tex/'+(pf==='bajo'?'p0b_decals':'p0_decals')+'.png?v='+BUILD_HASH);
+  if(!G.hard.idx.length&&!G.soft.idx.length&&!P0.use.drifts)return;
+  const atlas=new T.TextureLoader().load('assets/tex/'+(P0.use.decals?(pf==='bajo'?'p0b_decals':'p0_decals'):(pf==='bajo'?'p0b_covers':'p0_covers'))+'.png?v='+BUILD_HASH);
   atlas.encoding=T.sRGBEncoding;atlas.anisotropy=Math.min(pf==='alto'?4:2,renderer.capabilities.getMaxAnisotropy?renderer.capabilities.getMaxAnisotropy():1);
   const mk=(g,soft,name)=>{if(!g.idx.length)return;const geo=new T.BufferGeometry();geo.setAttribute('position',new T.Float32BufferAttribute(g.pos,3));
     const nrm=new Float32Array(g.pos.length);for(let i=1;i<nrm.length;i+=3)nrm[i]=1;geo.setAttribute('normal',new T.BufferAttribute(nrm,3));
@@ -4347,11 +4355,11 @@ function p0Details(foot){
     const m=new T.Mesh(geo,mat);m.name=name;m.receiveShadow=true;m.renderOrder=1;scene.add(m);P3W.meshes.push(m);P0.meshes.push(m);};
   mk(G.hard,false,'p0_decals_hard');mk(G.soft,true,'p0_decals_soft');
   // sand drifts: 1 m strips inside the pavements' kerbs, on the sides that face open ground (not a street or the plaza)
-  if(pf==='bajo')return;
+  if(pf==='bajo'||!P0.use.drifts)return;
   const open=(x,z)=>!((Math.abs(x)<=4.8&&z>=3.3)||Math.abs(z)<=3.8||(Math.abs(x)<=11.3&&Math.abs(z)<=11.3))&&Math.abs(x)<49&&z<49;
   const S={pos:[],uv:[],idx:[]};
   const strip=(ax,az,bx,bz,nx,nz)=>{const L=Math.hypot(bx-ax,bz-az);if(L<1)return;const i0=S.pos.length/3,y=0.03,w=1;
-    for(const [px,pz,u,v] of [[ax,az,0,0],[bx,bz,L/4,0],[bx+nx*w,bz+nz*w,L/4,1],[ax+nx*w,az+nz*w,0,1]]){S.pos.push(px,y,pz);S.uv.push(u,v);}
+    for(const [px,pz,u,v] of [[ax,az,0,0],[bx,bz,L/2,0],[bx+nx*w,bz+nz*w,L/2,1],[ax+nx*w,az+nz*w,0,1]]){S.pos.push(px,y,pz);S.uv.push(u,v);}
     S.idx.push(i0,i0+2,i0+1,i0,i0+3,i0+2);P0.strips++;};
   for(const [x0,x1,z0,z1] of foot){const p=1.5-0.2,X0=x0-p,X1=x1+p,Z0=z0-p,Z1=z1+p,mx=(X0+X1)/2,mz=(Z0+Z1)/2;
     if(open(mx,Z0-2))strip(X0,Z0,X1,Z0,0,1);if(open(mx,Z1+2))strip(X1,Z1,X0,Z1,0,-1);
@@ -4397,7 +4405,7 @@ if(P3ON){
       p0side:{tex:pre('sidewalk'),tile:1.5,r:0.8,n:1,rough:true,col:0xffffff},
       p0patch:{tex:pre('patch'),tile:2,r:0.9,n:1,rough:true,col:0xffffff}});
   }
-  p3mesh(SDTown3.ground({footprints:foot,fronts,place:P3W.place,p0:P0.on}).geo,'ground',gctx,true);
+  p3mesh(SDTown3.ground({footprints:foot,fronts,place:P3W.place,p0:P0.on?P0.use:null}).geo,'ground',gctx,true);
   if(P0.on)try{p0Details(foot);}catch(e){console.warn('p0',e);}
   p3mesh(SDTown3.backdrop({},P3W.place).geo,'backdrop',P3W.ctx);
   // the slice's sandbag walls become stone planters (same boxes), with orange trees on the long ones

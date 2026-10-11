@@ -1,0 +1,139 @@
+{
+  "pack": "Sniper Duel P0 Ground v2",
+  "version": "2.0",
+  "textures_resolution": 1024,
+  "surfaces": {
+    "plaza": {
+      "repeat_m": 2.0,
+      "cached": true,
+      "stone_count_xy": [
+        4,
+        4
+      ]
+    },
+    "cobble": {
+      "repeat_m": 2.0,
+      "cached": true,
+      "stone_count_xy": [
+        9,
+        10
+      ]
+    },
+    "sidewalk": {
+      "repeat_m": 1.5,
+      "cached": true,
+      "stone_count_xy": [
+        4,
+        4
+      ]
+    },
+    "sand": {
+      "repeat_m": 3.0,
+      "cached": true,
+      "stone_count_xy": [
+        0,
+        0
+      ]
+    },
+    "patch": {
+      "repeat_m": 2.0,
+      "mean_base_srgb": 136.1,
+      "mean_normal_z": 0.8887,
+      "seam_x_mean_abs_px": 3.13,
+      "seam_y_mean_abs_px": 3.66,
+      "stone_count_xy": [
+        5,
+        6
+      ]
+    }
+  },
+  "atlas_cells": {
+    "crack_thin": [
+      0,
+      0
+    ],
+    "crack_medium": [
+      1,
+      0
+    ],
+    "dirt_patch": [
+      2,
+      0
+    ],
+    "wet_mark": [
+      3,
+      0
+    ],
+    "sand_scatter": [
+      0,
+      1
+    ],
+    "wheel_mark": [
+      1,
+      1
+    ],
+    "edge_grime": [
+      2,
+      1
+    ],
+    "pavement_chips": [
+      3,
+      1
+    ],
+    "manhole_round": [
+      0,
+      2
+    ],
+    "drain_grate": [
+      1,
+      2
+    ],
+    "service_cover": [
+      2,
+      2
+    ],
+    "stone_break": [
+      3,
+      2
+    ],
+    "dust_specks": [
+      0,
+      3
+    ],
+    "crack_branch": [
+      1,
+      3
+    ],
+    "stain_spots": [
+      2,
+      3
+    ],
+    "grit_cluster": [
+      3,
+      3
+    ]
+  },
+  "decal_margin": 16,
+  "transition_repeat_m_longitudinal": 2.0,
+  "transition_width_m": 1.0,
+  "curb_nodes": [
+    "sd_curb_straight_1m_LOD0",
+    "sd_curb_straight_2m_LOD0",
+    "sd_curb_corner_outer_90_LOD0",
+    "sd_curb_corner_inner_90_LOD0",
+    "sd_curb_endcap_LOD0",
+    "sd_curb_drain_insert_LOD0",
+    "sd_curb_threshold_low_LOD0",
+    "sd_curb_ramp_1m_LOD0",
+    "sd_curb_straight_1m_LOD1",
+    "sd_curb_straight_2m_LOD1",
+    "sd_curb_corner_outer_90_LOD1",
+    "sd_curb_corner_inner_90_LOD1",
+    "sd_curb_endcap_LOD1",
+    "sd_curb_drain_insert_LOD1",
+    "sd_curb_threshold_low_LOD1",
+    "sd_curb_ramp_1m_LOD1"
+  ],
+  "author": "ChatGPT original procedural assets",
+  "note": "Test in Claude validator before deployment. Original 1024 maps; downsample at integration."
+}
