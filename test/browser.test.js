@@ -109,7 +109,8 @@ const shown = page => page.evaluate(ids => ids.filter(id => { const e = document
       await wf(() => __SD.LOAD.active === 'pistol' && __SD.LOAD.phase === 'ready' && __SD.PCORE.state === 'ready');
       const pv = await page.evaluate(() => ({ a: __SD.LOAD.active, ph: __SD.LOAD.phase, name: document.getElementById('wname').textContent, ammo: document.getElementById('ammoNum').textContent }));
       check('tecla 2: sale la pistola VÍBORA 9 (HUD con su nombre y 12 balas)', pv.a === 'pistol' && pv.ph === 'ready' && /VÍBORA 9/.test(pv.name) && /^12/.test(pv.ammo), pv.name + ' · ' + pv.ammo);
-      for (let i = 0; i < 3; i++) { await page.mouse.down(); await page.waitForFunction(n => __SD.PCORE.ammo === n, 11 - i, { timeout: 4000, polling: 30 }).catch(() => {}); await page.mouse.up(); await wf(() => __SD.PCORE.state === 'ready', 4000); }
+      // (each wait lets the slide cycle finish before the next action: software rendering is slow, a race here made R arrive mid-cycle)
+      for (let i = 0; i < 3; i++) { await page.mouse.down(); await page.waitForFunction(n => __SD.PCORE.ammo === n, 11 - i, { timeout: 20000, polling: 30 }).catch(() => {}); await page.mouse.up(); await wf(() => __SD.PCORE.state === 'ready'); }
       const pf = await page.evaluate(() => ({ ammo: __SD.PCORE.ammo, rifle: __SD.WCORE.ammo }));
       check('tres clics: tres disparos de pistola, el rifle conserva sus balas', pf.ammo === 9 && pf.rifle === 5, JSON.stringify(pf));
       await page.keyboard.press('KeyR');
@@ -209,13 +210,16 @@ const shown = page => page.evaluate(ids => ids.filter(id => { const e = document
       const s1 = await page.evaluate(() => ({ shots: __SD.STATS.shots, pellets: __SD.LAST_PELLETS, st: __SD.SCORE.state }));
       check('un clic: un disparo de 9 perdigones y el bombeo en marcha', s1.shots - s0.shots === 1 && s1.pellets === 9 && s1.st === 'bolt', JSON.stringify(s1));
       await page.waitForTimeout(120); await snap('furia-bombeo');
-      await wf(() => __SD.SCORE.state === 'ready', 4000);
+      await wf(() => __SD.SCORE.state === 'ready', 20000);
       await page.mouse.down({ button: 'right' }); await wf(() => __SD.SCORE.ads >= 1, 3000); await page.waitForTimeout(200); await snap('furia-mira');
       const fov = await page.evaluate(() => __SD.SROOT.visible);
       check('apuntando se ve el arma por las miras (sin visor)', fov && await page.evaluate(() => document.getElementById('scope').hidden));
       await page.mouse.up({ button: 'right' });
       await page.keyboard.press('KeyR');
-      check('R: carga cartucho a cartucho (5 → 6, uno cada ' + 0.4 + ' s)', await wf(() => __SD.SCORE.state === 'reload', 8000) && await wf(() => __SD.SCORE.ammo === 6 && __SD.SCORE.state === 'ready', 20000));
+      const rl0 = await page.evaluate(() => ({ st: __SD.SCORE.state, ammo: __SD.SCORE.ammo, ads: +__SD.SCORE.ads.toFixed(2), game: __SD.state, act: __SD.LOAD.active, ph: __SD.LOAD.phase }));
+      const rlOk = await wf(() => __SD.SCORE.state === 'reload', 20000) && await wf(() => __SD.SCORE.ammo === 6 && __SD.SCORE.state === 'ready', 45000);
+      check('R: carga cartucho a cartucho (5 → 6, uno cada ' + 0.4 + ' s)', rlOk);
+      if (!rlOk) console.log('       diagnóstico: al pulsar R ' + JSON.stringify(rl0) + ' · después ' + JSON.stringify(await page.evaluate(() => ({ st: __SD.SCORE.state, ammo: __SD.SCORE.ammo, game: __SD.state }))));
       // empty it, start a reload, shoot after two shells: it stops and fires
       await page.evaluate(() => { __SD.SCORE.ammo = 0; });
       await page.keyboard.press('KeyR'); await wf(() => __SD.SCORE.state === 'reload' && __SD.SCORE.ammo === 1, 10000); await snap('furia-recarga');

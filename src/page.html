@@ -640,10 +640,29 @@ GFX.profile=PERF_LOW?'bajo':SDQuality.resolve(GFX.choice,isTouch);
 const renderer=new T.WebGLRenderer({canvas,antialias:!PERF_LOW&&GFX.profile==='alto'&&(!isTouch||devicePixelRatio<2),powerPreference:'high-performance'});
 renderer.setPixelRatio(PERF_LOW?0.5:SDQuality.pixelRatio(GFX.profile,window.devicePixelRatio,1));
 renderer.shadowMap.enabled=!PERF_LOW&&SDQuality.PROFILES[GFX.profile].shadows;
-renderer.shadowMap.type=T.PCFSoftShadowMap;
+renderer.shadowMap.type=T.PCFShadowMap;
 renderer.autoClear=false;
+/* COLOR MANAGEMENT (GFX-1): light is computed in linear space and written as sRGB, with a filmic curve
+   (ACES) so bright faces roll off instead of clipping to white and shadows keep their colour.
+   Every colour in the code is an sRGB hex (as designed on screen); csFix() converts each material,
+   light and colour texture once, wherever it was created (scene, viewmodels, effects, models). */
+renderer.outputEncoding=T.sRGBEncoding;
+renderer.toneMapping=T.ACESFilmicToneMapping;
+const TONE={exposure:0.82};renderer.toneMappingExposure=TONE.exposure;
+function csMat(m){
+  if(!m||m.userData.cs)return;m.userData.cs=1;
+  if(m.isShaderMaterial||m.isRawShaderMaterial)return;
+  for(const k of ['color','emissive','specular'])if(m[k]&&m[k].isColor)m[k].convertSRGBToLinear();
+  for(const k of ['map','emissiveMap'])if(m[k]&&m[k].encoding!==T.sRGBEncoding){m[k].encoding=T.sRGBEncoding;m[k].needsUpdate=true;}
+  m.needsUpdate=true;
+}
+function csFix(root){root.traverse(o=>{
+  if(o.material){if(Array.isArray(o.material))for(const m of o.material)csMat(m);else csMat(o.material);}
+  if(o.isLight&&!o.userData.cs){o.userData.cs=1;o.color.convertSRGBToLinear();if(o.groundColor)o.groundColor.convertSRGBToLinear();}
+});}
+const csHex=(c,hex)=>c.setHex(hex).convertSRGBToLinear();   // runtime colour changes go through this
 const scene=new T.Scene();
-scene.fog=new T.Fog(0xd3a27c,45,175);
+scene.fog=new T.Fog(0xe2b894,45,175);scene.fog.color.convertSRGBToLinear();
 const BASE_FOV=isTouch?70:75;
 const camera=new T.PerspectiveCamera(BASE_FOV,1,0.05,600);
 camera.rotation.order='YXZ';
@@ -703,25 +722,47 @@ for(const t of [softTex,flashTex,glintTex]){t.wrapS=t.wrapT=T.ClampToEdgeWrappin
 
 /* =================== WORLD =================== */
 const W={colliders:[],ray:[]};
-const sun=new T.DirectionalLight(0xffd6a6,1.15);
+const sun=new T.DirectionalLight(0xffe0b5,2.7);   // warm low sun (linear light + ACES: stronger than before)
 sun.position.set(-45,60,-30);
 sun.castShadow=true;
 {const ms=SDQuality.PROFILES[GFX.profile].shadowMap||1024;sun.shadow.mapSize.set(ms,ms);}
 const sc=sun.shadow.camera;sc.left=-62;sc.right=62;sc.top=62;sc.bottom=-62;sc.near=10;sc.far=180;
-sun.shadow.bias=-0.0006;
+sun.shadow.bias=-0.0004;sun.shadow.normalBias=0.025;sun.shadow.radius=1.6;   // PCF (cheaper than PCFSoft, same look with a small radius)
 scene.add(sun);scene.add(sun.target);
-scene.add(new T.HemisphereLight(0xc4d2ec,0x8a6646,0.62));
+const hemi=new T.HemisphereLight(0xb8cdee,0x9a7656,0.6);scene.add(hemi);   // cool sky fill, warm bounce from the sand
 
 // sky dome
-const skyMat=new T.ShaderMaterial({side:T.BackSide,depthWrite:false,fog:false,uniforms:{top:{value:new T.Color(0x41557a)},mid:{value:new T.Color(0xc99b86)},hor:{value:new T.Color(0xf0b47e)}},
+// sky: gradient + glow around the sun + haze at the horizon, in linear light through the same tone curve
+const SKY={top:0x41557a,mid:0xc99b86,hor:0xf0b47e,glow:0xffd2a0};
+const skyMat=new T.ShaderMaterial({side:T.BackSide,depthWrite:false,fog:false,
+  uniforms:{top:{value:new T.Color(SKY.top)},mid:{value:new T.Color(SKY.mid)},hor:{value:new T.Color(SKY.hor)},glow:{value:new T.Color(SKY.glow)},sunDir:{value:new T.Vector3(-45,60,-30).normalize()}},
   vertexShader:'varying vec3 vP;void main(){vP=normalize(position);gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0);}',
-  fragmentShader:'uniform vec3 top;uniform vec3 mid;uniform vec3 hor;varying vec3 vP;void main(){float h=clamp(vP.y,0.0,1.0);vec3 c=mix(hor,mid,smoothstep(0.0,0.18,h));c=mix(c,top,smoothstep(0.15,0.7,h));gl_FragColor=vec4(c,1.0);}'});
+  fragmentShader:'uniform vec3 top;uniform vec3 mid;uniform vec3 hor;uniform vec3 glow;uniform vec3 sunDir;varying vec3 vP;'+
+    'void main(){vec3 d=normalize(vP);float h=clamp(d.y,0.0,1.0);vec3 c=mix(hor,mid,smoothstep(0.0,0.2,h));c=mix(c,top,smoothstep(0.16,0.75,h));'+
+    'float s=max(dot(d,sunDir),0.0);c+=glow*(pow(s,10.0)*0.12+pow(s,120.0)*0.5);'+
+    'c=mix(c,hor*1.05,(1.0-smoothstep(-0.02,0.08,d.y))*0.6);gl_FragColor=vec4(c,1.0);'+
+    '\n}',toneMapped:false});
 scene.add(new T.Mesh(new T.SphereGeometry(400,24,12),skyMat));
 const sunSprite=new T.Sprite(new T.SpriteMaterial({map:softTex,color:0xffe0b0,fog:false,depthWrite:false,transparent:true,blending:T.AdditiveBlending}));
 sunSprite.position.copy(sun.position).normalize().multiplyScalar(380);sunSprite.scale.set(70,70,1);scene.add(sunSprite);
 // distant mesas
-{const mm=new T.MeshLambertMaterial({color:0x9a7258});
- for(let i=0;i<18;i++){const a=i/18*Math.PI*2+rand(-.1,.1);const r=rand(130,175);const h=rand(14,38);const m=new T.Mesh(new T.CylinderGeometry(rand(10,22),rand(24,40),h,7),mm);m.position.set(Math.cos(a)*r,h/2-2,Math.sin(a)*r);scene.add(m);}}
+// distant buttes (GFX-1): eroded, layered rock instead of plain cylinders — far away, so cheap
+// (flat-shaded facets, colour bands in the vertices, one shared material, no shadows)
+{const mm=new T.MeshStandardMaterial({vertexColors:true,flatShading:true,roughness:0.95});
+ const BANDS=[0x9a6a4e,0xb07c58,0x8e5e46,0xc49470,0xa3704f,0x7f5440];
+ const lin=c=>c<=0.04045?c/12.92:Math.pow((c+0.055)/1.055,2.4);
+ for(let i=0;i<18;i++){
+   const a=i/18*Math.PI*2+rand(-.1,.1),r=rand(130,175),h=rand(14,38),rTop=rand(10,22),rBot=rand(24,40);
+   const seg=18,rings=7,geo=new T.CylinderGeometry(rTop,rBot,h,seg,rings,false);
+   const pos=geo.attributes.position,col=new Float32Array(pos.count*3),ph=rand(0,6.28),wob=rand(0.08,0.16);
+   const terr=[];for(let k=0;k<=rings;k++)terr.push(rand(-0.05,0.08));   // ledges: each layer sticks out a little differently
+   for(let v=0;v<pos.count;v++){const x=pos.getX(v),y=pos.getY(v),z=pos.getZ(v),t=(y+h/2)/h,ang=Math.atan2(z,x);
+     const ring=Math.round(t*rings),k=1+terr[ring]+Math.sin(ang*3+ph)*wob*0.6+Math.sin(ang*7+ph*2)*wob*0.4;
+     pos.setX(v,x*k);pos.setZ(v,z*k);
+     const c=new T.Color(BANDS[(ring+i)%BANDS.length]);const sh=0.9+0.2*Math.sin(ang*5+ph);
+     col[v*3]=lin(c.r*sh);col[v*3+1]=lin(c.g*sh);col[v*3+2]=lin(c.b*sh);}
+   geo.setAttribute('color',new T.BufferAttribute(col,3));geo.computeVertexNormals();
+   const m=new T.Mesh(geo,mm);mm.userData.cs=1;m.position.set(Math.cos(a)*r,h/2-2,Math.sin(a)*r);m.rotation.y=rand(0,6.28);scene.add(m);}}
 
 const MAT={
   sand:new T.MeshStandardMaterial({map:sandTex,roughness:1,metalness:0}),
@@ -756,10 +797,12 @@ let GROUND=null;const TOWN_FROM=scene.children.length;
 {const g=new T.Mesh(new T.PlaneGeometry(400,400),MAT.sand);g.rotation.x=-Math.PI/2;g.receiveShadow=true;scene.add(g);W.ray.push(g);GROUND=g;sandTex.repeat.set(100,100);
  const r1=new T.Mesh(new T.PlaneGeometry(9,98),MAT.road);r1.rotation.x=-Math.PI/2;r1.position.y=0.012;r1.receiveShadow=true;scene.add(r1);
  const r2=new T.Mesh(new T.PlaneGeometry(98,7),MAT.road);r2.rotation.x=-Math.PI/2;r2.position.y=0.014;r2.receiveShadow=true;scene.add(r2);
+ var OLD_ROADS=[r1,r2];
  roadTex.repeat.set(2,20);}
 // perimeter walls
 box(102,4,1,MAT.concrete,0,0,-50.5);box(102,4,1,MAT.concrete,0,0,50.5);box(1,4,100,MAT.concrete,-50.5,0,0);box(1,4,100,MAT.concrete,50.5,0,0);
 // buildings [x,z,w,d,h,tint]
+const OLD_TOWN={bodies:[],caps:[],roads:[]};   // PUEBLO 1 visuals PUEBLO 2.0 replaces (the boxes stay for bullets)
 const BUILDINGS=[[-31,-31,14,12,7,0],[-31,-9,12,10,5,1],[-32,16,12,12,9,2],[-31,37,14,10,6,3],[31,-33,12,10,8,4],[33,-8,10,12,5,5],[30,17,14,10,7,1],[33,38,10,10,10,2],[-9,-31,8,8,4,3],[13,-25,6,10,6,4],[-12,27,10,6,5,0],[11,31,8,6,4,5],[-2,-43,10,5,3.5,2],[3,43,12,5,4,3]];
 for(const [x,z,w,d,h,ti] of BUILDINGS){
   const tint=PLASTER_TINTS[ti];
@@ -768,9 +811,9 @@ for(const [x,z,w,d,h,ti] of BUILDINGS){
   const mf=new T.MeshStandardMaterial({map:fb,color:tint,roughness:.95});
   const ms=new T.MeshStandardMaterial({map:sd,color:tint,roughness:.95});
   const m=new T.Mesh(new T.BoxGeometry(w,h,d),[ms,ms,MAT.roof,MAT.roof,mf,mf]);
-  m.position.set(x,h/2,z);m.castShadow=true;m.receiveShadow=true;scene.add(m);W.ray.push(m);
+  m.position.set(x,h/2,z);m.castShadow=true;m.receiveShadow=true;scene.add(m);W.ray.push(m);OLD_TOWN.bodies.push(m);
   addCollider(x-w/2,0,z-d/2,x+w/2,h+0.35,z+d/2);
-  box(w+0.4,0.35,d+0.4,MAT.concreteDark,x,h,z,{collide:false});
+  OLD_TOWN.caps.push(box(w+0.4,0.35,d+0.4,MAT.concreteDark,x,h,z,{collide:false}));
 }
 // ramps: walkable slopes (height sampled in groundAt)
 W.ramps=[];
@@ -824,8 +867,118 @@ for(const [x,z] of [[3,-8],[3.8,-8.6],[-27,-24],[26,10],[-9,37],[36,-20],[-36,26
 // telegraph poles (visual)
 for(let i=-4;i<=4;i++){if(blockedPt(-5.2,i*11,0.4))continue;const p=new T.Mesh(new T.CylinderGeometry(0.1,0.12,8,6),MAT.rust);p.position.set(-5.2,4,i*11);p.castShadow=true;scene.add(p);W.ray.push(p);}
 
+/* =================== PUEBLO 2.0 (GFX-2): detailed buildings and streets (client/town.js) ===================
+   Built here from the same BUILDINGS list; the old flat boxes become invisible but stay where they are,
+   so movement and bullets (and the server's copy of the map) do not change at all. Textures: assets/tex
+   (generated by tools/textures/make_textures.py). ?town=0 shows the old town (for comparisons). */
+const TEX={loader:null,cache:{}};
+// own: a separate copy (its own repeat), not the shared one
+function texLoad(name,normal,own){
+  const key=name+(normal?'_n':'_c');if(!own&&TEX.cache[key])return TEX.cache[key];
+  if(!TEX.loader&&T.TextureLoader)TEX.loader=new T.TextureLoader();
+  if(!TEX.loader)return null;
+  const t=TEX.loader.load('assets/tex/'+key+'.jpg?v='+BUILD_HASH);
+  t.wrapS=t.wrapT=T.RepeatWrapping;t.anisotropy=Math.min(GFX.profile==='alto'?4:GFX.profile==='medio'?2:1,renderer.capabilities&&renderer.capabilities.getMaxAnisotropy?renderer.capabilities.getMaxAnisotropy():1);
+  if(!normal)t.encoding=T.sRGBEncoding;
+  if(!own)TEX.cache[key]=t;return t;
+}
+// texture scale (metres per repeat), roughness, metalness and normal strength per town material
+const TOWN_LOOK={
+  plaster:{tile:2.6,r:0.92,n:0.6},stone:{tile:1.6,r:0.85,n:0.8},wood:{tile:1.1,r:0.7,n:0.5},glass:{r:0.12,m:0.4,col:0x6d7f88},
+  iron:{r:0.55,m:0.6,two:true},metal:{tile:2.4,r:0.5,m:0.35,n:0.4},roof:{tile:3.2,r:0.95,n:0.7},cobble:{tile:1.9,r:0.85,n:1.0},
+  paving:{tile:2.4,r:0.88,n:0.7},lamp:{r:0.3,emissive:0xffd9a0,ei:1.6},
+  crate:{tex:'wood',tile:0.9,r:0.85,n:0.6},cloth:{tile:0.9,r:0.95,n:0.8},bag:{tex:'sandbag',tileU:0.56,tileV:0.21,r:0.95,n:1.0},paint:{r:0.45,m:0.25},rubber:{r:0.9},water:{r:0.08,m:0.2,col:0x3b5a58},concrete:{tile:3.0,r:0.9,n:0.6}
+};
+const TOWN={on:!/[?&]town=0\b/.test(location.search),meshes:[],tris:0};
+function townMaterial(k){
+  const L=TOWN_LOOK[k]||{},low=GFX.profile==='bajo'||/[?&]nm=0\b/.test(location.search);
+  const texName=L.tex||(['iron','glass','lamp','paint','rubber','water'].includes(k)?null:k);
+  const o={vertexColors:true,roughness:L.r==null?0.8:L.r,metalness:L.m||0};
+  const ru=1/(L.tileU||L.tile||2),rv=1/(L.tileV||L.tile||2);
+  if(texName){const c=texLoad(texName,false,true);if(c){o.map=c;c.repeat.set(ru,rv);}
+    if(!low&&L.n){const n=texLoad(texName,true,true);if(n){o.normalMap=n;n.repeat.set(ru,rv);o.normalScale=new T.Vector2(L.n,L.n);}}}
+  if(L.col)o.color=new T.Color(L.col);
+  if(L.emissive){o.emissive=new T.Color(L.emissive);o.emissiveIntensity=L.ei||1;}
+  if(L.two)o.side=T.DoubleSide;
+  return new T.MeshStandardMaterial(o);
+}
+const TOWN_MATS={};
+function townMat(k){return TOWN_MATS[k]||(TOWN_MATS[k]=townMaterial(k));}   // one material per kind, shared by every map
+const INVIS=new T.MeshBasicMaterial({visible:false});
+const SHADOW_PROXY=new T.MeshBasicMaterial();SHADOW_PROXY.userData.cs=1;   // only ever drawn into the shadow map (layer 1)
+sun.shadow.camera.layers.enable(1);
+// material groups (client/town.js) → one mesh per material, added to the scene
+function townMeshes(data,tag){
+  const lin=c=>c<=0.04045?c/12.92:Math.pow((c+0.055)/1.055,2.4);   // vertex colours come in sRGB
+  const out=[];
+  for(const k of SDTown.MATS){const g=data[k];if(!g)continue;
+    const geo=new T.BufferGeometry();
+    for(let i=0;i<g.col.length;i++)g.col[i]=lin(g.col[i]);
+    geo.setAttribute('position',new T.BufferAttribute(g.pos,3));geo.setAttribute('normal',new T.BufferAttribute(g.nrm,3));
+    geo.setAttribute('uv',new T.BufferAttribute(g.uv,2));geo.setAttribute('color',new T.BufferAttribute(g.col,3));
+    geo.setIndex(new T.BufferAttribute(g.idx,1));geo.computeBoundingSphere();
+    const mat=townMat(k);mat.userData.cs=1;   // vertex colours are linear already; the material colours are set below
+    // only the big shapes cast shadows (walls, cornices, roofs, crates, bags, cars): frames, bars and lamps are too small to matter
+    const m=new T.Mesh(geo,mat);m.name=tag+'_'+k;m.castShadow=!['cobble','paving','glass','water','wood','iron','lamp','rubber'].includes(k);m.receiveShadow=true;
+    scene.add(m);out.push(m);}
+  return out;
+}
+/* Props (GFX-3): crates, sandbags, barrels, cars, poles, the water tower and concrete walls of a map are
+   redrawn in detail on top of their old boxes (the boxes stay, invisible, for bullets and the server). */
+function hideOld(m){m.material=Array.isArray(m.material)?m.material.map(()=>INVIS):INVIS;m.castShadow=false;}
+function dressProps(objs,tag){
+  if(!TOWN.on||typeof SDTown==='undefined')return [];
+  const list=[],gp=(m,k)=>m.geometry&&m.geometry.parameters?m.geometry.parameters[k]:0;
+  const flatRot=m=>Math.abs(m.rotation.x)<1e-6&&Math.abs(m.rotation.z)<1e-6;
+  for(const o of objs){
+    if(o.isGroup){   // a car
+      let car=false;o.traverse(c=>{if(c.isMesh&&c.material===MAT.carPaint)car=true;});
+      if(car){list.push({t:'car',x:o.position.x,z:o.position.z,ry:o.rotation.y});o.traverse(c=>{if(c.isMesh)hideOld(c);});}
+      continue;
+    }
+    if(!o.isMesh||!flatRot(o))continue;
+    const g=o.geometry.type,p=o.position;
+    if(o.material===MAT.crate&&g==='BoxGeometry'){const hh=gp(o,'height');for(let i=0;i<Math.round(hh/1.2);i++)list.push({t:'crate',x:p.x,y:p.y-hh/2+i*1.2,z:p.z,ry:o.rotation.y});hideOld(o);}
+    else if(o.material===MAT.bag&&g==='BoxGeometry'){const h=gp(o,'height');list.push({t:'bags',x:p.x,y:p.y-h/2,z:p.z,w:gp(o,'width'),h,d:gp(o,'depth')});hideOld(o);}
+    else if(o.material===MAT.rust&&g==='CylinderGeometry'){const r=gp(o,'radiusTop'),h=gp(o,'height');
+      if(r>0.3&&r<0.4){list.push({t:'barrel',x:p.x,y:p.y-h/2,z:p.z,r,h});hideOld(o);}
+      else if(r<0.15&&h>6){list.push({t:'pole',x:p.x,y:p.y-h/2,z:p.z,h});hideOld(o);}
+      else if(r>2){list.push({t:'tank',x:p.x,y:p.y,z:p.z,r,h});list.push({t:'tower',x:p.x,y:0,z:p.z,h:p.y-h/2});hideOld(o);}}
+    else if(o.material===MAT.rust&&g==='BoxGeometry'&&gp(o,'height')>5){const h=gp(o,'height');list.push({t:'leg',x:p.x,y:p.y-h/2,z:p.z,w:gp(o,'width'),h,d:gp(o,'depth')});hideOld(o);}
+    else if(o.material===MAT.metal&&g==='ConeGeometry'){list.push({t:'cap',x:p.x,y:p.y,z:p.z,r:gp(o,'radius'),h:gp(o,'height')});hideOld(o);}
+    else if((o.material===MAT.concrete||o.material===MAT.concreteDark)&&g==='BoxGeometry'&&Math.abs(o.rotation.y)<1e-6){const h=gp(o,'height');list.push({t:'block',x:p.x,y:p.y-h/2,z:p.z,w:gp(o,'width'),h,d:gp(o,'depth'),dark:o.material===MAT.concreteDark});hideOld(o);}
+  }
+  // split by quarter (frustum culling); small maps stay in one piece
+  if(tag==='arena')return townMeshes(SDTown.props(list,11),tag);
+  let out=[];
+  for(const [sx,sz] of [[-1,-1],[1,-1],[-1,1],[1,1]]){const q=list.filter(p=>Math.sign(p.x||1)===sx&&Math.sign(p.z||1)===sz);if(q.length)out=out.concat(townMeshes(SDTown.props(q,7+sx*3+sz),tag));}
+  return out;
+}
+if(TOWN.on&&typeof SDTown!=='undefined'){
+  // in four quarters (plus the streets) so the camera only draws the part of town in view
+  const TOPT={tints:PLASTER_TINTS,reachable:[[-9,-31]]};
+  TOWN.meshes=[];TOWN.tris=0;
+  for(const [sx,sz] of [[-1,-1],[1,-1],[-1,1],[1,1]]){const q=BUILDINGS.filter(b=>Math.sign(b[0]||1)===sx&&Math.sign(b[1]||1)===sz);if(!q.length)continue;
+    const d=SDTown.build(q,Object.assign({part:'buildings'},TOPT));TOWN.tris+=d.tris;TOWN.meshes=TOWN.meshes.concat(townMeshes(d,'town'));}
+  {const d=SDTown.build(BUILDINGS,Object.assign({part:'streets'},TOPT));TOWN.tris+=d.tris;TOWN.meshes=TOWN.meshes.concat(townMeshes(d,'streets'));}
+  // the old visuals: drawn no more (an invisible material), still there for bullets and the server's map
+  for(const m of OLD_TOWN.bodies)hideOld(m);
+  // building shadows come from simple boxes (layer 1: only the sun's shadow camera sees them), not from
+  // the detailed walls: the same shadow on the ground at a fraction of the cost
+  for(const m of OLD_TOWN.bodies.concat(OLD_TOWN.caps)){const px=new T.Mesh(m.geometry,SHADOW_PROXY);px.position.copy(m.position);px.rotation.copy(m.rotation);
+    px.castShadow=true;px.receiveShadow=false;px.layers.set(1);scene.add(px);}
+  for(const m of TOWN.meshes)if(['town_plaster','town_stone','town_roof'].includes(m.name))m.castShadow=false;
+  for(const m of OLD_TOWN.caps.concat(OLD_ROADS)){m.material=INVIS;m.castShadow=false;}
+  TOWN.meshes=TOWN.meshes.concat(dressProps(scene.children.slice(TOWN_FROM).filter(o=>!TOWN.meshes.includes(o)),'town'));
+  // what is left of the old plain concrete (the ramps): the same concrete texture
+  {const c=texLoad('concrete',false,true);c.repeat.set(2,1);MAT.concrete.map=c;MAT.concrete.color.setHex(0xb9b2a6);MAT.concrete.needsUpdate=true;}
+  // the sand: generated texture with relief (4 m per repeat over the 400 m ground)
+  const sc=texLoad('sand',false,true);if(sc){sc.repeat.set(100,100);MAT.sand.map=sc;MAT.sand.color.setHex(0xd2c0a6);
+    MAT.sand.needsUpdate=true;}   // no normal map on the ground: it fills half the screen (fill-rate) and its relief is in the colour already
+}
+
 /* =================== SHOOTING RANGE (test gym, south of town) =================== */
-const RANGE={line:62,spawn:{x:2,z:57.5}};
+const RANGE={line:62,spawn:{x:2,z:57.5}};const RANGE_FROM=scene.children.length;
 function signTex(text,sub){return canvasTex(256,128,(g,w,h)=>{g.fillStyle='#e9d3ae';g.fillRect(0,0,w,h);g.fillStyle='#1c1915';g.fillRect(6,6,w-12,h-12);g.fillStyle='#e9d3ae';g.font='600 74px "Arial Narrow",Impact,sans-serif';g.textAlign='center';g.textBaseline='middle';g.fillText(text,w/2,h/2-6);if(sub){g.font='16px monospace';g.fillStyle='#ff8a2b';g.fillText(sub,w/2,h-22);}});}
 {
   const L=RANGE.line;
@@ -852,6 +1005,7 @@ function signTex(text,sub){return canvasTex(256,128,(g,w,h)=>{g.fillStyle='#e9d3
   box(1.2,2.4,1.2,MAT.crate,12,0,L+78);
   box(4,1.05,0.8,MAT.bag,-5,0,L+97);
 }
+TOWN.meshes=TOWN.meshes.concat(dressProps(scene.children.slice(RANGE_FROM),'range'));
 // dummy slots: static and moving targets at 20 / 50 / 100 m
 const RANGE_SLOTS=[
   {x:-6,z:RANGE.line+20},{x:5,z:RANGE.line+20,move:{amp:6,speed:1.8}},
@@ -892,7 +1046,14 @@ const WORLDS={pueblo:{colliders:W.colliders,ray:W.ray,ramps:W.ramps,objs:scene.c
   box(1,H,AZ*2,MAT.concreteDark,-AX-0.5,0,0);box(1,H,AZ*2,MAT.concreteDark,AX+0.5,0,0);
   for(const [w,d,x,z] of [[AX*2,0.05,0,-AZ+0.01],[AX*2,0.05,0,AZ-0.01],[0.05,AZ*2,-AX+0.01,0],[0.05,AZ*2,AX-0.01,0]])box(w,0.35,d,stripe,x,1.6,z,{collide:false,ray:false,cast:false});
   // floor: concrete slab with painted lines (visual; bullets hit the ground plane)
-  {const floorTex=roadTex.clone();floorTex.needsUpdate=true;floorTex.repeat.set(12,8);const slab=new T.Mesh(new T.PlaneGeometry(AX*2,AZ*2),new T.MeshStandardMaterial({map:floorTex,color:0x8a8174,roughness:1}));slab.rotation.x=-Math.PI/2;slab.position.y=0.015;slab.receiveShadow=true;scene.add(slab);
+  {let floorMat;
+   if(TOWN.on&&typeof SDTown!=='undefined'){   // GFX-4: poured concrete with seams and stains (generated texture)
+     const fc=texLoad('concrete',false,true),n=GFX.profile!=='bajo'?texLoad('concrete',true,true):null;
+     fc.repeat.set(AX*2/3.2,AZ*2/3.2);
+     floorMat=new T.MeshStandardMaterial({map:fc,color:0xa39a8c,roughness:0.92});
+     if(n){n.repeat.copy(fc.repeat);floorMat.normalMap=n;floorMat.normalScale=new T.Vector2(0.5,0.5);}
+   }else{const floorTex=roadTex.clone();floorTex.needsUpdate=true;floorTex.repeat.set(12,8);floorMat=new T.MeshStandardMaterial({map:floorTex,color:0x8a8174,roughness:1});}
+   const slab=new T.Mesh(new T.PlaneGeometry(AX*2,AZ*2),floorMat);slab.rotation.x=-Math.PI/2;slab.position.y=0.015;slab.receiveShadow=true;scene.add(slab);
    const lm=new T.MeshBasicMaterial({color:0xe9d3ae,transparent:true,opacity:.5});
    for(const [w,d,x,z] of [[0.18,AZ*2,0,0],[0.18,AZ*2,-18,0],[0.18,AZ*2,18,0],[AX*2,0.18,0,0]]){const l=new T.Mesh(new T.PlaneGeometry(w,d),lm);l.rotation.x=-Math.PI/2;l.position.set(x,0.025,z);scene.add(l);}}
   // centre block + ramps to its roof from both sides, parapet on the roof
@@ -920,6 +1081,7 @@ const WORLDS={pueblo:{colliders:W.colliders,ray:W.ray,ramps:W.ramps,objs:scene.c
   // the same points linked for the offline bots (walkable straight lines between neighbours)
   {const ix=new Map();nav.forEach((n,i)=>ix.set(n.x+','+n.z,i));
    for(const nd of nav)for(const [dx,dz] of [[2,0],[-2,0],[0,2],[0,-2],[2,2],[2,-2],[-2,2],[-2,-2]]){const j=ix.get((nd.x+dx)+','+(nd.z+dz));if(j!==undefined&&segClear(nd.x,nd.z,nd.x+dx,nd.z+dz,0.55))nd.n.push(j);}}
+  dressProps(scene.children.slice(from),'arena');
   WORLDS.arena={colliders:W.colliders,ray:W.ray,ramps:W.ramps,objs:scene.children.slice(from),nav,label:'ARENA DE PRUEBAS'};
   for(const o of WORLDS.arena.objs)o.visible=false;
   W.colliders=WORLDS.pueblo.colliders;W.ray=WORLDS.pueblo.ray;W.ramps=WORLDS.pueblo.ramps;
@@ -1062,7 +1224,7 @@ function emit(pos,o){
   for(let i=0;i<(o.n||1);i++){
     const p=PARTS[partIdx];partIdx=(partIdx+1)%PARTS.length;
     p.s.visible=true;p.s.position.copy(pos);
-    p.s.material.color.setHex(o.color||0xffffff);
+    csHex(p.s.material.color,o.color||0xffffff);
     p.s.material.blending=o.add?T.AdditiveBlending:T.NormalBlending;
     p.s.material.rotation=Math.random()*6.28;
     const sp=o.spread||0.5;p.v.set(rand(-sp,sp),rand(-sp,sp),rand(-sp,sp));if(o.dir)p.v.addScaledVector(o.dir,o.speed||1);if(o.up)p.v.y+=o.up;
@@ -1095,7 +1257,7 @@ function clearDecals(){for(const m of DECALS)m.visible=false;}
 const TRACERS=[];const tracerGeo=new T.BoxGeometry(0.018,0.018,1);tracerGeo.translate(0,0,0.5);
 for(let i=0;i<12;i++){const m=new T.Mesh(tracerGeo,new T.MeshBasicMaterial({color:0xffe1a0,transparent:true,opacity:.9,blending:T.AdditiveBlending,depthWrite:false,fog:false}));m.visible=false;scene.add(m);TRACERS.push({m,a:new T.Vector3(),d:new T.Vector3(),len:0,t:0,speed:700,tail:7});}
 let tracerIdx=0;
-function tracer(from,to,speed,color,tail){const tr=TRACERS[tracerIdx];tracerIdx=(tracerIdx+1)%TRACERS.length;tr.a.copy(from);tr.d.subVectors(to,from);tr.len=tr.d.length();if(tr.len<0.5)return;tr.d.divideScalar(tr.len);tr.t=0;tr.speed=speed||700;tr.tail=tail||7;tr.m.material.color.setHex(color||0xffe1a0);tr.m.visible=true;}
+function tracer(from,to,speed,color,tail){const tr=TRACERS[tracerIdx];tracerIdx=(tracerIdx+1)%TRACERS.length;tr.a.copy(from);tr.d.subVectors(to,from);tr.len=tr.d.length();if(tr.len<0.5)return;tr.d.divideScalar(tr.len);tr.t=0;tr.speed=speed||700;tr.tail=tail||7;csHex(tr.m.material.color,color||0xffe1a0);tr.m.visible=true;}
 const _tv=new T.Vector3();
 function updateTracers(dt){for(const tr of TRACERS){if(!tr.m.visible)continue;tr.t+=dt;const head=Math.min(tr.t*tr.speed,tr.len);const tail=Math.max(0,tr.t*tr.speed-tr.tail);if(tail>=tr.len){tr.m.visible=false;continue;}
   tr.m.position.copy(tr.a).addScaledVector(tr.d,tail);_tv.copy(tr.a).addScaledVector(tr.d,head);tr.m.lookAt(_tv);tr.m.scale.set(1,1,Math.max(0.01,head-tail));}}
@@ -1122,7 +1284,7 @@ const RIF={};
 // small environment map so metal reads as metal (without one, metallic surfaces render almost black)
 const ENV=(()=>{const face=(top,mid,bot)=>{const c=document.createElement('canvas');c.width=c.height=64;const g=c.getContext('2d');if(g){const gr=g.createLinearGradient(0,0,0,64);gr.addColorStop(0,top);gr.addColorStop(0.5,mid);gr.addColorStop(1,bot);g.fillStyle=gr;g.fillRect(0,0,64,64);}return c;};
   const side=()=>face('#7d8fb0','#f1c08e','#b08a5e');
-  const t=new T.CubeTexture([side(),side(),face('#9fb4d8','#9fb4d8','#9fb4d8'),face('#9a7a52','#9a7a52','#9a7a52'),side(),side()]);t.needsUpdate=true;return t;})();
+  const t=new T.CubeTexture([side(),side(),face('#9fb4d8','#9fb4d8','#9fb4d8'),face('#9a7a52','#9a7a52','#9a7a52'),side(),side()]);t.encoding=T.sRGBEncoding;t.needsUpdate=true;return t;})();   // painted in sRGB
 /* ---- hands for the viewmodels: gloved hands built from rounded pieces (palm, finger segments,
    thumb, wrist) and forearms that are NOT glued to the gun: every frame each sleeve runs from the
    wrist to an elbow that stays below the screen (HANDS.place), so turning the weapon never swings
@@ -2270,7 +2432,7 @@ function killPlayer(bot,head){
 function moveCtx(){return {speed:Math.hypot(PM.vx,PM.vz),airborne:!PM.onGround,crouch:PM.crouch,sliding:PM.sliding};}
 function surfaceOf(obj){
   const m=obj.material;
-  if(Array.isArray(m))return 'plaster';
+  if(Array.isArray(m)||OLD_TOWN.bodies.includes(obj))return 'plaster';
   if(m===MAT.crate)return 'wood';
   if(m===MAT.rust||m===MAT.metal||m===MAT.carPaint||m===MAT.glass||m===MAT.tire)return 'metal';
   if(m===MAT.sand||m===MAT.road||m===MAT.bag)return 'dirt';
@@ -3006,6 +3168,7 @@ function simTick(dt){
 }
 let hpDirty=false;
 let SIM_FREEZE=false;   // test hook: hold the player's weapon in a pose to look at it
+const SHOT={noVM:false}; // capture hook (tools/capture-scenes.js): draw the world without the weapon
 
 /* =================== CAMERA (per rendered frame) =================== */
 const _rt=new T.Vector3();
@@ -3725,12 +3888,16 @@ function frameBody(now){
   const drawDt=(now-GFX.lastDraw)/1000;GFX.lastDraw=now;
   if(!PERF_LOW&&GFX.adapt){if(SDQuality.feed(GFX.adapt,drawDt))renderer.setPixelRatio(SDQuality.pixelRatio(GFX.profile,window.devicePixelRatio,GFX.adapt.scale));
     if(SETTINGS.showFps&&GFX.adapt.frames===0)$('#fpsBox').textContent=Math.round(GFX.adapt.fps)+' FPS · '+Math.round(renderer.getPixelRatio()*100)/100+'×';}
+  if(GFX.frame%10===1){csFix(scene);csFix(wScene);}
   renderer.clear();
   renderer.render(scene,camera);
-  if((WROOT.visible||KROOT.visible||PROOT.visible||SROOT.visible)&&(state==='playing'||state==='dead')){renderer.clearDepth();renderer.render(wScene,wCam);}
+  if(!SHOT.noVM&&(WROOT.visible||KROOT.visible||PROOT.visible||SROOT.visible)&&(state==='playing'||state==='dead')){renderer.clearDepth();renderer.render(wScene,wCam);}
 }
 resize();
+// compile every shader of the visible world now, during the menu, instead of in the middle of the first
+// seconds of play (the town and its props use several material variants)
+try{csFix(scene);renderer.compile(scene,camera);}catch(e){}
 requestAnimationFrame(frame);
-window.__SD={freeze(on){SIM_FREEZE=!!on;},VMA,makeSoldier,animateSoldier,BOT_MAT,scene,camera,RemotePlayer,PMprev,PIS,PROOT,RIF,WROOT,SHO_:null,MANUAL,advance(ms){frameBody(last+ms);},get LAST_PELLETS(){return LAST_PELLETS;},SCORE,SCFG,SROOT,SHO,setPrimaryChoice,get PRIMARY(){return PRIMARY;},PCORE,PCFG,setWorld,WORLDS,get WORLD_ID(){return WORLD_ID;},renderer,GFX,gfxApply,get NET(){return NET;},get REMOTE(){return REMOTE;},W,get NAV(){return NAV;},setOffMap,get OFFMAP(){return OFFMAP;},TOUCH,EDIT,openEditor,get SETTINGS(){return SETTINGS;},get LAYOUT(){return LAYOUT;},checkOrientation,MAT,LOAD,TRAINERS,get RANGE_BOTS(){return RANGE_BOTS;},TRAIN,setTrain,setLethal,kitNote,GINS,TDIAG,AU,get TOUCH_EVENTS(){return TOUCH_EVENTS;},impactFX,bodyFX,get DECALS(){return DECALS;},surfaceOf,soundDelay,aimSelfTest,P,PM,WS,WCORE,RECOIL,AIM,BOTS,DUMMIES,BULLETS,EVENTS,PARTS,STATS,get state(){return state;},get mode(){return mode;},setMode,input,startMatch,simTick,frame,toMenu,pause,resume};
+window.__SD={freeze(on){SIM_FREEZE=!!on;},SHOT,VMA,makeSoldier,animateSoldier,BOT_MAT,scene,camera,RemotePlayer,PMprev,PIS,PROOT,RIF,WROOT,SHO_:null,MANUAL,advance(ms){frameBody(last+ms);},get LAST_PELLETS(){return LAST_PELLETS;},SCORE,SCFG,SROOT,SHO,setPrimaryChoice,get PRIMARY(){return PRIMARY;},PCORE,PCFG,setWorld,WORLDS,get WORLD_ID(){return WORLD_ID;},renderer,GFX,gfxApply,get NET(){return NET;},get REMOTE(){return REMOTE;},W,get NAV(){return NAV;},setOffMap,get OFFMAP(){return OFFMAP;},TOUCH,EDIT,openEditor,get SETTINGS(){return SETTINGS;},get LAYOUT(){return LAYOUT;},checkOrientation,MAT,LOAD,TRAINERS,get RANGE_BOTS(){return RANGE_BOTS;},TRAIN,setTrain,setLethal,kitNote,GINS,TDIAG,AU,get TOUCH_EVENTS(){return TOUCH_EVENTS;},impactFX,bodyFX,get DECALS(){return DECALS;},surfaceOf,soundDelay,aimSelfTest,P,PM,WS,WCORE,RECOIL,AIM,BOTS,DUMMIES,BULLETS,EVENTS,PARTS,STATS,get state(){return state;},get mode(){return mode;},setMode,input,startMatch,simTick,frame,toMenu,pause,resume};
 })();
 </script>

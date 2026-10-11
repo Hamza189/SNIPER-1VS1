@@ -30,7 +30,7 @@
     P_brass: { c: 0xd9a650, m: 1.0, r: 0.26, env: 1.3 },
     P_black: { c: 0x101113, m: 0.2, r: 0.65, env: 0.4 },
     // HALCÓN R7
-    R_chassis: { c: 0x5e5241, m: 0.25, r: 0.55, env: 0.6, detail: 'brushed', ns: 0.08 },
+    R_chassis: { c: 0x9a8360, m: 0.08, r: 0.62, env: 0.35, detail: 'brushed', ns: 0.08 },   // sand Cerakote (tuned for the linear-light pipeline)
     R_black: { c: 0x1d1f22, m: 0.55, r: 0.42, env: 0.8 },
     R_barrel: { c: 0x26282b, m: 0.8, r: 0.36, env: 1.0 },
     R_steel: { c: 0x9a9ea4, m: 0.95, r: 0.26, env: 1.3 },
