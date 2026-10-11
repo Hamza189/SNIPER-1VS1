@@ -179,3 +179,43 @@ Medidas de las cajas de colisión. La caja llega a **H + 0,35 m** (el pretil). L
   5. **Color (para que decida el usuario):** en el juego el estuco se ve gris y blanquecino frente a los ocres y
      terracotas del pueblo.
 - **Estado:** IMPLEMENTADO y PROBADO EN NAVEGADOR · PENDIENTE DE VALIDACIÓN EN IPHONE (aspecto, FPS y carga de 5 MB).
+
+## 9. P0 — suelo de PUEBLO: qué necesita la integración
+
+Plan acordado: ChatGPT fabrica (P0 suelo → P1 fachadas → P2 props → P3 guía de luz → P4 armas y personajes).
+Claude integra, valida, mide y publica. Claude no rehace modelos, salvo para compatibilidad u optimización
+(por ejemplo, añadir normales o tapar huecos que dejan ver a través).
+
+**El suelo plano no se hace con piezas 3D, sino con texturas que se repiten.** El suelo ocupa medio mapa; con mallas
+por piezas serían miles de objetos. Las piezas 3D se reservan para lo que tiene altura.
+
+1. **Juegos de textura PBR repetibles, sin costuras**, uno por material:
+   - `sd_suelo_<nombre>_basecolor.png` (sRGB), `_normal.png` (OpenGL, +Y) y `_roughness.png` (o `_orm.png`);
+   - 1024² para ALTO (Claude genera 512² para MEDIO y 256² para BAJO);
+   - indicar cuántos metros mide una repetición (hoy: adoquín 1,9 m, losas 3,2 m, espiga 0,8 m, asfalto 4,5 m,
+     tierra 3,6 m, arena 4 m).
+   - Materiales que se sustituyen: arena, tierra, adoquín (`setts`), losas (`slabs`), espiga (`herring`), canto
+     rodado (`pebbles`), asfalto, hormigón y escombros (`rubble`).
+   - Sin luz ni sombras pintadas en el color.
+   - Color base sin blancos quemados: ninguna zona grande por encima de ~200/255.
+   - Rugosidad de 0,6 a 0,95.
+2. **Transición arena–pavimento:** una tira repetible con máscara alfa (MASK, no BLEND).
+3. **Calcas (manchas, grietas, arena acumulada, aceite, alcantarilla, rejilla de desagüe):** un atlas PNG de 1024²
+   con alfa y la lista de rectángulos (u0, v0, u1, v1 y tamaño en metros). Van planas, a 1–2 cm del suelo.
+4. **Piezas con altura (GLB, con el mismo contrato que los edificios):**
+   - bordillo recto de 1 m, esquina y rebaje para paso;
+   - **altura máxima 0,09 m** (los pies no suben escalones: el suelo de colisión es plano);
+   - nada del suelo por encima de 0,12 m.
+   - LOD0, LOD1 y LOD2, con normales.
+5. **Presupuesto:** todo el suelo en ALTO, como máximo 10 MB de GPU en texturas y un material por tipo de superficie.
+6. **Ficha:** lista de archivos, escala de cada textura, dónde va cada material (plaza, calle norte, calle
+   transversal, aceras, afueras) y licencia (original, o CC0 con su fuente).
+
+**Integración:** detrás de `?pueblo=3`, con `&suelo=0` para comparar. Capturas con las mismas cámaras en ALTO, MEDIO y
+BAJO, coste en memoria y llamadas de dibujo, y prueba en iPhone antes de darlo por bueno.
+
+### Prueba en iPhone del 12-10-2026 (vídeo del usuario, `?pueblo=3`)
+
+- **Fluidez:** al moverse, la grabación tiene unos 57–58 fotogramas distintos por segundo (cerca de 60).
+- **CASA OLIVA:** solo aparece de lejos (LOD1). Se ve blanca y plana: sin contraventanas en ese nivel y con el estuco
+  pálido. El usuario no la aprueba; la sustituirá el kit de fachadas P1.
