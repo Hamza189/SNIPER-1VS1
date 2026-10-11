@@ -3314,7 +3314,8 @@ if (typeof module !== 'undefined' && module.exports) module.exports = KIT3D; els
 'use strict';
 
 const REVEAL = 0.22;
-const MATS = ['stucco', 'stone', 'rubble', 'brick', 'azulejo', 'roofterr', 'rooftiles', 'setts', 'slabs', 'asphalt', 'earth', 'concrete', 'dark', 'hill', 'herring', 'pebbles'];
+const MATS = ['stucco', 'stone', 'rubble', 'brick', 'azulejo', 'roofterr', 'rooftiles', 'setts', 'slabs', 'asphalt', 'earth', 'concrete', 'dark', 'hill', 'herring', 'pebbles',
+  'p0plaza', 'p0cobble', 'p0side', 'p0patch'];   // P0 ground pack (assets/3d/imports/…p0_ground_pack_v1): only with opt.p0
 const hex = h => [(h >> 16 & 255) / 255, (h >> 8 & 255) / 255, (h & 255) / 255];
 const mix = (a, b, t) => [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t, a[2] + (b[2] - a[2]) * t];
 const mul = (a, s) => [a[0] * s, a[1] * s, a[2] * s];
@@ -3701,10 +3702,15 @@ function ground(opt) {
   const B = createBuilder();
   const S = opt.slice || { x0: -49.5, x1: 49.5, z0: -11, z1: 49.5 };
   const foot = opt.footprints || [];
+  // opt.p0: the P0 ground pack's materials (plaza, cobbles, pavements, worn patches) instead of the old ones; same layout
+  // (the zone tints stay as they were: measured in the game, the pack's textures burn to white under this sun
+  // with a white vertex colour)
+  const p0 = !!opt.p0;
+  const M_SET = p0 ? 'p0cobble' : 'setts', M_PLAZA = p0 ? 'p0plaza' : 'slabs', M_SIDE = p0 ? 'p0side' : 'slabs', M_FORE = p0 ? 'p0patch' : 'herring';
   const C_SET = hex(0xcbc5bb), C_SLAB = hex(0xd6cab6);
   // north street: irregular cobbles with a stone gutter down the middle
-  flat(B, 'setts', -4.5, 3.5 + KERB, -0.22, S.z1, 0.012, C_SET);
-  flat(B, 'setts', 0.22, 3.5 + KERB, 4.5, S.z1, 0.012, C_SET);
+  flat(B, M_SET, -4.5, 3.5 + KERB, -0.22, S.z1, 0.012, C_SET);
+  flat(B, M_SET, 0.22, 3.5 + KERB, 4.5, S.z1, 0.012, C_SET);
   for (let z = 3.5 + KERB; z < S.z1; z += 1.2) flat(B, 'slabs', -0.22, z, 0.22, Math.min(S.z1, z + 1.18), 0.006, hex(0xbdb3a3));
   // the cross street: old asphalt, repaired; a painted crossing at the plaza
   flat(B, 'asphalt', S.x0, -3.5, -11 - KERB, 3.5, 0.012, [1, 1, 1]);
@@ -3712,13 +3718,13 @@ function ground(opt) {
   for (const sx of [-1, 1]) for (let k = 0; k < 6; k++) { const z = -3.0 + k * 1.2; flat(B, 'concrete', sx * (11 + KERB + 1.0), z, sx * (11 + KERB + 3.2), z + 0.5, 0.016, hex(0xd9d4c8)); }
   // plaza: limestone slabs, a band of cobbles round the edge and round the fountain
   const P = 11;
-  flat(B, 'slabs', -P + 0.9, -P + 0.9, P - 0.9, P - 0.9, 0.016, C_SLAB);
-  for (const [a0, b0, a1, b1] of [[-P, -P, P, -P + 0.9], [-P, P - 0.9, P, P], [-P, -P + 0.9, -P + 0.9, P - 0.9], [P - 0.9, -P + 0.9, P, P - 0.9]]) flat(B, 'setts', a0, b0, a1, b1, 0.018, hex(0xcfc6b8));
-  for (const [a0, b0, a1, b1] of [[-4.2, -4.2, 4.2, -3.2], [-4.2, 3.2, 4.2, 4.2], [-4.2, -3.2, -3.2, 3.2], [3.2, -3.2, 4.2, 3.2]]) flat(B, 'setts', a0, b0, a1, b1, 0.02, hex(0xc4b8a4));
+  flat(B, M_PLAZA, -P + 0.9, -P + 0.9, P - 0.9, P - 0.9, 0.016, C_SLAB);
+  for (const [a0, b0, a1, b1] of [[-P, -P, P, -P + 0.9], [-P, P - 0.9, P, P], [-P, -P + 0.9, -P + 0.9, P - 0.9], [P - 0.9, -P + 0.9, P, P - 0.9]]) flat(B, M_SET, a0, b0, a1, b1, 0.018, hex(0xcfc6b8));
+  for (const [a0, b0, a1, b1] of [[-4.2, -4.2, 4.2, -3.2], [-4.2, 3.2, 4.2, 4.2], [-4.2, -3.2, -3.2, 3.2], [3.2, -3.2, 4.2, 3.2]]) flat(B, M_SET, a0, b0, a1, b1, 0.02, hex(0xc4b8a4));
   // dark basalt bands dividing the plaza into squares (and framing the fountain)
   const DK = hex(0x6a635a);
-  for (const c of [-7.6, 7.6]) { flat(B, 'slabs', c - 0.2, -P + 0.9, c + 0.2, P - 0.9, 0.019, DK); flat(B, 'slabs', -P + 0.9, c - 0.2, P - 0.9, c + 0.2, 0.0195, DK); }
-  for (const c of [-4.4, 4.4]) { flat(B, 'slabs', c - 0.15, -4.4, c + 0.15, 4.4, 0.021, DK); flat(B, 'slabs', -4.4, c - 0.15, 4.4, c + 0.15, 0.0215, DK); }
+  for (const c of [-7.6, 7.6]) { flat(B, M_PLAZA, c - 0.2, -P + 0.9, c + 0.2, P - 0.9, 0.019, DK); flat(B, M_PLAZA, -P + 0.9, c - 0.2, P - 0.9, c + 0.2, 0.0195, DK); }
+  for (const c of [-4.4, 4.4]) { flat(B, M_PLAZA, c - 0.15, -4.4, c + 0.15, 4.4, 0.021, DK); flat(B, M_PLAZA, -4.4, c - 0.15, 4.4, c + 0.15, 0.0215, DK); }
   for (const sx of [-1, 1]) for (const sz of [-1, 1]) {   // pebble rosettes in the four corner squares
     const cx = sx * 8.95, cz = sz * 8.95, r = 1.05;
     const pts = [[cx - r, 0.022, cz - r], [cx + r, 0.022, cz - r], [cx + r, 0.022, cz + r], [cx - r, 0.022, cz + r]];
@@ -3739,7 +3745,7 @@ function ground(opt) {
   // pavements round the buildings: slabs with a kerb edge
   for (const [x0, x1, z0, z1] of foot) {
     const p = 1.5;
-    flat(B, 'slabs', x0 - p, z0 - p, x1 + p, z1 + p, 0.022, hex(0xcdc2ae));
+    flat(B, M_SIDE, x0 - p, z0 - p, x1 + p, z1 + p, 0.022, hex(0xcdc2ae));
     kx(x0 - p, x1 + p, z0 - p); kx(x0 - p, x1 + p, z1 + p); kz(z0 - p + KERB / 2, z1 + p - KERB / 2, x0 - p); kz(z0 - p + KERB / 2, z1 + p - KERB / 2, x1 + p);
   }
   // forecourts in front of the buildings that face open ground: herringbone brick or a pebble rosette
@@ -3758,7 +3764,7 @@ function ground(opt) {
       quad(B, 'pebbles', pts, [0, 1, 0], [1, 1, 1]);
       B.uvFn = null;
     }
-    quad(B, 'herring', [a, b2, cc, dd].map(p => [p[0], 0.026, p[2]]), [0, 1, 0], hex(0xd8c8b8));
+    quad(B, M_FORE, [a, b2, cc, dd].map(p => [p[0], 0.026, p[2]]), [0, 1, 0], hex(0xd8c8b8));
     for (const [p, q] of [[a, dd], [b2, cc], [dd, cc]]) {   // stone edging
       const e = sub(q, p), L2 = Math.hypot(e[0], e[2]), u = [e[0] / L2, 0, e[2] / L2], nn = [-u[2], 0, u[0]];
       const P0 = add(p, mul(nn, -0.1)), P1 = add(q, mul(nn, -0.1)), P2 = add(q, mul(nn, 0.1)), P3 = add(p, mul(nn, 0.1));
@@ -3900,7 +3906,7 @@ const SDTown3 = { REVEAL, MATS, OPEN, FAMILIES, SLICE_FAMILIES, SHOP_NAMES, buil
 if (typeof module !== 'undefined' && module.exports) module.exports = SDTown3; else root.SDTown3 = SDTown3;
 })(typeof window !== 'undefined' ? window : globalThis);
 
-const BUILD_ID="e1ff6f2";const BUILD_HASH="eda70d7e35";
+const BUILD_ID="f68bfb8";const BUILD_HASH="a4bc3811b0";
 </script>
 <script>
 (function(){
@@ -4262,6 +4268,11 @@ const inSlice3=b=>P3ON&&!!SDTown3.SLICE_FAMILIES[b[0]+','+b[1]];
    GLB has loaded (never an empty slot with an invisible wall); the collision box and the server do not change. */
 const E10={on:P3ON&&!/[?&]e10=0\b/.test(location.search),x:13,z:-25,old:[],root:null,levels:null,ready:false,failed:false,lod:-1,tris:[0,0,0]};
 const isE10=b=>E10.on&&b[0]===E10.x&&b[1]===E10.z;
+/* PUEBLO 3.0 · P0 ground pack (ChatGPT, 12-10-2026; textures in assets/tex/p0*, made by tools/p0/make_p0_textures.py from
+   the originals in assets/3d/imports/2026-10-12_p0_ground_pack_v1/): plaza, cobbles, pavements, worn forecourts and
+   sand, plus decals and sand drifts. Only with ?pueblo=3&suelo=p0 (until a version improves on the current ground).
+   Collisions do not change. */
+const P0={on:P3ON&&/[?&]suelo=p0\b/.test(location.search),decals:0,strips:0,meshes:[]};   // opt-in: v1 does not improve the ground yet (docs/ASSETS-3D.md §10)
 if(P3ON){   // old visuals the slice redraws differently: sandbag walls → stone planters, the fountain
   for(const o of scene.children.slice(TOWN_FROM)){
     if(!o.isMesh||o.geometry.type!=='BoxGeometry')continue;const p=o.position;
@@ -4294,10 +4305,63 @@ if(TOWN.on&&typeof SDTown!=='undefined'){
   // what is left of the old plain concrete (the ramps): the same concrete texture
   {const c=texLoad('concrete',false,true);c.repeat.set(2,1);MAT.concrete.map=c;MAT.concrete.color.setHex(0xb9b2a6);MAT.concrete.needsUpdate=true;}
   // the sand: generated texture with relief (4 m per repeat over the 400 m ground)
-  const sc=texLoad('sand',false,true);if(sc){sc.repeat.set(100,100);MAT.sand.map=sc;MAT.sand.color.setHex(0xd2c0a6);
+  const sc=P0.on?texLoad(GFX.profile==='bajo'?'p0b_sand':'p0_sand',false,true):texLoad('sand',false,true);
+  if(sc){sc.repeat.set(P0.on?400/3:100,P0.on?400/3:100);MAT.sand.map=sc;MAT.sand.color.setHex(P0.on?0xe6dccb:0xd2c0a6);
     MAT.sand.needsUpdate=true;}   // no normal map on the ground: it fills half the screen (fill-rate) and its relief is in the colour already
 }
 
+/* P0 decals (atlas 4×4: dirt, cracks, covers…) and sand drifts along the pavements that face open ground.
+   Two meshes for the decals (hard edges: alpha test · soft: blended, no depth write) and one for the drifts.
+   ALTO everything · MEDIO 70 % of the decals · BAJO only the hard-edged ones, half, and no drifts. */
+const P0_CELLS=[['crack_thin',1.2,1],['crack_medium',1.4,1],['dirt_patch',1.6,0],['wet_mark',1.4,0],['sand_scatter',1.6,0],['wheel_mark',3.0,0],['edge_grime',1.6,0],['pavement_chips',1.2,0],
+  ['manhole_round',1.3,1],['drain_grate',0.9,1],['service_cover',0.9,1],['stone_break',1.2,0],['dust_specks',1.6,0],['crack_branch',1.4,1],['stain_spots',1.3,0],['grit_cluster',1.4,0]];
+function p0Details(foot){
+  const pf=GFX.profile,R=(()=>{let a=0x5eed2026;return()=>{a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;};})();
+  const keep=pf==='alto'?1:pf==='medio'?0.7:0.5;
+  const G={hard:{pos:[],uv:[],idx:[]},soft:{pos:[],uv:[],idx:[]}};
+  const put=(cell,x,z,y,rot,scale)=>{const c=P0_CELLS[cell],hard=c[2]===1;if(pf==='bajo'&&!hard)return;
+    const g=hard?G.hard:G.soft,h=c[1]*(scale||1)/2,cs=Math.cos(rot),sn=Math.sin(rot),i0=g.pos.length/3;
+    const col=cell%4,row=cell/4|0,u0=col/4,u1=(col+1)/4,v1=1-row/4,v0=1-(row+1)/4;
+    for(const [a,b2,u,v] of [[-h,-h,u0,v0],[h,-h,u1,v0],[h,h,u1,v1],[-h,h,u0,v1]]){g.pos.push(x+a*cs-b2*sn,y,z+a*sn+b2*cs);g.uv.push(u,v);}
+    g.idx.push(i0,i0+2,i0+1,i0,i0+3,i0+2);P0.decals++;};
+  const pick=a=>a[Math.floor(R()*a.length)];
+  const scatter=(n,fn)=>{for(let i=0;i<n;i++){const r=R();if(r>keep&&keep<1)continue;fn();}};
+  // plaza (not over the fountain), north street, the cross street, the pavements round the buildings
+  scatter(18,()=>{let x,z;do{x=(R()*2-1)*10;z=(R()*2-1)*10;}while(Math.abs(x)<4.6&&Math.abs(z)<4.6);put(pick([2,3,12,14,15,0,1,13,11,7]),x,z,0.024,R()*6.28);});
+  for(const [x,z] of [[-6,-9.3],[9.3,6]])put(10,x,z,0.024,0);
+  scatter(16,()=>put(pick([2,12,14,15,0,1,13,7,3]),(R()*2-1)*3.8,12+R()*36,0.016,R()*6.28));
+  for(const z of [20,38])put(8,1.9,z,0.016,R()*6.28);
+  for(let z=14;z<48;z+=9+R()*6)put(5,-2.2+R()*0.6,z,0.016,R()*0.12-0.06);
+  scatter(10,()=>{const sx=R()<0.5?-1:1;put(pick([5,2,14,3,12]),sx*(13+R()*34),(R()*2-1)*2.6,0.018,Math.PI/2+R()*0.2-0.1);});
+  for(const [x0,x1,z0,z1] of foot){const p=1.5,per=2*((x1-x0)+(z1-z0));
+    scatter(Math.round(per/9),()=>{const t=R()*per,o=0.35+R()*0.8;let x,z,rot;
+      if(t<x1-x0){x=x0+t;z=z0-o;rot=0;}else if(t<2*(x1-x0)){x=x0+t-(x1-x0);z=z1+o;rot=Math.PI;}else if(t<2*(x1-x0)+(z1-z0)){x=x0-o;z=z0+t-2*(x1-x0);rot=-Math.PI/2;}else{x=x1+o;z=z0+t-2*(x1-x0)-(z1-z0);rot=Math.PI/2;}
+      put(pick([6,6,7,2,14,0,12]),x,z,0.03,rot+R()*0.3-0.15,0.8);});}
+  const atlas=new T.TextureLoader().load('assets/tex/'+(pf==='bajo'?'p0b_decals':'p0_decals')+'.png?v='+BUILD_HASH);
+  atlas.encoding=T.sRGBEncoding;atlas.anisotropy=Math.min(pf==='alto'?4:2,renderer.capabilities.getMaxAnisotropy?renderer.capabilities.getMaxAnisotropy():1);
+  const mk=(g,soft,name)=>{if(!g.idx.length)return;const geo=new T.BufferGeometry();geo.setAttribute('position',new T.Float32BufferAttribute(g.pos,3));
+    const nrm=new Float32Array(g.pos.length);for(let i=1;i<nrm.length;i+=3)nrm[i]=1;geo.setAttribute('normal',new T.BufferAttribute(nrm,3));
+    geo.setAttribute('uv',new T.Float32BufferAttribute(g.uv,2));geo.setIndex(g.idx);geo.computeBoundingSphere();
+    const mat=new T.MeshStandardMaterial({map:atlas,roughness:0.92,polygonOffset:true,polygonOffsetFactor:-2,polygonOffsetUnits:-4,
+      transparent:soft,depthWrite:!soft,alphaTest:soft?0.02:0.5});mat.userData.cs=1;
+    const m=new T.Mesh(geo,mat);m.name=name;m.receiveShadow=true;m.renderOrder=1;scene.add(m);P3W.meshes.push(m);P0.meshes.push(m);};
+  mk(G.hard,false,'p0_decals_hard');mk(G.soft,true,'p0_decals_soft');
+  // sand drifts: 1 m strips inside the pavements' kerbs, on the sides that face open ground (not a street or the plaza)
+  if(pf==='bajo')return;
+  const open=(x,z)=>!((Math.abs(x)<=4.8&&z>=3.3)||Math.abs(z)<=3.8||(Math.abs(x)<=11.3&&Math.abs(z)<=11.3))&&Math.abs(x)<49&&z<49;
+  const S={pos:[],uv:[],idx:[]};
+  const strip=(ax,az,bx,bz,nx,nz)=>{const L=Math.hypot(bx-ax,bz-az);if(L<1)return;const i0=S.pos.length/3,y=0.03,w=1;
+    for(const [px,pz,u,v] of [[ax,az,0,0],[bx,bz,L/4,0],[bx+nx*w,bz+nz*w,L/4,1],[ax+nx*w,az+nz*w,0,1]]){S.pos.push(px,y,pz);S.uv.push(u,v);}
+    S.idx.push(i0,i0+2,i0+1,i0,i0+3,i0+2);P0.strips++;};
+  for(const [x0,x1,z0,z1] of foot){const p=1.5-0.2,X0=x0-p,X1=x1+p,Z0=z0-p,Z1=z1+p,mx=(X0+X1)/2,mz=(Z0+Z1)/2;
+    if(open(mx,Z0-2))strip(X0,Z0,X1,Z0,0,1);if(open(mx,Z1+2))strip(X1,Z1,X0,Z1,0,-1);
+    if(open(X0-2,mz))strip(X0,Z1,X0,Z0,1,0);if(open(X1+2,mz))strip(X1,Z0,X1,Z1,-1,0);}
+  if(S.idx.length){const tex=new T.TextureLoader().load('assets/tex/p0_transition.png?v='+BUILD_HASH);tex.encoding=T.sRGBEncoding;tex.wrapS=T.RepeatWrapping;
+    const geo=new T.BufferGeometry();geo.setAttribute('position',new T.Float32BufferAttribute(S.pos,3));const nrm=new Float32Array(S.pos.length);for(let i=1;i<nrm.length;i+=3)nrm[i]=1;
+    geo.setAttribute('normal',new T.BufferAttribute(nrm,3));geo.setAttribute('uv',new T.Float32BufferAttribute(S.uv,2));geo.setIndex(S.idx);geo.computeBoundingSphere();
+    const mat=new T.MeshStandardMaterial({map:tex,roughness:0.95,alphaTest:0.5,polygonOffset:true,polygonOffsetFactor:-1,polygonOffsetUnits:-2});mat.userData.cs=1;
+    const m=new T.Mesh(geo,mat);m.name='p0_sand_drifts';m.receiveShadow=true;scene.add(m);P3W.meshes.push(m);P0.meshes.push(m);}
+}
 /* ---- PUEBLO 3.0 (vertical slice): families of buildings, kit pieces, new ground, the town outside the walls.
    Walls and ground are generated here (SDTown3); windows, doors, balconies… are instances of the Blender
    kit (assets/kit.glb) placed when it has loaded. Collision boxes and the server's map are the same. */
@@ -4325,7 +4389,16 @@ if(P3ON){
   const foot=[],fronts=[];
   for(const sx of [-1,1]){const q=BUILDINGS.filter(b=>inSlice3(b)&&Math.sign(b[0])===sx);const d=SDTown3.build(q,{});p3mesh(d.geo,'town'+sx,P3W.ctx);
     P3W.place.push(...d.place);P3W.signs.push(...d.signs);foot.push(...d.footprints);fronts.push(...d.fronts);}
-  p3mesh(SDTown3.ground({footprints:foot,fronts,place:P3W.place}).geo,'ground',gctx,true);
+  if(P0.on){   // the pack's materials, one texture size per profile (see tools/p0/make_p0_textures.py)
+    const pf=GFX.profile,pre=n=>pf==='bajo'?'p0b_'+n:pf==='medio'&&(n==='plaza'||n==='cobble')?'p0m_'+n:'p0_'+n;
+    Object.assign(KIT3D.LOOK,{
+      p0plaza:{tex:pre('plaza'),tile:2,r:0.85,n:1,rough:true,col:0xffffff},
+      p0cobble:{tex:pre('cobble'),tile:2,r:0.88,n:1,rough:true,col:0xffffff},
+      p0side:{tex:pre('sidewalk'),tile:1.5,r:0.8,n:1,rough:true,col:0xffffff},
+      p0patch:{tex:pre('patch'),tile:2,r:0.9,n:1,rough:true,col:0xffffff}});
+  }
+  p3mesh(SDTown3.ground({footprints:foot,fronts,place:P3W.place,p0:P0.on}).geo,'ground',gctx,true);
+  if(P0.on)try{p0Details(foot);}catch(e){console.warn('p0',e);}
   p3mesh(SDTown3.backdrop({},P3W.place).geo,'backdrop',P3W.ctx);
   // the slice's sandbag walls become stone planters (same boxes), with orange trees on the long ones
   for(const o of P3W.skip)hideOld(o);
@@ -7507,7 +7580,7 @@ function e10Lod(force){
 }
 if(E10.on)try{new T.GLTFLoader().load('assets/3d/models/sd_e10_casa_oliva.glb?v='+BUILD_HASH,g=>{try{e10Setup(g);}catch(e){E10.failed=true;console.warn('e10',e);}},undefined,e=>{E10.failed=true;console.warn('e10 load',e);});}catch(e){E10.failed=true;}
 
-window.__SD={E10,e10Lod,DIAG,setTrainMove,LIGHT:{sun,hemi,skyMat,LOOK,P3},P3W,freeze(on){SIM_FREEZE=!!on;},SHOT,VMA,makeSoldier,animateSoldier,BOT_MAT,scene,camera,RemotePlayer,PMprev,PIS,PROOT,RIF,WROOT,SHO_:null,MANUAL,advance(ms){frameBody(last+ms);},get LAST_PELLETS(){return LAST_PELLETS;},SCORE,SCFG,SROOT,SHO,setPrimaryChoice,get PRIMARY(){return PRIMARY;},PCORE,PCFG,setWorld,WORLDS,get WORLD_ID(){return WORLD_ID;},renderer,GFX,gfxApply,get NET(){return NET;},get REMOTE(){return REMOTE;},W,get NAV(){return NAV;},setOffMap,get OFFMAP(){return OFFMAP;},TOUCH,EDIT,openEditor,get SETTINGS(){return SETTINGS;},get LAYOUT(){return LAYOUT;},checkOrientation,MAT,LOAD,TRAINERS,get RANGE_BOTS(){return RANGE_BOTS;},TRAIN,setTrain,setLethal,kitNote,GINS,TDIAG,AU,get TOUCH_EVENTS(){return TOUCH_EVENTS;},impactFX,bodyFX,get DECALS(){return DECALS;},surfaceOf,soundDelay,aimSelfTest,P,PM,WS,WCORE,RECOIL,AIM,BOTS,DUMMIES,BULLETS,EVENTS,PARTS,STATS,get state(){return state;},get mode(){return mode;},setMode,input,startMatch,simTick,frame,toMenu,pause,resume};
+window.__SD={P0,E10,e10Lod,DIAG,setTrainMove,LIGHT:{sun,hemi,skyMat,LOOK,P3},P3W,freeze(on){SIM_FREEZE=!!on;},SHOT,VMA,makeSoldier,animateSoldier,BOT_MAT,scene,camera,RemotePlayer,PMprev,PIS,PROOT,RIF,WROOT,SHO_:null,MANUAL,advance(ms){frameBody(last+ms);},get LAST_PELLETS(){return LAST_PELLETS;},SCORE,SCFG,SROOT,SHO,setPrimaryChoice,get PRIMARY(){return PRIMARY;},PCORE,PCFG,setWorld,WORLDS,get WORLD_ID(){return WORLD_ID;},renderer,GFX,gfxApply,get NET(){return NET;},get REMOTE(){return REMOTE;},W,get NAV(){return NAV;},setOffMap,get OFFMAP(){return OFFMAP;},TOUCH,EDIT,openEditor,get SETTINGS(){return SETTINGS;},get LAYOUT(){return LAYOUT;},checkOrientation,MAT,LOAD,TRAINERS,get RANGE_BOTS(){return RANGE_BOTS;},TRAIN,setTrain,setLethal,kitNote,GINS,TDIAG,AU,get TOUCH_EVENTS(){return TOUCH_EVENTS;},impactFX,bodyFX,get DECALS(){return DECALS;},surfaceOf,soundDelay,aimSelfTest,P,PM,WS,WCORE,RECOIL,AIM,BOTS,DUMMIES,BULLETS,EVENTS,PARTS,STATS,get state(){return state;},get mode(){return mode;},setMode,input,startMatch,simTick,frame,toMenu,pause,resume};
 })();
 </script>
 

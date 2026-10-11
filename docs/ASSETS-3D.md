@@ -254,3 +254,82 @@ BAJO, coste en memoria y llamadas de dibujo, y prueba en iPhone antes de darlo p
 - **Fluidez:** al moverse, la grabación tiene unos 57–58 fotogramas distintos por segundo (cerca de 60).
 - **CASA OLIVA:** solo aparece de lejos (LOD1). Se ve blanca y plana: sin contraventanas en ese nivel y con el estuco
   pálido. El usuario no la aprueba; la sustituirá el kit de fachadas P1.
+
+## 10. P0 Ground Pack v1 (ChatGPT, 12-10-2026): resultado de la integración
+
+- **Entrega:** `assets/3d/imports/2026-10-12_p0_ground_pack_v1/`, guardada tal cual.
+- **Copias del juego:** generadas por `tools/p0/make_p0_textures.py` en `assets/tex/p0*` (ALTO `p0_`, MEDIO `p0m_`,
+  BAJO `p0b_`).
+- **En el juego:** solo con `?pueblo=3&suelo=p0`. **No está activado por defecto, ni siquiera en `?pueblo=3`**, porque
+  en las capturas no mejora el suelo actual.
+- **Pruebas:** `test/p0.browser.test.js` (23 comprobaciones) verifica:
+  - que sin la bandera no se descarga nada;
+  - que existe cada textura que pide cada perfil;
+  - mapas por perfil, sin rugosidad 0;
+  - calcas planas (≤ 5 cm);
+  - colisiones idénticas.
+- **Uso por zona:**
+  - plaza → `plaza`;
+  - calle norte y bandas de la plaza → `cobble`;
+  - aceras alrededor de los edificios → `sidewalk`;
+  - explanadas ante las fachadas → `patch`;
+  - suelo general → `sand`;
+  - el asfalto no se toca.
+- **Calcas:** 81 en ALTO, 58 en MEDIO y 15 en BAJO (solo las de borde nítido).
+- **Arena acumulada:** 24 tiras junto a los bordillos que dan a la arena (ALTO y MEDIO).
+- **Bordillos:** el GLB no se integra (ver defecto 8). La versión 3.0 ya dibuja sus bordillos de 9 cm con textura.
+
+**Medido (navegador de escritorio, mismas cámaras):**
+
+| | ALTO | MEDIO | BAJO |
+|---|---|---|---|
+| Memoria de texturas de toda la escena | 78,4 → 86,4 MB (+8) | 78,4 → 83,7 MB (+5,3) | 50,7 → 48,7 MB (−2) |
+| Llamadas de dibujo | +5 | +5 | +3 |
+| Triángulos | +210 | +160 | +30 |
+| Descarga | ~0,4 MB | | |
+
+- El suelo con el pack ocupa 20 MB en ALTO (el límite era 20). Las texturas antiguas del suelo siguen cargadas porque
+  se usan en cunetas, tejados y otros elementos; por eso la memoria total sube 8 MB.
+- FPS: pendiente del iPhone (el navegador de escritorio no sirve para medirlos).
+
+**Fallo de integración encontrado y corregido:** en MEDIO la plaza y el adoquín pedían `p0m_*_r.jpg`, que no se había
+generado. La textura que falta se lee como negra (rugosidad 0) y el suelo brillaba como un espejo. Corregido; el test
+ahora falla si alguna textura da 404.
+
+**Ajuste de material hecho por Claude:** con el color por vértice en blanco, las texturas se queman a blanco con el sol
+del juego. Se mantienen los tonos de zona del suelo actual. Además, el rango de brillo pedido (140–190) era demasiado
+claro para esta luz: mejor una media de ~120–160.
+
+**Defectos, archivo por archivo (para la v2):**
+1. **`*_normal.png` (los cinco): casi sin relieve.** La componente z media es 0,992 y los archivos comprimen a 2–28 KB.
+   Las piedras no tienen volumen y es la razón principal de que el suelo se vea plano. Hace falta:
+   - altura real por piedra (adoquín abombado, losas con canto biselado, juntas de 5–10 mm);
+   - una fuerza que deje la z media en ~0,90–0,95.
+2. **`sd_ground_cobble_01_*`:** 16 piedras por 2 m (12 cm), demasiado pequeñas y regulares: a la altura de los ojos se
+   ve una malla gris. El adoquín actual mide ~20–25 cm, redondeado e irregular. Pedir 8–10 piedras por 2 m, formas
+   irregulares, juntas oscuras y tono distinto por piedra.
+3. **`sd_ground_plaza_01_*`:**
+   - losas de 29 cm (7 × 7 por 2 m) con juntas onduladas: parece una cuadrícula deformada;
+   - **costura en los bordes** (diferencia 1,9 frente a 0,3 dentro): `sin(yy*19)` y `sin(xx*14)` no son periódicos en
+     [0, 1].
+
+   Pedir losas de 40–60 cm, juntas rectas de ancho algo irregular, tono por losa y bordes periódicos.
+4. **`sd_ground_patch_01_*`:** costura en Y (2,2 frente a 0,3) y en X (0,9), por la misma causa (`sin(yy*23)`,
+   `sin(xx*35)`).
+5. **Color base (los cinco):** solo ruido de nubes suave, sin variación por piedra ni grano fino; de cerca se ve borroso.
+   Hace falta tono por piedra, poros y desconchones, y un color de junta.
+6. **`sd_ground_decal_atlas_01.png`:**
+   - suciedad, humedad, arena, gravilla y manchas están dibujadas como círculos sueltos (lunares) y no se leen como
+     suciedad;
+   - las grietas son líneas en zigzag de 2–4 px que a 512 px parecen garabatos;
+   - tapas y rejilla son dibujos planos sin relieve ni material;
+   - **falta el tamaño real en metros** de cada celda (Claude lo ha supuesto).
+7. **`sd_ground_transition_sand_stone_01.png`:** el RGB es un único color plano (166, 145, 110), sin textura de arena.
+   En el generador, `… if False else np.zeros_like(base)` anula la variación. El borde está bien.
+8. **`sd_ground_curb_kit_01.glb`:** no pasa el validador.
+   - Sin normales, con vértices compartidos entre caras a 90°: hay que exportar con aristas duras
+     (`mesh.unmerge_vertices()` y luego `export(..., include_normals=True)`).
+   - Sin UV y sin material (solo color por vértice).
+   - Las esquinas «outer» e «inner» son la misma L reflejada.
+   - Para sustituir a los bordillos actuales necesitarían UV en metros, un material `sd_ground_curb_01` con textura de
+     piedra y biseles.

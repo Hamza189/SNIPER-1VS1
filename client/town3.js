@@ -20,7 +20,8 @@
 'use strict';
 
 const REVEAL = 0.22;
-const MATS = ['stucco', 'stone', 'rubble', 'brick', 'azulejo', 'roofterr', 'rooftiles', 'setts', 'slabs', 'asphalt', 'earth', 'concrete', 'dark', 'hill', 'herring', 'pebbles'];
+const MATS = ['stucco', 'stone', 'rubble', 'brick', 'azulejo', 'roofterr', 'rooftiles', 'setts', 'slabs', 'asphalt', 'earth', 'concrete', 'dark', 'hill', 'herring', 'pebbles',
+  'p0plaza', 'p0cobble', 'p0side', 'p0patch'];   // P0 ground pack (assets/3d/imports/…p0_ground_pack_v1): only with opt.p0
 const hex = h => [(h >> 16 & 255) / 255, (h >> 8 & 255) / 255, (h & 255) / 255];
 const mix = (a, b, t) => [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t, a[2] + (b[2] - a[2]) * t];
 const mul = (a, s) => [a[0] * s, a[1] * s, a[2] * s];
@@ -407,10 +408,15 @@ function ground(opt) {
   const B = createBuilder();
   const S = opt.slice || { x0: -49.5, x1: 49.5, z0: -11, z1: 49.5 };
   const foot = opt.footprints || [];
+  // opt.p0: the P0 ground pack's materials (plaza, cobbles, pavements, worn patches) instead of the old ones; same layout
+  // (the zone tints stay as they were: measured in the game, the pack's textures burn to white under this sun
+  // with a white vertex colour)
+  const p0 = !!opt.p0;
+  const M_SET = p0 ? 'p0cobble' : 'setts', M_PLAZA = p0 ? 'p0plaza' : 'slabs', M_SIDE = p0 ? 'p0side' : 'slabs', M_FORE = p0 ? 'p0patch' : 'herring';
   const C_SET = hex(0xcbc5bb), C_SLAB = hex(0xd6cab6);
   // north street: irregular cobbles with a stone gutter down the middle
-  flat(B, 'setts', -4.5, 3.5 + KERB, -0.22, S.z1, 0.012, C_SET);
-  flat(B, 'setts', 0.22, 3.5 + KERB, 4.5, S.z1, 0.012, C_SET);
+  flat(B, M_SET, -4.5, 3.5 + KERB, -0.22, S.z1, 0.012, C_SET);
+  flat(B, M_SET, 0.22, 3.5 + KERB, 4.5, S.z1, 0.012, C_SET);
   for (let z = 3.5 + KERB; z < S.z1; z += 1.2) flat(B, 'slabs', -0.22, z, 0.22, Math.min(S.z1, z + 1.18), 0.006, hex(0xbdb3a3));
   // the cross street: old asphalt, repaired; a painted crossing at the plaza
   flat(B, 'asphalt', S.x0, -3.5, -11 - KERB, 3.5, 0.012, [1, 1, 1]);
@@ -418,13 +424,13 @@ function ground(opt) {
   for (const sx of [-1, 1]) for (let k = 0; k < 6; k++) { const z = -3.0 + k * 1.2; flat(B, 'concrete', sx * (11 + KERB + 1.0), z, sx * (11 + KERB + 3.2), z + 0.5, 0.016, hex(0xd9d4c8)); }
   // plaza: limestone slabs, a band of cobbles round the edge and round the fountain
   const P = 11;
-  flat(B, 'slabs', -P + 0.9, -P + 0.9, P - 0.9, P - 0.9, 0.016, C_SLAB);
-  for (const [a0, b0, a1, b1] of [[-P, -P, P, -P + 0.9], [-P, P - 0.9, P, P], [-P, -P + 0.9, -P + 0.9, P - 0.9], [P - 0.9, -P + 0.9, P, P - 0.9]]) flat(B, 'setts', a0, b0, a1, b1, 0.018, hex(0xcfc6b8));
-  for (const [a0, b0, a1, b1] of [[-4.2, -4.2, 4.2, -3.2], [-4.2, 3.2, 4.2, 4.2], [-4.2, -3.2, -3.2, 3.2], [3.2, -3.2, 4.2, 3.2]]) flat(B, 'setts', a0, b0, a1, b1, 0.02, hex(0xc4b8a4));
+  flat(B, M_PLAZA, -P + 0.9, -P + 0.9, P - 0.9, P - 0.9, 0.016, C_SLAB);
+  for (const [a0, b0, a1, b1] of [[-P, -P, P, -P + 0.9], [-P, P - 0.9, P, P], [-P, -P + 0.9, -P + 0.9, P - 0.9], [P - 0.9, -P + 0.9, P, P - 0.9]]) flat(B, M_SET, a0, b0, a1, b1, 0.018, hex(0xcfc6b8));
+  for (const [a0, b0, a1, b1] of [[-4.2, -4.2, 4.2, -3.2], [-4.2, 3.2, 4.2, 4.2], [-4.2, -3.2, -3.2, 3.2], [3.2, -3.2, 4.2, 3.2]]) flat(B, M_SET, a0, b0, a1, b1, 0.02, hex(0xc4b8a4));
   // dark basalt bands dividing the plaza into squares (and framing the fountain)
   const DK = hex(0x6a635a);
-  for (const c of [-7.6, 7.6]) { flat(B, 'slabs', c - 0.2, -P + 0.9, c + 0.2, P - 0.9, 0.019, DK); flat(B, 'slabs', -P + 0.9, c - 0.2, P - 0.9, c + 0.2, 0.0195, DK); }
-  for (const c of [-4.4, 4.4]) { flat(B, 'slabs', c - 0.15, -4.4, c + 0.15, 4.4, 0.021, DK); flat(B, 'slabs', -4.4, c - 0.15, 4.4, c + 0.15, 0.0215, DK); }
+  for (const c of [-7.6, 7.6]) { flat(B, M_PLAZA, c - 0.2, -P + 0.9, c + 0.2, P - 0.9, 0.019, DK); flat(B, M_PLAZA, -P + 0.9, c - 0.2, P - 0.9, c + 0.2, 0.0195, DK); }
+  for (const c of [-4.4, 4.4]) { flat(B, M_PLAZA, c - 0.15, -4.4, c + 0.15, 4.4, 0.021, DK); flat(B, M_PLAZA, -4.4, c - 0.15, 4.4, c + 0.15, 0.0215, DK); }
   for (const sx of [-1, 1]) for (const sz of [-1, 1]) {   // pebble rosettes in the four corner squares
     const cx = sx * 8.95, cz = sz * 8.95, r = 1.05;
     const pts = [[cx - r, 0.022, cz - r], [cx + r, 0.022, cz - r], [cx + r, 0.022, cz + r], [cx - r, 0.022, cz + r]];
@@ -445,7 +451,7 @@ function ground(opt) {
   // pavements round the buildings: slabs with a kerb edge
   for (const [x0, x1, z0, z1] of foot) {
     const p = 1.5;
-    flat(B, 'slabs', x0 - p, z0 - p, x1 + p, z1 + p, 0.022, hex(0xcdc2ae));
+    flat(B, M_SIDE, x0 - p, z0 - p, x1 + p, z1 + p, 0.022, hex(0xcdc2ae));
     kx(x0 - p, x1 + p, z0 - p); kx(x0 - p, x1 + p, z1 + p); kz(z0 - p + KERB / 2, z1 + p - KERB / 2, x0 - p); kz(z0 - p + KERB / 2, z1 + p - KERB / 2, x1 + p);
   }
   // forecourts in front of the buildings that face open ground: herringbone brick or a pebble rosette
@@ -464,7 +470,7 @@ function ground(opt) {
       quad(B, 'pebbles', pts, [0, 1, 0], [1, 1, 1]);
       B.uvFn = null;
     }
-    quad(B, 'herring', [a, b2, cc, dd].map(p => [p[0], 0.026, p[2]]), [0, 1, 0], hex(0xd8c8b8));
+    quad(B, M_FORE, [a, b2, cc, dd].map(p => [p[0], 0.026, p[2]]), [0, 1, 0], hex(0xd8c8b8));
     for (const [p, q] of [[a, dd], [b2, cc], [dd, cc]]) {   // stone edging
       const e = sub(q, p), L2 = Math.hypot(e[0], e[2]), u = [e[0] / L2, 0, e[2] / L2], nn = [-u[2], 0, u[0]];
       const P0 = add(p, mul(nn, -0.1)), P1 = add(q, mul(nn, -0.1)), P2 = add(q, mul(nn, 0.1)), P3 = add(p, mul(nn, 0.1));
