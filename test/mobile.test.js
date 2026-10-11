@@ -152,7 +152,12 @@ console.log('\nGRÁFICOS (etapa C)');
   const low = a.scale; for (let i = 0; i < 60 * 60; i++) Q.feed(a, 1 / 60);   // then a minute at 60
   check('si luego va a 60 FPS, vuelve a subir poco a poco hasta 1', a.scale > low && a.scale <= 1, 'escala ' + a.scale);
   for (let i = 0; i < 60 * 40; i++) Q.feed(a, 1 / 12);
-  check('nunca baja de 0,55 aunque vaya fatal', a.scale >= Q.ADAPT.minScale, 'escala ' + a.scale);
+  check('nunca baja de 0,75 (la escena y el rival siguen nítidos) aunque vaya fatal', a.scale >= Q.ADAPT.minScale && Q.ADAPT.minScale >= 0.75, 'escala ' + a.scale);
+  { // AUTO estable: un dispositivo que va a 50 FPS por encima de 0,92 y a 58 por debajo no oscila sin fin
+    const o = Q.createAdaptive(60, true); const seen = [];
+    for (let t = 0; t < 300; t += 1 / 60) { const fps = o.scale > 0.92 ? 50 : 58; if (Q.feed(o, 1 / fps)) seen.push(o.scale); }
+    check('AUTO estable: no sube y baja sin parar (5 min con un límite justo)', seen.length <= 4 && o.scale <= 0.92, seen.length + ' cambios: ' + seen.join(' → '));
+  }
   const m = Q.createAdaptive(60, false); for (let i = 0; i < 300; i++) Q.feed(m, 1 / 30);
   check('con calidad fija (no AUTO) la resolución no cambia sola', m.scale === 1);
   check('un salto grande (pausa, segundo plano) no cuenta como FPS bajos', (() => { const b = Q.createAdaptive(60, true); Q.feed(b, 3); return b.frames === 0; })());

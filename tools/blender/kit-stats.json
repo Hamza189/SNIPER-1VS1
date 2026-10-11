@@ -1,0 +1,414 @@
+{
+ "reveal": 0.22,
+ "pieces": {
+  "win_std": {
+   "tris": 184,
+   "mats": [
+    "frame",
+    "glass",
+    "dark",
+    "stone"
+   ]
+  },
+  "win_std_cur": {
+   "tris": 186,
+   "mats": [
+    "frame",
+    "glass",
+    "clothw",
+    "dark",
+    "stone"
+   ]
+  },
+  "win_tall": {
+   "tris": 236,
+   "mats": [
+    "frame",
+    "glass",
+    "dark",
+    "stone"
+   ]
+  },
+  "win_small": {
+   "tris": 192,
+   "mats": [
+    "frame",
+    "glass",
+    "dark",
+    "iron",
+    "stone"
+   ]
+  },
+  "win_arch": {
+   "tris": 343,
+   "mats": [
+    "frame",
+    "glass",
+    "dark",
+    "stucco",
+    "stone"
+   ]
+  },
+  "reja": {
+   "tris": 234,
+   "mats": [
+    "iron"
+   ]
+  },
+  "shutter": {
+   "tris": 96,
+   "mats": [
+    "wood",
+    "dark"
+   ]
+  },
+  "shutter_tall": {
+   "tris": 124,
+   "mats": [
+    "wood",
+    "dark"
+   ]
+  },
+  "persiana": {
+   "tris": 104,
+   "mats": [
+    "wood",
+    "clothw",
+    "iron"
+   ]
+  },
+  "door_arch": {
+   "tris": 736,
+   "mats": [
+    "stucco",
+    "woodraw",
+    "iron",
+    "dark",
+    "stone"
+   ]
+  },
+  "door_panel": {
+   "tris": 270,
+   "mats": [
+    "wood",
+    "zinc",
+    "glass",
+    "dark",
+    "iron",
+    "stone"
+   ]
+  },
+  "door_garage": {
+   "tris": 220,
+   "mats": [
+    "metal",
+    "zinc",
+    "concrete"
+   ]
+  },
+  "shopfront": {
+   "tris": 410,
+   "mats": [
+    "wood",
+    "azulejo",
+    "glass",
+    "dark",
+    "woodraw",
+    "clothv",
+    "zinc",
+    "stone"
+   ]
+  },
+  "rec_stone": {
+   "tris": 76,
+   "mats": [
+    "stone"
+   ]
+  },
+  "rec_stone_tall": {
+   "tris": 76,
+   "mats": [
+    "stone"
+   ]
+  },
+  "rec_band": {
+   "tris": 48,
+   "mats": [
+    "stucco"
+   ]
+  },
+  "rec_band_tall": {
+   "tris": 36,
+   "mats": [
+    "stucco"
+   ]
+  },
+  "balcony": {
+   "tris": 466,
+   "mats": [
+    "stone",
+    "iron"
+   ]
+  },
+  "balcony_long": {
+   "tris": 790,
+   "mats": [
+    "stone",
+    "iron"
+   ]
+  },
+  "awning": {
+   "tris": 157,
+   "mats": [
+    "cloth",
+    "clothw",
+    "metal",
+    "iron"
+   ]
+  },
+  "eave": {
+   "tris": 180,
+   "mats": [
+    "stucco",
+    "terracotta",
+    "tile"
+   ]
+  },
+  "cornice": {
+   "tris": 22,
+   "mats": [
+    "stone"
+   ]
+  },
+  "pipe": {
+   "tris": 34,
+   "mats": [
+    "zinc",
+    "iron"
+   ]
+  },
+  "pipe_shoe": {
+   "tris": 60,
+   "mats": [
+    "zinc"
+   ]
+  },
+  "pipe_head": {
+   "tris": 72,
+   "mats": [
+    "zinc"
+   ]
+  },
+  "lantern": {
+   "tris": 188,
+   "mats": [
+    "iron",
+    "lamp"
+   ]
+  },
+  "planter": {
+   "tris": 236,
+   "mats": [
+    "terracotta",
+    "iron",
+    "leaf"
+   ]
+  },
+  "pot_big": {
+   "tris": 392,
+   "mats": [
+    "terracotta",
+    "leaf"
+   ]
+  },
+  "pot_agave": {
+   "tris": 130,
+   "mats": [
+    "terracotta",
+    "leaf"
+   ]
+  },
+  "pot_small": {
+   "tris": 150,
+   "mats": [
+    "terracotta",
+    "leaf"
+   ]
+  },
+  "bench": {
+   "tris": 62,
+   "mats": [
+    "stone",
+    "stucco",
+    "azulejo"
+   ]
+  },
+  "bougain": {
+   "tris": 912,
+   "mats": [
+    "woodraw",
+    "leaf"
+   ]
+  },
+  "climber": {
+   "tris": 820,
+   "mats": [
+    "leaf"
+   ]
+  },
+  "laundry": {
+   "tris": 96,
+   "mats": [
+    "iron",
+    "clothw",
+    "clothv"
+   ]
+  },
+  "ac_unit": {
+   "tris": 146,
+   "mats": [
+    "metal",
+    "dark",
+    "iron"
+   ]
+  },
+  "meter_box": {
+   "tris": 26,
+   "mats": [
+    "metal",
+    "glass",
+    "iron"
+   ]
+  },
+  "plaque": {
+   "tris": 24,
+   "mats": [
+    "ceramic"
+   ]
+  },
+  "sign": {
+   "tris": 60,
+   "mats": [
+    "wood",
+    "sign"
+   ]
+  },
+  "fountain": {
+   "tris": 738,
+   "mats": [
+    "stone",
+    "azulejo",
+    "zinc",
+    "water"
+   ]
+  },
+  "lamp_post": {
+   "tris": 180,
+   "mats": [
+    "iron",
+    "lamp"
+   ]
+  },
+  "planter_wall": {
+   "tris": 216,
+   "mats": [
+    "stone",
+    "leaf"
+   ]
+  },
+  "orange_tree": {
+   "tris": 716,
+   "mats": [
+    "woodraw",
+    "leaf"
+   ]
+  },
+  "cypress": {
+   "tris": 300,
+   "mats": [
+    "woodraw",
+    "leaf"
+   ]
+  },
+  "olive": {
+   "tris": 404,
+   "mats": [
+    "woodraw",
+    "leaf"
+   ]
+  },
+  "palm": {
+   "tris": 210,
+   "mats": [
+    "woodraw",
+    "leaf"
+   ]
+  },
+  "bell_tower": {
+   "tris": 354,
+   "mats": [
+    "stucco",
+    "stone",
+    "dark",
+    "zinc",
+    "tile",
+    "iron"
+   ]
+  },
+  "weeds": {
+   "tris": 31,
+   "mats": [
+    "leaf"
+   ]
+  },
+  "win_lo": {
+   "tris": 24,
+   "mats": [
+    "glass",
+    "frame",
+    "stone"
+   ]
+  },
+  "shutter_lo": {
+   "tris": 28,
+   "mats": [
+    "wood"
+   ]
+  },
+  "shutter_tall_lo": {
+   "tris": 40,
+   "mats": [
+    "wood"
+   ]
+  },
+  "win_tall_lo": {
+   "tris": 12,
+   "mats": [
+    "glass",
+    "frame"
+   ]
+  },
+  "balcony_lo": {
+   "tris": 50,
+   "mats": [
+    "stone",
+    "iron"
+   ]
+  },
+  "eave_lo": {
+   "tris": 42,
+   "mats": [
+    "terracotta",
+    "tile"
+   ]
+  },
+  "street_pole": {
+   "tris": 300,
+   "mats": [
+    "iron",
+    "lamp",
+    "ceramic"
+   ]
+  }
+ }
+}

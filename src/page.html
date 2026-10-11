@@ -648,7 +648,13 @@ renderer.autoClear=false;
    light and colour texture once, wherever it was created (scene, viewmodels, effects, models). */
 renderer.outputEncoding=T.sRGBEncoding;
 renderer.toneMapping=T.ACESFilmicToneMapping;
-const TONE={exposure:0.82};renderer.toneMappingExposure=TONE.exposure;
+/* PUEBLO 3.0 (vertical slice, ?pueblo=3): new light and town; without the flag the game looks exactly as before */
+const P3=/[?&]pueblo=3\b/.test(location.search);
+const LOOK=P3?{exp:0.95,fog:0xdcd6c8,sun:0xfff0d8,sunI:3.0,sunPos:[-45,60,-30],hemiSky:0xc4d8f0,hemiGround:0xc9a684,hemiI:1.0,
+    sky:{top:0x5b8fcb,mid:0x9ec2e2,hor:0xe9e4d6,glow:0xfff2d6}}
+  :{exp:0.82,fog:0xe2b894,sun:0xffe0b5,sunI:2.7,sunPos:[-45,60,-30],hemiSky:0xb8cdee,hemiGround:0x9a7656,hemiI:0.6,
+    sky:{top:0x41557a,mid:0xc99b86,hor:0xf0b47e,glow:0xffd2a0}};
+const TONE={exposure:LOOK.exp};renderer.toneMappingExposure=TONE.exposure;
 function csMat(m){
   if(!m||m.userData.cs)return;m.userData.cs=1;
   if(m.isShaderMaterial||m.isRawShaderMaterial)return;
@@ -662,7 +668,7 @@ function csFix(root){root.traverse(o=>{
 });}
 const csHex=(c,hex)=>c.setHex(hex).convertSRGBToLinear();   // runtime colour changes go through this
 const scene=new T.Scene();
-scene.fog=new T.Fog(0xe2b894,45,175);scene.fog.color.convertSRGBToLinear();
+scene.fog=new T.Fog(LOOK.fog,45,175);scene.fog.color.convertSRGBToLinear();
 const BASE_FOV=isTouch?70:75;
 const camera=new T.PerspectiveCamera(BASE_FOV,1,0.05,600);
 camera.rotation.order='YXZ';
@@ -722,20 +728,20 @@ for(const t of [softTex,flashTex,glintTex]){t.wrapS=t.wrapT=T.ClampToEdgeWrappin
 
 /* =================== WORLD =================== */
 const W={colliders:[],ray:[]};
-const sun=new T.DirectionalLight(0xffe0b5,2.7);   // warm low sun (linear light + ACES: stronger than before)
-sun.position.set(-45,60,-30);
+const sun=new T.DirectionalLight(LOOK.sun,LOOK.sunI);   // warm low sun (linear light + ACES: stronger than before)
+sun.position.set(...LOOK.sunPos);
 sun.castShadow=true;
 {const ms=SDQuality.PROFILES[GFX.profile].shadowMap||1024;sun.shadow.mapSize.set(ms,ms);}
 const sc=sun.shadow.camera;sc.left=-62;sc.right=62;sc.top=62;sc.bottom=-62;sc.near=10;sc.far=180;
 sun.shadow.bias=-0.0004;sun.shadow.normalBias=0.025;sun.shadow.radius=1.6;   // PCF (cheaper than PCFSoft, same look with a small radius)
 scene.add(sun);scene.add(sun.target);
-const hemi=new T.HemisphereLight(0xb8cdee,0x9a7656,0.6);scene.add(hemi);   // cool sky fill, warm bounce from the sand
+const hemi=new T.HemisphereLight(LOOK.hemiSky,LOOK.hemiGround,LOOK.hemiI);scene.add(hemi);   // cool sky fill, warm bounce from the sand
 
 // sky dome
 // sky: gradient + glow around the sun + haze at the horizon, in linear light through the same tone curve
-const SKY={top:0x41557a,mid:0xc99b86,hor:0xf0b47e,glow:0xffd2a0};
+const SKY=LOOK.sky;
 const skyMat=new T.ShaderMaterial({side:T.BackSide,depthWrite:false,fog:false,
-  uniforms:{top:{value:new T.Color(SKY.top)},mid:{value:new T.Color(SKY.mid)},hor:{value:new T.Color(SKY.hor)},glow:{value:new T.Color(SKY.glow)},sunDir:{value:new T.Vector3(-45,60,-30).normalize()}},
+  uniforms:{top:{value:new T.Color(SKY.top)},mid:{value:new T.Color(SKY.mid)},hor:{value:new T.Color(SKY.hor)},glow:{value:new T.Color(SKY.glow)},sunDir:{value:new T.Vector3(...LOOK.sunPos).normalize()}},
   vertexShader:'varying vec3 vP;void main(){vP=normalize(position);gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0);}',
   fragmentShader:'uniform vec3 top;uniform vec3 mid;uniform vec3 hor;uniform vec3 glow;uniform vec3 sunDir;varying vec3 vP;'+
     'void main(){vec3 d=normalize(vP);float h=clamp(d.y,0.0,1.0);vec3 c=mix(hor,mid,smoothstep(0.0,0.2,h));c=mix(c,top,smoothstep(0.16,0.75,h));'+
@@ -748,6 +754,7 @@ sunSprite.position.copy(sun.position).normalize().multiplyScalar(380);sunSprite.
 // distant mesas
 // distant buttes (GFX-1): eroded, layered rock instead of plain cylinders — far away, so cheap
 // (flat-shaded facets, colour bands in the vertices, one shared material, no shadows)
+const BUTTES=[];   // PUEBLO 3.0 swaps them for green-ochre hills
 {const mm=new T.MeshStandardMaterial({vertexColors:true,flatShading:true,roughness:0.95});
  const BANDS=[0x9a6a4e,0xb07c58,0x8e5e46,0xc49470,0xa3704f,0x7f5440];
  const lin=c=>c<=0.04045?c/12.92:Math.pow((c+0.055)/1.055,2.4);
@@ -762,7 +769,7 @@ sunSprite.position.copy(sun.position).normalize().multiplyScalar(380);sunSprite.
      const c=new T.Color(BANDS[(ring+i)%BANDS.length]);const sh=0.9+0.2*Math.sin(ang*5+ph);
      col[v*3]=lin(c.r*sh);col[v*3+1]=lin(c.g*sh);col[v*3+2]=lin(c.b*sh);}
    geo.setAttribute('color',new T.BufferAttribute(col,3));geo.computeVertexNormals();
-   const m=new T.Mesh(geo,mm);mm.userData.cs=1;m.position.set(Math.cos(a)*r,h/2-2,Math.sin(a)*r);m.rotation.y=rand(0,6.28);scene.add(m);}}
+   const m=new T.Mesh(geo,mm);mm.userData.cs=1;m.position.set(Math.cos(a)*r,h/2-2,Math.sin(a)*r);m.rotation.y=rand(0,6.28);scene.add(m);BUTTES.push(m);}}
 
 const MAT={
   sand:new T.MeshStandardMaterial({map:sandTex,roughness:1,metalness:0}),
@@ -873,13 +880,14 @@ for(let i=-4;i<=4;i++){if(blockedPt(-5.2,i*11,0.4))continue;const p=new T.Mesh(n
    (generated by tools/textures/make_textures.py). ?town=0 shows the old town (for comparisons). */
 const TEX={loader:null,cache:{}};
 // own: a separate copy (its own repeat), not the shared one
-function texLoad(name,normal,own){
-  const key=name+(normal?'_n':'_c');if(!own&&TEX.cache[key])return TEX.cache[key];
+// raw: the file is <name>.jpg as given (data such as roughness: linear, no suffix)
+function texLoad(name,normal,own,raw){
+  const key=raw?name:name+(normal?'_n':'_c');if(!own&&TEX.cache[key])return TEX.cache[key];
   if(!TEX.loader&&T.TextureLoader)TEX.loader=new T.TextureLoader();
   if(!TEX.loader)return null;
   const t=TEX.loader.load('assets/tex/'+key+'.jpg?v='+BUILD_HASH);
   t.wrapS=t.wrapT=T.RepeatWrapping;t.anisotropy=Math.min(GFX.profile==='alto'?4:GFX.profile==='medio'?2:1,renderer.capabilities&&renderer.capabilities.getMaxAnisotropy?renderer.capabilities.getMaxAnisotropy():1);
-  if(!normal)t.encoding=T.sRGBEncoding;
+  if(!normal&&!raw)t.encoding=T.sRGBEncoding;
   if(!own)TEX.cache[key]=t;return t;
 }
 // texture scale (metres per repeat), roughness, metalness and normal strength per town material
@@ -954,27 +962,88 @@ function dressProps(objs,tag){
   for(const [sx,sz] of [[-1,-1],[1,-1],[-1,1],[1,1]]){const q=list.filter(p=>Math.sign(p.x||1)===sx&&Math.sign(p.z||1)===sz);if(q.length)out=out.concat(townMeshes(SDTown.props(q,7+sx*3+sz),tag));}
   return out;
 }
+/* PUEBLO 3.0 vertical slice (?pueblo=3): the north half of the town (client/town3.js + the Blender kit) */
+const P3ON=P3&&TOWN.on&&typeof SDTown3!=='undefined'&&typeof KIT3D!=='undefined';
+const P3W={meshes:[],tris:0,place:[],kit:null,skip:new Set(),kitTris:0,signs:[]};
+const inSlice3=b=>P3ON&&!!SDTown3.SLICE_FAMILIES[b[0]+','+b[1]];
+if(P3ON){   // old visuals the slice redraws differently: sandbag walls → stone planters, the fountain
+  for(const o of scene.children.slice(TOWN_FROM)){
+    if(!o.isMesh||o.geometry.type!=='BoxGeometry')continue;const p=o.position;
+    if(o.material===MAT.bag&&p.z>4&&Math.abs(p.x)<45)P3W.skip.add(o);
+    else if((o.material===MAT.concrete||o.material===MAT.concreteDark)&&Math.abs(p.x)<3.2&&Math.abs(p.z)<3.2)P3W.skip.add(o);
+  }
+  for(const o of scene.children.slice(TOWN_FROM))   // telegraph poles in the slice → street lights (same cylinder)
+    if(o.isMesh&&o.material===MAT.rust&&o.geometry.type==='CylinderGeometry'&&o.geometry.parameters.radiusTop<0.15&&o.geometry.parameters.height>6&&o.position.z>-1)P3W.skip.add(o);
+}
 if(TOWN.on&&typeof SDTown!=='undefined'){
   // in four quarters (plus the streets) so the camera only draws the part of town in view
   const TOPT={tints:PLASTER_TINTS,reachable:[[-9,-31]]};
   TOWN.meshes=[];TOWN.tris=0;
-  for(const [sx,sz] of [[-1,-1],[1,-1],[-1,1],[1,1]]){const q=BUILDINGS.filter(b=>Math.sign(b[0]||1)===sx&&Math.sign(b[1]||1)===sz);if(!q.length)continue;
+  for(const [sx,sz] of [[-1,-1],[1,-1],[-1,1],[1,1]]){const q=BUILDINGS.filter(b=>Math.sign(b[0]||1)===sx&&Math.sign(b[1]||1)===sz&&!inSlice3(b));if(!q.length)continue;
     const d=SDTown.build(q,Object.assign({part:'buildings'},TOPT));TOWN.tris+=d.tris;TOWN.meshes=TOWN.meshes.concat(townMeshes(d,'town'));}
-  {const d=SDTown.build(BUILDINGS,Object.assign({part:'streets'},TOPT));TOWN.tris+=d.tris;TOWN.meshes=TOWN.meshes.concat(townMeshes(d,'streets'));}
+  {const d=SDTown.build(BUILDINGS.filter(b=>!inSlice3(b)),Object.assign({part:'streets',clipZ:P3ON?-11:undefined},TOPT));TOWN.tris+=d.tris;TOWN.meshes=TOWN.meshes.concat(townMeshes(d,'streets'));}
   // the old visuals: drawn no more (an invisible material), still there for bullets and the server's map
   for(const m of OLD_TOWN.bodies)hideOld(m);
   // building shadows come from simple boxes (drawn only into the shadow map), not from the detailed
   // walls: the same shadow on the ground at a fraction of the cost
-  for(const m of OLD_TOWN.bodies.concat(OLD_TOWN.caps)){const px=new T.Mesh(m.geometry,SHADOW_PROXY);px.position.copy(m.position);px.rotation.copy(m.rotation);
-    px.castShadow=true;px.receiveShadow=false;px.renderOrder=-1;scene.add(px);}
+  // (all in ONE mesh: one draw call in each pass instead of 28)
+  {const arr=[];for(const m of OLD_TOWN.bodies.concat(OLD_TOWN.caps)){m.updateMatrix();const g=m.geometry.index?m.geometry.toNonIndexed():m.geometry.clone();g.applyMatrix4(m.matrix);arr.push(g.attributes.position.array);}
+   const pos=new Float32Array(arr.reduce((n,a)=>n+a.length,0));let o=0;for(const a of arr){pos.set(a,o);o+=a.length;}
+   const geo=new T.BufferGeometry();geo.setAttribute('position',new T.BufferAttribute(pos,3));geo.computeBoundingSphere();
+   const px=new T.Mesh(geo,SHADOW_PROXY);px.name='shadow_proxies';px.castShadow=true;px.receiveShadow=false;px.renderOrder=-1;scene.add(px);}
   for(const m of TOWN.meshes)if(['town_plaster','town_stone','town_roof'].includes(m.name))m.castShadow=false;
   for(const m of OLD_TOWN.caps.concat(OLD_ROADS)){m.material=INVIS;m.castShadow=false;}
-  TOWN.meshes=TOWN.meshes.concat(dressProps(scene.children.slice(TOWN_FROM).filter(o=>!TOWN.meshes.includes(o)),'town'));
+  TOWN.meshes=TOWN.meshes.concat(dressProps(scene.children.slice(TOWN_FROM).filter(o=>!TOWN.meshes.includes(o)&&!P3W.skip.has(o)),'town'));
   // what is left of the old plain concrete (the ramps): the same concrete texture
   {const c=texLoad('concrete',false,true);c.repeat.set(2,1);MAT.concrete.map=c;MAT.concrete.color.setHex(0xb9b2a6);MAT.concrete.needsUpdate=true;}
   // the sand: generated texture with relief (4 m per repeat over the 400 m ground)
   const sc=texLoad('sand',false,true);if(sc){sc.repeat.set(100,100);MAT.sand.map=sc;MAT.sand.color.setHex(0xd2c0a6);
     MAT.sand.needsUpdate=true;}   // no normal map on the ground: it fills half the screen (fill-rate) and its relief is in the colour already
+}
+
+/* ---- PUEBLO 3.0 (vertical slice): families of buildings, kit pieces, new ground, the town outside the walls.
+   Walls and ground are generated here (SDTown3); windows, doors, balconies… are instances of the Blender
+   kit (assets/kit.glb) placed when it has loaded. Collision boxes and the server's map are the same. */
+if(P3ON){
+  const low=GFX.profile==='bajo'||/[?&]nm=0\b/.test(location.search);
+  const CAST=new Set(['balcony','balcony_long','awning','eave','cornice','fountain','orange_tree','planter_wall','lamp_post','laundry','door_arch','door_panel']);
+  // shadows from the kit: ALTO everything big (eaves, doors…), MEDIO only balconies, awnings and cornices
+  const CAST_MEDIO=new Set(['balcony','balcony_long','awning','cornice','fountain','orange_tree']);
+  P3W.ctx={texLoad,low,cache:{},shared:true,env:null,shadows:(k,m)=>GFX.profile!=='bajo'&&(GFX.profile==='alto'?CAST:CAST_MEDIO).has(k)&&!['iron','glass','lamp','dark','water'].includes(m)};
+  const gctx={texLoad,low,cache:{},shared:true};   // ground: its own materials, drawn just above the sand
+  const p3mesh=(data,tag,cx,ground)=>{
+    for(const k of SDTown3.MATS){const g=data[k];if(!g)continue;
+      const geo=new T.BufferGeometry();
+      geo.setAttribute('position',new T.BufferAttribute(g.pos,3));geo.setAttribute('normal',new T.BufferAttribute(g.nrm,3));
+      const L=KIT3D.LOOK[k]||{},sc=1/(L.tile||1);if(sc!==1)for(let i=0;i<g.uv.length;i++)g.uv[i]*=sc;   // metres → texture repeats (shared textures)
+      geo.setAttribute('uv',new T.BufferAttribute(g.uv,2));
+      const col=g.col;for(let i=0;i<col.length;i++)col[i]=col[i]<=0.04045?col[i]/12.92:Math.pow((col[i]+0.055)/1.055,2.4);
+      geo.setAttribute('color',new T.BufferAttribute(col,3));geo.setIndex(new T.BufferAttribute(g.idx,1));geo.computeBoundingSphere();
+      const mat=KIT3D.material(T,k,cx);
+      if(ground&&!mat.polygonOffset){mat.polygonOffset=true;mat.polygonOffsetFactor=-1;mat.polygonOffsetUnits=-2;}
+      const m=new T.Mesh(geo,mat);m.name='p3_'+tag+'_'+k;m.castShadow=false;m.receiveShadow=tag!=='hills';
+      scene.add(m);P3W.meshes.push(m);P3W.tris+=g.idx.length/3;}
+  };
+  // buildings: one build per side of the street (culling), then the ground and the town outside
+  const foot=[],fronts=[];
+  for(const sx of [-1,1]){const q=BUILDINGS.filter(b=>inSlice3(b)&&Math.sign(b[0])===sx);const d=SDTown3.build(q,{});p3mesh(d.geo,'town'+sx,P3W.ctx);
+    P3W.place.push(...d.place);P3W.signs.push(...d.signs);foot.push(...d.footprints);fronts.push(...d.fronts);}
+  p3mesh(SDTown3.ground({footprints:foot,fronts,place:P3W.place}).geo,'ground',gctx,true);
+  p3mesh(SDTown3.backdrop({},P3W.place).geo,'backdrop',P3W.ctx);
+  // the slice's sandbag walls become stone planters (same boxes), with orange trees on the long ones
+  for(const o of P3W.skip)hideOld(o);
+  for(const o of P3W.skip){const gp=k=>o.geometry.parameters[k],p=o.position,w=gp('width'),h=gp('height'),d=gp('depth');
+    if(o.geometry.type==='CylinderGeometry'){P3W.place.push({k:'street_pole',x:p.x,y:p.y-gp('height')/2,z:p.z,ry:0});continue;}
+    if(Math.abs(p.x)<3.2&&Math.abs(p.z)<3.2)continue;
+    const along=w>=d,L=along?w:d,n=Math.max(1,Math.round(L)),sx=L/n;
+    for(let i=0;i<n;i++){const t=-L/2+(i+0.5)*sx;P3W.place.push({k:'planter_wall',x:p.x+(along?t:0),y:p.y-h/2,z:p.z+(along?0:t),ry:along?0:Math.PI/2,s:[sx,h/1.05,d<w?d/0.8:w/0.8]});}
+    if(L>=4.5)P3W.place.push({k:'orange_tree',x:p.x,y:p.y-h/2,z:p.z,ry:p.x*1.7});
+  }
+  P3W.place.push({k:'fountain',x:0,y:0,z:0,ry:0});
+  for(const [sx,sz] of [[-1,-1],[1,-1],[-1,1],[1,1]])P3W.place.push({k:'lamp_post',x:sx*2.75,y:0.8,z:sz*2.75,ry:Math.atan2(-sx,-sz)+Math.PI/2});
+  // distant hills instead of the red buttes (every map)
+  for(const m of BUTTES)m.visible=false;
+  {const before=P3W.meshes.length;p3mesh(SDTown3.hills({}).geo,'hills',P3W.ctx);for(const m of P3W.meshes.slice(before))m.userData.global=true;}
 }
 
 /* =================== SHOOTING RANGE (test gym, south of town) =================== */
@@ -1035,7 +1104,7 @@ function findPath(a,b){
    crouch behind, a few tall walls and pillars that break the lines of sight, crates.
    It is built into its own lists (colliders, ray targets, ramps) and its own scene objects;
    setWorld() swaps which map is live. The server gets the same geometry (core/mapdata.js). */
-const WORLDS={pueblo:{colliders:W.colliders,ray:W.ray,ramps:W.ramps,objs:scene.children.slice(TOWN_FROM).filter(o=>o!==GROUND),nav:NAV,label:'PUEBLO'}};
+const WORLDS={pueblo:{colliders:W.colliders,ray:W.ray,ramps:W.ramps,objs:scene.children.slice(TOWN_FROM).filter(o=>o!==GROUND&&!o.userData.global),nav:NAV,label:'PUEBLO'}};
 {
   W.colliders=[];W.ray=[GROUND];W.ramps=[];
   const from=scene.children.length;
@@ -3898,6 +3967,41 @@ resize();
 // seconds of play (the town and its props use several material variants)
 try{csFix(scene);renderer.compile(scene,camera);}catch(e){}
 requestAnimationFrame(frame);
-window.__SD={freeze(on){SIM_FREEZE=!!on;},SHOT,VMA,makeSoldier,animateSoldier,BOT_MAT,scene,camera,RemotePlayer,PMprev,PIS,PROOT,RIF,WROOT,SHO_:null,MANUAL,advance(ms){frameBody(last+ms);},get LAST_PELLETS(){return LAST_PELLETS;},SCORE,SCFG,SROOT,SHO,setPrimaryChoice,get PRIMARY(){return PRIMARY;},PCORE,PCFG,setWorld,WORLDS,get WORLD_ID(){return WORLD_ID;},renderer,GFX,gfxApply,get NET(){return NET;},get REMOTE(){return REMOTE;},W,get NAV(){return NAV;},setOffMap,get OFFMAP(){return OFFMAP;},TOUCH,EDIT,openEditor,get SETTINGS(){return SETTINGS;},get LAYOUT(){return LAYOUT;},checkOrientation,MAT,LOAD,TRAINERS,get RANGE_BOTS(){return RANGE_BOTS;},TRAIN,setTrain,setLethal,kitNote,GINS,TDIAG,AU,get TOUCH_EVENTS(){return TOUCH_EVENTS;},impactFX,bodyFX,get DECALS(){return DECALS;},surfaceOf,soundDelay,aimSelfTest,P,PM,WS,WCORE,RECOIL,AIM,BOTS,DUMMIES,BULLETS,EVENTS,PARTS,STATS,get state(){return state;},get mode(){return mode;},setMode,input,startMatch,simTick,frame,toMenu,pause,resume};
+/* PUEBLO 3.0: the kit arrives (assets/kit.glb) → one instanced mesh per piece and material; shop signs */
+function p3Signs(kit){
+  const part=(kit.pieces.sign||[]).find(p=>p.mat==='sign');if(!part||!P3W.signs.length)return;
+  const n=P3W.signs.length,rowH=128,c=document.createElement('canvas');c.width=1024;c.height=rowH*n;const g=c.getContext('2d');if(!g)return;
+  P3W.signs.forEach((sg,i)=>{const y=i*rowH;const bg='#'+(sg.c||0x334455).toString(16).padStart(6,'0');
+    g.fillStyle=bg;g.fillRect(0,y,1024,rowH);g.fillStyle='rgba(255,255,255,0.08)';for(let k=0;k<1024;k+=7)g.fillRect(k,y,2,rowH);
+    g.strokeStyle='#f3ead6';g.lineWidth=5;g.strokeRect(14,y+12,996,rowH-24);
+    g.fillStyle='#f6eedc';g.textAlign='center';g.textBaseline='middle';let fs=74;g.font='700 '+fs+'px Georgia,"Times New Roman",serif';
+    while(g.measureText(sg.text).width>930&&fs>30){fs-=4;g.font='700 '+fs+'px Georgia,"Times New Roman",serif';}
+    g.fillText(sg.text,512,y+rowH/2+4);});
+  const tex=new T.CanvasTexture(c);tex.encoding=T.sRGBEncoding;tex.anisotropy=4;
+  const mat=new T.MeshStandardMaterial({map:tex,roughness:0.65});mat.userData.cs=1;
+  P3W.signs.forEach((sg,i)=>{const geo=part.geometry.clone(),uv=geo.attributes.uv;
+    for(let k=0;k<uv.count;k++)uv.setY(k,1-((i+(1-uv.getY(k)))/n));   // glTF UVs run top-down
+    const m=new T.Mesh(geo,mat);m.position.set(sg.p[0],sg.p[1],sg.p[2]);m.rotation.y=sg.ry;m.receiveShadow=true;m.name='p3_sign';
+    scene.add(m);WORLDS.pueblo.objs.push(m);m.visible=WORLD_ID==='pueblo';P3W.meshes.push(m);});
+}
+if(P3ON&&T.GLTFLoader){
+  KIT3D.load(T,'assets/kit.glb?v='+BUILD_HASH,kit=>{try{
+    P3W.kit=kit;P3W.ctx.env=ENV;P3W.loadedAt=performance.now();
+    // BAJO: without the small details (decided when the page loads, like the antialiasing)
+    const drop=GFX.profile==='bajo'?new Set(['weeds','pipe','pipe_head','pipe_shoe','plaque','meter_box','climber','pot_small','planter','ac_unit','laundry']):null;
+    const list=P3W.place.filter(p=>!drop||!drop.has(p.k));
+    for(const sg of P3W.signs)list.push({k:'sign',x:sg.p[0],y:sg.p[1],z:sg.p[2],ry:sg.ry});
+    // baked into static meshes per area of the map and material: few draw calls (see KIT3D.merge)
+    const regionOf=p=>Math.abs(p.x)>=49.5||Math.abs(p.z)>=49.5?(p.z>=49.5?'fuera_n':p.x<0?'fuera_o':'fuera_e'):(p.x<0?'oeste':'este');
+    const THIN=['lamp_post','street_pole','orange_tree'];   // thin posts and trunks: their own meshes, and their axes for the cover check
+    P3W.ctx.separate=new Set(THIN);P3W.axes=list.filter(p=>THIN.includes(p.k)).map(p=>[p.x,p.z]);
+    const r=KIT3D.merge(T,kit,list,P3W.ctx,regionOf);P3W.kitTris=r.tris;
+    for(const m of r.meshes){scene.add(m);WORLDS.pueblo.objs.push(m);m.visible=WORLD_ID==='pueblo';P3W.meshes.push(m);}
+    p3Signs(kit);
+    try{renderer.compile(scene,camera);}catch(e){}
+  }catch(e){console.warn('kit',e);}},e=>console.warn('kit load',e));
+}
+
+window.__SD={LIGHT:{sun,hemi,skyMat,LOOK,P3},P3W,freeze(on){SIM_FREEZE=!!on;},SHOT,VMA,makeSoldier,animateSoldier,BOT_MAT,scene,camera,RemotePlayer,PMprev,PIS,PROOT,RIF,WROOT,SHO_:null,MANUAL,advance(ms){frameBody(last+ms);},get LAST_PELLETS(){return LAST_PELLETS;},SCORE,SCFG,SROOT,SHO,setPrimaryChoice,get PRIMARY(){return PRIMARY;},PCORE,PCFG,setWorld,WORLDS,get WORLD_ID(){return WORLD_ID;},renderer,GFX,gfxApply,get NET(){return NET;},get REMOTE(){return REMOTE;},W,get NAV(){return NAV;},setOffMap,get OFFMAP(){return OFFMAP;},TOUCH,EDIT,openEditor,get SETTINGS(){return SETTINGS;},get LAYOUT(){return LAYOUT;},checkOrientation,MAT,LOAD,TRAINERS,get RANGE_BOTS(){return RANGE_BOTS;},TRAIN,setTrain,setLethal,kitNote,GINS,TDIAG,AU,get TOUCH_EVENTS(){return TOUCH_EVENTS;},impactFX,bodyFX,get DECALS(){return DECALS;},surfaceOf,soundDelay,aimSelfTest,P,PM,WS,WCORE,RECOIL,AIM,BOTS,DUMMIES,BULLETS,EVENTS,PARTS,STATS,get state(){return state;},get mode(){return mode;},setMode,input,startMatch,simTick,frame,toMenu,pause,resume};
 })();
 </script>

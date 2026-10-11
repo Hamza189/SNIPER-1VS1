@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Kit PUEBLO 3.0</title>
+<style>html,body{margin:0;background:#8fb4d8;overflow:hidden}canvas{display:block}#t{position:fixed;left:12px;top:8px;font:600 15px system-ui;color:#1d2a36}</style>
+</head><body><div id="t">KIT PUEBLO 3.0 — piezas del kit (assets/kit.glb) dibujadas por el motor del juego (Three.js), misma luz que ?pueblo=3</div>
+<script src="../vendor/three.min.js"></script>
+<script src="../vendor/GLTFLoader.js"></script>
+<script src="../client/kit3d.js"></script>
+<script src="../client/town3.js"></script>
+<script>
+/* Kit sheet: every piece on a small wall panel (openings get their hole and reveal), in rows by kind.
+   ?set=openings|ornaments|props|all  — tools/capture-kit.js photographs it. */
+const T = THREE;
+const set = (location.search.match(/set=(\w+)/) || [, 'openings'])[1];
+const W = innerWidth, H = innerHeight;
+const r = new T.WebGLRenderer({ antialias: true }); r.setSize(W, H); r.setPixelRatio(1); document.body.appendChild(r.domElement);
+r.outputEncoding = T.sRGBEncoding; r.toneMapping = T.ACESFilmicToneMapping; r.toneMappingExposure = 0.95; r.shadowMap.enabled = true; r.shadowMap.type = T.PCFShadowMap;
+const scene = new T.Scene(); scene.background = new T.Color(0x9fc2e2).convertSRGBToLinear();
+const cam = new T.PerspectiveCamera(30, W / H, 0.1, 200);
+const sun = new T.DirectionalLight(new T.Color(0xfff0d8).convertSRGBToLinear(), 3.0); sun.position.set(-6, 9, 8); sun.castShadow = true;
+sun.shadow.mapSize.set(2048, 2048); Object.assign(sun.shadow.camera, { left: -16, right: 16, top: 10, bottom: -6, near: 1, far: 40 }); sun.shadow.bias = -0.0004; sun.shadow.normalBias = 0.02;
+scene.add(sun); scene.add(sun.target);
+scene.add(new T.HemisphereLight(new T.Color(0xc4d8f0).convertSRGBToLinear(), new T.Color(0xc9a684).convertSRGBToLinear(), 1.0));
+const loader = new T.TextureLoader(), cache = {};
+function texLoad(name, normal, own, raw) {
+  const key = raw ? name : name + (normal ? '_n' : '_c'); if (!own && cache[key]) return cache[key];
+  const t = loader.load('../assets/tex/' + key + '.jpg'); t.wrapS = t.wrapT = T.RepeatWrapping; t.anisotropy = 4; if (!normal && !raw) t.encoding = T.sRGBEncoding;
+  if (!own) cache[key] = t; return t;
+}
+const ctx = { texLoad, cache: {}, shared: true, env: null, shadows: () => true };
+const SETS = {
+  openings: [['win_std', 0xf2ece0], ['win_std_cur', 0xf2ece0], ['win_tall', 0xf2ece0], ['win_arch', 0xf2ece0], ['win_small', 0xf2ece0], ['door_arch', 0xdcb98a], ['door_panel', 0xc9734c], ['door_garage', 0xb9aca0], ['shopfront', 0xebd394]],
+  ornaments: [['rec_stone', 0xc9734c], ['rec_band', 0xf2ece0], ['shutter', 0xf2ece0], ['persiana', 0xebd394], ['balcony', 0xe8bfae], ['awning', 0xebd394], ['eave', 0xf2ece0], ['cornice', 0xe8bfae], ['lantern', 0xdcb98a], ['reja', 0xf2ece0]],
+  props: [['bougain', 0xf2ece0], ['climber', 0xdcb98a], ['planter', 0xc9734c], ['pot_big', 0xebd394], ['pot_agave', 0xdcb98a], ['bench', 0xf2ece0], ['laundry', 0xc9734c], ['ac_unit', 0xb9aca0], ['plaque', 0xe8bfae], ['pipe', 0xb9aca0]],
+  street: [['fountain', null], ['lamp_post', null], ['street_pole', null], ['planter_wall', null], ['orange_tree', null], ['olive', null], ['cypress', null], ['palm', null], ['bell_tower', null]],
+};
+const TINTS = { shutter: 0x3f7a4e, door_panel: 0x2f6a9a, door_garage: 0x4f6b52, persiana: 0x5b7a3a, awning: 0xb0302a, rec_band: 0x3f6f9e, door_arch: 0x6e4a2c };
+const lin = h => new T.Color(h).convertSRGBToLinear();
+// a wall panel with an opening (and its reveal) for the piece
+function panel(x0, w, h, hole, tint) {
+  const g = []; const z = 0;
+  const q = (a, b, c, d, n) => g.push([a, b, c, d, n]);
+  const [u0, u1, v0, v1] = hole || [0, 0, 0, 0];
+  const rects = hole ? [[0, w, 0, v0], [0, w, v1, h], [0, u0, v0, v1], [u1, w, v0, v1]] : [[0, w, 0, h]];
+  const pos = [], nrm = [], uv = [], col = [], idx = [];
+  const c = lin(tint);
+  const add = (pts, n, k) => { const i0 = pos.length / 3; for (const p of pts) { pos.push(p[0], p[1], p[2]); nrm.push(...n); uv.push((p[0] + p[2]) / 2.4, p[1] / 2.4); col.push(c.r * k, c.g * k, c.b * k); } idx.push(i0, i0 + 1, i0 + 2, i0, i0 + 2, i0 + 3); };
+  for (const [a, b, cc, d] of rects) if (b - a > 0.001 && d - cc > 0.001) add([[x0 + a, cc, z], [x0 + b, cc, z], [x0 + b, d, z], [x0 + a, d, z]], [0, 0, 1], 1);
+  if (hole) { const D = -SDTown3.REVEAL;
+    add([[x0 + u0, v0, z], [x0 + u0, v0, D], [x0 + u0, v1, D], [x0 + u0, v1, z]], [1, 0, 0], 0.75);
+    add([[x0 + u1, v0, z], [x0 + u1, v1, z], [x0 + u1, v1, D], [x0 + u1, v0, D]], [-1, 0, 0], 0.75);
+    add([[x0 + u0, v1, z], [x0 + u0, v1, D], [x0 + u1, v1, D], [x0 + u1, v1, z]], [0, -1, 0], 0.65);
+    if (v0 > 0) add([[x0 + u0, v0, z], [x0 + u1, v0, z], [x0 + u1, v0, D], [x0 + u0, v0, D]], [0, 1, 0], 0.8); }
+  const geo = new T.BufferGeometry();
+  geo.setAttribute('position', new T.Float32BufferAttribute(pos, 3)); geo.setAttribute('normal', new T.Float32BufferAttribute(nrm, 3));
+  geo.setAttribute('uv', new T.Float32BufferAttribute(uv, 2)); geo.setAttribute('color', new T.Float32BufferAttribute(col, 3)); geo.setIndex(idx);
+  const m = new T.Mesh(geo, KIT3D.material(T, 'stucco', ctx)); m.receiveShadow = true; m.castShadow = true; scene.add(m);
+}
+KIT3D.load(T, '../assets/kit.glb', kit => {
+  const list = SETS[set] || SETS.openings;
+  let x = 0; const gap = 0.7, place = [];
+  const ground = new T.Mesh(new T.PlaneGeometry(200, 60), KIT3D.material(T, 'slabs', ctx)); ground.rotation.x = -Math.PI / 2; ground.receiveShadow = true;
+  ground.geometry.attributes.uv.array.forEach((v, i, a) => { a[i] = v * 40; });
+  ground.geometry.setAttribute('color', new T.Float32BufferAttribute(new Array(ground.geometry.attributes.position.count * 3).fill(0.75), 3)); scene.add(ground);
+  for (const [k, wall] of list) {
+    const op = SDTown3.OPEN[k];
+    const wide = op ? op[0] + 1.6 : k === 'fountain' ? 6.5 : k === 'bell_tower' ? 5 : ['awning', 'laundry', 'balcony'].includes(k) ? 3.2 : ['eave', 'cornice'].includes(k) ? 2.2 : ['olive', 'palm'].includes(k) ? 4 : 2.0;
+    const hgt = op ? Math.max(3.2, op[1] + 1.0) : 3.6;
+    const cx = x + wide / 2;
+    const special = ['rec_stone', 'rec_band', 'shutter', 'reja'].includes(k);
+    if (wall != null && !special) panel(x, wide, hgt, op ? [wide / 2 - op[0] / 2, wide / 2 + op[0] / 2, op[1] > 2 ? 0 : 0.6, (op[1] > 2 ? 0 : 0.6) + op[1]] : null, wall);
+    const y = op ? (op[1] > 2 ? 0 : 0.6) : ['eave', 'cornice'].includes(k) ? hgt : k === 'awning' ? 3.2 : k === 'balcony' ? 1.6 : k === 'lantern' ? 2.6 : k === 'laundry' ? 3.0 : k === 'persiana' ? 3.0 : k === 'plaque' ? 1.6 : k === 'ac_unit' ? 1.4 : k === 'rec_stone' || k === 'rec_band' ? 1.0 : k === 'planter' ? 1.2 : k === 'reja' ? 0.6 : 0;
+    if (k === 'rec_stone' || k === 'rec_band') { place.push({ k: 'win_std', x: cx, y, z: 0 }); panel(x, wide, hgt, [wide / 2 - 0.5, wide / 2 + 0.5, y, y + 1.4], wall); }
+    if (k === 'shutter') { place.push({ k: 'shutter', x: cx - 0.8, y: 0.8, z: 0, c: TINTS.shutter }, { k: 'shutter', x: cx + 0.8, y: 0.8, z: 0, c: TINTS.shutter }, { k: 'win_std', x: cx, y: 0.8, z: 0 }); panel(x, wide, hgt, [wide / 2 - 0.5, wide / 2 + 0.5, 0.8, 2.2], wall); x += wide + gap; continue; }
+    if (k === 'pipe') { for (let v = 0.5; v < 3.0; v++) place.push({ k: 'pipe', x: cx, y: v, z: 0 }); place.push({ k: 'pipe_shoe', x: cx, y: 0, z: 0 }, { k: 'pipe_head', x: cx, y: hgt, z: 0 }); x += wide + gap; continue; }
+    if (k === 'reja') { place.push({ k: 'win_std', x: cx, y: 0.65, z: 0 }); panel(x, wide, hgt, [wide / 2 - 0.5, wide / 2 + 0.5, 0.65, 2.05], wall); }
+    place.push({ k, x: cx, y, z: 0, c: TINTS[k] != null ? TINTS[k] : (k === 'eave' ? 0xffffff : undefined), s: ['eave', 'cornice'].includes(k) ? [1, 1, 1] : undefined });
+    if (k === 'eave' || k === 'cornice') place.push({ k, x: cx - 1, y, z: 0 }, { k, x: cx + 1, y, z: 0 });
+    if (k === 'planter_wall') place.push({ k, x: cx - 1, y: 0, z: 0 }, { k, x: cx + 1, y: 0, z: 0 });
+    x += wide + gap;
+  }
+  const res = KIT3D.merge(T, kit, place, ctx, () => 'all');
+  for (const m of res.meshes) { m.castShadow = true; scene.add(m); }
+  const span = x - gap, tall = set === 'street' ? 17 : 4.2;
+  const fov = 30 * Math.PI / 180, dist = Math.max(span / 2 / Math.tan(fov / 2) / (W / H), tall / 2 / Math.tan(fov / 2)) * 1.08;
+  cam.position.set(span / 2 - 0.4, tall * 0.5 + 0.6, dist); cam.lookAt(span / 2, tall * 0.42, 0);
+  sun.target.position.set(span / 2, 0, 0); sun.position.set(span / 2 - 7, 10, 9);
+  Object.assign(sun.shadow.camera, { left: -span / 2 - 2, right: span / 2 + 2, top: tall + 2, bottom: -4 }); sun.shadow.camera.updateProjectionMatrix();
+  r.render(scene, cam); setTimeout(() => { r.render(scene, cam); window.__ready = true; }, 1200);
+});
+</script></body></html>

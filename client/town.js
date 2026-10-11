@@ -302,20 +302,23 @@ const GROUND_TINT = { cobble: hex(0xb8ae9e), paving: hex(0xab9e88) };
 function flat(B, m, x0, z0, x1, z1, y) {
   quad(B, m, [[x0, y, z0], [x0, y, z1], [x1, y, z1], [x1, y, z0]], [0, 1, 0], GROUND_TINT[m] || WHITE, false);
 }
-function streets(B, foot) {
-  flat(B, 'cobble', -4.5, -49, 4.5, 49, 0.012);
-  flat(B, 'cobble', -49, -3.5, 49, 3.5, 0.013);
+function streets(B, foot, clipZ) {
+  // clipZ: only what lies south of that line (PUEBLO 3.0 draws its own ground north of it)
+  const zc = clipZ == null ? Infinity : clipZ;
+  const fl = (m, x0, z0, x1, z1, y) => { z1 = Math.min(z1, zc); if (z1 - z0 > 0.01) flat(B, m, x0, z0, x1, z1, y); };
+  fl('cobble', -4.5, -49, 4.5, 49, 0.012);
+  fl('cobble', -49, -3.5, 49, 3.5, 0.013);
   const P = 11, k = 0.22;
-  flat(B, 'paving', -P, -P, P, P, 0.016);
-  const kx = (a, b2, z) => { if (b2 - a > 0.1) box(B, 'stone', a, 0, z - k / 2, b2, 0.09, z + k / 2, STONE_DK, '-y', false); };
-  const kz = (a, b2, x) => { if (b2 - a > 0.1) box(B, 'stone', x - k / 2, 0, a, x + k / 2, 0.09, b2, STONE_DK, '-y', false); };
+  fl('paving', -P, -P, P, P, 0.016);
+  const kx = (a, b2, z) => { if (b2 - a > 0.1 && z + k / 2 <= zc) box(B, 'stone', a, 0, z - k / 2, b2, 0.09, z + k / 2, STONE_DK, '-y', false); };
+  const kz = (a, b2, x) => { b2 = Math.min(b2, zc); if (b2 - a > 0.1) box(B, 'stone', x - k / 2, 0, a, x + k / 2, 0.09, b2, STONE_DK, '-y', false); };
   for (const x of [-4.5 - k / 2, 4.5 + k / 2]) { kz(-49, -P, x); kz(P, 49, x); }
   for (const z of [-3.5 - k / 2, 3.5 + k / 2]) { kx(-49, -P, z); kx(P, 49, z); }
   for (const s of [-1, 1]) {
     kx(-P, -4.5 - k, s * (P + k / 2)); kx(4.5 + k, P, s * (P + k / 2));
     kz(-P, -3.5 - k, s * (P + k / 2)); kz(3.5 + k, P, s * (P + k / 2));
   }
-  for (const [x0, x1, z0, z1] of foot) flat(B, 'paving', x0 - 1.1, z0 - 1.1, x1 + 1.1, z1 + 1.1, 0.018);
+  for (const [x0, x1, z0, z1] of foot) fl('paving', x0 - 1.1, z0 - 1.1, x1 + 1.1, z1 + 1.1, 0.018);
 }
 
 /* ------------------------------------------------------------------ props
@@ -512,7 +515,7 @@ function build(buildings, opt) {
   const part = opt.part || 'all';
   if (part !== 'streets') for (const b of buildings) foot.push(building(B, b, opt));
   else for (const [bx, bz, w, d] of buildings) foot.push([bx - w / 2, bx + w / 2, bz - d / 2, bz + d / 2]);
-  if (part !== 'buildings') streets(B, foot);
+  if (part !== 'buildings') streets(B, foot, opt.clipZ);
   const out = {}; let tris = 0;
   for (const k of MATS) {
     const g = B[k]; if (!g.idx.length) continue;

@@ -8,7 +8,7 @@
 import pathlib
 root = pathlib.Path(__file__).parent
 CORE = ["config.js", "movement.js", "weapon.js", "melee.js", "trainer.js", "player.js", "protocol.js", "hitbox.js"]
-CLIENT = ["settings.js", "layout.js", "touch.js", "quality.js", "netcore.js", "vmrig.js", "town.js"]
+CLIENT = ["settings.js", "layout.js", "touch.js", "quality.js", "netcore.js", "vmrig.js", "town.js", "kit3d.js", "town3.js"]
 code = "\n".join((root / "core" / f).read_text() for f in CORE) + "\n" + \
        "\n".join((root / "client" / f).read_text() for f in CLIENT)
 page = (root / "src" / "page.html").read_text()
@@ -22,7 +22,8 @@ import hashlib, json
 # to tell an open tab that a newer version has been published
 glb = root / "assets" / "viewmodels.glb"
 tex = b"".join(p.read_bytes() for p in sorted((root / "assets" / "tex").glob("*.jpg")))
-build_hash = hashlib.sha1((code + page).encode() + (glb.read_bytes() if glb.exists() else b"") + tex).hexdigest()[:10]
+kit = root / "assets" / "kit.glb"
+build_hash = hashlib.sha1((code + page).encode() + (glb.read_bytes() if glb.exists() else b"") + (kit.read_bytes() if kit.exists() else b"") + tex).hexdigest()[:10]
 fragment = page.replace("/*@@CORE@@*/", code + "\nconst BUILD_ID=" + repr(build_id).replace("'", '"') + ";const BUILD_HASH=" + json.dumps(build_hash) + ";", 1)
 (root / "version.json").write_text(json.dumps({"hash": build_hash, "rev": build_id}) + "\n")
 
