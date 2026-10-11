@@ -28,10 +28,11 @@ function writeGLB(file, nodes, opts) {
     json.accessors.push({ bufferView: push(N, 34962), componentType: 5126, count: N.length / 3, type: 'VEC3' });
     json.accessors.push({ bufferView: push(I, 34963), componentType: 5123, count: I.length, type: 'SCALAR' });
     const a = json.accessors.length;
-    json.meshes.push({ name, primitives: [{ attributes: { POSITION: a - 3, NORMAL: a - 2 }, indices: a - 1, material: 0 }] });
+    json.meshes.push({ name, primitives: [{ attributes: opts.nonormals ? { POSITION: a - 3 } : { POSITION: a - 3, NORMAL: a - 2 }, indices: a - 1, material: 0 }] });
     json.nodes.push({ name, mesh: json.meshes.length - 1, scale: opts.cm ? [100, 100, 100] : undefined });
     json.scenes[0].nodes.push(json.nodes.length - 1);
   }
+  if (opts.wrap) { json.nodes.push({ name: opts.wrap, children: json.scenes[0].nodes.slice() }); json.scenes[0].nodes = [json.nodes.length - 1]; }   // one root node, as trimesh writes ('world')
   const bin = Buffer.concat(bins); json.buffers.push({ byteLength: bin.length });
   let js = Buffer.from(JSON.stringify(json)); while (js.length % 4) js = Buffer.concat([js, Buffer.from(' ')]);
   const out = Buffer.alloc(12 + 8 + js.length + 8 + bin.length);
@@ -47,6 +48,12 @@ const house = [[-4, 0, -3, 4, 4, 3], [-1, 2.6, 3, 1, 2.75, 3.6]];
 writeGLB(path.join(dir, 'ok.glb'), { casa_LOD0: house, casa_LOD1: house, casa_LOD2: [[-4, 0, -3, 4, 4, 3]] });
 const ok = run(path.join(dir, 'ok.glb'), ['--box', '8,6,4']);
 check('un edificio que cabe en su caja 8 × 6 × 4 m con tres LOD pasa', ok.ok, ok.o.split('\n').filter(l => /✔|✘/.test(l)).join(' '));
+writeGLB(path.join(dir, 'wrap.glb'), { casa_LOD0: house, casa_LOD1: house, casa_LOD2: house.concat([[5, 0, 0, 7, 1.2, 0.3]]) }, { wrap: 'world' });
+const wrap = run(path.join(dir, 'wrap.glb'), ['--box', '8,6,4']);
+check('LOD dentro de un nodo raíz (como exporta trimesh: "world"): los encuentra y revisa cada uno (un muro suelto solo en el LOD2 se detecta)', !wrap.ok && /casa_LOD2/.test(wrap.o) && /casa_LOD0 \d+ tri/.test(wrap.o) && /cobertura falsa/.test(wrap.o), wrap.o.split('\n').filter(l => /nodos|✘/.test(l)).join(' '));
+writeGLB(path.join(dir, 'nonrm.glb'), { casa_LOD0: house }, { nonormals: true });
+const nn = run(path.join(dir, 'nonrm.glb'));
+check('sin normales: rechazado; tools/glb-add-normals.js las añade (caras planas) y entonces pasa', !nn.ok && /sin normales/.test(nn.o) && (() => { try { execFileSync('node', [path.join(__dirname, '..', 'tools', 'glb-add-normals.js'), path.join(dir, 'nonrm.glb'), path.join(dir, 'nonrm-fixed.glb')]); return run(path.join(dir, 'nonrm-fixed.glb')).ok; } catch (e) { return false; } })());
 writeGLB(path.join(dir, 'cm.glb'), { casa_LOD0: house }, { cm: true });
 const cm = run(path.join(dir, 'cm.glb'));
 check('exportado en centímetros: rechazado', !cm.ok && /centímetros/.test(cm.o));

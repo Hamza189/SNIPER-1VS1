@@ -27,8 +27,13 @@ El kit procedural actual (`assets/kit.glb`) y las texturas de `assets/tex/` sigu
 - **Unidades:** 1 unidad = 1 metro.
 - **Ejes:** +Y arriba. La fachada principal mira a **+Z**.
 - **Origen:** en el centro de la huella, a ras de suelo (y = 0).
-- **Nodos LOD** en la raíz: `<id>_LOD0` (ALTO), `<id>_LOD1` (MEDIO) y `<id>_LOD2` (BAJO). Los tres comparten la misma
-  silueta y el mismo volumen.
+- **Nodos LOD**: `<id>_LOD0` (ALTO), `<id>_LOD1` (MEDIO) y `<id>_LOD2` (BAJO), en la raíz o dentro de un único nodo
+  raíz (como el `world` que escribe trimesh). Los tres comparten la misma silueta y el mismo volumen.
+- **Normales en todas las primitivas.** Con aristas duras: vértices separados por cara, no compartidos entre caras en
+  ángulo. En trimesh, `scene.export(ruta, include_normals=True)`.
+- **Ningún hueco atraviesa el edificio.** Si el interior está vacío, cada abertura (ventana, puerta, escaparate) se
+  cierra entera con su vidrio o panel, o se incluye un volumen interior cerrado. Si no, se ve a través del edificio
+  donde las balas no pasan.
 - Sin cámaras ni luces. Sin animaciones, salvo que se acuerden.
 - **Materiales PBR** metallic-roughness:
   - base color en sRGB;
@@ -61,7 +66,8 @@ objetivo son 60 FPS en iPhone, por eso el presupuesto es menor.
 Las balas y el servidor usan cajas fijas (`core/mapdata.js`). El modelo tiene que encajar en su caja; si no, aparece
 una **cobertura falsa**.
 
-- **Muros:** sobre las caras de la caja. Los huecos pueden entrar hasta 0,25 m.
+- **Muros:** sobre las caras de la caja. Los huecos (vidrio, puertas) pueden entrar hasta 0,25 m desde la cara de la
+  caja, no desde la pared.
 - **A la altura del cuerpo (0,12–2,0 m):** nada a más de 0,45 m de la caja. Excepción: decoración baja (≤ 0,66 m) pegada
   a la pared, como macetas o bancos.
 - **Por encima de 2 m:** balcones, toldos, faroles, aleros y ropa tendida pueden salir hasta 1,2 m de la fachada.
@@ -129,3 +135,47 @@ Medidas de las cajas de colisión. La caja llega a **H + 0,35 m** (el pretil). L
    triángulos y memoria (`tools/scene-metrics.js`).
 6. Pasa los tests (`npm test`, que incluye la comprobación de coberturas falsas) y publica, pendiente de la prueba en
    iPhone.
+
+## 8. Entregas
+
+### E10 · `sd_e10_casa_oliva` (CASA OLIVA) — 11-10-2026
+
+- **Entrega:** `assets/3d/imports/2026-10-11_sd_e10_casa_oliva/`, guardada tal cual con su script y sus vistas.
+- **Validador:**
+  - El original no pasa: ninguna primitiva tiene normales.
+  - Por eso hay una copia `assets/3d/models/sd_e10_casa_oliva.glb` hecha con `node tools/glb-add-normals.js`. Las
+    caras ya tenían sus vértices separados (ángulo máximo entre caras que comparten vértice: 1,2°), así que las
+    normales salen exactas.
+  - La copia cumple las reglas obligatorias: LOD 13 558 / 5 990 / 348 triángulos, 8 / 6 / 3 materiales, 5 MB y nada
+    fuera de la caja en ningún LOD.
+- **En el juego:** solo con `?pueblo=3` (`&e10=0` muestra el edificio anterior).
+  - El edificio PUEBLO 2.0 se dibuja hasta que carga el GLB, así que el hueco nunca queda vacío con una pared invisible.
+  - Las colisiones y el servidor no cambian.
+  - El nivel de detalle depende de la distancia dividida por el zoom, para que con la mira no aparezca el LOD bajo:
+
+    | Perfil | LOD0 | LOD1 | LOD2 |
+    |---|---|---|---|
+    | ALTO | < 35 m | 35–80 m | más allá |
+    | MEDIO | — | < 55 m | más allá |
+    | BAJO | — | < 30 m | más allá |
+
+  - Sin sombras propias: la sombra la da la caja de siempre.
+  - En BAJO, sin mapas de normales.
+- **Coste medido** (mismas cámaras, navegador de escritorio): unas 9 llamadas de dibujo y 11 000 triángulos más en
+  ALTO cerca; 7 llamadas y unos 4 000 triángulos en MEDIO y BAJO. Texturas: 15,4 MB de GPU.
+- **Defectos del modelo, a corregir en la próxima entrega:**
+  1. **Sin normales** (resuelto en la copia, pero el archivo tiene que traerlas).
+  2. **Se ve a través del edificio a la altura del cuerpo.** El interior está hueco y hay aberturas sin cerrar:
+     - ventanas laterales (±X) en z local ≈ −3,5 y +0,5, entre 1,2 y 1,8 m: el rayo cruza de una calle a la otra;
+     - fachada +Z en x ≈ +2,1, entre 0,3 y 1,8 m: rendija junto a la puerta que deja ver la ventana trasera;
+     - trasera −Z en x ≈ −2,1…−1,2, a 0,9 m.
+
+     Mientras tanto, la integración añade un volumen interior opaco a 0,36 m de las caras (12 triángulos), que
+     `test/e10.browser.test.js` comprueba.
+  3. **Huecos de 0,28–0,33 m de fondo** desde la cara de la caja (el máximo es 0,25 m). La pared queda a 0,08–0,12 m,
+     así que vidrios y puertas deben quedar como mucho a 0,13–0,17 m por detrás de la pared.
+  4. **Memoria de texturas:** 11 texturas propias, 15,4 MB de GPU para un solo edificio. Para 14 edificios hace falta
+     un juego de texturas compartido (`sd_estuco`, `sd_piedra`…), normales a 512 como máximo y color en atlas.
+  5. **Color (para que decida el usuario):** en el juego el estuco se ve gris y blanquecino frente a los ocres y
+     terracotas del pueblo.
+- **Estado:** IMPLEMENTADO y PROBADO EN NAVEGADOR · PENDIENTE DE VALIDACIÓN EN IPHONE (aspecto, FPS y carga de 5 MB).

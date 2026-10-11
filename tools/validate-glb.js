@@ -69,10 +69,12 @@ if ((J.animations || []).length) warn((J.animations || []).length + ' animacione
 if ((J.cameras || []).length || (J.extensions && J.extensions.KHR_lights_punctual)) warn('trae cámaras o luces: el juego las ignora (mejor quitarlas)');
 
 // geometry: bounding box in world space, triangles per top-level node (LODs by name), attributes
-const stats = {}; let bb = [Infinity, Infinity, Infinity, -Infinity, -Infinity, -Infinity]; const allVerts = [];
+const stats = {}; let bb = [Infinity, Infinity, Infinity, -Infinity, -Infinity, -Infinity]; const vertsBy = {};
 const walk = (ni, parent, top) => {
   const n = J.nodes[ni], M = mat4mul(parent, nodeMatrix(n));
-  const name = top == null ? (n.name || 'node' + ni) : top;
+  // group = the nearest <id>_LODn node (at any depth: exporters such as trimesh or Blender often wrap the scene in
+  // one root node, e.g. 'world'), otherwise the top-level node
+  const name = /_LOD\d$/i.test(n.name || '') ? n.name : top == null ? (n.name || 'node' + ni) : top;
   if (n.mesh != null) {
     const st = stats[name] || (stats[name] = { tris: 0, prims: 0, mats: new Set(), noNormals: 0, noUV: 0 });
     for (const p of J.meshes[n.mesh].primitives) {
@@ -86,7 +88,7 @@ const walk = (ni, parent, top) => {
         const x = pos.data[k * 3], y = pos.data[k * 3 + 1], z = pos.data[k * 3 + 2];
         const wx = M[0] * x + M[4] * y + M[8] * z + M[12], wy = M[1] * x + M[5] * y + M[9] * z + M[13], wz = M[2] * x + M[6] * y + M[10] * z + M[14];
         bb = [Math.min(bb[0], wx), Math.min(bb[1], wy), Math.min(bb[2], wz), Math.max(bb[3], wx), Math.max(bb[4], wy), Math.max(bb[5], wz)];
-        if (/LOD0|^[^_]*$/i.test(name) || !/LOD\d/i.test(name)) allVerts.push([wx, wy, wz]);
+        (vertsBy[name] || (vertsBy[name] = [])).push([wx, wy, wz]);
       }
     }
   }
@@ -118,17 +120,24 @@ const box = opt('box');
 if (box) {
   const [W, D, H] = box.split(',').map(Number);
   if (Math.abs(cx) > 0.05 || Math.abs(cz) > 0.05) warn('la huella no está centrada en el origen (' + cx.toFixed(2) + ', ' + cz.toFixed(2) + ')');
-  let body = 0, over = 0, above = 0, ex = '';
-  for (const [x, y, z] of allVerts) {
-    const dx = Math.max(0, Math.abs(x) - W / 2), dz = Math.max(0, Math.abs(z) - D / 2), d = Math.hypot(dx, dz);
-    if (y > 0.12 && y < 2.0 && d > 0.45 && !(y <= 0.66 && d <= 0.66)) { body++; ex = ex || [x, y, z].map(v => v.toFixed(2)).join(','); }
-    else if (y >= 2.0 && y < H + 0.35 && d > 1.2) over++;
-    else if (y > H + 0.4 && d < 0.6) above++;
+  // every LOD must respect the envelope (the far LODs are what the other player sees from a distance)
+  R.info.envelope = { W, D, H, groups: {} };
+  let body = 0, over = 0, above = 0, ex = '', exG = '', overG = '', aboveG = '';
+  for (const [gname, verts] of Object.entries(vertsBy)) {
+    let b = 0, o = 0, a = 0;
+    for (const [x, y, z] of verts) {
+      const dx = Math.max(0, Math.abs(x) - W / 2), dz = Math.max(0, Math.abs(z) - D / 2), d = Math.hypot(dx, dz);
+      if (y > 0.12 && y < 2.0 && d > 0.45 && !(y <= 0.66 && d <= 0.66)) { b++; if (!ex) { ex = [x, y, z].map(v => v.toFixed(2)).join(','); exG = gname; } }
+      else if (y >= 2.0 && y < H + 0.35 && d > 1.2) { o++; overG = overG || gname; }
+      else if (y > H + 0.4 && d < 0.6) { a++; aboveG = aboveG || gname; }
+    }
+    R.info.envelope.groups[gname] = { bodyOut: b, overhangOut: o, aboveCap: a };
+    body += b; over += o; above += a;
   }
-  R.info.envelope = { W, D, H, bodyOut: body, overhangOut: over, aboveCap: above };
-  if (body) err(body + ' vértices a la altura del cuerpo a más de 0,45 m de la caja ' + W + '×' + D + ' (cobertura falsa), p. ej. ' + ex);
-  if (over) err(over + ' vértices por encima de 2 m a más de 1,2 m de la fachada');
-  if (above) warn(above + ' vértices por encima de la caja (+0,4 m): tejado / chimeneas sin colisión — hay que ampliar la caja del mapa (cambio en el servidor) o bajarlos');
+  Object.assign(R.info.envelope, { bodyOut: body, overhangOut: over, aboveCap: above });
+  if (body) err(body + ' vértices a la altura del cuerpo a más de 0,45 m de la caja ' + W + '×' + D + ' (cobertura falsa), p. ej. ' + exG + ' ' + ex);
+  if (over) err(over + ' vértices por encima de 2 m a más de 1,2 m de la fachada (' + overG + ')');
+  if (above) warn(above + ' vértices por encima de la caja (+0,4 m, ' + aboveG + '): tejado / chimeneas sin colisión — hay que ampliar la caja del mapa (cambio en el servidor) o bajarlos');
 }
 
 const T = s => console.log(s);

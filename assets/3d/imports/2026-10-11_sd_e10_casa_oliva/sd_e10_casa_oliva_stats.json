@@ -1,0 +1,50 @@
+{
+  "id": "sd_e10_casa_oliva",
+  "file_bytes": 4754252,
+  "lod": {
+    "sd_e10_casa_oliva_LOD0": {
+      "triangles": 13558,
+      "materials": 8,
+      "mesh_parts": 6779
+    },
+    "sd_e10_casa_oliva_LOD1": {
+      "triangles": 5990,
+      "materials": 6,
+      "mesh_parts": 2995
+    },
+    "sd_e10_casa_oliva_LOD2": {
+      "triangles": 348,
+      "materials": 3,
+      "mesh_parts": 174
+    }
+  },
+  "lod_material_triangles": {
+    "sd_e10_casa_oliva_LOD0": {
+      "sd_estuco": 2736,
+      "sd_piedra": 2616,
+      "sd_vidrio": 252,
+      "sd_hierro": 2348,
+      "sd_madera": 4764,
+      "sd_teja": 576,
+      "sd_acento": 170,
+      "sd_vegetacion": 96
+    },
+    "sd_e10_casa_oliva_LOD1": {
+      "sd_estuco": 2736,
+      "sd_piedra": 1932,
+      "sd_vidrio": 216,
+      "sd_hierro": 596,
+      "sd_madera": 492,
+      "sd_acento": 18
+    },
+    "sd_e10_casa_oliva_LOD2": {
+      "sd_estuco": 12,
+      "sd_piedra": 288,
+      "sd_madera": 48
+    }
+  },
+  "destination": "PUEBLO E10; 6×10m wall height 6m",
+  "format": "glTF 2.0 GLB",
+  "bbox_note": "Overhangs on upper levels may protrude; keep strict visual/game cover checks in Claude",
+  "target_contract": "E10, y max <=6.35, origin ground centre, +Y up, facade +Z"
+}

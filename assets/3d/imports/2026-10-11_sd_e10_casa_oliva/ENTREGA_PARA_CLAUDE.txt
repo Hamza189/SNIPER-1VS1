@@ -1,0 +1,23 @@
+SNIPER DUEL — CASA OLIVA, E10 — PAQUETE 3D ORIGINAL
+
+Fichero principal: sd_e10_casa_oliva.glb
+Entrega generada en este chat (geometría real, no ilustración ni maqueta 2D).
+
+Siguientes pasos en Claude:
+1. NO sustituir el mapa estable. Importa sd_e10_casa_oliva.glb a assets/3d/imports/.
+2. Ejecuta node tools/validate-glb.js <ruta> --box 6,10,6 (consulta --help si cambia).
+3. Revisa y aplica node scene.children con nombres sd_e10_casa_oliva_LOD0/LOD1/LOD2. SOLO UNO VISIBLE a la vez; en visores genéricos puede verse solapado si muestran los tres.
+4. Desarrolla integración detrás de ?pueblo=3, E10, fachada +Z.
+5. Mantén colisiones existentes. Ejecuta test/cover.browser.test.js antes de publicar.
+6. Compara a cámara equivalente y comparte capturas REALES en calidad ALTO/MEDIO/BAJO.
+7. NO declares 60 FPS en iPhone hasta medirlo en el dispositivo.
+
+CONTENIDO:
+- GLB completo con tres LOD, texturas y materiales PBR incorporados.
+- generate_e10_realista.py: fuente de modelado/generación reproducible (numpy,Pillow,scipy,trimesh)
+- textures/: mapas originales de color y normales, opcionales; ya están incluidos en GLB.
+- validate_asset.py: validaciones locales de GLB, medidas y polígonos.
+- *_integracion.md: ficha técnica y notas para integración.
+- vista_*: vistas renderizadas del GLB con LOD0, NO renders conceptuales.
+
+ESTADO: tests locales OK. Sin validar con el script real de Claude; sin mediciones en iPhone.

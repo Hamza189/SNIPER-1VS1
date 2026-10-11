@@ -977,6 +977,11 @@ function dressProps(objs,tag){
 const P3ON=P3&&TOWN.on&&typeof SDTown3!=='undefined'&&typeof KIT3D!=='undefined';
 const P3W={meshes:[],tris:0,place:[],kit:null,skip:new Set(),kitTris:0,signs:[]};
 const inSlice3=b=>P3ON&&!!SDTown3.SLICE_FAMILIES[b[0]+','+b[1]];
+/* PUEBLO 3.0 · E10 «Casa Oliva»: the first delivered 3D model (assets/3d/models/, contract in docs/ASSETS-3D.md).
+   Only with ?pueblo=3 (&e10=0 → the PUEBLO 2.0 building, for comparisons). The old building is drawn until the
+   GLB has loaded (never an empty slot with an invisible wall); the collision box and the server do not change. */
+const E10={on:P3ON&&!/[?&]e10=0\b/.test(location.search),x:13,z:-25,old:[],root:null,levels:null,ready:false,failed:false,lod:-1,tris:[0,0,0]};
+const isE10=b=>E10.on&&b[0]===E10.x&&b[1]===E10.z;
 if(P3ON){   // old visuals the slice redraws differently: sandbag walls → stone planters, the fountain
   for(const o of scene.children.slice(TOWN_FROM)){
     if(!o.isMesh||o.geometry.type!=='BoxGeometry')continue;const p=o.position;
@@ -990,9 +995,10 @@ if(TOWN.on&&typeof SDTown!=='undefined'){
   // in four quarters (plus the streets) so the camera only draws the part of town in view
   const TOPT={tints:PLASTER_TINTS,reachable:[[-9,-31]]};
   TOWN.meshes=[];TOWN.tris=0;
-  for(const [sx,sz] of [[-1,-1],[1,-1],[-1,1],[1,1]]){const q=BUILDINGS.filter(b=>Math.sign(b[0]||1)===sx&&Math.sign(b[1]||1)===sz&&!inSlice3(b));if(!q.length)continue;
+  for(const [sx,sz] of [[-1,-1],[1,-1],[-1,1],[1,1]]){const q=BUILDINGS.filter(b=>Math.sign(b[0]||1)===sx&&Math.sign(b[1]||1)===sz&&!inSlice3(b)&&!isE10(b));if(!q.length)continue;
     const d=SDTown.build(q,Object.assign({part:'buildings'},TOPT));TOWN.tris+=d.tris;TOWN.meshes=TOWN.meshes.concat(townMeshes(d,'town'));}
   {const d=SDTown.build(BUILDINGS.filter(b=>!inSlice3(b)),Object.assign({part:'streets',clipZ:P3ON?-11:undefined},TOPT));TOWN.tris+=d.tris;TOWN.meshes=TOWN.meshes.concat(townMeshes(d,'streets'));}
+  if(E10.on){const d=SDTown.build(BUILDINGS.filter(isE10),Object.assign({part:'buildings'},TOPT));TOWN.tris+=d.tris;E10.old=townMeshes(d,'e10old');TOWN.meshes=TOWN.meshes.concat(E10.old);}
   // the old visuals: drawn no more (an invisible material), still there for bullets and the server's map
   for(const m of OLD_TOWN.bodies)hideOld(m);
   // building shadows come from simple boxes (drawn only into the shadow map), not from the detailed
@@ -1002,7 +1008,7 @@ if(TOWN.on&&typeof SDTown!=='undefined'){
    const pos=new Float32Array(arr.reduce((n,a)=>n+a.length,0));let o=0;for(const a of arr){pos.set(a,o);o+=a.length;}
    const geo=new T.BufferGeometry();geo.setAttribute('position',new T.BufferAttribute(pos,3));geo.computeBoundingSphere();
    const px=new T.Mesh(geo,SHADOW_PROXY);px.name='shadow_proxies';px.castShadow=true;px.receiveShadow=false;px.renderOrder=-1;scene.add(px);}
-  for(const m of TOWN.meshes)if(['town_plaster','town_stone','town_roof'].includes(m.name))m.castShadow=false;
+  for(const m of TOWN.meshes)if(/^(town|e10old)_(plaster|stone|roof)$/.test(m.name))m.castShadow=false;
   for(const m of OLD_TOWN.caps.concat(OLD_ROADS)){m.material=INVIS;m.castShadow=false;}
   TOWN.meshes=TOWN.meshes.concat(dressProps(scene.children.slice(TOWN_FROM).filter(o=>!TOWN.meshes.includes(o)&&!P3W.skip.has(o)),'town'));
   // what is left of the old plain concrete (the ramps): the same concrete texture
@@ -4142,6 +4148,7 @@ function frameBody(now){
     if(SETTINGS.showFps&&GFX.adapt.frames===0)$('#fpsBox').textContent=Math.round(GFX.adapt.fps)+' FPS · '+Math.round(renderer.getPixelRatio()*100)/100+'×';}
   if(GFX.frame%10===1){csFix(scene);csFix(wScene);}
   renderer.clear();
+  if(E10.ready)e10Lod(false);
   renderer.render(scene,camera);
   if(!SHOT.noVM&&(WROOT.visible||KROOT.visible||PROOT.visible||SROOT.visible)&&(state==='playing'||state==='dead')){renderer.clearDepth();renderer.render(wScene,wCam);}
 }
@@ -4185,6 +4192,41 @@ if(P3ON&&T.GLTFLoader){
   }catch(e){console.warn('kit',e);}},e=>console.warn('kit load',e));
 }
 
-window.__SD={DIAG,setTrainMove,LIGHT:{sun,hemi,skyMat,LOOK,P3},P3W,freeze(on){SIM_FREEZE=!!on;},SHOT,VMA,makeSoldier,animateSoldier,BOT_MAT,scene,camera,RemotePlayer,PMprev,PIS,PROOT,RIF,WROOT,SHO_:null,MANUAL,advance(ms){frameBody(last+ms);},get LAST_PELLETS(){return LAST_PELLETS;},SCORE,SCFG,SROOT,SHO,setPrimaryChoice,get PRIMARY(){return PRIMARY;},PCORE,PCFG,setWorld,WORLDS,get WORLD_ID(){return WORLD_ID;},renderer,GFX,gfxApply,get NET(){return NET;},get REMOTE(){return REMOTE;},W,get NAV(){return NAV;},setOffMap,get OFFMAP(){return OFFMAP;},TOUCH,EDIT,openEditor,get SETTINGS(){return SETTINGS;},get LAYOUT(){return LAYOUT;},checkOrientation,MAT,LOAD,TRAINERS,get RANGE_BOTS(){return RANGE_BOTS;},TRAIN,setTrain,setLethal,kitNote,GINS,TDIAG,AU,get TOUCH_EVENTS(){return TOUCH_EVENTS;},impactFX,bodyFX,get DECALS(){return DECALS;},surfaceOf,soundDelay,aimSelfTest,P,PM,WS,WCORE,RECOIL,AIM,BOTS,DUMMIES,BULLETS,EVENTS,PARTS,STATS,get state(){return state;},get mode(){return mode;},setMode,input,startMatch,simTick,frame,toMenu,pause,resume};
+/* E10 «Casa Oliva»: three LOD nodes; the level is chosen by distance × zoom (in the scope a far building is
+   seen big, so the 348-triangle level must not appear there). ALTO: LOD0 < 35 m, MEDIO and BAJO start at LOD1. */
+const E10_LOD={alto:[35,80],medio:[0,55],bajo:[0,30]};
+function e10Setup(g){
+  const root=g.scene,levels=[0,1,2].map(i=>root.getObjectByName('sd_e10_casa_oliva_LOD'+i));
+  if(levels.some(l=>!l))throw new Error('E10: faltan nodos LOD');
+  const low=GFX.profile==='bajo'||/[?&]nm=0\b/.test(location.search),aniso=GFX.profile==='alto'?4:GFX.profile==='medio'?2:1;
+  const mats=new Set();
+  levels.forEach((l,i)=>l.traverse(o=>{if(!o.isMesh)return;o.castShadow=false;o.receiveShadow=true;o.name='e10_LOD'+i+'_'+(o.material&&o.material.name||'');
+    mats.add(o.material);E10.tris[i]+=o.geometry.index?o.geometry.index.count/3:o.geometry.attributes.position.count/3;}));
+  for(const m of mats){m.userData.cs=1;   // glTF colours are linear already
+    if(low&&m.normalMap){m.normalMap=null;}
+    for(const t of [m.map,m.normalMap])if(t)t.anisotropy=Math.min(aniso,renderer.capabilities.getMaxAnisotropy?renderer.capabilities.getMaxAnisotropy():1);
+    if(ENV&&/vidrio|hierro/.test(m.name)){m.envMap=ENV;m.envMapIntensity=/vidrio/.test(m.name)?0.55:0.35;}
+    m.needsUpdate=true;}
+  // opaque interior volume just behind the glass (0.36 m inside the collision box): the delivered shell is hollow
+  // and some openings have gaps, so without it you can see through the building where bullets cannot pass
+  {const bl=new T.Mesh(new T.BoxGeometry(6-0.72,5.85,10-0.72),new T.MeshBasicMaterial({color:0x221d19}));bl.material.color.convertSRGBToLinear();bl.material.userData.cs=1;
+   bl.position.y=0.02+5.85/2;bl.name='e10_blocker';bl.castShadow=false;bl.receiveShadow=false;root.add(bl);E10.blocker=bl;}
+  root.position.set(E10.x,0,E10.z);root.name='e10_casa_oliva';
+  scene.add(root);WORLDS.pueblo.objs.push(root);root.visible=WORLD_ID==='pueblo';
+  E10.root=root;E10.levels=levels;E10.ready=true;e10Lod(true);
+  for(const m of E10.old)m.visible=false;   // the PUEBLO 2.0 building goes now (not before)
+  WORLDS.pueblo.objs=WORLDS.pueblo.objs.filter(o=>!E10.old.includes(o));
+  try{renderer.compile(scene,camera);}catch(e){}
+}
+const _e10v=new T.Vector3();
+function e10Lod(force){
+  if(!E10.ready)return;
+  const zoom=BASE_FOV/camera.fov,d=camera.getWorldPosition(_e10v).distanceTo(E10.root.position)/Math.max(1,zoom);
+  const L=E10_LOD[GFX.profile]||E10_LOD.medio,i=d<L[0]?0:d<L[1]?1:2;
+  if(i===E10.lod&&!force)return;E10.lod=i;E10.levels.forEach((l,k)=>l.visible=k===i);
+}
+if(E10.on)try{new T.GLTFLoader().load('assets/3d/models/sd_e10_casa_oliva.glb?v='+BUILD_HASH,g=>{try{e10Setup(g);}catch(e){E10.failed=true;console.warn('e10',e);}},undefined,e=>{E10.failed=true;console.warn('e10 load',e);});}catch(e){E10.failed=true;}
+
+window.__SD={E10,e10Lod,DIAG,setTrainMove,LIGHT:{sun,hemi,skyMat,LOOK,P3},P3W,freeze(on){SIM_FREEZE=!!on;},SHOT,VMA,makeSoldier,animateSoldier,BOT_MAT,scene,camera,RemotePlayer,PMprev,PIS,PROOT,RIF,WROOT,SHO_:null,MANUAL,advance(ms){frameBody(last+ms);},get LAST_PELLETS(){return LAST_PELLETS;},SCORE,SCFG,SROOT,SHO,setPrimaryChoice,get PRIMARY(){return PRIMARY;},PCORE,PCFG,setWorld,WORLDS,get WORLD_ID(){return WORLD_ID;},renderer,GFX,gfxApply,get NET(){return NET;},get REMOTE(){return REMOTE;},W,get NAV(){return NAV;},setOffMap,get OFFMAP(){return OFFMAP;},TOUCH,EDIT,openEditor,get SETTINGS(){return SETTINGS;},get LAYOUT(){return LAYOUT;},checkOrientation,MAT,LOAD,TRAINERS,get RANGE_BOTS(){return RANGE_BOTS;},TRAIN,setTrain,setLethal,kitNote,GINS,TDIAG,AU,get TOUCH_EVENTS(){return TOUCH_EVENTS;},impactFX,bodyFX,get DECALS(){return DECALS;},surfaceOf,soundDelay,aimSelfTest,P,PM,WS,WCORE,RECOIL,AIM,BOTS,DUMMIES,BULLETS,EVENTS,PARTS,STATS,get state(){return state;},get mode(){return mode;},setMode,input,startMatch,simTick,frame,toMenu,pause,resume};
 })();
 </script>

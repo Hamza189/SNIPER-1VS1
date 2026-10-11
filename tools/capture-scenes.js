@@ -42,7 +42,7 @@ const LOOKX = process.env.LOOKX || '';
   // MODE=duel (default: what a match in PUEBLO looks like, fog included) or range; BOTS=1 keeps the bots
   const MODE = process.env.MODE || 'duel', KEEPBOTS = process.env.BOTS === '1';
   await p.evaluate(m => { __SD.setTrain('off'); __SD.setMode(m); __SD.startMatch(); }, MODE);
-  if (/pueblo=3/.test(URLX)) await p.waitForFunction(() => __SD.P3W && __SD.P3W.kit, null, { timeout: 90000 });
+  if (/pueblo=3/.test(URLX)) await p.waitForFunction(() => __SD.P3W && __SD.P3W.kit && (!__SD.E10.on || __SD.E10.ready || __SD.E10.failed), null, { timeout: 90000 });
   await p.waitForTimeout(1500);
   const metrics = {};
   for (const [name, world, x, y, z, yaw, pitch] of VIEWS) {
