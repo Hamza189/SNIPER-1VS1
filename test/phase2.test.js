@@ -196,6 +196,29 @@ for (const level of ['easy', 'normal', 'hard']) {
   if (level === 'hard') check('difícil: más rápidos y con slides', avgSpeed > 3.5 && sl > 3, avgSpeed.toFixed(2) + ' m/s de media, ' + sl + ' slides');
   if (level === 'normal') check('normal: velocidad intermedia', avgSpeed > 2.5, avgSpeed.toFixed(2) + ' m/s de media');
 }
+{ // readable movement: in the open, the sideways direction (seen from the player) almost never reverses sooner
+  // than the level's changeMin (12 runs of 3 min each; before the fix: 5.8 % on NORMAL, 4.2 % on DIFÍCIL)
+  for (const level of ['easy', 'normal', 'hard']) {
+    const diff = CFG.training[level], area = CFG.training.area; let fast = 0, all = 0;
+    for (let seed = 1; seed <= 12; seed++) {
+      const rnd = lcg(seed * 31), player = { x: (seed % 3 - 1) * 8, z: area.minZ - 10 };
+      const s = M.createState(0, 0, area.minZ + 45), b = TR.createBrain(rnd); let last = 0, ls = 0, t = 0;
+      for (let i = 0; i < 180 / DT; i++) { t += DT; const c = TR.think(b, s, player, area, [], diff, DT, rnd); M.step(s, c, DT, { colliders: [], ramps: [] }, mc);
+        const lx = s.x - player.x, lz = s.z - player.z, side = (s.vx * lz - s.vz * lx) / Math.hypot(lx, lz), sg = Math.abs(side) > 0.8 ? Math.sign(side) : 0;
+        const edge = s.x < area.minX + 3 || s.x > area.maxX - 3 || s.z < area.minZ + 3 || s.z > area.maxZ - 3;   // at the edge turning back is fine
+        if (sg && ls && sg !== ls) { if (!edge) { all++; if (t - last < diff.changeMin * 0.8) fast++; } last = t; } if (sg) ls = sg; }
+    }
+    check(level + ': cambios de dirección legibles (casi nunca antes de ' + diff.changeMin + ' s)', fast / all < 0.02, (fast / all * 100).toFixed(1) + ' % de ' + all + ' cambios');
+  }
+  // fixed patterns of the range (QUIETOS / ANDAN / CORREN / LATERAL)
+  const area = CFG.training.area, player = { x: 0, z: area.minZ - 10 };
+  for (const kind of ['walk', 'run', 'strafe']) {
+    const s = M.createState(0, 0, area.minZ + 45), b = {}, rnd = lcg(3); let vmax = 0, out = 0;
+    for (let i = 0; i < 60 / DT; i++) { const c = TR.pattern(b, s, player, area, kind, DT, rnd); M.step(s, c, DT, { colliders: [], ramps: [] }, mc); vmax = Math.max(vmax, Math.hypot(s.vx, s.vz)); if (s.x < area.minX - 1 || s.x > area.maxX + 1) out++; }
+    const want = { walk: [2.2, 2.4], run: [6.8, 7.1], strafe: [4.5, 4.7] }[kind];
+    check('patrón ' + kind + ': velocidad ' + want.join('–') + ' m/s y sin salirse', vmax >= want[0] && vmax <= want[1] && out === 0, vmax.toFixed(2) + ' m/s');
+  }
+}
 { // toLocal round-trip
   let mx = 0; for (let k = 0; k < 50; k++) { const yaw = k * 0.37, a = k * 0.91, wx = Math.cos(a), wz = Math.sin(a);
     const l = TR.toLocal(wx, wz, yaw); const s = M.createState(); M.step(s, { mx: l.mx, mz: l.mz, yaw }, DT, { colliders: [], ramps: [] }, mc);
