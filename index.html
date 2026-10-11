@@ -3012,7 +3012,7 @@ const SDTown = { build, props, MATS, DEPTH };
 if (typeof module !== 'undefined' && module.exports) module.exports = SDTown; else root.SDTown = SDTown;
 })(typeof window !== 'undefined' ? window : globalThis);
 
-const BUILD_ID="682da41";const BUILD_HASH="dd6ed7d10e";
+const BUILD_ID="09e0f00";const BUILD_HASH="8572fbf3c3";
 </script>
 <script>
 (function(){
@@ -3308,8 +3308,8 @@ function townMaterial(k){
 const TOWN_MATS={};
 function townMat(k){return TOWN_MATS[k]||(TOWN_MATS[k]=townMaterial(k));}   // one material per kind, shared by every map
 const INVIS=new T.MeshBasicMaterial({visible:false});
-const SHADOW_PROXY=new T.MeshBasicMaterial();SHADOW_PROXY.userData.cs=1;   // only ever drawn into the shadow map (layer 1)
-sun.shadow.camera.layers.enable(1);
+// casts the shadow but draws nothing on screen (no colour, no depth): a box costs 12 triangles
+const SHADOW_PROXY=new T.MeshBasicMaterial({colorWrite:false,depthWrite:false});SHADOW_PROXY.userData.cs=1;
 // material groups (client/town.js) → one mesh per material, added to the scene
 function townMeshes(data,tag){
   const lin=c=>c<=0.04045?c/12.92:Math.pow((c+0.055)/1.055,2.4);   // vertex colours come in sRGB
@@ -3366,10 +3366,10 @@ if(TOWN.on&&typeof SDTown!=='undefined'){
   {const d=SDTown.build(BUILDINGS,Object.assign({part:'streets'},TOPT));TOWN.tris+=d.tris;TOWN.meshes=TOWN.meshes.concat(townMeshes(d,'streets'));}
   // the old visuals: drawn no more (an invisible material), still there for bullets and the server's map
   for(const m of OLD_TOWN.bodies)hideOld(m);
-  // building shadows come from simple boxes (layer 1: only the sun's shadow camera sees them), not from
-  // the detailed walls: the same shadow on the ground at a fraction of the cost
+  // building shadows come from simple boxes (drawn only into the shadow map), not from the detailed
+  // walls: the same shadow on the ground at a fraction of the cost
   for(const m of OLD_TOWN.bodies.concat(OLD_TOWN.caps)){const px=new T.Mesh(m.geometry,SHADOW_PROXY);px.position.copy(m.position);px.rotation.copy(m.rotation);
-    px.castShadow=true;px.receiveShadow=false;px.layers.set(1);scene.add(px);}
+    px.castShadow=true;px.receiveShadow=false;px.renderOrder=-1;scene.add(px);}
   for(const m of TOWN.meshes)if(['town_plaster','town_stone','town_roof'].includes(m.name))m.castShadow=false;
   for(const m of OLD_TOWN.caps.concat(OLD_ROADS)){m.material=INVIS;m.castShadow=false;}
   TOWN.meshes=TOWN.meshes.concat(dressProps(scene.children.slice(TOWN_FROM).filter(o=>!TOWN.meshes.includes(o)),'town'));
