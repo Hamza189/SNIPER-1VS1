@@ -1,0 +1,10 @@
+PACK PROVISIONAL / NO VALIDADO PARA PRODUCCION
+Origen: imagen de referencia generada por IA en esta conversación, NO escaneos CC0.
+Cada PNG es 2048 x 2048, pero el detalle de origen es muy inferior: la imagen se ha escalado.
+Los bordes de color se igualaron con mezcla sin espejo; esto no garantiza ausencia de artefactos o patrones en el interior.
+Las normales son estimaciones a partir de luminancia, NO geometria ni mapa height medido.
+La rugosidad es aproximada y NO medida de material fisico.
+El adoquin conserva piedras demasiado grandes para el objetivo de 15-25 cm.
+No afirmar que pasa prueba de offset 50%, tamaño, brillo o calidad PBR sin validacion en el motor.
+Orden: color en sRGB, normal RGB tangente OpenGL aproximada, roughness lineal gris.
+Para version final se recomienda sustituir por texturas PBR CC0 de Poly Haven o ambientCG y conservar atribucion/fuente del asset elegido.

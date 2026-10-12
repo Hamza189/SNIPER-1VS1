@@ -988,10 +988,10 @@ const isE10=b=>E10.on&&b[0]===E10.x&&b[1]===E10.z;
    Collisions do not change. */
 // opt-in, and per material: v2 (docs/ASSETS-3D.md §11) only the plaza and the covers hold up against the current ground;
 // the cobbles, pavements, forecourts, sand, the other decals and the sand drifts stay as they were
-// &suelo=v3: the v3 prototype (plaza + cobbles from ChatGPT's illustration, 12-10-2026) to judge the photographic direction
+// &suelo=v3: ChatGPT's photographic limestone for the plaza (v3b provisional pack, 12-10-2026), to judge on the phone
 const P0V3=P3ON&&/[?&]suelo=v3\b/.test(location.search);
 const P0={on:P3ON&&(P0V3||/[?&]suelo=p0\b/.test(location.search)),set:P0V3?'v3':'v2',
-  use:P0V3?{plaza:true,cobble:true,sidewalk:false,patch:false,sand:false,covers:true,decals:false,drifts:false}
+  use:P0V3?{plaza:true,cobble:false,sidewalk:false,patch:false,sand:false,covers:true,decals:false,drifts:false}   // v3b: the limestone only (its cobbles show a mirror axis)
           :{plaza:true,cobble:false,sidewalk:false,patch:false,sand:false,covers:true,decals:false,drifts:false},decals:0,strips:0,meshes:[]};
 if(P3ON){   // old visuals the slice redraws differently: sandbag walls → stone planters, the fountain
   for(const o of scene.children.slice(TOWN_FROM)){

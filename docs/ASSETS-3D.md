@@ -410,3 +410,26 @@ claro para esta luz: mejor una media de ~120–160.
 3. Plaza: media de ~150 / 135 / 110 (menos saturación).
 4. Adoquín: 8–12 piedras por metro, de 15–25 cm.
 5. Normales con z media de 0,92–0,95.
+
+### 12.1 Pack provisional v3b (6 PNG de 2048², 12-10-2026)
+
+- **Entrega:** `assets/3d/imports/2026-10-12_p0_v3b_provisional/`. Origen: la ilustración de ChatGPT ampliada (no son
+  escaneos CC0). Los bordes se han igualado mezclando sin espejo.
+- **Caliza:**
+  - pasa la prueba de desplazamiento del 50 %: sin cruz central ni losas duplicadas;
+  - color medio (157, 140, 120), dentro de rango;
+  - z media de la normal 0,956; rugosidad 0,82.
+- **Adoquín: no pasa.**
+  - En el desplazamiento del 50 % se ve un eje de espejo vertical en el centro (piedras simétricas en «mariposa»).
+  - Las piedras siguen siendo de ~30–40 cm.
+  - Se mantiene el adoquín actual.
+- **En el juego (`?pueblo=3&suelo=v3`, solo la plaza):**
+  - en ALTO, MEDIO y BAJO la caliza se lee como travertino desgastado, con juntas y poros, cálido sin ser naranja;
+  - **es el primer material entregado que mejora el actual**;
+  - de muy cerca se nota algo blando porque viene ampliado.
+- **Coste:** texturas de 1024 (color y normal) y 512 (rugosidad): unos +12 MB de memoria de texturas en ALTO (sin
+  límite desde el 12-10-2026).
+- **Estado:** opción. Se activará por defecto en `?pueblo=3` cuando el propietario lo apruebe en el iPhone (FPS y
+  aspecto).
+- **CC0:** desde este entorno no se puede llegar a Poly Haven ni ambientCG (la red lo bloquea). Si se usan, el
+  propietario los descarga en su ordenador y Claude los recoge de la carpeta conectada.
