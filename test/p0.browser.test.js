@@ -42,9 +42,9 @@ async function load(b, url, q) {
   check('?pueblo=3 sin &suelo=p0: P0 apagado y ningún archivo P0 descargado', !base.on && base.p0files.length === 0, base.p0files.join(' '));
   const def = await load(b, srv.url + '?vm=1', 'alto');
   check('el juego normal: P0 apagado y ningún archivo P0 descargado', !def.on && def.p0files.length === 0);
-  for (const q of ['alto', 'medio', 'bajo']) {
-    console.log('\nP0 · ' + q.toUpperCase());
-    const r = await load(b, srv.url + '?vm=1&pueblo=3&suelo=p0', q);
+  for (const [q, set] of [['alto', 'p0'], ['medio', 'p0'], ['bajo', 'p0'], ['alto', 'v3'], ['bajo', 'v3']]) {
+    console.log('\nP0 ' + (set === 'v3' ? 'prototipo v3' : 'v2') + ' · ' + q.toUpperCase());
+    const r = await load(b, srv.url + '?vm=1&pueblo=3&suelo=' + set, q);
     check('todas las texturas que pide la página existen (ningún 404)', r.bad.length === 0, r.bad.slice(0, 4).join(' | ') || r.p0files.length + ' archivos P0');
     const names = [['plaza', 'kit_p0plaza'], ['cobble', 'kit_p0cobble'], ['sidewalk', 'kit_p0side'], ['patch', 'kit_p0patch']].filter(([k]) => r.use[k]).map(([, n]) => n);
     const unused = ['kit_p0plaza', 'kit_p0cobble', 'kit_p0side', 'kit_p0patch'].filter(n => !names.includes(n));

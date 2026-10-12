@@ -374,3 +374,39 @@ claro para esta luz: mejor una media de ~120–160.
 2. **Adoquín:** canto rodado irregular y abombado (no rectángulos), con juntas de arena oscura.
 3. **Calcas:** manchas orgánicas (ruido suave), no círculos; grietas de 4–8 px con borde oscuro y variación de ancho.
 4. **Bordillo:** textura de 512 × 128 como mínimo, con UV en metros (1 m de bordillo = una repetición) y un bisel visible.
+
+## 12. P0 v3, prototipo (ChatGPT, 12-10-2026): primera dirección fotográfica
+
+- **Entrega:** `assets/3d/imports/2026-10-12_p0_v3_prototipo/` con plaza y adoquín: 6 PNG de 2048² más pruebas de
+  repetición.
+- **En el juego:** `?pueblo=3&suelo=v3` (copias de `tools/p0/make_p0v3_proto.py`: color y normal a 1024, rugosidad a
+  512). El resto del suelo sigue como está.
+
+**Medido en los archivos:**
+- **Rugosidad:** 0,82 (plaza) y 0,80 (adoquín), correcta.
+- **Normales:** z media de 0,977 y 0,974, más débiles que el 0,94 anunciado.
+- **Color de la plaza:** media sRGB (201, 164, 118), más claro y anaranjado que el rango de 120–160 pedido. El adoquín
+  da (155, 124, 95).
+- **Bordes:** la diferencia entre bordes opuestos es 0 porque se igualaron mezclando en espejo. En la prueba de
+  desplazamiento del 50 % aparecen:
+  - **piedras duplicadas en simetría** (en el adoquín, piedras en «mariposa»);
+  - **una losa fantasma** en la plaza;
+  - **una línea horizontal recta** que cruza el centro.
+
+  En el juego se ve una línea recta fina que atraviesa las losas.
+- **Resolución efectiva:** baja, porque son recortes de la ilustración ampliados. A 2048 no hay más detalle que a ~512.
+
+**En el juego (mismas cámaras):**
+- **Es la primera vez que el suelo se lee como piedra de verdad:** travertino con poros y desgaste, y canto rodado con
+  volumen. La dirección es la correcta.
+- **Plaza:** muy cerca de servir, a falta de la costura y de bajar la saturación naranja (con el tono de zona del
+  juego sale todavía más amarilla).
+- **Adoquín:** piedras de ~30–40 cm (se pidieron 15–25), tonos anaranjados y borrosas de cerca. El actual sigue siendo
+  más nítido.
+
+**Para la v3 definitiva:**
+1. Generar la textura **directamente a 2048²** (no recortes ampliados).
+2. Hacer la continuidad **sin espejo**: desplazar el 50 % y rellenar (inpaint) la cruz del centro con contenido nuevo.
+3. Plaza: media de ~150 / 135 / 110 (menos saturación).
+4. Adoquín: 8–12 piedras por metro, de 15–25 cm.
+5. Normales con z media de 0,92–0,95.
