@@ -13,7 +13,7 @@ const file = args.find(a => !a.startsWith('--') && !/^[\d.,]+$/.test(a));
 const opt = k => { const i = args.indexOf('--' + k); return i >= 0 ? args[i + 1] : null; };
 if (!file) { console.log('uso: node tools/validate-glb.js FILE.glb [--box W,D,H] [--json out.json]'); process.exit(2); }
 
-const BUDGET = { lod0: +(opt('lod0') || 15000), lod1: +(opt('lod1') || 6000), lod2: +(opt('lod2') || 1500), materials: 8, tex: 2048, fileMB: 6 };
+const BUDGET = { lod0: +(opt('lod0') || 15000), lod1: +(opt('lod1') || 6000), lod2: +(opt('lod2') || 1500), materials: 8, tex: 4096 };   // no storage limit (owner's decision, 12-10-2026): size is only reported
 const UNSUPPORTED = ['KHR_draco_mesh_compression', 'EXT_meshopt_compression', 'KHR_texture_basisu', 'KHR_mesh_quantization', 'EXT_texture_webp', 'KHR_materials_variants'];
 
 function readGLB(path) {
@@ -63,7 +63,6 @@ const J = g.json;
 R.info.sizeMB = +(g.size / 1048576).toFixed(2);
 R.info.generator = J.asset && J.asset.generator;
 if (!J.asset || J.asset.version !== '2.0') err('glTF ' + (J.asset && J.asset.version) + ': hace falta glTF 2.0');
-if (g.size > BUDGET.fileMB * 1048576) err('archivo de ' + R.info.sizeMB + ' MB (máximo ' + BUDGET.fileMB + ' MB)');
 for (const e of (J.extensionsRequired || []).concat(J.extensionsUsed || [])) if (UNSUPPORTED.includes(e)) err('usa ' + e + ': el cargador de Three.js r128 del juego no lo lee (exportar sin compresión)');
 if ((J.animations || []).length) warn((J.animations || []).length + ' animaciones (el contrato las pide solo si se acuerdan)');
 if ((J.cameras || []).length || (J.extensions && J.extensions.KHR_lights_punctual)) warn('trae cámaras o luces: el juego las ignora (mejor quitarlas)');
@@ -113,7 +112,7 @@ if (!lods.length) warn('sin nodos _LOD0 / _LOD1 / _LOD2 (el contrato pide tres n
 R.info.materials = (J.materials || []).map(m => ({ name: m.name, alpha: m.alphaMode || 'OPAQUE', double: !!m.doubleSided, baseColor: !!(m.pbrMetallicRoughness && m.pbrMetallicRoughness.baseColorTexture), normal: !!m.normalTexture, orm: !!(m.pbrMetallicRoughness && m.pbrMetallicRoughness.metallicRoughnessTexture), ao: !!m.occlusionTexture }));
 for (const m of R.info.materials) if (m.alpha === 'BLEND') warn('material ' + m.name + ': transparencia BLEND (mejor MASK para vegetación; BLEND solo vidrio)');
 R.info.textures = (J.images || []).map((img, i) => Object.assign({ name: img.name || 'img' + i }, imageSize(g, img) || {}));
-for (const t of R.info.textures) { if (t.w > BUDGET.tex || t.h > BUDGET.tex) err('textura ' + t.name + ' de ' + t.w + '×' + t.h + ' (máximo ' + BUDGET.tex + ')'); if (t.w && ((t.w & (t.w - 1)) || (t.h & (t.h - 1)))) warn('textura ' + t.name + ' ' + t.w + '×' + t.h + ' no es potencia de 2 (mipmaps peores en WebGL1)'); }
+for (const t of R.info.textures) { if (t.w > BUDGET.tex || t.h > BUDGET.tex) warn('textura ' + t.name + ' de ' + t.w + '×' + t.h + ': por encima de ' + BUDGET.tex + ' puede no cargar en algunos móviles (límite de WebGL, no de almacenamiento)'); if (t.w && ((t.w & (t.w - 1)) || (t.h & (t.h - 1)))) warn('textura ' + t.name + ' ' + t.w + '×' + t.h + ' no es potencia de 2 (mipmaps peores en WebGL1)'); }
 R.info.textureMB = +(R.info.textures.reduce((s, t) => s + (t.w * t.h * 4 * 1.33 || 0), 0) / 1048576).toFixed(1);
 // gameplay envelope (no false cover) against the slot's collision box
 const box = opt('box');

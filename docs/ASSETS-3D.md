@@ -45,21 +45,19 @@ El kit procedural actual (`assets/kit.glb`) y las texturas de `assets/tex/` sigu
   `sd_vidrio`, `sd_vegetacion`), que permiten afinarlos desde el juego.
 - **Licencia:** obra original. Si algo es CC0, se indica la fuente. No se aceptan assets de licencia dudosa.
 
-## 3. Presupuestos (por edificio)
+## 3. Tamaño y rendimiento
 
-| | LOD0 · ALTO | LOD1 · MEDIO | LOD2 · BAJO |
-|---|---|---|---|
-| Triángulos | ≤ 15 000 | ≤ 6 000 | ≤ 1 500 |
-| Materiales (= llamadas de dibujo) | ≤ 8 | ≤ 6 | ≤ 3 |
-| Textura de color | 1024² (atlas) | compartida | compartida |
-| Normal / ORM | 1024² o 512² | 512² | sin normal |
+**Sin límite de almacenamiento** (decisión del propietario, 12-10-2026). No hay máximo de MB por archivo ni de
+memoria de texturas: el validador solo informa del tamaño. La única regla es que **el juego siga fluido en el iPhone**,
+medido con el contador de FPS (AJUSTES → GRÁFICOS → «Mostrar FPS») en ALTO, MEDIO y BAJO.
 
-- Archivo completo: ≤ 6 MB.
-- Lado máximo de textura: 2048.
-- Potencias de 2.
-
-Las cifras de la imagen de referencia (28 000 / 12 000 / 4 500) son orientativas. En el mapa conviven 14 edificios y el
-objetivo son 60 FPS en iPhone, por eso el presupuesto es menor.
+- **Texturas:** potencias de 2. Hasta 4096 px de lado; por encima, algunos móviles no las cargan (límite técnico de
+  WebGL, no de almacenamiento).
+- **Triángulos por edificio (orientativo, por rendimiento):** LOD0 ≤ 15 000, LOD1 ≤ 6 000, LOD2 ≤ 1 500. Se pueden
+  superar si la prueba en el iPhone lo permite.
+- **Materiales por edificio:** pocos (cada uno es una llamada de dibujo); mejor atlas o texturas compartidas entre
+  edificios.
+- Claude genera las versiones reducidas para MEDIO y BAJO a partir de los originales.
 
 ## 4. Reglas de juego: lo que el modelo puede ocupar
 
@@ -207,7 +205,7 @@ por piezas serían miles de objetos. Las piezas 3D se reservan para lo que tiene
    - **altura máxima 0,09 m** (los pies no suben escalones: el suelo de colisión es plano);
    - nada del suelo por encima de 0,12 m.
    - LOD0, LOD1 y LOD2, con normales.
-5. **Presupuesto (corregido con lo medido).** El suelo actual ya usa 18 MB de GPU (color a 512²; normal y rugosidad a
+5. **Presupuesto (ya no se aplica: sin límite de almacenamiento desde el 12-10-2026; ver §3).** El suelo actual ya usa 18 MB de GPU (color a 512²; normal y rugosidad a
    256²) y el iPhone va a 60 FPS. El límite anterior de 10 MB era demasiado bajo y no cabía con texturas de 1024²: una
    textura de 1024² ocupa 5,3 MB con mipmaps. Queda así:
    - ChatGPT entrega **originales de 1024²** y el juego carga versiones reducidas:
