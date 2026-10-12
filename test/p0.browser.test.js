@@ -1,5 +1,5 @@
 /* P0 ground pack (assets/tex/p0*, tools/p0/make_p0_textures.py) in the game, per graphics profile:
-   - only with ?pueblo=3&suelo=p0: ?pueblo=3 and the default game do not load a single P0 file
+   - ?pueblo=3 loads the v3 limestone plaza by default; ?pueblo=3&suelo=0 and the default game do not load a single P0 file
    - every texture the page asks for exists (a missing roughness map reads as 0 = a mirror: this happened in MEDIO)
    - the materials get their maps where the profile says (ALTO/MEDIO: colour, normal, roughness · BAJO: colour)
    - decals and sand drifts stay flat on the ground (≤ 5 cm) and the collision boxes are the same as without P0
@@ -37,9 +37,12 @@ async function load(b, url, q) {
 (async () => {
   const srv = await ss.start();
   const b = await chromium.launch({ args: ['--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist'] });
-  const base = await load(b, srv.url + '?vm=1&pueblo=3', 'alto');
+  const base = await load(b, srv.url + '?vm=1&pueblo=3&suelo=0', 'alto');
   console.log('\nSIN EL PACK');
-  check('?pueblo=3 sin &suelo=p0: P0 apagado y ningún archivo P0 descargado', !base.on && base.p0files.length === 0, base.p0files.join(' '));
+  check('?pueblo=3&suelo=0: suelo anterior y ningún archivo P0 descargado', !base.on && base.p0files.length === 0, base.p0files.join(' '));
+  const dflt = await load(b, srv.url + '?vm=1&pueblo=3', 'alto');
+  check('?pueblo=3 por defecto: caliza nueva de la plaza (aprobada el 12-10-2026), sin el adoquín', dflt.on && dflt.p0files.some(f => /^p0v3_plaza_c/.test(f)) && !dflt.p0files.some(f => /cobble/.test(f)), dflt.p0files.join(' '));
+  check('?pueblo=3 por defecto: mismas cajas de colisión', dflt.colliders === base.colliders);
   const def = await load(b, srv.url + '?vm=1', 'alto');
   check('el juego normal: P0 apagado y ningún archivo P0 descargado', !def.on && def.p0files.length === 0);
   for (const [q, set] of [['alto', 'p0'], ['medio', 'p0'], ['bajo', 'p0'], ['alto', 'v3'], ['bajo', 'v3']]) {

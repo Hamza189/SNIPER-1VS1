@@ -429,7 +429,8 @@ claro para esta luz: mejor una media de ~120–160.
   - de muy cerca se nota algo blando porque viene ampliado.
 - **Coste:** texturas de 1024 (color y normal) y 512 (rugosidad): unos +12 MB de memoria de texturas en ALTO (sin
   límite desde el 12-10-2026).
-- **Estado:** opción. Se activará por defecto en `?pueblo=3` cuando el propietario lo apruebe en el iPhone (FPS y
-  aspecto).
+- **Estado:** **activada por defecto en `?pueblo=3` desde el 12-10-2026**: el propietario la aprobó a la vista («la
+  textura de la plaza ha quedado muy chula»). `&suelo=0` vuelve al suelo anterior y `&suelo=p0` a la plaza v2. El
+  adoquín sigue siendo el actual. FPS en iPhone: PENDIENTE DE VALIDACIÓN EN IPHONE.
 - **CC0:** desde este entorno no se puede llegar a Poly Haven ni ambientCG (la red lo bloquea). Si se usan, el
   propietario los descarga en su ordenador y Claude los recoge de la carpeta conectada.

@@ -68,9 +68,11 @@ console.log('\nPATRÓN DE PERDIGONES');
     return Math.round(tot / 40); };
   check('desde la cadera a 4 m: baja de un tiro', shot(4, 0) >= 100, shot(4, 0));
   check('apuntando a 6 m: baja de un tiro', shot(6, 1) >= 100, shot(6, 1));
-  check('a 9 m ya no mata de un tiro (ni apuntando)', shot(9, 1) < 100 && shot(9, 0) < 100, shot(9, 0) + ' / ' + shot(9, 1));
-  check('apuntando a 12 m: dos tiros', shot(12, 1) >= 50 && shot(12, 1) < 100, shot(12, 1));
-  check('a 20 m apenas hace daño (menos que una bala de pistola)', shot(20, 1) < CFG.pistols.vibora.dmg.torso, shot(20, 1));
+  check('apuntando a 10 m: baja de un tiro', shot(10, 1) >= 100, shot(10, 1));
+  check('desde la cadera a 8 m ya no mata de un tiro (hay que apuntar)', shot(8, 0) < 100, shot(8, 0));
+  check('apuntando a 15 m y a 18 m: dos tiros', shot(15, 1) >= 50 && shot(15, 1) < 100 && shot(18, 1) >= 50, shot(15, 1) + ' / ' + shot(18, 1));
+  check('a 12 m ya no mata de un tiro (ni apuntando)', shot(12, 1) < 100, shot(12, 1));
+  check('a 25 m apenas hace daño (menos que una bala de pistola)', shot(25, 1) < CFG.pistols.vibora.dmg.torso, shot(25, 1));
 }
 console.log('\nINSTANTÁNEA Y VELOCIDAD');
 { const a = shotgunPlayer(), b = SDP.create(0, 0, 0);

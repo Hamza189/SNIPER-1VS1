@@ -313,6 +313,39 @@ body.touch #score .side span{max-width:11vw;overflow:hidden;text-overflow:ellips
   #mpLobby .row{flex-wrap:wrap;gap:8px}
   #mpPlayers li{padding:6px 10px}
 }
+/* phone in landscape: the whole menu on one screen (JUGAR visible without scrolling); options in two columns,
+   no description, roadmap or keyboard list (the touch controls are on screen anyway) */
+@media (max-height:500px) and (min-width:560px){
+  #menu .eyebrow,#menu .sub,#menu .road,#menu .keys,#menu .dmg{display:none}
+  #menu .menuInner{padding:calc(10px + env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) calc(10px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px));
+    gap:8px 20px;align-content:center;grid-template-columns:minmax(0,1fr) minmax(0,230px)}
+  #menu h1{font-size:clamp(28px,5vw,42px);line-height:.9;margin:0 0 2px}
+  #menu .ctrlBlock{margin-top:4px;gap:7px 12px;grid-template-columns:minmax(0,1fr) minmax(0,1fr);max-width:none}
+  #menu .ctrlBlock .lbl{margin-bottom:3px!important;font-size:9px;letter-spacing:.18em}
+  #menu .seg button{padding:7px 3px;font-size:10px;letter-spacing:.08em}
+  #menu .ctrlBlock>.row,#menu #rangeBlock{grid-column:1/-1}
+  #menu #rangeBlock{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:3px 12px}
+  #menu #rangeBlock[hidden]{display:none}
+  #menu #rangeBlock>.lbl{margin:2px 0 0!important}
+  #menu #lblTrain{grid-area:1/1}#menu #trainSeg{grid-area:2/1}
+  #menu #lblLethal{grid-area:1/2}#menu #lethalSeg{grid-area:2/2}
+  #menu #lblMove{grid-area:3/1/3/3}#menu #moveSeg{grid-area:4/1/4/3}
+  #menu #rangeBlock .chk{margin-top:2px;font-size:10px}
+  #menu .row{gap:8px}
+  #menu .btn{font-size:20px;padding:9px 16px 6px}
+  #menu #openSettings{font-size:15px!important}
+  #menu .sens{gap:8px}
+  #menu .card{padding:12px 14px;gap:8px}
+  #menu .card h2{font-size:24px}
+  #menu .card h2 small{margin-top:5px;font-size:9px}
+  #menu .stats{gap:5px}
+}
+/* iPhone SE and other very short landscape screens: the CAMPO DE TIRO options fit without scrolling */
+@media (max-height:385px) and (min-width:560px){
+  #menu .menuInner{padding-top:calc(6px + env(safe-area-inset-top,0px));padding-bottom:calc(6px + env(safe-area-inset-bottom,0px));gap:6px 18px}
+  #menu .ctrlBlock{gap:5px 12px}
+  #menu .seg button{padding:6px 3px}
+}
 @media (prefers-reduced-motion:reduce){
   #callout.on{animation-duration:1.2s}
   #feed div{animation:none}
@@ -493,16 +526,16 @@ body.touch #score .side span{max-width:11vw;overflow:hidden;text-overflow:ellips
           <div class="seg" id="mapSeg" role="group" aria-label="Mapa"><button type="button" data-map="arena">ARENA DE PRUEBAS</button><button type="button" data-map="pueblo">PUEBLO</button></div>
         </div>
         <div id="rangeBlock" hidden>
-          <div class="lbl" style="margin-bottom:6px">Bots de entrenamiento (se mueven y disparan)</div>
+          <div class="lbl" id="lblTrain" style="margin-bottom:6px">Bots de entrenamiento (se mueven y disparan)</div>
           <div class="seg" id="trainSeg">
             <button type="button" data-t="off" aria-pressed="true">NO</button>
             <button type="button" data-t="easy" aria-pressed="false">FÁCIL</button>
             <button type="button" data-t="normal" aria-pressed="false">NORMAL</button>
             <button type="button" data-t="hard" aria-pressed="false">DIFÍCIL</button>
           </div>
-          <div class="lbl" style="margin:10px 0 6px">Bots pueden matarte</div>
+          <div class="lbl" id="lblLethal" style="margin:10px 0 6px">Bots pueden matarte</div>
           <div class="seg" id="lethalSeg" role="group" aria-label="Bots pueden matarte"><button type="button" data-l="0">NO</button><button type="button" data-l="1">SÍ</button></div>
-          <div class="lbl" style="margin:10px 0 6px">Movimiento de los bots</div>
+          <div class="lbl" id="lblMove" style="margin:10px 0 6px">Movimiento de los bots</div>
           <div class="seg" id="moveSeg" role="group" aria-label="Movimiento de los bots">
             <button type="button" data-m="free" aria-pressed="true">LIBRE</button>
             <button type="button" data-m="still" aria-pressed="false">QUIETOS</button>
@@ -796,13 +829,14 @@ const SD_CONFIG = {
       adsSpreadMin: 0.5,
       moveSpread: 0.012, airSpread: 0.03, crouchSpreadMul: 0.85,
       pellets: 9,          // centre + inner ring of 3 + outer ring of 5 (fixed pattern, turned each shot)
-      pelletSpread: 0.065, // rad radius of the outer ring from the hip…
-      pelletAdsMul: 0.7,   // …× 0.7 aiming down the sights
+      pelletSpread: 0.05,  // rad radius of the outer ring from the hip…
+      pelletAdsMul: 0.55,  // …× 0.55 aiming down the sights (a tight pattern: it was 0.065 × 0.7, owner's test 12-10-2026)
       climb: 0.03,
       dmg: { head: 24, torso: 15, legs: 11 },   // PER PELLET: 7+ pellets in the body up close = kill
-      falloff: { from: 7, to: 24, min: 0.25 },  // × 1 up to 7 m, × 0.25 from 24 m
-      // result (centre of the chest, standing): one shot kills up to ~5 m from the hip and ~7 m
-      // aiming; two shots at 12 m aiming; beyond ~18 m it barely scratches
+      falloff: { from: 10, to: 30, min: 0.3 },  // × 1 up to 10 m, × 0.3 from 30 m
+      // result (centre of the chest, standing): one shot kills up to ~6 m from the hip and ~10 m
+      // aiming; two shots up to ~18 m aiming; three at 20 m; beyond ~25 m it barely scratches
+      // (before 12-10-2026: one shot to 7 m aiming, four at 15 m, eight at 20 m)
       speed: 330, gravity: 9.8, zero: 15, maxRange: 35,   // pellets vanish after 35 m
       moveMul: 0.98,
       sway: 0.003, swayMoveMul: 0.3, swayCrouchMul: 0.6, swayAirMul: 2.5,
@@ -3908,7 +3942,7 @@ const SDTown3 = { REVEAL, MATS, OPEN, FAMILIES, SLICE_FAMILIES, SHOP_NAMES, buil
 if (typeof module !== 'undefined' && module.exports) module.exports = SDTown3; else root.SDTown3 = SDTown3;
 })(typeof window !== 'undefined' ? window : globalThis);
 
-const BUILD_ID="d0c4105";const BUILD_HASH="7c388cd09e";
+const BUILD_ID="ba259bd";const BUILD_HASH="4976210f98";
 </script>
 <script>
 (function(){
@@ -4033,6 +4067,18 @@ sun.castShadow=true;
 {const ms=SDQuality.PROFILES[GFX.profile].shadowMap||1024;sun.shadow.mapSize.set(ms,ms);}
 const sc=sun.shadow.camera;sc.left=-62;sc.right=62;sc.top=62;sc.bottom=-62;sc.near=10;sc.far=180;
 sun.shadow.bias=-0.0004;sun.shadow.normalBias=0.025;sun.shadow.radius=1.6;   // PCF (cheaper than PCFSoft, same look with a small radius)
+/* the shadow box follows the camera in whole shadow-map texels: moving it by fractions of a texel redraws every
+   shadow edge a little differently each frame (edges crawl, distant walls show moving stripes, worse in the scope) */
+const SUN_OFF=new T.Vector3(-45,60,-30),_sd=new T.Vector3(),_sr=new T.Vector3(),_su=new T.Vector3(),_st=new T.Vector3();
+let SUN_SNAP=!/[?&]sombra=libre\b/.test(location.search);
+function sunFollow(p){
+  if(!SUN_SNAP){sun.position.set(p.x+SUN_OFF.x,SUN_OFF.y,p.z+SUN_OFF.z);sun.target.position.set(p.x,0,p.z);return;}
+  _sd.copy(SUN_OFF).negate().normalize();_sr.set(0,1,0).cross(_sd).normalize();_su.copy(_sd).cross(_sr).normalize();
+  const ts=(sc.right-sc.left)/sun.shadow.mapSize.x;_st.set(p.x,0,p.z);
+  const r=Math.round(_st.dot(_sr)/ts)*ts,u=Math.round(_st.dot(_su)/ts)*ts,d=_st.dot(_sd);
+  _st.copy(_sr).multiplyScalar(r).addScaledVector(_su,u).addScaledVector(_sd,d);
+  sun.target.position.copy(_st);sun.position.copy(_st).add(SUN_OFF);
+}
 scene.add(sun);scene.add(sun.target);
 const hemi=new T.HemisphereLight(LOOK.hemiSky,LOOK.hemiGround,LOOK.hemiI);scene.add(hemi);   // cool sky fill, warm bounce from the sand
 
@@ -4272,13 +4318,14 @@ const E10={on:P3ON&&!/[?&]e10=0\b/.test(location.search),x:13,z:-25,old:[],root:
 const isE10=b=>E10.on&&b[0]===E10.x&&b[1]===E10.z;
 /* PUEBLO 3.0 · P0 ground pack (ChatGPT, v2 12-10-2026; textures in assets/tex/p0*, made by tools/p0/make_p0_textures.py from
    the originals in assets/3d/imports/2026-10-12_p0_ground_pack_v2/): plaza, cobbles, pavements, worn forecourts and
-   sand, plus decals and sand drifts. Only with ?pueblo=3&suelo=p0 (until a version improves on the current ground).
+   sand, plus decals and sand drifts. In ?pueblo=3 by default since 12-10-2026 (v3 limestone plaza + covers); &suelo=0 turns it off.
    Collisions do not change. */
 // opt-in, and per material: v2 (docs/ASSETS-3D.md §11) only the plaza and the covers hold up against the current ground;
 // the cobbles, pavements, forecourts, sand, the other decals and the sand drifts stay as they were
-// &suelo=v3: ChatGPT's photographic limestone for the plaza (v3b provisional pack, 12-10-2026), to judge on the phone
-const P0V3=P3ON&&/[?&]suelo=v3\b/.test(location.search);
-const P0={on:P3ON&&(P0V3||/[?&]suelo=p0\b/.test(location.search)),set:P0V3?'v3':'v2',
+// ?pueblo=3 uses ChatGPT's photographic limestone for the plaza (v3b, 12-10-2026; approved by the owner the same day)
+// and the drain covers; &suelo=0 → the previous ground, &suelo=p0 → the v2 plaza (for comparisons)
+const P0V3=P3ON&&!/[?&]suelo=(0|p0)\b/.test(location.search);
+const P0={on:P3ON&&!/[?&]suelo=0\b/.test(location.search),set:P0V3?'v3':'v2',
   use:P0V3?{plaza:true,cobble:false,sidewalk:false,patch:false,sand:false,covers:true,decals:false,drifts:false}   // v3b: the limestone only (its cobbles show a mirror axis)
           :{plaza:true,cobble:false,sidewalk:false,patch:false,sand:false,covers:true,decals:false,drifts:false},decals:0,strips:0,meshes:[]};
 if(P3ON){   // old visuals the slice redraws differently: sandbag walls → stone planters, the fountain
@@ -5087,6 +5134,7 @@ function setupViewmodels(g){
     SHO.pump=fp('s_pump');SHO.stock=fp('s_stock');
     const shell=fp('s_shell');shell.position.set(0,0,-0.004);shell.rotation.set(0,0,0);SHO.shell.add(shell);
     SHO.gun.add(SHO.load,SHO.flash);SHO.load.visible=false;SHO.loadH.g.visible=false;
+    SHO.reflex.visible=true;   // the red dot goes on the modelled gun too
     VMA.S={root:fur};}
   VMA.ready=true;
   for(const R of SOLDIERS)soldierUseModels(R);
@@ -5172,6 +5220,8 @@ function placeArm(A,wrist,ex,ey,ez){
   _el.set(ex+wrist.x*0.35,ey+(wrist.y+0.1)*0.3,ez+wrist.z*0.15);_ad.copy(_el).sub(wrist);const len=_ad.length();
   A.g.position.copy(wrist);A.g.quaternion.setFromUnitVectors(_up,_ad.divideScalar(len));A.s.scale.y=len;
 }
+// aiming: arms out (45 cm from the eye, it was 33.5): the same sight picture, the gun covers much less of the view
+const PIS_ADS_Z=-0.45;
 function updatePistolVM(dt){
   PROOT.visible=LOAD.active==='pistol'&&(state==='playing'||state==='dead'||state==='paused');
   PIS.arms.visible=false;
@@ -5179,7 +5229,7 @@ function updatePistolVM(dt){
   const glb=VMA.ready;
   const ads=ss(PCORE.ads),free=1-ads,dbg=PIS.debug;
   // hip: low right, canted a touch, muzzle towards the crosshair; ADS: sight line on the screen centre
-  let x=lerp(glb?0.102:0.074,0,ads),y=lerp(glb?-0.053:-0.088,-0.0262,ads),z=lerp(glb?-0.266:-0.29,-0.335,ads),rx=(glb?0.12:0.04)*free,ry=(glb?0.35:0.1)*free,rz=(glb?-0.15:-0.06)*free;
+  let x=lerp(glb?0.102:0.074,0,ads),y=lerp(glb?-0.053:-0.088,-0.0262,ads),z=lerp(glb?-0.266:-0.29,PIS_ADS_Z,ads),rx=(glb?0.12:0.04)*free,ry=(glb?0.35:0.1)*free,rz=(glb?-0.15:-0.06)*free;
   // sprint: lowered and turned in; slide / air / landing / lean / death
   const sw=VM.sprintW*free;
   if(glb){x-=0.035*sw;y-=0.05*sw;z+=0.03*sw;rx-=0.62*sw;ry+=0.42*sw;rz+=0.45*sw;}else{x-=0.02*sw;y-=0.022*sw;z+=0.02*sw;rx-=0.42*sw;ry+=0.38*sw;rz+=0.3*sw;}
@@ -5255,7 +5305,27 @@ function updatePistolVM(dt){
   const fl=WS.flashT>0||!!(dbg&&dbg.flash);PIS.flash.visible=fl;PIS.flame.visible=fl&&ads<0.6;
   if(fl)PIS.flame.rotation.z=Math.random()*3;
 }
-/* ---- FURIA 12 viewmodel (pump-action: receiver, barrel over the tube, sliding pump, bead sight) ---- */
+/* ---- FURIA 12 viewmodel (pump-action: receiver, barrel over the tube, sliding pump, red-dot sight) ---- */
+const SHO_DOT_Y=0.074;
+// compact red-dot sight on a riser over the receiver: clamp, riser, base, hood with a tinted window, the dot on the
+// sight line (also on the GLB gun). The riser lifts the sight line so the receiver sits well below the screen centre
+function shotgunReflex(){
+  const g=new T.Group();g.name='s_reflex';const D=SHO_DOT_Y;
+  const body=new T.MeshStandardMaterial({color:0x1d1f22,metalness:.45,roughness:.5,envMap:ENV,envMapIntensity:.5});
+  const B=(w,h,d,x,y,z)=>{const o=new T.Mesh(new T.BoxGeometry(w,h,d),body);o.position.set(x,y,z);g.add(o);return o;};
+  B(0.022,0.006,0.06,0,0.036,0.015);                      // clamp on the receiver
+  B(0.016,D-0.061,0.04,0,(0.039+D-0.022)/2,0.015);        // riser
+  B(0.038,0.008,0.034,0,D-0.018,0.012);                   // base
+  for(const sx of [-1,1])B(0.0035,0.038,0.03,sx*0.0205,D+0.005,0.012);   // hood sides
+  B(0.0445,0.0045,0.032,0,D+0.0252,0.012);                // hood top
+  B(0.006,0.006,0.012,0.0252,D+0.0035,0.016);             // brightness knob
+  const glass=new T.Mesh(new T.PlaneGeometry(0.0375,0.037),new T.MeshBasicMaterial({color:0x7fb4d8,transparent:true,opacity:0.13,depthWrite:false,side:T.DoubleSide}));
+  glass.position.set(0,D+0.005,-0.002);g.add(glass);
+  const dot=new T.Mesh(new T.SphereGeometry(0.003,12,10),new T.MeshBasicMaterial({color:0xff2412}));dot.position.set(0,D,-0.003);dot.name='s_dot';g.add(dot);
+  const halo=new T.Sprite(new T.SpriteMaterial({map:flashTex,color:0xff3a22,transparent:true,opacity:0.45,depthWrite:false}));
+  halo.position.copy(dot.position);halo.scale.set(0.011,0.011,1);g.add(halo);
+  return g;
+}
 const SROOT=new T.Group();wScene.add(SROOT);SROOT.visible=false;
 const SHO={};
 (function buildShotgun(){
@@ -5310,8 +5380,10 @@ const SHO={};
   SHO.flash=new T.Sprite(new T.SpriteMaterial({map:flashTex,transparent:true,depthWrite:false,blending:T.AdditiveBlending,color:0xffc27a}));
   SHO.flash.position.set(0,0.018,-0.69);SHO.flash.scale.set(0.42,0.42,1);SHO.flash.visible=false;SHO.gun.add(SHO.flash);
   SHO.muzzle=new T.Vector3(0,0.018,-0.64);SHO.eject=new T.Vector3(0.03,0.01,-0.02);
+  SHO.reflex=shotgunReflex();SHO.gun.add(SHO.reflex);
 })();
-const SHIP={x:0.15,y:-0.15,z:-0.43,rx:0.02,ry:0.05},SADS={x:0,y:-0.04,z:-0.5};
+// aiming through the red dot (sight line y = SHO_DOT_Y in gun space, it was the bead at 0.04): the receiver stays below the centre
+const SHIP={x:0.15,y:-0.15,z:-0.43,rx:0.02,ry:0.05},SADS={x:0,y:-SHO_DOT_Y,z:-0.6};
 function updateShotgunVM(dt){
   SROOT.visible=LOAD.active==='shotgun'&&(state==='playing'||state==='dead'||state==='paused');
   SHO.arms.grp.visible=false;
@@ -7505,7 +7577,7 @@ function frameBody(now){
   if(state!=='paused'){updateParts(fxdt);updateTracers(fxdt);for(const f of FLASHES){if(f.s.visible){f.t-=fxdt;if(f.t<=0)f.s.visible=false;}}}
   if(mode==='online')netFrame(rdt);
   updateDebug(rdt);
-  sun.position.set(camera.position.x-45,60,camera.position.z-30);sun.target.position.set(camera.position.x,0,camera.position.z);
+  sunFollow(camera.position);
   // FPS cap: skip drawing (not simulating) some display frames; adaptive resolution follows the drawn FPS
   GFX.frame++;const rawDt=(now-GFX.lastRaf)/1000;GFX.lastRaf=now;if(rawDt>0&&rawDt<0.2)GFX.hz=GFX.hz?GFX.hz+(1/rawDt-GFX.hz)*0.05:1/rawDt;
   if(!SDQuality.shouldDraw(SETTINGS.fpsCap,GFX.frame,GFX.hz))return;
@@ -7593,7 +7665,7 @@ function e10Lod(force){
 }
 if(E10.on)try{new T.GLTFLoader().load('assets/3d/models/sd_e10_casa_oliva.glb?v='+BUILD_HASH,g=>{try{e10Setup(g);}catch(e){E10.failed=true;console.warn('e10',e);}},undefined,e=>{E10.failed=true;console.warn('e10 load',e);});}catch(e){E10.failed=true;}
 
-window.__SD={P0,E10,e10Lod,DIAG,setTrainMove,LIGHT:{sun,hemi,skyMat,LOOK,P3},P3W,freeze(on){SIM_FREEZE=!!on;},SHOT,VMA,makeSoldier,animateSoldier,BOT_MAT,scene,camera,RemotePlayer,PMprev,PIS,PROOT,RIF,WROOT,SHO_:null,MANUAL,advance(ms){frameBody(last+ms);},get LAST_PELLETS(){return LAST_PELLETS;},SCORE,SCFG,SROOT,SHO,setPrimaryChoice,get PRIMARY(){return PRIMARY;},PCORE,PCFG,setWorld,WORLDS,get WORLD_ID(){return WORLD_ID;},renderer,GFX,gfxApply,get NET(){return NET;},get REMOTE(){return REMOTE;},W,get NAV(){return NAV;},setOffMap,get OFFMAP(){return OFFMAP;},TOUCH,EDIT,openEditor,get SETTINGS(){return SETTINGS;},get LAYOUT(){return LAYOUT;},checkOrientation,MAT,LOAD,TRAINERS,get RANGE_BOTS(){return RANGE_BOTS;},TRAIN,setTrain,setLethal,kitNote,GINS,TDIAG,AU,get TOUCH_EVENTS(){return TOUCH_EVENTS;},impactFX,bodyFX,get DECALS(){return DECALS;},surfaceOf,soundDelay,aimSelfTest,P,PM,WS,WCORE,RECOIL,AIM,BOTS,DUMMIES,BULLETS,EVENTS,PARTS,STATS,get state(){return state;},get mode(){return mode;},setMode,input,startMatch,simTick,frame,toMenu,pause,resume};
+window.__SD={sunFollow,setSunSnap(on){SUN_SNAP=!!on;},sun,P0,E10,e10Lod,DIAG,setTrainMove,LIGHT:{sun,hemi,skyMat,LOOK,P3},P3W,freeze(on){SIM_FREEZE=!!on;},SHOT,VMA,makeSoldier,animateSoldier,BOT_MAT,scene,camera,RemotePlayer,PMprev,PIS,PROOT,RIF,WROOT,SHO_:null,MANUAL,advance(ms){frameBody(last+ms);},get LAST_PELLETS(){return LAST_PELLETS;},SCORE,SCFG,SROOT,SHO,setPrimaryChoice,get PRIMARY(){return PRIMARY;},PCORE,PCFG,setWorld,WORLDS,get WORLD_ID(){return WORLD_ID;},renderer,GFX,gfxApply,get NET(){return NET;},get REMOTE(){return REMOTE;},W,get NAV(){return NAV;},setOffMap,get OFFMAP(){return OFFMAP;},TOUCH,EDIT,openEditor,get SETTINGS(){return SETTINGS;},get LAYOUT(){return LAYOUT;},checkOrientation,MAT,LOAD,TRAINERS,get RANGE_BOTS(){return RANGE_BOTS;},TRAIN,setTrain,setLethal,kitNote,GINS,TDIAG,AU,get TOUCH_EVENTS(){return TOUCH_EVENTS;},impactFX,bodyFX,get DECALS(){return DECALS;},surfaceOf,soundDelay,aimSelfTest,P,PM,WS,WCORE,RECOIL,AIM,BOTS,DUMMIES,BULLETS,EVENTS,PARTS,STATS,get state(){return state;},get mode(){return mode;},setMode,input,startMatch,simTick,frame,toMenu,pause,resume};
 })();
 </script>
 

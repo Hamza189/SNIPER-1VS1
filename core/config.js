@@ -159,13 +159,14 @@ const SD_CONFIG = {
       adsSpreadMin: 0.5,
       moveSpread: 0.012, airSpread: 0.03, crouchSpreadMul: 0.85,
       pellets: 9,          // centre + inner ring of 3 + outer ring of 5 (fixed pattern, turned each shot)
-      pelletSpread: 0.065, // rad radius of the outer ring from the hip…
-      pelletAdsMul: 0.7,   // …× 0.7 aiming down the sights
+      pelletSpread: 0.05,  // rad radius of the outer ring from the hip…
+      pelletAdsMul: 0.55,  // …× 0.55 aiming down the sights (a tight pattern: it was 0.065 × 0.7, owner's test 12-10-2026)
       climb: 0.03,
       dmg: { head: 24, torso: 15, legs: 11 },   // PER PELLET: 7+ pellets in the body up close = kill
-      falloff: { from: 7, to: 24, min: 0.25 },  // × 1 up to 7 m, × 0.25 from 24 m
-      // result (centre of the chest, standing): one shot kills up to ~5 m from the hip and ~7 m
-      // aiming; two shots at 12 m aiming; beyond ~18 m it barely scratches
+      falloff: { from: 10, to: 30, min: 0.3 },  // × 1 up to 10 m, × 0.3 from 30 m
+      // result (centre of the chest, standing): one shot kills up to ~6 m from the hip and ~10 m
+      // aiming; two shots up to ~18 m aiming; three at 20 m; beyond ~25 m it barely scratches
+      // (before 12-10-2026: one shot to 7 m aiming, four at 15 m, eight at 20 m)
       speed: 330, gravity: 9.8, zero: 15, maxRange: 35,   // pellets vanish after 35 m
       moveMul: 0.98,
       sway: 0.003, swayMoveMul: 0.3, swayCrouchMul: 0.6, swayAirMul: 2.5,

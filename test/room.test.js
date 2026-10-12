@@ -393,12 +393,12 @@ console.log('\nESCOPETA FURIA 12 ONLINE');
   check('un disparo cuenta como uno en las estadísticas (no nueve)', S.room.seats.A.shots >= 1 && S.room.seats.A.hits === 1, S.room.seats.A.shots + ' disparos, ' + S.room.seats.A.hits + ' impactos');
   check('cartuchos iguales en cliente y servidor', A.local.sw.ammo === S.room.seats.A.p.sw.ammo && A.local.sw.ammo === CFG.shotguns.furia.mag - 1, A.local.sw.ammo);
   check('sin correcciones de predicción con la escopeta', A.N.corrMax < 1e-6, A.N.corrMax.toExponential(1));
-  // 20 m: it barely scratches
+  // 20 m: the pattern opens and the falloff bites (balance of 12-10-2026: ~3 shots aiming; it used to be < 30 = 8 shots)
   S.run(3300);
   S.room.debug.place('A', -10, -3, -Math.PI / 2); S.room.debug.place('B', 10, -3, Math.PI / 2); S.run(900);
   const h1 = evs(A, 'hit').length; shoot = true; S.run(9); shoot = false; S.run(600);
   const far = evs(A, 'hit')[h1];
-  check('a 20 m hace poco daño (perdigones sueltos y caída por distancia)', !far || far.dmg < 30, far ? far.pellets + ' perdigones, ' + far.dmg : 'ningún perdigón');
+  check('a 20 m no mata de un tiro y hace menos de la mitad que a quemarropa (perdigones sueltos y caída por distancia)', !far || (far.dmg < 100 && far.pellets < 9 && hs[0] && far.dmg < hs[0].dmg / 2), far ? far.pellets + ' perdigones, ' + far.dmg + ' (a 4 m: ' + (hs[0] && hs[0].dmg) + ')' : 'ningún perdigón');
   // cadence: holding the trigger never beats the pump
   const s0 = evs(A, 'shot').length; shoot = true; S.run(2000); shoot = false; S.run(200);
   const n = evs(A, 'shot').length - s0, maxN = Math.floor(2 / CFG.shotguns.furia.bolt) + 1;
