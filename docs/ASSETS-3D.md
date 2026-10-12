@@ -434,3 +434,40 @@ claro para esta luz: mejor una media de ~120–160.
   adoquín sigue siendo el actual. FPS en iPhone: PENDIENTE DE VALIDACIÓN EN IPHONE.
 - **CC0:** desde este entorno no se puede llegar a Poly Haven ni ambientCG (la red lo bloquea). Si se usan, el
   propietario los descarga en su ordenador y Claude los recoge de la carpeta conectada.
+
+## 13. Adoquín CC0: Poly Haven `cobblestone_02` (12-10-2026)
+
+- **Fuente:** https://polyhaven.com/a/cobblestone_02, de Amal Kumar, con licencia **CC0**. El propietario lo descargó en su PC. Originales y procedencia en `assets/3d/imports/2026-10-12_cobble_cc0_polyhaven/` (ver `FUENTE.md` en esa carpeta).
+  - Color: PNG 2K sin pérdida.
+  - Normal OpenGL y rugosidad: EXR 4K.
+- **Preparador de ChatGPT:**
+  - el color y la normal salen bien;
+  - **la rugosidad sale blanca entera (255)**: el PNG de 16 bits se satura al convertirlo a RGB. Por eso se usa el EXR.
+- **Medidas del escaneo:**
+  - repetible sin costuras: el salto en el borde es 4,3 y dentro de la imagen 4,5;
+  - sin espejo ni piedras duplicadas en el desplazamiento del 50 %;
+  - nada por encima de 220;
+  - z media de la normal 0,88 (relieve fuerte); rugosidad 0,80 (de 0,69 a 0,89).
+- **Comparativa en el juego** (mismas cámaras en ALTO: calle norte, plaza y suelo a 1,6 m):
+
+  | Variante | Resultado |
+  |---|---|
+  | Tal cual, 1,8 m (tamaño real) | Piedras de 4–6 cm: a pocos metros parece grava. La tierra naranja hace que la calle se lea como un camino de tierra |
+  | Tal cual, 2,7 y 3,6 m | Mejor tamaño, pero sigue siendo naranja |
+  | **Gris cálido (saturación × 0,5), 2,7 m** | **Candidata.** Canto rodado real con volumen y sombra entre las piedras (el actual es una malla de grietas dibujada), color que encaja con el pueblo, y de lejos se sigue leyendo como piedra. De cerca tiene menos contraste que el actual |
+  | Gris cálido, 3,6 m | Piedras demasiado grandes y escaneo blando de cerca |
+
+- **Generador:** `tools/p0/make_p0cc_cobble.py`. Solo redimensiona y desatura; no toca las formas.
+- **Tamaños por perfil:**
+
+  | Perfil | Archivos | Color | Normal | Rugosidad |
+  |---|---|---|---|---|
+  | ALTO | `p0cc_cobble_*` | 2048 | 2048 | 1024 |
+  | MEDIO | `p0ccm_` | 1024 | 1024 | 512 |
+  | BAJO | `p0ccb_` | 512 | — | — |
+
+- **En el juego:** opción `?pueblo=3&adoquin=cc0`, en la calle norte y las bandas de la plaza. Mismos triángulos, draw calls y colisiones. `&adoquinm=<m>` cambia el tamaño de la repetición (por defecto 2,7).
+- **Estado:**
+  - PROBADO EN NAVEGADOR (`test/p0.browser.test.js`).
+  - PENDIENTE DE VALIDACIÓN EN IPHONE: aspecto y FPS. Las texturas de ALTO a 2048 cuestan unos 40 MB más de memoria de vídeo que el adoquín actual.
+  - No se activa por defecto hasta que el propietario lo apruebe.

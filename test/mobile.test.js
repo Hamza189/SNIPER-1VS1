@@ -101,7 +101,13 @@ console.log('\nAJUSTES');
   check('sensibilidad con mira solo se aplica con la mira puesta', Math.abs(sc.yaw - hip.yaw * 0.125 * 0.5) < 1e-12);
   const dPc = ST.load(fakeStore(), false), dMob = ST.load(fakeStore(), true);
   check('PC sin cambios: dedo 1, mira 1, horizontal/vertical 1', dPc.touchLook === 1 && dPc.adsSens === 1 && dPc.sensH === 1 && dPc.sensV === 1);
-  check('móvil nuevo: dedo 1,6, mira 1,3, horizontal/vertical 1', dMob.touchLook === 1.6 && dMob.adsSens === 1.3 && dMob.sensH === 1 && dMob.sensV === 1);
+  check('móvil nuevo: dedo 1,6, mira 0,8 (antes 1,3; 12-10-2026), horizontal/vertical 1', dMob.touchLook === 1.6 && dMob.adsSens === 0.8 && dMob.sensH === 1 && dMob.sensV === 1);
+  { const old = fakeStore(); old.set('settings', { touchLook: 2, adsSens: 1.3, v: 2 });
+    const mine = fakeStore(); mine.set('settings', { adsSens: 1.5, v: 2 });
+    const pc = fakeStore(); pc.set('settings', { adsSens: 1.3, v: 2 });
+    const done = fakeStore(); done.set('settings', { adsSens: 1.3, v: 3 });
+    check('un móvil guardado con la mira antigua por defecto (1,3) pasa a 0,8 y conserva lo demás', ST.load(old, true).adsSens === 0.8 && ST.load(old, true).touchLook === 2 && ST.load(old, true).v === 3);
+    check('…pero un valor elegido por el jugador, el PC o un 1,3 elegido después del cambio se respetan', ST.load(mine, true).adsSens === 1.5 && ST.load(pc, false).adsSens === 1.3 && ST.load(done, true).adsSens === 1.3); }
   check('máximo del dedo 4,0', ST.RANGES.touchLook[1] === 4 && ST.sanitize({ touchLook: 9 }, true).touchLook === 4);
   const own = fakeStore(); ST.save(own, { touchLook: 2.2, adsSens: 0.9 }, true);
   check('un móvil con ajustes ya guardados conserva los suyos', ST.load(own, true).touchLook === 2.2 && ST.load(own, true).adsSens === 0.9);

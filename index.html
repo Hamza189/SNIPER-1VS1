@@ -1821,15 +1821,16 @@ const CATEGORIES = {
 };
 // Phones start from different values (agreed after testing on iPhone); PC defaults are unchanged.
 // A device that already saved its settings keeps them; RESTAURAR goes back to these.
-const TOUCH_DEFAULTS = { touchLook: 1.6, adsSens: 1.3 };
-function defaults(touch) { return Object.assign({}, DEFAULTS, touch ? TOUCH_DEFAULTS : {}, { v: 2 }); }
+// adsSens 1.3 → 0.8 on 12-10-2026 (owner's choice: aiming on the move was too twitchy compared with COD Mobile)
+const TOUCH_DEFAULTS = { touchLook: 1.6, adsSens: 0.8 };
+function defaults(touch) { return Object.assign({}, DEFAULTS, touch ? TOUCH_DEFAULTS : {}, { v: VERSION }); }
 const RANGES = { sensH: [0.2, 3], sensV: [0.2, 3], adsSens: [0.3, 2], touchLook: [0.3, 4], adsH: [0.3, 2], adsV: [0.3, 2], touchDead: [0, 12], smooth: [0, 0.8],
   volMaster: [0, 1], volShots: [0, 1], volFx: [0, 1], volSteps: [0, 1], volAmb: [0, 1] };
 const ADS_MODES = ['holdDrag', 'hold', 'toggle'];
 
 // any stored object → a complete, valid settings object (unknown keys dropped, numbers clamped)
 // settings format version (stored as v), for future migrations
-const VERSION = 2;
+const VERSION = 3;
 function sanitize(o, touch) {
   const s = defaults(touch);
   if (!o || typeof o !== 'object') return s;
@@ -1847,6 +1848,8 @@ function sanitize(o, touch) {
 // reads from a store with get(key, default); migrates the old single "sens" value
 function load(store, touch) {
   const saved = store.get('settings', null);
+  // v3: a phone still on the old default aiming sensitivity (1.3) moves to the new one; a value the player chose stays
+  if (saved && touch && typeof saved === 'object' && !(saved.v >= 3) && saved.adsSens === 1.3) return sanitize(Object.assign({}, saved, { adsSens: TOUCH_DEFAULTS.adsSens }), touch);
   if (saved) return sanitize(saved, touch);
   const old = Number(store.get('sens', 1));
   return sanitize(isFinite(old) ? { sensH: old, sensV: old } : {}, touch);
@@ -3942,7 +3945,7 @@ const SDTown3 = { REVEAL, MATS, OPEN, FAMILIES, SLICE_FAMILIES, SHOP_NAMES, buil
 if (typeof module !== 'undefined' && module.exports) module.exports = SDTown3; else root.SDTown3 = SDTown3;
 })(typeof window !== 'undefined' ? window : globalThis);
 
-const BUILD_ID="ba259bd";const BUILD_HASH="4976210f98";
+const BUILD_ID="e087503";const BUILD_HASH="64029862b8";
 </script>
 <script>
 (function(){
@@ -4325,9 +4328,13 @@ const isE10=b=>E10.on&&b[0]===E10.x&&b[1]===E10.z;
 // ?pueblo=3 uses ChatGPT's photographic limestone for the plaza (v3b, 12-10-2026; approved by the owner the same day)
 // and the drain covers; &suelo=0 → the previous ground, &suelo=p0 → the v2 plaza (for comparisons)
 const P0V3=P3ON&&!/[?&]suelo=(0|p0)\b/.test(location.search);
+// &adoquin=cc0: the Poly Haven scan cobblestone_02 (CC0) on the north street and the plaza bands, instead of the setts (option to
+// judge on the phone, 12-10-2026); one repetition = 2.7 m (the scan is 1.8 m wide: at real size the pebbles read as gravel
+// a few metres away; 3.6 m made them too big and soft); &adoquinm=<m> to try other sizes
+const COBCC=P3ON&&/[?&]adoquin=cc0\b/.test(location.search),COBCC_TILE=Math.min(8,Math.max(0.5,+((location.search.match(/[?&]adoquinm=([\d.]+)/)||[])[1])||2.7));
 const P0={on:P3ON&&!/[?&]suelo=0\b/.test(location.search),set:P0V3?'v3':'v2',
-  use:P0V3?{plaza:true,cobble:false,sidewalk:false,patch:false,sand:false,covers:true,decals:false,drifts:false}   // v3b: the limestone only (its cobbles show a mirror axis)
-          :{plaza:true,cobble:false,sidewalk:false,patch:false,sand:false,covers:true,decals:false,drifts:false},decals:0,strips:0,meshes:[]};
+  use:P0V3?{plaza:true,cobble:COBCC,sidewalk:false,patch:false,sand:false,covers:true,decals:false,drifts:false}   // v3b: the limestone only (its cobbles show a mirror axis)
+          :{plaza:true,cobble:COBCC,sidewalk:false,patch:false,sand:false,covers:true,decals:false,drifts:false},decals:0,strips:0,meshes:[]};
 if(P3ON){   // old visuals the slice redraws differently: sandbag walls → stone planters, the fountain
   for(const o of scene.children.slice(TOWN_FROM)){
     if(!o.isMesh||o.geometry.type!=='BoxGeometry')continue;const p=o.position;
@@ -4450,10 +4457,10 @@ if(P3ON){
     P3W.place.push(...d.place);P3W.signs.push(...d.signs);foot.push(...d.footprints);fronts.push(...d.fronts);}
   if(P0.on){   // the pack's materials, one texture size per profile (see tools/p0/make_p0_textures.py)
     const pf=GFX.profile,v3=P0.set==='v3'&&(n=>n==='plaza'||n==='cobble'),
-      pre=n=>v3&&v3(n)?(pf==='bajo'?'p0v3b_':pf==='medio'?'p0v3m_':'p0v3_')+n:pf==='bajo'?'p0b_'+n:pf==='medio'&&(n==='plaza'||n==='cobble')?'p0m_'+n:'p0_'+n;
+      pre=n=>COBCC&&n==='cobble'?(pf==='bajo'?'p0ccb_':pf==='medio'?'p0ccm_':'p0cc_')+n:v3&&v3(n)?(pf==='bajo'?'p0v3b_':pf==='medio'?'p0v3m_':'p0v3_')+n:pf==='bajo'?'p0b_'+n:pf==='medio'&&(n==='plaza'||n==='cobble')?'p0m_'+n:'p0_'+n;
     Object.assign(KIT3D.LOOK,{
       p0plaza:{tex:pre('plaza'),tile:2,r:0.85,n:1,rough:true,col:0xffffff},
-      p0cobble:{tex:pre('cobble'),tile:2,r:0.88,n:1,rough:true,col:0xffffff},
+      p0cobble:{tex:pre('cobble'),tile:COBCC?COBCC_TILE:2,r:0.88,n:1,rough:true,col:0xffffff},
       p0side:{tex:pre('sidewalk'),tile:1.5,r:0.8,n:1,rough:true,col:0xffffff},
       p0patch:{tex:pre('patch'),tile:2,r:0.9,n:1,rough:true,col:0xffffff}});
   }

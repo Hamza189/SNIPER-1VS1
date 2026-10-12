@@ -40,15 +40,16 @@ const CATEGORIES = {
 };
 // Phones start from different values (agreed after testing on iPhone); PC defaults are unchanged.
 // A device that already saved its settings keeps them; RESTAURAR goes back to these.
-const TOUCH_DEFAULTS = { touchLook: 1.6, adsSens: 1.3 };
-function defaults(touch) { return Object.assign({}, DEFAULTS, touch ? TOUCH_DEFAULTS : {}, { v: 2 }); }
+// adsSens 1.3 → 0.8 on 12-10-2026 (owner's choice: aiming on the move was too twitchy compared with COD Mobile)
+const TOUCH_DEFAULTS = { touchLook: 1.6, adsSens: 0.8 };
+function defaults(touch) { return Object.assign({}, DEFAULTS, touch ? TOUCH_DEFAULTS : {}, { v: VERSION }); }
 const RANGES = { sensH: [0.2, 3], sensV: [0.2, 3], adsSens: [0.3, 2], touchLook: [0.3, 4], adsH: [0.3, 2], adsV: [0.3, 2], touchDead: [0, 12], smooth: [0, 0.8],
   volMaster: [0, 1], volShots: [0, 1], volFx: [0, 1], volSteps: [0, 1], volAmb: [0, 1] };
 const ADS_MODES = ['holdDrag', 'hold', 'toggle'];
 
 // any stored object → a complete, valid settings object (unknown keys dropped, numbers clamped)
 // settings format version (stored as v), for future migrations
-const VERSION = 2;
+const VERSION = 3;
 function sanitize(o, touch) {
   const s = defaults(touch);
   if (!o || typeof o !== 'object') return s;
@@ -66,6 +67,8 @@ function sanitize(o, touch) {
 // reads from a store with get(key, default); migrates the old single "sens" value
 function load(store, touch) {
   const saved = store.get('settings', null);
+  // v3: a phone still on the old default aiming sensitivity (1.3) moves to the new one; a value the player chose stays
+  if (saved && touch && typeof saved === 'object' && !(saved.v >= 3) && saved.adsSens === 1.3) return sanitize(Object.assign({}, saved, { adsSens: TOUCH_DEFAULTS.adsSens }), touch);
   if (saved) return sanitize(saved, touch);
   const old = Number(store.get('sens', 1));
   return sanitize(isFinite(old) ? { sensH: old, sensV: old } : {}, touch);
