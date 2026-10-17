@@ -577,3 +577,20 @@ claro para esta luz: mejor una media de ~120–160.
 - **Estado:**
   - PROBADO EN NAVEGADOR.
   - PENDIENTE DE VALIDACIÓN EN IPHONE: FPS con 3 ratas y 1 430 plantas en ALTO.
+
+
+### 16.1 Segunda pasada (17-10-2026, tras la decisión del propietario)
+
+- **Armas:** opción 1.
+  - Las modernas (HALCÓN R7, VÍBORA 9 y la navaja táctica) se quedan como armas principales.
+  - Las clásicas se convierten y se guardan en `assets/3d/weapons_classic/` (ver `FUENTE.md` en esa carpeta): 8,4 MB, comprobadas en el Three.js del juego.
+  - El juego no las carga y no están animadas.
+- **Rata más ligera:** de 14 286 a 3 568 triángulos; a 2 m se ven idénticas. Son unos 32 000 triángulos menos en ALTO con 3 ratas.
+- **Coste medido** (navegador por software, así que son llamadas de dibujo, triángulos y tiempo de CPU, no FPS reales):
+  - el cerebro y los huesos de las 3 ratas: 0,2 ms por fotograma;
+  - la vegetación en ALTO: unos 48 000 triángulos y 13 llamadas de dibujo.
+  - FPS reales: PENDIENTE DE VALIDACIÓN EN IPHONE.
+- **Kit P1 de ChatGPT, probado dentro del juego** (fachada de muestra en el campo de tiro, con la misma luz), frente a fachadas reales del pueblo:
+  - estilo monumental: marcos y sillares gruesos, puerta lisa y el doble de triángulos;
+  - el pueblo actual tiene más carácter: estuco de color, persianas, balcones, rejas y recercados finos;
+  - **no se integra ninguna pieza.**
