@@ -17,7 +17,7 @@ function check(name, cond, info) { if (cond) { pass++; console.log('  ok   ' + n
 
 async function audit(page, url, p3, canary) {
   await page.goto(url);
-  await page.waitForFunction(p3 => window.__SD && __SD.W && (!p3 || (__SD.P3W && __SD.P3W.kit && (!__SD.E10.on || __SD.E10.ready || __SD.E10.failed))), p3, { timeout: 90000 });
+  await page.waitForFunction(p3 => window.__SD && __SD.W && (!p3 || (__SD.P3W && __SD.P3W.kit && (!__SD.E10.on || __SD.E10.ready || __SD.E10.failed) && (!__SD.FLORA.on || __SD.FLORA.ready || __SD.FLORA.failed))), p3, { timeout: 120000 });
   return page.evaluate(canary => {
     const S = __SD, T = THREE; S.setWorld('pueblo'); const W = S.WORLDS.pueblo;
     // E10 (Casa Oliva, a delivered GLB): all three LOD levels are checked, not only the one in view
@@ -43,6 +43,9 @@ async function audit(page, url, p3, canary) {
         const mats = Array.isArray(m.material) ? m.material : [m.material];
         if (mats.every(mt => !mt || mt.visible === false || mt.colorWrite === false)) return;
         if (/^p3_(hills|backdrop|ground)|^streets_|^town_(cobble|paving)/.test(m.name)) return;
+        // vegetation (client/flora.js): see-through low decoration that stops nothing — allowed anywhere, but it must stay
+        // ≤ 0.66 m (the low-decoration limit, below the legs' hit zone): only its height is measured
+        const flora = /^flora_/.test(m.name);
         out.meshes++;
         { const lm = /^e10_LOD(\d)/.exec(m.name); if (lm) out.e10.lods[lm[1]] = (out.e10.lods[lm[1]] || 0) + 1; }
         m.updateMatrixWorld(true);
@@ -54,6 +57,7 @@ async function audit(page, url, p3, canary) {
           for (let k = 0; k < pos.count; k += step) {
             v.fromBufferAttribute(pos, k).applyMatrix4(M);
             const x = v.x, y = v.y, z = v.z;
+            if (flora) { out.floraMax = Math.max(out.floraMax || 0, y - M.elements[13]); continue; }   // height above its own ground
             if (Math.abs(x) > 49.9 || Math.abs(z) > 49.9 || y <= 0.12) continue;
             out.verts++;
             if (y < 2.0) {
@@ -90,6 +94,7 @@ async function audit(page, url, p3, canary) {
   const B = await audit(page, srv.url + '?vm=1&pueblo=3', true);
   check('a la altura del cuerpo: todo lo que se ve para las balas', B.body === 0, B.body + ' vértices de ' + B.verts + ' en ' + B.meshes + ' mallas' + (B.ex.length ? ': ' + B.ex.join(' | ') : ''));
   check('sobre la calle: nada suelto lejos de un muro', B.over === 0, B.over + '');
+  check('vegetación: decoración baja que no tapa a nadie (≤ 0,66 m, por debajo de la zona de las piernas)', B.floraMax > 0.1 && B.floraMax <= 0.66, (B.floraMax || 0).toFixed(2) + ' m');
   check('E10 Casa Oliva (GLB): carga y se coloca en ?pueblo=3', B.e10.ready && !B.e10.failed, JSON.stringify(B.e10));
   check('E10: se comprueban sus tres LOD (no solo el visible)', ['0', '1', '2'].every(k => B.e10.lods[k] > 0), JSON.stringify(B.e10.lods));
   const p3roof = Object.keys(B.roofBy).filter(k => /^p3_|^kit_|^e10_/.test(k)).reduce((s, k) => s + B.roofBy[k], 0);

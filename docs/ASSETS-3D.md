@@ -533,3 +533,47 @@ claro para esta luz: mejor una media de ~120–160.
 - **Comparación:** con las mismas cámaras, antes y después son casi idénticos (entre el 1 y el 2 % de píxeles distintos) y las sombras de los edificios en el suelo siguen igual.
 - **Estado:** PENDIENTE DE VALIDACIÓN en el PC y el iPhone del propietario, que es donde se ve el fallo.
 - **Para comparar:** `&sombrafade=0` desactiva el fundido.
+
+## 16. Fase de modelos 3D de Poly Haven (17-10-2026)
+
+**Auditoría de los 8 paquetes** (con Blender 5.2, `tools` en `/home/claude/assets3d`): ninguno trae animaciones, y solo la rata conserva los pesos de un rig.
+
+| Paquete | Qué es de verdad | Decisión |
+|---|---|---|
+| `bolt_action_rifle_7_62` | Rifle de cerrojo clásico de madera, tipo Mosin, con visor pequeño; 1,23 m; ~12 000 triángulos | **No sustituye a HALCÓN R7.** Es otra estética (militar antigua frente a la táctica moderna actual). Lo decide el propietario |
+| `service_pistol` | Pistola clásica de acero y cachas de madera, tipo P38 | Igual: no sustituye a VÍBORA 9 sin su decisión |
+| `fish_knife` | Cuchillo de pesca con mango de madera | Igual que las dos anteriores |
+| `street_rat` | Rata de 14,8 cm, sin rig pero con los pesos de un Rigify | **Integrada** (ver abajo) |
+| `dandelion_01`, `grass_medium_02` | Plantas con varios niveles de detalle | **Integradas** (ver abajo) |
+| `gate_latch_01` | Pestillo metálico de verja | Pendiente: decoración de puertas |
+| Kit P1 de ChatGPT | Piedra provisional y estuco CC0 | Pendiente de comparar |
+
+**Rata con vida** (`client/rats.js`, `tools/fauna/`)
+- **Esqueleto:** 19 huesos reconstruidos sobre los pesos originales del rig.
+- **Animación procedural:** patas al trote en diagonal, columna, cabeza, orejas y cola.
+- **Estados:** reposo, olfateo, exploración junto a las paredes, huida (si el jugador se acerca a menos de 4,5 m o suena un disparo a menos de 30 m) y escondida en la alcantarilla. Vuelve a salir cuando el jugador está a más de 9 m.
+- **Sin efecto en el juego:** no tiene colisiones, no le afectan las balas y no pasa por el servidor.
+- **Cantidad:** 3 en ALTO, 2 en MEDIO y ninguna en BAJO. `&ratas=0` las quita.
+- **Pruebas:** `test/rats.test.js` (11 comprobaciones) y `test/fauna.browser.test.js`.
+
+**Vegetación** (`client/flora.js`, `tools/flora/`)
+- **Dónde crece:** al pie de paredes y jardineras, en la junta del bordillo y alrededor de las alcantarillas; nunca en mitad de la calle.
+- **Mismas plantas para todos los jugadores.** Miden de 15 a 60 cm, así que no esconden a nadie.
+- **Hierba en tarjetas** (ver `assets/3d/imports/2026-10-17_flora/FUENTE.md`).
+  - Antes: 505 matas sumaban 230 000 triángulos y apenas se veían unas pajas.
+  - Ahora:
+
+    | Calidad | Plantas | Triángulos | Llamadas de dibujo |
+    |---|---|---|---|
+    | ALTO | 1 430 | 48 000 | 13 |
+    | MEDIO | 853 | 31 000 | 13 |
+    | BAJO | 350 | 12 000 | 13 |
+
+- **Arreglos en el camino:**
+  - las hojas finas desaparecían en los mipmaps (el alpha test ahora se corrige según el nivel de mipmap);
+  - la cara trasera de las tarjetas salía oscura (se dejó de invertir la normal).
+- `&flora=0` quita la vegetación.
+- **Pruebas:** `test/flora.test.js` (9 comprobaciones) y `test/fauna.browser.test.js` (21 comprobaciones).
+- **Estado:**
+  - PROBADO EN NAVEGADOR.
+  - PENDIENTE DE VALIDACIÓN EN IPHONE: FPS con 3 ratas y 1 430 plantas en ALTO.
