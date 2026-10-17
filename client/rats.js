@@ -1,6 +1,7 @@
 /* PUEBLO 3.0 fauna: street rats (Poly Haven "street_rat", CC0, Sean Buckley).
    The Blender file kept the weights of its original Rigify rig; tools/fauna/rat_rig.py rebuilt a light skeleton on them
-   (19 bones: hips, chest, neck, head, ears, four tail bones, two segments per leg) and exported assets/3d/fauna/rat.glb.
+   (19 bones: hips, chest, neck, head, ears, four tail bones, two segments per leg), simplified the mesh 14 286 → 3 568 triangles
+   (17-10-2026: identical at 2 m, ~32 000 triangles less for three rats) and exported assets/3d/fauna/rat.glb.
    Here: a small ambient brain and a procedural animation of those bones (legs in a diagonal trot, spine, head, ears and tail),
    with no physics, no server and no effect on bullets, collisions or gameplay.
    States: idle (breathes, looks around) · sniff (head down, quick nose nods) · explore (walks along walls inside its patch) ·

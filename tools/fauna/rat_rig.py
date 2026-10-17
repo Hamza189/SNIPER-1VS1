@@ -64,6 +64,14 @@ bpy.ops.object.mode_set(mode='OBJECT')
 for n, *_ in B: o.vertex_groups.new(name=n)
 for vi, ws in W.items():
     for k, w in ws.items(): o.vertex_groups[k].add([vi], w, 'REPLACE')
+# lighter mesh (17-10-2026): 14 286 triangles per rat was ~43 000 for three 36 cm animals; collapse-decimate AFTER the weights
+# are on the vertex groups (Blender interpolates them), before the armature. RAT_RATIO=1 keeps the full mesh
+import os
+ratio = float(os.environ.get('RAT_RATIO', '0.25'))
+if ratio < 1:
+    bpy.context.view_layer.objects.active = o; o.select_set(True)
+    d = o.modifiers.new('lod', 'DECIMATE'); d.ratio = ratio; d.use_symmetry = True; d.symmetry_axis = 'X'
+    bpy.ops.object.modifier_apply(modifier='lod')
 o.parent = ao; md = o.modifiers.new('rig', 'ARMATURE'); md.object = ao
 mat = bpy.data.materials.new('rat'); o.data.materials.clear(); o.data.materials.append(mat)
 bpy.ops.export_scene.gltf(filepath=out, export_format='GLB', use_selection=False, export_skins=True, export_animations=False,
