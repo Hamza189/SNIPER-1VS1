@@ -31,6 +31,17 @@ function check(name, cond, info) { if (cond) { pass++; console.log('  ok   ' + n
     S.setSunSnap(true); R.setRenderTarget(null); return out; });
   check('caminar no hace bailar las sombras: el parpadeo baja al menos a la mitad con la sombra por texeles', r.snap < r.free / 2, 'antes ' + r.free.toFixed(2) + ' % → ahora ' + r.snap.toFixed(2) + ' % de píxeles');
   check('parpadeo restante pequeño (< 1 % de la imagen)', r.snap < 1, r.snap.toFixed(2) + ' %');
+  const f = await p.evaluate(() => { const S = __SD, sh = S.P3W.ctx.shadows; let px = null;
+    S.scene.traverse(o => { if (o.name === 'shadow_proxies') px = o; });
+    // the proxies are 0.3 m inside the collision boxes: no vertex of theirs may sit on a box face
+    let onFace = 0; if (px) { const P = px.geometry.attributes.position; for (let i = 0; i < P.count; i++) { const x = P.getX(i), y = P.getY(i), z = P.getZ(i);
+      for (const c of S.W.colliders) if ((Math.abs(x - c.minX) < 0.02 || Math.abs(x - c.maxX) < 0.02) && (Math.abs(z - c.minZ) < 0.02 || Math.abs(z - c.maxZ) < 0.02)) { onFace++; break; } } }
+    return { fade: S.SHADOW_FADE && /sdF/.test(THREE.ShaderChunk.lights_fragment_begin), nb: S.sun.shadow.normalBias, map: S.sun.shadow.mapSize.x,
+      doorCast: ['door_arch', 'door_panel'].filter(k => sh(k, 'wood') || sh(k, 'stone')).length, balcony: sh('balcony', 'stucco'), proxy: !!px, onFace }; });
+  check('fundido de sombra en el shader del sol (pared rozada por el sol y lejos de 40 a 58 m)', f.fade);
+  check('desplazamiento normal según el texel de sombra (ALTO 2048 → 3,6 cm)', Math.abs(f.nb - 0.6 * 124 / f.map) < 1e-6 && f.nb > 0.03, f.nb.toFixed(4) + ' m con ' + f.map);
+  check('marcos y hojas de puerta ya no proyectan sombra (manchas a rayas en la pared); los balcones sí', f.doorCast === 0 && f.balcony);
+  check('las cajas de sombra de los edificios quedan dentro de la pared (ninguna esquina coincide con la de su caja de colisión)', f.proxy && f.onFace === 0, f.onFace + ' esquinas coincidentes');
   check('sin errores en la página', errs.length === 0, errs.slice(0, 2).join(' | '));
   await b.close(); srv.close();
   console.log('\n' + pass + ' correctas, ' + fail + ' fallidas');

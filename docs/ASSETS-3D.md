@@ -493,3 +493,43 @@ claro para esta luz: mejor una media de ~120–160.
   | `wood` (persianas y puertas) | `distressed_painted_planks`, `rough_pine_door` | Se tiñe |
 
 - **Texturas actuales:** las generé con código, de 20 a 60 KB cada una. Son el punto flojo al lado del suelo nuevo.
+
+### 14.1 Resultado (17-10-2026)
+
+- **Descarga del propietario:** las 9 texturas, en PNG 2K. Cuatro rugosidades son de 16 bits y se convirtieron bien (de 0,86 a 0,95, ninguna blanca).
+- **Copias compactas, `info.json` y fuente:** en `assets/3d/imports/2026-10-17_p1_polyhaven/`. Generador: `tools/p1/make_p1_facades.py`.
+- **Cada escaneo se lleva al brillo de la textura que sustituye,** así que el color de cada fachada no cambia; solo cambia el detalle.
+
+| Material | Elegido | Resultado en el juego (mismas cámaras, ALTO) |
+|---|---|---|
+| Paredes (`stucco`) | `white_stucco_02`, 1,8 m, desaturado | Grano de enlucido real y más limpio, pero pierde las manchas de humedad de la actual. Mejora leve |
+| Tejados (`rooftiles`) | `clay_roof_tiles_02` (teja árabe), 2,5 m | Apenas se nota a la distancia de juego |
+| Persianas (`wood`) | `distressed_painted_planks`, 1,6 m | Apenas se nota |
+| Puertas (`woodraw`) | `rough_pine_door`, 2 m | Apenas se nota |
+| Piedra (`stone`) | `sandstone_blocks_04` | **Peor:** los bloques casi no se marcan y jardineras y jambas parecen una mancha. **Descartada**, se queda la actual |
+| Descartados al mirarlos | `beige_wall_001` (casi lisa), `plastered_wall_02` (juntas de panel de hormigón), `clay_roof_tiles_03` (teja plana francesa), `large_sandstone_blocks_01` (verdosa, con musgo) | |
+
+- **Conclusión:** en las fachadas la textura no es lo que limita el aspecto; pesan más la forma y el color de los edificios.
+- **Estado:**
+  - opción `?pueblo=3&fachada=cc0`;
+  - PENDIENTE DE VALIDACIÓN EN IPHONE;
+  - no se activa por defecto si el propietario no la ve mejor.
+
+## 15. Rayas en las paredes lejanas (vídeo del propietario, 17-10-2026)
+
+- **Síntoma:** en paredes a 20–50 m se ven manchas de sombra rayadas en diagonal alrededor de puertas y ventanas de la planta baja.
+  - Al moverse parpadean y parecen una textura sin cargar.
+  - Al pararse se ven como una sombra.
+- **No se reproduce en el navegador de pruebas** (WebGL por software, más precisión de profundidad), así que es propio de la tarjeta gráfica real.
+- **El sol nunca roza las paredes** (viene del noroeste, a unos 47°), así que las rayas no son sombra estirada sino **autosombra (shadow acne)**:
+  - las paredes detalladas están justo sobre las caras de las cajas que proyectan la sombra de los edificios;
+  - los marcos y las hojas de las puertas están a ras de la pared;
+  - solo los separaba un desplazamiento de 2,5 cm, con texeles de sombra de 6 cm (ALTO) o 12 cm (MEDIO).
+- **Arreglos** (`test/shadow.browser.test.js`):
+  1. Las cajas de sombra de los edificios se meten 0,3 m dentro de la pared. La comprobación se probó en los dos sentidos: con las cajas sin meter, 504 esquinas coinciden con las de colisión; metidas, ninguna.
+  2. Los marcos y hojas de puerta ya no proyectan sombra. De paso hay menos llamadas de dibujo: calle de 222 a 194, vista general de 255 a 237.
+  3. El desplazamiento normal va con el texel: 0,6 texel, es decir, 3,6 cm en ALTO y 7 cm en MEDIO.
+  4. En el shader del sol, la sombra se desvanece si el sol roza la superficie y, por distancia, de 40 a 58 m, en vez de cortarse en el borde de la caja de 62 m.
+- **Comparación:** con las mismas cámaras, antes y después son casi idénticos (entre el 1 y el 2 % de píxeles distintos) y las sombras de los edificios en el suelo siguen igual.
+- **Estado:** PENDIENTE DE VALIDACIÓN en el PC y el iPhone del propietario, que es donde se ve el fallo.
+- **Para comparar:** `&sombrafade=0` desactiva el fundido.

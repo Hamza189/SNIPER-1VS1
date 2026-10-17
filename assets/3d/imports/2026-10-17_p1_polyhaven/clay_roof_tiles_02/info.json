@@ -1,0 +1,31 @@
+{
+  "asset": "clay_roof_tiles_02",
+  "uso": "tejado",
+  "pagina": "https://polyhaven.com/a/clay_roof_tiles_02",
+  "licencia": "CC0",
+  "autores": [
+    "Amal Kumar"
+  ],
+  "medidas_mm": [
+    2500,
+    2500
+  ],
+  "resolucion": "2k",
+  "archivos": {
+    "color": {
+      "archivo": "color.png",
+      "url": "https://dl.polyhaven.org/file/ph-assets/Textures/png/2k/clay_roof_tiles_02/clay_roof_tiles_02_diff_2k.png",
+      "bytes": 22384677
+    },
+    "normal": {
+      "archivo": "normal.png",
+      "url": "https://dl.polyhaven.org/file/ph-assets/Textures/png/2k/clay_roof_tiles_02/clay_roof_tiles_02_nor_gl_2k.png",
+      "bytes": 22043810
+    },
+    "rugosidad": {
+      "archivo": "rugosidad.png",
+      "url": "https://dl.polyhaven.org/file/ph-assets/Textures/png/2k/clay_roof_tiles_02/clay_roof_tiles_02_rough_2k.png",
+      "bytes": 6641629
+    }
+  }
+}

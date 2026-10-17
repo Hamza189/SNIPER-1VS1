@@ -9,6 +9,7 @@
 <meta name="apple-mobile-web-app-title" content="Sniper Duel">
 <link rel="manifest" href="manifest.webmanifest">
 <title>Sniper Duel</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 32 32%22%3E%3Crect width=%2232%22 height=%2232%22 rx=%226%22 fill=%22%23171310%22/%3E%3Ccircle cx=%2216%22 cy=%2216%22 r=%229%22 fill=%22none%22 stroke=%22%23ff8a2b%22 stroke-width=%222.5%22/%3E%3Cpath d=%22M16 4v8M16 20v8M4 16h8M20 16h8%22 stroke=%22%23f3e9d6%22 stroke-width=%222%22/%3E%3C/svg%3E">
 <meta name="theme-color" content="#0f0d0a">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -3951,7 +3952,7 @@ const SDTown3 = { REVEAL, MATS, OPEN, FAMILIES, SLICE_FAMILIES, SHOP_NAMES, buil
 if (typeof module !== 'undefined' && module.exports) module.exports = SDTown3; else root.SDTown3 = SDTown3;
 })(typeof window !== 'undefined' ? window : globalThis);
 
-const BUILD_ID="7d92fb5";const BUILD_HASH="2bd0580a93";
+const BUILD_ID="2d03f82";const BUILD_HASH="abb8d79dc5";
 </script>
 <script>
 (function(){
@@ -4076,7 +4077,23 @@ sun.position.set(...LOOK.sunPos);
 sun.castShadow=true;
 {const ms=SDQuality.PROFILES[GFX.profile].shadowMap||1024;sun.shadow.mapSize.set(ms,ms);}
 const sc=sun.shadow.camera;sc.left=-62;sc.right=62;sc.top=62;sc.bottom=-62;sc.near=10;sc.far=180;
-sun.shadow.bias=-0.0004;sun.shadow.normalBias=0.025;sun.shadow.radius=1.6;   // PCF (cheaper than PCFSoft, same look with a small radius)
+sun.shadow.bias=-0.0004;sun.shadow.normalBias=0.025;
+// normal offset in step with the shadow texel (124 m box / map size): 0.6 texel, at least 2.5 cm (ALTO 3.6 cm, MEDIO 7 cm)
+function sunBiasFor(ms){sun.shadow.normalBias=Math.max(0.025,0.6*124/(ms||1024));}sunBiasFor(sun.shadow.mapSize.x);sun.shadow.radius=1.6;   // PCF (cheaper than PCFSoft, same look with a small radius)
+// Shadow fade (17-10-2026, owner's video): distant walls showed shadows drawn as diagonal stripes that shimmer while walking
+// ("como si no cargara la textura"). Two causes, two fades in Three's light shader (sun only):
+//  · walls the sun grazes: each shadow-map texel stretches into a long line; there the sun barely lights the wall anyway
+//    (N·L ≈ 0), so the shadow fades out with N·L between 0.03 and 0.22 and the stripes go with it;
+//  · distance: past ~40 m the shadow map (6 cm/texel in ALTO, 12 in MEDIO) is too coarse; it fades to none by 58 m
+//    (inside the 62 m box) instead of stopping at its edge. &sombrafade=0 → as before (comparisons)
+const SHADOW_FADE=!/[?&]sombrafade=0\b/.test(location.search);
+if(SHADOW_FADE&&T.ShaderChunk&&T.ShaderChunk.lights_fragment_begin){
+  const A='directLight.color *= all( bvec2( directLight.visible, receiveShadow ) ) ? getShadow( directionalShadowMap[ i ], directionalLightShadow.shadowMapSize, directionalLightShadow.shadowBias, directionalLightShadow.shadowRadius, vDirectionalShadowCoord[ i ] ) : 1.0;';
+  const B='{ float sdS = all( bvec2( directLight.visible, receiveShadow ) ) ? getShadow( directionalShadowMap[ i ], directionalLightShadow.shadowMapSize, directionalLightShadow.shadowBias, directionalLightShadow.shadowRadius, vDirectionalShadowCoord[ i ] ) : 1.0;'+
+    ' float sdF = smoothstep( 0.03, 0.22, dot( geometry.normal, directLight.direction ) ) * ( 1.0 - smoothstep( 40.0, 58.0, length( geometry.position ) ) );'+
+    ' directLight.color *= mix( 1.0, sdS, sdF ); }';
+  const ch=T.ShaderChunk.lights_fragment_begin;if(ch.includes(A))T.ShaderChunk.lights_fragment_begin=ch.replace(A,B);else console.warn('sombra: no encuentro el trozo del shader');
+}
 /* the shadow box follows the camera in whole shadow-map texels: moving it by fractions of a texel redraws every
    shadow edge a little differently each frame (edges crawl, distant walls show moving stripes, worse in the scope) */
 const SUN_OFF=new T.Vector3(-45,60,-30),_sd=new T.Vector3(),_sr=new T.Vector3(),_su=new T.Vector3(),_st=new T.Vector3();
@@ -4341,6 +4358,14 @@ const P0V3=P3ON&&!/[?&]suelo=(0|p0)\b/.test(location.search);
 // a few metres away; 3.6 m made them too big and soft); &adoquinm=<m> to try other sizes
 // default since 17-10-2026 (the owner saw it on the iPhone: «se ve todo el suelo muy bien en 4k»); &adoquin=0 → the setts
 const COBCC=P3ON&&!/[?&]adoquin=0\b/.test(location.search),COBCC_TILE=Math.min(8,Math.max(0.5,+((location.search.match(/[?&]adoquinm=([\d.]+)/)||[])[1])||2.7));
+// &fachada=cc0: P1, the facades with CC0 Poly Haven scans (tools/p1/make_p1_facades.py, 17-10-2026): walls, roof tiles, stone,
+// shutters and doors; the kit's UVs are in metres, so only the texture and its real size change (option to judge on the phone)
+const FACC=P3ON&&/[?&]fachada=cc0\b/.test(location.search);
+if(FACC){const pf=GFX.profile,pre=pf==='bajo'?'p1b_':pf==='medio'?'p1m_':'p1_',L=KIT3D.LOOK;
+  Object.assign(L.stucco,{tex:pre+'stucco',tile:1.8,rough:true});Object.assign(L.rooftiles,{tex:pre+'rooftiles',tile:2.5,rough:true});
+  // stone (sandstone_blocks_04) left out: its blocks are so faint that planters and jambs read as a smear (17-10-2026)
+  Object.assign(L.wood,{tex:pre+'wood',tile:1.6,rough:true});
+  Object.assign(L.woodraw,{tex:pre+'door',tile:2.0,rough:true,col:0xffffff});}
 const P0={on:P3ON&&!/[?&]suelo=0\b/.test(location.search),set:P0V3?'v3':'v2',
   use:P0V3?{plaza:true,cobble:COBCC,sidewalk:false,patch:false,sand:false,covers:true,decals:false,drifts:false}   // v3b: the limestone only (its cobbles show a mirror axis)
           :{plaza:true,cobble:COBCC,sidewalk:false,patch:false,sand:false,covers:true,decals:false,drifts:false},decals:0,strips:0,meshes:[]};
@@ -4366,7 +4391,12 @@ if(TOWN.on&&typeof SDTown!=='undefined'){
   // building shadows come from simple boxes (drawn only into the shadow map), not from the detailed
   // walls: the same shadow on the ground at a fraction of the cost
   // (all in ONE mesh: one draw call in each pass instead of 28)
-  {const arr=[];for(const m of OLD_TOWN.bodies.concat(OLD_TOWN.caps)){m.updateMatrix();const g=m.geometry.index?m.geometry.toNonIndexed():m.geometry.clone();g.applyMatrix4(m.matrix);arr.push(g.attributes.position.array);}
+  // each box 0.3 m smaller on every side (17-10-2026): the detailed walls sit on the box faces, so a sunlit wall shared its
+  // plane with the box shadowing it → striped self-shadow (acne) on real GPUs; the shadow on the ground moves 0.3 m
+  {const arr=[],IN=0.3;for(const m of OLD_TOWN.bodies.concat(OLD_TOWN.caps)){m.updateMatrix();const g=m.geometry.index?m.geometry.toNonIndexed():m.geometry.clone();g.applyMatrix4(m.matrix);
+     g.computeBoundingBox();const bb=g.boundingBox,cx=(bb.min.x+bb.max.x)/2,cz=(bb.min.z+bb.max.z)/2,P=g.attributes.position;
+     for(let i=0;i<P.count;i++){const x=P.getX(i),z=P.getZ(i),hx=Math.max(0.05,Math.abs(x-cx)-IN),hz=Math.max(0.05,Math.abs(z-cz)-IN);P.setXYZ(i,cx+Math.sign(x-cx)*hx,P.getY(i),cz+Math.sign(z-cz)*hz);}
+     arr.push(g.attributes.position.array);}
    const pos=new Float32Array(arr.reduce((n,a)=>n+a.length,0));let o=0;for(const a of arr){pos.set(a,o);o+=a.length;}
    const geo=new T.BufferGeometry();geo.setAttribute('position',new T.BufferAttribute(pos,3));geo.computeBoundingSphere();
    const px=new T.Mesh(geo,SHADOW_PROXY);px.name='shadow_proxies';px.castShadow=true;px.receiveShadow=false;px.renderOrder=-1;scene.add(px);}
@@ -4442,7 +4472,9 @@ function p0Details(foot){
    kit (assets/kit.glb) placed when it has loaded. Collision boxes and the server's map are the same. */
 if(P3ON){
   const low=GFX.profile==='bajo'||/[?&]nm=0\b/.test(location.search);
-  const CAST=new Set(['balcony','balcony_long','awning','eave','cornice','fountain','orange_tree','planter_wall','lamp_post','laundry','door_arch','door_panel']);
+  // door_arch / door_panel no longer cast (17-10-2026): flush with the wall, they shadowed it in striped patches around the
+  // doors and windows (shadow acne) for a shadow on the ground nobody notices
+  const CAST=new Set(['balcony','balcony_long','awning','eave','cornice','fountain','orange_tree','planter_wall','lamp_post','laundry']);
   // shadows from the kit: ALTO everything big (eaves, doors…), MEDIO only balconies, awnings and cornices
   const CAST_MEDIO=new Set(['balcony','balcony_long','awning','cornice','fountain','orange_tree']);
   P3W.ctx={texLoad,low,cache:{},shared:true,env:null,shadows:(k,m)=>GFX.profile!=='bajo'&&(GFX.profile==='alto'?CAST:CAST_MEDIO).has(k)&&!['iron','glass','lamp','dark','water'].includes(m)};
@@ -6566,7 +6598,7 @@ function gfxApply(){
   GFX.adapt.enabled=SETTINGS.quality==='auto';if(!GFX.adapt.enabled)GFX.adapt.scale=1;
   renderer.setPixelRatio(SDQuality.pixelRatio(prof,window.devicePixelRatio,GFX.adapt.scale));
   if(renderer.shadowMap.enabled!==P0.shadows){renderer.shadowMap.enabled=P0.shadows;scene.traverse(o=>{if(o.material){for(const m of [].concat(o.material))m.needsUpdate=true;}});}
-  if(P0.shadowMap&&sun.shadow.mapSize.x!==P0.shadowMap){sun.shadow.mapSize.set(P0.shadowMap,P0.shadowMap);if(sun.shadow.map){sun.shadow.map.dispose();sun.shadow.map=null;}}
+  if(P0.shadowMap&&sun.shadow.mapSize.x!==P0.shadowMap){sun.shadow.mapSize.set(P0.shadowMap,P0.shadowMap);sunBiasFor(P0.shadowMap);if(sun.shadow.map){sun.shadow.map.dispose();sun.shadow.map=null;}}
   $('#fpsBox').hidden=!SETTINGS.showFps;
 }
 function gfxNote(){const n=$('#qNote');if(!n)return;const prof=SDQuality.resolve(SETTINGS.quality,isTouch);
@@ -7692,7 +7724,7 @@ function e10Lod(force){
 }
 if(E10.on)try{new T.GLTFLoader().load('assets/3d/models/sd_e10_casa_oliva.glb?v='+BUILD_HASH,g=>{try{e10Setup(g);}catch(e){E10.failed=true;console.warn('e10',e);}},undefined,e=>{E10.failed=true;console.warn('e10 load',e);});}catch(e){E10.failed=true;}
 
-window.__SD={setDuelLethal,get DUEL_LETHAL(){return DUEL_LETHAL;},gfxDiagText,get P3ON(){return P3ON;},COBCC,damagePlayer,TEX,sunFollow,setSunSnap(on){SUN_SNAP=!!on;},sun,P0,E10,e10Lod,DIAG,setTrainMove,LIGHT:{sun,hemi,skyMat,LOOK,P3},P3W,freeze(on){SIM_FREEZE=!!on;},SHOT,VMA,makeSoldier,animateSoldier,BOT_MAT,scene,camera,RemotePlayer,PMprev,PIS,PROOT,RIF,WROOT,SHO_:null,MANUAL,advance(ms){frameBody(last+ms);},get LAST_PELLETS(){return LAST_PELLETS;},SCORE,SCFG,SROOT,SHO,setPrimaryChoice,get PRIMARY(){return PRIMARY;},PCORE,PCFG,setWorld,WORLDS,get WORLD_ID(){return WORLD_ID;},renderer,GFX,gfxApply,get NET(){return NET;},get REMOTE(){return REMOTE;},W,get NAV(){return NAV;},setOffMap,get OFFMAP(){return OFFMAP;},TOUCH,EDIT,openEditor,get SETTINGS(){return SETTINGS;},get LAYOUT(){return LAYOUT;},checkOrientation,MAT,LOAD,TRAINERS,get RANGE_BOTS(){return RANGE_BOTS;},TRAIN,setTrain,setLethal,kitNote,GINS,TDIAG,AU,get TOUCH_EVENTS(){return TOUCH_EVENTS;},impactFX,bodyFX,get DECALS(){return DECALS;},surfaceOf,soundDelay,aimSelfTest,P,PM,WS,WCORE,RECOIL,AIM,BOTS,DUMMIES,BULLETS,EVENTS,PARTS,STATS,get state(){return state;},get mode(){return mode;},setMode,input,startMatch,simTick,frame,toMenu,pause,resume};
+window.__SD={SHADOW_FADE,setDuelLethal,get DUEL_LETHAL(){return DUEL_LETHAL;},gfxDiagText,get P3ON(){return P3ON;},COBCC,damagePlayer,TEX,sunFollow,setSunSnap(on){SUN_SNAP=!!on;},sun,P0,E10,e10Lod,DIAG,setTrainMove,LIGHT:{sun,hemi,skyMat,LOOK,P3},P3W,freeze(on){SIM_FREEZE=!!on;},SHOT,VMA,makeSoldier,animateSoldier,BOT_MAT,scene,camera,RemotePlayer,PMprev,PIS,PROOT,RIF,WROOT,SHO_:null,MANUAL,advance(ms){frameBody(last+ms);},get LAST_PELLETS(){return LAST_PELLETS;},SCORE,SCFG,SROOT,SHO,setPrimaryChoice,get PRIMARY(){return PRIMARY;},PCORE,PCFG,setWorld,WORLDS,get WORLD_ID(){return WORLD_ID;},renderer,GFX,gfxApply,get NET(){return NET;},get REMOTE(){return REMOTE;},W,get NAV(){return NAV;},setOffMap,get OFFMAP(){return OFFMAP;},TOUCH,EDIT,openEditor,get SETTINGS(){return SETTINGS;},get LAYOUT(){return LAYOUT;},checkOrientation,MAT,LOAD,TRAINERS,get RANGE_BOTS(){return RANGE_BOTS;},TRAIN,setTrain,setLethal,kitNote,GINS,TDIAG,AU,get TOUCH_EVENTS(){return TOUCH_EVENTS;},impactFX,bodyFX,get DECALS(){return DECALS;},surfaceOf,soundDelay,aimSelfTest,P,PM,WS,WCORE,RECOIL,AIM,BOTS,DUMMIES,BULLETS,EVENTS,PARTS,STATS,get state(){return state;},get mode(){return mode;},setMode,input,startMatch,simTick,frame,toMenu,pause,resume};
 })();
 </script>
 

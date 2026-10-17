@@ -1,0 +1,31 @@
+{
+  "asset": "distressed_painted_planks",
+  "uso": "madera",
+  "pagina": "https://polyhaven.com/a/distressed_painted_planks",
+  "licencia": "CC0",
+  "autores": [
+    "Rob Tuytel"
+  ],
+  "medidas_mm": [
+    1599.9999046325684,
+    1599.9999046325684
+  ],
+  "resolucion": "2k",
+  "archivos": {
+    "color": {
+      "archivo": "color.png",
+      "url": "https://dl.polyhaven.org/file/ph-assets/Textures/png/2k/distressed_painted_planks/distressed_painted_planks_diff_2k.png",
+      "bytes": 22175537
+    },
+    "normal": {
+      "archivo": "normal.png",
+      "url": "https://dl.polyhaven.org/file/ph-assets/Textures/png/2k/distressed_painted_planks/distressed_painted_planks_nor_gl_2k.png",
+      "bytes": 16420500
+    },
+    "rugosidad": {
+      "archivo": "rugosidad.png",
+      "url": "https://dl.polyhaven.org/file/ph-assets/Textures/png/2k/distressed_painted_planks/distressed_painted_planks_rough_2k.png",
+      "bytes": 6642428
+    }
+  }
+}

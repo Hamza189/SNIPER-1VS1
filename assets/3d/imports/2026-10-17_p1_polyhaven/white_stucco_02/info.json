@@ -1,0 +1,31 @@
+{
+  "asset": "white_stucco_02",
+  "uso": "pared",
+  "pagina": "https://polyhaven.com/a/white_stucco_02",
+  "licencia": "CC0",
+  "autores": [
+    "Dimitrios Savva"
+  ],
+  "medidas_mm": [
+    7.868050033721374e-05,
+    1800.0000715255737
+  ],
+  "resolucion": "2k",
+  "archivos": {
+    "color": {
+      "archivo": "color.png",
+      "url": "https://dl.polyhaven.org/file/ph-assets/Textures/png/2k/white_stucco_02/white_stucco_02_diff_2k.png",
+      "bytes": 22160774
+    },
+    "normal": {
+      "archivo": "normal.png",
+      "url": "https://dl.polyhaven.org/file/ph-assets/Textures/png/2k/white_stucco_02/white_stucco_02_nor_gl_2k.png",
+      "bytes": 23365103
+    },
+    "rugosidad": {
+      "archivo": "rugosidad.png",
+      "url": "https://dl.polyhaven.org/file/ph-assets/Textures/png/2k/white_stucco_02/white_stucco_02_rough_2k.png",
+      "bytes": 6978774
+    }
+  }
+}

@@ -1,0 +1,31 @@
+{
+  "asset": "rough_pine_door",
+  "uso": "madera",
+  "pagina": "https://polyhaven.com/a/rough_pine_door",
+  "licencia": "CC0",
+  "autores": [
+    "Dimitrios Savva"
+  ],
+  "medidas_mm": [
+    2000,
+    2000
+  ],
+  "resolucion": "2k",
+  "archivos": {
+    "color": {
+      "archivo": "color.png",
+      "url": "https://dl.polyhaven.org/file/ph-assets/Textures/png/2k/rough_pine_door/rough_pine_door_diff_2k.png",
+      "bytes": 21472802
+    },
+    "normal": {
+      "archivo": "normal.png",
+      "url": "https://dl.polyhaven.org/file/ph-assets/Textures/png/2k/rough_pine_door/rough_pine_door_nor_gl_2k.png",
+      "bytes": 21908842
+    },
+    "rugosidad": {
+      "archivo": "rugosidad.png",
+      "url": "https://dl.polyhaven.org/file/ph-assets/Textures/png/2k/rough_pine_door/rough_pine_door_rough_2k.png",
+      "bytes": 6245758
+    }
+  }
+}

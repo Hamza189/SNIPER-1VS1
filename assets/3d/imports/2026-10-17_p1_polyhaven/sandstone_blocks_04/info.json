@@ -1,0 +1,31 @@
+{
+  "asset": "sandstone_blocks_04",
+  "uso": "piedra",
+  "pagina": "https://polyhaven.com/a/sandstone_blocks_04",
+  "licencia": "CC0",
+  "autores": [
+    "Rob Tuytel"
+  ],
+  "medidas_mm": [
+    3000,
+    3000
+  ],
+  "resolucion": "2k",
+  "archivos": {
+    "color": {
+      "archivo": "color.png",
+      "url": "https://dl.polyhaven.org/file/ph-assets/Textures/png/2k/sandstone_blocks_04/sandstone_blocks_04_diff_2k.png",
+      "bytes": 6962192
+    },
+    "normal": {
+      "archivo": "normal.png",
+      "url": "https://dl.polyhaven.org/file/ph-assets/Textures/png/2k/sandstone_blocks_04/sandstone_blocks_04_nor_gl_2k.png",
+      "bytes": 6086672
+    },
+    "rugosidad": {
+      "archivo": "rugosidad.png",
+      "url": "https://dl.polyhaven.org/file/ph-assets/Textures/png/2k/sandstone_blocks_04/sandstone_blocks_04_rough_2k.png",
+      "bytes": 2974543
+    }
+  }
+}

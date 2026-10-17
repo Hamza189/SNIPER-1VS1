@@ -17,7 +17,7 @@ async function load(b, url, q, p3mem) {
   await ctx.addInitScript(q => { try { localStorage.setItem('sniperduel_settings', JSON.stringify({ quality: q, v: 2 })); } catch (e) {} }, q);
   const p = await ctx.newPage(), bad = [], p0files = [], errs = [];
   p.on('pageerror', e => errs.push(e.message));
-  p.on('response', r => { const u = r.url(); if (/\/assets\//.test(u) && r.status() >= 400) bad.push(r.status() + ' ' + u.replace(/^.*\/assets\//, 'assets/').replace(/\?.*/, '')); if (/assets\/tex\/p0/.test(u)) p0files.push(u.replace(/^.*\/tex\//, '').replace(/\?.*/, '')); });
+  p.on('response', r => { const u = r.url(); if (/\/assets\//.test(u) && r.status() >= 400) bad.push(r.status() + ' ' + u.replace(/^.*\/assets\//, 'assets/').replace(/\?.*/, '')); if (/assets\/tex\/p1/.test(u)) (p0files.p1 || (p0files.p1 = [])).push(u.replace(/^.*\/tex\//, '').replace(/\?.*/, '') + (r.status() >= 400 ? '(' + r.status() + ')' : '')); if (/assets\/tex\/p0/.test(u)) p0files.push(u.replace(/^.*\/tex\//, '').replace(/\?.*/, '')); });
   p.on('requestfailed', r => { if (/\/assets\//.test(r.url())) bad.push('fallo ' + r.url().replace(/^.*\/assets\//, 'assets/')); });
   await p.goto(url);
   await p.waitForFunction(() => window.__SD && __SD.W && (!__SD.P3ON || (__SD.P3W && __SD.P3W.kit)), null, { timeout: 120000 });
@@ -45,6 +45,10 @@ async function load(b, url, q, p3mem) {
   check('?pueblo=3 por defecto: caliza v3b en la plaza y adoquín de Poly Haven (aprobados el 12 y el 17-10-2026)', dflt.on && dflt.p0files.some(f => /^p0v3_plaza_c/.test(f)) && dflt.p0files.some(f => /^p0cc_cobble_c/.test(f)), dflt.p0files.join(' '));
   const noCob = await load(b, srv.url + '?vm=1&pueblo=3&adoquin=0', 'alto');
   check('&adoquin=0: vuelve el adoquín anterior (ningún archivo del escaneo)', noCob.on && !noCob.use.cobble && !noCob.p0files.some(f => /cobble/.test(f)), noCob.p0files.join(' '));
+  const fa = await load(b, srv.url + '?vm=1&pueblo=3&fachada=cc0', 'alto');
+  const p1 = fa.p0files.p1 || [];
+  check('&fachada=cc0 (P1): paredes, tejas, persianas y puertas de Poly Haven, sin 404, mismas colisiones', ['stucco', 'rooftiles', 'wood', 'door'].every(m => p1.some(f => f.startsWith('p1_' + m + '_c'))) && !p1.some(f => /\(/.test(f)) && !p1.some(f => /stone/.test(f)) && fa.colliders === base.colliders && fa.bad.length === 0, p1.join(' '));
+  check('sin &fachada=cc0 no se descarga ninguna textura P1', !(dflt.p0files.p1 || []).length);
   const mem = await load(b, srv.url + '?vm=1', 'alto', true);
   check('PUEBLO 3.0 elegido en AJUSTES (guardado en el dispositivo) sin nada en el enlace: suelo nuevo', mem.on && mem.p0files.some(f => /^p0cc_cobble_c/.test(f)), mem.p0files.join(' '));
   check('?pueblo=3 por defecto: mismas cajas de colisión', dflt.colliders === base.colliders);
