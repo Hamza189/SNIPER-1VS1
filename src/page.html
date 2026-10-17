@@ -2963,7 +2963,7 @@ function bulletHit(h,b){
 /* ---- shot: direction from the last rendered aim (reticle), never from recoil or shake ---- */
 function doFire(e,kind){
   const pistol=kind==='pistol',shotgun=kind==='shotgun',cfg=pistol?PCFG:shotgun?SCFG:GUNCFG,core=pistol?PCORE:shotgun?SCORE:WCORE;
-  STATS.shots++;if(STATS.firstShot<0)STATS.firstShot=gameTime;
+  STATS.shots++;if(STATS.firstShot<0)STATS.firstShot=gameTime;RATS.shot={at:performance.now(),x:PM.x,z:PM.z};
   const scoped=!pistol&&!shotgun&&e.scoped;
   _ae.set(AIM.pitch,AIM.yaw,0,'YXZ');_aq.setFromEuler(_ae);
   const fwd=new T.Vector3(0,0,-1).applyQuaternion(_aq),up=new T.Vector3(0,1,0).applyQuaternion(_aq),right=new T.Vector3(1,0,0).applyQuaternion(_aq);
@@ -4354,6 +4354,8 @@ function frameBody(now){
   if(GFX.frame%10===1){csFix(scene);csFix(wScene);}
   renderer.clear();
   if(E10.ready)e10Lod(false);
+  if(RATS.ready)ratsFrame(drawDt);
+  if(FLORA.ready)FLORA.time.value=now/1000%1000;
   renderer.render(scene,camera);
   if(!SHOT.noVM&&(WROOT.visible||KROOT.visible||PROOT.visible||SROOT.visible)&&(state==='playing'||state==='dead')){renderer.clearDepth();renderer.render(wScene,wCam);}
 }
@@ -4432,6 +4434,108 @@ function e10Lod(force){
 }
 if(E10.on)try{new T.GLTFLoader().load('assets/3d/models/sd_e10_casa_oliva.glb?v='+BUILD_HASH,g=>{try{e10Setup(g);}catch(e){E10.failed=true;console.warn('e10',e);}},undefined,e=>{E10.failed=true;console.warn('e10 load',e);});}catch(e){E10.failed=true;}
 
-window.__SD={SHADOW_FADE,setDuelLethal,get DUEL_LETHAL(){return DUEL_LETHAL;},gfxDiagText,get P3ON(){return P3ON;},COBCC,damagePlayer,TEX,sunFollow,setSunSnap(on){SUN_SNAP=!!on;},sun,P0,E10,e10Lod,DIAG,setTrainMove,LIGHT:{sun,hemi,skyMat,LOOK,P3},P3W,freeze(on){SIM_FREEZE=!!on;},SHOT,VMA,makeSoldier,animateSoldier,BOT_MAT,scene,camera,RemotePlayer,PMprev,PIS,PROOT,RIF,WROOT,SHO_:null,MANUAL,advance(ms){frameBody(last+ms);},get LAST_PELLETS(){return LAST_PELLETS;},SCORE,SCFG,SROOT,SHO,setPrimaryChoice,get PRIMARY(){return PRIMARY;},PCORE,PCFG,setWorld,WORLDS,get WORLD_ID(){return WORLD_ID;},renderer,GFX,gfxApply,get NET(){return NET;},get REMOTE(){return REMOTE;},W,get NAV(){return NAV;},setOffMap,get OFFMAP(){return OFFMAP;},TOUCH,EDIT,openEditor,get SETTINGS(){return SETTINGS;},get LAYOUT(){return LAYOUT;},checkOrientation,MAT,LOAD,TRAINERS,get RANGE_BOTS(){return RANGE_BOTS;},TRAIN,setTrain,setLethal,kitNote,GINS,TDIAG,AU,get TOUCH_EVENTS(){return TOUCH_EVENTS;},impactFX,bodyFX,get DECALS(){return DECALS;},surfaceOf,soundDelay,aimSelfTest,P,PM,WS,WCORE,RECOIL,AIM,BOTS,DUMMIES,BULLETS,EVENTS,PARTS,STATS,get state(){return state;},get mode(){return mode;},setMode,input,startMatch,simTick,frame,toMenu,pause,resume};
+/* Fauna (client/rats.js, 17-10-2026): street rats in PUEBLO 3.0 — ambient only (no collisions, bullets or server), each one
+   living round a drain of the new ground. ALTO 3, MEDIO 2, BAJO none; &ratas=0 → none. */
+const RATS={on:P3ON&&typeof SDRats!=='undefined'&&!/[?&]ratas=0\b/.test(location.search)&&GFX.profile!=='bajo',list:[],ready:false,failed:false,shot:{at:0,x:0,z:0},
+  homes:[[1.9,20],[-6,-9.3],[9.3,6],[1.9,38]]};
+const RAT_WORLD={
+  // low boxes only (walls, planters, crates, cars): a rat runs under nothing taller than itself anyway
+  blocked(x,z){if(x<-60||x>60||z<-60||z>60)return true;for(const c of W.colliders){if(c.minY>0.25)continue;if(x>c.minX-0.1&&x<c.maxX+0.1&&z>c.minZ-0.1&&z<c.maxZ+0.1)return true;}return false;},
+  clear(x0,z0,x1,z1){const n=Math.ceil(Math.hypot(x1-x0,z1-z0)/0.25);for(let i=1;i<=n;i++){const t=i/n;if(this.blocked(x0+(x1-x0)*t,z0+(z1-z0)*t))return false;}return true;},
+  wallDist(x,z){let d=9;for(const c of W.colliders){if(c.minY>0.25||c.maxY<0.5)continue;const dx=Math.max(c.minX-x,0,x-c.maxX),dz=Math.max(c.minZ-z,0,z-c.maxZ);d=Math.min(d,Math.hypot(dx,dz));}return d;}};
+function ratsSetup(buf){
+  const n=GFX.profile==='alto'?3:2,tl=new T.TextureLoader(),tx=(f,srgb)=>{const t=tl.load('assets/tex/'+f+'.jpg?v='+BUILD_HASH);t.flipY=false;if(srgb)t.encoding=T.sRGBEncoding;return t;};
+  const full=GFX.profile==='alto';
+  const mat=new T.MeshStandardMaterial({map:tx('rat_c',true),normalMap:full?tx('rat_n'):null,roughnessMap:tx('rat_r'),roughness:1,metalness:0,skinning:true});mat.userData.cs=1;mat.name='rat';
+  let left=n;
+  for(let i=0;i<n;i++)new T.GLTFLoader().parse(buf,'',g=>{try{
+    const root=g.scene;root.scale.setScalar(SDRats.CFG.scale);root.name='rat_'+i;
+    root.traverse(o=>{if(o.isMesh){o.material=mat;o.castShadow=false;o.receiveShadow=true;o.frustumCulled=false;}});
+    const h=RATS.homes[i],br=SDRats.brain({x:h[0],z:h[1]},0x7a7+i*977,RAT_WORLD),bd=SDRats.body(T,root,0x51+i*131);
+    scene.add(root);WORLDS.pueblo.objs.push(root);root.visible=WORLD_ID==='pueblo';
+    RATS.list.push({root,brain:br,body:bd});
+    }catch(e){RATS.failed=true;console.warn('rata',e);}if(--left===0)RATS.ready=!RATS.failed;},e=>{RATS.failed=true;console.warn('rata glb',e);});
+}
+function ratsFrame(dt){
+  if(!RATS.ready||WORLD_ID!=='pueblo')return;
+  const cx=camera.position.x,cz=camera.position.z,P={x:cx,z:cz,shotAt:RATS.shot.at,shotX:RATS.shot.x,shotZ:RATS.shot.z};
+  dt=Math.min(dt,0.1);
+  for(const r of RATS.list){const b=r.brain;
+    if(Math.hypot(b.x-cx,b.z-cz)>60){r.root.visible=false;continue;}
+    b.update(dt,P);const bob=r.body.update(dt,b);
+    r.root.position.set(b.x,0.02+bob-b.sink*0.16,b.z);r.root.rotation.y=b.yaw;r.root.visible=b.visible;}
+}
+if(RATS.on)try{new T.FileLoader().setResponseType('arraybuffer').load('assets/3d/fauna/rat.glb?v='+BUILD_HASH,ratsSetup,undefined,e=>{RATS.failed=true;console.warn('rata glb',e);});}catch(e){RATS.failed=true;}
+
+/* Vegetation (client/flora.js, 17-10-2026): dandelions and grass at the foot of walls, kerbs and drains of PUEBLO 3.0.
+   Instanced (one draw call per variant and texture), alpha-tested (no sorting), no shadows cast, a little wind in the
+   vertex shader. ALTO all, MEDIO 60 %, BAJO 25 % (the same places). &flora=0 → none. */
+const FLORA={on:P3ON&&typeof SDFlora!=='undefined'&&!/[?&]flora=0\b/.test(location.search),meshes:[],plants:0,tris:0,ready:false,failed:false,time:{value:0},glb:{}};
+function floraSetup(){
+  // dandelions: their light 3D level (LOD3, 140–265 triangles) everywhere; grass: impostor cards (2 crossed squares per clump,
+  // 4 triangles) of the FULL-detail Poly Haven clumps rendered in Blender (tools/flora/grass_cards.py + grass_atlas.py): the mesh
+  // clumps were ~470 triangles each and, simplified, lost most of their blades (230 000 triangles for a few straws)
+  const pf=GFX.profile,big=pf==='alto'?1024:512,LOD='LOD3',CARDS=FLORA.cards;
+  const list=SDFlora.scatter({colliders:W.colliders,region:[-30,30,-14,50],profile:pf,seed:0x5d17,drains:RATS.homes,
+    kerbs:[['z',-4.5,3.8,49,1],['z',4.5,3.8,49,-1],['x',-3.5,11.2,30,1],['x',3.5,11.2,30,-1],['x',-3.5,-30,-11.2,1],['x',3.5,-30,-11.2,-1]],
+    avoid:(x,z)=>Math.hypot(x,z)<4.5});   // not inside the fountain
+  // ground height under each plant (pavements are higher than the street): one ray down onto the town's ground
+  const ground=P3W.meshes.filter(m=>/^p3_ground/.test(m.name)),ray=new T.Raycaster(),down=new T.Vector3(0,-1,0),o=new T.Vector3();
+  const tl=new T.TextureLoader(),tex=(n,flip)=>{const t=tl.load('assets/tex/'+n+'_'+big+'.png?v='+BUILD_HASH);t.flipY=!!flip;t.encoding=T.sRGBEncoding;
+    t.anisotropy=Math.min(pf==='alto'?4:2,renderer.capabilities.getMaxAnisotropy?renderer.capabilities.getMaxAnisotropy():1);return t;};
+  // alpha test that keeps its coverage in the mipmaps (17-10-2026): the blades are thin, so in the small mips their alpha
+  // averages down to ~0.1 and the 0.45 test erased most of every tuft a metre away; alpha is scaled up with the mip level in use
+  // (dFdx/dFdy of the texel position), the usual fix for alpha-tested foliage
+  const mat=(n,flip)=>{const m=new T.MeshStandardMaterial({map:tex(n,flip),alphaTest:0.45,side:T.DoubleSide,roughness:0.88,metalness:0});m.userData.cs=1;m.name='flora_'+n;
+    m.extensions={derivatives:true};
+    m.onBeforeCompile=sh=>{sh.uniforms.uFloraT=FLORA.time;
+      // grass cards: both faces keep the UP normal (Three flips it on back faces of double-sided materials → half the clumps dark)
+      if(flip)sh.fragmentShader=sh.fragmentShader.replace('#include <normal_fragment_begin>','#include <normal_fragment_begin>\n normal = normalize( vNormal );');
+      sh.fragmentShader=sh.fragmentShader.replace('#include <map_fragment>','#include <map_fragment>\n{ vec2 fdx=dFdx(vUv*'+big+'.0),fdy=dFdy(vUv*'+big+'.0);'+
+        ' float fmip=max(0.0,0.5*log2(max(dot(fdx,fdx),dot(fdy,fdy)))); diffuseColor.a=clamp(diffuseColor.a*(1.0+fmip*0.6),0.0,1.0); }');sh.vertexShader='uniform float uFloraT;\n'+sh.vertexShader.replace('#include <begin_vertex>',
+      '#include <begin_vertex>\n#ifdef USE_INSTANCING\nfloat fw=max(transformed.y,0.0)*0.09;transformed.x+=sin(uFloraT*1.9+instanceMatrix[3].x*0.9+instanceMatrix[3].z*0.6)*fw;transformed.z+=cos(uFloraT*1.4+instanceMatrix[3].z*0.8)*fw*0.7;\n#endif');};
+    return m;};
+  const M={dandelion:mat('flora_dandelion'),grass:mat('flora_grasscards',true)};M.grassdry=M.grass;
+  // one card per clump: two squares crossed at 90°, standing on the clump's own base, normals up (lit like the ground under it)
+  const CW=1/4,inset=2/(big*1),cardGeo={};
+  const card=(v,dry)=>{const k=v+(dry?'d':'g');if(cardGeo[k])return cardGeo[k];const c=CARDS[v],S=c.size,y0=-c.base*S,u0=c.col*CW+inset,u1=(c.col+1)*CW-inset,v0=(dry?0:0.5)+inset*2,v1=(dry?0.5:1)-inset*2;
+    const P=[],U=[],N=[],I=[];for(let q=0;q<2;q++){const a=q?Math.PI/2:0,cx=Math.cos(a)*S/2,cz=Math.sin(a)*S/2,b=P.length/3;
+      P.push(-cx,y0,-cz, cx,y0,cz, cx,y0+S,cz, -cx,y0+S,-cz);U.push(u0,v0,u1,v0,u1,v1,u0,v1);N.push(0,1,0,0,1,0,0,1,0,0,1,0);I.push(b,b+1,b+2,b,b+2,b+3);}
+    const g=new T.BufferGeometry();g.setAttribute('position',new T.Float32BufferAttribute(P,3));g.setAttribute('uv',new T.Float32BufferAttribute(U,2));
+    g.setAttribute('normal',new T.Float32BufferAttribute(N,3));g.setIndex(I);return cardGeo[k]=g;};
+  const groups={},m4=new T.Matrix4(),q=new T.Quaternion(),e=new T.Euler(),sc=new T.Vector3(),ps=new T.Vector3(),col=new T.Color();
+  for(const p of list){
+    o.set(p.x,3,p.z);ray.set(o,down);const hit=ground.length?ray.intersectObjects(ground,false)[0]:null;const y=hit?hit.point.y:0.015;
+    const key=p.kind==='grass'?(p.dry?'grassdry':'grass')+'|'+'bbcde'[p.variant]:'dandelion|'+'abcde'[p.variant];   // the card atlas has clumps b–e
+    (groups[key]||(groups[key]=[])).push([p,y]);}
+  for(const key in groups){
+    const [mk,v]=key.split('|');let src=null;
+    if(mk==='dandelion'){const node=FLORA.glb.dandelion.getObjectByName('dandelion_01_'+v+'_'+LOD);node&&node.traverse(x=>{if(!src&&x.isMesh)src=x;});}
+    else src={geometry:card(v,mk==='grassdry')};
+    if(!src)continue;
+    // never taller than 0.6 m (fair play: low see-through decoration, below the legs' hit zone at 0.86 m)
+    if(!src.geometry.boundingBox)src.geometry.computeBoundingBox();const topY=Math.max(0.05,src.geometry.boundingBox.max.y),maxS=0.6/topY;
+    const L=groups[key],im=new T.InstancedMesh(src.geometry,M[mk],L.length);
+    let x0=1e9,x1=-1e9,z0=1e9,z1=-1e9;
+    L.forEach(([p,y],i)=>{e.set(p.tilt,p.ry,p.tilt*0.7);q.setFromEuler(e);sc.setScalar(Math.min(p.s,maxS));ps.set(p.x,y,p.z);m4.compose(ps,q,sc);im.setMatrixAt(i,m4);
+      col.setRGB(p.tint,p.tint*(mk==='grassdry'?0.97:1),p.tint*(mk==='grassdry'?0.9:0.95));im.setColorAt(i,col);
+      x0=Math.min(x0,p.x);x1=Math.max(x1,p.x);z0=Math.min(z0,p.z);z1=Math.max(z1,p.z);});
+    im.instanceMatrix.needsUpdate=true;if(im.instanceColor)im.instanceColor.needsUpdate=true;
+    // one bounding sphere round all instances (r128 culls an InstancedMesh by its single geometry)
+    const g=src.geometry.clone();g.boundingSphere=new T.Sphere(new T.Vector3((x0+x1)/2,0.2,(z0+z1)/2),Math.hypot(x1-x0,z1-z0)/2+1);im.geometry=g;
+    im.castShadow=false;im.receiveShadow=true;im.name='flora_'+key.replace('|','_');
+    scene.add(im);WORLDS.pueblo.objs.push(im);im.visible=WORLD_ID==='pueblo';FLORA.meshes.push(im);
+    FLORA.plants+=L.length;FLORA.tris+=L.length*(g.index?g.index.count/3:g.attributes.position.count/3);}
+  FLORA.list=list;FLORA.ready=true;
+}
+if(FLORA.on){const gl=new T.GLTFLoader();let n=2;
+  new T.FileLoader().setResponseType('json').load('assets/3d/flora/grass_cards.json?v='+BUILD_HASH,j=>{FLORA.cards=j;done();},undefined,e=>{FLORA.failed=true;console.warn('flora cards',e);});
+  gl.load('assets/3d/flora/dandelion.glb?v='+BUILD_HASH,g=>{FLORA.glb.dandelion=g.scene;done();},undefined,e=>{FLORA.failed=true;console.warn('flora glb',e);});
+  function done(){if(--n===0){
+      const go=()=>{try{floraSetup();}catch(e){FLORA.failed=true;console.warn('flora',e);}};
+      // the town's ground must exist first (rays land on it)
+      if(P3W.kit)go();else{const w=setInterval(()=>{if(P3W.kit){clearInterval(w);go();}},300);}}}}
+
+window.__SD={FLORA,RATS,RAT_WORLD,ratsFrame,SHADOW_FADE,setDuelLethal,get DUEL_LETHAL(){return DUEL_LETHAL;},gfxDiagText,get P3ON(){return P3ON;},COBCC,damagePlayer,TEX,sunFollow,setSunSnap(on){SUN_SNAP=!!on;},sun,P0,E10,e10Lod,DIAG,setTrainMove,LIGHT:{sun,hemi,skyMat,LOOK,P3},P3W,freeze(on){SIM_FREEZE=!!on;},SHOT,VMA,makeSoldier,animateSoldier,BOT_MAT,scene,camera,RemotePlayer,PMprev,PIS,PROOT,RIF,WROOT,SHO_:null,MANUAL,advance(ms){frameBody(last+ms);},get LAST_PELLETS(){return LAST_PELLETS;},SCORE,SCFG,SROOT,SHO,setPrimaryChoice,get PRIMARY(){return PRIMARY;},PCORE,PCFG,setWorld,WORLDS,get WORLD_ID(){return WORLD_ID;},renderer,GFX,gfxApply,get NET(){return NET;},get REMOTE(){return REMOTE;},W,get NAV(){return NAV;},setOffMap,get OFFMAP(){return OFFMAP;},TOUCH,EDIT,openEditor,get SETTINGS(){return SETTINGS;},get LAYOUT(){return LAYOUT;},checkOrientation,MAT,LOAD,TRAINERS,get RANGE_BOTS(){return RANGE_BOTS;},TRAIN,setTrain,setLethal,kitNote,GINS,TDIAG,AU,get TOUCH_EVENTS(){return TOUCH_EVENTS;},impactFX,bodyFX,get DECALS(){return DECALS;},surfaceOf,soundDelay,aimSelfTest,P,PM,WS,WCORE,RECOIL,AIM,BOTS,DUMMIES,BULLETS,EVENTS,PARTS,STATS,get state(){return state;},get mode(){return mode;},setMode,input,startMatch,simTick,frame,toMenu,pause,resume};
 })();
 </script>
