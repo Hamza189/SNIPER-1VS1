@@ -545,8 +545,8 @@ claro para esta luz: mejor una media de ~120–160.
 | `fish_knife` | Cuchillo de pesca con mango de madera | Igual que las dos anteriores |
 | `street_rat` | Rata de 14,8 cm, sin rig pero con los pesos de un Rigify | **Integrada** (ver abajo) |
 | `dandelion_01`, `grass_medium_02` | Plantas con varios niveles de detalle | **Integradas** (ver abajo) |
-| `gate_latch_01` | Pestillo metálico de verja | Pendiente: decoración de puertas |
-| Kit P1 de ChatGPT | Piedra provisional y estuco CC0 | Pendiente de comparar |
+| `gate_latch_01` | Pestillo metálico de verja (~15 cm) | **Aparcado:** no se ve a la distancia de juego |
+| Kit P1 de ChatGPT | Perfiles de cajas con piedra procedural y el estuco `beige_wall_001` (casi liso) | **No se integra:** no supera al kit actual de Blender, que ya tiene jambas, cornisas y zócalos. El propio paquete se presenta como «prototipo, no publicar por defecto» |
 
 **Rata con vida** (`client/rats.js`, `tools/fauna/`)
 - **Esqueleto:** 19 huesos reconstruidos sobre los pesos originales del rig.
