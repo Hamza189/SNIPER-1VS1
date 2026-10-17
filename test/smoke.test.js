@@ -130,6 +130,12 @@ if (SD.state !== 'over') {
 key('F3', true); key('F3', false); frames(40, 16);
 check('panel F3 se actualiza sin errores', errors.length === 0);
 
+console.log('\nDUELO: BOTS PUEDEN MATARTE');
+SD.toMenu(); frames(5, 16); SD.setMode('duel'); SD.setDuelLethal(false); SD.startMatch(); frames(5, 16);
+{ const bot = SD.BOTS[0]; SD.damagePlayer(80, bot, true); SD.damagePlayer(80, bot, true);
+  check('«NO»: los disparos de los bots no te quitan vida ni te matan', SD.P.hp === 100 && SD.P.alive, SD.P.hp);
+  SD.setDuelLethal(true); SD.damagePlayer(30, bot, false);
+  check('«SÍ» (por defecto): vuelven a hacer daño', SD.P.hp === 70, SD.P.hp); }
 console.log('\nCAMPO DE TIRO');
 SD.toMenu(); frames(5, 16);
 SD.setMode('range'); SD.startMatch();

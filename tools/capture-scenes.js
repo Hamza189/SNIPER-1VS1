@@ -1,6 +1,7 @@
 /* Fixed-camera captures of the maps, for fair before/after comparisons (same camera, FOV, size, quality).
    node tools/capture-scenes.js OUT_DIR [prefix]      env: Q=alto|medio|bajo  W=1170 H=540  ONLY=pueblo-plaza,…
-   Uses software WebGL (swiftshader): good for comparing looks, NOT for measuring phone performance. */
+   WEBGL1=1 forces the WebGL 1 path (Chrome on some Android GPUs). Uses software WebGL (swiftshader): good for comparing
+   looks, NOT for measuring phone performance. */
 'use strict';
 const { chromium } = require('playwright');
 const ss = require('./static-server.js');
@@ -36,7 +37,12 @@ const LOOKX = process.env.LOOKX || '';
   await ctx.addInitScript(q => { try { localStorage.setItem('sniperduel_settings', JSON.stringify({ quality: q, v: 2 })); } catch (e) {} }, Q);
   if (LOOKX) await ctx.addInitScript(j => { window.__LOOKX = S => { const o = JSON.parse(j), L = S.LIGHT;
     if (o.exp != null) S.renderer.toneMappingExposure = o.exp; if (o.sunI != null) L.sun.intensity = o.sunI; if (o.hemiI != null) L.hemi.intensity = o.hemiI; }; }, LOOKX);
+  // WEBGL1=1: the browser refuses WebGL 2, as Chrome does on some Android GPUs, so the game takes its WebGL 1 path
+  if (process.env.WEBGL1 === '1') await ctx.addInitScript(() => { const g = HTMLCanvasElement.prototype.getContext;
+    HTMLCanvasElement.prototype.getContext = function (t, o) { return t === 'webgl2' ? null : g.call(this, t, o); }; });
   const p = await ctx.newPage(); p.on('pageerror', e => console.log('ERR', e.message));
+  p.on('console', m => { if (m.type() === 'error' || m.type() === 'warning') console.log('consola ' + m.type() + ':', m.text().slice(0, 200)); });
+  p.on('response', r => { if (r.status() >= 400) console.log('HTTP', r.status(), r.url().replace(/^.*?\/assets\//, 'assets/')); });
   await p.goto(srv.url + '?vm=1' + URLX);
   await p.addStyleTag({ content: '#lockHint{display:none!important}' }); await p.waitForTimeout(2500);
   // MODE=duel (default: what a match in PUEBLO looks like, fog included) or range; BOTS=1 keeps the bots

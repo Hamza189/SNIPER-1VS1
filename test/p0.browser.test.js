@@ -10,8 +10,9 @@ const ss = require('../tools/static-server.js');
 let pass = 0, fail = 0;
 function check(name, cond, info) { if (cond) { pass++; console.log('  ok   ' + name + (info !== undefined ? '  (' + info + ')' : '')); } else { fail++; console.log('  FAIL ' + name + (info !== undefined ? '  (' + info + ')' : '')); } }
 
-async function load(b, url, q) {
+async function load(b, url, q, p3mem) {
   const ctx = await b.newContext({ viewport: { width: 640, height: 360 } });
+  if (p3mem) await ctx.addInitScript(() => { try { localStorage.setItem('sniperduel_p3', 'true'); } catch (e) {} });
   await ctx.route(/fonts\.(googleapis|gstatic)\.com/, r => r.abort());
   await ctx.addInitScript(q => { try { localStorage.setItem('sniperduel_settings', JSON.stringify({ quality: q, v: 2 })); } catch (e) {} }, q);
   const p = await ctx.newPage(), bad = [], p0files = [], errs = [];
@@ -19,7 +20,7 @@ async function load(b, url, q) {
   p.on('response', r => { const u = r.url(); if (/\/assets\//.test(u) && r.status() >= 400) bad.push(r.status() + ' ' + u.replace(/^.*\/assets\//, 'assets/').replace(/\?.*/, '')); if (/assets\/tex\/p0/.test(u)) p0files.push(u.replace(/^.*\/tex\//, '').replace(/\?.*/, '')); });
   p.on('requestfailed', r => { if (/\/assets\//.test(r.url())) bad.push('fallo ' + r.url().replace(/^.*\/assets\//, 'assets/')); });
   await p.goto(url);
-  await p.waitForFunction(() => window.__SD && __SD.W && (!/pueblo=3/.test(location.search) || (__SD.P3W && __SD.P3W.kit)), null, { timeout: 120000 });
+  await p.waitForFunction(() => window.__SD && __SD.W && (!__SD.P3ON || (__SD.P3W && __SD.P3W.kit)), null, { timeout: 120000 });
   await p.waitForTimeout(2500);   // the textures arrive after the kit
   const r = await p.evaluate(() => {
     const S = __SD; S.setWorld('pueblo');
@@ -41,7 +42,11 @@ async function load(b, url, q) {
   console.log('\nSIN EL PACK');
   check('?pueblo=3&suelo=0: suelo anterior y ningún archivo P0 descargado', !base.on && base.p0files.length === 0, base.p0files.join(' '));
   const dflt = await load(b, srv.url + '?vm=1&pueblo=3', 'alto');
-  check('?pueblo=3 por defecto: caliza nueva de la plaza (aprobada el 12-10-2026), sin el adoquín', dflt.on && dflt.p0files.some(f => /^p0v3_plaza_c/.test(f)) && !dflt.p0files.some(f => /cobble/.test(f)), dflt.p0files.join(' '));
+  check('?pueblo=3 por defecto: caliza v3b en la plaza y adoquín de Poly Haven (aprobados el 12 y el 17-10-2026)', dflt.on && dflt.p0files.some(f => /^p0v3_plaza_c/.test(f)) && dflt.p0files.some(f => /^p0cc_cobble_c/.test(f)), dflt.p0files.join(' '));
+  const noCob = await load(b, srv.url + '?vm=1&pueblo=3&adoquin=0', 'alto');
+  check('&adoquin=0: vuelve el adoquín anterior (ningún archivo del escaneo)', noCob.on && !noCob.use.cobble && !noCob.p0files.some(f => /cobble/.test(f)), noCob.p0files.join(' '));
+  const mem = await load(b, srv.url + '?vm=1', 'alto', true);
+  check('PUEBLO 3.0 elegido en AJUSTES (guardado en el dispositivo) sin nada en el enlace: suelo nuevo', mem.on && mem.p0files.some(f => /^p0cc_cobble_c/.test(f)), mem.p0files.join(' '));
   check('?pueblo=3 por defecto: mismas cajas de colisión', dflt.colliders === base.colliders);
   const def = await load(b, srv.url + '?vm=1', 'alto');
   check('el juego normal: P0 apagado y ningún archivo P0 descargado', !def.on && def.p0files.length === 0);

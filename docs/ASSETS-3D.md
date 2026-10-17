@@ -468,6 +468,28 @@ claro para esta luz: mejor una media de ~120–160.
 
 - **En el juego:** opción `?pueblo=3&adoquin=cc0`, en la calle norte y las bandas de la plaza. Mismos triángulos, draw calls y colisiones. `&adoquinm=<m>` cambia el tamaño de la repetición (por defecto 2,7).
 - **Estado:**
-  - PROBADO EN NAVEGADOR (`test/p0.browser.test.js`).
-  - PENDIENTE DE VALIDACIÓN EN IPHONE: aspecto y FPS. Las texturas de ALTO a 2048 cuestan unos 40 MB más de memoria de vídeo que el adoquín actual.
-  - No se activa por defecto hasta que el propietario lo apruebe.
+  - **Activado por defecto en PUEBLO 3.0 desde el 17-10-2026.** El propietario lo vio en su iPhone («se ve todo el suelo muy bien en 4k»). `&adoquin=0` vuelve al adoquín anterior.
+  - PROBADO EN NAVEGADOR (`test/p0.browser.test.js`). Las texturas de ALTO a 2048 cuestan unos 40 MB más de memoria de vídeo.
+  - **Samsung de su pareja (17-10-2026): suelo gris** en BAJO y en ALTO, en varios navegadores.
+    - En el navegador de pruebas, forzando WebGL 1 (`WEBGL1=1 node tools/capture-scenes.js …`), se ve bien.
+    - Causa más probable: el enlace perdió `?pueblo=3&adoquin=cc0` al compartirlo, y sin eso se carga el pueblo clásico, cuyo adoquín es gris.
+    - Arreglo:
+      - el pueblo 3.0 se elige en AJUSTES › GRÁFICOS (CLÁSICO / 3.0) y se recuerda en el dispositivo;
+      - en esa misma pestaña, una línea de diagnóstico muestra si está activo el pueblo 3.0, si el suelo es el nuevo, la versión de WebGL, la GPU y cuántas texturas han cargado o fallado. Con una captura desde cualquier móvil se sabe qué pasa.
+
+## 14. P1 — fachadas con escaneos CC0 (plan, 17-10-2026)
+
+- **Mismo método que el adoquín.** Escaneos CC0 de Poly Haven:
+  - los descarga el propietario con `tools/polyhaven/descargar_p1.py` (Python sin instalar nada, PNG 2K tal cual);
+  - Claude los compara en el juego con las mismas cámaras y los activa como opción;
+  - solo pasan a ser los de por defecto si mejoran.
+- **Candidatos:**
+
+  | Material del kit | Candidatos | Notas |
+  |---|---|---|
+  | `stucco` (paredes) | `white_stucco_02`, `plastered_wall_02`, `beige_wall_001` | Se tiñe por fachada: hace falta una base clara y neutra |
+  | `rooftiles` (tejados) | `clay_roof_tiles_02`, `clay_roof_tiles_03` | Teja árabe |
+  | `stone` (jambas y zócalos) | `sandstone_blocks_04`, `large_sandstone_blocks_01` | |
+  | `wood` (persianas y puertas) | `distressed_painted_planks`, `rough_pine_door` | Se tiñe |
+
+- **Texturas actuales:** las generé con código, de 20 a 60 KB cada una. Son el punto flojo al lado del suelo nuevo.
