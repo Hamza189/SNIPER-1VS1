@@ -46,6 +46,7 @@ Antes de cambiar algo: lee el archivo entero que vas a tocar y busca su prueba e
 | `CLAUDE.md` | Reglas permanentes |
 | `docs/claude-code/SNIPER_DUEL_DECISIONS_LOG.md` | Registro duradero de decisiones, cambios y tareas abiertas |
 | `docs/claude-code/SNIPER_DUEL_ONBOARDING_2026-10-18.md` | Informe de incorporación de Claude Code |
+| `docs/claude-code/SNIPER_DUEL_AUDIT_2026-10-18.md` | Auditoría de rendimiento, gráficos, jugabilidad y red, con paquetes de trabajo |
 | `docs/claude-code/SNIPER_DUEL_TECHNOLOGY_EVOLUTION.md` | Auditoría de lenguajes y plan de evolución tecnológica (T0–T6) |
 | `docs/claude-code/SNIPER_DUEL_MASTER_CONTEXT.md` | Qué es, estado de cada sistema, decisiones, problemas abiertos |
 | `docs/claude-code/SNIPER_DUEL_TECHNICAL_ARCHITECTURE.md` | Código, archivos, render, red, banderas, pruebas |

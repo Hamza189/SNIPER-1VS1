@@ -16,7 +16,19 @@ Las decisiones anteriores al 18-10-2026 están resumidas en `SNIPER_DUEL_MASTER_
 | Instalar `gh` en el PC | Propietario (decide) | PENDIENTE |
 | `.gitattributes` para fines de línea | Propietario (aprobar) | PROPUESTA |
 | Armas clásicas como aspectos | Propietario (aprobar inicio) | SIN EMPEZAR |
+| Fallo online: eventos ignorados tras reinicio de sala (Q1) | Claude, con tu aprobación | COMPROBADO, SIN ARREGLAR |
+| CASA ATLAS: bots atascados por red de navegación partida (J1) | Claude, con tu aprobación | COMPROBADO, SIN ARREGLAR |
+| Paquetes de la auditoría (`SNIPER_DUEL_AUDIT_2026-10-18.md` §4) | Propietario (aprobar) | PROPUESTOS |
 | Evolución tecnológica T0–T6 (`SNIPER_DUEL_TECHNOLOGY_EVOLUTION.md`) | Propietario (revisar el informe y aprobar fases) | INFORME ENTREGADO |
+
+## 18-10-2026 — Auditoría con cuatro agentes (sesión 1, tercera parte)
+- **Petición (propietario):** cuatro auditorías en paralelo de solo lectura; el agente principal coordina; nada de
+  despliegues ni balance sin aprobación; implementaciones paralelas solo en worktrees aislados.
+- **Hecho:** `SNIPER_DUEL_AUDIT_2026-10-18.md`. Verificados por el coordinador: fallo de eventos online tras reinicio de
+  sala, red de CASA partida (1 861/13/1 nodos), texturas duplicadas, `wScene` sin precompilar, capas de pared a 3–6 mm,
+  fundido de sombra con normal perturbada, zonas de impacto offline distintas.
+- **Decisión de método:** `src/page.html` lo tocan casi todos los arreglos → cambios del cliente en serie; solo red y CI
+  en paralelo.
 
 ## 18-10-2026 — Libertad tecnológica: auditoría e informe (sesión 1, segunda parte)
 - **Decisión (propietario):** se autoriza proponer otros lenguajes y herramientas si se demuestra la mejora; nada de
