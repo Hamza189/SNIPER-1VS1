@@ -4,8 +4,22 @@ Shooter PvP de francotiradores en el navegador, hecho con Three.js. Sin Unity ni
 
 **Estado:** alfa privada del **1v1 online** (sala privada con código o enlace, servidor autoritativo en Cloudflare) + modo offline completo (duelo contra bots y campo de tiro). Arma principal a elegir (rifle HALCÓN R7 o escopeta FURIA 12) + pistola VÍBORA 9 + navaja táctica. PC y móvil.
 
-- Juego: https://hamza189.github.io/SNIPER-1VS1/
+- Juego: https://hamza189.github.io/SNIPER-1VS1/ · PUEBLO 3.0: `?pueblo=3` · mapa experimental CASA ATLAS: `?casa=1&pueblo=3`
 - Servidor online: la dirección está en [`server.json`](server.json). Cómo se juega online, las pruebas con dos móviles y cómo revertir: [`docs/ONLINE.md`](docs/ONLINE.md).
+
+## Para Claude Code (y cualquiera que continúe el trabajo)
+
+1. [`CLAUDE.md`](CLAUDE.md): reglas permanentes del propietario y forma de trabajar. **Léelo antes de tocar nada.**
+2. [`docs/claude-code/SNIPER_DUEL_HANDOFF.md`](docs/claude-code/SNIPER_DUEL_HANDOFF.md): situación actual, primeros pasos y flujo de publicación.
+3. [`SNIPER_DUEL_MASTER_CONTEXT.md`](docs/claude-code/SNIPER_DUEL_MASTER_CONTEXT.md) (estado de cada sistema, decisiones, problemas abiertos) ·
+   [`SNIPER_DUEL_TECHNICAL_ARCHITECTURE.md`](docs/claude-code/SNIPER_DUEL_TECHNICAL_ARCHITECTURE.md) (código, red, banderas de URL, pruebas) ·
+   [`SNIPER_DUEL_ASSETS_AND_MAPS.md`](docs/claude-code/SNIPER_DUEL_ASSETS_AND_MAPS.md) (mapas y modelos) ·
+   [`SNIPER_DUEL_CONNECTIONS.md`](docs/claude-code/SNIPER_DUEL_CONNECTIONS.md) (GitHub, Pages, Actions, Cloudflare) ·
+   [`SNIPER_DUEL_ROADMAP.md`](docs/claude-code/SNIPER_DUEL_ROADMAP.md) (pendiente y prioridades).
+
+**Último estado (18-10-2026):** CASA ATLAS 1V1 integrado como mapa experimental (`?casa=1`) en cliente y servidor
+(detalles en [`docs/ASSETS-3D.md` §17](docs/ASSETS-3D.md)); pendiente de que el propietario lo pruebe en sus móviles y
+apruebe. Abierto: rayas en paredes en el PC del propietario (no reproducidas aún).
 
 ## Jugar
 
@@ -37,7 +51,7 @@ core/            Lógica pura y determinista (sin Three.js): la usan el navegado
   melee.js       Cambio de arma, navaja (alcance, paredes, espalda), animaciones
   player.js      El tick de un jugador (navaja → movimiento → rifle → pistola → escopeta), idéntico en cliente y servidor
   trainer.js     Cerebro de los bots de entrenamiento
-  mapdata.js     Los mapas (PUEBLO y ARENA DE PRUEBAS) exportados del navegador para el servidor
+  mapdata.js     Los mapas (PUEBLO, ARENA DE PRUEBAS y CASA ATLAS) exportados del navegador para el servidor (generado)
   geom.js        Rayos/segmentos contra el mapa y el cuerpo (mismo resultado que Three.js)
   hitbox.js      Zonas de impacto cabeza/torso/piernas (servidor y modelo del rival)
   protocol.js    Protocolo de red v1 validado (docs/PROTOCOLO.md)
@@ -48,6 +62,8 @@ client/          Lógica del cliente sin DOM (probada en Node)
   quality.js     Perfiles gráficos y resolución automática
   netcore.js     Multijugador: predicción, reconciliación, interpolación del rival, ping
   vmrig.js       Modelos 3D: materiales, brazos con guantes (colocación de manos y dedos), poses
+  town.js / town3.js / kit3d.js   PUEBLO 2.0 y 3.0 (kit modular horneado)      rats.js / flora.js   ratas y vegetación (3.0)
+  casa.js        Cajas de CASA ATLAS (generado por tools/casa/make_casa_js.py)
 server/
   worker.js      Servidor en Cloudflare (Worker + Durable Object por sala)
   node.js        El mismo servidor en Node (pruebas locales)
@@ -77,6 +93,7 @@ npm test                # build + pruebas automáticas
 - `test/smoke.test.js` (57) el juego completo con Three.js imitado.
 - `test/room.test.js` (110) la sala 1v1 con dos clientes reales sobre red simulada: latencia 20–250 ms, jitter, picos de pérdida, duplicados, reconexión, compensación de latencia, estrés.
 - `test/net.test.js` (13) servidor Node real + dos WebSocket · `test/browser.test.js` (38) Chromium real · `test/online.browser.test.js` (43) dos navegadores jugando una partida contra el servidor.
+- Mapas y assets: `town`, `town3`, `glb.contract`, `cover.browser`, `e10.browser`, `p0.browser`, `shadow.browser`, `rats`, `flora`, `fauna.browser`, `aim.browser` · CASA ATLAS: `casa.test.js` (75), `casa.browser.test.js` (18), `casa.online.browser.test.js` (12). Lista completa y cifras: [`SNIPER_DUEL_TECHNICAL_ARCHITECTURE.md`](docs/claude-code/SNIPER_DUEL_TECHNICAL_ARCHITECTURE.md) §9.
 - En GitHub, tras cada publicación: `public.test.js` y `public.browser.test.js` contra la página y el servidor públicos.
 
 Edita `core/` o `src/page.html`, nunca `index.html` directamente: se regenera con `build.py`.
@@ -85,7 +102,7 @@ Las pruebas que hay que hacer jugando están en [`docs/PRUEBAS-Y-AJUSTES.md`](do
 
 ## Hoja de ruta
 
-1. Gunplay ✔ · 2A. Navaja y entrenamiento ✔ · 2B. Controles móviles ✔ · 2C. Calidad gráfica (básica ✔: perfiles y resolución automática) · **3. 1v1 online con sala privada (alfa, actual)** · 4. Salas 2v2 / 3v3 · después: ranked, cuentas, cosméticos
+1. Gunplay ✔ · 2A. Navaja y entrenamiento ✔ · 2B. Controles móviles ✔ · 2C. Calidad gráfica ✔ (perfiles, ACES, PUEBLO 2.0/3.0) · **3. 1v1 online con sala privada ✔ (alfa)** · mapas: ARENA ✔, PUEBLO 3.0 y CASA ATLAS (experimentales) · 4. Salas 2v2 / 3v3 · después: ranked, cuentas, cosméticos. Detalle: [`SNIPER_DUEL_ROADMAP.md`](docs/claude-code/SNIPER_DUEL_ROADMAP.md)
 
 ## Modelos 3D (armas y brazos)
 
