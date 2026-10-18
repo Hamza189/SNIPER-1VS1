@@ -31,8 +31,9 @@ async function open(b, url, opts) {
   console.log('\nSIN ?casa=1');
   { const o = await open(b, srv.url + '?vm=0'); await o.p.waitForTimeout(1500);
     const r = await o.p.evaluate(() => ({ btn: [...document.querySelectorAll('[data-map=casa]')].map(x => x.hidden), exp: __SD.CASA.exp, built: !!__SD.WORLDS.casa }));
-    check('el botón CASA ATLAS no aparece en los menús', r.btn.length === 2 && r.btn.every(h => h), JSON.stringify(r.btn));
-    check('el mapa existe igualmente (para poder unirse a una sala online en él)', r.built && !r.exp);
+    // since 18-10-2026 every map is offered in the menu (owner); ?casa=0 still hides the experimental ones
+    check('el botón CASA ATLAS aparece en los dos menús (duelo y online)', r.btn.length === 2 && r.btn.every(h => !h), JSON.stringify(r.btn));
+    check('el mapa existe y se ofrece', r.built && r.exp);
     check('no se descarga el GLB del mapa', o.files.length === 0, o.files.join(' '));
     await o.ctx.close(); }
 

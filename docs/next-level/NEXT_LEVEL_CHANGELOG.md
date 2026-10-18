@@ -64,3 +64,36 @@ Estado: IMPLEMENTADO · PROBADO EN NAVEGADOR · PROBADO ONLINE · PENDIENTE DE V
 - **Rendimiento:** `navMarkMain` recorre la red una vez por mapa (la primera aparición); despreciable.
 - **Limitaciones:** solo en navegador por software; pendiente de verlo jugando en CASA en el PC y el iPhone.
 - **Revertir:** `git revert` del commit; solo cliente.
+
+---
+
+## N5-1 · CASA ATLAS XL (40 × 32 m) integrado como mapa experimental, solo contra bots; todos los mapas en el menú
+
+**Antes**
+- **Problema:** CASA ATLAS (18 × 14 m) es un mapa de corta distancia para un juego de francotiradores: visión media
+  6,1 m, máxima 18,6 m, 1 % de líneas > 15 m (MEDIDO, `NEXT_LEVEL_PLAYTEST.md`). Además, los mapas experimentales solo
+  salían con banderas en la URL; el propietario pidió elegir todos los mapas desde el menú.
+- **Solución:** entrega de ChatGPT (encargo `docs/PROMPT-CHATGPT-CASA-ATLAS-XL.md`): villa, garaje, patio con estanque,
+  pérgola, jardín, calle y callejones. Integrado como mapa `casaxl`, **solo en el cliente** (duelo contra bots): el
+  mundo lleva `local: true` y `tools/export-map.js` lo salta, así que `core/mapdata.js` y el servidor público no cambian.
+- **Riesgos:** ninguno para el online (XL no se ofrece en las salas). Visual: acabado sencillo (texturas procedurales);
+  lo dice la propia entrega.
+
+**Después**
+- **Archivos:** `assets/3d/imports/2026-10-18_casa_atlas_xl/` (original intacto), `assets/maps/casa_atlas_xl/`,
+  `tools/casa/make_casaxl_js.py` → `client/casaxl.js`, `build.py`, `src/page.html` (bloque XL, menú, `setWorld`,
+  partida, salida A), `tools/export-map.js` (salta mundos `local`), `test/casaxl.browser.test.js` (nueva, en `npm test`),
+  `test/casa.browser.test.js` (CASA ahora visible por defecto).
+- **Validación:** `validate-glb` ✔ en los dos GLB (avisos: sin LOD, punto más bajo −0,21 m del suelo exterior, techo a
+  3,25 m porque va aparte). Comprobación propia de las colisiones: 98 cajas, salidas a 42,4 m sin verse, holgura 2,4 m,
+  una sola red caminable.
+- **Antes/después (MEDIDO, rayos contra las cajas reales):** visión media 6,1 → **14,9 m**; máxima 18,6 → **37,6–41,4 m**;
+  líneas > 25 m: 0 → **13–14 %**.
+- **Rendimiento (MEDIDO en la GTX 1050 Ti, ventana pequeña):** 23 llamadas de dibujo y ~35 000 triángulos en el patio
+  (menos que ARENA). Texturas del GLB: ~55 MB en GPU (16 mapas de normales PNG de 512²): **pendiente** pasarlas a
+  JPEG/menor resolución en MEDIO, como se hizo con CASA ATLAS. Sin medir en iPhone.
+- **Menú:** la sección «Mapa» del duelo ofrece siempre ARENA, PUEBLO, CASA ATLAS y CASA ATLAS XL (`?casa=0` oculta los
+  experimentales). El menú online ofrece ARENA, PUEBLO y CASA ATLAS (XL no, hasta desplegar el servidor).
+- **Pendiente:** 1v1 online en XL (requiere desplegar el servidor con aprobación), texturas CC0 reales, iluminación
+  interior con techo, prueba en iPhone/Samsung.
+- **Revertir:** `git revert` del commit; solo cliente.

@@ -667,3 +667,14 @@ no se puede medir aquí (WebGL por software); PENDIENTE DE VALIDACIÓN EN IPHONE
 **Estado:** IMPLEMENTADO · PROBADO EN NAVEGADOR · 1v1 PROBADO con servidor local (falta la prueba online real entre
 dos dispositivos) · PENDIENTE DE VALIDACIÓN EN IPHONE. Enlace: `?casa=1` (con `&pueblo=3` para la luz nueva; `&techo=1`
 para probar el techo).
+
+## 18. CASA ATLAS XL — mapa experimental de ChatGPT (18-10-2026)
+
+Villa en una parcela de 40 × 32 m (encargo `docs/PROMPT-CHATGPT-CASA-ATLAS-XL.md`). GLB de 3 204 triángulos y 16
+materiales + techo aparte (96 triángulos, 3 materiales) + `collision_map.json` con 98 cajas (90 sólidas, 8 de cristal).
+Original intacto en `assets/3d/imports/2026-10-18_casa_atlas_xl/`; en el juego, `assets/maps/casa_atlas_xl/`.
+- **Solo cliente** (duelo contra bots): `WORLDS.casaxl.local = true` → `tools/export-map.js` no lo manda al servidor.
+- Cajas: `tools/casa/make_casaxl_js.py` → `client/casaxl.js`. Rejilla de bots de 0,5 m (3 915 puntos, un solo trozo).
+- Sombra del sol en ±26 m; el suelo del pueblo baja 4 cm, como en CASA ATLAS. Techo opaco siempre cargado.
+- Medido: visión media 14,9 m, máxima ~40 m, 13–14 % de líneas > 25 m; salidas a 42,4 m sin verse.
+- Pendiente: texturas CC0 reales, JPEG en lugar de PNG para las normales (~55 MB en GPU), 1v1 online (servidor), iPhone.

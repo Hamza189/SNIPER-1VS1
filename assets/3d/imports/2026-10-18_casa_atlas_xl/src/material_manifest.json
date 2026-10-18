@@ -1,0 +1,308 @@
+{
+  "sd_estuco": {
+    "name": "sd_estuco",
+    "color_size": [
+      512,
+      512
+    ],
+    "normal_size": [
+      512,
+      512
+    ],
+    "orm_size": [
+      512,
+      512
+    ],
+    "texture_repeat_m": 2.8,
+    "license": "Original — generated for CASA ATLAS XL"
+  },
+  "sd_estuco_ocre": {
+    "name": "sd_estuco_ocre",
+    "color_size": [
+      512,
+      512
+    ],
+    "normal_size": [
+      512,
+      512
+    ],
+    "orm_size": [
+      512,
+      512
+    ],
+    "texture_repeat_m": 2.8,
+    "license": "Original — generated for CASA ATLAS XL"
+  },
+  "sd_piedra": {
+    "name": "sd_piedra",
+    "color_size": [
+      512,
+      512
+    ],
+    "normal_size": [
+      512,
+      512
+    ],
+    "orm_size": [
+      512,
+      512
+    ],
+    "texture_repeat_m": 1.7,
+    "license": "Original — generated for CASA ATLAS XL"
+  },
+  "sd_suelo_caliza": {
+    "name": "sd_suelo_caliza",
+    "color_size": [
+      512,
+      512
+    ],
+    "normal_size": [
+      512,
+      512
+    ],
+    "orm_size": [
+      512,
+      512
+    ],
+    "texture_repeat_m": 2.2,
+    "license": "Original — generated for CASA ATLAS XL"
+  },
+  "sd_adoquin": {
+    "name": "sd_adoquin",
+    "color_size": [
+      512,
+      512
+    ],
+    "normal_size": [
+      512,
+      512
+    ],
+    "orm_size": [
+      512,
+      512
+    ],
+    "texture_repeat_m": 2.1,
+    "license": "Original — generated for CASA ATLAS XL"
+  },
+  "sd_tierra": {
+    "name": "sd_tierra",
+    "color_size": [
+      512,
+      512
+    ],
+    "normal_size": [
+      512,
+      512
+    ],
+    "orm_size": [
+      512,
+      512
+    ],
+    "texture_repeat_m": 3.0,
+    "license": "Original — generated for CASA ATLAS XL"
+  },
+  "sd_madera": {
+    "name": "sd_madera",
+    "color_size": [
+      512,
+      512
+    ],
+    "normal_size": [
+      512,
+      512
+    ],
+    "orm_size": [
+      512,
+      512
+    ],
+    "texture_repeat_m": 1.4,
+    "license": "Original — generated for CASA ATLAS XL"
+  },
+  "sd_madera_pintada": {
+    "name": "sd_madera_pintada",
+    "color_size": [
+      512,
+      512
+    ],
+    "normal_size": [
+      512,
+      512
+    ],
+    "orm_size": [
+      512,
+      512
+    ],
+    "texture_repeat_m": 1.4,
+    "license": "Original — generated for CASA ATLAS XL"
+  },
+  "sd_hierro": {
+    "name": "sd_hierro",
+    "color_size": [
+      256,
+      256
+    ],
+    "normal_size": [
+      256,
+      256
+    ],
+    "orm_size": [
+      256,
+      256
+    ],
+    "texture_repeat_m": 1.2,
+    "license": "Original — generated for CASA ATLAS XL"
+  },
+  "sd_teja": {
+    "name": "sd_teja",
+    "color_size": [
+      512,
+      512
+    ],
+    "normal_size": [
+      512,
+      512
+    ],
+    "orm_size": [
+      512,
+      512
+    ],
+    "texture_repeat_m": 1.2,
+    "license": "Original — generated for CASA ATLAS XL"
+  },
+  "sd_vidrio": {
+    "name": "sd_vidrio",
+    "color_size": [
+      256,
+      256
+    ],
+    "normal_size": [
+      256,
+      256
+    ],
+    "orm_size": [
+      256,
+      256
+    ],
+    "texture_repeat_m": 1.5,
+    "license": "Original — generated for CASA ATLAS XL"
+  },
+  "sd_agua": {
+    "name": "sd_agua",
+    "color_size": [
+      256,
+      256
+    ],
+    "normal_size": [
+      256,
+      256
+    ],
+    "orm_size": [
+      256,
+      256
+    ],
+    "texture_repeat_m": 2.0,
+    "license": "Original — generated for CASA ATLAS XL"
+  },
+  "sd_vegetacion": {
+    "name": "sd_vegetacion",
+    "color_size": [
+      512,
+      512
+    ],
+    "normal_size": [
+      512,
+      512
+    ],
+    "orm_size": [
+      512,
+      512
+    ],
+    "texture_repeat_m": 1.4,
+    "license": "Original — generated for CASA ATLAS XL"
+  },
+  "sd_tela": {
+    "name": "sd_tela",
+    "color_size": [
+      512,
+      512
+    ],
+    "normal_size": [
+      512,
+      512
+    ],
+    "orm_size": [
+      512,
+      512
+    ],
+    "texture_repeat_m": 1.4,
+    "license": "Original — generated for CASA ATLAS XL"
+  },
+  "sd_hormigon": {
+    "name": "sd_hormigon",
+    "color_size": [
+      512,
+      512
+    ],
+    "normal_size": [
+      512,
+      512
+    ],
+    "orm_size": [
+      512,
+      512
+    ],
+    "texture_repeat_m": 2.0,
+    "license": "Original — generated for CASA ATLAS XL"
+  },
+  "sd_pavimento": {
+    "name": "sd_pavimento",
+    "color_size": [
+      512,
+      512
+    ],
+    "normal_size": [
+      512,
+      512
+    ],
+    "orm_size": [
+      512,
+      512
+    ],
+    "texture_repeat_m": 2.4,
+    "license": "Original — generated for CASA ATLAS XL"
+  },
+  "sd_grava": {
+    "name": "sd_grava",
+    "color_size": [
+      512,
+      512
+    ],
+    "normal_size": [
+      512,
+      512
+    ],
+    "orm_size": [
+      512,
+      512
+    ],
+    "texture_repeat_m": 2.6,
+    "license": "Original — generated for CASA ATLAS XL"
+  },
+  "sd_roble": {
+    "name": "sd_roble",
+    "color_size": [
+      512,
+      512
+    ],
+    "normal_size": [
+      512,
+      512
+    ],
+    "orm_size": [
+      512,
+      512
+    ],
+    "texture_repeat_m": 1.5,
+    "license": "Original — generated for CASA ATLAS XL"
+  }
+}

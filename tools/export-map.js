@@ -47,7 +47,8 @@ async function main() {
   const b = await chromium.launch({ args: ['--use-angle=swiftshader', '--enable-unsafe-swiftshader'] });
   const p = await b.newPage(); await p.route(/fonts\.(googleapis|gstatic)\.com/, r => r.abort());
   await p.goto(S.url); await p.waitForFunction(() => window.__SD && __SD.W && __SD.W.ray.length > 0);
-  const ids = await p.evaluate(() => Object.keys(__SD.WORLDS));
+  // worlds marked local (CASA ATLAS XL, client only until the owner approves deploying it) are not sent to the server
+  const ids = await p.evaluate(() => Object.keys(__SD.WORLDS).filter(id => !__SD.WORLDS[id].local));
   const maps = {}; for (const id of ids) maps[id] = await dumpWorld(p, id);
   await b.close(); S.close();
   fs.writeFileSync(path.join(__dirname, '..', 'core', 'mapdata.js'), toModule(maps));

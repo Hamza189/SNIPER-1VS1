@@ -1,0 +1,330 @@
+{
+  "CASA_ATLAS_XL.md": {
+    "bytes": 7720,
+    "sha256": "3e853662bdb4216ac7e7140fbc8d0bc000649c91b0bfb4350b03a4087dcc2b8c"
+  },
+  "FUENTE.md": {
+    "bytes": 292,
+    "sha256": "0900c48ab87fa1486f7debe1160398da00644fa9bb774cdf5a356ab4172dc7a0"
+  },
+  "INTEGRACION_CLAUDE.md": {
+    "bytes": 2577,
+    "sha256": "2e59aa8faac2e00bbf08e2e5925fc669f67ee80d1fd18fa24db512eaac2e76e0"
+  },
+  "LICENSE_ASSETS.md": {
+    "bytes": 655,
+    "sha256": "d979b1e075ef3c837b4a1e87ac8206996604e0f3ca2157e5167cd5e8a40e5fed"
+  },
+  "README.md": {
+    "bytes": 1467,
+    "sha256": "a9aaa57ccdca1fba2c3867eeaefadea5acd7adde5a19c44508026c41ec8990f7"
+  },
+  "assets/sd_adoquin_basecolor.jpg": {
+    "bytes": 31591,
+    "sha256": "cc196eb7d38caeda1a58841ce1a0c9a3adc06d2a0b4b7b511e7460d4a6f36d43"
+  },
+  "assets/sd_adoquin_normal.png": {
+    "bytes": 455042,
+    "sha256": "55ab47215c07d8be2ea6d5326591080824bd65292c79d66e16b14e7269d8236f"
+  },
+  "assets/sd_adoquin_orm.jpg": {
+    "bytes": 23479,
+    "sha256": "2aae37ba882821fe19cafa9d7b07dc908047018686fa876b8d021029c9dded7f"
+  },
+  "assets/sd_agua_basecolor.jpg": {
+    "bytes": 7589,
+    "sha256": "761c618dc7582a658769ad1b235e413b030e6f699119f4c1b635e6041930060b"
+  },
+  "assets/sd_agua_normal.png": {
+    "bytes": 116354,
+    "sha256": "20092728512d9bf162fd70d09888ce90c2f9e0e5a2962774b1abf63b70ef2d5a"
+  },
+  "assets/sd_agua_orm.jpg": {
+    "bytes": 9246,
+    "sha256": "fd39dd0fd6dd86ac55c8992ac76b12314e27d463653d22310a0b3b0a291b7ae1"
+  },
+  "assets/sd_estuco_basecolor.jpg": {
+    "bytes": 31537,
+    "sha256": "76851c316c750d85db7be6b331c2ecf30b44618609fef0817c5af7f05c1f574e"
+  },
+  "assets/sd_estuco_normal.png": {
+    "bytes": 386301,
+    "sha256": "70357a1aa7a5049c3e659ed5e59b177413db3295902124515b64d671727c4032"
+  },
+  "assets/sd_estuco_ocre_basecolor.jpg": {
+    "bytes": 31608,
+    "sha256": "b0df0522509bddbb3ce11a8a2c0aa46a644b6a3dd927f611f02ad1688e614ab6"
+  },
+  "assets/sd_estuco_ocre_normal.png": {
+    "bytes": 385444,
+    "sha256": "0f2e973f7e69d9ec491b038d83350554dbb1497648db893f7766457c09f48eb8"
+  },
+  "assets/sd_estuco_ocre_orm.jpg": {
+    "bytes": 23065,
+    "sha256": "c69bc1d789e93bc2f3822059293adea8bab3c2fa911fec35e657f28df51a272b"
+  },
+  "assets/sd_estuco_orm.jpg": {
+    "bytes": 23307,
+    "sha256": "c5c0f6f8b48a5f1a6ec9ce78880d0c0eb694338a7a3a32b0db367cf8dbf92412"
+  },
+  "assets/sd_grava_basecolor.jpg": {
+    "bytes": 31527,
+    "sha256": "6606d6ffc08ed38edb9b9ca8f97f2c875d5abd3963a4923a6a1cae382830335d"
+  },
+  "assets/sd_grava_normal.png": {
+    "bytes": 386066,
+    "sha256": "649c0b5cde353800712a0c113b3672f222518f9f62fecc6e1a7c2dca0caaa90f"
+  },
+  "assets/sd_grava_orm.jpg": {
+    "bytes": 23108,
+    "sha256": "5466d72bc0694d2e2dd3d52d75f35b5acdee566ea407387d5e52a8a71b6824c9"
+  },
+  "assets/sd_hierro_basecolor.jpg": {
+    "bytes": 7616,
+    "sha256": "ee8bb7963326a87a79396d69b2d860406c8253dd15039a2e4947a0b6c9371ac0"
+  },
+  "assets/sd_hierro_normal.png": {
+    "bytes": 116201,
+    "sha256": "a951edcfe66450c06e47437301f8cfe74fa8f7555e8f7d2dd86e4f1325331ca9"
+  },
+  "assets/sd_hierro_orm.jpg": {
+    "bytes": 9264,
+    "sha256": "5654a114069d36b6225bf9b652717a891f1a00f1df935dbd3abddeedd5b8911e"
+  },
+  "assets/sd_hormigon_basecolor.jpg": {
+    "bytes": 31641,
+    "sha256": "cd625fc87076baf25384e97f05064166aa484a4100de49b4e32ee903725f61d5"
+  },
+  "assets/sd_hormigon_normal.png": {
+    "bytes": 385683,
+    "sha256": "c4ace2fb0cc956eca28bbac6d554ae7c78425b9747bf95375caa83f1a84a3bd9"
+  },
+  "assets/sd_hormigon_orm.jpg": {
+    "bytes": 23127,
+    "sha256": "f9344d22b74b16cf41b22a3f670567dc3a33028537695f98880593074dc0cb81"
+  },
+  "assets/sd_madera_basecolor.jpg": {
+    "bytes": 31642,
+    "sha256": "e128bf2af5afca4d1f1f9785eccd0d9bbce2bed8addbae764200713ec5d99772"
+  },
+  "assets/sd_madera_normal.png": {
+    "bytes": 385616,
+    "sha256": "f7209b619e3e30343ccff762dd300d227b8915a546afbdda427dbe0e77c44f7a"
+  },
+  "assets/sd_madera_orm.jpg": {
+    "bytes": 23019,
+    "sha256": "884a2c884cb6d1e77ef0e0d9b1f681dce6ce08972d0a2ffca6a2c4ca52121ae8"
+  },
+  "assets/sd_madera_pintada_basecolor.jpg": {
+    "bytes": 31568,
+    "sha256": "4aebd611b7ef766844ccd496ec8cefefc7fe6a9404cc64c7b6946bd42154082a"
+  },
+  "assets/sd_madera_pintada_normal.png": {
+    "bytes": 387424,
+    "sha256": "9e0c063d1a862d36cd6df238402a3552405bfb75a8415f944e38ebb39695f3cd"
+  },
+  "assets/sd_madera_pintada_orm.jpg": {
+    "bytes": 23182,
+    "sha256": "86b45a9d7a03d8b1cabd0d25fff27af8d265f2631eb737f4f90eb9e69981207e"
+  },
+  "assets/sd_pavimento_basecolor.jpg": {
+    "bytes": 31488,
+    "sha256": "4a07524209040df6aa2a949e19d9802f4b0faa43abb1f0ce3006ee2da9d7ff27"
+  },
+  "assets/sd_pavimento_normal.png": {
+    "bytes": 386031,
+    "sha256": "08a4b4fd7706ffa56f2fdb5f145e49c724f5954353d415b6a612466213d28547"
+  },
+  "assets/sd_pavimento_orm.jpg": {
+    "bytes": 22947,
+    "sha256": "623a62db39fd001fd0bef70e731221b86efe920efa4b88db8a47135b9008724c"
+  },
+  "assets/sd_piedra_basecolor.jpg": {
+    "bytes": 31511,
+    "sha256": "f496114a57d129713b22cf981a07e4621a7253278094617d84bed0873d3c0557"
+  },
+  "assets/sd_piedra_normal.png": {
+    "bytes": 454180,
+    "sha256": "cd26a279d4b211773eea44df341a6a6a17d7c213fe29cbfecc41b5ec9128a82d"
+  },
+  "assets/sd_piedra_orm.jpg": {
+    "bytes": 23377,
+    "sha256": "a16a0d4925f26a10c4e699dc2dbb46baaf7df42ca2abde5e0bfc2bb287ceb799"
+  },
+  "assets/sd_roble_basecolor.jpg": {
+    "bytes": 31553,
+    "sha256": "1f893619de9f74858904f348e34a3fbed9e95fabd2bccc3ea9973e41370e6ad3"
+  },
+  "assets/sd_roble_normal.png": {
+    "bytes": 385438,
+    "sha256": "e464ea7a0155a2fb2ca4416401398eeaee0bab0bc8b283f9aad2952b4f000df9"
+  },
+  "assets/sd_roble_orm.jpg": {
+    "bytes": 23047,
+    "sha256": "7894f6d95fc60009551f9be76cf613e4ea88496967b83ed3801ebd8dc9f3f0fc"
+  },
+  "assets/sd_suelo_caliza_basecolor.jpg": {
+    "bytes": 31575,
+    "sha256": "5cc348a53a924a628ea7450ccc2caef9f9f1ff7a4f3b5f73453909a4b426420a"
+  },
+  "assets/sd_suelo_caliza_normal.png": {
+    "bytes": 452537,
+    "sha256": "c7f877116aaa9bc898f65ea276291cac6af4e199a5776ef0dc32c951f2f27fd5"
+  },
+  "assets/sd_suelo_caliza_orm.jpg": {
+    "bytes": 23140,
+    "sha256": "30fe67f72c1c6ff8c5660419195e65fad020ef21d42edcea4c7645a487f57b94"
+  },
+  "assets/sd_teja_basecolor.jpg": {
+    "bytes": 31566,
+    "sha256": "d9aaa8a1646b4d05c75d12b96ce1fc35351484663ba59cd25f649bef5bb9dba3"
+  },
+  "assets/sd_teja_normal.png": {
+    "bytes": 385641,
+    "sha256": "4c95de11a2c32bff5d3abaa67131dfacfc51cfdaff15e349c1a232b354d5273e"
+  },
+  "assets/sd_teja_orm.jpg": {
+    "bytes": 22944,
+    "sha256": "5683a46a38d08541662704800d820a05dc51bfa2d369e3240cc82332953732b4"
+  },
+  "assets/sd_tela_basecolor.jpg": {
+    "bytes": 31468,
+    "sha256": "12e8bd405ae8fc4ea8f59834fa53dc692e75e9434e3207d375a7da2797ea7edb"
+  },
+  "assets/sd_tela_normal.png": {
+    "bytes": 386895,
+    "sha256": "f8c285b0da58e0d130066e4874a8ece8fc9430a2d7fa7af9560ed67679732b34"
+  },
+  "assets/sd_tela_orm.jpg": {
+    "bytes": 23211,
+    "sha256": "51cbd4b2fc49ec94a832471df37368dfee21229d44764e784bebb584ec8b9c99"
+  },
+  "assets/sd_tierra_basecolor.jpg": {
+    "bytes": 31541,
+    "sha256": "5ae541e314d37522d0bb29c490300738cfa8a0626c1b74ec7aaf53fbb50bfac9"
+  },
+  "assets/sd_tierra_normal.png": {
+    "bytes": 386492,
+    "sha256": "038c113df9112238bf4ac4c77e4095e3d5bef4b5d6eb87e221e4f9315e3ef99b"
+  },
+  "assets/sd_tierra_orm.jpg": {
+    "bytes": 23156,
+    "sha256": "2c15039a409cfe20caefa76b9b2520d61692bb4029c54a1b6ed5ec5e95e1e7c7"
+  },
+  "assets/sd_vegetacion_basecolor.jpg": {
+    "bytes": 31479,
+    "sha256": "d9a616dd1b9ab60b22ca10479fe5cd6e308061bd1da53fb195d57d1d80f13feb"
+  },
+  "assets/sd_vegetacion_basecolor.png": {
+    "bytes": 164797,
+    "sha256": "1aa7af249c9fce9e9f286a4d1fd9d45341b933938654b07b96b7ded8a901a609"
+  },
+  "assets/sd_vegetacion_normal.png": {
+    "bytes": 386060,
+    "sha256": "8dd9e88c6e8a3a4e9694b0c7f94cd036b93bcd68fc7daf34733b6f6d7a105a70"
+  },
+  "assets/sd_vegetacion_orm.jpg": {
+    "bytes": 23228,
+    "sha256": "477cd5167eb666387dd1139f385a13c7e22487df0aca1fa061dc4de65b7ae9c0"
+  },
+  "assets/sd_vidrio_basecolor.jpg": {
+    "bytes": 7634,
+    "sha256": "f97458e2f0f4f73af8d68e8363a809e901522f3d185ce12cc57b0c108c4c7678"
+  },
+  "assets/sd_vidrio_normal.png": {
+    "bytes": 116726,
+    "sha256": "f6be2cf80a3c55c8dabb2d18151bc4d93aacc9ca1e785759af8d8b63ea65b984"
+  },
+  "assets/sd_vidrio_orm.jpg": {
+    "bytes": 9469,
+    "sha256": "e33f34f95ac935d8dcca156ce8a7dcdbd85820cc6b97461bc03f41ef934948f7"
+  },
+  "collision_map.json": {
+    "bytes": 26775,
+    "sha256": "1eadd869405583232fa7aa94f4ce89efbceaaa0deb1c54632c9ea61be2f8611e"
+  },
+  "models/sd_casa_atlas_xl.glb": {
+    "bytes": 8873188,
+    "sha256": "d056c905b6aec210a2394a78fde5e93385f80539a9f63a4b0504a1de2b033872"
+  },
+  "models/sd_casa_atlas_xl_techo.glb": {
+    "bytes": 1827312,
+    "sha256": "38a439bce2f4f5b88573bb4f8da98077ace55bc3c791eec56c71c442a544bf06"
+  },
+  "preview/01_cenital_colisiones.png": {
+    "bytes": 140202,
+    "sha256": "e177808aecdac68819e79cf14cd0d3f77cf83e9e09b0ab9b28f0ab92fea7c9e2"
+  },
+  "preview/02_qa_navegacion.png": {
+    "bytes": 30762,
+    "sha256": "fa265253df25b4204cc843755a44f15c77c594921d254359c038b5e6b8160b8b"
+  },
+  "preview/03_calle_fps.png": {
+    "bytes": 32690,
+    "sha256": "18ea2634c7b954a6af2c8bd93ad9b48050d159caf3c333327c62891836bea5bb"
+  },
+  "preview/04_patio_fps.png": {
+    "bytes": 28922,
+    "sha256": "c36d256bdd52322e0c7654a929499f20b528e198f5016962a6c9f9b8af61f30b"
+  },
+  "preview/05_villa_fps.png": {
+    "bytes": 19522,
+    "sha256": "4ae7c9c211ca1394b9badce4c103aec75f93b081d1c2e253335ffe26b33024bf"
+  },
+  "preview/06_jardin_fps.png": {
+    "bytes": 23151,
+    "sha256": "6a8d8d404ccb7c00c3ef9e639ff16e133821e105b61d1933fdc4b79ad2edc5b6"
+  },
+  "preview/07_garaje_fps.png": {
+    "bytes": 15812,
+    "sha256": "e32bb8c60efae2bd9e3f3d208ee0127c2f3f27d8e55afcaa02d22f77cb7bc313"
+  },
+  "preview/08_vista_isometrica.png": {
+    "bytes": 45744,
+    "sha256": "1cdbe7fb948a2620ef8c27719641891726b1c237506c0e7c7b06fc743f321eb5"
+  },
+  "preview/09_vista_con_techos.png": {
+    "bytes": 44261,
+    "sha256": "b7e39674c9251d3d58cc4f8137b44d4a1a90813d07116ed9a040713b007c605a"
+  },
+  "requirements.txt": {
+    "bytes": 75,
+    "sha256": "c742b88d16a9e93b3f093172590b536f2cb2ca6d56589fff6d89642924623531"
+  },
+  "src/__pycache__/generate_casa_atlas_xl.cpython-313.pyc": {
+    "bytes": 58239,
+    "sha256": "9e480ea40d2333ec958f3c9fdf011d959c25a16a8e3df9001a845a57da2f71b8"
+  },
+  "src/build.log": {
+    "bytes": 864,
+    "sha256": "7210441067245259a7d0e61d1435ec0a56790dca66aa41b9a7eb946e2a144756"
+  },
+  "src/generate_casa_atlas_xl.py": {
+    "bytes": 38028,
+    "sha256": "98899c0aac7b548da6fc2f451367145998fd525fa3d9a0c4b4d2e9d067dadd3d"
+  },
+  "src/material_manifest.json": {
+    "bytes": 5030,
+    "sha256": "1c41c0642fe1b333014ef6a6c3ca01d3d9afbe5b54612fe774d9f110a0bcdb7a"
+  },
+  "src/qa.log": {
+    "bytes": 457,
+    "sha256": "490762941626d300ab7ddb4b60ba46beae73bca8af9bcc102ec1cc2a66d13387"
+  },
+  "src/qa_casa_xl.py": {
+    "bytes": 6111,
+    "sha256": "cea9f7f4b6f4a67e42768227d63fe6b78d19d21dd00556a06bcae2ef16a14202"
+  },
+  "src/qa_results.json": {
+    "bytes": 33356,
+    "sha256": "1612f0ab979fb455daebcd260cbd85ff2c0f3660efb4f624394c5712ed68e15a"
+  },
+  "src/scene_objects.json": {
+    "bytes": 74008,
+    "sha256": "dc0b671eeb3e338bcb0a235b482adec4956d30b52ef1669dfde6696de698034a"
+  },
+  "web/visor_casaxl.html": {
+    "bytes": 5388,
+    "sha256": "ac618fd4146ca1c1192fb7a5fbfdde392f7b819e77bf93691106d7ed2ec7d4cf"
+  }
+}
