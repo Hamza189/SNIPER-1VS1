@@ -658,6 +658,9 @@ Piso de 18 × 14 m en una planta: salón, cocina, comedor, dormitorio, baño, es
 | MEDIO | 33 · 11 651 | 25 · 10 466 | 167 · 241 950 |
 | BAJO  | 32 · 11 015 | 20 · 5 830 | 120 · 170 854 |
 
+En una GPU real (PC del propietario, GeForce GTX 1050 Ti, 1280 × 720, ALTO, versión publicada, fotograma sincronizado
+con la GPU): CASA ATLAS 18,3 ms · ARENA 18,6 ms · PUEBLO 3.0 24,1 ms. Es decir, cuesta lo mismo que la ARENA.
+
 Texturas del mapa en la GPU: ~31 MB (11 de 512² y 3 de 1024²); BAJO quita el mapa de normales. El tiempo por fotograma
 no se puede medir aquí (WebGL por software); PENDIENTE DE VALIDACIÓN EN IPHONE y en el Samsung.
 

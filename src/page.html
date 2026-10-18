@@ -2642,7 +2642,8 @@ class Bot{
         // steering (not teleporting along the grid): the velocity turns toward the next node with a limited
         // acceleration and cuts a little into the next leg near each node, so the bot walks in readable
         // curves instead of changing direction in one tick (tools/bot-motion-audit.js measures it)
-        const n=NAV[this.path[0]];const mx=n.x-ex,mz=n.z-ez;const md=Math.hypot(mx,mz);
+        const n=NAV[this.path[0]];if(!n){this.path.length=0;break;}   // path from another map (the map changed under it)
+        const mx=n.x-ex,mz=n.z-ez;const md=Math.hypot(mx,mz);
         if(md<(this.path.length>1?0.9:0.25)){this.node=this.path.shift();break;}   // aim at the next node early: a curve, not a corner
         const last=this.path.length===1,vt=last?Math.min(BOT_WALK,md*2.2):BOT_WALK;
         this.steer(mx/md*vt,mz/md*vt,dt);
