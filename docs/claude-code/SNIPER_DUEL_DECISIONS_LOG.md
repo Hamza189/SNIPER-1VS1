@@ -16,8 +16,8 @@ Las decisiones anteriores al 18-10-2026 están resumidas en `SNIPER_DUEL_MASTER_
 | Instalar `gh` en el PC | Propietario (decide) | PENDIENTE |
 | `.gitattributes` para fines de línea | Propietario (aprobar) | PROPUESTA |
 | Armas clásicas como aspectos | Propietario (aprobar inicio) | SIN EMPEZAR |
-| Fallo online: eventos ignorados tras reinicio de sala (Q1) | Claude, con tu aprobación | COMPROBADO, SIN ARREGLAR |
-| CASA ATLAS: bots atascados por red de navegación partida (J1) | Claude, con tu aprobación | COMPROBADO, SIN ARREGLAR |
+| Fallo online: eventos ignorados tras reinicio de sala (Q1) | — | ARREGLADO (commits locales e3fdc49 y 43bd0da, sin publicar) |
+| CASA ATLAS: bots atascados por red de navegación partida (J1) | — | ARREGLADO (commits locales e3fdc49 y 43bd0da, sin publicar) |
 | Paquetes de la auditoría (`SNIPER_DUEL_AUDIT_2026-10-18.md` §4) | Propietario (aprobar) | PROPUESTOS |
 | Evolución tecnológica T0–T6 (`SNIPER_DUEL_TECHNOLOGY_EVOLUTION.md`) | Propietario (revisar el informe y aprobar fases) | INFORME ENTREGADO |
 
