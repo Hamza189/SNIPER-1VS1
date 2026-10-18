@@ -16,6 +16,8 @@ Las decisiones anteriores al 18-10-2026 están resumidas en `SNIPER_DUEL_MASTER_
 | Instalar `gh` en el PC | Propietario (decide) | PENDIENTE |
 | `.gitattributes` para fines de línea | Propietario (aprobar) | PROPUESTA |
 | CASA ATLAS XL (40×32 m): encargo a ChatGPT en `docs/PROMPT-CHATGPT-CASA-ATLAS-XL.md` | Propietario (pasarlo a ChatGPT) | ESPERANDO ENTREGA |
+| PR #1 `next-level/casa-atlas-xl` (CASA XL, todos los mapas, arreglos Q1/J1/J2) | Propietario (revisar y fusionar; redespliega el servidor por `client/netcore.js`) | ABIERTA |
+| Proyecto Cloudflare Pages `sniper-1vs1` conectado al repo: su build falla en todos los commits (también en `main`); no es el que publica el juego | Propietario (desconectarlo o decir para qué es) | DETECTADO |
 | Armas clásicas como aspectos | Propietario (aprobar inicio) | SIN EMPEZAR |
 | Fallo online: eventos ignorados tras reinicio de sala (Q1) | — | ARREGLADO (commits locales e3fdc49 y 43bd0da, sin publicar) |
 | CASA ATLAS: bots atascados por red de navegación partida (J1) | — | ARREGLADO (commits locales e3fdc49 y 43bd0da, sin publicar) |
