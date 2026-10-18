@@ -4181,7 +4181,7 @@ const SDCasaXL = {"id":"CASA_ATLAS_XL","version":"1.0.0","bounds":{"min":[-20,0,
 if (typeof module !== 'undefined' && module.exports) module.exports = SDCasaXL; else root.SDCasaXL = SDCasaXL;
 })(typeof window !== 'undefined' ? window : globalThis);
 
-const BUILD_ID="fb046e1";const BUILD_HASH="12c56d216e";
+const BUILD_ID="03f95b8";const BUILD_HASH="ee6774b94f";
 </script>
 <script>
 (function(){
@@ -5496,7 +5496,7 @@ const VMA={ready:false,rig:null,P:null,loading:false};
 const PD=new T.Vector3(0,-0.946,0.326);                 // VÍBORA 9 grip axis (down), gun space
 function loadViewmodels(){
   if(VMA.loading||!T.GLTFLoader||/[?&]vm=0\b/.test(location.search)||PERF_LOW&&!/[?&]vm=1\b/.test(location.search))return;VMA.loading=true;
-  try{new T.GLTFLoader().load('assets/viewmodels.glb?v='+BUILD_HASH,g=>{try{setupViewmodels(g);}catch(e){console.warn('viewmodels',e);}},undefined,()=>{});}catch(e){}
+  try{new T.GLTFLoader().load('assets/viewmodels.glb?v='+BUILD_HASH,g=>{try{setupViewmodels(g);precompileAll();}catch(e){console.warn('viewmodels',e);}},undefined,()=>{});}catch(e){}
 }
 function setupViewmodels(g){
   SDVM.refine(g.scene,T,ENV,{low:GFX.profile==='bajo'});
@@ -8032,7 +8032,15 @@ function frameBody(now){
 resize();
 // compile every shader of the visible world now, during the menu, instead of in the middle of the first
 // seconds of play (the town and its props use several material variants)
-try{csFix(scene);renderer.compile(scene,camera);}catch(e){}
+// …and the first-person scene (weapons, arms, muzzle smoke): its materials are first drawn when a match starts, and
+// compiling them then made the first frame of every first match 1.6–3.3 s long (measured, software WebGL, 18-10-2026).
+// Called again whenever something with new materials finishes loading (viewmodels, flora, rats).
+// The first duel bot is built now (hidden; startMatch builds the rest), so its soldier materials compile in the menu too,
+// and every texture of both scenes is uploaded to the GPU here instead of in the first frame of play.
+function precompileAll(){try{if(!BOTS.length)BOTS.push(new Bot(0));csFix(scene);csFix(wScene);renderer.compile(scene,camera);renderer.compile(wScene,wCam);
+  const seen=new Set(),up=o=>{const ms=o.material?(Array.isArray(o.material)?o.material:[o.material]):[];for(const m of ms)for(const k of ['map','normalMap','roughnessMap','metalnessMap','aoMap','emissiveMap','alphaMap','envMap'])
+    {const tx=m[k];if(tx&&!seen.has(tx)&&!tx.isCubeTexture&&tx.image){seen.add(tx);renderer.initTexture(tx);}}};scene.traverse(up);wScene.traverse(up);}catch(e){console.warn('precompile',e);}}
+precompileAll();
 requestAnimationFrame(frame);
 /* PUEBLO 3.0: the kit arrives (assets/kit.glb) → one instanced mesh per piece and material; shop signs */
 function p3Signs(kit){
@@ -8124,7 +8132,7 @@ function ratsSetup(buf){
     const h=RATS.homes[i],br=SDRats.brain({x:h[0],z:h[1]},0x7a7+i*977,RAT_WORLD),bd=SDRats.body(T,root,0x51+i*131);
     scene.add(root);WORLDS.pueblo.objs.push(root);root.visible=WORLD_ID==='pueblo';
     RATS.list.push({root,brain:br,body:bd});
-    }catch(e){RATS.failed=true;console.warn('rata',e);}if(--left===0)RATS.ready=!RATS.failed;},e=>{RATS.failed=true;console.warn('rata glb',e);});
+    }catch(e){RATS.failed=true;console.warn('rata',e);}if(--left===0){RATS.ready=!RATS.failed;if(RATS.ready)precompileAll();}},e=>{RATS.failed=true;console.warn('rata glb',e);});
 }
 function ratsFrame(dt){
   if(!RATS.ready||WORLD_ID!=='pueblo')return;
@@ -8196,7 +8204,7 @@ function floraSetup(){
     im.castShadow=false;im.receiveShadow=true;im.name='flora_'+key.replace('|','_');
     scene.add(im);WORLDS.pueblo.objs.push(im);im.visible=WORLD_ID==='pueblo';FLORA.meshes.push(im);
     FLORA.plants+=L.length;FLORA.tris+=L.length*(g.index?g.index.count/3:g.attributes.position.count/3);}
-  FLORA.list=list;FLORA.ready=true;
+  FLORA.list=list;FLORA.ready=true;precompileAll();
 }
 if(FLORA.on){const gl=new T.GLTFLoader();let n=2;
   new T.FileLoader().setResponseType('json').load('assets/3d/flora/grass_cards.json?v='+BUILD_HASH,j=>{FLORA.cards=j;done();},undefined,e=>{FLORA.failed=true;console.warn('flora cards',e);});

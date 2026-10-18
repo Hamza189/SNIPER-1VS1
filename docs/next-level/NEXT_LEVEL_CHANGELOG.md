@@ -97,3 +97,27 @@ Estado: IMPLEMENTADO · PROBADO EN NAVEGADOR · PROBADO ONLINE · PENDIENTE DE V
 - **Pendiente:** 1v1 online en XL (requiere desplegar el servidor con aprobación), texturas CC0 reales, iluminación
   interior con techo, prueba en iPhone/Samsung.
 - **Revertir:** `git revert` del commit; solo cliente.
+
+---
+
+## N6-1 · Sin tirón al empezar la primera partida (precompilación de shaders y subida de texturas)
+
+**Antes**
+- **Problema:** el primer fotograma de la primera partida tardaba mucho: los materiales de las armas en primera persona
+  (otra escena, `wScene`) y de los bots (se construyen al pulsar JUGAR) se compilaban y sus texturas se subían a la GPU
+  en ese momento. Se nota como un parón justo al aparecer.
+- **Evidencia (MEDIDO, Chromium por software 1170×540, PUEBLO 3.0; los ms solo sirven para comparar):** se creaban
+  **6 programas de shader** y ~15 texturas en el primer fotograma; 1.er fotograma 1 619 ms (MEDIO) / 3 329 ms (ALTO)
+  frente a 27–45 ms los siguientes.
+- **Solución:** `precompileAll()` en el menú: construye ya el primer bot (oculto), compila `scene` y `wScene` y sube todas
+  sus texturas (`renderer.initTexture`); se repite al terminar de cargar armas, vegetación y ratas.
+
+**Después**
+- **Archivos:** `src/page.html`.
+- **Antes/después:** programas nuevos en el 1.er fotograma 6 → **0**; texturas subidas ~15 → 8–10 (quedan las de los
+  muñecos del campo de tiro); 1.er fotograma 1 619 → **274 ms** (MEDIO) y 3 329 → **149 ms** (ALTO).
+- **Pruebas:** `smoke` 76/76, `browser` 58/58, `p0.browser` 75/75.
+- **Observado:** `browser.test` › «AUDIO: el volumen de disparos…» falló una vez y pasó al repetir (lee el volumen 30 ms
+  después de cambiarlo): **prueba intermitente anotada**, pendiente de arreglar.
+- **Rendimiento:** el trabajo se hace en el menú (carga), no en partida. Sin medir en iPhone.
+- **Revertir:** `git revert`; solo cliente.
