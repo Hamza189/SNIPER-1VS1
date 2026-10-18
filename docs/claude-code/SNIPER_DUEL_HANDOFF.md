@@ -10,6 +10,9 @@ Si acabas de llegar al repositorio, lee esto primero (5 minutos) y luego `CLAUDE
 - Lo último que reportó el propietario: en su PC «se siguen viendo las rayas». No reproducido; se le pidió captura y la
   línea de diagnóstico, y probar `?pueblo=3&sombras=0`.
 
+- 18-10 (tarde): migración a Claude Code hecha y verificada. Informe: `SNIPER_DUEL_ONBOARDING_2026-10-18.md`. Registro
+  vivo de decisiones y tareas: `SNIPER_DUEL_DECISIONS_LOG.md` (léelo justo después de este documento).
+
 ## 2. Primeros pasos en una sesión nueva
 ```
 git pull
@@ -41,6 +44,8 @@ Antes de cambiar algo: lee el archivo entero que vas a tocar y busca su prueba e
 | Documento | Para qué |
 |---|---|
 | `CLAUDE.md` | Reglas permanentes |
+| `docs/claude-code/SNIPER_DUEL_DECISIONS_LOG.md` | Registro duradero de decisiones, cambios y tareas abiertas |
+| `docs/claude-code/SNIPER_DUEL_ONBOARDING_2026-10-18.md` | Informe de incorporación de Claude Code |
 | `docs/claude-code/SNIPER_DUEL_MASTER_CONTEXT.md` | Qué es, estado de cada sistema, decisiones, problemas abiertos |
 | `docs/claude-code/SNIPER_DUEL_TECHNICAL_ARCHITECTURE.md` | Código, archivos, render, red, banderas, pruebas |
 | `docs/claude-code/SNIPER_DUEL_ASSETS_AND_MAPS.md` | Mapas, modelos aceptados/rechazados, reglas de colisión |

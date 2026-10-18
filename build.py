@@ -9,9 +9,9 @@ import pathlib
 root = pathlib.Path(__file__).parent
 CORE = ["config.js", "movement.js", "weapon.js", "melee.js", "trainer.js", "player.js", "protocol.js", "hitbox.js"]
 CLIENT = ["settings.js", "layout.js", "touch.js", "quality.js", "netcore.js", "vmrig.js", "town.js", "kit3d.js", "town3.js", "rats.js", "flora.js", "casa.js"]
-code = "\n".join((root / "core" / f).read_text() for f in CORE) + "\n" + \
-       "\n".join((root / "client" / f).read_text() for f in CLIENT)
-page = (root / "src" / "page.html").read_text()
+code = "\n".join((root / "core" / f).read_text(encoding="utf-8") for f in CORE) + "\n" + \
+       "\n".join((root / "client" / f).read_text(encoding="utf-8") for f in CLIENT)
+page = (root / "src" / "page.html").read_text(encoding="utf-8")
 assert "/*@@CORE@@*/" in page
 import subprocess
 try: rev = subprocess.run(["git", "rev-parse", "--short", "HEAD"], cwd=root, capture_output=True, text=True).stdout.strip() or "dev"
@@ -25,7 +25,7 @@ tex = b"".join(p.read_bytes() for p in sorted((root / "assets" / "tex").glob("*.
 kit = root / "assets" / "kit.glb"
 build_hash = hashlib.sha1((code + page).encode() + (glb.read_bytes() if glb.exists() else b"") + (kit.read_bytes() if kit.exists() else b"") + tex).hexdigest()[:10]
 fragment = page.replace("/*@@CORE@@*/", code + "\nconst BUILD_ID=" + repr(build_id).replace("'", '"') + ";const BUILD_HASH=" + json.dumps(build_hash) + ";", 1)
-(root / "version.json").write_text(json.dumps({"hash": build_hash, "rev": build_id}) + "\n")
+(root / "version.json").write_text(json.dumps({"hash": build_hash, "rev": build_id}) + "\n", encoding="utf-8")
 
 # split the fragment: everything up to the end of the first <style> belongs in <head>
 cut = fragment.index("</style>") + len("</style>")
@@ -56,7 +56,7 @@ standalone = standalone.replace(CDN, LOCAL)
 GLTF_CDN = '<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>'
 assert standalone.count(GLTF_CDN) == 1
 standalone = standalone.replace(GLTF_CDN, '<script src="vendor/GLTFLoader.js"></script>')
-(root / "index.html").write_text(standalone)
+(root / "index.html").write_text(standalone, encoding="utf-8")
 (root / "build").mkdir(exist_ok=True)
-(root / "build" / "artifact.html").write_text(fragment)
+(root / "build" / "artifact.html").write_text(fragment, encoding="utf-8")
 print("built index.html (standalone) and build/artifact.html (fragment)")

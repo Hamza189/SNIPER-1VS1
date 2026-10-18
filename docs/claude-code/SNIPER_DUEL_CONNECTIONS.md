@@ -34,11 +34,22 @@ Coste: plan gratuito de Cloudflare (100 000 peticiones/día; sin cobro sin cambi
 | Claude.ai, proyecto «1VS1 SNIPER» | Conversaciones y copia de documentos (`claude/sniper-duel-*.md`, espejo de `docs/`) | Claude.ai | Activo; el repositorio es la fuente de verdad |
 | Navegador integrado de Claude en el PC del propietario (MSI, GTX 1050 Ti) | Pruebas en GPU real | Claude desktop app | Usado el 18-10 para medir y verificar |
 
-## 3. Conectores disponibles en las sesiones de Claude.ai pero NO usados por el proyecto
-Context7, Netlify, Sentry, Supabase, Figma, Linear, Cloudflare Developer Platform (MCP), Google Drive/Docs/Sheets/Calendar,
-Gmail, Runway. Ninguno forma parte del juego ni de su despliegue. Sentry no está configurado (no hay DSN). Claude Code
-**no** hereda estos conectores: solo los tendrá si el propietario los configura allí como servidores MCP. No crear
-proyectos ni recursos en ellos sin permiso (pueden tener coste).
+## 3. Conectores MCP (comprobados en Claude Code el 18-10-2026, solo lectura)
+Corrección: en la app de escritorio Claude Code **sí** tiene los conectores de la cuenta. Ninguno forma parte del juego
+ni de su despliegue. No crear proyectos ni recursos en ellos sin permiso (pueden tener coste).
+
+| Conector | Comprobación | Resultado |
+|---|---|---|
+| Cloudflare Developer Platform | listar Workers | Ve `sniper-duel` (modificado 18-10 10:53 UTC). Útil para leer el estado del servidor; desplegar sigue siendo cosa de Actions |
+| Context7 | buscar «Three.js» | Funciona (documentación de Three.js) |
+| Linear | listar equipos e incidencias | Equipo «SNIPER DUEL» (SNI) con solo las 4 tareas de bienvenida; sin proyectos. No se usa |
+| Sentry | listar organizaciones | Una organización; el juego no tiene Sentry (sin DSN ni código) |
+| Supabase | listar proyectos | Un proyecto ajeno al juego |
+| Netlify | leer usuario | Cuenta del propietario; el juego no usa Netlify |
+| Figma | `whoami` | Plan starter; no usado |
+| Google Drive/Docs/Sheets/Calendar, Gmail, Runway, Chrome, navegador integrado, control del escritorio | — | Disponibles; no usados por el proyecto |
+
+En el PC del propietario no está instalado `gh`; el estado de Actions se lee con la API pública de GitHub (`curl`).
 
 ## 4. Datos que faltan (PENDIENTE DE RECUPERAR)
 - Identificadores internos de Cloudflare (cuenta, zona): no se necesitan y no se documentan.

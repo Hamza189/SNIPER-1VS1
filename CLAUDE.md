@@ -43,17 +43,32 @@ https://hamza189.github.io/SNIPER-1VS1/ desde la rama `main`.
   (`tools/capture-scenes.js`). El WebGL por software (SwiftShader) del entorno de pruebas sirve para comparar aspecto y
   contar llamadas/triángulos, **no** para FPS ni para fallos de precisión de GPU.
 - Documenta cada cambio en `docs/` (assets en `docs/ASSETS-3D.md`) y actualiza `docs/claude-code/` si cambia el estado.
+- Registro duradero: al final de cada sesión (o tras cada decisión del propietario) añade una entrada arriba en
+  `docs/claude-code/SNIPER_DUEL_DECISIONS_LOG.md` y actualiza su tabla de tareas abiertas.
+- Publicar = `git push origin main` (republica la página y, si toca `core/`/`server/`, el servidor). Antes de cada push,
+  di al propietario qué cambia y espera su autorización.
 
 ## Comandos
 ```
 python3 build.py                 # core/ + client/ + src/page.html → index.html + version.json (NUNCA editar index.html)
-npm test                         # build + todas las pruebas (≈ 25 suites; las de navegador tardan bastante)
+npm test                         # build + 26 suites (936 comprobaciones el 18-10; las de navegador tardan bastante)
 node test/<nombre>.test.js       # una suite
 node tools/export-map.js         # tras cambiar cualquier mapa: regenera core/mapdata.js (lo que usa el servidor)
 node server/node.js              # servidor local (pruebas)
 ```
 Requisitos: Python 3, Node 18+ (CI usa 22), `ws`, `playwright` 1.56 con Chromium; Blender como módulo `bpy` solo para
 regenerar modelos. Dependencias de Python de herramientas: numpy, Pillow.
+
+### PC del propietario (Windows 11, MSI GF63 con Intel UHD 630 + GTX 1050 Ti Max-Q)
+- `python3` es una copia de `C:\Python314\python.exe`; si desaparece, `npm test` falla al llamar a `python3 build.py`.
+- `playwright@1.56.0` y `ws` se instalan sin guardarlos: `npm install --no-save playwright@1.56.0 ws` y
+  `npx playwright install chromium`.
+- `gh` no está instalado: el estado de Actions se lee con
+  `curl -s https://api.github.com/repos/Hamza189/SNIPER-1VS1/actions/runs?per_page=8`.
+- `core.autocrlf=true`: un archivo regenerado puede salir «modificado» solo por fin de línea; compruébalo con
+  `git diff --stat` y deshazlo con `git checkout -- <archivo>` si no hay cambio real.
+- Conectores MCP disponibles en Claude Code (Cloudflare, Context7, Linear, Sentry, Supabase, Netlify, Figma…): estado en
+  `docs/claude-code/SNIPER_DUEL_CONNECTIONS.md`. Solo lectura salvo permiso expreso; ninguno forma parte del juego.
 
 ## Puntos delicados del código
 - `core/` es lógica pura compartida por cliente y servidor (movimiento, armas, balística, sala). Cualquier cambio aquí
