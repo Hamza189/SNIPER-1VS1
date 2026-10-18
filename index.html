@@ -2193,7 +2193,9 @@ function create(opts) {
     let m; try { m = JSON.parse(text); } catch (e) { return [{ k: 'error', code: 'json' }]; }
     const ev = [];
     switch (m.t) {
-      case 'welcome': N.you = m.you; N.token = m.token; N.code = m.code; N.phase = m.phase; N.players = m.players; N.match = m.match; ev.push({ k: 'welcome', m }); break;
+      // a welcome opens a new socket: the server only numbers events from here on, and a restarted
+      // server object (every deploy) numbers them again from 1, so the old count must not filter them
+      case 'welcome': N.you = m.you; N.token = m.token; N.code = m.code; N.phase = m.phase; N.players = m.players; N.match = m.match; N.lastEvQ = 0; ev.push({ k: 'welcome', m }); break;
       case 'lobby': N.phase = m.phase; N.players = m.players; if (m.map) N.map = m.map; if (m.maps) N.maps = m.maps; ev.push({ k: 'lobby', m }); break;
       case 'start':
         N.match = m.m; if (m.map) N.map = m.map; N.names = m.names || {}; N.phase = 'countdown'; N.startIn = m.in; N.startedAt = N.now();
@@ -4170,7 +4172,7 @@ const SDCasa = {"id":"CASA_ATLAS_1V1","version":"1.0.0","spawns":[{"team":"A","x
 if (typeof module !== 'undefined' && module.exports) module.exports = SDCasa; else root.SDCasa = SDCasa;
 })(typeof window !== 'undefined' ? window : globalThis);
 
-const BUILD_ID="0a419e1";const BUILD_HASH="0816092dae";
+const BUILD_ID="69f2122";const BUILD_HASH="c9c4927d22";
 </script>
 <script>
 (function(){
@@ -4787,6 +4789,17 @@ function segClear(ax,az,bx,bz,inf){const d=Math.hypot(bx-ax,bz-az);const n=Math.
 {const S=3;for(let gx=-46;gx<=46;gx+=S)for(let gz=-46;gz<=46;gz+=S){if(!blockedPt(gx,gz,1.0)){NAVMAP.set(gx+','+gz,NAV.length);NAV.push({x:gx,z:gz,n:[]});}}
  for(const nd of NAV){for(const [dx,dz] of [[S,0],[-S,0],[0,S],[0,-S],[S,S],[S,-S],[-S,S],[-S,-S]]){const j=NAVMAP.get((nd.x+dx)+','+(nd.z+dz));if(j!==undefined&&segClear(nd.x,nd.z,nd.x+dx,nd.z+dz,0.55))nd.n.push(j);}}}
 function nearestNode(x,z){let best=0,bd=1e9;for(let i=0;i<NAV.length;i++){const d=(NAV[i].x-x)**2+(NAV[i].z-z)**2;if(d<bd){bd=d;best=i;}}return best;}
+// walkable points cut off from the rest (CASA ATLAS: a 13-point pocket between the kitchen island and the oven, a lone
+// point) are marked .off: bots neither appear on them nor walk to them (they could never leave). The list itself is not
+// changed, because tools/export-map.js sends it to the server as its respawn candidates (a player walks out of the pocket)
+function navMarkMain(nav){
+  if(nav.marked)return;nav.marked=true;
+  const comp=new Int32Array(nav.length).fill(-1),sizes=[];
+  for(let i=0;i<nav.length;i++){if(comp[i]>=0)continue;const c=sizes.length,q=[i];comp[i]=c;let n=0;
+    while(q.length){const k=q.pop();n++;for(const j of nav[k].n)if(comp[j]<0){comp[j]=c;q.push(j);}}sizes.push(n);}
+  const main=sizes.indexOf(Math.max(...sizes));
+  for(let i=0;i<nav.length;i++)if(comp[i]!==main)nav[i].off=true;
+}
 function findPath(a,b){
   if(a===b)return [b];
   const prev=new Int32Array(NAV.length).fill(-1);prev[a]=a;const q=[a];let h=0;
@@ -6054,18 +6067,19 @@ class Bot{
       this.ms=SDMovement.createState(x,0,z);this.brain=SDTrainer.createBrain(Math.random);
       this.yaw=Math.atan2(P.pos.x-x,P.pos.z-z);this.g.position.set(x,0,z);this.g.rotation.y=this.yaw;this.state='trainer';return;
     }
-    let best=null,bestScore=-1e9;
-    for(let k=0;k<40;k++){const n=NAV[(Math.random()*NAV.length)|0];const d=Math.hypot(n.x-P.pos.x,n.z-P.pos.z);let s=d>30?(d<70?50-Math.abs(d-48):10):-100+d;
+    let best=null,bestScore=-1e9;navMarkMain(NAV);
+    for(let k=0;k<40;k++){const n=NAV[(Math.random()*NAV.length)|0];if(n.off)continue;const d=Math.hypot(n.x-P.pos.x,n.z-P.pos.z);let s=d>30?(d<70?50-Math.abs(d-48):10):-100+d;
       if(P.alive&&losClear(n.x,1.6,n.z,P.pos.x,P.pos.y+P.eye,P.pos.z))s-=60;
       for(const b of BOTS){if(b!==this&&b.alive){const bd=Math.hypot(n.x-b.g.position.x,n.z-b.g.position.z);if(bd<12)s-=30;}}
       s+=Math.random()*8;if(s>bestScore){bestScore=s;best=n;}}
+    if(!best)best=NAV.find(n=>!n.off);
     this.g.position.set(best.x,0,best.z);this.node=NAV.indexOf(best);
     this.yaw=Math.atan2(P.pos.x-best.x,P.pos.z-best.z)+rand(-0.6,0.6);this.g.rotation.y=this.yaw;
     this.state='watch';this.watchT=rand(1,3);this.lookYaw=this.yaw;
   }
   pickDest(){
-    const here=nearestNode(this.g.position.x,this.g.position.z);let best=-1,bs=-1e9;
-    for(let k=0;k<10;k++){const i=(Math.random()*NAV.length)|0;const n=NAV[i];const d=Math.hypot(n.x-this.g.position.x,n.z-this.g.position.z);if(d<8||d>40)continue;
+    const here=nearestNode(this.g.position.x,this.g.position.z);let best=-1,bs=-1e9;navMarkMain(NAV);
+    for(let k=0;k<10;k++){const i=(Math.random()*NAV.length)|0;const n=NAV[i];if(n.off)continue;const d=Math.hypot(n.x-this.g.position.x,n.z-this.g.position.z);if(d<8||d>40)continue;
       const dp=Math.hypot(n.x-P.pos.x,n.z-P.pos.z);let s=-Math.abs(dp-32)+Math.random()*12;
       for(const b of BOTS){if(b!==this&&b.alive&&Math.hypot(n.x-b.g.position.x,n.z-b.g.position.z)<10)s-=15;}
       if(s>bs){bs=s;best=i;}}
@@ -6152,9 +6166,13 @@ class Bot{
         // steering (not teleporting along the grid): the velocity turns toward the next node with a limited
         // acceleration and cuts a little into the next leg near each node, so the bot walks in readable
         // curves instead of changing direction in one tick (tools/bot-motion-audit.js measures it)
-        const n=NAV[this.path[0]];if(!n){this.path.length=0;break;}   // path from another map (the map changed under it)
-        const mx=n.x-ex,mz=n.z-ez;const md=Math.hypot(mx,mz);
-        if(md<(this.path.length>1?0.9:0.25)){this.node=this.path.shift();break;}   // aim at the next node early: a curve, not a corner
+        let n=NAV[this.path[0]];if(!n){this.path.length=0;break;}   // path from another map (the map changed under it)
+        let mx=n.x-ex,mz=n.z-ez,md=Math.hypot(mx,mz);
+        // aim at the next node early: a curve, not a corner. Reaching a node moves on to the next one in the same tick
+        // (it used to stand still for that tick: 9 % of the walking ticks on the 0.25 m grid of CASA ATLAS)
+        while(md<(this.path.length>1?0.9:0.25)){this.node=this.path.shift();if(!this.path.length)break;
+          n=NAV[this.path[0]];if(!n){this.path.length=0;break;}mx=n.x-ex;mz=n.z-ez;md=Math.hypot(mx,mz);}
+        if(!this.path.length)break;
         const last=this.path.length===1,vt=last?Math.min(BOT_WALK,md*2.2):BOT_WALK;
         this.steer(mx/md*vt,mz/md*vt,dt);
         g.position.x+=this.vx*dt;g.position.z+=this.vz*dt;
@@ -7658,7 +7676,8 @@ function netConnect(code){
   let ws;try{ws=new WebSocket(NET.url.replace(/^http/,'ws')+'/room/'+code);}catch(e){netErr('ws '+e.message);netRetry();return;}
   NET.ws=ws;
   ws.onopen=()=>{NET.status='online';NET.retries=0;NET.lastMsgAt=performance.now();const tok=store.get('tok_'+code,null);NET.N.hello(mpName(),tok);NET.N.ping();};
-  ws.onmessage=e=>{NET.lastMsgAt=performance.now();NET.bytesIn+=e.data.length||0;for(const ev of NET.N.onMessage(e.data))netEvent(ev);};
+  ws.onmessage=e=>{if(NET.ws!==ws)return;   // a late frame from a socket already replaced is never applied
+    NET.lastMsgAt=performance.now();NET.bytesIn+=e.data.length||0;for(const ev of NET.N.onMessage(e.data))netEvent(ev);};
   ws.onerror=()=>{netErr('socket error');};
   ws.onclose=e=>{
     if(NET.ws!==ws)return;NET.ws=null;

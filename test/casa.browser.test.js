@@ -105,6 +105,25 @@ async function open(b, url, opts) {
   });
   check('el bot se mueve por el piso', bot.moved > 5, bot.moved.toFixed(1) + ' m · ' + bot.states.join(', '));
   check('nunca dentro de una caja ni fuera del piso', bot.inBox === 0 && bot.out === 0, bot.inBox + ' / ' + bot.out);
+
+  console.log('\nBOTS EN CASA: RED DE NAVEGACIÓN (auditoría 18-10-2026, J1 y J2)');
+  const navr = await p.evaluate(() => {
+    const S = __SD, NAV = S.WORLDS.casa.nav, B = S.BOTS.find(x => x.alive);
+    // pieces of the walkable grid that are not joined to each other
+    const comp = new Int32Array(NAV.length).fill(-1), sizes = [];
+    for (let i = 0; i < NAV.length; i++) { if (comp[i] >= 0) continue; const c = sizes.length, q = [i]; comp[i] = c; let n = 0;
+      while (q.length) { const k = q.pop(); n++; for (const j of NAV[k].n) if (comp[j] < 0) { comp[j] = c; q.push(j); } } sizes.push(n); }
+    const main = sizes.indexOf(Math.max(...sizes));
+    let off = 0; const N = 300;
+    for (let i = 0; i < N; i++) { B.spawn(); if (comp[B.node] !== main) off++; }
+    // walking along a path: ticks in which the bot stands still although it is in 'move'
+    B.spawn(); let mv = 0, still = 0;
+    for (let i = 0; i < 3600; i++) { const x = B.g.position.x, z = B.g.position.z, st = B.state; S.simTick(1 / 120);
+      if (st === 'move' && B.state === 'move') { mv++; if (Math.hypot(B.g.position.x - x, B.g.position.z - z) < 1e-6) still++; } }
+    return { sizes, off, N, mv, still };
+  });
+  check('ningún bot aparece en un trozo de la red separado del resto (300 apariciones)', navr.off === 0, navr.off + '/' + navr.N + ' · trozos ' + navr.sizes.join('/'));
+  check('caminando por su ruta, el bot no se queda parado al cambiar de punto (< 1 % de ticks)', navr.mv > 200 && navr.still / navr.mv < 0.01, navr.still + '/' + navr.mv + ' ticks parados');
   const back = await p.evaluate(() => { __SD.toMenu(); __SD.setOffMap('arena'); return { w: __SD.WORLD_ID, gy: __SD.WORLDS && THREE && __SD.scene.children.find(o => o.geometry && o.geometry.parameters && o.geometry.parameters.width === 400).position.y, sc: __SD.LIGHT.sun.shadow.camera.right, casaVis: __SD.CASA.root.visible }; });
   check('volver a la ARENA: suelo y sombras como antes, el piso oculto', back.w === 'arena' && back.gy === 0 && back.sc === 62 && !back.casaVis, JSON.stringify(back));
   await o.ctx.close();
