@@ -4148,7 +4148,8 @@ function netConnect(code){
   let ws;try{ws=new WebSocket(NET.url.replace(/^http/,'ws')+'/room/'+code);}catch(e){netErr('ws '+e.message);netRetry();return;}
   NET.ws=ws;
   ws.onopen=()=>{NET.status='online';NET.retries=0;NET.lastMsgAt=performance.now();const tok=store.get('tok_'+code,null);NET.N.hello(mpName(),tok);NET.N.ping();};
-  ws.onmessage=e=>{NET.lastMsgAt=performance.now();NET.bytesIn+=e.data.length||0;for(const ev of NET.N.onMessage(e.data))netEvent(ev);};
+  ws.onmessage=e=>{if(NET.ws!==ws)return;   // a late frame from a socket already replaced is never applied
+    NET.lastMsgAt=performance.now();NET.bytesIn+=e.data.length||0;for(const ev of NET.N.onMessage(e.data))netEvent(ev);};
   ws.onerror=()=>{netErr('socket error');};
   ws.onclose=e=>{
     if(NET.ws!==ws)return;NET.ws=null;

@@ -26,9 +26,12 @@ function createSim(o) {
     S.q.push({ at, deliver, text });
     if (o.dup && R() < o.dup) S.q.push({ at: at + 1, deliver, text });
   }
-  const room = SDRoom.create(Object.assign(o.maps ? { maps: MAP.maps, defaultMap: o.maps } : { map: MAP, index: INDEX }, { code: 'TESTAA', now: 0, debug: true, rand: rng(o.seed + 1),
+  // persist: like the Durable Object storage (server/worker.js), so a test can restart the room
+  const makeRoom = () => SDRoom.create(Object.assign(o.maps ? { maps: MAP.maps, defaultMap: o.maps } : { map: MAP, index: INDEX }, { code: 'TESTAA', now: S.t, debug: true, rand: rng(o.seed + 1),
     send: (conn, text) => { const c = S.byConn[conn]; if (c && c.open) wire('s' + conn, () => c.recv(text), text); },
-    close: (conn) => { const c = S.byConn[conn]; if (c) c.open = false; } }));
+    close: (conn) => { const c = S.byConn[conn]; if (c) c.open = false; },
+    persist: d => { S.saved = JSON.parse(JSON.stringify(d)); } }));
+  let room = makeRoom();
   S.room = room; S.byConn = {};
   let nextConn = 1;
   S.addClient = (name, ai) => {
@@ -45,6 +48,14 @@ function createSim(o) {
     room.disconnect(c.conn, S.t); delete S.byConn[c.conn];
     c.conn = nextConn++; c.open = true; S.byConn[c.conn] = c; room.connect(c.conn, S.t);
     c.N.hello(c.name, c.N.token);
+  };
+  // the server object is evicted (every deploy does it): a fresh room restored from storage, every
+  // socket cut, and the clients come back with their tokens (as the page does after a close)
+  S.restartRoom = () => {
+    for (const k in S.clients) S.clients[k].open = false;
+    S.q = []; S.byConn = {};
+    room = makeRoom(); room.restore(S.saved); S.room = room;
+    for (const k in S.clients) { const c = S.clients[k]; c.conn = nextConn++; c.open = true; S.byConn[c.conn] = c; room.connect(c.conn, S.t); c.N.hello(c.name, c.N.token); }
   };
   S.drop = c => { c.open = false; room.disconnect(c.conn, S.t); delete S.byConn[c.conn]; };
   // one simulated client tick: build the command (AI), predict, send — like the page does
