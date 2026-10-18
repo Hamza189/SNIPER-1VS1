@@ -78,3 +78,15 @@ regenerar modelos. Dependencias de Python de herramientas: numpy, Pillow.
   no coinciden.
 - Lo que se ve (GLB, kit, texturas) nunca define colisiones ni balas: eso son siempre cajas/triángulos exportados.
 - Banderas de URL para todo lo experimental (lista en `docs/claude-code/SNIPER_DUEL_TECHNICAL_ARCHITECTURE.md`).
+
+## Decisiones técnicas (tecnologías y lenguajes)
+- 18-10-2026, propietario: Claude puede **proponer** otros lenguajes, librerías y herramientas (TypeScript, GLSL, Rust/WASM,
+  WebGPU, Python/Blender…) si demuestra con medidas que mejoran el juego. Nunca por ser más modernas. Cada migración
+  necesita una prueba previa, comparación medida y su aprobación. Compatibilidad obligatoria: PC, iPhone, Android,
+  GitHub Pages, Cloudflare Workers/Durable Objects, servidor autoritativo, Three.js y los GLB actuales.
+- No migrar el servidor ni el motor a Rust sin aprobación expresa. No sustituir el renderizador WebGL: WebGPU o Three.js
+  moderno solo como prueba aislada con vuelta a WebGL.
+- El navegador y Cloudflare reciben siempre JavaScript. Herramientas de desarrollo gratuitas y de código abierto.
+- Informe y plan por fases (T0–T6): `docs/claude-code/SNIPER_DUEL_TECHNOLOGY_EVOLUTION.md`. Estado de cada fase en
+  `docs/claude-code/SNIPER_DUEL_DECISIONS_LOG.md`. Medido el 18-10: el coste está en la GPU y en el envío de dibujo, no
+  en la lógica (tick de jugador ~5 µs), así que Rust/WASM no está justificado hoy.
