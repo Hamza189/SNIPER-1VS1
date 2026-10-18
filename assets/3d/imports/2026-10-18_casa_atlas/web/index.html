@@ -1,0 +1,31 @@
+<!DOCTYPE html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>CASA ATLAS 1V1 — Sniper Duel</title>
+<style>*{box-sizing:border-box}body{margin:0;background:#10191d;color:#f0ece5;font:14px system-ui}canvas{display:block}#ui{position:absolute;top:12px;left:12px;max-width:335px;background:rgba(9,17,22,.88);padding:16px;border-radius:13px;backdrop-filter:blur(8px);z-index:5}h2{margin:0 0 8px;font-size:17px}p{line-height:1.5;color:#b5c4ca;margin:8px 0 12px}button{cursor:pointer;background:#24373f;border:1px solid #44616e;border-radius:7px;color:#eee;padding:9px 11px;margin:3px 3px 3px 0}button:hover{background:#345362}#status{color:#97cdb8;margin-top:7px}#cross{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);font-size:22px;color:white;pointer-events:none;display:none}#bottom{position:absolute;bottom:12px;right:12px;background:rgba(8,15,17,.8);padding:7px 11px;border-radius:7px;z-index:5}</style></head>
+<body><div id="ui"><h2>CASA ATLAS · 1v1</h2><p>Mapa 3D original de Sniper Duel. <strong>18 × 14 m</strong>, interior compacto. El GLB que ves es el que entregamos a Claude.</p>
+<button id="iso">Vista 3D</button><button id="top">Vista cenital</button><button id="walk">Caminar FPS</button><button id="roof">Techo opcional</button><button id="boxes">Colisiones</button>
+<p>Modo FPS: haz clic en el juego y mueve el ratón. WASD para moverte, Esc para salir. Este visor no sustituye la jugabilidad online.</p><div id="status">Cargando modelo 3D…</div></div><div id="cross">+</div><div id="bottom">GLB real • Three.js r128 • Proyecto experimental</div>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+<script type="module">
+import {loadCasaAtlas,canStandAt} from './apartmentMap.js';
+const renderer=new THREE.WebGLRenderer({antialias:true,powerPreference:'high-performance'});renderer.setSize(innerWidth,innerHeight);renderer.setPixelRatio(Math.min(devicePixelRatio,2));renderer.outputEncoding=THREE.sRGBEncoding;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.0;document.body.appendChild(renderer.domElement);
+const scene=new THREE.Scene();scene.background=new THREE.Color(0xb7cbd5);const camera=new THREE.PerspectiveCamera(66,innerWidth/innerHeight,.08,150);camera.position.set(22,21,25);
+scene.add(new THREE.HemisphereLight(0xd9ebff,0x998a78,1.05));const sun=new THREE.DirectionalLight(0xffefd8,1.45);sun.position.set(-9,22,11);scene.add(sun);
+const controls=new THREE.OrbitControls(camera,renderer.domElement);controls.target.set(0,0,.2);controls.enableDamping=true;controls.maxPolarAngle=1.55;controls.update();
+let atlas=null,roofGroup=null,boxGroup=null,mode='orbit';const keys={};let yaw=0,pitch=0,velocity=4.1;document.getElementById('status').textContent='Cargando geometría y texturas…';
+try{
+ atlas=await loadCasaAtlas({THREE,GLTFLoader:THREE.GLTFLoader,scene,assetBase:'../'});
+ document.getElementById('status').textContent=`Cargado · ${atlas.data.renderMeshes.length} lotes de mallas · ${atlas.data.colliders.length} colisiones`;
+}catch(e){document.getElementById('status').textContent='Error: '+e.message;throw e}
+function orbit(){mode='orbit';controls.enabled=true;document.getElementById('cross').style.display='none';if(document.pointerLockElement)document.exitPointerLock()}
+document.getElementById('iso').onclick=()=>{orbit();camera.position.set(22,21,25);controls.target.set(0,0,.2);controls.update()};
+document.getElementById('top').onclick=()=>{orbit();camera.position.set(0,27,.0001);controls.target.set(0,0,0);controls.update()};
+document.getElementById('walk').onclick=()=>{mode='fps';controls.enabled=false;camera.position.set(-7.45,1.62,.57);yaw=-1.57;pitch=0;document.getElementById('cross').style.display='block';document.getElementById('status').textContent='Modo FPS: clic sobre el mapa';};
+document.getElementById('roof').onclick=async()=>{if(!roofGroup){const l=new THREE.GLTFLoader();roofGroup=(await new Promise((rs,rj)=>l.load('../models/sd_casa_atlas_roof_optional.glb',rs,undefined,rj))).scene;scene.add(roofGroup)}else roofGroup.visible=!roofGroup.visible};
+document.getElementById('boxes').onclick=()=>{if(!boxGroup){boxGroup=new THREE.Group();const m=new THREE.MeshBasicMaterial({color:0xff7a42,wireframe:true,transparent:true,opacity:.45});const g=new THREE.BoxGeometry(1,1,1);for(const c of atlas.playerColliders){const b=new THREE.Mesh(g,m);b.position.set(...c.center);b.scale.set(...c.size);boxGroup.add(b)}scene.add(boxGroup)}else boxGroup.visible=!boxGroup.visible};
+renderer.domElement.onclick=()=>{if(mode==='fps')renderer.domElement.requestPointerLock()};
+document.addEventListener('mousemove',e=>{if(mode!=='fps'||document.pointerLockElement!==renderer.domElement)return;yaw-=e.movementX*.0023;pitch=Math.max(-1.4,Math.min(1.4,pitch-e.movementY*.0023));});
+addEventListener('keydown',e=>{keys[e.code]=true});addEventListener('keyup',e=>{keys[e.code]=false});
+addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight)});
+const clock=new THREE.Clock();function animate(){requestAnimationFrame(animate);const dt=Math.min(.05,clock.getDelta());if(mode==='orbit')controls.update();else{let fb=(keys.KeyW?1:0)-(keys.KeyS?1:0);let lr=(keys.KeyD?1:0)-(keys.KeyA?1:0);if(fb||lr){let n=Math.hypot(fb,lr),speed=(keys.ShiftLeft?6:velocity)*dt/n;let dx=(-Math.sin(yaw)*fb+Math.cos(yaw)*lr)*speed;let dz=(-Math.cos(yaw)*fb-Math.sin(yaw)*lr)*speed;const x=camera.position.x,z=camera.position.z;if(canStandAt(x+dx,z,atlas.playerColliders))camera.position.x+=dx;if(canStandAt(camera.position.x,z+dz,atlas.playerColliders))camera.position.z+=dz}camera.rotation.order='YXZ';camera.rotation.y=yaw;camera.rotation.x=pitch;}renderer.render(scene,camera)}animate();
+</script></body></html>

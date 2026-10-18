@@ -1,0 +1,12 @@
+{
+  "byPart": {
+    "architecture": 900,
+    "details": 6772,
+    "furniture": 2316,
+    "glass": 120
+  },
+  "triangles": 10108,
+  "renderMeshes": 32,
+  "colliders": 78,
+  "glb_bytes": 7362976
+}

@@ -594,3 +594,73 @@ claro para esta luz: mejor una media de ~120–160.
   - estilo monumental: marcos y sillares gruesos, puerta lisa y el doble de triángulos;
   - el pueblo actual tiene más carácter: estuco de color, persianas, balcones, rejas y recercados finos;
   - **no se integra ninguna pieza.**
+
+## 17. CASA ATLAS 1V1 — mapa experimental de ChatGPT (18-10-2026)
+
+Piso de 18 × 14 m en una planta: salón, cocina, comedor, dormitorio, baño, estudio y balcón. GLB real (10 108 triángulos,
+32 piezas, 25 materiales PBR, 14 texturas) + techo opcional + `collision_map.json` (78 cajas) + spawns. Original intacto en
+`assets/3d/imports/2026-10-18_casa_atlas/`; en el juego, `assets/maps/casa_atlas/`.
+
+**Cómo entra en el juego**
+- Mapa nuevo `casa`, independiente de PUEBLO y ARENA (que no cambian: sus datos de servidor son idénticos byte a byte).
+- Solo aparece en los menús con `?casa=1` (se recuerda en el dispositivo; `?casa=0` lo vuelve a ocultar). El mapa existe
+  siempre (sus cajas son baratas), así que un invitado sin el enlace puede entrar en una sala online creada en él; su GLB
+  solo se descarga la primera vez que se muestra.
+- **Colisiones y balas salen solo de las cajas** (`client/casa.js`, generado por `tools/casa/make_casa_js.py` desde
+  `collision_map.json` + `collision_fixes.json`), nunca del GLB: caja sólida → colisión + caja invisible para las balas;
+  caja de solo movimiento → colisión. `tools/export-map.js` lleva exactamente las mismas al servidor (`core/mapdata.js`).
+- Duelo contra bots: 1 bot (2 en ÉLITE). Navegación con rejilla de 0,25 m a 0,4 m de todo lo que esté a la altura del cuerpo.
+- Sin techo: luz del sol del mapa; la caja de sombras del sol se reduce a ±16 m en este mapa (sombras 4 veces más finas)
+  y el suelo del pueblo baja 4 cm (sin parpadeo con los suelos del piso). Todo vuelve a su valor al cambiar de mapa.
+- `&techo=1` carga el techo opcional (experimental).
+
+**Decisiones de juego (iguales en cliente y servidor)**
+- El cristal **no para las balas** ni se rompe; **sí impide el paso** (ventanas, cristaleras del balcón, mampara).
+- Las barandillas del balcón llegan a 3,30 m para el movimiento (las balas pasan por encima de la barandilla real de 1,16 m).
+- No se puede estar encima del armario, frigorífico, estanterías, horno ni televisor (sin techo se vería por encima de los
+  tabiques). Saltando desde un mueble de más de 0,5 m los ojos asoman un instante por encima de los tabiques (3,12 m).
+
+**Problemas de diseño encontrados** (fichero → coordenadas → qué se ha hecho / recomendación para ChatGPT)
+1. `collision_map.json`: el **televisor de pie** (x −2,10…−0,30, y 0,81…1,88, z −2,14…−2,06) en mitad del paso salón–pasillo
+   no tenía caja: parecía cobertura y las balas lo atravesaban. Añadida caja sólida.
+2. Cabecero de la cama (x −7,10…−5,10, y hasta 1,45, z −5,97…−5,80) sin caja. Añadida.
+3. **Ventanas y cristaleras**: con alféizar a 1,10–1,25 m y salto de 1 m + escalón de 0,45 m, se salía del mapa por
+   cualquier ventana; las cristaleras del salón/comedor (desde el suelo) se cruzaban andando. Cajas de solo movimiento.
+4. Barandillas del balcón de 1,16 m: se saltaban. Subidas a 3,30 m solo para el movimiento.
+5. **Spawn A** (−7,45; 0,57): a 0,33 m de la silla del escritorio; con el radio del juego (0,35 m) nace dentro. Movido a
+   (−7,45; 0,95). **Spawn B** (7,15; 0,20): ve la salida A en línea recta a 14,6 m por las puertas del estudio y la cocina.
+   Movido a (7,10; −2,50), detrás de la pared, junto a la isla.
+6. **Sillas del comedor** (z 1,84…2,34 y 4,18…4,68): a 0,29 m de la mesa y delante de la puerta de la cocina; con caja
+   cortaban el paso. Las dos de z ≈ 2,3 tienen el respaldo hacia la mesa (están al revés). Se quedan sin caja (como el original).
+   Recomendación: alejarlas 0,45 m de la mesa y girar las del norte.
+7. **Macetas**: la del pasillo (x 2,67…3,26, z −3,40…−2,83) está en el marco de la puerta de la cocina; las del balcón
+   (x −6,40…−5,86 y 5,70…6,24) dejan 0,62 m con la fachada y bloquean el paso a los extremos del balcón. Sin caja salvo las
+   dos grandes del salón. Recomendación: moverlas al menos 0,8 m de puertas y fachada.
+8. Rincones muertos sin acceso (0,22 m² detrás de la mesilla del dormitorio, 0,14 m² entre váter y lavabo): sin importancia.
+9. Materiales: el suelo de roble multiplica una textura ya marrón por un color base marrón (sale naranja saturado); el
+   resto de texturas son procedimentales y planas. Para la siguiente versión: texturas escaneadas (Poly Haven) y color base 1,0.
+10. Sin LOD (no hacen falta: 32 piezas) y el GLB pesaba 7,4 MB por las PNG (ahora 1,8 MB en JPEG).
+
+**Validación** (`test/casa.test.js` 75, `test/casa.browser.test.js` 18, `test/casa.online.browser.test.js` 12)
+- Cliente = servidor: mismas 102 cajas, 950 triángulos de bala, mismos spawns; 400 disparos al azar con el mismo impacto
+  en el cliente (Three.js) y en el servidor (core/geom.js).
+- Lo que se ve = las cajas: 1 670 rayos contra las dos caras de cada pared, todas dibujadas a menos de 6 cm.
+- Las 10 puertas se cruzan en los dos sentidos con el código de movimiento real; las 9 cristaleras/ventanas y las tres
+  barandillas no se cruzan ni corriendo y saltando; nadie se queda encima de los muebles altos.
+- 1v1 online (red simulada y dos navegadores reales con el servidor Node): spawns A/B, impacto cruzando el salón, el
+  tabique y el televisor paran la bala, la cristalera no.
+
+**Rendimiento** (`tools/casa/perf.js`, 4 cámaras por mapa, PUEBLO 3.0 activo; llamadas y triángulos exactos, incluida la sombra)
+
+| perfil | CASA ATLAS | ARENA | PUEBLO 3.0 |
+|---|---|---|---|
+| ALTO  | 38 llamadas · 12 635 triángulos | 25 · 10 466 | 182 · 288 252 |
+| MEDIO | 33 · 11 651 | 25 · 10 466 | 167 · 241 950 |
+| BAJO  | 32 · 11 015 | 20 · 5 830 | 120 · 170 854 |
+
+Texturas del mapa en la GPU: ~31 MB (11 de 512² y 3 de 1024²); BAJO quita el mapa de normales. El tiempo por fotograma
+no se puede medir aquí (WebGL por software); PENDIENTE DE VALIDACIÓN EN IPHONE y en el Samsung.
+
+**Estado:** IMPLEMENTADO · PROBADO EN NAVEGADOR · 1v1 PROBADO con servidor local (falta la prueba online real entre
+dos dispositivos) · PENDIENTE DE VALIDACIÓN EN IPHONE. Enlace: `?casa=1` (con `&pueblo=3` para la luz nueva; `&techo=1`
+para probar el techo).

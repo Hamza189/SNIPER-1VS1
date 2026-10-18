@@ -515,7 +515,7 @@ body.touch #score .side span{max-width:11vw;overflow:hidden;text-overflow:ellips
         </div>
         <div id="mapBlock">
           <div class="lbl" style="margin-bottom:6px">Mapa</div>
-          <div class="seg" id="mapSeg" role="group" aria-label="Mapa"><button type="button" data-map="arena">ARENA DE PRUEBAS</button><button type="button" data-map="pueblo">PUEBLO</button></div>
+          <div class="seg" id="mapSeg" role="group" aria-label="Mapa"><button type="button" data-map="arena">ARENA DE PRUEBAS</button><button type="button" data-map="pueblo">PUEBLO</button><button type="button" data-map="casa" hidden>CASA ATLAS · EXP.</button></div>
         </div>
         <div id="rangeBlock" hidden>
           <div class="lbl" id="lblTrain" style="margin-bottom:6px">Bots de entrenamiento (se mueven y disparan)</div>
@@ -643,7 +643,7 @@ body.touch #score .side span{max-width:11vw;overflow:hidden;text-overflow:ellips
     <div id="mpLobby" hidden style="display:grid;gap:14px">
       <div style="display:grid;gap:4px"><span class="lbl">Código de sala</span><div id="mpCodeBig">------</div></div>
       <div class="row"><button class="btn ghost" id="mpCopy" type="button" style="font-size:20px">COPIAR CÓDIGO</button><button class="btn ghost" id="mpShare" type="button" style="font-size:20px">COMPARTIR INVITACIÓN</button></div>
-      <div style="display:grid;gap:6px"><p class="mpLink" id="mpLink" style="margin:0"></p><span class="lbl">Mapa (lo elige quien crea la sala)</span><div class="seg" id="mpMapSeg" role="group" aria-label="Mapa"><button type="button" data-map="arena">ARENA DE PRUEBAS</button><button type="button" data-map="pueblo">PUEBLO</button></div><span class="lbl">Tu arma principal</span><div class="seg kitSeg" role="group" aria-label="Arma principal"><button type="button" data-kit="rifle">HALCÓN R7</button><button type="button" data-kit="shotgun">FURIA 12</button></div></div>
+      <div style="display:grid;gap:6px"><p class="mpLink" id="mpLink" style="margin:0"></p><span class="lbl">Mapa (lo elige quien crea la sala)</span><div class="seg" id="mpMapSeg" role="group" aria-label="Mapa"><button type="button" data-map="arena">ARENA DE PRUEBAS</button><button type="button" data-map="pueblo">PUEBLO</button><button type="button" data-map="casa" hidden>CASA ATLAS · EXP.</button></div><span class="lbl">Tu arma principal</span><div class="seg kitSeg" role="group" aria-label="Arma principal"><button type="button" data-kit="rifle">HALCÓN R7</button><button type="button" data-kit="shotgun">FURIA 12</button></div></div>
       <ul id="mpPlayers"></ul>
       <p class="mpMsg" id="mpStatus">ESPERANDO AL SEGUNDO JUGADOR…</p>
       <div class="row"><button class="btn" id="mpReady" type="button">LISTO</button><button class="btn ghost" id="mpLeave" type="button" style="font-size:20px">SALIR</button></div>
@@ -690,7 +690,9 @@ const GFX={choice:SDSettings.load(store,isTouch).quality,profile:'medio',adapt:n
 GFX.profile=PERF_LOW?'bajo':SDQuality.resolve(GFX.choice,isTouch);
 const renderer=new T.WebGLRenderer({canvas,antialias:!PERF_LOW&&GFX.profile==='alto'&&(!isTouch||devicePixelRatio<2),powerPreference:'high-performance'});
 renderer.setPixelRatio(PERF_LOW?0.5:SDQuality.pixelRatio(GFX.profile,window.devicePixelRatio,1));
-renderer.shadowMap.enabled=!PERF_LOW&&SDQuality.PROFILES[GFX.profile].shadows;
+// &sombras=0 (diagnostic, 18-10-2026): no sun shadows at all, to tell whether stripes someone sees are shadows or something else
+const NO_SHADOWS=/[?&]sombras=0\b/.test(location.search);
+renderer.shadowMap.enabled=!PERF_LOW&&!NO_SHADOWS&&SDQuality.PROFILES[GFX.profile].shadows;
 renderer.shadowMap.type=T.PCFShadowMap;
 renderer.autoClear=false;
 /* COLOR MANAGEMENT (GFX-1): light is computed in linear space and written as sRGB, with a filmic curve
@@ -787,7 +789,7 @@ sun.castShadow=true;
 const sc=sun.shadow.camera;sc.left=-62;sc.right=62;sc.top=62;sc.bottom=-62;sc.near=10;sc.far=180;
 sun.shadow.bias=-0.0004;sun.shadow.normalBias=0.025;
 // normal offset in step with the shadow texel (124 m box / map size): 0.6 texel, at least 2.5 cm (ALTO 3.6 cm, MEDIO 7 cm)
-function sunBiasFor(ms){sun.shadow.normalBias=Math.max(0.025,0.6*124/(ms||1024));}sunBiasFor(sun.shadow.mapSize.x);sun.shadow.radius=1.6;   // PCF (cheaper than PCFSoft, same look with a small radius)
+function sunBiasFor(ms){sun.shadow.normalBias=Math.max(sc.right>20?0.025:0.012,0.6*(sc.right-sc.left)/(ms||1024));}sunBiasFor(sun.shadow.mapSize.x);sun.shadow.radius=1.6;   // PCF (cheaper than PCFSoft, same look with a small radius)
 // Shadow fade (17-10-2026, owner's video): distant walls showed shadows drawn as diagonal stripes that shimmer while walking
 // ("como si no cargara la textura"). Two causes, two fades in Three's light shader (sun only):
 //  · walls the sun grazes: each shadow-map texel stretches into a long line; there the sun barely lights the wall anyway
@@ -1341,6 +1343,71 @@ const WORLDS={pueblo:{colliders:W.colliders,ray:W.ray,ramps:W.ramps,objs:scene.c
   for(const o of WORLDS.arena.objs)o.visible=false;
   W.colliders=WORLDS.pueblo.colliders;W.ray=WORLDS.pueblo.ray;W.ramps=WORLDS.pueblo.ramps;
 }
+/* =================== CASA ATLAS 1V1 (experimental map, 18-10-2026) ===================
+   An 18 × 14 m one-floor flat by ChatGPT (assets/maps/casa_atlas/, originals in assets/3d/imports/2026-10-18_casa_atlas/).
+   What you collide with and what bullets hit come ONLY from the boxes in client/casa.js (collision_map.json + Claude's
+   collision_fixes.json), never from the GLB: the server gets exactly the same boxes (core/mapdata.js).
+   · solid boxes → movement collider + an invisible box bullets hit (with its impact surface)
+   · movement-only boxes → glass (bullets go through it, players do not), balcony rails, plants, no standing on tall furniture
+   The GLB is only what you see; it loads the first time the map is shown. Offered in the menus only with ?casa=1 (remembered
+   on the device; ?casa=0 hides it again), but always built, so a friend without the link can join an online room on it. */
+const CASA={on:typeof SDCasa!=='undefined',exp:false,ready:false,loading:false,failed:false,root:null,roof:null,tris:0,calls:0,
+  roofWanted:/[?&]techo=1\b/.test(location.search)};
+{const q=location.search.match(/[?&]casa=([01])\b/);if(q)store.set('casaExp',q[1]==='1');CASA.exp=CASA.on&&store.get('casaExp',false)===true;}
+if(CASA.on){
+  W.colliders=[];W.ray=[];W.ramps=[];
+  const pm={},mk=f=>pm[f]||(pm[f]=new T.MeshBasicMaterial({visible:false}));
+  // floor for bullets at y = 0 (the GLB floors are 0–1 cm high); wide, so shots out of a window land somewhere
+  {const fl=new T.Mesh(new T.PlaneGeometry(240,240),mk('concrete'));fl.rotation.x=-Math.PI/2;fl.userData.surf='concrete';fl.name='casa_floor_ray';scene.add(fl);fl.updateMatrixWorld(true);W.ray.push(fl);}
+  for(const b of SDCasa.boxes){
+    const [x0,y0,z0]=b.a,[x1,y1,z1]=b.b;addCollider(x0,y0,z0,x1,y1,z1);
+    if(!b.s)continue;
+    const m=new T.Mesh(new T.BoxGeometry(x1-x0,y1-y0,z1-z0),mk(b.f));m.position.set((x0+x1)/2,(y0+y1)/2,(z0+z1)/2);
+    m.userData.surf=b.f;m.name='casa_'+b.n;scene.add(m);m.updateMatrixWorld(true);W.ray.push(m);
+  }
+  // walkable points (spawns, bots): 0.25 m grid, 0.4 m clear of anything at body height (a door lintel or a table top you
+  // step onto does not count); linked to their 8 neighbours when the straight line between them is clear too
+  const body=W.colliders.filter(c=>c.maxY>SD_CONFIG.move.step&&c.minY<SD_CONFIG.move.heightStand);
+  const blk=(x,z,r)=>{for(const c of body)if(x>c.minX-r&&x<c.maxX+r&&z>c.minZ-r&&z<c.maxZ+r)return true;return false;};
+  const G=0.25,nav=[],ix=new Map();
+  for(let x=-8.5;x<=8.5+1e-6;x+=G)for(let z=-6.5;z<=6.75+1e-6;z+=G){const X=+x.toFixed(2),Z=+z.toFixed(2);if(!blk(X,Z,0.4)){ix.set(X+','+Z,nav.length);nav.push({x:X,z:Z,n:[]});}}
+  for(const nd of nav)for(const [dx,dz] of [[G,0],[-G,0],[0,G],[0,-G],[G,G],[G,-G],[-G,G],[-G,-G]]){
+    const j=ix.get((+(nd.x+dx).toFixed(2))+','+(+(nd.z+dz).toFixed(2)));if(j===undefined)continue;
+    let ok=true;for(let t=0.25;t<1;t+=0.25)if(blk(nd.x+dx*t,nd.z+dz*t,0.4)){ok=false;break;}if(ok)nd.n.push(j);}
+  WORLDS.casa={colliders:W.colliders,ray:W.ray,ramps:W.ramps,objs:[],nav,label:'CASA ATLAS',spawns:SDCasa.spawns};
+  W.colliders=WORLDS.pueblo.colliders;W.ray=WORLDS.pueblo.ray;W.ramps=WORLDS.pueblo.ramps;
+}
+// the GLB (what you see). Materials keep ChatGPT's PBR values (glTF colours are already linear); only: glass transparent with
+// the sky reflection, the lamp shades glow a little, no normal map in BAJO, walls (and furniture in ALTO) cast sun shadows
+function casaLoad(){
+  if(!CASA.on||CASA.ready||CASA.loading||!T.GLTFLoader)return;CASA.loading=true;
+  const prof=GFX.profile,aniso=Math.min(prof==='alto'?4:prof==='medio'?2:1,renderer.capabilities.getMaxAnisotropy?renderer.capabilities.getMaxAnisotropy():1);
+  const fix=root=>{const mats=new Set();root.traverse(o=>{if(!o.isMesh)return;
+      o.receiveShadow=true;o.castShadow=/wall_plaster/.test(o.name)||(prof==='alto'&&/^furniture__(wood|steel|sofa)/.test(o.name));
+      mats.add(o.material);CASA.calls++;CASA.tris+=o.geometry.index?o.geometry.index.count/3:o.geometry.attributes.position.count/3;});
+    for(const m of mats){m.userData.cs=1;
+      if(prof==='bajo'&&m.normalMap)m.normalMap=null;
+      for(const t of [m.map,m.normalMap,m.roughnessMap])if(t)t.anisotropy=aniso;
+      if(/glass/.test(m.name)){m.transparent=true;m.depthWrite=false;m.envMap=ENV;m.envMapIntensity=0.6;}
+      if(/light_glow/.test(m.name)){m.emissive=m.color.clone();m.emissiveIntensity=0.9;}
+      m.needsUpdate=true;}};
+  // without the roof the ceiling lamps (2.7–2.84 m) would hang in the sky: their triangles go (they are part of two merged
+  // meshes with lamps on tables, so only what is above 2.6 m is dropped)
+  const noCeilingLamps=root=>root.traverse(o=>{if(!o.isMesh||!/^details__(light_glow|metal_dark)/.test(o.name))return;
+    const g=o.geometry,P=g.attributes.position,I=g.index;if(!I)return;const keep=[];
+    for(let i=0;i<I.count;i+=3){const a=I.getX(i),b=I.getX(i+1),c=I.getX(i+2);if(Math.min(P.getY(a),P.getY(b),P.getY(c))<2.6)keep.push(a,b,c);}
+    CASA.lampTris=(CASA.lampTris||0)+(I.count-keep.length)/3;g.setIndex(keep);});
+  const done=root=>{
+    if(!CASA.roofWanted)noCeilingLamps(root);
+    root.name='casa_atlas';fix(root);scene.add(root);CASA.root=root;WORLDS.casa.objs.push(root);root.visible=WORLD_ID==='casa';
+    CASA.ready=true;CASA.loading=false;try{renderer.compile(scene,camera);}catch(e){}
+    if(CASA.roofWanted)new T.GLTFLoader().load('assets/maps/casa_atlas/casa_atlas_techo.glb?v='+BUILD_HASH,g=>{const r=g.scene;r.name='casa_techo';fix(r);
+      r.traverse(o=>{if(o.isMesh){o.castShadow=true;o.material.side=T.DoubleSide;}});scene.add(r);CASA.roof=r;WORLDS.casa.objs.push(r);r.visible=WORLD_ID==='casa';},undefined,()=>{});
+    for(const f of CASA.wait.splice(0))f();};
+  try{new T.GLTFLoader().load('assets/maps/casa_atlas/casa_atlas.glb?v='+BUILD_HASH,g=>{try{done(g.scene);}catch(e){CASA.failed=true;CASA.loading=false;console.warn('casa',e);}},
+    undefined,e=>{CASA.failed=true;CASA.loading=false;console.warn('casa load',e);for(const f of CASA.wait.splice(0))f();});}catch(e){CASA.failed=true;CASA.loading=false;}
+}
+CASA.wait=[];
 let WORLD_ID='pueblo';
 // switch the live map: what is drawn, what the player collides with, what bullets hit
 function setWorld(id){
@@ -1349,6 +1416,11 @@ function setWorld(id){
   const w=WORLDS[id];for(const o of w.objs)o.visible=true;
   W.colliders=w.colliders;W.ray=w.ray;W.ramps=w.ramps;NAV=w.nav;WORLD_ID=id;
   if(typeof clearDecals==='function')clearDecals();
+  // CASA ATLAS: the town ground sinks 4 cm under the flat's floors (no z-fighting; outside the windows it is still there),
+  // and the sun's shadow box shrinks to the flat (±16 m instead of ±62 m: 4× finer shadows indoors)
+  const casa=id==='casa';GROUND.position.y=casa?-0.04:0;GROUND.updateMatrixWorld(true);
+  const half=casa?16:62;if(sc.right!==half){sc.left=sc.bottom=-half;sc.right=sc.top=half;sc.updateProjectionMatrix();sunBiasFor(sun.shadow.mapSize.x);}
+  if(casa)casaLoad();
 }
 
 /* =================== AUDIO =================== */
@@ -2687,7 +2759,7 @@ function pickPlayerSpawn(){
 }
 function respawnPlayer(){
   clearPendingInput();
-  const n=mode==='range'?RANGE.spawn:pickPlayerSpawn();
+  const n=mode==='range'?RANGE.spawn:WORLD_ID==='casa'&&STATS.deaths===0&&STATS.kills===0&&mode!=='online'?WORLDS.casa.spawns[0]:pickPlayerSpawn();
   Object.assign(PM,SDMovement.createState(n.x,0,n.z));PMprev.x=n.x;PMprev.y=0;PMprev.z=n.z;
   P.yaw=mode==='range'?Math.PI:Math.atan2(n.x,n.z);P.pitch=0;P.hp=100;P.alive=true;P.deadT=0;P.roll=0;
   P.breath=1;P.exhausted=0;P.holding=false;
@@ -2851,6 +2923,7 @@ DIAG.frame=function(dt){
 /* =================== FIRING =================== */
 function moveCtx(){return {speed:Math.hypot(PM.vx,PM.vz),airborne:!PM.onGround,crouch:PM.crouch,sliding:PM.sliding};}
 function surfaceOf(obj){
+  if(obj.userData&&obj.userData.surf)return obj.userData.surf;   // CASA ATLAS proxies say what they stand for
   const m=obj.material;
   if(Array.isArray(m)||OLD_TOWN.bodies.includes(obj))return 'plaster';
   if(m===MAT.crate)return 'wood';
@@ -3305,7 +3378,7 @@ function gfxApply(){
   if(!GFX.adapt||changed||GFX.adapt.target!==SETTINGS.fpsCap)GFX.adapt=SDQuality.createAdaptive(SETTINGS.fpsCap,SETTINGS.quality==='auto');
   GFX.adapt.enabled=SETTINGS.quality==='auto';if(!GFX.adapt.enabled)GFX.adapt.scale=1;
   renderer.setPixelRatio(SDQuality.pixelRatio(prof,window.devicePixelRatio,GFX.adapt.scale));
-  if(renderer.shadowMap.enabled!==P0.shadows){renderer.shadowMap.enabled=P0.shadows;scene.traverse(o=>{if(o.material){for(const m of [].concat(o.material))m.needsUpdate=true;}});}
+  if(renderer.shadowMap.enabled!==(P0.shadows&&!NO_SHADOWS)){renderer.shadowMap.enabled=P0.shadows&&!NO_SHADOWS;scene.traverse(o=>{if(o.material){for(const m of [].concat(o.material))m.needsUpdate=true;}});}
   if(P0.shadowMap&&sun.shadow.mapSize.x!==P0.shadowMap){sun.shadow.mapSize.set(P0.shadowMap,P0.shadowMap);sunBiasFor(P0.shadowMap);if(sun.shadow.map){sun.shadow.map.dispose();sun.shadow.map=null;}}
   $('#fpsBox').hidden=!SETTINGS.showFps;
 }
@@ -3350,13 +3423,16 @@ function setDiff(d){diff=d;store.set('diff',d);document.querySelectorAll('#diffS
 document.querySelectorAll('#diffSeg button').forEach(b=>b.addEventListener('click',()=>{setDiff(+b.dataset.d);audioInit();SFX.ui();}));
 setDiff(diff);
 const MODE_SUB={duel:'Pueblo abandonado. Tú contra bots francotiradores. Gana el primero que llegue a 10 bajas. Fíjate en el destello de sus miras: es lo único que te avisa antes del disparo.',
+  duelCasa:'CASA ATLAS (EXPERIMENTAL): un piso de 18 × 14 m con salón, cocina, dormitorio, baño, estudio, comedor y balcón. Combate a corta distancia contra 1 bot (2 en ÉLITE). Gana el primero que llegue a 10 bajas. El cristal no para las balas.',
   duelArena:'ARENA DE PRUEBAS: un patio cerrado de 48 × 32 m, el mapa del 1v1 online. Tú contra bots, distancias cortas, coberturas bajas y un bloque central con tejado. Gana el primero que llegue a 10 bajas.',
   range:'Galería de tiro con dianas a 20, 50 y 100 m, fijas y en movimiento. Añade bots de entrenamiento desarmados que corren, esquivan y se cubren, y prueba el rifle y la navaja (tecla 3) sin que te maten.'};
 // offline map (duel vs bots): ARENA DE PRUEBAS by default; the shooting range lives in the town
-let OFFMAP=store.get('offMap','arena');if(OFFMAP!=='arena'&&OFFMAP!=='pueblo')OFFMAP='arena';
+let OFFMAP=store.get('offMap','arena');if(OFFMAP!=='arena'&&OFFMAP!=='pueblo'&&!(OFFMAP==='casa'&&CASA.exp))OFFMAP='arena';
+if(CASA.exp)document.querySelectorAll('#mapSeg [data-map=casa],#mpMapSeg [data-map=casa]').forEach(b=>b.hidden=false);
+const subKey=(m,id)=>m==='duel'&&id==='arena'?'duelArena':m==='duel'&&id==='casa'?'duelCasa':m;
 const offWorld=()=>mode==='range'?'pueblo':OFFMAP;
-function setOffMap(id){OFFMAP=id;store.set('offMap',id);document.querySelectorAll('#mapSeg button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.map===id)));if(mode!=='online')$('#modeSub').textContent=MODE_SUB[mode==='duel'&&id==='arena'?'duelArena':mode];if(state==='menu')setWorld(offWorld());}
-function setMode(m){mode=m;store.set('mode',m);$('#rangeBlock').hidden=m!=='range';$('#mapBlock').hidden=m==='range';document.querySelectorAll('#modeSeg button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.m===m)));$('#modeSub').textContent=MODE_SUB[m==='duel'&&OFFMAP==='arena'?'duelArena':m];$('#diffBlock').hidden=m==='range';if(state==='menu')setWorld(offWorld());}
+function setOffMap(id){OFFMAP=id;store.set('offMap',id);document.querySelectorAll('#mapSeg button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.map===id)));if(mode!=='online')$('#modeSub').textContent=MODE_SUB[subKey(mode,id)];if(state==='menu')setWorld(offWorld());}
+function setMode(m){mode=m;store.set('mode',m);$('#rangeBlock').hidden=m!=='range';$('#mapBlock').hidden=m==='range';document.querySelectorAll('#modeSeg button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.m===m)));$('#modeSub').textContent=MODE_SUB[subKey(m,OFFMAP)];$('#diffBlock').hidden=m==='range';if(state==='menu')setWorld(offWorld());}
 document.querySelectorAll('#mapSeg button').forEach(b=>b.addEventListener('click',()=>{setOffMap(b.dataset.map);audioInit();SFX.ui();}));
 document.querySelectorAll('#modeSeg button').forEach(b=>b.addEventListener('click',()=>{setMode(b.dataset.m);audioInit();SFX.ui();}));
 setMode(mode);setOffMap(OFFMAP);
@@ -3383,7 +3459,7 @@ function setP3Pref(on){store.set('p3',!!on);if(!!on===!!P3ON)return;const u=new 
 document.querySelectorAll('#p3Seg button').forEach(b=>{b.setAttribute('aria-pressed',String((b.dataset.p3==='1')===!!P3ON));b.addEventListener('click',()=>{SFX.ui();setP3Pref(b.dataset.p3==='1');});});
 function gfxDiagText(){let gpu='?',gl2=false;try{const g=renderer.getContext();gl2=typeof WebGL2RenderingContext!=='undefined'&&g instanceof WebGL2RenderingContext;const e=g.getExtension('WEBGL_debug_renderer_info');gpu=e?g.getParameter(e.UNMASKED_RENDERER_WEBGL):g.getParameter(g.RENDERER);}catch(e){}
   return 'Pueblo 3.0: '+(P3ON?'SÍ':'NO')+(P3ON?' · suelo nuevo: '+(P0.on?'SÍ':'NO')+' · adoquín: '+(COBCC?'Poly Haven':'anterior')+' · kit: '+(P3W.kit?'cargado':'NO cargado'):'')+' · calidad: '+String(GFX.profile).toUpperCase()+
-    ' · WebGL '+(gl2?'2':'1')+' · GPU: '+String(gpu).slice(0,60)+' · texturas: '+(TEX.ok||0)+'/'+(TEX.asked||0)+' cargadas'+(TEX.fail?' · FALLAN '+TEX.fail+': '+TEX.failed.slice(0,4).join(', '):'');}
+    ' · sombras: '+(renderer.shadowMap.enabled?sun.shadow.mapSize.x:'NO')+' · píxeles ×'+renderer.getPixelRatio().toFixed(2)+' · WebGL '+(gl2?'2':'1')+' · GPU: '+String(gpu).slice(0,60)+' · texturas: '+(TEX.ok||0)+'/'+(TEX.asked||0)+' cargadas'+(TEX.fail?' · FALLAN '+TEX.fail+': '+TEX.failed.slice(0,4).join(', '):'');}
 $('#infAmmo').addEventListener('change',()=>{TRAIN.infAmmo=$('#infAmmo').checked;store.set('infAmmo',TRAIN.infAmmo);});
 function updateRangeHud(){if(mode!=='range')return;$('#rK').textContent=STATS.kills;$('#rD').textContent=Math.round(STATS.damage);$('#rN').textContent=STATS.meleeHits+'/'+(STATS.meleeSwings||0);$('#rT').textContent=STATS.kills>=2?((STATS.lastKill-STATS.firstKill)/(STATS.kills-1)).toFixed(2):'–';$('#rS').textContent=STATS.shots;$('#rH').textContent=STATS.hits;$('#rC').textContent=STATS.rangeHs;$('#rA').textContent=(STATS.shots?Math.round(STATS.hits/STATS.shots*100):0)+'%';}
 const sensEl=$('#sens');
@@ -3400,8 +3476,10 @@ function startMatch(){
   audioInit();SFX.ui();
   const df=DIFFS[diff];
   setWorld(offWorld());
-  // the arena is small: fewer bots (2, or 3 on ÉLITE)
-  const nBots=WORLD_ID==='arena'?Math.min(df.bots,diff===2?3:2):df.bots;
+  // CASA ATLAS: its GLB loads the first time; the match starts when it is there (or without it if it fails: the boxes are what count)
+  if(WORLD_ID==='casa'&&!CASA.ready&&!CASA.failed){$('#modeSub').textContent='Cargando CASA ATLAS…';if(!CASA.wait.includes(startMatch))CASA.wait.push(startMatch);casaLoad();return;}
+  // the arena is small: fewer bots (2, or 3 on ÉLITE); CASA ATLAS is a 1v1 flat: 1 bot (2 on ÉLITE)
+  const nBots=WORLD_ID==='arena'?Math.min(df.bots,diff===2?3:2):WORLD_ID==='casa'?Math.min(df.bots,diff===2?2:1):df.bots;
   while(BOTS.length<nBots)BOTS.push(new Bot(BOTS.length));
   while(DUMMIES.length<RANGE_SLOTS.length)DUMMIES.push(new Bot(DUMMIES.length,RANGE_SLOTS[DUMMIES.length]));
   const tcount=TRAIN.level==='off'?0:SD_CONFIG.training[TRAIN.level].count;
@@ -4118,6 +4196,7 @@ function renderLobby(){
   const two=(N.players||[]).filter(Boolean).length===2;const me=(N.players||[]).find(p=>p&&p.id===N.you);
   $('#mpReady').textContent=me&&me.ready?'NO ESTOY LISTO':'LISTO';
   document.querySelectorAll('#mpMapSeg button').forEach(b=>{b.setAttribute('aria-pressed',String(b.dataset.map===N.map));b.disabled=N.you!=='A';});
+  if(N.map==='casa'){casaLoad();const cb=$('#mpMapSeg [data-map=casa]');if(cb)cb.hidden=false;}   // a guest without ?casa=1 still sees (and loads) the room's map
   $('#mpStatus').textContent=!two?'ESPERANDO AL SEGUNDO JUGADOR… Comparte el código o el enlace.':me&&me.ready?'Esperando a que el rival esté listo…':'Pulsa LISTO. Empieza cuando los dos lo estéis.';
 }
 function netEvent(e){
@@ -4536,6 +4615,6 @@ if(FLORA.on){const gl=new T.GLTFLoader();let n=2;
       // the town's ground must exist first (rays land on it)
       if(P3W.kit)go();else{const w=setInterval(()=>{if(P3W.kit){clearInterval(w);go();}},300);}}}}
 
-window.__SD={FLORA,RATS,RAT_WORLD,ratsFrame,SHADOW_FADE,setDuelLethal,get DUEL_LETHAL(){return DUEL_LETHAL;},gfxDiagText,get P3ON(){return P3ON;},COBCC,damagePlayer,TEX,sunFollow,setSunSnap(on){SUN_SNAP=!!on;},sun,P0,E10,e10Lod,DIAG,setTrainMove,LIGHT:{sun,hemi,skyMat,LOOK,P3},P3W,freeze(on){SIM_FREEZE=!!on;},SHOT,VMA,makeSoldier,animateSoldier,BOT_MAT,scene,camera,RemotePlayer,PMprev,PIS,PROOT,RIF,WROOT,SHO_:null,MANUAL,advance(ms){frameBody(last+ms);},get LAST_PELLETS(){return LAST_PELLETS;},SCORE,SCFG,SROOT,SHO,setPrimaryChoice,get PRIMARY(){return PRIMARY;},PCORE,PCFG,setWorld,WORLDS,get WORLD_ID(){return WORLD_ID;},renderer,GFX,gfxApply,get NET(){return NET;},get REMOTE(){return REMOTE;},W,get NAV(){return NAV;},setOffMap,get OFFMAP(){return OFFMAP;},TOUCH,EDIT,openEditor,get SETTINGS(){return SETTINGS;},get LAYOUT(){return LAYOUT;},checkOrientation,MAT,LOAD,TRAINERS,get RANGE_BOTS(){return RANGE_BOTS;},TRAIN,setTrain,setLethal,kitNote,GINS,TDIAG,AU,get TOUCH_EVENTS(){return TOUCH_EVENTS;},impactFX,bodyFX,get DECALS(){return DECALS;},surfaceOf,soundDelay,aimSelfTest,P,PM,WS,WCORE,RECOIL,AIM,BOTS,DUMMIES,BULLETS,EVENTS,PARTS,STATS,get state(){return state;},get mode(){return mode;},setMode,input,startMatch,simTick,frame,toMenu,pause,resume};
+window.__SD={CASA,casaLoad,FLORA,RATS,RAT_WORLD,ratsFrame,SHADOW_FADE,setDuelLethal,get DUEL_LETHAL(){return DUEL_LETHAL;},gfxDiagText,get P3ON(){return P3ON;},COBCC,damagePlayer,TEX,sunFollow,setSunSnap(on){SUN_SNAP=!!on;},sun,P0,E10,e10Lod,DIAG,setTrainMove,LIGHT:{sun,hemi,skyMat,LOOK,P3},P3W,freeze(on){SIM_FREEZE=!!on;},SHOT,VMA,makeSoldier,animateSoldier,BOT_MAT,scene,camera,RemotePlayer,PMprev,PIS,PROOT,RIF,WROOT,SHO_:null,MANUAL,advance(ms){frameBody(last+ms);},get LAST_PELLETS(){return LAST_PELLETS;},SCORE,SCFG,SROOT,SHO,setPrimaryChoice,get PRIMARY(){return PRIMARY;},PCORE,PCFG,setWorld,WORLDS,get WORLD_ID(){return WORLD_ID;},renderer,GFX,gfxApply,get NET(){return NET;},get REMOTE(){return REMOTE;},W,get NAV(){return NAV;},setOffMap,get OFFMAP(){return OFFMAP;},TOUCH,EDIT,openEditor,get SETTINGS(){return SETTINGS;},get LAYOUT(){return LAYOUT;},checkOrientation,MAT,LOAD,TRAINERS,get RANGE_BOTS(){return RANGE_BOTS;},TRAIN,setTrain,setLethal,kitNote,GINS,TDIAG,AU,get TOUCH_EVENTS(){return TOUCH_EVENTS;},impactFX,bodyFX,get DECALS(){return DECALS;},surfaceOf,soundDelay,aimSelfTest,P,PM,WS,WCORE,RECOIL,AIM,BOTS,DUMMIES,BULLETS,EVENTS,PARTS,STATS,get state(){return state;},get mode(){return mode;},setMode,input,startMatch,simTick,frame,toMenu,pause,resume};
 })();
 </script>

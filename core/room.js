@@ -109,8 +109,10 @@ function create(opts) {
     R.rematch = { A: false, B: false };
     const a = R.seats.A, b = R.seats.B;
     a.kills = b.kills = a.deaths = b.deaths = 0; a.shots = b.shots = a.hits = b.hits = a.hs = b.hs = 0;
-    const sa = spawnPoint('A', null); placeSeat(a, sa);
-    const sb = spawnPoint('B', { x: sa.x, y: 0, z: sa.z }); placeSeat(b, sb);
+    // maps with fixed first spawns (CASA ATLAS: A in the study, B in the kitchen); the others pick them from the nav points
+    const fixed = id => { const f = MAP.spawns && MAP.spawns.find(q => q.team === id); return f ? { x: f.x, z: f.z, yaw: f.yaw } : null; };
+    const sa = fixed('A') || spawnPoint('A', null); placeSeat(a, sa);
+    const sb = fixed('B') || spawnPoint('B', { x: sa.x, y: 0, z: sa.z }); placeSeat(b, sb);
     for (const s of [a, b]) { s.lastSeq = -1; s.budget = PR.LIMITS.cmdBurst; s.budgetAt = R.startAt; }
     for (const s of [a, b]) sendTo(s, { t: 'start', m: R.match, map: mapId, in: RULES.countdownMs, you: s.id,
       spawn: { x: s.p.ms.x, z: s.p.ms.z, yaw: s.yaw }, rules: { kills: RULES.killsToWin, hp: RULES.hp, respawnMs: RULES.respawnMs },

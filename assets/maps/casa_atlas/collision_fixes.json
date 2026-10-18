@@ -1,0 +1,365 @@
+{
+ "about": "CASA ATLAS 1V1 — cajas añadidas por Claude al collision_map.json de ChatGPT (que no se modifica). Medidas tomadas del GLB (tools/casa/validate_casa.py, tools/casa/components.py). solid = movimiento + balas; move = solo movimiento.",
+ "rules": [
+  "El cristal NO para balas (no tiene caja de bala en cliente ni en servidor) y no se rompe; SÍ impide el paso: ventanas, cristaleras del salón/comedor y mampara de la ducha.",
+  "Sin techo, todo lo que esté a más de 1,40 m (armario, frigorífico, estanterías, horno, televisor) no se puede pisar: si no, desde encima se ve por encima de los tabiques.",
+  "Las barandillas del balcón llegan a 3,30 m para el movimiento (con 1,16 m se saltaban con salto + escalón); a las balas no les afectan.",
+  "Sillas y macetas pequeñas sin caja (como en el original): con caja, las sillas del comedor (a 0,29 m de la mesa y delante de la puerta de la cocina), la maceta del pasillo (en el marco de la puerta de la cocina) y las del balcón (a 0,62 m de la fachada) cortaban el paso a radio 0,35 m. Pendiente de rediseño en el GLB."
+ ],
+ "solid": [
+  {
+   "name": "tv_panel",
+   "min": [
+    -2.1,
+    0.805,
+    -2.14
+   ],
+   "max": [
+    -0.3,
+    1.88,
+    -2.06
+   ],
+   "surf": "metal",
+   "why": "televisor de pie (1,8 × 1,07 m) en mitad del paso salón–pasillo: se veía como cobertura pero las balas lo atravesaban"
+  },
+  {
+   "name": "headboard",
+   "min": [
+    -7.1,
+    0.15,
+    -5.97
+   ],
+   "max": [
+    -5.1,
+    1.45,
+    -5.8
+   ],
+   "surf": "wood",
+   "why": "cabecero de la cama, 1,45 m, sin caja"
+  },
+  {
+   "name": "bench_balcony_w",
+   "min": [
+    -7.14,
+    0,
+    5.88
+   ],
+   "max": [
+    -6.46,
+    0.38,
+    6.52
+   ],
+   "surf": "wood",
+   "why": "bancos del balcón (0,38 m: se pisan, no cortan el paso; paran balas bajas)"
+  },
+  {
+   "name": "bench_balcony_e",
+   "min": [
+    6.26,
+    0,
+    5.88
+   ],
+   "max": [
+    6.94,
+    0.38,
+    6.52
+   ],
+   "surf": "wood",
+   "why": ""
+  }
+ ],
+ "move": [
+  {
+   "name": "glass_n_w",
+   "min": [
+    -7.2,
+    0,
+    -6.79
+   ],
+   "max": [
+    -5.2,
+    2.4,
+    -6.61
+   ],
+   "why": "ventana norte del dormitorio: alféizar a 1,25 m, se salía del mapa con salto + escalón"
+  },
+  {
+   "name": "glass_n_e",
+   "min": [
+    5.45,
+    0,
+    -6.79
+   ],
+   "max": [
+    7.5,
+    2.4,
+    -6.61
+   ],
+   "why": "ventana norte de la cocina (1,15 m)"
+  },
+  {
+   "name": "glass_w",
+   "min": [
+    -8.79,
+    0,
+    -0.4
+   ],
+   "max": [
+    -8.61,
+    2.5,
+    1.9
+   ],
+   "why": "ventana oeste del estudio (1,10 m)"
+  },
+  {
+   "name": "glass_e_n",
+   "min": [
+    8.61,
+    0,
+    -3.5
+   ],
+   "max": [
+    8.79,
+    2.4,
+    -1.1
+   ],
+   "why": "ventana este de la cocina (1,10 m)"
+  },
+  {
+   "name": "glass_e_s",
+   "min": [
+    8.61,
+    0,
+    2.15
+   ],
+   "max": [
+    8.79,
+    2.4,
+    4.45
+   ],
+   "why": "ventana este del comedor (1,10 m)"
+  },
+  {
+   "name": "glass_s_w",
+   "min": [
+    -7.4,
+    0,
+    5.21
+   ],
+   "max": [
+    -5.45,
+    2.5,
+    5.39
+   ],
+   "why": "ventana sur (1,15 m) hacia el balcón"
+  },
+  {
+   "name": "glass_s_salon",
+   "min": [
+    -1.7,
+    0,
+    5.21
+   ],
+   "max": [
+    1.3,
+    2.7,
+    5.39
+   ],
+   "why": "cristalera fija salón–balcón (cristal desde el suelo): se cruzaba andando"
+  },
+  {
+   "name": "glass_s_comedor",
+   "min": [
+    1.6,
+    0,
+    5.21
+   ],
+   "max": [
+    4.5,
+    2.7,
+    5.39
+   ],
+   "why": "cristalera fija salón/comedor–balcón"
+  },
+  {
+   "name": "glass_shower",
+   "min": [
+    -1.97,
+    0,
+    -6.28
+   ],
+   "max": [
+    -1.89,
+    2.03,
+    -5.02
+   ],
+   "why": "mampara de la ducha"
+  },
+  {
+   "name": "plant_salon_w",
+   "min": [
+    -4.49,
+    0,
+    3.69
+   ],
+   "max": [
+    -3.55,
+    0.99,
+    4.6
+   ],
+   "why": "macetas: se atravesaban (las hojas no paran balas)"
+  },
+  {
+   "name": "plant_salon_e",
+   "min": [
+    2.36,
+    0,
+    3.93
+   ],
+   "max": [
+    3.19,
+    0.88,
+    4.73
+   ],
+   "why": ""
+  },
+  {
+   "name": "rail_front_tall",
+   "min": [
+    -8.8,
+    0,
+    6.96
+   ],
+   "max": [
+    8.8,
+    3.3,
+    7.08
+   ],
+   "why": "barandillas del balcón: 1,16 m se saltaban"
+  },
+  {
+   "name": "rail_left_tall",
+   "min": [
+    -8.89,
+    0,
+    5.25
+   ],
+   "max": [
+    -8.77,
+    3.3,
+    7.05
+   ],
+   "why": ""
+  },
+  {
+   "name": "rail_right_tall",
+   "min": [
+    8.77,
+    0,
+    5.25
+   ],
+   "max": [
+    8.89,
+    3.3,
+    7.05
+   ],
+   "why": ""
+  },
+  {
+   "name": "nostand_wardrobe",
+   "min": [
+    -8.37,
+    2.15,
+    -5.0
+   ],
+   "max": [
+    -7.87,
+    3.3,
+    -3.1
+   ],
+   "why": "no se puede estar encima (se vería por encima de los tabiques)"
+  },
+  {
+   "name": "nostand_fridge",
+   "min": [
+    7.5,
+    2.15,
+    -1.53
+   ],
+   "max": [
+    8.66,
+    3.3,
+    -0.83
+   ],
+   "why": ""
+  },
+  {
+   "name": "nostand_bookshelf",
+   "min": [
+    -4.61,
+    1.96,
+    -1.82
+   ],
+   "max": [
+    -4.31,
+    3.3,
+    -0.82
+   ],
+   "why": ""
+  },
+  {
+   "name": "nostand_officebc",
+   "min": [
+    -5.32,
+    1.8,
+    -2.08
+   ],
+   "max": [
+    -5.02,
+    3.3,
+    -1.16
+   ],
+   "why": ""
+  },
+  {
+   "name": "nostand_oven",
+   "min": [
+    7.44,
+    1.43,
+    -3.81
+   ],
+   "max": [
+    8.32,
+    3.3,
+    -3.23
+   ],
+   "why": ""
+  },
+  {
+   "name": "nostand_tv",
+   "min": [
+    -2.1,
+    1.88,
+    -2.14
+   ],
+   "max": [
+    -0.3,
+    3.3,
+    -2.06
+   ],
+   "why": ""
+  }
+ ],
+ "spawns": {
+  "A": {
+   "x": -7.45,
+   "z": 0.95,
+   "why": "la original (-7,45; 0,57) queda a 0,33 m de la silla del escritorio: con el radio del juego (0,35 m) arranca dentro de ella"
+  },
+  "B": {
+   "x": 7.1,
+   "z": -2.5,
+   "why": "desde la original (7,15; 0,20) se ve la salida A en línea recta a 14,6 m por las dos puertas (estudio y cocina): se moría al aparecer. Detrás de la pared, junto a la isla"
+  }
+ }
+}

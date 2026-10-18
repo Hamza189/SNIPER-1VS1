@@ -23,6 +23,15 @@ const VIEWS = [
   ['p3-plaza', 'pueblo', 9, 0, -8, 2.65, 0.02],
   ['p3-fachada', 'pueblo', -9, 0, 17, 2.76, 0.12],
   ['p3-general', 'pueblo', 8, 9, -12, 2.83, -0.25],
+  // CASA ATLAS 1V1 (experimental, 18-10-2026): eye level in each zone + one view from above (no roof)
+  ['casa-spawnA', 'casa', -7.45, 0, 0.95, -Math.PI / 2, 0.0],
+  ['casa-salon', 'casa', -4.3, 0, 4.6, -0.8, -0.03],
+  ['casa-pasillo', 'casa', 2.4, 0, -2.5, Math.PI / 2, 0.0],
+  ['casa-cocina', 'casa', 4.6, 0, 0.3, -0.5, -0.05],
+  ['casa-comedor', 'casa', 4.0, 0, 4.9, -0.85, -0.05],
+  ['casa-dormitorio', 'casa', -4.1, 0, -3.0, 0.875, -0.12],
+  ['casa-balcon', 'casa', -8.2, 0, 6.0, -Math.PI / 2, 0.0],
+  ['casa-general', 'casa', 0, 11, 10, 0, -0.85],
 ];
 // VIEW='name,world,x,y,z,yaw,pitch[;…]' adds views for this run
 if (process.env.VIEW) for (const v of process.env.VIEW.split(';')) { const a = v.split(','); VIEWS.push([a[0], a[1], ...a.slice(2).map(Number)]); }
@@ -49,6 +58,10 @@ const LOOKX = process.env.LOOKX || '';
   const MODE = process.env.MODE || 'duel', KEEPBOTS = process.env.BOTS === '1';
   await p.evaluate(m => { __SD.setTrain('off'); __SD.setMode(m); __SD.startMatch(); }, MODE);
   if (/pueblo=3/.test(URLX)) await p.waitForFunction(() => __SD.P3W && __SD.P3W.kit && (!__SD.E10.on || __SD.E10.ready || __SD.E10.failed), null, { timeout: 90000 });
+  if (VIEWS.some(v => v[1] === 'casa' && (!ONLY || ONLY.includes(v[0])))) {
+    await p.evaluate(() => { __SD.setWorld('casa'); }); await p.waitForFunction(() => __SD.CASA.ready || __SD.CASA.failed, null, { timeout: 90000 });
+    console.log('CASA ATLAS', await p.evaluate(() => JSON.stringify({ ready: __SD.CASA.ready, tris: __SD.CASA.tris, calls: __SD.CASA.calls })));
+  }
   await p.waitForTimeout(1500);
   const metrics = {};
   for (const [name, world, x, y, z, yaw, pitch] of VIEWS) {

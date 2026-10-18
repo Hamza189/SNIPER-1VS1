@@ -1,0 +1,1375 @@
+{
+  "id": "CASA_ATLAS_1V1",
+  "version": "1.0.0",
+  "author": "ChatGPT for Sniper Duel",
+  "license": "CC0 geometry; beige_wall_001 Poly Haven CC0 (see LICENSE_ASSETS.md)",
+  "units": "meters",
+  "axis": "+Y up, +Z balcony/south",
+  "dimensions": {
+    "width": 18,
+    "depth": 14,
+    "height": 3.12
+  },
+  "bounds": {
+    "min": [
+      -8.88,
+      0,
+      -6.82
+    ],
+    "max": [
+      8.88,
+      3.32,
+      7.06
+    ]
+  },
+  "playerEyeHeight": 1.62,
+  "floorY": 0,
+  "spawns": [
+    {
+      "team": "A",
+      "position": [
+        -7.45,
+        0,
+        0.57
+      ],
+      "yaw": -1.5708
+    },
+    {
+      "team": "B",
+      "position": [
+        7.15,
+        0,
+        0.2
+      ],
+      "yaw": 1.5708
+    }
+  ],
+  "zones": [
+    {
+      "name": "SALON",
+      "bounds": [
+        -4.8,
+        -2.2,
+        3.4,
+        5.3
+      ]
+    },
+    {
+      "name": "COCINA",
+      "bounds": [
+        3.4,
+        -6.7,
+        8.7,
+        1.15
+      ]
+    },
+    {
+      "name": "DORMITORIO",
+      "bounds": [
+        -8.7,
+        -6.7,
+        -3.55,
+        -2.25
+      ]
+    },
+    {
+      "name": "BANO",
+      "bounds": [
+        -3.55,
+        -6.7,
+        0.85,
+        -3.72
+      ]
+    },
+    {
+      "name": "ESTUDIO",
+      "bounds": [
+        -8.7,
+        -2.25,
+        -4.8,
+        1.55
+      ]
+    },
+    {
+      "name": "COMEDOR",
+      "bounds": [
+        3.43,
+        1.15,
+        8.7,
+        5.3
+      ]
+    },
+    {
+      "name": "BALCON",
+      "bounds": [
+        -8.7,
+        5.3,
+        8.7,
+        7.0
+      ]
+    }
+  ],
+  "colliders": [
+    {
+      "name": "wall_z_-6.7_-7.95_0",
+      "center": [
+        -7.95,
+        1.56,
+        -6.7
+      ],
+      "size": [
+        1.5,
+        3.12,
+        0.18
+      ],
+      "type": "solid"
+    },
+    {
+      "name": "wall_z_-6.7_-6.2_0",
+      "center": [
+        -6.2,
+        0.625,
+        -6.7
+      ],
+      "size": [
+        2.0,
+        1.25,
+        0.18
+      ],
+      "type": "solid"
+    },
+    {
+      "name": "wall_z_-6.7_-6.2_2.4",
+      "center": [
+        -6.2,
+        2.735,
+        -6.7
+      ],
+      "size": [
+        2.0,
+        0.77,
+        0.18
+      ],
+      "type": "solid"
+    },
+    {
+      "name": "wall_z_-6.7_0.12_0",
+      "center": [
+        0.125,
+        1.56,
+        -6.7
+      ],
+      "size": [
+        10.65,
+        3.12,
+        0.18
+      ],
+      "type": "solid"
+    },
+    {
+      "name": "wall_z_-6.7_6.47_0",
+      "center": [
+        6.475,
+        0.575,
+        -6.7
+      ],
+      "size": [
+        2.05,
+        1.15,
+        0.18
+      ],
+      "type": "solid"
+    },
+    {
+      "name": "wall_z_-6.7_6.47_2.4",
+      "center": [
+        6.475,
+        2.75,
+        -6.7
+      ],
+      "size": [
+        2.05,
+        0.74,
+        0.18
+      ],
+      "type": "solid"
+    },
+    {
+      "name": "wall_z_-6.7_8.1_0",
+      "center": [
+        8.1,
+        1.56,
+        -6.7
+      ],
+      "size": [
+        1.2,
+        3.12,
+        0.18
+      ],
+      "type": "solid"
+    },
+    {
+      "name": "wall_x_-8.7_-3.55_0",
+      "center": [
+        -8.7,
+        1.56,
+        -3.55
+      ],
+      "size": [
+        0.18,
+        3.12,
+        6.3
+      ],
+      "type": "solid"
+    },
+    {
+      "name": "wall_x_-8.7_0.75_0",
+      "center": [
+        -8.7,
+        0.55,
+        0.75
+      ],
+      "size": [
+        0.18,
+        1.1,
+        2.3
+      ],
+      "type": "solid"
+    },
+    {
+      "name": "wall_x_-8.7_0.75_2.5",
+      "center": [
+        -8.7,
+        2.785,
+        0.75
+      ],
+      "size": [
+        0.18,
+        0.67,
+        2.3
+      ],
+      "type": "solid"
+    },
+    {
+      "name": "wall_x_-8.7_3.6_0",
+      "center": [
+        -8.7,
+        1.56,
+        3.6
+      ],
+      "size": [
+        0.18,
+        3.12,
+        3.4
+      ],
+      "type": "solid"
+    },
+    {
+      "name": "wall_x_8.7_-5.1_0",
+      "center": [
+        8.7,
+        1.56,
+        -5.1
+      ],
+      "size": [
+        0.18,
+        3.12,
+        3.2
+      ],
+      "type": "solid"
+    },
+    {
+      "name": "wall_x_8.7_-2.3_0",
+      "center": [
+        8.7,
+        0.55,
+        -2.3
+      ],
+      "size": [
+        0.18,
+        1.1,
+        2.4
+      ],
+      "type": "solid"
+    },
+    {
+      "name": "wall_x_8.7_-2.3_2.4",
+      "center": [
+        8.7,
+        2.76,
+        -2.3
+      ],
+      "size": [
+        0.18,
+        0.72,
+        2.4
+      ],
+      "type": "solid"
+    },
+    {
+      "name": "wall_x_8.7_0.52_0",
+      "center": [
+        8.7,
+        1.56,
+        0.525
+      ],
+      "size": [
+        0.18,
+        3.12,
+        3.25
+      ],
+      "type": "solid"
+    },
+    {
+      "name": "wall_x_8.7_3.3_0",
+      "center": [
+        8.7,
+        0.55,
+        3.3
+      ],
+      "size": [
+        0.18,
+        1.1,
+        2.3
+      ],
+      "type": "solid"
+    },
+    {
+      "name": "wall_x_8.7_3.3_2.4",
+      "center": [
+        8.7,
+        2.76,
+        3.3
+      ],
+      "size": [
+        0.18,
+        0.72,
+        2.3
+      ],
+      "type": "solid"
+    },
+    {
+      "name": "wall_x_8.7_4.88_0",
+      "center": [
+        8.7,
+        1.56,
+        4.875
+      ],
+      "size": [
+        0.18,
+        3.12,
+        0.85
+      ],
+      "type": "solid"
+    },
+    {
+      "name": "wall_z_5.3_-8.05_0",
+      "center": [
+        -8.05,
+        1.56,
+        5.3
+      ],
+      "size": [
+        1.3,
+        3.12,
+        0.18
+      ],
+      "type": "solid"
+    },
+    {
+      "name": "wall_z_5.3_-6.43_0",
+      "center": [
+        -6.425,
+        0.575,
+        5.3
+      ],
+      "size": [
+        1.95,
+        1.15,
+        0.18
+      ],
+      "type": "solid"
+    },
+    {
+      "name": "wall_z_5.3_-6.43_2.5",
+      "center": [
+        -6.425,
+        2.795,
+        5.3
+      ],
+      "size": [
+        1.95,
+        0.65,
+        0.18
+      ],
+      "type": "solid"
+    },
+    {
+      "name": "wall_z_5.3_-4.65_0",
+      "center": [
+        -4.65,
+        1.56,
+        5.3
+      ],
+      "size": [
+        1.6,
+        3.12,
+        0.18
+      ],
+      "type": "solid"
+    },
+    {
+      "name": "wall_z_5.3_-3.12_2.5",
+      "center": [
+        -3.125,
+        2.785,
+        5.3
+      ],
+      "size": [
+        1.45,
+        0.67,
+        0.18
+      ],
+      "type": "solid"
+    },
+    {
+      "name": "wall_z_5.3_-2.05_0",
+      "center": [
+        -2.05,
+        1.56,
+        5.3
+      ],
+      "size": [
+        0.7,
+        3.12,
+        0.18
+      ],
+      "type": "solid"
+    },
+    {
+      "name": "wall_z_5.3_-0.2_2.7",
+      "center": [
+        -0.2,
+        2.9,
+        5.3
+      ],
+      "size": [
+        3.0,
+        0.44,
+        0.18
+      ],
+      "type": "solid"
+    },
+    {
+      "name": "wall_z_5.3_1.45_0",
+      "center": [
+        1.45,
+        1.56,
+        5.3
+      ],
+      "size": [
+        0.3,
+        3.12,
+        0.18
+      ],
+      "type": "solid"
+    },
+    {
+      "name": "wall_z_5.3_3.05_2.7",
+      "center": [
+        3.05,
+        2.9,
+        5.3
+      ],
+      "size": [
+        2.9,
+        0.44,
+        0.18
+      ],
+      "type": "solid"
+    },
+    {
+      "name": "wall_z_5.3_4.97_0",
+      "center": [
+        4.975,
+        1.56,
+        5.3
+      ],
+      "size": [
+        0.95,
+        3.12,
+        0.18
+      ],
+      "type": "solid"
+    },
+    {
+      "name": "wall_z_5.3_6.15_2.5",
+      "center": [
+        6.15,
+        2.785,
+        5.3
+      ],
+      "size": [
+        1.4,
+        0.67,
+        0.18
+      ],
+      "type": "solid"
+    },
+    {
+      "name": "wall_z_5.3_7.77_0",
+      "center": [
+        7.775,
+        1.56,
+        5.3
+      ],
+      "size": [
+        1.85,
+        3.12,
+        0.18
+      ],
+      "type": "solid"
+    },
+    {
+      "name": "wall_z_-2.25_-7.82_0",
+      "center": [
+        -7.825,
+        1.56,
+        -2.25
+      ],
+      "size": [
+        1.75,
+        3.12,
+        0.18
+      ],
+      "type": "solid"
+    },
+    {
+      "name": "wall_z_-2.25_-6.2_2.2",
+      "center": [
+        -6.2,
+        2.685,
+        -2.25
+      ],
+      "size": [
+        1.5,
+        0.87,
+        0.18
+      ],
+      "type": "solid"
+    },
+    {
+      "name": "wall_z_-2.25_-4.5_0",
+      "center": [
+        -4.5,
+        1.56,
+        -2.25
+      ],
+      "size": [
+        1.9,
+        3.12,
+        0.18
+      ],
+      "type": "solid"
+    },
+    {
+      "name": "wall_x_-3.55_-5.22_0",
+      "center": [
+        -3.55,
+        1.56,
+        -5.225
+      ],
+      "size": [
+        0.18,
+        3.12,
+        2.95
+      ],
+      "type": "solid"
+    },
+    {
+      "name": "wall_x_-3.55_-3.1_2.2",
+      "center": [
+        -3.55,
+        2.685,
+        -3.1
+      ],
+      "size": [
+        0.18,
+        0.87,
+        1.3
+      ],
+      "type": "solid"
+    },
+    {
+      "name": "wall_x_-3.55_-2.35_0",
+      "center": [
+        -3.55,
+        1.56,
+        -2.35
+      ],
+      "size": [
+        0.18,
+        3.12,
+        0.2
+      ],
+      "type": "solid"
+    },
+    {
+      "name": "wall_z_-3.72_-2.45_0",
+      "center": [
+        -2.45,
+        1.56,
+        -3.72
+      ],
+      "size": [
+        2.2,
+        3.12,
+        0.18
+      ],
+      "type": "solid"
+    },
+    {
+      "name": "wall_z_-3.72_-0.78_2.2",
+      "center": [
+        -0.775,
+        2.67,
+        -3.72
+      ],
+      "size": [
+        1.15,
+        0.9,
+        0.18
+      ],
+      "type": "solid"
+    },
+    {
+      "name": "wall_z_-3.72_0.32_0",
+      "center": [
+        0.325,
+        1.56,
+        -3.72
+      ],
+      "size": [
+        1.05,
+        3.12,
+        0.18
+      ],
+      "type": "solid"
+    },
+    {
+      "name": "wall_x_0.85_-5.21_0",
+      "center": [
+        0.85,
+        1.56,
+        -5.21
+      ],
+      "size": [
+        0.18,
+        3.12,
+        2.98
+      ],
+      "type": "solid"
+    },
+    {
+      "name": "wall_x_3.43_-5.08_0",
+      "center": [
+        3.43,
+        1.56,
+        -5.075
+      ],
+      "size": [
+        0.18,
+        3.12,
+        3.25
+      ],
+      "type": "solid"
+    },
+    {
+      "name": "wall_x_3.43_-2.8_2.2",
+      "center": [
+        3.43,
+        2.685,
+        -2.8
+      ],
+      "size": [
+        0.18,
+        0.87,
+        1.3
+      ],
+      "type": "solid"
+    },
+    {
+      "name": "wall_x_3.43_-1.4_0",
+      "center": [
+        3.43,
+        1.56,
+        -1.4
+      ],
+      "size": [
+        0.18,
+        3.12,
+        1.5
+      ],
+      "type": "solid"
+    },
+    {
+      "name": "wall_x_3.43_0.05_2.4",
+      "center": [
+        3.43,
+        2.735,
+        0.05
+      ],
+      "size": [
+        0.18,
+        0.77,
+        1.4
+      ],
+      "type": "solid"
+    },
+    {
+      "name": "wall_x_3.43_1.52_0",
+      "center": [
+        3.43,
+        1.56,
+        1.525
+      ],
+      "size": [
+        0.18,
+        3.12,
+        1.55
+      ],
+      "type": "solid"
+    },
+    {
+      "name": "wall_x_3.43_3.02_2.3",
+      "center": [
+        3.43,
+        2.71,
+        3.025
+      ],
+      "size": [
+        0.18,
+        0.82,
+        1.45
+      ],
+      "type": "solid"
+    },
+    {
+      "name": "wall_x_3.43_4.53_0",
+      "center": [
+        3.43,
+        1.56,
+        4.525
+      ],
+      "size": [
+        0.18,
+        3.12,
+        1.55
+      ],
+      "type": "solid"
+    },
+    {
+      "name": "wall_x_-4.8_-1.05_0",
+      "center": [
+        -4.8,
+        1.56,
+        -1.05
+      ],
+      "size": [
+        0.18,
+        3.12,
+        2.4
+      ],
+      "type": "solid"
+    },
+    {
+      "name": "wall_x_-4.8_0.7_2.2",
+      "center": [
+        -4.8,
+        2.66,
+        0.7
+      ],
+      "size": [
+        0.18,
+        0.92,
+        1.1
+      ],
+      "type": "solid"
+    },
+    {
+      "name": "wall_x_-4.8_1.4_0",
+      "center": [
+        -4.8,
+        1.56,
+        1.4
+      ],
+      "size": [
+        0.18,
+        3.12,
+        0.3
+      ],
+      "type": "solid"
+    },
+    {
+      "name": "wall_z_1.15_4.32_0",
+      "center": [
+        4.315,
+        1.56,
+        1.15
+      ],
+      "size": [
+        1.77,
+        3.12,
+        0.18
+      ],
+      "type": "solid"
+    },
+    {
+      "name": "wall_z_1.15_6.08_2.4",
+      "center": [
+        6.075,
+        2.76,
+        1.15
+      ],
+      "size": [
+        1.75,
+        0.72,
+        0.18
+      ],
+      "type": "solid"
+    },
+    {
+      "name": "wall_z_1.15_7.82_0",
+      "center": [
+        7.825,
+        1.56,
+        1.15
+      ],
+      "size": [
+        1.75,
+        3.12,
+        0.18
+      ],
+      "type": "solid"
+    },
+    {
+      "name": "sofa_base",
+      "center": [
+        -1.3,
+        0.29,
+        3.15
+      ],
+      "size": [
+        2.76,
+        0.43,
+        0.95
+      ],
+      "type": "solid"
+    },
+    {
+      "name": "sofa_back",
+      "center": [
+        -1.3,
+        0.55,
+        3.54
+      ],
+      "size": [
+        2.76,
+        0.63,
+        0.24
+      ],
+      "type": "solid"
+    },
+    {
+      "name": "coffee_top",
+      "center": [
+        -0.65,
+        0.39,
+        1.7
+      ],
+      "size": [
+        1.35,
+        0.095,
+        0.7
+      ],
+      "type": "solid"
+    },
+    {
+      "name": "media_console",
+      "center": [
+        -1.2,
+        0.54,
+        -1.86
+      ],
+      "size": [
+        2.65,
+        0.53,
+        0.4
+      ],
+      "type": "solid"
+    },
+    {
+      "name": "bookshelf",
+      "center": [
+        -4.46,
+        1.01,
+        -1.32
+      ],
+      "size": [
+        0.3,
+        1.9,
+        1.0
+      ],
+      "type": "solid"
+    },
+    {
+      "name": "bed_base",
+      "center": [
+        -6.1,
+        0.2,
+        -4.67
+      ],
+      "size": [
+        1.93,
+        0.39,
+        2.2
+      ],
+      "type": "solid"
+    },
+    {
+      "name": "bedside",
+      "center": [
+        -7.53,
+        0.42,
+        -5.63
+      ],
+      "size": [
+        0.4,
+        0.67,
+        0.48
+      ],
+      "type": "solid"
+    },
+    {
+      "name": "bedside",
+      "center": [
+        -4.6,
+        0.42,
+        -5.63
+      ],
+      "size": [
+        0.4,
+        0.67,
+        0.48
+      ],
+      "type": "solid"
+    },
+    {
+      "name": "wardrobe",
+      "center": [
+        -8.12,
+        1.1,
+        -4.05
+      ],
+      "size": [
+        0.5,
+        2.1,
+        1.9
+      ],
+      "type": "solid"
+    },
+    {
+      "name": "shower_tray",
+      "center": [
+        -2.6,
+        0.31,
+        -5.65
+      ],
+      "size": [
+        1.24,
+        0.55,
+        1.22
+      ],
+      "type": "solid"
+    },
+    {
+      "name": "toilet",
+      "center": [
+        -0.55,
+        0.36,
+        -5.85
+      ],
+      "size": [
+        0.48,
+        0.46,
+        0.6
+      ],
+      "type": "solid"
+    },
+    {
+      "name": "sink_vanity",
+      "center": [
+        0.42,
+        0.51,
+        -5.05
+      ],
+      "size": [
+        0.5,
+        0.72,
+        1.04
+      ],
+      "type": "solid"
+    },
+    {
+      "name": "hall_console",
+      "center": [
+        1.6,
+        0.55,
+        -2.91
+      ],
+      "size": [
+        1.1,
+        1.05,
+        0.29
+      ],
+      "type": "solid"
+    },
+    {
+      "name": "kitchen_counter_unit",
+      "center": [
+        8.17,
+        0.41,
+        -5.9
+      ],
+      "size": [
+        1.0,
+        0.8,
+        1.06
+      ],
+      "type": "solid"
+    },
+    {
+      "name": "kitchen_counter_unit",
+      "center": [
+        8.17,
+        0.41,
+        -4.75
+      ],
+      "size": [
+        1.0,
+        0.8,
+        1.06
+      ],
+      "type": "solid"
+    },
+    {
+      "name": "kitchen_counter_unit",
+      "center": [
+        8.17,
+        0.41,
+        -3.6
+      ],
+      "size": [
+        1.0,
+        0.8,
+        1.06
+      ],
+      "type": "solid"
+    },
+    {
+      "name": "oven",
+      "center": [
+        7.88,
+        1.14,
+        -3.52
+      ],
+      "size": [
+        0.88,
+        0.58,
+        0.58
+      ],
+      "type": "solid"
+    },
+    {
+      "name": "kitchen_island",
+      "center": [
+        6.05,
+        0.44,
+        -1.9
+      ],
+      "size": [
+        1.2,
+        0.85,
+        2.05
+      ],
+      "type": "solid"
+    },
+    {
+      "name": "fridge",
+      "center": [
+        8.08,
+        1.08,
+        -1.18
+      ],
+      "size": [
+        1.16,
+        2.14,
+        0.7
+      ],
+      "type": "solid"
+    },
+    {
+      "name": "dining_table_top",
+      "center": [
+        6.1,
+        0.75,
+        3.18
+      ],
+      "size": [
+        2.05,
+        0.13,
+        1.1
+      ],
+      "type": "solid"
+    },
+    {
+      "name": "desk_top",
+      "center": [
+        -7.1,
+        0.72,
+        -0.8
+      ],
+      "size": [
+        1.38,
+        0.095,
+        0.65
+      ],
+      "type": "solid"
+    },
+    {
+      "name": "office_bookcase",
+      "center": [
+        -5.17,
+        0.94,
+        -1.62
+      ],
+      "size": [
+        0.3,
+        1.72,
+        0.92
+      ],
+      "type": "solid"
+    },
+    {
+      "name": "balcony_front_player_boundary",
+      "center": [
+        0,
+        0.58,
+        7.02
+      ],
+      "size": [
+        17.6,
+        1.16,
+        0.12
+      ],
+      "type": "player_boundary"
+    },
+    {
+      "name": "balcony_left_player_boundary",
+      "center": [
+        -8.83,
+        0.58,
+        6.15
+      ],
+      "size": [
+        0.12,
+        1.16,
+        1.8
+      ],
+      "type": "player_boundary"
+    },
+    {
+      "name": "balcony_right_player_boundary",
+      "center": [
+        8.83,
+        0.58,
+        6.15
+      ],
+      "size": [
+        0.12,
+        1.16,
+        1.8
+      ],
+      "type": "player_boundary"
+    }
+  ],
+  "renderMeshes": [
+    {
+      "name": "architecture__balcony_stone",
+      "triangles": 12,
+      "material": "sd_apto_balcony_stone"
+    },
+    {
+      "name": "architecture__floor_concrete",
+      "triangles": 12,
+      "material": "sd_apto_floor_concrete"
+    },
+    {
+      "name": "architecture__floor_oak",
+      "triangles": 36,
+      "material": "sd_apto_floor_oak"
+    },
+    {
+      "name": "architecture__floor_tile",
+      "triangles": 36,
+      "material": "sd_apto_floor_tile"
+    },
+    {
+      "name": "architecture__metal_dark",
+      "triangles": 168,
+      "material": "sd_apto_metal_dark"
+    },
+    {
+      "name": "architecture__wall_plaster",
+      "triangles": 636,
+      "material": "sd_apto_wall_plaster"
+    },
+    {
+      "name": "details__gold",
+      "triangles": 80,
+      "material": "sd_apto_gold"
+    },
+    {
+      "name": "details__green_leaf",
+      "triangles": 4480,
+      "material": "sd_apto_green_leaf"
+    },
+    {
+      "name": "details__light_glow",
+      "triangles": 576,
+      "material": "sd_apto_light_glow"
+    },
+    {
+      "name": "details__metal_dark",
+      "triangles": 608,
+      "material": "sd_apto_metal_dark"
+    },
+    {
+      "name": "details__steel",
+      "triangles": 224,
+      "material": "sd_apto_steel"
+    },
+    {
+      "name": "details__terracotta",
+      "triangles": 320,
+      "material": "sd_apto_terracotta"
+    },
+    {
+      "name": "details__trim_white",
+      "triangles": 72,
+      "material": "sd_apto_trim_white"
+    },
+    {
+      "name": "details__wood_dark",
+      "triangles": 224,
+      "material": "sd_apto_wood_dark"
+    },
+    {
+      "name": "details__wood_warm",
+      "triangles": 188,
+      "material": "sd_apto_wood_warm"
+    },
+    {
+      "name": "furniture__bath_white",
+      "triangles": 60,
+      "material": "sd_apto_bath_white"
+    },
+    {
+      "name": "furniture__bed_linen",
+      "triangles": 36,
+      "material": "sd_apto_bed_linen"
+    },
+    {
+      "name": "furniture__black",
+      "triangles": 24,
+      "material": "sd_apto_black"
+    },
+    {
+      "name": "furniture__counter_stone",
+      "triangles": 48,
+      "material": "sd_apto_counter_stone"
+    },
+    {
+      "name": "furniture__gold",
+      "triangles": 24,
+      "material": "sd_apto_gold"
+    },
+    {
+      "name": "furniture__metal_dark",
+      "triangles": 864,
+      "material": "sd_apto_metal_dark"
+    },
+    {
+      "name": "furniture__rug",
+      "triangles": 12,
+      "material": "sd_apto_rug"
+    },
+    {
+      "name": "furniture__screen",
+      "triangles": 48,
+      "material": "sd_apto_screen"
+    },
+    {
+      "name": "furniture__sofa_fabric",
+      "triangles": 96,
+      "material": "sd_apto_sofa_fabric"
+    },
+    {
+      "name": "furniture__sofa_light",
+      "triangles": 48,
+      "material": "sd_apto_sofa_light"
+    },
+    {
+      "name": "furniture__soft_cloth",
+      "triangles": 180,
+      "material": "sd_apto_soft_cloth"
+    },
+    {
+      "name": "furniture__steel",
+      "triangles": 84,
+      "material": "sd_apto_steel"
+    },
+    {
+      "name": "furniture__trim_white",
+      "triangles": 24,
+      "material": "sd_apto_trim_white"
+    },
+    {
+      "name": "furniture__wall_tile",
+      "triangles": 12,
+      "material": "sd_apto_wall_tile"
+    },
+    {
+      "name": "furniture__wood_dark",
+      "triangles": 492,
+      "material": "sd_apto_wood_dark"
+    },
+    {
+      "name": "furniture__wood_warm",
+      "triangles": 264,
+      "material": "sd_apto_wood_warm"
+    },
+    {
+      "name": "glass__glass",
+      "triangles": 120,
+      "material": "sd_apto_glass"
+    }
+  ],
+  "notes": [
+    "Single-level apartment intentionally. No vertical exploit routes.",
+    "Doors are openings and windows are glazing; server collision must respect exactly the wall segments in this file.",
+    "Wall colliders should use obstacles that block bullets, furniture marked solid where defined.",
+    "Non-solid decor and glass require explicit team gameplay decision; do not treat glass as bulletproof if not in collision JSON.",
+    "Optional roof intended only if correct enclosed lighting is provided."
+  ]
+}
