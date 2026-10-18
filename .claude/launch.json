@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "sniper-local",
+      "runtimeExecutable": "node",
+      "runtimeArgs": ["-e", "require('./tools/static-server.js').start(8123).then(s=>console.log('listo '+s.url))"],
+      "port": 8123
+    }
+  ]
+}
