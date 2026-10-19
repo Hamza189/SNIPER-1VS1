@@ -23,6 +23,7 @@ Las decisiones anteriores al 18-10-2026 están resumidas en `SNIPER_DUEL_MASTER_
 | **Siguiente prioridad (propietario, 19-10): personaje del jugador y bots** — encargo `docs/PROMPT-CHATGPT-PERSONAJE.md` | Propietario (pasarlo a ChatGPT/Codex) | ESPERANDO ENTREGA |
 | Gráficos de CASA ATLAS XL, poco a poco (cuando haya uso de Codex) | Propietario | APARCADO |
 | Cloudflare Pages `sniper-1vs1` (archivo > 25 MiB) | Propietario | APARCADO |
+| Multiplataforma (web + .exe + iPhone + Android) y monetización — plan en `SNIPER_DUEL_ROADMAP.md` | Propietario (cuándo y gastos de tiendas) | FUTURO |
 | Armas clásicas como aspectos | Propietario (aprobar inicio) | SIN EMPEZAR |
 | Fallo online: eventos ignorados tras reinicio de sala (Q1) | — | ARREGLADO y PUBLICADO (19-10) |
 | CASA ATLAS: bots atascados por red de navegación partida (J1) | — | ARREGLADO y PUBLICADO (19-10) |

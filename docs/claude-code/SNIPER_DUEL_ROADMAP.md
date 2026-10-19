@@ -58,3 +58,16 @@ sugerencia de Claude está marcado como **PROPUESTA (sin aprobar)**.
 ### PROPUESTAS (sin aprobar) de Claude
 - Optimización medida en iPhone real (frame times, memoria de texturas, tiempos de carga) antes de añadir más contenido.
 - Unificar texturas de edificios en atlas compartidos para PUEBLO 3.0.
+
+## Objetivo futuro del propietario (19-10-2026): multiplataforma y monetización
+Quiere el juego en **web (enlace) + PC (.exe) + iPhone + Android**, para llegar a más jugadores y poder monetizarlo.
+Plan técnico propuesto (sin aprobar; nada empezado):
+- **Una sola base de código** (la web actual) empaquetada para cada plataforma, para no mantener cuatro juegos.
+- **PC (.exe):** Electron (incluye Chromium: permite quitar el límite de FPS de la pantalla y llegar a 120–144+) o Tauri
+  (más ligero, usa el navegador de Windows). Se decide midiendo.
+- **iPhone / Android:** Capacitor (la misma web dentro de una app nativa). Requiere cuenta de Apple Developer
+  (99 $/año) y Google Play (25 $ una vez): **gasto que debe aprobar el propietario**.
+- El servidor online (Cloudflare) sirve igual para todas: solo hay que añadir los orígenes de las apps a `ALLOWED_ORIGINS`.
+- Antes de empaquetar: optimizar y «comprimir» el juego (texturas KTX2, minificar, carga bajo demanda) para que la app
+  pese poco y vaya a los FPS que permita cada dispositivo.
+- Monetización: solo cosmética, sin ventaja competitiva (regla del plan original).
