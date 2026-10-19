@@ -121,3 +121,28 @@ Estado: IMPLEMENTADO · PROBADO EN NAVEGADOR · PROBADO ONLINE · PENDIENTE DE V
   después de cambiarlo): **prueba intermitente anotada**, pendiente de arreglar.
 - **Rendimiento:** el trabajo se hace en el menú (carga), no en partida. Sin medir en iPhone.
 - **Revertir:** `git revert`; solo cliente.
+
+---
+
+## N6-2 · Texturas del pueblo y de la ARENA subidas una sola vez (−13,3 MB de GPU)
+- **Antes:** cada tipo de material pedía su copia de la textura para darle su repetición: hormigón ×4, madera ×3, piedra ×2
+  (14,6 MB duplicados en PUEBLO 3.0, MEDIDO). **Causa:** `texLoad(…, own=true)` en `townMaterial` y en el suelo de la ARENA.
+- **Solución:** textura compartida (caché) y la repetición se aplica a las UV de la malla (`townUV`), como ya hacía el kit.
+- **Después (MEDIDO, Chromium por software):** PUEBLO 3.0 MEDIO 105 → **92 MB**, ALTO 153 → **139 MB**, pueblo clásico
+  33 → **27 MB**. Queda 1 copia del hormigón de las rampas (1,3 MB). Capturas antes/después con la misma cámara: paredes,
+  suelo y cajas idénticos; diferencias solo en el cielo del horizonte (0,1–1 % de píxeles).
+- **Pruebas:** town, town3, browser, cover.browser, e10.browser. **Revertir:** `git revert ca28d6e`.
+
+## N3-3 · Audio: volumen aplicado con el audio en pausa; prueba intermitente arreglada
+- **Antes:** `browser.test` › volumen de disparos fallaba 2 de cada 3 veces. **Causa (confirmada):** la rampa de 20 ms
+  (`setTargetAtTime`) solo avanza con el reloj de audio en marcha; la prueba leía a los 200 ms.
+- **Solución:** con el audio en pausa, el nivel se pone al momento; la prueba espera a que llegue (hasta 2 s).
+- **Después:** 4 de 4 ejecuciones en verde. **Revertir:** `git revert d37a0c9`.
+
+## N6-3 · HUD táctil y brújula sin escrituras inútiles en el DOM
+- **Antes:** en táctil se reescribían cada fotograma los textos de FUEGO / FUEGO 2 / zoom y la brújula, aunque no
+  cambiaran (cada escritura recalcula estilos; en iPhone suma). **MEDIDO:** 4,2 cambios del DOM por fotograma.
+- **Solución:** `setText` / `setHidden` y la brújula guarda su último HTML.
+- **Después:** **0,1** cambios por fotograma (250 → 8 en 60 fotogramas, MutationObserver, emulación táctil 844×390).
+- **Pruebas:** mobile 74/74, touch.smoke 82/82. **Pendiente:** medir el efecto en el iPhone real (Safari Timeline).
+  **Revertir:** `git revert b1601b0`.
