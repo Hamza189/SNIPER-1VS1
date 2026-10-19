@@ -985,9 +985,10 @@ function townMaterial(k){
   const L=TOWN_LOOK[k]||{},low=GFX.profile==='bajo'||/[?&]nm=0\b/.test(location.search);
   const texName=L.tex||(['iron','glass','lamp','paint','rubber','water'].includes(k)?null:k);
   const o={vertexColors:true,roughness:L.r==null?0.8:L.r,metalness:L.m||0};
-  const ru=1/(L.tileU||L.tile||2),rv=1/(L.tileV||L.tile||2);
-  if(texName){const c=texLoad(texName,false,true);if(c){o.map=c;c.repeat.set(ru,rv);}
-    if(!low&&L.n){const n=texLoad(texName,true,true);if(n){o.normalMap=n;n.repeat.set(ru,rv);o.normalScale=new T.Vector2(L.n,L.n);}}}
+  // the shared texture (one upload per image: wood, crate and the arena used to upload their own copies, 14.6 MB in PUEBLO
+  // 3.0); its scale per kind goes into the UVs instead (townUV, applied by townMeshes)
+  if(texName){const c=texLoad(texName,false);if(c)o.map=c;
+    if(!low&&L.n){const n=texLoad(texName,true);if(n){o.normalMap=n;o.normalScale=new T.Vector2(L.n,L.n);}}}
   if(L.col)o.color=new T.Color(L.col);
   if(L.emissive){o.emissive=new T.Color(L.emissive);o.emissiveIntensity=L.ei||1;}
   if(L.two)o.side=T.DoubleSide;
@@ -995,6 +996,8 @@ function townMaterial(k){
 }
 const TOWN_MATS={};
 function townMat(k){return TOWN_MATS[k]||(TOWN_MATS[k]=townMaterial(k));}   // one material per kind, shared by every map
+// metres per texture repeat of a kind → the factor its UVs are multiplied by (the textures themselves stay at repeat 1)
+function townUV(k){const L=TOWN_LOOK[k]||{};return [1/(L.tileU||L.tile||2),1/(L.tileV||L.tile||2)];}
 const INVIS=new T.MeshBasicMaterial({visible:false});
 // casts the shadow but draws nothing on screen (no colour, no depth): a box costs 12 triangles
 const SHADOW_PROXY=new T.MeshBasicMaterial({colorWrite:false,depthWrite:false});SHADOW_PROXY.userData.cs=1;
@@ -1006,7 +1009,8 @@ function townMeshes(data,tag){
     const geo=new T.BufferGeometry();
     for(let i=0;i<g.col.length;i++)g.col[i]=lin(g.col[i]);
     geo.setAttribute('position',new T.BufferAttribute(g.pos,3));geo.setAttribute('normal',new T.BufferAttribute(g.nrm,3));
-    geo.setAttribute('uv',new T.BufferAttribute(g.uv,2));geo.setAttribute('color',new T.BufferAttribute(g.col,3));
+    const [su,sv]=townUV(k),uv=Float32Array.from(g.uv);for(let i=0;i<uv.length;i+=2){uv[i]*=su;uv[i+1]*=sv;}   // a copy: data may be built again
+    geo.setAttribute('uv',new T.BufferAttribute(uv,2));geo.setAttribute('color',new T.BufferAttribute(g.col,3));
     geo.setIndex(new T.BufferAttribute(g.idx,1));geo.computeBoundingSphere();
     const mat=townMat(k);mat.userData.cs=1;   // vertex colours are linear already; the material colours are set below
     // only the big shapes cast shadows (walls, cornices, roofs, crates, bags, cars): frames, bars and lamps are too small to matter
@@ -1316,12 +1320,14 @@ const WORLDS={pueblo:{colliders:W.colliders,ray:W.ray,ramps:W.ramps,objs:scene.c
   // floor: concrete slab with painted lines (visual; bullets hit the ground plane)
   {let floorMat;
    if(TOWN.on&&typeof SDTown!=='undefined'){   // GFX-4: poured concrete with seams and stains (generated texture)
-     const fc=texLoad('concrete',false,true),n=GFX.profile!=='bajo'?texLoad('concrete',true,true):null;
-     fc.repeat.set(AX*2/3.2,AZ*2/3.2);
-     floorMat=new T.MeshStandardMaterial({map:fc,color:0xa39a8c,roughness:0.92});
-     if(n){n.repeat.copy(fc.repeat);floorMat.normalMap=n;floorMat.normalScale=new T.Vector2(0.5,0.5);}
+     // the shared concrete (one GPU upload); the 3.2 m repeat goes into the slab's UVs below
+     const fc=texLoad('concrete',false),n=GFX.profile!=='bajo'?texLoad('concrete',true):null;
+     floorMat=new T.MeshStandardMaterial({map:fc,color:0xa39a8c,roughness:0.92});floorMat.userData.uvRep=[AX*2/3.2,AZ*2/3.2];
+     if(n){floorMat.normalMap=n;floorMat.normalScale=new T.Vector2(0.5,0.5);}
    }else{const floorTex=roadTex.clone();floorTex.needsUpdate=true;floorTex.repeat.set(12,8);floorMat=new T.MeshStandardMaterial({map:floorTex,color:0x8a8174,roughness:1});}
-   const slab=new T.Mesh(new T.PlaneGeometry(AX*2,AZ*2),floorMat);slab.rotation.x=-Math.PI/2;slab.position.y=0.015;slab.receiveShadow=true;scene.add(slab);
+   const slabGeo=new T.PlaneGeometry(AX*2,AZ*2);
+   if(floorMat.userData.uvRep){const uv=slabGeo.attributes.uv,[su,sv]=floorMat.userData.uvRep;for(let i=0;i<uv.count;i++)uv.setXY(i,uv.getX(i)*su,uv.getY(i)*sv);}
+   const slab=new T.Mesh(slabGeo,floorMat);slab.rotation.x=-Math.PI/2;slab.position.y=0.015;slab.receiveShadow=true;scene.add(slab);
    const lm=new T.MeshBasicMaterial({color:0xe9d3ae,transparent:true,opacity:.5});
    for(const [w,d,x,z] of [[0.18,AZ*2,0,0],[0.18,AZ*2,-18,0],[0.18,AZ*2,18,0],[AX*2,0.18,0,0]]){const l=new T.Mesh(new T.PlaneGeometry(w,d),lm);l.rotation.x=-Math.PI/2;l.position.set(x,0.025,z);scene.add(l);}}
   // centre block + ramps to its roof from both sides, parapet on the roof
