@@ -96,3 +96,17 @@ Prioridad si no da tiempo a todo: idle/aim/walk/sprint/crouch/death primero; des
    `aim_up/aim_down` por la inclinación, armas de `viewmodels.glb` en los sockets, LOD por distancia y por perfil.
 4. Medir llamadas de dibujo, triángulos y ms de CPU de las animaciones con 3 bots; `aim.browser`, `online.browser`,
    `fauna`/`cover` y `npm test`; capturas antes/después. Por defecto solo cuando el propietario lo apruebe.
+
+---
+
+## Aclaraciones (19-10-2026, preguntas de Codex respondidas por Claude con el propietario)
+1. **Altura:** prevalece la esfera de la cabeza. Cabeza y casco **dentro de la esfera: máximo 1,78 m**. El 1,80 m del
+   §1 es la altura del cilindro de movimiento, no la del modelo.
+2. **Agachado y deslizamiento:** los clips `crouch_*` y `slide` ya llevan la altura final; Claude quita el escalado
+   externo (×0,62 / ×0,52) solo para este modelo. En esas posturas el cuerpo debe caber en las cajas del servidor
+   (ancho y fondo iguales que de pie; la esfera de la cabeza mantiene radio 0,15):
+   | Postura | Cabeza (centro) | Torso | Piernas |
+   |---|---|---|---|
+   | De pie (ojos 1,62) | 1,63 m | 0,86 – 1,48 m | 0 – 0,86 m |
+   | Agachado (ojos 1,00) | 1,006 m | 0,53 – 0,91 m | 0 – 0,53 m |
+   | Deslizándose (ojos 0,85) | 0,855 m | 0,45 – 0,78 m | 0 – 0,45 m |
