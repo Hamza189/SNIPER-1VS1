@@ -668,6 +668,9 @@ body.touch #score .side span{max-width:11vw;overflow:hidden;text-overflow:ellips
 if(!window.THREE){document.getElementById('loadErr').hidden=false;return;}
 const T=window.THREE;
 const $=s=>document.querySelector(s);
+// writes a text only when it changes: every write makes the browser recompute styles (per frame on iPhone it adds up)
+const setText=(el,v)=>{if(el&&el.textContent!==v)el.textContent=v;};
+const setHidden=(el,v)=>{if(el&&el.hidden!==v)el.hidden=v;};
 const clamp=(v,a,b)=>v<a?a:v>b?b:v;
 const lerp=(a,b,t)=>a+(b-a)*t;
 const damp=(a,b,k,dt)=>lerp(a,b,1-Math.exp(-k*dt));
@@ -3213,7 +3216,7 @@ function updateCompass(){if(!compassW)compassW=$('#compass').clientWidth;
   $('#compassStrip').style.transform='translateX('+(w/2-(h+360)*PX)+'px)';
   const marks=$('#compassMarks');let html='';
   for(let i=compassMarks.length-1;i>=0;i--){const m=compassMarks[i];if(m.until<gameTime){compassMarks.splice(i,1);continue;}let rel=m.b-h;while(rel>180)rel-=360;while(rel<-180)rel+=360;if(Math.abs(rel)<w/2/PX-6)html+='<b style="left:'+(w/2+rel*PX)+'px;opacity:'+clamp((m.until-gameTime)/1.5,0,1).toFixed(2)+'"></b>';}
-  marks.innerHTML=html;
+  if(marks._h!==html){marks._h=html;marks.innerHTML=html;}   // the DOM is only touched when the marks change (it was every frame)
 }
 
 /* =================== INPUT: DESKTOP =================== */
@@ -3839,7 +3842,7 @@ function updateCamera(dt,alpha){
     $('#airVig').style.opacity=P.exhausted>0?(0.55+Math.sin(P.swayT*7)*0.2).toFixed(2):P.holding?(0.15*clamp(1-P.breath,0,1)+0.08).toFixed(2):0;
   }
   {const lh=document.getElementById('lockHint'),want=!isTouch&&!pointerLocked&&state==='playing';if(lh.hidden===want)lh.hidden=!want;}
-  if(isTouch&&!EDIT.on){const bz=$('#tbZoom'),bb=$('#tbBreath'),kn=LOAD.active==='knife';$('#tbScope').hidden=kn;{const ih=!kn&&(ads>0.05||PM.sprinting);if($('#tbInspect').hidden!==ih)$('#tbInspect').hidden=ih;}$('#tbFire2').hidden=!SETTINGS.leftFire;$('#tbFire').textContent=$('#tbFire2').textContent=kn?'ATACAR':'FUEGO';if(bz.hidden===showScope){bz.hidden=!showScope;bb.hidden=!showScope;}bz.textContent=WS.zoom+'×';bb.classList.toggle('on',P.holding);$('#tbScope').classList.toggle('on',input.scopeToggle||input.scopeHeld);$('#tbCrouch').classList.toggle('on',input.crouchHeld);}
+  if(isTouch&&!EDIT.on){const bz=$('#tbZoom'),bb=$('#tbBreath'),kn=LOAD.active==='knife';setHidden($('#tbScope'),kn);{const ih=!kn&&(ads>0.05||PM.sprinting);if($('#tbInspect').hidden!==ih)$('#tbInspect').hidden=ih;}setHidden($('#tbFire2'),!SETTINGS.leftFire);{const ft=kn?'ATACAR':'FUEGO';setText($('#tbFire'),ft);setText($('#tbFire2'),ft);}if(bz.hidden===showScope){bz.hidden=!showScope;bb.hidden=!showScope;}setText(bz,WS.zoom+'×');bb.classList.toggle('on',P.holding);$('#tbScope').classList.toggle('on',input.scopeToggle||input.scopeHeld);$('#tbCrouch').classList.toggle('on',input.crouchHeld);}
   // hip crosshair shows the real spread cone
   const cr=$('#cross');
   const knife=LOAD.active==='knife';
