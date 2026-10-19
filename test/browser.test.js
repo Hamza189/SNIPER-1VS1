@@ -89,6 +89,14 @@ const shown = page => page.evaluate(ids => ids.filter(id => { const e = document
       check('después de comprobar los mapas la página sigue en el mismo mapa', await page.evaluate(w => __SD.WORLD_ID === w, world0));
       const dup = await page.evaluate(() => { const c = {}; document.querySelectorAll('[id]').forEach(e => c[e.id] = (c[e.id] || 0) + 1); return Object.keys(c).filter(k => c[k] > 1); });
       check('ningún id repetido en la página (si se repite, un dato se escribe en el sitio equivocado)', dup.length === 0, dup.join(', ') || 'ninguno');
+      // PC: the whole menu fits the window, no scrolling (19-10-2026: it was 1 061 px tall, JUGAR below the fold)
+      { const vp = page.viewportSize(), fit = [];
+        for (const [w, h] of [[1536, 775], [1366, 657], [1920, 969]]) {
+          await page.setViewportSize({ width: w, height: h }); await page.waitForTimeout(150);
+          fit.push(await page.evaluate(() => { const i = document.querySelector('#menu .menuInner'), b = document.getElementById('play').getBoundingClientRect(); return { over: i.scrollHeight - innerHeight, play: b.bottom <= innerHeight }; }));
+        }
+        await page.setViewportSize(vp);
+        check('PC: el menú cabe entero sin deslizar y JUGAR se ve (1536×775, 1366×657, 1920×969)', fit.every(f => f.over <= 0 && f.play), JSON.stringify(fit)); }
       // real mouse click on JUGAR → the browser really captures the mouse (Pointer Lock)
       await page.evaluate(() => __SD.setMode('range'));
       await page.getByRole('button', { name: 'JUGAR', exact: true }).click();

@@ -238,3 +238,17 @@ Sprint: vuelta al 10 % en ~0,10 s (antes ~0,23 s), calculado de las constantes.
 - Verificación de maquetación en Chrome, Duelo y Campo de tiro: 1536×775, 1366×657, 1280×720, 1920×969 y 1440×789 sin desbordamiento vertical. Captura local: build/menu-desktop.png (HTML sin ejecutar el juego; no es una prueba de render 3D).
 - mobile.test 74/74; touch.smoke.test 82/82. No se ha repetido npm test completo para este ajuste CSS.
 - Pendiente: aprobación visual del propietario y publicación. Se conserva el trabajo independiente de CASA ATLAS.
+
+---
+
+## N8-1 · Menú de PC sin deslizar (petición del propietario, captura 19-10-2026)
+- **Antes (MEDIDO):** el menú medía 1 061 px de alto en todos los tamaños; en 1536×775 (el Chrome del propietario)
+  sobraban 286 px y **JUGAR quedaba en y = 879, fuera de la pantalla**; también en 1366×657, 1280×720 y 1440×789.
+- **Solución (solo PC, ancho ≥ 900 px):** título que sigue la altura de la ventana, controles en dos columnas
+  (Modo | Arma, Dificultad | Bots pueden matarte; bots de entrenamiento en dos columnas en el campo de tiro), fuera la
+  línea antigua de fases; en ventanas de ≤ 700 px de alto se ocultan la descripción del modo y la lista de teclas.
+  Texto superior actualizado («Duelo de francotiradores · 1v1»). El móvil no cambia.
+- **Después:** sobra 0 px en 1536×775, 1366×657, 1280×720, 1920×969 y 1440×789; JUGAR en y = 641 de 775.
+- **Pruebas:** browser 61/61 (nueva: el menú cabe en 3 tamaños), mobile 74/74, touch.smoke 82/82, smoke 76/76.
+- También: la prueba de `&xltex=1` espera hasta 240 s a la carga (en una ejecución completa con el PC ocupado pasó de
+  120 s; sola pasa). **Revertir:** `git revert`.
