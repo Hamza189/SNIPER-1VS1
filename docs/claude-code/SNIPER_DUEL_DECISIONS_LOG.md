@@ -24,6 +24,8 @@ Las decisiones anteriores al 18-10-2026 están resumidas en `SNIPER_DUEL_MASTER_
 | Gráficos de CASA ATLAS XL, poco a poco (cuando haya uso de Codex) | Propietario | APARCADO |
 | Cloudflare Pages `sniper-1vs1` (archivo > 25 MiB) | Propietario | APARCADO |
 | Multiplataforma (web + .exe + iPhone + Android) y monetización — plan en `SNIPER_DUEL_ROADMAP.md` | Propietario (cuándo y gastos de tiendas) | FUTURO |
+| Perfil BAJO usa PUEBLO 2.0 automáticamente (más ligero; mismas colisiones) y MEDIO/ALTO el 3.0 — idea del propietario | Claude (junto con la optimización) | PENDIENTE |
+| Originales de las entregas (`assets/3d/imports`, ~319 MB): se conservan (los usan las herramientas para regenerar texturas); decisión del propietario 19-10 | — | DECIDIDO |
 | Armas clásicas como aspectos | Propietario (aprobar inicio) | SIN EMPEZAR |
 | Fallo online: eventos ignorados tras reinicio de sala (Q1) | — | ARREGLADO y PUBLICADO (19-10) |
 | CASA ATLAS: bots atascados por red de navegación partida (J1) | — | ARREGLADO y PUBLICADO (19-10) |
