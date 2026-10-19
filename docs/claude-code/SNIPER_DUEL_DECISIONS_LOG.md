@@ -13,16 +13,26 @@ Las decisiones anteriores al 18-10-2026 están resumidas en `SNIPER_DUEL_MASTER_
 | FPS en iPhone/Samsung (PUEBLO 3.0, CASA ATLAS) | Propietario | ESPERANDO |
 | Suelo del Samsung, fachadas P1 | Propietario y su pareja | ESPERANDO |
 | Reconexión con dos iPhone, partidas de 10–15 min | Propietario | ESPERANDO |
-| Instalar `gh` en el PC | Propietario (decide) | PENDIENTE |
+| Instalar `gh` en el PC | — | HECHO (19-10, sesión de Hamza189) |
 | `.gitattributes` para fines de línea | Propietario (aprobar) | PROPUESTA |
 | CASA ATLAS XL (40×32 m): encargo a ChatGPT en `docs/PROMPT-CHATGPT-CASA-ATLAS-XL.md` | Propietario (pasarlo a ChatGPT) | ESPERANDO ENTREGA |
-| PR #1 `next-level/casa-atlas-xl` (CASA XL, todos los mapas, arreglos Q1/J1/J2) | Propietario (revisar y fusionar; redespliega el servidor por `client/netcore.js`) | ABIERTA |
+| PR #1 `next-level/casa-atlas-xl` | — | FUSIONADA 19-10 (`4517b82`); Pages, servidor y prueba pública en verde |
 | Proyecto Cloudflare Pages `sniper-1vs1` conectado al repo: su build falla en todos los commits (también en `main`); no es el que publica el juego | Propietario (desconectarlo o decir para qué es) | DETECTADO |
+| Comparar `?feel=2` con la sensación actual (PC e iPhone) | Propietario | ESPERANDO |
+| Pruebas de rayas (`docs/next-level/PRUEBA_RAYAS_PC.md`) | Propietario | ESPERANDO |
 | Armas clásicas como aspectos | Propietario (aprobar inicio) | SIN EMPEZAR |
-| Fallo online: eventos ignorados tras reinicio de sala (Q1) | — | ARREGLADO (commits locales e3fdc49 y 43bd0da, sin publicar) |
-| CASA ATLAS: bots atascados por red de navegación partida (J1) | — | ARREGLADO (commits locales e3fdc49 y 43bd0da, sin publicar) |
+| Fallo online: eventos ignorados tras reinicio de sala (Q1) | — | ARREGLADO y PUBLICADO (19-10) |
+| CASA ATLAS: bots atascados por red de navegación partida (J1) | — | ARREGLADO y PUBLICADO (19-10) |
 | Paquetes de la auditoría (`SNIPER_DUEL_AUDIT_2026-10-18.md` §4) | Propietario (aprobar) | PROPUESTOS |
 | Evolución tecnológica T0–T6 (`SNIPER_DUEL_TECHNOLOGY_EVOLUTION.md`) | Propietario (revisar el informe y aprobar fases) | INFORME ENTREGADO |
+
+## 19-10-2026 — NEXT LEVEL: primer paquete publicado (PR #1)
+- **Publicado** (`4517b82`, fusión hecha por Claude con `gh` por orden del propietario): CASA ATLAS XL solo contra bots,
+  todos los mapas en el menú, arreglos online (eventos tras reinicio) y de bots de CASA, rendimiento (sin tirón inicial,
+  −13 MB de texturas, HUD táctil, sombras de soldados), audio, banderas de diagnóstico de rayas y `?feel=2`.
+- **Comprobado:** Pages, «Desplegar servidor» y «Prueba pública online» en verde; `version.json` publicado = local
+  (`e9a6f2b13e`); `/health` ok; el GLB de XL se sirve. `npm test` 955/955 antes de fusionar.
+- **Pendiente:** el propietario compara `?feel=2` y hace las pruebas de rayas; validación en iPhone y Samsung.
 
 ## 18-10-2026 — Auditoría con cuatro agentes (sesión 1, tercera parte)
 - **Petición (propietario):** cuatro auditorías en paralelo de solo lectura; el agente principal coordina; nada de
