@@ -20,6 +20,9 @@ Las decisiones anteriores al 18-10-2026 están resumidas en `SNIPER_DUEL_MASTER_
 | Proyecto Cloudflare Pages `sniper-1vs1` conectado al repo: su build falla en todos los commits (también en `main`); no es el que publica el juego | Propietario (desconectarlo o decir para qué es) | DETECTADO |
 | Comparar `?feel=2` con la sensación actual (PC e iPhone) | Propietario | ESPERANDO |
 | Pruebas de rayas (`docs/next-level/PRUEBA_RAYAS_PC.md`) | Propietario | ESPERANDO |
+| **Siguiente prioridad (propietario, 19-10): personaje del jugador y bots** — encargo `docs/PROMPT-CHATGPT-PERSONAJE.md` | Propietario (pasarlo a ChatGPT/Codex) | ESPERANDO ENTREGA |
+| Gráficos de CASA ATLAS XL, poco a poco (cuando haya uso de Codex) | Propietario | APARCADO |
+| Cloudflare Pages `sniper-1vs1` (archivo > 25 MiB) | Propietario | APARCADO |
 | Armas clásicas como aspectos | Propietario (aprobar inicio) | SIN EMPEZAR |
 | Fallo online: eventos ignorados tras reinicio de sala (Q1) | — | ARREGLADO y PUBLICADO (19-10) |
 | CASA ATLAS: bots atascados por red de navegación partida (J1) | — | ARREGLADO y PUBLICADO (19-10) |
