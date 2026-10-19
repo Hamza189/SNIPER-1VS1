@@ -16,13 +16,15 @@ def make(sk):
 
     # ---------------------------------------------------------------- piezas del tren superior
     def up_rifle_idle(P, t, extra_twist=0.0):
-        B.chest(P, twist=R_(-14) + extra_twist, lean=R_(2.0), breath_t=t)
-        B.hands_on(P, 'rifle', rifle_low(), clav_r=(R_(2), R_(4)))
-        B.head_look(P, pitch=R_(-3) + R_(1.2) * math.sin(TAU * t / 4.0), yaw_=R_(1.5) * math.sin(TAU * t / 5.0))
+        B.chest(P, twist=R_(-15) + extra_twist, lean=R_(2.0), breath_t=t)
+        Rb, pb = rifle_low(R_(16))
+        B.hands_on(P, 'rifle', (Rb, pb + np.array([0.01, 0.05, 0.03])), clav_r=(R_(5), R_(10)), clav_l=(R_(3), R_(8)),
+                   elbow_r=np.array([-0.95, -0.35, -0.2]), elbow_l=np.array([0.55, -0.85, 0.0]))
+        B.head_look(P, pitch=R_(-4) + R_(1.2) * math.sin(TAU * t / 4.0), yaw_=R_(2.5) * math.sin(TAU * t / 5.0))
 
     def up_rifle_aim(P, t, pitch=0.0, recoil=0.0, breath=0.35):
         lean = R_(3.0) + max(0.0, -pitch) * 0.13
-        B.chest(P, twist=R_(-20), lean=lean + R_(1.5), breath_t=t if breath else None)
+        B.chest(P, twist=R_(-18), lean=lean - R_(1.0), breath_t=t if breath else None)
         if pitch >= 0:
             Rw, pw = rifle_aim(pitch)
         else:                                     # hacia abajo gira alrededor de la culata y se inclina el torso
@@ -33,8 +35,9 @@ def make(sk):
         if recoil:
             pw = pw + Rw @ np.array([0, 0.004, -0.035]) * recoil
             Rw = Rw @ up(R_(6) * recoil)
-        B.hands_on(P, 'rifle', (Rw, pw), clav_r=(R_(6) - 0.4 * recoil * R_(5), R_(9) - recoil * R_(4)), clav_l=(R_(2), R_(6)))
-        B.head_look(P, pitch=pitch * 0.42 - R_(4), rol=R_(7.5) * (1 - abs(pitch) / R_(90)))
+        B.hands_on(P, 'rifle', (Rw, pw), clav_r=(R_(9) - 0.4 * recoil * R_(5), R_(14) - recoil * R_(4)), clav_l=(R_(3), R_(10)),
+                   elbow_r=np.array([-1.0, -0.15, -0.25]), elbow_l=np.array([0.35, -1.0, 0.05]))
+        B.head_look(P, pitch=pitch * 0.42 - R_(5), rol=R_(7.5) * (1 - abs(pitch) / R_(90)))
         return Rw, pw
 
     def up_pistol(P, t, aim=True, pitch=0.0, recoil=0.0):
@@ -51,6 +54,11 @@ def make(sk):
         return Rw, pw
 
     def lower_stand(P, t, **kw):
+        # postura de combate: algo de rodilla, cadera atrás, el peso hacia delante y los pies abiertos
+        kw.setdefault('lean', R_(3.0))
+        kw.setdefault('hips_back', 0.025)
+        kw.setdefault('width', 0.03)
+        kw['knee'] = kw.get('knee', 0) + 3.0
         B.stand(P, t, **kw)
 
     clips = {}

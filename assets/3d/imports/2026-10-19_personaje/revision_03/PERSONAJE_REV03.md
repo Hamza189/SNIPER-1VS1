@@ -7,6 +7,17 @@ La revisión 01 de Codex (procedural, 5 328 triángulos, piezas rígidas) fue re
 muñecos». La 02 (Codex, sobre MakeHuman) quedó a medias. Esta revisión se ha rehecho entera por código con otra técnica:
 cuerpo humano real, ropa con volumen y pliegues, pesos suaves y animación con cinemática inversa.
 
+## Segunda pasada (03b, 20-10-2026, tras la primera opinión del propietario)
+«Bastante bien para empezar», pero más agresivo, más detalle y mejores materiales, tipo PUBG Mobile. Cambios:
+- **Chaleco porta-placas** (placas delante y detrás, faja, hombreras, 3 portacargadores con solapa, bolsillo de
+  pecho y radio con antena) en lugar de los bolsillos del pecho y los tirantes.
+- **Camuflaje** (bosque en B, desierto en A, digital urbano en bots) con la posición 3D, sin costuras; cintas
+  **MOLLE** con remates en el chaleco; pliegues un 35 % más marcados; oclusión y cantos con más contraste; gafas
+  con cristal reflectante.
+- **Postura de combate**: cadera atrás, rodillas flexionadas, pies más abiertos, peso hacia delante, rifle más alto
+  con codos abiertos, clavículas adelantadas y cabeza baja sobre la culata. El margen lo marcan las cajas del
+  servidor: inclinarse más saca la cabeza de su esfera (lo comprueba `tools/check-character-hitbox.js`).
+
 ## Cómo está hecho
 1. **Cuerpo** (`src/body.py`): malla de MakeHuman (CC0, `../revision_02/sources/base.obj`) con sus targets CC0 de hombre
    joven atlético (`sources/targets/`, procedencia y SHA-256 en `sources/provenance.json`). Escala: ojos a 1,62 m;
@@ -70,33 +81,33 @@ caja más cercana (o de la esfera, para el cuello). Brazos y manos exentos (suje
 
 | Clip | s | Bucle | Capa | Cabeza | Cuerpo X / Y / Z | Se exige |
 |---|---:|:---:|---|---:|---|:---:|
-| `idle_rifle` | 4.00 | sí | upper | 1.7 | 3.1 / 3.1 / 3.6 | sí |
-| `aim_rifle` | 4.00 | sí | upper | 3.6 | 3.8 / 3.6 / 3.5 | sí |
-| `aim_up` | 0 | no | aditiva | 2.2 | 3.3 / 3.3 / 2.4 | no |
-| `aim_down` | 0 | no | aditiva | 10.9 | 3.7 / 3.7 / 2.5 | no |
-| `walk_fwd` | 0.66 | sí | lower | 3.1 | 3.7 / 3.3 / 3.6 | sí |
-| `walk_back` | 0.66 | sí | lower | 3.0 | 3.7 / 3.3 / 3.6 | sí |
-| `walk_left` | 0.66 | sí | lower | 2.4 | 3.2 / 3.2 / 2.9 | sí |
-| `walk_right` | 0.66 | sí | lower | 2.4 | 3.2 / 3.2 / 2.9 | sí |
-| `sprint` | 0.62 | sí | entero | 3.7 | 3.8 / 3.8 / 2.9 | sí |
-| `crouch_idle` | 4.00 | sí | lower | 3.3 | 3.0 / 3.1 / 3.0 | sí |
-| `crouch_walk` | 0.70 | sí | lower | 2.4 | 3.1 / 2.4 / 3.6 | sí |
-| `slide` | 1.00 | sí | entero | 0 | 2.7 / 2.3 / 3.9 | sí |
-| `jump_start` | 0.30 | no | lower | 11.0 | 4.2 / 4.3 / 11.7 | no |
-| `jump_air` | 0.60 | sí | lower | 0.8 | 3.8 / 9.8 / 20.4 | no |
-| `jump_land` | 0.30 | no | lower | 12.8 | 4.3 / 4.8 / 6.8 | no |
-| `fire_rifle` | 0.95 | no | upper | 3.2 | 3.4 / 3.5 / 3.4 | no |
-| `reload_rifle` | 2.35 | no | upper | 4.0 | 3.6 / 3.6 / 3.2 | no |
-| `idle_pistol` | 4.00 | sí | upper | 1.4 | 3.1 / 3.0 / 2.4 | sí |
-| `aim_pistol` | 4.00 | sí | upper | 1.2 | 2.9 / 2.9 / 2.4 | sí |
-| `fire_pistol` | 0.22 | no | upper | 1.1 | 2.7 / 2.5 / 2.4 | no |
-| `reload_pistol` | 1.45 | no | upper | 2.8 | 3.1 / 2.9 / 2.4 | no |
-| `fire_shotgun` | 0.25 | no | upper | 3.5 | 3.2 / 3.1 / 4.6 | no |
-| `pump_shotgun` | 0.32 | no | upper | 3.5 | 3.2 / 3.1 / 3.9 | no |
-| `reload_shell` | 0.32 | no | upper | 3.4 | 3.4 / 3.1 / 2.6 | no |
-| `knife_slash` | 0.45 | no | upper | 2.5 | 3.5 / 3.5 / 2.7 | no |
-| `idle_knife` | 4.00 | sí | upper | 2.8 | 3.9 / 3.9 / 2.9 | no |
-| `hit_react` | 0.26 | no | upper | 1.2 | 2.8 / 2.7 / 3.8 | no |
+| `idle_rifle` | 4.00 | sí | upper | 2.7 | 3.9 / 3.9 / 4 | sí |
+| `aim_rifle` | 4.00 | sí | upper | 2.8 | 3.6 / 3.5 / 3.9 | sí |
+| `aim_up` | 0 | no | aditiva | 1.8 | 3.6 / 3.2 / 3.8 | no |
+| `aim_down` | 0 | no | aditiva | 10.6 | 3.6 / 3.2 / 3.8 | no |
+| `walk_fwd` | 0.66 | sí | lower | 3.2 | 3.7 / 3.3 / 3.3 | sí |
+| `walk_back` | 0.66 | sí | lower | 3.1 | 3.7 / 3.3 / 3.3 | sí |
+| `walk_left` | 0.66 | sí | lower | 2.5 | 3.2 / 3.2 / 2.9 | sí |
+| `walk_right` | 0.66 | sí | lower | 2.5 | 3.2 / 3.2 / 2.9 | sí |
+| `sprint` | 0.62 | sí | entero | 4 | 3.8 / 3.7 / 2.9 | sí |
+| `crouch_idle` | 4.00 | sí | lower | 3.4 | 3 / 3.1 / 3 | sí |
+| `crouch_walk` | 0.70 | sí | lower | 3 | 3.1 / 2.4 / 3.3 | sí |
+| `slide` | 1.00 | sí | entero | 0.9 | 2.7 / 2.3 / 3.9 | sí |
+| `jump_start` | 0.30 | no | lower | 9.8 | 3.6 / 5.9 / 11.1 | no |
+| `jump_air` | 0.60 | sí | lower | 1.6 | 3.8 / 8.9 / 19.3 | no |
+| `jump_land` | 0.30 | no | lower | 11.6 | 3.1 / 6.4 / 5.6 | no |
+| `fire_rifle` | 0.95 | no | upper | 2.3 | 3.6 / 3.4 / 3.8 | no |
+| `reload_rifle` | 2.35 | no | upper | 4.4 | 3.9 / 3.9 / 3.9 | no |
+| `idle_pistol` | 4.00 | sí | upper | 2.6 | 3.9 / 3.9 / 4 | sí |
+| `aim_pistol` | 4.00 | sí | upper | 2.6 | 3.6 / 3.5 / 3.8 | sí |
+| `fire_pistol` | 0.22 | no | upper | 2.3 | 3.6 / 3.2 / 3.8 | no |
+| `reload_pistol` | 1.45 | no | upper | 3.3 | 3.7 / 3.9 / 3.9 | no |
+| `fire_shotgun` | 0.25 | no | upper | 3.6 | 3.6 / 3.6 / 4.5 | no |
+| `pump_shotgun` | 0.32 | no | upper | 3.6 | 3.6 / 3.6 / 3.8 | no |
+| `reload_shell` | 0.32 | no | upper | 3.9 | 3.6 / 3.6 / 3.3 | no |
+| `knife_slash` | 0.45 | no | upper | 3.9 | 3.9 / 3.8 / 3.8 | no |
+| `idle_knife` | 4.00 | sí | upper | 4.3 | 4 / 4 / 3.8 | no |
+| `hit_react` | 0.26 | no | upper | 1.8 | 3.6 / 3.6 / 4 | no |
 | `death_front` / `death_back` | 1.25 | no | entero | — | (tumbado) | no |
 
 Velocidades sin patinar (el juego ajusta la fase a la velocidad real): adelante/atrás 4,49 m/s, lateral 2,75, esprint

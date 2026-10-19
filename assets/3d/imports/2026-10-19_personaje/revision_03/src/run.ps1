@@ -3,7 +3,7 @@
 #   & 'assets/3d/imports/2026-10-19_personaje/revision_03/src/run.ps1' -Stage glb # solo animaciones/GLB (rápido)
 # Requisitos: Blender 5.2 (D:\Blender), Python 3 con numpy y Pillow (C:\Python314). Una vez: python prepare_targets.py
 param([string]$Stage = 'all')
-$ErrorActionPreference = 'Stop'
+$ErrorActionPreference = 'Continue'   # Blender escribe avisos en stderr; se comprueban los códigos de salida
 $src = $PSScriptRoot; $rev = Split-Path $src -Parent
 $env:PYTHONDONTWRITEBYTECODE = '1'
 if ($Stage -eq 'all') {

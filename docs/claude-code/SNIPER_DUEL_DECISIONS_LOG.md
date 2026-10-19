@@ -65,6 +65,15 @@ Detalle de cada cambio (antes/después, medidas, cómo revertir): `docs/next-lev
 | Encargos para ChatGPT: CASA XL, CASA XL v2 y personaje | 18-10 / 19-10 |
 | Personaje 3D rev. 03 hecho por Claude e integrado tras `?pj=2` (bots y rival online) | 20-10 · directo a `main` |
 
+## 20-10-2026 — Personaje 3D: segunda pasada (chaleco, camuflaje, postura)
+- **Opinión del propietario** sobre la rev. 03 en el juego: «bastante bien para empezar»; pide más agresividad,
+  postura, detalle y materiales tipo PUBG Mobile (envía fotos de referencia).
+- **Hecho:** chaleco porta-placas con portacargadores, camuflaje por apariencia, MOLLE, más contraste y postura de
+  combate (detalle en el changelog › N7-2). Sigue cabiendo en las cajas en los 3 LOD.
+- **Límite que conviene que sepa el propietario:** con las cajas actuales del servidor el cuerpo no puede inclinarse
+  mucho más hacia delante (la cabeza saldría de su esfera); una postura «PUBG» más baja exigiría ajustar las cajas.
+- **Estado:** IMPLEMENTADO · PROBADO EN NAVEGADOR · PENDIENTE DE VALIDACIÓN EN IPHONE.
+
 ## 20-10-2026 — Personaje 3D (revisión 03) tras `?pj=2`
 - **Contexto:** el propietario rechazó la rev. 01 de Codex («parecen muñecos») y Codex se quedó sin uso dos veces;
   el trabajo pasó a Claude (sesión lanzada desde la principal).

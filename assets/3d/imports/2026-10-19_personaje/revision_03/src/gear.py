@@ -17,7 +17,8 @@ PARTS = {   # id: (nombre, zona para la validación de cajas)
     4: ('cinturon', 'torso'), 5: ('hebilla', 'torso'), 6: ('bolsillo_cargo', 'legs'), 7: ('rodillera', 'legs'),
     8: ('correa', 'legs'), 9: ('casco', 'head'), 10: ('plastico_casco', 'head'), 11: ('cristal', 'head'),
     12: ('goma_gafas', 'head'), 13: ('cuello_chaqueta', 'torso'), 14: ('tirante', 'torso'), 15: ('bajo_chaqueta', 'torso'),
-    16: ('puno', 'arm'), 17: ('parche', 'arm'), 18: ('bota', 'legs'), 19: ('funda_cuchillo', 'legs'), 20: ('suela', 'legs'),
+    16: ('puno', 'arm'), 17: ('parche', 'arm'), 18: ('bota', 'legs'), 19: ('funda_cuchillo', 'legs'), 20: ('suela', 'legs'), 21: ('placa', 'torso'), 22: ('portacargador', 'torso'),
+    23: ('faja', 'torso'), 24: ('hombrera', 'torso'), 25: ('solapa_chaleco', 'torso'),
 }
 
 
@@ -197,46 +198,58 @@ def build_gear(body, C, J):
     G = {k: game_from_blender(v) for k, v in J.items()}
     X, Y, Z = np.eye(3)
 
-    # --- chaqueta: bolsillos de pecho con solapa y bolsillos bajos (como la referencia) ---
+    # --- chaleco porta-placas (rev. 03b, estilo PUBG): placas delante y detrás, faja, hombreras, portacargadores,
+    #     bolsillo de pecho y radio. Sustituye a los bolsillos del pecho y a los tirantes de la primera versión.
+    P, N = patch(S, np.array([0, 1.225, 0.1]), X, Y, 0.30, 0.33, 9, 10, 0.022, bulge=0.008, round_=0.3)
+    P, F = solid(P, N, 9, 10, 0.03)
+    B.add(P, F, 21)
+    P, N = patch(S, np.array([0, 1.195, -0.1]), -X, Y, 0.25, 0.26, 9, 10, 0.006, bulge=0.002, round_=0.35)
+    P, F = solid(P, N, 9, 10, 0.03)
+    B.add(P, F, 21)
+    P, N = ring(S, lambda t: [0, 1.035 + t * 0.125, -0.01], 0, 1, 3, 44, 0.017)
+    P, F = solid(P, N, 44, 3, 0.016, closed_u=True)
+    B.add(P, F, 23)
     for s in (1, -1):
-        c = np.array([s * 0.095, 1.285, 0.1])
-        P, N = patch(S, c, X, Y, 0.105, 0.115, 6, 7, 0.003, bulge=0.010)
-        P, F = solid(P, N, 6, 7, 0.006)
-        B.add(P, F, 1)
-        P, N = patch(S, c + [0, 0.045, 0], X, Y, 0.113, 0.042, 6, 3, 0.012, bulge=0.010, round_=0.15)
-        P, F = solid(P, N, 6, 3, 0.005)
-        B.add(P, F, 2)
-        c = np.array([s * 0.112, 1.065, 0.1])
-        P, N = patch(S, c, X, Y, 0.125, 0.12, 6, 6, 0.004, bulge=0.012)
-        P, F = solid(P, N, 6, 6, 0.007)
-        B.add(P, F, 3)
-        P, N = patch(S, c + [0, 0.048, 0], X, Y, 0.13, 0.042, 6, 3, 0.014, bulge=0.012, round_=0.15)
-        P, F = solid(P, N, 6, 3, 0.005)
-        B.add(P, F, 2)
-
-    # --- tirantes (correas de hombro de la referencia): de los bolsillos de pecho, por encima del hombro, a la espalda ---
-    for s in (1, -1):
-        x = s * 0.115
+        x = s * 0.105
         pts, nor = [], []
-        for k in range(15):
-            a = math.radians(-60 + 300 * k / 14)          # ángulo en el plano z-y alrededor del hombro
-            cy, cz = 1.30, 0.0
-            d = np.array([0, math.sin(a), math.cos(a)])
-            r = S.hit(np.array([x, cy, cz]) + d * 0.5, -d, maxd=0.6)
+        for k in range(21):
+            a_ = math.radians(-40 + 260 * k / 20)
+            d = np.array([0, math.sin(a_), math.cos(a_)])
+            r = S.hit(np.array([x, 1.30, 0.0]) + d * 0.5, -d, maxd=0.6)
             if r is None:
                 continue
             p, n = r
-            if p[1] < 1.20 and k > 2 and k < 12:
+            if p[1] < 1.36 or (p[2] < -0.04 and p[1] < 1.41):
                 continue
             pts.append(p); nor.append(n / np.linalg.norm(n))
         pts = np.array(pts); nor = np.array(nor)
         side = np.cross(np.gradient(pts, axis=0), nor)
         side /= np.linalg.norm(side, axis=1)[:, None]
-        Pt = np.vstack([pts - side * 0.019 + nor * 0.006, pts + side * 0.019 + nor * 0.006])
+        Pt = np.vstack([pts - side * 0.03 + nor * 0.012, pts + side * 0.03 + nor * 0.012])
         Pt = Pt.reshape(2, -1, 3).transpose(1, 0, 2).reshape(-1, 3)
-        Nt = np.repeat(nor, 2, axis=0)
-        P, F = solid(Pt, Nt, 2, len(pts), 0.004)
-        B.add(P, F, 14)
+        P, F = solid(Pt, np.repeat(nor, 2, axis=0), 2, len(pts), 0.012)
+        B.add(P, F, 24)
+    for x in (-0.077, 0.0, 0.077):
+        P, N = patch(S, np.array([x, 1.125, 0.1]), X, Y, 0.068, 0.13, 5, 7, 0.054, bulge=0.006, round_=0.25)
+        P, F = solid(P, N, 5, 7, 0.028)
+        B.add(P, F, 22)
+        P, N = patch(S, np.array([x, 1.178, 0.1]), X, Y, 0.072, 0.036, 5, 3, 0.061, bulge=0.004, round_=0.2)
+        P, F = solid(P, N, 5, 3, 0.007)
+        B.add(P, F, 25)
+    P, N = patch(S, np.array([0, 1.312, 0.1]), X, Y, 0.17, 0.07, 7, 4, 0.050, bulge=0.006, round_=0.3)
+    P, F = solid(P, N, 7, 4, 0.022)
+    B.add(P, F, 22)
+    outv = np.array([1, 0, 0.15]); outv /= np.linalg.norm(outv)
+    P, N = patch(S, np.array([0.16, 1.10, -0.02]), np.array([0, 0, -1.0]), Y, 0.06, 0.11, 4, 6, 0.032, bulge=0.004, round_=0.3, normal=outv)
+    P, F = solid(P, N, 4, 6, 0.028)
+    B.add(P, F, 22)
+    P, F = box(np.array([0.165, 1.205, -0.025]), (0.008, 0.11, 0.008))
+    B.add(P, F, 10)
+    top = None   # asa trasera retirada: salía de la caja del torso
+    if top:
+        q = top[0]
+        Pt_, Ft_ = tube([q + [-0.04, 0.0, -0.045], q + [-0.03, 0.025, -0.05], q + [0.03, 0.025, -0.05], q + [0.04, 0.0, -0.045]], 0.008, 8)
+        B.add(Pt_, Ft_, 24)
 
     # --- cuello de la chaqueta (subido, un poco abierto delante) ---
     neck = G['neck']

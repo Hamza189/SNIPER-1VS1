@@ -303,17 +303,18 @@ class Builder:
         self.I = I
 
     # ---- tren inferior
-    def stand(self, P, t, sway=1.0, stance=0.0, knee=0.0, hips_back=0.0):
+    def stand(self, P, t, sway=1.0, stance=0.0, knee=0.0, hips_back=0.0, lean=0.0, width=0.0):
         """de pie: respiración y un leve vaivén del peso; stance > 0 adelanta el pie izquierdo"""
         sk = self.sk
         ph = TAU * t / 2.0
         P.hips = np.array([0.006 * math.sin(ph * 0.5) * sway, -0.004 * knee - 0.002 * (1 - math.cos(ph)) * sway, -hips_back])
-        P.local('Hips', yaw(math.radians(1.2) * math.sin(ph * 0.5) * sway) @ roll(math.radians(-1.0) * math.sin(ph * 0.5) * sway))
+        P.local('Hips', yaw(math.radians(1.2) * math.sin(ph * 0.5) * sway) @ up(-lean) @ roll(math.radians(-1.0) * math.sin(ph * 0.5) * sway))
         P.local('Spine', roll(math.radians(0.8) * math.sin(ph * 0.5) * sway))
         feet = {}
         for side, sx in (('Left', 1), ('Right', -1)):
             ank = self.R[self.I[side + 'Foot']].copy()
             ank[2] += stance * (0.02 if side == 'Left' else -0.03)
+            ank[0] += sx * width
             feet[side] = (ank, yaw(sx * math.radians(1)))
         self.legs_to(P, feet)
 

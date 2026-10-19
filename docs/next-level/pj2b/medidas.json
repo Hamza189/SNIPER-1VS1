@@ -1,0 +1,126 @@
+{
+ "pueblo_pj2": {
+  "cam": {
+   "x": -46,
+   "y": 0,
+   "z": -16,
+   "yaw": 3.141592653589793,
+   "free": 45
+  },
+  "world": "pueblo",
+  "free": 45,
+  "bots": 3,
+  "animMs": 0.3269999999801318,
+  "calls": 42,
+  "tris": 76212,
+  "total": {
+   "calls": 265,
+   "tris": 422468
+  },
+  "lods": [
+   0,
+   0,
+   1
+  ],
+  "v2": [
+   true,
+   true,
+   true
+  ],
+  "errors": [],
+  "http": []
+ },
+ "pueblo_antes": {
+  "cam": {
+   "x": -46,
+   "y": 0,
+   "z": -16,
+   "yaw": 3.141592653589793,
+   "free": 45
+  },
+  "world": "pueblo",
+  "free": 45,
+  "bots": 3,
+  "animMs": 0.07833333333333334,
+  "calls": 125,
+  "tris": 14120,
+  "total": {
+   "calls": 346,
+   "tris": 362932
+  },
+  "lods": [
+   -1,
+   -1,
+   -1
+  ],
+  "v2": [
+   false,
+   false,
+   false
+  ],
+  "errors": [],
+  "http": []
+ },
+ "casaxl_pj2": {
+  "cam": {
+   "x": -17.25,
+   "y": 0,
+   "z": -12.3,
+   "yaw": 4.4505895925855405,
+   "free": 38.227572961642316
+  },
+  "world": "casaxl",
+  "free": 38.2,
+  "bots": 3,
+  "animMs": 0.12366666667163372,
+  "calls": 42,
+  "tris": 76212,
+  "total": {
+   "calls": 97,
+   "tris": 128886
+  },
+  "lods": [
+   0,
+   0,
+   1
+  ],
+  "v2": [
+   true,
+   true,
+   true
+  ],
+  "errors": [],
+  "http": []
+ },
+ "casaxl_antes": {
+  "cam": {
+   "x": -17.25,
+   "y": 0,
+   "z": -12.3,
+   "yaw": 4.4505895925855405,
+   "free": 38.227572961642316
+  },
+  "world": "casaxl",
+  "free": 38.2,
+  "bots": 3,
+  "animMs": 0.16899999998509885,
+  "calls": 129,
+  "tris": 14496,
+  "total": {
+   "calls": 184,
+   "tris": 67170
+  },
+  "lods": [
+   -1,
+   -1,
+   -1
+  ],
+  "v2": [
+   false,
+   false,
+   false
+  ],
+  "errors": [],
+  "http": []
+ }
+}

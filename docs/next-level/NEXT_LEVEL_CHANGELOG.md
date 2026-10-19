@@ -6,6 +6,29 @@ Estado: IMPLEMENTADO · PROBADO EN NAVEGADOR · PROBADO ONLINE · PENDIENTE DE V
 
 ---
 
+## N7-2 · Personaje 3D, segunda pasada: chaleco, camuflaje y postura de combate (`?pj=2`, 20-10-2026)
+
+**Antes**
+- **Problema (propietario):** «bastante bien para empezar», pero le falta ser más agresivo, mejor postura, más
+  detalle y mejores texturas y materiales, tipo PUBG Mobile (fotos de referencia).
+- **Solución:** chaleco porta-placas con faja, hombreras, 3 portacargadores, bolsillo de pecho y radio (sustituye a
+  bolsillos de pecho y tirantes); camuflaje por apariencia (bosque B, desierto A, digital urbano bots) calculado en 3D;
+  cintas MOLLE con remates; pliegues +35 %; más contraste de oclusión y cantos; cristal de gafas reflectante. Postura:
+  cadera atrás, rodillas flexionadas, pies abiertos, rifle más alto con codos abiertos, clavículas adelantadas.
+- **Riesgos:** los mismos que N7-1 (solo cliente, solo con la bandera). La inclinación tiene tope: más saca la cabeza
+  o la espalda de las cajas del servidor.
+
+**Después**
+- **Archivos:** `revision_03/src/gear.py`, `textures.py`, `clips.py`, `anim.py`, `build_model.py`, `run.ps1`;
+  `assets/personaje/*` regenerados.
+- **Pruebas:** `check-character-hitbox` ✔ en los 3 LOD; `soldier2.test` 18/18; `pj2.browser.test` 14/14;
+  `online.browser` 43/43; `browser` 61/61.
+- **Antes/después:** `docs/next-level/pj2b/` (misma cámara que `pj2/`). Llamadas 42 (igual), triángulos 76 200 (igual),
+  CPU de animación de 3 bots 0,12–0,33 ms.
+- **Cómo revertir:** `git revert` de este commit (vuelve la primera versión de la rev. 03).
+
+---
+
 ## N7-1 · Personaje 3D realista para bots y rival online, tras `?pj=2` (19/20-10-2026)
 
 **Antes**

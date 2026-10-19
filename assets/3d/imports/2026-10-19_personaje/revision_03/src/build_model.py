@@ -182,7 +182,7 @@ N = game_from_blender(normals_np(bake_hi))
 regc = np.empty(len(bake_hi.data.vertices) * 4)
 bake_hi.data.color_attributes['reg'].data.foreach_get('color', regc)
 regc = regc.reshape(-1, 4)
-d = fold_offsets(P, regc, J)
+d = fold_offsets(P, regc, J) * 1.35
 set_verts(bake_hi, game_to_blender(P + N * d[:, None]))
 log('alta con pliegues', tri_count(bake_hi), 'tri; desplazamiento máx', float(np.abs(d).max()))
 
