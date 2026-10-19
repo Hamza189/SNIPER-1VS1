@@ -1,0 +1,28 @@
+{
+  "models": [
+    {
+      "file": "sd_casa_atlas_xl_v2.glb",
+      "triangles": 23234,
+      "materials": 22,
+      "draw_calls": 22,
+      "textures": 21,
+      "bytes": 5461412
+    },
+    {
+      "file": "sd_casa_atlas_xl_v2_techo.glb",
+      "triangles": 4860,
+      "materials": 5,
+      "draw_calls": 5,
+      "textures": 4,
+      "bytes": 1146688
+    }
+  ],
+  "total_triangles": 28094,
+  "unique_materials": 23,
+  "unique_textures": 22,
+  "baked_vertices": 4991,
+  "collision_sha256": "60715746a9ad203c693bd7e0b2aecf93d366420d716d25612561c5478937607a",
+  "collision_boxes": 98,
+  "blender": "5.2.2 LTS",
+  "status": "GENERATED; visual and browser QA pending"
+}

@@ -1,0 +1,232 @@
+{
+  "collision_identical": true,
+  "models": [
+    {
+      "file": "sd_casa_atlas_xl_v2.glb",
+      "triangles": 23234,
+      "materials": 22,
+      "images": 21,
+      "bytes": 5461412
+    },
+    {
+      "file": "sd_casa_atlas_xl_v2_techo.glb",
+      "triangles": 4860,
+      "materials": 5,
+      "images": 4,
+      "bytes": 1146688
+    }
+  ],
+  "total_triangles": 28094,
+  "material_slots_total": 27,
+  "embedded_image_instances": 25,
+  "unique_images": 22,
+  "textures": [
+    {
+      "name": "stucco_color.jpg",
+      "size": [
+        1024,
+        1024
+      ],
+      "format": "JPEG",
+      "gpu_bytes_with_mips": 5592405
+    },
+    {
+      "name": "stucco_normal.jpg",
+      "size": [
+        512,
+        512
+      ],
+      "format": "JPEG",
+      "gpu_bytes_with_mips": 1398101
+    },
+    {
+      "name": "stucco_orm.jpg",
+      "size": [
+        512,
+        512
+      ],
+      "format": "JPEG",
+      "gpu_bytes_with_mips": 1398101
+    },
+    {
+      "name": "stone_color.jpg",
+      "size": [
+        512,
+        512
+      ],
+      "format": "JPEG",
+      "gpu_bytes_with_mips": 1398101
+    },
+    {
+      "name": "stone_normal.jpg",
+      "size": [
+        512,
+        512
+      ],
+      "format": "JPEG",
+      "gpu_bytes_with_mips": 1398101
+    },
+    {
+      "name": "stone_orm.jpg",
+      "size": [
+        512,
+        512
+      ],
+      "format": "JPEG",
+      "gpu_bytes_with_mips": 1398101
+    },
+    {
+      "name": "wood_color.jpg",
+      "size": [
+        1024,
+        1024
+      ],
+      "format": "JPEG",
+      "gpu_bytes_with_mips": 5592405
+    },
+    {
+      "name": "wood_normal.jpg",
+      "size": [
+        512,
+        512
+      ],
+      "format": "JPEG",
+      "gpu_bytes_with_mips": 1398101
+    },
+    {
+      "name": "wood_orm.jpg",
+      "size": [
+        512,
+        512
+      ],
+      "format": "JPEG",
+      "gpu_bytes_with_mips": 1398101
+    },
+    {
+      "name": "paint_color.jpg",
+      "size": [
+        512,
+        512
+      ],
+      "format": "JPEG",
+      "gpu_bytes_with_mips": 1398101
+    },
+    {
+      "name": "bark_color.jpg",
+      "size": [
+        512,
+        512
+      ],
+      "format": "JPEG",
+      "gpu_bytes_with_mips": 1398101
+    },
+    {
+      "name": "ochre_color.jpg",
+      "size": [
+        512,
+        512
+      ],
+      "format": "JPEG",
+      "gpu_bytes_with_mips": 1398101
+    },
+    {
+      "name": "cobble_color.jpg",
+      "size": [
+        1024,
+        1024
+      ],
+      "format": "JPEG",
+      "gpu_bytes_with_mips": 5592405
+    },
+    {
+      "name": "terracotta_color.jpg",
+      "size": [
+        1024,
+        1024
+      ],
+      "format": "JPEG",
+      "gpu_bytes_with_mips": 5592405
+    },
+    {
+      "name": "terracotta_normal.jpg",
+      "size": [
+        512,
+        512
+      ],
+      "format": "JPEG",
+      "gpu_bytes_with_mips": 1398101
+    },
+    {
+      "name": "terracotta_orm.jpg",
+      "size": [
+        512,
+        512
+      ],
+      "format": "JPEG",
+      "gpu_bytes_with_mips": 1398101
+    },
+    {
+      "name": "soil_color.jpg",
+      "size": [
+        512,
+        512
+      ],
+      "format": "JPEG",
+      "gpu_bytes_with_mips": 1398101
+    },
+    {
+      "name": "linen_color.jpg",
+      "size": [
+        512,
+        512
+      ],
+      "format": "JPEG",
+      "gpu_bytes_with_mips": 1398101
+    },
+    {
+      "name": "palette.jpg",
+      "size": [
+        128,
+        16
+      ],
+      "format": "JPEG",
+      "gpu_bytes_with_mips": 10922
+    },
+    {
+      "name": "glass.png",
+      "size": [
+        16,
+        16
+      ],
+      "format": "PNG",
+      "gpu_bytes_with_mips": 1365
+    },
+    {
+      "name": "botanical.png",
+      "size": [
+        512,
+        512
+      ],
+      "format": "PNG",
+      "gpu_bytes_with_mips": 1398101
+    },
+    {
+      "name": "tile_color.jpg",
+      "size": [
+        512,
+        512
+      ],
+      "format": "JPEG",
+      "gpu_bytes_with_mips": 1398101
+    }
+  ],
+  "gpu_unique_mib": 42.68,
+  "passed": true,
+  "decoration_body_audit": {
+    "method": "All body-slice AABB corners to nearest original solid/move box; geometric bound, not gameplay proof",
+    "checked": 524,
+    "max_distance_m": 0.4937,
+    "violations": []
+  },
+  "gpu_two_files_mib": 49.36
+}

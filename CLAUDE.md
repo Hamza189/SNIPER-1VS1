@@ -45,8 +45,9 @@ https://hamza189.github.io/SNIPER-1VS1/ desde la rama `main`.
 - Documenta cada cambio en `docs/` (assets en `docs/ASSETS-3D.md`) y actualiza `docs/claude-code/` si cambia el estado.
 - Registro duradero: al final de cada sesión (o tras cada decisión del propietario) añade una entrada arriba en
   `docs/claude-code/SNIPER_DUEL_DECISIONS_LOG.md` y actualiza su tabla de tareas abiertas.
-- Publicar = `git push origin main` (republica la página y, si toca `core/`/`server/`, el servidor). Antes de cada push,
-  di al propietario qué cambia y espera su autorización.
+- Publicar = `git push origin main` (republica la página y, si toca `core/`/`server/`, el servidor). Desde el 19-10-2026
+  el propietario autoriza a probar y publicar sin pedir OK (push directo o PR fusionada por Claude con `gh`), avisándole
+  después de qué cambió. Sigue haciendo falta su aprobación para balance, reglas competitivas del servidor y gastos.
 
 ## Comandos
 ```

@@ -1,0 +1,142 @@
+[
+  {
+    "key": "stucco",
+    "asset": "white_stucco_02",
+    "url": "https://polyhaven.com/a/white_stucco_02",
+    "license": "CC0-1.0",
+    "authors": [
+      "Dimitrios Savva"
+    ],
+    "repeat_m": 1.8,
+    "source_sha256": "4ad957e9f24a58f151b96780aee9e358fb342b280b70dfba497528567b664de9"
+  },
+  {
+    "key": "stone",
+    "asset": "sandstone_blocks_04",
+    "url": "https://polyhaven.com/a/sandstone_blocks_04",
+    "license": "CC0-1.0",
+    "authors": [
+      "Rob Tuytel"
+    ],
+    "repeat_m": 2.0,
+    "source_sha256": "41b7c90a6c2644c0b1dacbc57b10414fdc93b9fbdeac4f3842f04da24503d860"
+  },
+  {
+    "key": "tile",
+    "asset": "clay_roof_tiles_02",
+    "url": "https://polyhaven.com/a/clay_roof_tiles_02",
+    "license": "CC0-1.0",
+    "authors": [
+      "Amal Kumar"
+    ],
+    "repeat_m": 1.5,
+    "source_sha256": "e55282d274de25a2229cfb4b4cbc78f19ec1ab7cbe5eae6b8b8cb0179d3df1a6"
+  },
+  {
+    "key": "paint",
+    "asset": "distressed_painted_planks",
+    "url": "https://polyhaven.com/a/distressed_painted_planks",
+    "license": "CC0-1.0",
+    "authors": [
+      "Rob Tuytel"
+    ],
+    "repeat_m": 1.5,
+    "source_sha256": "f1160074102c1a47dcafec8e2e6541bbe9666248a04790ab183611b1002ab57a"
+  },
+  {
+    "key": "wood",
+    "asset": "rough_pine_door",
+    "url": "https://polyhaven.com/a/rough_pine_door",
+    "license": "CC0-1.0",
+    "authors": [
+      "Dimitrios Savva"
+    ],
+    "repeat_m": 2.0,
+    "source_sha256": "507c0f59caac2d2a8556cfeab923bdc7d0c545f85c7b7ce8a406c6ff3e51bd6a"
+  },
+  {
+    "key": "cobble",
+    "asset": "cobblestone_02",
+    "url": "https://polyhaven.com/a/cobblestone_02",
+    "license": "CC0-1.0",
+    "repeat_m": 2.0,
+    "source_sha256": "1fd1e811da9d9754c377074a2812a1c26713207d7e36d1becc1baf779fbaecfd",
+    "note": "Albedo scan; constant roughness, no invented normal."
+  },
+  {
+    "key": "terracotta",
+    "asset": "terracotta_floor_tiles",
+    "url": "https://polyhaven.com/a/terracotta_floor_tiles",
+    "license": "CC0-1.0",
+    "authors": [
+      "Dimitrios Savva"
+    ],
+    "repeat_m": 2.0799999237060547,
+    "sources": [
+      {
+        "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/terracotta_floor_tiles/terracotta_floor_tiles_diff_1k.jpg",
+        "sha256": "966ff423065e4a4ce9490864fba61fdb491985d4a2c60eb2b85181c7e7edcd5d"
+      },
+      {
+        "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/terracotta_floor_tiles/terracotta_floor_tiles_nor_gl_1k.jpg",
+        "sha256": "7d9a6935951f3b2c1f6ae372dd512969dd5c7c27efbbfe6941ed3ec1b7da9758"
+      },
+      {
+        "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/terracotta_floor_tiles/terracotta_floor_tiles_rough_1k.jpg",
+        "sha256": "df263e7205e36a6249db10e85f4d55b93b3f6793871fc79d2d10531433de109e"
+      }
+    ],
+    "adaptation": "Resize / JPEG / roughness packing"
+  },
+  {
+    "key": "soil",
+    "asset": "dry_ground_01",
+    "url": "https://polyhaven.com/a/dry_ground_01",
+    "license": "CC0-1.0",
+    "authors": [
+      "Rob Tuytel"
+    ],
+    "repeat_m": 4.0,
+    "sources": [
+      {
+        "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/dry_ground_01/dry_ground_01_diff_1k.jpg",
+        "sha256": "75222fc97a82b635a09cf8f2891dd58bc42e49599b9fda920b2c50193fe85e9f"
+      }
+    ],
+    "adaptation": "Resize / JPEG / roughness packing"
+  },
+  {
+    "key": "linen",
+    "asset": "fabric_pattern_07",
+    "url": "https://polyhaven.com/a/fabric_pattern_07",
+    "license": "CC0-1.0",
+    "authors": [
+      "Rob Tuytel"
+    ],
+    "repeat_m": 0.4000000059604645,
+    "sources": [
+      {
+        "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/fabric_pattern_07/fabric_pattern_07_col_1_1k.jpg",
+        "sha256": "aeb7a1487b77aec55e39de662def4d371f5c7c617f62d1f291d7f9932ffebdc9"
+      }
+    ],
+    "adaptation": "Neutral sage color grading"
+  },
+  {
+    "key": "bark",
+    "asset": "bark_brown_02",
+    "url": "https://polyhaven.com/a/bark_brown_02",
+    "license": "CC0-1.0",
+    "authors": [
+      "Rob Tuytel"
+    ],
+    "repeat_m": 0.9999990463256836,
+    "sources": [
+      {
+        "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/bark_brown_02/bark_brown_02_diff_1k.jpg",
+        "sha256": "920fa0bed0c9d78c1d530e99795113afd532d7db746de440f4a85d7c83ed0f1a"
+      }
+    ],
+    "adaptation": "Resize / JPEG / roughness packing"
+  }
+]

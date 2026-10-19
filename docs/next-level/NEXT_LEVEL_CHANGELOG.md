@@ -270,3 +270,12 @@ Sprint: vuelta al 10 % en ~0,10 s (antes ~0,23 s), calculado de las constantes.
 - **Pruebas:** p0.browser 76/76 (nueva: materiales propios con desplazamiento), town3, cover, shadow, e10 en verde.
 - **Pendiente:** confirmación del propietario en su PC. Queda un caso pequeño (4 puntos) de piedra del kit contra estuco
   del pueblo en x ≈ 23–33. **Revertir:** `git revert`.
+## N5-5 · CASA ATLAS XL v2 (ChatGPT) por defecto en XL
+- **Entrega:** `assets/3d/imports/2026-10-19_casa_atlas_xl_v2/` (encargo `docs/PROMPT-CHATGPT-CASA-ATLAS-XL-V2.md`). ChatGPT
+  se quedó sin uso antes de su control de calidad («visual and browser QA pending»); lo hizo Claude.
+- **Comprobado:** `collision_map.json` idéntico byte a byte a la v1 (combate, servidor y bots sin cambios);
+  `validate-glb` ✔ en los dos GLB; 28 094 triángulos (v1: 3 300), 23 materiales, 22 texturas; 49 MB en GPU (v1: 67).
+  Capturas en el juego con 4 cámaras: rejas, contraventanas, puertas con marco, toldos, zócalo, suelo de barro, olivo
+  con ramas, interior con techo y rodapié.
+- **En el juego:** v2 por defecto; `&xlv=1` muestra la v1 (y `&xltex=1` solo se aplica a la v1).
+- **Pruebas:** casaxl.browser 17/17, casa.browser 20/20. **Pendiente:** aprobación visual del propietario; iPhone.

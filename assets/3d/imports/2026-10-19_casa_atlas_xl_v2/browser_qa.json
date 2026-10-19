@@ -1,0 +1,203 @@
+{
+  "views": {
+    "v2_calle": {
+      "position": [
+        -6.6,
+        1.62,
+        14.1
+      ],
+      "target": [
+        -6.6,
+        1.8,
+        8.6
+      ],
+      "drawCalls": 26,
+      "triangles": 27894
+    },
+    "v2_patio": {
+      "position": [
+        12.2,
+        1.62,
+        9.25
+      ],
+      "target": [
+        0.7,
+        1.8,
+        2.8
+      ],
+      "drawCalls": 27,
+      "triangles": 28094
+    },
+    "v2_pergola": {
+      "position": [
+        7.5,
+        1.62,
+        -1.1
+      ],
+      "target": [
+        3.4,
+        2,
+        -7.5
+      ],
+      "drawCalls": 25,
+      "triangles": 27882
+    },
+    "v2_interior": {
+      "position": [
+        -7.9,
+        1.62,
+        6.65
+      ],
+      "target": [
+        -11.4,
+        1.5,
+        1.8
+      ],
+      "drawCalls": 23,
+      "triangles": 27414
+    },
+    "v2_jardin": {
+      "position": [
+        -7.9,
+        1.62,
+        -13.9
+      ],
+      "target": [
+        -10,
+        1.8,
+        -5.8
+      ],
+      "drawCalls": 25,
+      "triangles": 28058
+    },
+    "v2_garaje": {
+      "position": [
+        12.6,
+        1.62,
+        0.7
+      ],
+      "target": [
+        14.3,
+        1.8,
+        -6.7
+      ],
+      "drawCalls": 23,
+      "triangles": 26990
+    },
+    "v1_calle": {
+      "position": [
+        -6.6,
+        1.62,
+        14.1
+      ],
+      "target": [
+        -6.6,
+        1.8,
+        8.6
+      ],
+      "drawCalls": 19,
+      "triangles": 3300
+    },
+    "v1_patio": {
+      "position": [
+        12.2,
+        1.62,
+        9.25
+      ],
+      "target": [
+        0.7,
+        1.8,
+        2.8
+      ],
+      "drawCalls": 18,
+      "triangles": 3288
+    },
+    "v1_pergola": {
+      "position": [
+        7.5,
+        1.62,
+        -1.1
+      ],
+      "target": [
+        3.4,
+        2,
+        -7.5
+      ],
+      "drawCalls": 15,
+      "triangles": 3204
+    },
+    "v1_interior": {
+      "position": [
+        -7.9,
+        1.62,
+        6.65
+      ],
+      "target": [
+        -11.4,
+        1.5,
+        1.8
+      ],
+      "drawCalls": 15,
+      "triangles": 3240
+    },
+    "v1_jardin": {
+      "position": [
+        -7.9,
+        1.62,
+        -13.9
+      ],
+      "target": [
+        -10,
+        1.8,
+        -5.8
+      ],
+      "drawCalls": 15,
+      "triangles": 3240
+    },
+    "v1_garaje": {
+      "position": [
+        12.6,
+        1.62,
+        0.7
+      ],
+      "target": [
+        14.3,
+        1.8,
+        -6.7
+      ],
+      "drawCalls": 15,
+      "triangles": 3168
+    }
+  },
+  "errors": [],
+  "game": {
+    "world": "casaxl",
+    "navigationComponents": 1,
+    "navigationNodes": 3915,
+    "triangles": 28094,
+    "meshes": 27,
+    "bot40s": {
+      "inside": 0,
+      "outside": 0,
+      "moved": 71.28385501154725
+    },
+    "testOnlyResponseSubstitution": true
+  },
+  "v2": {
+    "three": "128",
+    "meshes": 27,
+    "triangles": 28094,
+    "materials": 27,
+    "textureObjects": 25,
+    "eye": 1.62
+  },
+  "v1": {
+    "three": "128",
+    "meshes": 19,
+    "triangles": 3300,
+    "materials": 19,
+    "textureObjects": 57,
+    "eye": 1.62
+  },
+  "passed": true
+}

@@ -1515,7 +1515,7 @@ if(XL.on){
    resolution per profile, shared with the town when it is loaded): white_stucco_02, the kit masonry, the v3b limestone,
    cobblestone_02, planks, herringbone, clay roof tiles… Glass, water, iron, cloth and plants keep their own. The UVs of
    the delivery are in world scale; each mesh's are rescaled so the texture repeats at its real size (tile, metres). */
-const XLTEX=/[?&]xltex=1\b/.test(location.search);
+const XLV1=/[?&]xlv=1\b/.test(location.search),XLTEX=XLV1&&/[?&]xltex=1\b/.test(location.search);
 const XL_TEXSET={sd_estuco:{t:'p1:stucco',tile:2.6},sd_estuco_ocre:{t:'p1:stucco',tile:2.6,col:0xe8c995},sd_piedra:{t:'stone',tile:1.6},
   sd_suelo_caliza:{t:'p0v3:plaza',tile:4},sd_adoquin:{t:'p0cc:cobble',tile:2.7},sd_tierra:{t:'earth',tile:4},sd_grava:{t:'earth',tile:3,col:0xc9c3b8},
   sd_hormigon:{t:'concrete',tile:3},sd_madera:{t:'wood',tile:1.1,col:0x8a6a4a},sd_madera_pintada:{t:'p1:wood',tile:1.2,col:0xd9d2c4},
@@ -1551,9 +1551,12 @@ function casaxlLoad(){
       m.needsUpdate=true;}};
   const add=(r,name)=>{r.name=name;fix(r);if(XLTEX)xlRetex(r);scene.add(r);WORLDS.casaxl.objs.push(r);r.visible=WORLD_ID==='casaxl';return r;};
   const fail=e=>{XL.failed=true;XL.loading=false;console.warn('casaxl load',e);for(const f of XL.wait.splice(0))f();};
-  try{new T.GLTFLoader().load('assets/maps/casa_atlas_xl/casa_atlas_xl.glb?v='+BUILD_HASH,g=>{try{
+  // v2 (ChatGPT, 19-10-2026: same plan and collisions, real detail: frames, bars, shutters, awnings, tiles, a furnished
+  // interior with a ceiling) by default; &xlv=1 shows the first delivery to compare (&xltex=1 only applies to that one)
+  const V=XLV1?'':'_v2';
+  try{new T.GLTFLoader().load('assets/maps/casa_atlas_xl/casa_atlas_xl'+V+'.glb?v='+BUILD_HASH,g=>{try{
       XL.root=add(g.scene,'casa_atlas_xl');XL.ready=true;XL.loading=false;try{renderer.compile(scene,camera);}catch(e){}
-      new T.GLTFLoader().load('assets/maps/casa_atlas_xl/casa_atlas_xl_techo.glb?v='+BUILD_HASH,r=>{XL.roof=add(r.scene,'casa_atlas_xl_techo');
+      new T.GLTFLoader().load('assets/maps/casa_atlas_xl/casa_atlas_xl'+V+'_techo.glb?v='+BUILD_HASH,r=>{XL.roof=add(r.scene,'casa_atlas_xl_techo');
         XL.roof.traverse(o=>{if(o.isMesh){o.castShadow=true;o.material.side=T.DoubleSide;}});},undefined,()=>{});
       for(const f of XL.wait.splice(0))f();}catch(e){fail(e);}},undefined,fail);}catch(e){fail(e);}
 }

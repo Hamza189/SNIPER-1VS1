@@ -73,7 +73,7 @@ function check(name, cond, info) { if (cond) { pass++; console.log('  ok   ' + n
     await c2.addInitScript(() => { try { localStorage.setItem('sniperduel_settings', JSON.stringify({ quality: 'medio', v: 3 })); } catch (e) {} });
     const q = await c2.newPage(), e2 = [], bad2 = [];
     q.on('pageerror', e => e2.push(e.message)); q.on('response', r => { if (/\/assets\//.test(r.url()) && r.status() >= 400) bad2.push(r.status() + ' ' + r.url()); });
-    await q.goto(srv.url + '?vm=0&xltex=1'); await q.waitForFunction(() => window.__SD && __SD.WORLDS && __SD.WORLDS.casaxl);
+    await q.goto(srv.url + '?vm=0&xlv=1&xltex=1');   // the CC0 retexture only applies to the first delivery await q.waitForFunction(() => window.__SD && __SD.WORLDS && __SD.WORLDS.casaxl);
     await q.evaluate(() => { document.querySelector('#mapSeg [data-map=casaxl]').click(); __SD.setMode('duel'); __SD.setDuelLethal(false); __SD.startMatch(); });
     await q.waitForFunction(() => __SD.XL.ready && __SD.XL.roof && __SD.state === 'playing', null, { timeout: 240000 }); await q.waitForTimeout(1500);   // ~20 more textures to decode in software WebGL: slow on a busy machine
     const m = await q.evaluate(() => { const out = {}; for (const r of [__SD.XL.root, __SD.XL.roof]) r.traverse(o => { if (o.isMesh && o.material && o.material.map) { const s = (o.material.map.image && (o.material.map.image.currentSrc || o.material.map.image.src)) || ''; out[o.material.name] = s.split('/').pop().split('?')[0] || 'glb'; } }); return out; });

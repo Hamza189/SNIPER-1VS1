@@ -1,0 +1,29 @@
+<!doctype html><html lang="es"><meta charset="utf-8"><title>CASA ATLAS XL · v2</title>
+<style>body{margin:0;background:#dbe4e7;font:14px system-ui;color:#fff}canvas{display:block}nav{position:fixed;left:20px;bottom:20px;display:flex;gap:7px;padding:12px;background:#20302dde;border-radius:12px}button{font:inherit;background:#ffffff18;border:1px solid #ffffff40;color:white;border-radius:6px;padding:8px 12px;cursor:pointer}button:hover,button.active{background:#b7c49b;color:#20302d}#info{position:fixed;top:20px;left:20px;background:#20302ddd;padding:12px 18px;border-radius:10px;line-height:1.5}#info strong{font-size:18px}small{opacity:.8}</style>
+<div id="info"><strong>CASA ATLAS XL · v2</strong><br><span id="status">Cargando…</span><br><small>Altura de cámara: 1,62 m · Three.js r128 · techo opaco</small></div>
+<nav id="nav"></nav>
+<script src="../../../../vendor/three.min.js"></script><script src="../../../../vendor/GLTFLoader.js"></script>
+<script>
+const T=THREE,scene=new T.Scene();scene.background=new T.Color(0xb8ced7);
+const renderer=new T.WebGLRenderer({antialias:true,preserveDrawingBuffer:true});renderer.setPixelRatio(1);renderer.setSize(innerWidth,innerHeight);renderer.outputEncoding=T.sRGBEncoding;renderer.toneMapping=T.ACESFilmicToneMapping;renderer.toneMappingExposure=1.15;renderer.shadowMap.enabled=true;renderer.shadowMap.type=T.PCFSoftShadowMap;document.body.prepend(renderer.domElement);
+const camera=new T.PerspectiveCamera(66,innerWidth/innerHeight,.06,140);
+scene.add(new T.HemisphereLight(0xdceaff,0xb9a083,1.1));
+const sun=new T.DirectionalLight(0xffe6c6,2.0);sun.position.set(-14,24,12);sun.castShadow=true;sun.shadow.mapSize.set(2048,2048);Object.assign(sun.shadow.camera,{left:-27,right:27,top:23,bottom:-23,near:.5,far:80});sun.shadow.bias=-.00012;sun.shadow.normalBias=.025;scene.add(sun);
+const views={calle:{p:[-6.6,1.62,14.1],t:[-6.6,1.8,8.6]},patio:{p:[12.2,1.62,9.25],t:[.7,1.8,2.8]},pergola:{p:[7.5,1.62,-1.1],t:[3.4,2,-7.5]},interior:{p:[-7.9,1.62,6.65],t:[-11.4,1.5,1.8]},jardin:{p:[-7.9,1.62,-13.9],t:[-10,1.8,-5.8]},garaje:{p:[12.6,1.62,.7],t:[14.3,1.8,-6.7]}};
+let models,version=new URLSearchParams(location.search).get('version')||'v2',active='calle';
+const loader=new T.GLTFLoader();
+async function init(){
+ const paths=version==='v1'?['../2026-10-18_casa_atlas_xl/models/sd_casa_atlas_xl.glb','../2026-10-18_casa_atlas_xl/models/sd_casa_atlas_xl_techo.glb']:['models/sd_casa_atlas_xl_v2.glb','models/sd_casa_atlas_xl_v2_techo.glb'];
+ models=await Promise.all(paths.map(p=>new Promise((yes,no)=>loader.load(p,g=>yes(g.scene),undefined,no))));
+ models.forEach(root=>{root.traverse(o=>{if(o.isMesh){o.castShadow=!/vidrio|agua/.test(o.material.name);o.receiveShadow=true;if(o.material.map)o.material.map.anisotropy=4;}});scene.add(root)});
+ window.ready=true;setView(active);document.querySelector('#info strong').textContent='CASA ATLAS XL · '+version;
+}
+function setView(key){active=key;let v=views[key];camera.position.fromArray(v.p);camera.lookAt(new T.Vector3(...v.t));renderer.render(scene,camera);document.querySelector('#status').textContent=key.toUpperCase()+' · '+renderer.info.render.triangles.toLocaleString()+' triángulos · '+renderer.info.render.calls+' envíos en pase principal';document.querySelectorAll('button[data-view]').forEach(b=>b.classList.toggle('active',b.dataset.view===key));}
+Object.keys(views).forEach(key=>{let b=document.createElement('button');b.textContent=key;b.dataset.view=key;b.onclick=()=>setView(key);nav.append(b)});
+let compare=document.createElement('button');compare.textContent='Ver '+(version==='v2'?'v1':'v2');compare.onclick=()=>location.search='?version='+(version==='v2'?'v1':'v2');nav.append(compare);
+let dragging=false,last;renderer.domElement.onpointerdown=e=>{dragging=true;last=[e.clientX,e.clientY]};onpointerup=()=>dragging=false;onpointermove=e=>{if(!dragging)return;const q=new T.Euler().setFromQuaternion(camera.quaternion,'YXZ');q.y-=(e.clientX-last[0])*.003;q.x=Math.max(-1.4,Math.min(1.4,q.x-(e.clientY-last[1])*.003));camera.quaternion.setFromEuler(q);last=[e.clientX,e.clientY];renderer.render(scene,camera)};
+onkeydown=e=>{const speed=e.shiftKey?.7:.2,d=new T.Vector3();camera.getWorldDirection(d);d.y=0;d.normalize();if(e.key.toLowerCase()==='w')camera.position.addScaledVector(d,speed);if(e.key.toLowerCase()==='s')camera.position.addScaledVector(d,-speed);if(e.key.toLowerCase()==='a')camera.position.addScaledVector(d.cross(camera.up),-speed);if(e.key.toLowerCase()==='d')camera.position.addScaledVector(d.cross(camera.up),speed);camera.position.y=1.62;renderer.render(scene,camera)};
+onresize=()=>{renderer.setSize(innerWidth,innerHeight);camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.render(scene,camera)};
+window.audit=()=>{let m=0,tri=0,mats=new Set(),textures=new Set();models.forEach(r=>r.traverse(o=>{if(o.isMesh){m++;tri+=o.geometry.index?o.geometry.index.count/3:o.geometry.attributes.position.count/3;mats.add(o.material.uuid);['map','normalMap','roughnessMap','metalnessMap','emissiveMap'].forEach(k=>{if(o.material[k])textures.add(o.material[k].uuid)})}}));return{three:T.REVISION,meshes:m,triangles:tri,materials:mats.size,textureObjects:textures.size,eye:camera.position.y}};
+init().catch(e=>{document.querySelector('#status').textContent=e.message;console.error(e)});
+</script></html>

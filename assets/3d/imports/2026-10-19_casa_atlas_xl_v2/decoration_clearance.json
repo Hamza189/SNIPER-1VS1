@@ -1,0 +1,3146 @@
+[
+  {
+    "name": "perimetro_n_pilastra",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.045,
+    "height_max": 3.7
+  },
+  {
+    "name": "perimetro_n_pilastra",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.045,
+    "height_max": 3.7
+  },
+  {
+    "name": "perimetro_n_pilastra",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.045,
+    "height_max": 3.7
+  },
+  {
+    "name": "perimetro_n_pilastra",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.045,
+    "height_max": 3.7
+  },
+  {
+    "name": "perimetro_n_pilastra",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.045,
+    "height_max": 3.7
+  },
+  {
+    "name": "perimetro_n_pilastra",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.045,
+    "height_max": 3.7
+  },
+  {
+    "name": "perimetro_n_pilastra",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.045,
+    "height_max": 3.7
+  },
+  {
+    "name": "perimetro_n_pilastra",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.045,
+    "height_max": 3.7
+  },
+  {
+    "name": "perimetro_n_pilastra",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.045,
+    "height_max": 3.7
+  },
+  {
+    "name": "perimetro_n_pilastra",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.045,
+    "height_max": 3.7
+  },
+  {
+    "name": "perimetro_n_pilastra",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.045,
+    "height_max": 3.7
+  },
+  {
+    "name": "perimetro_o_pilastra",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.045,
+    "height_max": 3.7
+  },
+  {
+    "name": "perimetro_o_pilastra",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.045,
+    "height_max": 3.7
+  },
+  {
+    "name": "perimetro_o_pilastra",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.045,
+    "height_max": 3.7
+  },
+  {
+    "name": "perimetro_o_pilastra",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.045,
+    "height_max": 3.7
+  },
+  {
+    "name": "perimetro_o_pilastra",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.045,
+    "height_max": 3.7
+  },
+  {
+    "name": "perimetro_o_pilastra",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.045,
+    "height_max": 3.7
+  },
+  {
+    "name": "perimetro_o_pilastra",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.045,
+    "height_max": 3.7
+  },
+  {
+    "name": "perimetro_o_pilastra",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.045,
+    "height_max": 3.7
+  },
+  {
+    "name": "perimetro_o_pilastra",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.045,
+    "height_max": 3.7
+  },
+  {
+    "name": "perimetro_e_pilastra",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.045,
+    "height_max": 3.7
+  },
+  {
+    "name": "perimetro_e_pilastra",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.045,
+    "height_max": 3.7
+  },
+  {
+    "name": "perimetro_e_pilastra",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.045,
+    "height_max": 3.7
+  },
+  {
+    "name": "perimetro_e_pilastra",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.045,
+    "height_max": 3.7
+  },
+  {
+    "name": "perimetro_e_pilastra",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.045,
+    "height_max": 3.7
+  },
+  {
+    "name": "perimetro_e_pilastra",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.045,
+    "height_max": 3.7
+  },
+  {
+    "name": "perimetro_e_pilastra",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.045,
+    "height_max": 3.7
+  },
+  {
+    "name": "perimetro_e_pilastra",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.045,
+    "height_max": 3.7
+  },
+  {
+    "name": "perimetro_e_pilastra",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.045,
+    "height_max": 3.7
+  },
+  {
+    "name": "perimetro_sur_izq_pilastra",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.045,
+    "height_max": 3.7
+  },
+  {
+    "name": "perimetro_sur_izq_pilastra",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.045,
+    "height_max": 3.7
+  },
+  {
+    "name": "perimetro_sur_izq_pilastra",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.045,
+    "height_max": 3.7
+  },
+  {
+    "name": "perimetro_sur_izq_pilastra",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.045,
+    "height_max": 3.7
+  },
+  {
+    "name": "perimetro_sur_izq_pilastra",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.045,
+    "height_max": 3.7
+  },
+  {
+    "name": "porton_liston",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.03,
+    "height_max": 3.575
+  },
+  {
+    "name": "porton_liston",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.03,
+    "height_max": 3.575
+  },
+  {
+    "name": "porton_liston",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.03,
+    "height_max": 3.575
+  },
+  {
+    "name": "porton_liston",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.03,
+    "height_max": 3.575
+  },
+  {
+    "name": "porton_liston",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.03,
+    "height_max": 3.575
+  },
+  {
+    "name": "porton_liston",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.03,
+    "height_max": 3.575
+  },
+  {
+    "name": "porton_liston",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.03,
+    "height_max": 3.575
+  },
+  {
+    "name": "porton_liston",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.03,
+    "height_max": 3.575
+  },
+  {
+    "name": "porton_liston",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.03,
+    "height_max": 3.575
+  },
+  {
+    "name": "porton_liston",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.03,
+    "height_max": 3.575
+  },
+  {
+    "name": "porton_liston",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.03,
+    "height_max": 3.575
+  },
+  {
+    "name": "porton_liston",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.03,
+    "height_max": 3.575
+  },
+  {
+    "name": "porton_liston",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.03,
+    "height_max": 3.575
+  },
+  {
+    "name": "porton_liston",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.03,
+    "height_max": 3.575
+  },
+  {
+    "name": "porton_liston",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.03,
+    "height_max": 3.575
+  },
+  {
+    "name": "porton_liston",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.03,
+    "height_max": 3.575
+  },
+  {
+    "name": "porton_liston",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.03,
+    "height_max": 3.575
+  },
+  {
+    "name": "porton_liston",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.03,
+    "height_max": 3.575
+  },
+  {
+    "name": "porton_liston",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.03,
+    "height_max": 3.575
+  },
+  {
+    "name": "porton_liston",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.03,
+    "height_max": 3.575
+  },
+  {
+    "name": "porton_liston",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.03,
+    "height_max": 3.575
+  },
+  {
+    "name": "porton_liston",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.03,
+    "height_max": 3.575
+  },
+  {
+    "name": "porton_liston",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.03,
+    "height_max": 3.575
+  },
+  {
+    "name": "porton_liston",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.03,
+    "height_max": 3.575
+  },
+  {
+    "name": "porton_liston",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.03,
+    "height_max": 3.575
+  },
+  {
+    "name": "porton_liston",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.03,
+    "height_max": 3.575
+  },
+  {
+    "name": "porton_liston",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.03,
+    "height_max": 3.575
+  },
+  {
+    "name": "porton_liston",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.03,
+    "height_max": 3.575
+  },
+  {
+    "name": "porton_liston",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.03,
+    "height_max": 3.575
+  },
+  {
+    "name": "porton_liston",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.03,
+    "height_max": 3.575
+  },
+  {
+    "name": "porton_liston",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.03,
+    "height_max": 3.575
+  },
+  {
+    "name": "porton_liston",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.03,
+    "height_max": 3.575
+  },
+  {
+    "name": "porton_liston",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.03,
+    "height_max": 3.575
+  },
+  {
+    "name": "porton_liston",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.03,
+    "height_max": 3.575
+  },
+  {
+    "name": "porton_liston",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.03,
+    "height_max": 3.575
+  },
+  {
+    "name": "porton_herrajes",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.0425,
+    "height_max": 0.385
+  },
+  {
+    "name": "porton_herrajes",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.0425,
+    "height_max": 1.835
+  },
+  {
+    "name": "perimetro_sur_der_pilastra",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.045,
+    "height_max": 3.7
+  },
+  {
+    "name": "perimetro_sur_der_pilastra",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.045,
+    "height_max": 3.7
+  },
+  {
+    "name": "perimetro_sur_der_pilastra",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.045,
+    "height_max": 3.7
+  },
+  {
+    "name": "perimetro_sur_der_pilastra",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.045,
+    "height_max": 3.7
+  },
+  {
+    "name": "perimetro_sur_der_pilastra",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.045,
+    "height_max": 3.7
+  },
+  {
+    "name": "villa_norte_wall_0_rodapie_-1",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.025,
+    "height_max": 0.32
+  },
+  {
+    "name": "villa_norte_wall_0_rodapie_1",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.025,
+    "height_max": 0.32
+  },
+  {
+    "name": "villa_norte_door_header_0_jamba_-1-1",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.05,
+    "height_max": 2.42
+  },
+  {
+    "name": "villa_norte_door_header_0_jamba_-11",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.05,
+    "height_max": 2.42
+  },
+  {
+    "name": "villa_norte_door_header_0_jamba_1-1",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.05,
+    "height_max": 2.42
+  },
+  {
+    "name": "villa_norte_door_header_0_jamba_11",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.05,
+    "height_max": 2.42
+  },
+  {
+    "name": "villa_norte_door_header_0_hoja_abierta",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.0465,
+    "height_max": 2.28
+  },
+  {
+    "name": "villa_norte_door_header_0_refuerzo_hoja",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.059,
+    "height_max": 0.27
+  },
+  {
+    "name": "villa_norte_door_header_0_refuerzo_hoja",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.059,
+    "height_max": 1.17
+  },
+  {
+    "name": "villa_norte_door_header_0_tirador",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.0565,
+    "height_max": 1.135
+  },
+  {
+    "name": "villa_norte_wall_1_rodapie_-1",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.025,
+    "height_max": 0.32
+  },
+  {
+    "name": "villa_norte_wall_1_rodapie_1",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.025,
+    "height_max": 0.32
+  },
+  {
+    "name": "villa_norte_sill_1_rodapie_-1",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.025,
+    "height_max": 0.32
+  },
+  {
+    "name": "villa_norte_sill_1_rodapie_1",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.025,
+    "height_max": 0.32
+  },
+  {
+    "name": "villa_norte_window_move_1_marco_-1-1",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.05,
+    "height_max": 2.36
+  },
+  {
+    "name": "villa_norte_window_move_1_marco_-11",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.05,
+    "height_max": 2.36
+  },
+  {
+    "name": "villa_norte_window_move_1_alf eizar_-1",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.055,
+    "height_max": 1.08
+  },
+  {
+    "name": "villa_norte_window_move_1_marco_1-1",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.05,
+    "height_max": 2.36
+  },
+  {
+    "name": "villa_norte_window_move_1_marco_11",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.05,
+    "height_max": 2.36
+  },
+  {
+    "name": "villa_norte_window_move_1_alf eizar_1",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.055,
+    "height_max": 1.08
+  },
+  {
+    "name": "villa_norte_window_move_1_contraventana_-1",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.0425,
+    "height_max": 2.28
+  },
+  {
+    "name": "villa_norte_window_move_1_lama_-1_0",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.055,
+    "height_max": 1.1775
+  },
+  {
+    "name": "villa_norte_window_move_1_lama_-1_1",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.055,
+    "height_max": 1.3261
+  },
+  {
+    "name": "villa_norte_window_move_1_lama_-1_2",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.055,
+    "height_max": 1.4746
+  },
+  {
+    "name": "villa_norte_window_move_1_lama_-1_3",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.055,
+    "height_max": 1.6232
+  },
+  {
+    "name": "villa_norte_window_move_1_lama_-1_4",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.055,
+    "height_max": 1.7718
+  },
+  {
+    "name": "villa_norte_window_move_1_lama_-1_5",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.055,
+    "height_max": 1.9204
+  },
+  {
+    "name": "villa_norte_window_move_1_bisagra",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.059,
+    "height_max": 1.2275
+  },
+  {
+    "name": "villa_norte_window_move_1_contraventana_1",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.0425,
+    "height_max": 2.28
+  },
+  {
+    "name": "villa_norte_window_move_1_lama_1_0",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.055,
+    "height_max": 1.1775
+  },
+  {
+    "name": "villa_norte_window_move_1_lama_1_1",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.055,
+    "height_max": 1.3261
+  },
+  {
+    "name": "villa_norte_window_move_1_lama_1_2",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.055,
+    "height_max": 1.4746
+  },
+  {
+    "name": "villa_norte_window_move_1_lama_1_3",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.055,
+    "height_max": 1.6232
+  },
+  {
+    "name": "villa_norte_window_move_1_lama_1_4",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.055,
+    "height_max": 1.7718
+  },
+  {
+    "name": "villa_norte_window_move_1_lama_1_5",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.055,
+    "height_max": 1.9204
+  },
+  {
+    "name": "villa_norte_window_move_1_bisagra",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.059,
+    "height_max": 1.2275
+  },
+  {
+    "name": "villa_norte_window_move_1_reja",
+    "rule": "window_cosmetic",
+    "max_corner_distance_m": 0.057,
+    "height_max": 2.22
+  },
+  {
+    "name": "villa_norte_window_move_1_reja",
+    "rule": "window_cosmetic",
+    "max_corner_distance_m": 0.057,
+    "height_max": 2.22
+  },
+  {
+    "name": "villa_norte_window_move_1_reja",
+    "rule": "window_cosmetic",
+    "max_corner_distance_m": 0.057,
+    "height_max": 2.22
+  },
+  {
+    "name": "villa_norte_window_move_1_reja",
+    "rule": "window_cosmetic",
+    "max_corner_distance_m": 0.057,
+    "height_max": 2.22
+  },
+  {
+    "name": "villa_norte_window_move_1_reja",
+    "rule": "window_cosmetic",
+    "max_corner_distance_m": 0.057,
+    "height_max": 2.22
+  },
+  {
+    "name": "villa_norte_window_move_1_reja",
+    "rule": "window_cosmetic",
+    "max_corner_distance_m": 0.057,
+    "height_max": 2.22
+  },
+  {
+    "name": "villa_norte_window_move_1_reja",
+    "rule": "window_cosmetic",
+    "max_corner_distance_m": 0.057,
+    "height_max": 2.22
+  },
+  {
+    "name": "villa_norte_window_move_1_travesano_reja",
+    "rule": "window_cosmetic",
+    "max_corner_distance_m": 0.0575,
+    "height_max": 1.2325
+  },
+  {
+    "name": "villa_norte_wall_2_rodapie_-1",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.025,
+    "height_max": 0.32
+  },
+  {
+    "name": "villa_norte_wall_2_rodapie_1",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.025,
+    "height_max": 0.32
+  },
+  {
+    "name": "villa_norte_sill_2_rodapie_-1",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.025,
+    "height_max": 0.32
+  },
+  {
+    "name": "villa_norte_sill_2_rodapie_1",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.025,
+    "height_max": 0.32
+  },
+  {
+    "name": "villa_norte_window_move_2_marco_-1-1",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.05,
+    "height_max": 2.36
+  },
+  {
+    "name": "villa_norte_window_move_2_marco_-11",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.05,
+    "height_max": 2.36
+  },
+  {
+    "name": "villa_norte_window_move_2_alf eizar_-1",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.055,
+    "height_max": 1.08
+  },
+  {
+    "name": "villa_norte_window_move_2_marco_1-1",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.05,
+    "height_max": 2.36
+  },
+  {
+    "name": "villa_norte_window_move_2_marco_11",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.05,
+    "height_max": 2.36
+  },
+  {
+    "name": "villa_norte_window_move_2_alf eizar_1",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.055,
+    "height_max": 1.08
+  },
+  {
+    "name": "villa_norte_window_move_2_contraventana_-1",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.0425,
+    "height_max": 2.28
+  },
+  {
+    "name": "villa_norte_window_move_2_lama_-1_0",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.055,
+    "height_max": 1.1775
+  },
+  {
+    "name": "villa_norte_window_move_2_lama_-1_1",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.055,
+    "height_max": 1.3261
+  },
+  {
+    "name": "villa_norte_window_move_2_lama_-1_2",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.055,
+    "height_max": 1.4746
+  },
+  {
+    "name": "villa_norte_window_move_2_lama_-1_3",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.055,
+    "height_max": 1.6232
+  },
+  {
+    "name": "villa_norte_window_move_2_lama_-1_4",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.055,
+    "height_max": 1.7718
+  },
+  {
+    "name": "villa_norte_window_move_2_lama_-1_5",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.055,
+    "height_max": 1.9204
+  },
+  {
+    "name": "villa_norte_window_move_2_bisagra",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.059,
+    "height_max": 1.2275
+  },
+  {
+    "name": "villa_norte_window_move_2_contraventana_1",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.0425,
+    "height_max": 2.28
+  },
+  {
+    "name": "villa_norte_window_move_2_lama_1_0",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.055,
+    "height_max": 1.1775
+  },
+  {
+    "name": "villa_norte_window_move_2_lama_1_1",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.055,
+    "height_max": 1.3261
+  },
+  {
+    "name": "villa_norte_window_move_2_lama_1_2",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.055,
+    "height_max": 1.4746
+  },
+  {
+    "name": "villa_norte_window_move_2_lama_1_3",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.055,
+    "height_max": 1.6232
+  },
+  {
+    "name": "villa_norte_window_move_2_lama_1_4",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.055,
+    "height_max": 1.7718
+  },
+  {
+    "name": "villa_norte_window_move_2_lama_1_5",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.055,
+    "height_max": 1.9204
+  },
+  {
+    "name": "villa_norte_window_move_2_bisagra",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.059,
+    "height_max": 1.2275
+  },
+  {
+    "name": "villa_norte_window_move_2_reja",
+    "rule": "window_cosmetic",
+    "max_corner_distance_m": 0.057,
+    "height_max": 2.22
+  },
+  {
+    "name": "villa_norte_window_move_2_reja",
+    "rule": "window_cosmetic",
+    "max_corner_distance_m": 0.057,
+    "height_max": 2.22
+  },
+  {
+    "name": "villa_norte_window_move_2_reja",
+    "rule": "window_cosmetic",
+    "max_corner_distance_m": 0.057,
+    "height_max": 2.22
+  },
+  {
+    "name": "villa_norte_window_move_2_reja",
+    "rule": "window_cosmetic",
+    "max_corner_distance_m": 0.057,
+    "height_max": 2.22
+  },
+  {
+    "name": "villa_norte_window_move_2_reja",
+    "rule": "window_cosmetic",
+    "max_corner_distance_m": 0.057,
+    "height_max": 2.22
+  },
+  {
+    "name": "villa_norte_window_move_2_reja",
+    "rule": "window_cosmetic",
+    "max_corner_distance_m": 0.057,
+    "height_max": 2.22
+  },
+  {
+    "name": "villa_norte_window_move_2_travesano_reja",
+    "rule": "window_cosmetic",
+    "max_corner_distance_m": 0.0575,
+    "height_max": 1.2325
+  },
+  {
+    "name": "villa_norte_wall_end_rodapie_-1",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.025,
+    "height_max": 0.32
+  },
+  {
+    "name": "villa_norte_wall_end_rodapie_1",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.025,
+    "height_max": 0.32
+  },
+  {
+    "name": "villa_sur_wall_0_rodapie_-1",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.025,
+    "height_max": 0.32
+  },
+  {
+    "name": "villa_sur_wall_0_rodapie_1",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.025,
+    "height_max": 0.32
+  },
+  {
+    "name": "villa_sur_sill_0_rodapie_-1",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.025,
+    "height_max": 0.32
+  },
+  {
+    "name": "villa_sur_sill_0_rodapie_1",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.025,
+    "height_max": 0.32
+  },
+  {
+    "name": "villa_sur_window_move_0_marco_-1-1",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.05,
+    "height_max": 2.36
+  },
+  {
+    "name": "villa_sur_window_move_0_marco_-11",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.05,
+    "height_max": 2.36
+  },
+  {
+    "name": "villa_sur_window_move_0_alf eizar_-1",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.055,
+    "height_max": 1.08
+  },
+  {
+    "name": "villa_sur_window_move_0_marco_1-1",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.05,
+    "height_max": 2.36
+  },
+  {
+    "name": "villa_sur_window_move_0_marco_11",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.05,
+    "height_max": 2.36
+  },
+  {
+    "name": "villa_sur_window_move_0_alf eizar_1",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.055,
+    "height_max": 1.08
+  },
+  {
+    "name": "villa_sur_window_move_0_contraventana_-1",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.0425,
+    "height_max": 2.28
+  },
+  {
+    "name": "villa_sur_window_move_0_lama_-1_0",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.055,
+    "height_max": 1.1775
+  },
+  {
+    "name": "villa_sur_window_move_0_lama_-1_1",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.055,
+    "height_max": 1.3261
+  },
+  {
+    "name": "villa_sur_window_move_0_lama_-1_2",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.055,
+    "height_max": 1.4746
+  },
+  {
+    "name": "villa_sur_window_move_0_lama_-1_3",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.055,
+    "height_max": 1.6232
+  },
+  {
+    "name": "villa_sur_window_move_0_lama_-1_4",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.055,
+    "height_max": 1.7718
+  },
+  {
+    "name": "villa_sur_window_move_0_lama_-1_5",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.055,
+    "height_max": 1.9204
+  },
+  {
+    "name": "villa_sur_window_move_0_bisagra",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.059,
+    "height_max": 1.2275
+  },
+  {
+    "name": "villa_sur_window_move_0_contraventana_1",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.0425,
+    "height_max": 2.28
+  },
+  {
+    "name": "villa_sur_window_move_0_lama_1_0",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.055,
+    "height_max": 1.1775
+  },
+  {
+    "name": "villa_sur_window_move_0_lama_1_1",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.055,
+    "height_max": 1.3261
+  },
+  {
+    "name": "villa_sur_window_move_0_lama_1_2",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.055,
+    "height_max": 1.4746
+  },
+  {
+    "name": "villa_sur_window_move_0_lama_1_3",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.055,
+    "height_max": 1.6232
+  },
+  {
+    "name": "villa_sur_window_move_0_lama_1_4",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.055,
+    "height_max": 1.7718
+  },
+  {
+    "name": "villa_sur_window_move_0_lama_1_5",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.055,
+    "height_max": 1.9204
+  },
+  {
+    "name": "villa_sur_window_move_0_bisagra",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.059,
+    "height_max": 1.2275
+  },
+  {
+    "name": "villa_sur_window_move_0_reja",
+    "rule": "window_cosmetic",
+    "max_corner_distance_m": 0.057,
+    "height_max": 2.22
+  },
+  {
+    "name": "villa_sur_window_move_0_reja",
+    "rule": "window_cosmetic",
+    "max_corner_distance_m": 0.057,
+    "height_max": 2.22
+  },
+  {
+    "name": "villa_sur_window_move_0_reja",
+    "rule": "window_cosmetic",
+    "max_corner_distance_m": 0.057,
+    "height_max": 2.22
+  },
+  {
+    "name": "villa_sur_window_move_0_reja",
+    "rule": "window_cosmetic",
+    "max_corner_distance_m": 0.057,
+    "height_max": 2.22
+  },
+  {
+    "name": "villa_sur_window_move_0_reja",
+    "rule": "window_cosmetic",
+    "max_corner_distance_m": 0.057,
+    "height_max": 2.22
+  },
+  {
+    "name": "villa_sur_window_move_0_reja",
+    "rule": "window_cosmetic",
+    "max_corner_distance_m": 0.057,
+    "height_max": 2.22
+  },
+  {
+    "name": "villa_sur_window_move_0_reja",
+    "rule": "window_cosmetic",
+    "max_corner_distance_m": 0.057,
+    "height_max": 2.22
+  },
+  {
+    "name": "villa_sur_window_move_0_reja",
+    "rule": "window_cosmetic",
+    "max_corner_distance_m": 0.057,
+    "height_max": 2.22
+  },
+  {
+    "name": "villa_sur_window_move_0_travesano_reja",
+    "rule": "window_cosmetic",
+    "max_corner_distance_m": 0.0575,
+    "height_max": 1.2325
+  },
+  {
+    "name": "villa_sur_wall_1_rodapie_-1",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.025,
+    "height_max": 0.32
+  },
+  {
+    "name": "villa_sur_wall_1_rodapie_1",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.025,
+    "height_max": 0.32
+  },
+  {
+    "name": "villa_sur_door_header_1_jamba_-1-1",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.05,
+    "height_max": 2.42
+  },
+  {
+    "name": "villa_sur_door_header_1_jamba_-11",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.05,
+    "height_max": 2.42
+  },
+  {
+    "name": "villa_sur_door_header_1_jamba_1-1",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.05,
+    "height_max": 2.42
+  },
+  {
+    "name": "villa_sur_door_header_1_jamba_11",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.05,
+    "height_max": 2.42
+  },
+  {
+    "name": "villa_sur_door_header_1_hoja_abierta",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.0465,
+    "height_max": 2.28
+  },
+  {
+    "name": "villa_sur_door_header_1_refuerzo_hoja",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.059,
+    "height_max": 0.27
+  },
+  {
+    "name": "villa_sur_door_header_1_refuerzo_hoja",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.059,
+    "height_max": 1.17
+  },
+  {
+    "name": "villa_sur_door_header_1_tirador",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.0565,
+    "height_max": 1.135
+  },
+  {
+    "name": "villa_sur_wall_2_rodapie_-1",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.025,
+    "height_max": 0.32
+  },
+  {
+    "name": "villa_sur_wall_2_rodapie_1",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.025,
+    "height_max": 0.32
+  },
+  {
+    "name": "villa_sur_sill_2_rodapie_-1",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.025,
+    "height_max": 0.32
+  },
+  {
+    "name": "villa_sur_sill_2_rodapie_1",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.025,
+    "height_max": 0.32
+  },
+  {
+    "name": "villa_sur_window_move_2_marco_-1-1",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.05,
+    "height_max": 2.36
+  },
+  {
+    "name": "villa_sur_window_move_2_marco_-11",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.05,
+    "height_max": 2.36
+  },
+  {
+    "name": "villa_sur_window_move_2_alf eizar_-1",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.055,
+    "height_max": 1.08
+  },
+  {
+    "name": "villa_sur_window_move_2_marco_1-1",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.05,
+    "height_max": 2.36
+  },
+  {
+    "name": "villa_sur_window_move_2_marco_11",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.05,
+    "height_max": 2.36
+  },
+  {
+    "name": "villa_sur_window_move_2_alf eizar_1",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.055,
+    "height_max": 1.08
+  },
+  {
+    "name": "villa_sur_window_move_2_contraventana_-1",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.0425,
+    "height_max": 2.28
+  },
+  {
+    "name": "villa_sur_window_move_2_lama_-1_0",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.055,
+    "height_max": 1.1775
+  },
+  {
+    "name": "villa_sur_window_move_2_lama_-1_1",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.055,
+    "height_max": 1.3261
+  },
+  {
+    "name": "villa_sur_window_move_2_lama_-1_2",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.055,
+    "height_max": 1.4746
+  },
+  {
+    "name": "villa_sur_window_move_2_lama_-1_3",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.055,
+    "height_max": 1.6232
+  },
+  {
+    "name": "villa_sur_window_move_2_lama_-1_4",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.055,
+    "height_max": 1.7718
+  },
+  {
+    "name": "villa_sur_window_move_2_lama_-1_5",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.055,
+    "height_max": 1.9204
+  },
+  {
+    "name": "villa_sur_window_move_2_bisagra",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.059,
+    "height_max": 1.2275
+  },
+  {
+    "name": "villa_sur_window_move_2_contraventana_1",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.0425,
+    "height_max": 2.28
+  },
+  {
+    "name": "villa_sur_window_move_2_lama_1_0",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.055,
+    "height_max": 1.1775
+  },
+  {
+    "name": "villa_sur_window_move_2_lama_1_1",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.055,
+    "height_max": 1.3261
+  },
+  {
+    "name": "villa_sur_window_move_2_lama_1_2",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.055,
+    "height_max": 1.4746
+  },
+  {
+    "name": "villa_sur_window_move_2_lama_1_3",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.055,
+    "height_max": 1.6232
+  },
+  {
+    "name": "villa_sur_window_move_2_lama_1_4",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.055,
+    "height_max": 1.7718
+  },
+  {
+    "name": "villa_sur_window_move_2_lama_1_5",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.055,
+    "height_max": 1.9204
+  },
+  {
+    "name": "villa_sur_window_move_2_bisagra",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.059,
+    "height_max": 1.2275
+  },
+  {
+    "name": "villa_sur_window_move_2_reja",
+    "rule": "window_cosmetic",
+    "max_corner_distance_m": 0.057,
+    "height_max": 2.22
+  },
+  {
+    "name": "villa_sur_window_move_2_reja",
+    "rule": "window_cosmetic",
+    "max_corner_distance_m": 0.057,
+    "height_max": 2.22
+  },
+  {
+    "name": "villa_sur_window_move_2_reja",
+    "rule": "window_cosmetic",
+    "max_corner_distance_m": 0.057,
+    "height_max": 2.22
+  },
+  {
+    "name": "villa_sur_window_move_2_reja",
+    "rule": "window_cosmetic",
+    "max_corner_distance_m": 0.057,
+    "height_max": 2.22
+  },
+  {
+    "name": "villa_sur_window_move_2_reja",
+    "rule": "window_cosmetic",
+    "max_corner_distance_m": 0.057,
+    "height_max": 2.22
+  },
+  {
+    "name": "villa_sur_window_move_2_reja",
+    "rule": "window_cosmetic",
+    "max_corner_distance_m": 0.057,
+    "height_max": 2.22
+  },
+  {
+    "name": "villa_sur_window_move_2_reja",
+    "rule": "window_cosmetic",
+    "max_corner_distance_m": 0.057,
+    "height_max": 2.22
+  },
+  {
+    "name": "villa_sur_window_move_2_reja",
+    "rule": "window_cosmetic",
+    "max_corner_distance_m": 0.057,
+    "height_max": 2.22
+  },
+  {
+    "name": "villa_sur_window_move_2_travesano_reja",
+    "rule": "window_cosmetic",
+    "max_corner_distance_m": 0.0575,
+    "height_max": 1.2325
+  },
+  {
+    "name": "villa_sur_wall_end_rodapie_-1",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.025,
+    "height_max": 0.32
+  },
+  {
+    "name": "villa_sur_wall_end_rodapie_1",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.025,
+    "height_max": 0.32
+  },
+  {
+    "name": "villa_oeste_wall_0_rodapie_-1",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.025,
+    "height_max": 0.32
+  },
+  {
+    "name": "villa_oeste_wall_0_rodapie_1",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.025,
+    "height_max": 0.32
+  },
+  {
+    "name": "villa_oeste_door_header_0_jamba_-1-1",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.05,
+    "height_max": 2.42
+  },
+  {
+    "name": "villa_oeste_door_header_0_jamba_-11",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.05,
+    "height_max": 2.42
+  },
+  {
+    "name": "villa_oeste_door_header_0_jamba_1-1",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.05,
+    "height_max": 2.42
+  },
+  {
+    "name": "villa_oeste_door_header_0_jamba_11",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.05,
+    "height_max": 2.42
+  },
+  {
+    "name": "villa_oeste_door_header_0_hoja_abierta",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.0465,
+    "height_max": 2.28
+  },
+  {
+    "name": "villa_oeste_door_header_0_refuerzo_hoja",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.059,
+    "height_max": 0.27
+  },
+  {
+    "name": "villa_oeste_door_header_0_refuerzo_hoja",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.059,
+    "height_max": 1.17
+  },
+  {
+    "name": "villa_oeste_door_header_0_tirador",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.0565,
+    "height_max": 1.135
+  },
+  {
+    "name": "villa_oeste_wall_1_rodapie_-1",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.025,
+    "height_max": 0.32
+  },
+  {
+    "name": "villa_oeste_wall_1_rodapie_1",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.025,
+    "height_max": 0.32
+  },
+  {
+    "name": "villa_oeste_sill_1_rodapie_-1",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.025,
+    "height_max": 0.32
+  },
+  {
+    "name": "villa_oeste_sill_1_rodapie_1",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.025,
+    "height_max": 0.32
+  },
+  {
+    "name": "villa_oeste_window_move_1_marco_-1-1",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.05,
+    "height_max": 2.36
+  },
+  {
+    "name": "villa_oeste_window_move_1_marco_-11",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.05,
+    "height_max": 2.36
+  },
+  {
+    "name": "villa_oeste_window_move_1_alf eizar_-1",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.055,
+    "height_max": 1.08
+  },
+  {
+    "name": "villa_oeste_window_move_1_marco_1-1",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.05,
+    "height_max": 2.36
+  },
+  {
+    "name": "villa_oeste_window_move_1_marco_11",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.05,
+    "height_max": 2.36
+  },
+  {
+    "name": "villa_oeste_window_move_1_alf eizar_1",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.055,
+    "height_max": 1.08
+  },
+  {
+    "name": "villa_oeste_window_move_1_contraventana_-1",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.0425,
+    "height_max": 2.28
+  },
+  {
+    "name": "villa_oeste_window_move_1_lama_-1_0",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.055,
+    "height_max": 1.1775
+  },
+  {
+    "name": "villa_oeste_window_move_1_lama_-1_1",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.055,
+    "height_max": 1.3261
+  },
+  {
+    "name": "villa_oeste_window_move_1_lama_-1_2",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.055,
+    "height_max": 1.4746
+  },
+  {
+    "name": "villa_oeste_window_move_1_lama_-1_3",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.055,
+    "height_max": 1.6232
+  },
+  {
+    "name": "villa_oeste_window_move_1_lama_-1_4",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.055,
+    "height_max": 1.7718
+  },
+  {
+    "name": "villa_oeste_window_move_1_lama_-1_5",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.055,
+    "height_max": 1.9204
+  },
+  {
+    "name": "villa_oeste_window_move_1_bisagra",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.059,
+    "height_max": 1.2275
+  },
+  {
+    "name": "villa_oeste_window_move_1_contraventana_1",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.0425,
+    "height_max": 2.28
+  },
+  {
+    "name": "villa_oeste_window_move_1_lama_1_0",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.055,
+    "height_max": 1.1775
+  },
+  {
+    "name": "villa_oeste_window_move_1_lama_1_1",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.055,
+    "height_max": 1.3261
+  },
+  {
+    "name": "villa_oeste_window_move_1_lama_1_2",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.055,
+    "height_max": 1.4746
+  },
+  {
+    "name": "villa_oeste_window_move_1_lama_1_3",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.055,
+    "height_max": 1.6232
+  },
+  {
+    "name": "villa_oeste_window_move_1_lama_1_4",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.055,
+    "height_max": 1.7718
+  },
+  {
+    "name": "villa_oeste_window_move_1_lama_1_5",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.055,
+    "height_max": 1.9204
+  },
+  {
+    "name": "villa_oeste_window_move_1_bisagra",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.059,
+    "height_max": 1.2275
+  },
+  {
+    "name": "villa_oeste_window_move_1_reja",
+    "rule": "window_cosmetic",
+    "max_corner_distance_m": 0.0554,
+    "height_max": 2.22
+  },
+  {
+    "name": "villa_oeste_window_move_1_reja",
+    "rule": "window_cosmetic",
+    "max_corner_distance_m": 0.0554,
+    "height_max": 2.22
+  },
+  {
+    "name": "villa_oeste_window_move_1_reja",
+    "rule": "window_cosmetic",
+    "max_corner_distance_m": 0.0554,
+    "height_max": 2.22
+  },
+  {
+    "name": "villa_oeste_window_move_1_reja",
+    "rule": "window_cosmetic",
+    "max_corner_distance_m": 0.0554,
+    "height_max": 2.22
+  },
+  {
+    "name": "villa_oeste_window_move_1_reja",
+    "rule": "window_cosmetic",
+    "max_corner_distance_m": 0.0554,
+    "height_max": 2.22
+  },
+  {
+    "name": "villa_oeste_window_move_1_reja",
+    "rule": "window_cosmetic",
+    "max_corner_distance_m": 0.0554,
+    "height_max": 2.22
+  },
+  {
+    "name": "villa_oeste_window_move_1_reja",
+    "rule": "window_cosmetic",
+    "max_corner_distance_m": 0.0554,
+    "height_max": 2.22
+  },
+  {
+    "name": "villa_oeste_window_move_1_travesano_reja",
+    "rule": "window_cosmetic",
+    "max_corner_distance_m": 0.0575,
+    "height_max": 1.2325
+  },
+  {
+    "name": "villa_oeste_wall_end_rodapie_-1",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.025,
+    "height_max": 0.32
+  },
+  {
+    "name": "villa_oeste_wall_end_rodapie_1",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.025,
+    "height_max": 0.32
+  },
+  {
+    "name": "villa_este_wall_0_rodapie_-1",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.025,
+    "height_max": 0.32
+  },
+  {
+    "name": "villa_este_wall_0_rodapie_1",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.025,
+    "height_max": 0.32
+  },
+  {
+    "name": "villa_este_sill_0_rodapie_-1",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.025,
+    "height_max": 0.32
+  },
+  {
+    "name": "villa_este_sill_0_rodapie_1",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.025,
+    "height_max": 0.32
+  },
+  {
+    "name": "villa_este_window_move_0_marco_-1-1",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.05,
+    "height_max": 2.36
+  },
+  {
+    "name": "villa_este_window_move_0_marco_-11",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.05,
+    "height_max": 2.36
+  },
+  {
+    "name": "villa_este_window_move_0_alf eizar_-1",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.055,
+    "height_max": 1.08
+  },
+  {
+    "name": "villa_este_window_move_0_marco_1-1",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.05,
+    "height_max": 2.36
+  },
+  {
+    "name": "villa_este_window_move_0_marco_11",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.05,
+    "height_max": 2.36
+  },
+  {
+    "name": "villa_este_window_move_0_alf eizar_1",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.055,
+    "height_max": 1.08
+  },
+  {
+    "name": "villa_este_window_move_0_contraventana_-1",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.0425,
+    "height_max": 2.28
+  },
+  {
+    "name": "villa_este_window_move_0_lama_-1_0",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.055,
+    "height_max": 1.1775
+  },
+  {
+    "name": "villa_este_window_move_0_lama_-1_1",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.055,
+    "height_max": 1.3261
+  },
+  {
+    "name": "villa_este_window_move_0_lama_-1_2",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.055,
+    "height_max": 1.4746
+  },
+  {
+    "name": "villa_este_window_move_0_lama_-1_3",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.055,
+    "height_max": 1.6232
+  },
+  {
+    "name": "villa_este_window_move_0_lama_-1_4",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.055,
+    "height_max": 1.7718
+  },
+  {
+    "name": "villa_este_window_move_0_lama_-1_5",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.055,
+    "height_max": 1.9204
+  },
+  {
+    "name": "villa_este_window_move_0_bisagra",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.059,
+    "height_max": 1.2275
+  },
+  {
+    "name": "villa_este_window_move_0_contraventana_1",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.0425,
+    "height_max": 2.28
+  },
+  {
+    "name": "villa_este_window_move_0_lama_1_0",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.055,
+    "height_max": 1.1775
+  },
+  {
+    "name": "villa_este_window_move_0_lama_1_1",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.055,
+    "height_max": 1.3261
+  },
+  {
+    "name": "villa_este_window_move_0_lama_1_2",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.055,
+    "height_max": 1.4746
+  },
+  {
+    "name": "villa_este_window_move_0_lama_1_3",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.055,
+    "height_max": 1.6232
+  },
+  {
+    "name": "villa_este_window_move_0_lama_1_4",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.055,
+    "height_max": 1.7718
+  },
+  {
+    "name": "villa_este_window_move_0_lama_1_5",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.055,
+    "height_max": 1.9204
+  },
+  {
+    "name": "villa_este_window_move_0_bisagra",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.059,
+    "height_max": 1.2275
+  },
+  {
+    "name": "villa_este_window_move_0_reja",
+    "rule": "window_cosmetic",
+    "max_corner_distance_m": 0.0554,
+    "height_max": 2.22
+  },
+  {
+    "name": "villa_este_window_move_0_reja",
+    "rule": "window_cosmetic",
+    "max_corner_distance_m": 0.0554,
+    "height_max": 2.22
+  },
+  {
+    "name": "villa_este_window_move_0_reja",
+    "rule": "window_cosmetic",
+    "max_corner_distance_m": 0.0554,
+    "height_max": 2.22
+  },
+  {
+    "name": "villa_este_window_move_0_reja",
+    "rule": "window_cosmetic",
+    "max_corner_distance_m": 0.0554,
+    "height_max": 2.22
+  },
+  {
+    "name": "villa_este_window_move_0_reja",
+    "rule": "window_cosmetic",
+    "max_corner_distance_m": 0.0554,
+    "height_max": 2.22
+  },
+  {
+    "name": "villa_este_window_move_0_reja",
+    "rule": "window_cosmetic",
+    "max_corner_distance_m": 0.0554,
+    "height_max": 2.22
+  },
+  {
+    "name": "villa_este_window_move_0_reja",
+    "rule": "window_cosmetic",
+    "max_corner_distance_m": 0.0554,
+    "height_max": 2.22
+  },
+  {
+    "name": "villa_este_window_move_0_reja",
+    "rule": "window_cosmetic",
+    "max_corner_distance_m": 0.0554,
+    "height_max": 2.22
+  },
+  {
+    "name": "villa_este_window_move_0_travesano_reja",
+    "rule": "window_cosmetic",
+    "max_corner_distance_m": 0.0575,
+    "height_max": 1.2325
+  },
+  {
+    "name": "villa_este_wall_1_rodapie_-1",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.025,
+    "height_max": 0.32
+  },
+  {
+    "name": "villa_este_wall_1_rodapie_1",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.025,
+    "height_max": 0.32
+  },
+  {
+    "name": "villa_este_door_header_1_jamba_-1-1",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.05,
+    "height_max": 2.42
+  },
+  {
+    "name": "villa_este_door_header_1_jamba_-11",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.05,
+    "height_max": 2.42
+  },
+  {
+    "name": "villa_este_door_header_1_jamba_1-1",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.05,
+    "height_max": 2.42
+  },
+  {
+    "name": "villa_este_door_header_1_jamba_11",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.05,
+    "height_max": 2.42
+  },
+  {
+    "name": "villa_este_door_header_1_hoja_abierta",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.0465,
+    "height_max": 2.28
+  },
+  {
+    "name": "villa_este_door_header_1_refuerzo_hoja",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.059,
+    "height_max": 0.27
+  },
+  {
+    "name": "villa_este_door_header_1_refuerzo_hoja",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.059,
+    "height_max": 1.17
+  },
+  {
+    "name": "villa_este_door_header_1_tirador",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.0565,
+    "height_max": 1.135
+  },
+  {
+    "name": "villa_este_wall_2_rodapie_-1",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.025,
+    "height_max": 0.32
+  },
+  {
+    "name": "villa_este_wall_2_rodapie_1",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.025,
+    "height_max": 0.32
+  },
+  {
+    "name": "villa_este_sill_2_rodapie_-1",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.025,
+    "height_max": 0.32
+  },
+  {
+    "name": "villa_este_sill_2_rodapie_1",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.025,
+    "height_max": 0.32
+  },
+  {
+    "name": "villa_este_window_move_2_marco_-1-1",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.05,
+    "height_max": 2.36
+  },
+  {
+    "name": "villa_este_window_move_2_marco_-11",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.05,
+    "height_max": 2.36
+  },
+  {
+    "name": "villa_este_window_move_2_alf eizar_-1",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.055,
+    "height_max": 1.08
+  },
+  {
+    "name": "villa_este_window_move_2_marco_1-1",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.05,
+    "height_max": 2.36
+  },
+  {
+    "name": "villa_este_window_move_2_marco_11",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.05,
+    "height_max": 2.36
+  },
+  {
+    "name": "villa_este_window_move_2_alf eizar_1",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.055,
+    "height_max": 1.08
+  },
+  {
+    "name": "villa_este_window_move_2_contraventana_-1",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.0425,
+    "height_max": 2.28
+  },
+  {
+    "name": "villa_este_window_move_2_lama_-1_0",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.055,
+    "height_max": 1.1775
+  },
+  {
+    "name": "villa_este_window_move_2_lama_-1_1",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.055,
+    "height_max": 1.3261
+  },
+  {
+    "name": "villa_este_window_move_2_lama_-1_2",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.055,
+    "height_max": 1.4746
+  },
+  {
+    "name": "villa_este_window_move_2_lama_-1_3",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.055,
+    "height_max": 1.6232
+  },
+  {
+    "name": "villa_este_window_move_2_lama_-1_4",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.055,
+    "height_max": 1.7718
+  },
+  {
+    "name": "villa_este_window_move_2_lama_-1_5",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.055,
+    "height_max": 1.9204
+  },
+  {
+    "name": "villa_este_window_move_2_bisagra",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.059,
+    "height_max": 1.2275
+  },
+  {
+    "name": "villa_este_window_move_2_contraventana_1",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.0425,
+    "height_max": 2.28
+  },
+  {
+    "name": "villa_este_window_move_2_lama_1_0",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.055,
+    "height_max": 1.1775
+  },
+  {
+    "name": "villa_este_window_move_2_lama_1_1",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.055,
+    "height_max": 1.3261
+  },
+  {
+    "name": "villa_este_window_move_2_lama_1_2",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.055,
+    "height_max": 1.4746
+  },
+  {
+    "name": "villa_este_window_move_2_lama_1_3",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.055,
+    "height_max": 1.6232
+  },
+  {
+    "name": "villa_este_window_move_2_lama_1_4",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.055,
+    "height_max": 1.7718
+  },
+  {
+    "name": "villa_este_window_move_2_lama_1_5",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.055,
+    "height_max": 1.9204
+  },
+  {
+    "name": "villa_este_window_move_2_bisagra",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.059,
+    "height_max": 1.2275
+  },
+  {
+    "name": "villa_este_window_move_2_reja",
+    "rule": "window_cosmetic",
+    "max_corner_distance_m": 0.0554,
+    "height_max": 2.22
+  },
+  {
+    "name": "villa_este_window_move_2_reja",
+    "rule": "window_cosmetic",
+    "max_corner_distance_m": 0.0554,
+    "height_max": 2.22
+  },
+  {
+    "name": "villa_este_window_move_2_reja",
+    "rule": "window_cosmetic",
+    "max_corner_distance_m": 0.0554,
+    "height_max": 2.22
+  },
+  {
+    "name": "villa_este_window_move_2_reja",
+    "rule": "window_cosmetic",
+    "max_corner_distance_m": 0.0554,
+    "height_max": 2.22
+  },
+  {
+    "name": "villa_este_window_move_2_reja",
+    "rule": "window_cosmetic",
+    "max_corner_distance_m": 0.0554,
+    "height_max": 2.22
+  },
+  {
+    "name": "villa_este_window_move_2_reja",
+    "rule": "window_cosmetic",
+    "max_corner_distance_m": 0.0554,
+    "height_max": 2.22
+  },
+  {
+    "name": "villa_este_window_move_2_reja",
+    "rule": "window_cosmetic",
+    "max_corner_distance_m": 0.0554,
+    "height_max": 2.22
+  },
+  {
+    "name": "villa_este_window_move_2_travesano_reja",
+    "rule": "window_cosmetic",
+    "max_corner_distance_m": 0.0575,
+    "height_max": 1.2325
+  },
+  {
+    "name": "villa_este_wall_end_rodapie_-1",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.025,
+    "height_max": 0.32
+  },
+  {
+    "name": "villa_este_wall_end_rodapie_1",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.025,
+    "height_max": 0.32
+  },
+  {
+    "name": "villa_divisor_norte_wall_0_rodapie_-1",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.025,
+    "height_max": 0.32
+  },
+  {
+    "name": "villa_divisor_norte_wall_0_rodapie_1",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.025,
+    "height_max": 0.32
+  },
+  {
+    "name": "villa_divisor_norte_door_header_0_jamba_-1-1",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.05,
+    "height_max": 2.42
+  },
+  {
+    "name": "villa_divisor_norte_door_header_0_jamba_-11",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.05,
+    "height_max": 2.42
+  },
+  {
+    "name": "villa_divisor_norte_door_header_0_jamba_1-1",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.05,
+    "height_max": 2.42
+  },
+  {
+    "name": "villa_divisor_norte_door_header_0_jamba_11",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.05,
+    "height_max": 2.42
+  },
+  {
+    "name": "villa_divisor_norte_door_header_0_hoja_abierta",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.0465,
+    "height_max": 2.28
+  },
+  {
+    "name": "villa_divisor_norte_door_header_0_refuerzo_hoja",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.059,
+    "height_max": 0.27
+  },
+  {
+    "name": "villa_divisor_norte_door_header_0_refuerzo_hoja",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.059,
+    "height_max": 1.17
+  },
+  {
+    "name": "villa_divisor_norte_door_header_0_tirador",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.0565,
+    "height_max": 1.135
+  },
+  {
+    "name": "villa_divisor_norte_wall_end_rodapie_-1",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.025,
+    "height_max": 0.32
+  },
+  {
+    "name": "villa_divisor_norte_wall_end_rodapie_1",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.025,
+    "height_max": 0.32
+  },
+  {
+    "name": "villa_divisor_salon_wall_0_rodapie_-1",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.025,
+    "height_max": 0.32
+  },
+  {
+    "name": "villa_divisor_salon_wall_0_rodapie_1",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.025,
+    "height_max": 0.32
+  },
+  {
+    "name": "villa_divisor_salon_door_header_0_jamba_-1-1",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.05,
+    "height_max": 2.42
+  },
+  {
+    "name": "villa_divisor_salon_door_header_0_jamba_-11",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.05,
+    "height_max": 2.42
+  },
+  {
+    "name": "villa_divisor_salon_door_header_0_jamba_1-1",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.05,
+    "height_max": 2.42
+  },
+  {
+    "name": "villa_divisor_salon_door_header_0_jamba_11",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.05,
+    "height_max": 2.42
+  },
+  {
+    "name": "villa_divisor_salon_door_header_0_hoja_abierta",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.0465,
+    "height_max": 2.28
+  },
+  {
+    "name": "villa_divisor_salon_door_header_0_refuerzo_hoja",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.059,
+    "height_max": 0.27
+  },
+  {
+    "name": "villa_divisor_salon_door_header_0_refuerzo_hoja",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.059,
+    "height_max": 1.17
+  },
+  {
+    "name": "villa_divisor_salon_door_header_0_tirador",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.0565,
+    "height_max": 1.135
+  },
+  {
+    "name": "villa_divisor_salon_wall_end_rodapie_-1",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.025,
+    "height_max": 0.32
+  },
+  {
+    "name": "villa_divisor_salon_wall_end_rodapie_1",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.025,
+    "height_max": 0.32
+  },
+  {
+    "name": "garaje_norte_wall_0_rodapie_-1",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.025,
+    "height_max": 0.32
+  },
+  {
+    "name": "garaje_norte_wall_0_rodapie_1",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.025,
+    "height_max": 0.32
+  },
+  {
+    "name": "garaje_norte_sill_0_rodapie_-1",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.025,
+    "height_max": 0.32
+  },
+  {
+    "name": "garaje_norte_sill_0_rodapie_1",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.025,
+    "height_max": 0.32
+  },
+  {
+    "name": "garaje_norte_window_move_0_marco_-1-1",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.05,
+    "height_max": 2.23
+  },
+  {
+    "name": "garaje_norte_window_move_0_marco_-11",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.05,
+    "height_max": 2.23
+  },
+  {
+    "name": "garaje_norte_window_move_0_alf eizar_-1",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.055,
+    "height_max": 1.25
+  },
+  {
+    "name": "garaje_norte_window_move_0_marco_1-1",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.05,
+    "height_max": 2.23
+  },
+  {
+    "name": "garaje_norte_window_move_0_marco_11",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.05,
+    "height_max": 2.23
+  },
+  {
+    "name": "garaje_norte_window_move_0_alf eizar_1",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.055,
+    "height_max": 1.25
+  },
+  {
+    "name": "garaje_norte_window_move_0_contraventana_-1",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.0425,
+    "height_max": 2.15
+  },
+  {
+    "name": "garaje_norte_window_move_0_lama_-1_0",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.055,
+    "height_max": 1.3475
+  },
+  {
+    "name": "garaje_norte_window_move_0_lama_-1_1",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.055,
+    "height_max": 1.4532
+  },
+  {
+    "name": "garaje_norte_window_move_0_lama_-1_2",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.055,
+    "height_max": 1.5589
+  },
+  {
+    "name": "garaje_norte_window_move_0_lama_-1_3",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.055,
+    "height_max": 1.6646
+  },
+  {
+    "name": "garaje_norte_window_move_0_lama_-1_4",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.055,
+    "height_max": 1.7704
+  },
+  {
+    "name": "garaje_norte_window_move_0_lama_-1_5",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.055,
+    "height_max": 1.8761
+  },
+  {
+    "name": "garaje_norte_window_move_0_lama_-1_6",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.055,
+    "height_max": 1.9818
+  },
+  {
+    "name": "garaje_norte_window_move_0_bisagra",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.059,
+    "height_max": 1.3975
+  },
+  {
+    "name": "garaje_norte_window_move_0_contraventana_1",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.0425,
+    "height_max": 2.15
+  },
+  {
+    "name": "garaje_norte_window_move_0_lama_1_0",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.055,
+    "height_max": 1.3475
+  },
+  {
+    "name": "garaje_norte_window_move_0_lama_1_1",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.055,
+    "height_max": 1.4532
+  },
+  {
+    "name": "garaje_norte_window_move_0_lama_1_2",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.055,
+    "height_max": 1.5589
+  },
+  {
+    "name": "garaje_norte_window_move_0_lama_1_3",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.055,
+    "height_max": 1.6646
+  },
+  {
+    "name": "garaje_norte_window_move_0_lama_1_4",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.055,
+    "height_max": 1.7704
+  },
+  {
+    "name": "garaje_norte_window_move_0_lama_1_5",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.055,
+    "height_max": 1.8761
+  },
+  {
+    "name": "garaje_norte_window_move_0_lama_1_6",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.055,
+    "height_max": 1.9818
+  },
+  {
+    "name": "garaje_norte_window_move_0_bisagra",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.059,
+    "height_max": 1.3975
+  },
+  {
+    "name": "garaje_norte_window_move_0_reja",
+    "rule": "window_cosmetic",
+    "max_corner_distance_m": 0.057,
+    "height_max": 2.09
+  },
+  {
+    "name": "garaje_norte_window_move_0_reja",
+    "rule": "window_cosmetic",
+    "max_corner_distance_m": 0.057,
+    "height_max": 2.09
+  },
+  {
+    "name": "garaje_norte_window_move_0_reja",
+    "rule": "window_cosmetic",
+    "max_corner_distance_m": 0.057,
+    "height_max": 2.09
+  },
+  {
+    "name": "garaje_norte_window_move_0_reja",
+    "rule": "window_cosmetic",
+    "max_corner_distance_m": 0.057,
+    "height_max": 2.09
+  },
+  {
+    "name": "garaje_norte_window_move_0_reja",
+    "rule": "window_cosmetic",
+    "max_corner_distance_m": 0.057,
+    "height_max": 2.09
+  },
+  {
+    "name": "garaje_norte_window_move_0_reja",
+    "rule": "window_cosmetic",
+    "max_corner_distance_m": 0.057,
+    "height_max": 2.09
+  },
+  {
+    "name": "garaje_norte_window_move_0_travesano_reja",
+    "rule": "window_cosmetic",
+    "max_corner_distance_m": 0.0575,
+    "height_max": 1.4025
+  },
+  {
+    "name": "garaje_norte_window_move_0_travesano_reja",
+    "rule": "window_cosmetic",
+    "max_corner_distance_m": 0.0575,
+    "height_max": 2.0225
+  },
+  {
+    "name": "garaje_norte_wall_end_rodapie_-1",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.025,
+    "height_max": 0.32
+  },
+  {
+    "name": "garaje_norte_wall_end_rodapie_1",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.025,
+    "height_max": 0.32
+  },
+  {
+    "name": "garaje_sur_wall_0_rodapie_-1",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.025,
+    "height_max": 0.32
+  },
+  {
+    "name": "garaje_sur_wall_0_rodapie_1",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.025,
+    "height_max": 0.32
+  },
+  {
+    "name": "garaje_sur_door_header_0_jamba_-1-1",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.05,
+    "height_max": 2.42
+  },
+  {
+    "name": "garaje_sur_door_header_0_jamba_-11",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.05,
+    "height_max": 2.42
+  },
+  {
+    "name": "garaje_sur_door_header_0_jamba_1-1",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.05,
+    "height_max": 2.42
+  },
+  {
+    "name": "garaje_sur_door_header_0_jamba_11",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.05,
+    "height_max": 2.42
+  },
+  {
+    "name": "garaje_sur_wall_end_rodapie_-1",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.025,
+    "height_max": 0.32
+  },
+  {
+    "name": "garaje_sur_wall_end_rodapie_1",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.025,
+    "height_max": 0.32
+  },
+  {
+    "name": "garaje_oeste_wall_0_rodapie_-1",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.025,
+    "height_max": 0.32
+  },
+  {
+    "name": "garaje_oeste_wall_0_rodapie_1",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.025,
+    "height_max": 0.32
+  },
+  {
+    "name": "garaje_oeste_door_header_0_jamba_-1-1",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.05,
+    "height_max": 2.42
+  },
+  {
+    "name": "garaje_oeste_door_header_0_jamba_-11",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.05,
+    "height_max": 2.42
+  },
+  {
+    "name": "garaje_oeste_door_header_0_jamba_1-1",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.05,
+    "height_max": 2.42
+  },
+  {
+    "name": "garaje_oeste_door_header_0_jamba_11",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.05,
+    "height_max": 2.42
+  },
+  {
+    "name": "garaje_oeste_door_header_0_hoja_abierta",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.0465,
+    "height_max": 2.28
+  },
+  {
+    "name": "garaje_oeste_door_header_0_refuerzo_hoja",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.059,
+    "height_max": 0.27
+  },
+  {
+    "name": "garaje_oeste_door_header_0_refuerzo_hoja",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.059,
+    "height_max": 1.17
+  },
+  {
+    "name": "garaje_oeste_door_header_0_tirador",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.0565,
+    "height_max": 1.135
+  },
+  {
+    "name": "garaje_oeste_wall_end_rodapie_-1",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.025,
+    "height_max": 0.32
+  },
+  {
+    "name": "garaje_oeste_wall_end_rodapie_1",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.025,
+    "height_max": 0.32
+  },
+  {
+    "name": "garaje_este_wall_0_rodapie_-1",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.025,
+    "height_max": 0.32
+  },
+  {
+    "name": "garaje_este_wall_0_rodapie_1",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.025,
+    "height_max": 0.32
+  },
+  {
+    "name": "garaje_este_door_header_0_jamba_-1-1",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.05,
+    "height_max": 2.42
+  },
+  {
+    "name": "garaje_este_door_header_0_jamba_-11",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.05,
+    "height_max": 2.42
+  },
+  {
+    "name": "garaje_este_door_header_0_jamba_1-1",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.05,
+    "height_max": 2.42
+  },
+  {
+    "name": "garaje_este_door_header_0_jamba_11",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.05,
+    "height_max": 2.42
+  },
+  {
+    "name": "garaje_este_door_header_0_hoja_abierta",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.0465,
+    "height_max": 2.28
+  },
+  {
+    "name": "garaje_este_door_header_0_refuerzo_hoja",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.059,
+    "height_max": 0.27
+  },
+  {
+    "name": "garaje_este_door_header_0_refuerzo_hoja",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.059,
+    "height_max": 1.17
+  },
+  {
+    "name": "garaje_este_door_header_0_tirador",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.0565,
+    "height_max": 1.135
+  },
+  {
+    "name": "garaje_este_wall_end_rodapie_-1",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.025,
+    "height_max": 0.32
+  },
+  {
+    "name": "garaje_este_wall_end_rodapie_1",
+    "rule": "wall_detail_<=6cm",
+    "max_corner_distance_m": 0.025,
+    "height_max": 0.32
+  },
+  {
+    "name": "garaje_bajante",
+    "rule": "wall_detail_<=45cm",
+    "max_corner_distance_m": 0.212,
+    "height_max": 3.509
+  },
+  {
+    "name": "arbol_tronco_0",
+    "rule": "trunk_existing",
+    "max_corner_distance_m": 0.0273,
+    "height_max": 2.2052
+  },
+  {
+    "name": "arbol_tronco_1",
+    "rule": "trunk_existing",
+    "max_corner_distance_m": 0.0273,
+    "height_max": 2.2052
+  },
+  {
+    "name": "arbol_tronco_2",
+    "rule": "trunk_existing",
+    "max_corner_distance_m": 0.0273,
+    "height_max": 2.2052
+  },
+  {
+    "name": "arbol_tronco_3",
+    "rule": "trunk_existing",
+    "max_corner_distance_m": 0.0273,
+    "height_max": 2.2052
+  },
+  {
+    "name": "maceta_barro",
+    "rule": "low_wall_detail",
+    "max_corner_distance_m": 0.4937,
+    "height_max": 0.51
+  },
+  {
+    "name": "maceta_barro",
+    "rule": "low_wall_detail",
+    "max_corner_distance_m": 0.4937,
+    "height_max": 0.51
+  },
+  {
+    "name": "maceta_barro",
+    "rule": "low_wall_detail",
+    "max_corner_distance_m": 0.49,
+    "height_max": 0.51
+  },
+  {
+    "name": "maceta_barro",
+    "rule": "low_wall_detail",
+    "max_corner_distance_m": 0.47,
+    "height_max": 0.51
+  },
+  {
+    "name": "maceta_barro",
+    "rule": "low_wall_detail",
+    "max_corner_distance_m": 0.47,
+    "height_max": 0.51
+  },
+  {
+    "name": "maceta_barro",
+    "rule": "low_wall_detail",
+    "max_corner_distance_m": 0.43,
+    "height_max": 0.51
+  },
+  {
+    "name": "caja_patio_junta",
+    "rule": "existing_detail_<=6cm",
+    "max_corner_distance_m": 0.024,
+    "height_max": 0.149
+  },
+  {
+    "name": "caja_patio_junta",
+    "rule": "existing_detail_<=6cm",
+    "max_corner_distance_m": 0.024,
+    "height_max": 0.379
+  },
+  {
+    "name": "caja_patio_junta",
+    "rule": "existing_detail_<=6cm",
+    "max_corner_distance_m": 0.024,
+    "height_max": 0.609
+  },
+  {
+    "name": "caja_patio_junta",
+    "rule": "existing_detail_<=6cm",
+    "max_corner_distance_m": 0.024,
+    "height_max": 0.839
+  },
+  {
+    "name": "caja_patio_pomo",
+    "rule": "existing_detail_<=6cm",
+    "max_corner_distance_m": 0.0355,
+    "height_max": 0.5629
+  },
+  {
+    "name": "caja_patio_pomo",
+    "rule": "existing_detail_<=6cm",
+    "max_corner_distance_m": 0.0355,
+    "height_max": 0.5629
+  },
+  {
+    "name": "caja_calle_01_junta",
+    "rule": "existing_detail_<=6cm",
+    "max_corner_distance_m": 0.024,
+    "height_max": 0.149
+  },
+  {
+    "name": "caja_calle_01_junta",
+    "rule": "existing_detail_<=6cm",
+    "max_corner_distance_m": 0.024,
+    "height_max": 0.379
+  },
+  {
+    "name": "caja_calle_01_junta",
+    "rule": "existing_detail_<=6cm",
+    "max_corner_distance_m": 0.024,
+    "height_max": 0.609
+  },
+  {
+    "name": "caja_calle_01_pomo",
+    "rule": "existing_detail_<=6cm",
+    "max_corner_distance_m": 0.0355,
+    "height_max": 0.5245
+  },
+  {
+    "name": "caja_calle_01_pomo",
+    "rule": "existing_detail_<=6cm",
+    "max_corner_distance_m": 0.0355,
+    "height_max": 0.5245
+  },
+  {
+    "name": "caja_calle_02_junta",
+    "rule": "existing_detail_<=6cm",
+    "max_corner_distance_m": 0.024,
+    "height_max": 0.149
+  },
+  {
+    "name": "caja_calle_02_junta",
+    "rule": "existing_detail_<=6cm",
+    "max_corner_distance_m": 0.024,
+    "height_max": 0.379
+  },
+  {
+    "name": "caja_calle_02_junta",
+    "rule": "existing_detail_<=6cm",
+    "max_corner_distance_m": 0.024,
+    "height_max": 0.609
+  },
+  {
+    "name": "caja_calle_02_pomo",
+    "rule": "existing_detail_<=6cm",
+    "max_corner_distance_m": 0.0355,
+    "height_max": 0.5245
+  },
+  {
+    "name": "caja_calle_02_pomo",
+    "rule": "existing_detail_<=6cm",
+    "max_corner_distance_m": 0.0355,
+    "height_max": 0.5245
+  },
+  {
+    "name": "isla_cocina_junta",
+    "rule": "existing_detail_<=6cm",
+    "max_corner_distance_m": 0.024,
+    "height_max": 0.149
+  },
+  {
+    "name": "isla_cocina_junta",
+    "rule": "existing_detail_<=6cm",
+    "max_corner_distance_m": 0.024,
+    "height_max": 0.379
+  },
+  {
+    "name": "isla_cocina_junta",
+    "rule": "existing_detail_<=6cm",
+    "max_corner_distance_m": 0.024,
+    "height_max": 0.609
+  },
+  {
+    "name": "isla_cocina_junta",
+    "rule": "existing_detail_<=6cm",
+    "max_corner_distance_m": 0.024,
+    "height_max": 0.839
+  },
+  {
+    "name": "isla_cocina_pomo",
+    "rule": "existing_detail_<=6cm",
+    "max_corner_distance_m": 0.0355,
+    "height_max": 0.6141
+  },
+  {
+    "name": "isla_cocina_pomo",
+    "rule": "existing_detail_<=6cm",
+    "max_corner_distance_m": 0.0355,
+    "height_max": 0.6141
+  },
+  {
+    "name": "aparador_junta",
+    "rule": "existing_detail_<=6cm",
+    "max_corner_distance_m": 0.024,
+    "height_max": 0.149
+  },
+  {
+    "name": "aparador_junta",
+    "rule": "existing_detail_<=6cm",
+    "max_corner_distance_m": 0.024,
+    "height_max": 0.379
+  },
+  {
+    "name": "aparador_junta",
+    "rule": "existing_detail_<=6cm",
+    "max_corner_distance_m": 0.024,
+    "height_max": 0.609
+  },
+  {
+    "name": "aparador_junta",
+    "rule": "existing_detail_<=6cm",
+    "max_corner_distance_m": 0.024,
+    "height_max": 0.839
+  },
+  {
+    "name": "aparador_pomo",
+    "rule": "existing_detail_<=6cm",
+    "max_corner_distance_m": 0.0355,
+    "height_max": 0.6653
+  },
+  {
+    "name": "aparador_pomo",
+    "rule": "existing_detail_<=6cm",
+    "max_corner_distance_m": 0.0355,
+    "height_max": 0.6653
+  },
+  {
+    "name": "armario_dormitorio_junta",
+    "rule": "existing_detail_<=6cm",
+    "max_corner_distance_m": 0.024,
+    "height_max": 0.149
+  },
+  {
+    "name": "armario_dormitorio_junta",
+    "rule": "existing_detail_<=6cm",
+    "max_corner_distance_m": 0.024,
+    "height_max": 0.379
+  },
+  {
+    "name": "armario_dormitorio_junta",
+    "rule": "existing_detail_<=6cm",
+    "max_corner_distance_m": 0.024,
+    "height_max": 0.609
+  },
+  {
+    "name": "armario_dormitorio_junta",
+    "rule": "existing_detail_<=6cm",
+    "max_corner_distance_m": 0.024,
+    "height_max": 0.839
+  },
+  {
+    "name": "armario_dormitorio_junta",
+    "rule": "existing_detail_<=6cm",
+    "max_corner_distance_m": 0.024,
+    "height_max": 1.069
+  },
+  {
+    "name": "armario_dormitorio_junta",
+    "rule": "existing_detail_<=6cm",
+    "max_corner_distance_m": 0.024,
+    "height_max": 1.299
+  },
+  {
+    "name": "armario_dormitorio_junta",
+    "rule": "existing_detail_<=6cm",
+    "max_corner_distance_m": 0.024,
+    "height_max": 1.529
+  },
+  {
+    "name": "armario_dormitorio_junta",
+    "rule": "existing_detail_<=6cm",
+    "max_corner_distance_m": 0.024,
+    "height_max": 1.759
+  },
+  {
+    "name": "armario_dormitorio_junta",
+    "rule": "existing_detail_<=6cm",
+    "max_corner_distance_m": 0.024,
+    "height_max": 1.989
+  },
+  {
+    "name": "armario_dormitorio_pomo",
+    "rule": "existing_detail_<=6cm",
+    "max_corner_distance_m": 0.0355,
+    "height_max": 1.3565
+  },
+  {
+    "name": "armario_dormitorio_pomo",
+    "rule": "existing_detail_<=6cm",
+    "max_corner_distance_m": 0.0355,
+    "height_max": 1.3565
+  },
+  {
+    "name": "garaje_cajon_herramientas_junta",
+    "rule": "existing_detail_<=6cm",
+    "max_corner_distance_m": 0.024,
+    "height_max": 0.149
+  },
+  {
+    "name": "garaje_cajon_herramientas_junta",
+    "rule": "existing_detail_<=6cm",
+    "max_corner_distance_m": 0.024,
+    "height_max": 0.379
+  },
+  {
+    "name": "garaje_cajon_herramientas_junta",
+    "rule": "existing_detail_<=6cm",
+    "max_corner_distance_m": 0.024,
+    "height_max": 0.609
+  },
+  {
+    "name": "garaje_cajon_herramientas_junta",
+    "rule": "existing_detail_<=6cm",
+    "max_corner_distance_m": 0.024,
+    "height_max": 0.839
+  },
+  {
+    "name": "garaje_cajon_herramientas_junta",
+    "rule": "existing_detail_<=6cm",
+    "max_corner_distance_m": 0.024,
+    "height_max": 1.069
+  },
+  {
+    "name": "garaje_cajon_herramientas_pomo",
+    "rule": "existing_detail_<=6cm",
+    "max_corner_distance_m": 0.0355,
+    "height_max": 0.7293
+  },
+  {
+    "name": "garaje_cajon_herramientas_pomo",
+    "rule": "existing_detail_<=6cm",
+    "max_corner_distance_m": 0.0355,
+    "height_max": 0.7293
+  },
+  {
+    "name": "garaje_almacen_junta",
+    "rule": "existing_detail_<=6cm",
+    "max_corner_distance_m": 0.024,
+    "height_max": 0.149
+  },
+  {
+    "name": "garaje_almacen_junta",
+    "rule": "existing_detail_<=6cm",
+    "max_corner_distance_m": 0.024,
+    "height_max": 0.379
+  },
+  {
+    "name": "garaje_almacen_junta",
+    "rule": "existing_detail_<=6cm",
+    "max_corner_distance_m": 0.024,
+    "height_max": 0.609
+  },
+  {
+    "name": "garaje_almacen_junta",
+    "rule": "existing_detail_<=6cm",
+    "max_corner_distance_m": 0.024,
+    "height_max": 0.839
+  },
+  {
+    "name": "garaje_almacen_junta",
+    "rule": "existing_detail_<=6cm",
+    "max_corner_distance_m": 0.024,
+    "height_max": 1.069
+  },
+  {
+    "name": "garaje_almacen_junta",
+    "rule": "existing_detail_<=6cm",
+    "max_corner_distance_m": 0.024,
+    "height_max": 1.299
+  },
+  {
+    "name": "garaje_almacen_pomo",
+    "rule": "existing_detail_<=6cm",
+    "max_corner_distance_m": 0.0355,
+    "height_max": 0.9085
+  },
+  {
+    "name": "garaje_almacen_pomo",
+    "rule": "existing_detail_<=6cm",
+    "max_corner_distance_m": 0.0355,
+    "height_max": 0.9085
+  },
+  {
+    "name": "cama_almohada",
+    "rule": "existing_detail_<=6cm",
+    "max_corner_distance_m": 0.055,
+    "height_max": 0.595
+  }
+]
