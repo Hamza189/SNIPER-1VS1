@@ -63,8 +63,8 @@ regenerar modelos. Dependencias de Python de herramientas: numpy, Pillow.
 - `python3` es una copia de `C:\Python314\python.exe`; si desaparece, `npm test` falla al llamar a `python3 build.py`.
 - `playwright@1.56.0` y `ws` se instalan sin guardarlos: `npm install --no-save playwright@1.56.0 ws` y
   `npx playwright install chromium`.
-- `gh` no está instalado: el estado de Actions se lee con
-  `curl -s https://api.github.com/repos/Hamza189/SNIPER-1VS1/actions/runs?per_page=8`.
+- `gh` 2.102 instalado (19-10-2026, winget) en `C:\Program Files\GitHub CLI\gh.exe` y con sesión de Hamza189: PRs,
+  `gh run list`, `gh pr merge`. En Git Bash puede no estar en el PATH hasta reiniciar: usar la ruta completa.
 - `core.autocrlf=true`: un archivo regenerado puede salir «modificado» solo por fin de línea; compruébalo con
   `git diff --stat` y deshazlo con `git checkout -- <archivo>` si no hay cambio real.
 - Conectores MCP disponibles en Claude Code (Cloudflare, Context7, Linear, Sentry, Supabase, Netlify, Figma…): estado en
