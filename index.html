@@ -4212,7 +4212,7 @@ const SDCasaXL = {"id":"CASA_ATLAS_XL","version":"1.0.0","bounds":{"min":[-20,0,
 if (typeof module !== 'undefined' && module.exports) module.exports = SDCasaXL; else root.SDCasaXL = SDCasaXL;
 })(typeof window !== 'undefined' ? window : globalThis);
 
-const BUILD_ID="af36832";const BUILD_HASH="76cac8af30";
+const BUILD_ID="2acbd65";const BUILD_HASH="cd46b5eb1a";
 </script>
 <script>
 (function(){
@@ -4794,7 +4794,11 @@ if(P3ON){
   }
   p3mesh(SDTown3.ground({footprints:foot,fronts,place:P3W.place,p0:P0.on?P0.use:null}).geo,'ground',gctx,true);
   if(P0.on)try{p0Details(foot);}catch(e){console.warn('p0',e);}
-  p3mesh(SDTown3.backdrop({},P3W.place).geo,'backdrop',P3W.ctx);
+  // the town outside: its facades stand exactly on the plane of the old 4 m concrete perimeter wall (x, z = ±50), so the
+  // lower half of every facade at the end of a street fought that wall for each pixel: a grey mix when standing still,
+  // crawling stripes when moving (the owner's "rayas", found by ray casting on 19-10-2026: 102 coplanar hits). Its own
+  // materials (same shared textures) with the ground's depth offset, so the facade always wins
+  p3mesh(SDTown3.backdrop({},P3W.place).geo,'backdrop',Object.assign({},P3W.ctx,{cache:{}}),true);
   // the slice's sandbag walls become stone planters (same boxes), with orange trees on the long ones
   for(const o of P3W.skip)hideOld(o);
   for(const o of P3W.skip){const gp=k=>o.geometry.parameters[k],p=o.position,w=gp('width'),h=gp('height'),d=gp('depth');

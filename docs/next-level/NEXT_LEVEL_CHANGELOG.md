@@ -252,3 +252,21 @@ Sprint: vuelta al 10 % en ~0,10 s (antes ~0,23 s), calculado de las constantes.
 - **Pruebas:** browser 61/61 (nueva: el menú cabe en 3 tamaños), mobile 74/74, touch.smoke 82/82, smoke 76/76.
 - También: la prueba de `&xltex=1` espera hasta 240 s a la carga (en una ejecución completa con el PC ocupado pasó de
   120 s; sola pasa). **Revertir:** `git revert`.
+
+---
+
+## N5-4 · Rayas en las paredes lejanas: CAUSA ENCONTRADA Y ARREGLADA (19-10-2026)
+- **Síntoma (vídeo del propietario, ya con la GTX 1050 Ti):** al fondo de las calles de PUEBLO 3.0, la mitad de abajo de
+  las fachadas se ve con manchas grises si estás quieto y con rayas que se mueven al andar. Ninguna de las banderas de
+  diagnóstico (`near`, `sombras=0`, `nm=0`, `sombrageo`) lo cambiaba.
+- **Causa (CONFIRMADA con rayos en la página):** las fachadas del «pueblo exterior» (`p3_backdrop_*`) están exactamente
+  en el plano del muro perimetral antiguo de hormigón (`town_concrete`, x/z = ±50, 4 m de alto): 102 puntos coplanarios.
+  Dos superficies a distancia cero pelean por cada píxel (z-fighting); por eso ninguna precisión extra lo arreglaba y
+  por eso solo afecta a la franja baja (la altura del muro).
+- **Solución:** el pueblo exterior usa materiales propios (mismas texturas, sin memoria extra) con el mismo
+  desplazamiento de profundidad que ya usa el suelo: la fachada siempre gana al muro.
+- **Antes/después (MEDIDO en la GTX 1050 Ti, píxeles de la pared que cambian con 5 mm de movimiento, 3 puntos a 16–36 m):**
+  publicado 11–33 % → con el arreglo 0–2,6 %.
+- **Pruebas:** p0.browser 76/76 (nueva: materiales propios con desplazamiento), town3, cover, shadow, e10 en verde.
+- **Pendiente:** confirmación del propietario en su PC. Queda un caso pequeño (4 puntos) de piedra del kit contra estuco
+  del pueblo en x ≈ 23–33. **Revertir:** `git revert`.
