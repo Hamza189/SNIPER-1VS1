@@ -4,33 +4,81 @@ Registro duradero que mantiene Claude Code. Una entrada por sesión o por decisi
 Cada entrada dice qué se decidió o cambió, quién lo decidió, y el estado real
 (IMPLEMENTADO · PROBADO EN NAVEGADOR · PROBADO ONLINE · PENDIENTE DE VALIDACIÓN EN IPHONE).
 Las decisiones anteriores al 18-10-2026 están resumidas en `SNIPER_DUEL_MASTER_CONTEXT.md` §4.
+Detalle de cada cambio (antes/después, medidas, cómo revertir): `docs/next-level/NEXT_LEVEL_CHANGELOG.md`.
 
-## Tareas abiertas (resumen vivo; detalle en `SNIPER_DUEL_ROADMAP.md`)
+## Tareas (resumen vivo, actualizado el 19-10-2026)
+
+### Siguiente prioridad
 | Tarea | Quién la desbloquea | Estado |
 |---|---|---|
-| Rayas en las paredes en el PC del propietario | Propietario: captura + línea de diagnóstico + `?pueblo=3&sombras=0` | ESPERANDO |
-| CASA ATLAS: recorrido, bots, 1v1 real, aprobación, techo | Propietario | ESPERANDO |
-| FPS en iPhone/Samsung (PUEBLO 3.0, CASA ATLAS) | Propietario | ESPERANDO |
-| Suelo del Samsung, fachadas P1 | Propietario y su pareja | ESPERANDO |
-| Reconexión con dos iPhone, partidas de 10–15 min | Propietario | ESPERANDO |
-| Instalar `gh` en el PC | — | HECHO (19-10, sesión de Hamza189) |
-| `.gitattributes` para fines de línea | Propietario (aprobar) | PROPUESTA |
-| CASA ATLAS XL (40×32 m): encargo a ChatGPT en `docs/PROMPT-CHATGPT-CASA-ATLAS-XL.md` | Propietario (pasarlo a ChatGPT) | ESPERANDO ENTREGA |
-| PR #1 `next-level/casa-atlas-xl` | — | FUSIONADA 19-10 (`4517b82`); Pages, servidor y prueba pública en verde |
-| Proyecto Cloudflare Pages `sniper-1vs1` conectado al repo: su build falla en todos los commits (también en `main`); no es el que publica el juego | Propietario (desconectarlo o decir para qué es) | DETECTADO |
-| Comparar `?feel=2` con la sensación actual (PC e iPhone) | Propietario | ESPERANDO |
-| Pruebas de rayas (`docs/next-level/PRUEBA_RAYAS_PC.md`) | Propietario | ESPERANDO |
-| **Siguiente prioridad (propietario, 19-10): personaje del jugador y bots** — encargo `docs/PROMPT-CHATGPT-PERSONAJE.md` | Propietario (pasarlo a ChatGPT/Codex) | ESPERANDO ENTREGA |
-| Gráficos de CASA ATLAS XL, poco a poco (cuando haya uso de Codex) | Propietario | APARCADO |
-| Cloudflare Pages `sniper-1vs1` (archivo > 25 MiB) | Propietario | APARCADO |
-| Multiplataforma (web + .exe + iPhone + Android) y monetización — plan en `SNIPER_DUEL_ROADMAP.md` | Propietario (cuándo y gastos de tiendas) | FUTURO |
-| Perfil BAJO usa PUEBLO 2.0 automáticamente (más ligero; mismas colisiones) y MEDIO/ALTO el 3.0 — idea del propietario | Claude (junto con la optimización) | PENDIENTE |
-| Originales de las entregas (`assets/3d/imports`, ~319 MB): se conservan (los usan las herramientas para regenerar texturas); decisión del propietario 19-10 | — | DECIDIDO |
-| Armas clásicas como aspectos | Propietario (aprobar inicio) | SIN EMPEZAR |
-| Fallo online: eventos ignorados tras reinicio de sala (Q1) | — | ARREGLADO y PUBLICADO (19-10) |
-| CASA ATLAS: bots atascados por red de navegación partida (J1) | — | ARREGLADO y PUBLICADO (19-10) |
-| Paquetes de la auditoría (`SNIPER_DUEL_AUDIT_2026-10-18.md` §4) | Propietario (aprobar) | PROPUESTOS |
-| Evolución tecnológica T0–T6 (`SNIPER_DUEL_TECHNOLOGY_EVOLUTION.md`) | Propietario (revisar el informe y aprobar fases) | INFORME ENTREGADO |
+| **Personaje del jugador, rival online y bots** (que dejen de ser monigotes) — encargo `docs/PROMPT-CHATGPT-PERSONAJE.md` | Propietario (pasarlo a ChatGPT/Codex); después Claude lo integra tras `?pj=2` | ESPERANDO ENTREGA |
+
+### Esperando pruebas o decisiones del propietario
+| Tarea | Estado |
+|---|---|
+| 1v1 online real entre dos dispositivos en CASA ATLAS (el mapa ya funciona contra bots en PC y móvil) | PENDIENTE |
+| CASA ATLAS: ¿techo sí o no? (`&techo=1`) | PENDIENTE |
+| Comparar `?feel=2` (sensación de armas) con la actual en PC e iPhone | PENDIENTE |
+| FPS medidos en iPhone y Samsung (el propietario dice que en el móvil «va bastante bien» y todos los mapas funcionan; faltan cifras) | VALIDADO A OJO |
+| Suelo del Samsung y fachadas P1 (`&fachada=cc0`) | PENDIENTE |
+| Reconexión desde segundo plano con dos iPhone; partidas largas de 10–15 min | PENDIENTE |
+| Comparar CASA XL v2 con v1 (`&xlv=1`) y aprobarla | PENDIENTE |
+| Paquetes de la auditoría que cambian reglas o la sensación (zonas de impacto offline J3, dispersión del servidor J5, mensajes por segundo Q2) | NECESITAN APROBACIÓN |
+| Evolución tecnológica T0–T6 (`SNIPER_DUEL_TECHNOLOGY_EVOLUTION.md`) | INFORME ENTREGADO |
+| `.gitattributes` para los fines de línea | PROPUESTA |
+
+### Pendiente de Claude (se hará poco a poco; se publica sin pedir OK si las pruebas pasan)
+| Tarea | Estado |
+|---|---|
+| Perfil BAJO = PUEBLO 2.0 automáticamente; MEDIO/ALTO = PUEBLO 3.0 (mismas colisiones) | PENDIENTE |
+| Calidades por etapas: congelar lo hecho como BAJO (~finales de octubre), mejorar a MEDIO y luego ALTO (plan en la hoja de ruta) | PLANIFICADO |
+| Resto de la auditoría que no cambia reglas: seguridad del servidor (Q3, Q4, Q6, Q7), CI con `test:fast` y reversión (Q8), pruebas del Worker (Q9), navaja contra bots agachados (J4), daño del bot tras el retardo (J7), FUEGO doble táctil (J8), giro residual al reanudar (J9), textura de rata y E10 por perfil (R3, R4), unir mallas del kit (R6), partículas instanciadas (R8), liberar CASA al salir (R10), LOD y anisotropía (G4, G10, G11) | PENDIENTE |
+| Caso pequeño de z-fighting: piedra del kit contra estuco del pueblo (x ≈ 23–33, 4 puntos) | PENDIENTE |
+| Paredes blancas lisas de la CASA ATLAS original que deslumbran de cerca | PENDIENTE |
+
+### Futuro / aparcado
+| Tarea | Estado |
+|---|---|
+| Multiplataforma (web + .exe + iPhone + Android) y monetización cosmética — plan en `SNIPER_DUEL_ROADMAP.md` | FUTURO |
+| Subir de 60 a 120–144 FPS en PC (dificultad media; en el navegador lo limita la frecuencia de la pantalla) | FUTURO |
+| Gráficos de CASA ATLAS XL, poco a poco (cuando haya uso de Codex) | APARCADO |
+| Cloudflare Pages `sniper-1vs1`: falla porque un original pesa 31 MiB (> 25 MiB); arreglo: comando de compilación en el panel | APARCADO |
+| Armas clásicas como aspectos opcionales | SIN EMPEZAR |
+
+### Hecho y publicado (18–19 de octubre de 2026)
+| Tarea | Cuándo |
+|---|---|
+| Migración a Claude Code: informe de incorporación, `build.py` en UTF-8, entorno de Windows (`python3`, Playwright, `gh` con sesión) | 18-10 / 19-10 |
+| Auditoría con cuatro agentes (rendimiento, gráficos, jugabilidad, red) e informe de evolución tecnológica | 18-10 |
+| Online: el cliente ya no pierde los eventos tras reiniciarse el servidor de la sala (Q1) | 19-10 · PR #1 |
+| CASA ATLAS: bots que aparecían encerrados y andaban a tirones (J1, J2) | 19-10 · PR #1 |
+| CASA ATLAS XL (40 × 32 m) contra bots; todos los mapas en el menú | 19-10 · PR #1 |
+| Rendimiento: sin tirón al empezar (R1), −13 MB de texturas duplicadas (R2), sombras de soldados (R5), HUD táctil (R7) | 19-10 · PR #1 |
+| Prueba de audio que fallaba al azar | 19-10 · PR #1 |
+| `?feel=2`: sprint, retroceso con muelle, confirmación de baja e impactos lejanos (para comparar) | 19-10 · PR #1 |
+| Ratón «pillado» (REANUDAR demasiado pronto tras Esc) | 19-10 · PR #2 |
+| Menú de PC sin deslizar (JUGAR estaba fuera de la pantalla) | 19-10 · PR #2 |
+| CASA XL con texturas reales (`&xlv=1&xltex=1`, para la v1) | 19-10 · PR #2 |
+| Chrome del propietario usaba la GPU Intel → puesto en «Alto rendimiento» (GTX 1050 Ti): 57–60 FPS estables | 19-10 (propietario) |
+| **Rayas en las paredes lejanas**: z-fighting del pueblo exterior con el muro perimetral; confirmado por el propietario | 19-10 · PR #3 |
+| CASA ATLAS XL v2 de ChatGPT por defecto (mismas colisiones, detalle real) | 19-10 · directo a `main` |
+| Encargos para ChatGPT: CASA XL, CASA XL v2 y personaje | 18-10 / 19-10 |
+
+## 19-10-2026 — Rayas, CASA XL v2, nuevas reglas de trabajo y planes de futuro
+- **Arreglado y publicado:** ratón pillado y menú de PC (PR #2), rayas de las paredes lejanas (PR #3; el propietario confirma
+  que han desaparecido), CASA ATLAS XL v2 por defecto (directo a `main`). Pages y «Prueba pública online» en verde en cada
+  publicación.
+- **Valoración del propietario:** el juego va a 60 FPS estables en PC (GTX 1050 Ti) y «bastante bien» en el móvil; todos
+  los mapas funcionan; el movimiento de la mira al apuntar y disparar está consolidado en PC e iPhone. CASA XL le gusta
+  por su tamaño, pero hay que mejorar mucho más los gráficos, poco a poco.
+- **Decisión (propietario):** Claude prueba y publica sin pedir OK (push directo o PR fusionada con `gh`) y avisa después;
+  sigue haciendo falta aprobación para balance, reglas competitivas del servidor y gastos. Anotado en `CLAUDE.md`.
+- **Decisión (propietario):** siguiente prioridad = personaje del jugador y bots (encargo a ChatGPT entregado).
+- **Decisión (propietario):** no se borran originales ni versiones antiguas; las calidades gráficas se harán por etapas
+  (lo hecho → BAJO; mejoras → MEDIO; más mejoras → ALTO), empezando por BAJO = PUEBLO 2.0.
+- **Objetivo futuro (propietario):** multiplataforma (web, .exe, iPhone, Android) y monetización.
+- **Lección:** en el navegador integrado, el juego capturaba el ratón real del propietario al lanzar partidas de prueba;
+  Claude desactiva la captura antes de probar allí.
 
 ## 19-10-2026 — NEXT LEVEL: primer paquete publicado (PR #1)
 - **Publicado** (`4517b82`, fusión hecha por Claude con `gh` por orden del propietario): CASA ATLAS XL solo contra bots,
@@ -38,7 +86,6 @@ Las decisiones anteriores al 18-10-2026 están resumidas en `SNIPER_DUEL_MASTER_
   −13 MB de texturas, HUD táctil, sombras de soldados), audio, banderas de diagnóstico de rayas y `?feel=2`.
 - **Comprobado:** Pages, «Desplegar servidor» y «Prueba pública online» en verde; `version.json` publicado = local
   (`e9a6f2b13e`); `/health` ok; el GLB de XL se sirve. `npm test` 955/955 antes de fusionar.
-- **Pendiente:** el propietario compara `?feel=2` y hace las pruebas de rayas; validación en iPhone y Samsung.
 
 ## 18-10-2026 — Auditoría con cuatro agentes (sesión 1, tercera parte)
 - **Petición (propietario):** cuatro auditorías en paralelo de solo lectura; el agente principal coordina; nada de
@@ -57,7 +104,6 @@ Las decisiones anteriores al 18-10-2026 están resumidas en `SNIPER_DUEL_MASTER_
   texturas en GPU en PUEBLO 3.0 ALTO; descarga 13,5 MB.
 - **Recomendación:** T0 (higiene) y T1 (comprobación de tipos con `tsc --noEmit`) primero; T3 (texturas KTX2) como
   experimento que necesita el iPhone y el Samsung del propietario. Rust/WASM no está justificado hoy.
-- **Publicación:** el commit `f408962` está publicado; Pages y «Prueba pública online» en verde.
 
 ## 18-10-2026 — Migración a Claude Code (sesión 1)
 - **Hecho:** incorporación completa; informe en `SNIPER_DUEL_ONBOARDING_2026-10-18.md`.
@@ -67,7 +113,5 @@ Las decisiones anteriores al 18-10-2026 están resumidas en `SNIPER_DUEL_MASTER_
   `ws` con `npm install --no-save`.
 - **Documentación:** conectores reales de Claude Code anotados en `SNIPER_DUEL_CONNECTIONS.md`; `CLAUDE.md` con notas de
   Windows y la obligación de mantener este registro.
-- **Decisión (propietario):** no empezar todavía ninguna fase nueva ni reconstrucción; primero entender y confirmar el
-  estado real. Publicar solo con su autorización.
 - **Comprobado:** documentación y código coinciden (armas, reglas, mapas, banderas); `core/mapdata.js` se regenera
   idéntico; Pages y servidor público responden; Actions en verde.
