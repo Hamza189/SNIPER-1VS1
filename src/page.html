@@ -1514,8 +1514,11 @@ function audioInit(){
 // applies the AJUSTES → AUDIO levels (master × channel; mute silences everything)
 function audioLevels(){
   if(!AU.ctx||typeof SETTINGS==='undefined')return;const S=SETTINGS,t=AU.ctx.currentTime;
-  AU.master.gain.setTargetAtTime(S.mute?0:0.85*S.volMaster,t,0.02);
-  const v={shots:S.volShots,fx:S.volFx,steps:S.volSteps,amb:S.volAmb};for(const k in v)AU.bus[k].gain.setTargetAtTime(v[k],t,0.02);
+  // a 20 ms ramp while the audio clock runs; with the context suspended (no touch yet on iOS, a background tab) the clock
+  // is stopped and a ramp would never get there, so the level is set at once (this also made a test fail at random)
+  const set=(g,val)=>{if(AU.ctx.state==='running')g.setTargetAtTime(val,t,0.02);else{g.cancelScheduledValues(0);g.value=val;}};
+  set(AU.master.gain,S.mute?0:0.85*S.volMaster);
+  const v={shots:S.volShots,fx:S.volFx,steps:S.volSteps,amb:S.volAmb};for(const k in v)set(AU.bus[k].gain,v[k]);
 }
 function outNode(pan,verb){
   const ctx=AU.ctx;const g=ctx.createGain();

@@ -55,7 +55,10 @@ const shown = page => page.evaluate(ids => ids.filter(id => { const e = document
           q('.setTabs button[data-tab="audio"]').click(); await wait(30);
           o.tab = [...document.querySelectorAll('.setPane')].filter(p => !p.hidden).map(p => p.dataset.pane).join(',');
           o.tabsAll = document.querySelectorAll('.setTabs button').length;
-          const vs = q('#vS'); vs.value = '0.2'; vs.dispatchEvent(new Event('input')); await wait(200);
+          // the level ramps on the audio clock, which in a headless browser advances in jumps: wait until it gets there
+          // (up to 2 s) instead of reading it after a fixed 200 ms (that made this check fail at random)
+          const vs = q('#vS'); vs.value = '0.2'; vs.dispatchEvent(new Event('input'));
+          for (let i = 0; i < 40 && !(S.AU && S.AU.bus && Math.abs(S.AU.bus.shots.gain.value - 0.2) < 0.005); i++) await wait(50);
           o.shots = S.AU && S.AU.bus ? +S.AU.bus.shots.gain.value.toFixed(2) : null; o.fx = S.AU && S.AU.bus ? +S.AU.bus.fx.gain.value.toFixed(2) : null;
           q('#sMute').click(); await wait(200); o.master = S.AU && S.AU.master ? +S.AU.master.gain.value.toFixed(2) : null;
           o.saved = JSON.parse(localStorage.getItem('sniperduel_settings')).volShots;
