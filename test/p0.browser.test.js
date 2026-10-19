@@ -29,7 +29,11 @@ async function load(b, url, q, p3mem) {
       if (/^kit_p0/.test(m.name)) mats[m.name] = { map: !!(m.map && m.map.image && m.map.image.width), normal: !!(m.normalMap && m.normalMap.image && m.normalMap.image.width), rough: !!(m.roughnessMap && m.roughnessMap.image && m.roughnessMap.image.width), r: m.roughness };
       if (/^p0_/.test(o.name)) { o.geometry.computeBoundingBox(); maxY = Math.max(maxY, o.geometry.boundingBox.max.y); } });
     const col = S.W.colliders.map(c => [c.minX, c.minY, c.minZ, c.maxX, c.maxY, c.maxZ].map(v => +v.toFixed(3)).join(',')).join(';');
-    return { on: S.P0.on, use: S.P0.use, decals: S.P0.decals, strips: S.P0.strips, meshes: S.P0.meshes.map(m => m.name), mats, maxY, colliders: col };
+    // the town outside stands on the plane of the old concrete perimeter wall: its materials must carry the depth offset
+    // (19-10-2026, the owner's distant stripes) and must not be the kit's shared ones (that would offset every building)
+    const kitMats = new Set(); S.scene.traverse(o => { if (o.isMesh && /^kit_/.test(o.name)) kitMats.add(o.material); });
+    const bd = S.scene.children.filter(o => /^p3_backdrop/.test(o.name)).map(o => ({ off: !!o.material.polygonOffset, shared: kitMats.has(o.material) }));
+    return { on: S.P0.on, use: S.P0.use, decals: S.P0.decals, strips: S.P0.strips, meshes: S.P0.meshes.map(m => m.name), mats, maxY, colliders: col, bd };
   });
   await ctx.close();
   return Object.assign(r, { bad, p0files, errs });
@@ -41,6 +45,7 @@ async function load(b, url, q, p3mem) {
   const base = await load(b, srv.url + '?vm=1&pueblo=3&suelo=0', 'alto');
   console.log('\nSIN EL PACK');
   check('?pueblo=3&suelo=0: suelo anterior y ningún archivo P0 descargado', !base.on && base.p0files.length === 0, base.p0files.join(' '));
+  check('pueblo exterior: materiales propios con desplazamiento de profundidad (sin rayas contra el muro perimetral)', base.bd.length > 0 && base.bd.every(x => x.off && !x.shared), JSON.stringify(base.bd));
   const dflt = await load(b, srv.url + '?vm=1&pueblo=3', 'alto');
   check('?pueblo=3 por defecto: caliza v3b en la plaza y adoquín de Poly Haven (aprobados el 12 y el 17-10-2026)', dflt.on && dflt.p0files.some(f => /^p0v3_plaza_c/.test(f)) && dflt.p0files.some(f => /^p0cc_cobble_c/.test(f)), dflt.p0files.join(' '));
   const noCob = await load(b, srv.url + '?vm=1&pueblo=3&adoquin=0', 'alto');
