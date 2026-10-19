@@ -171,3 +171,31 @@ Estado: IMPLEMENTADO · PROBADO EN NAVEGADOR · PROBADO ONLINE · PENDIENTE DE V
 memoria **del PC** (Node no pudo reservar memoria con 22 MB de montón; 3,5 GB libres con Chrome del propietario abierto);
 las 6 suites restantes se pasaron después por separado. `online.browser` agotó una vez los 30 s de carga de la página en
 ese estado y pasó 43/43 al repetirla sola.
+
+---
+
+## N4-1 · Sensación de las armas tras `?feel=2` (para comparar con la actual)
+**Antes (diagnóstico en el código):**
+1. **Sprint:** el arma baja hasta 8 cm y gira rx −0,42 / ry +0,55 rad; tarda ~0,23 s en volver (amortiguación 10/s) aunque
+   el sprint termina en 0,1 s: el disparo puede salir con el arma aún bajada (auditoría J10).
+2. **Retroceso visual:** el golpe se apaga en exponencial lenta (sigue al 15 % a los 200 ms y al 2,5 % a los 400 ms):
+   sensación de arma que «flota».
+3. **Confirmación:** la marca de baja / headshot dura 0,26 s, igual que un impacto normal, y coincide con la sacudida.
+4. **Impactos:** las partículas en el cuerpo crecen con la distancia, las de pared y suelo no: a 60–100 m sin mira son
+   casi invisibles.
+
+**Solución (`?feel=2`, solo presentación):** pose de sprint al 60 % y vuelta a 22/s; retroceso visual con muelle
+(k 420, c 26 → ζ≈0,63); marca de baja/headshot con «pop» ×1,9 y 0,5 s; impactos en pared/suelo ×(distancia/30), hasta
+×2,2, sin cambiar el tamaño del agujero. **Puntería, RECOIL, dispersión, daño y balas no cambian.**
+
+**Después (MEDIDO, curva del retroceso visual tras un disparo, cada 1/60 s):**
+| | 50 ms | 100 ms | 200 ms | 400 ms |
+|---|---|---|---|---|
+| actual | 0,57 | 0,37 | 0,15 | 0,025 |
+| feel=2 | 0,55 | 0,16 | −0,05 (rebote) | 0,003 |
+Sprint: vuelta al 10 % en ~0,10 s (antes ~0,23 s), calculado de las constantes.
+
+**Pruebas:** phase2 64/64, pistol 15/15, shotgun 27/27, smoke 76/76. **Pendiente:** suites de navegador (`aim.browser`,
+`browser`…): no se pudieron ejecutar porque Windows se quedó sin memoria comprometida (24,4/24,5 GB). **Pendiente de
+que el propietario compare** `?feel=2` con la versión actual, en PC e iPhone.
+**Revertir:** `git revert` del commit; o simplemente no usar la bandera.
