@@ -1478,6 +1478,34 @@ if(XL.on){
   WORLDS.casaxl={colliders:W.colliders,ray:W.ray,ramps:W.ramps,objs:[],nav,label:'CASA ATLAS XL',spawns:SDCasaXL.spawns,local:true};
   W.colliders=prevC;W.ray=prevR;W.ramps=prevP;
 }
+/* &xltex=1 (19-10-2026): the delivery's textures are almost flat colours (±4/255) with very strong normal maps, and take
+   55 MB of GPU. With the flag its materials use the game's approved CC0 / own textures instead (the PUEBLO 3.0 sets, one
+   resolution per profile, shared with the town when it is loaded): white_stucco_02, the kit masonry, the v3b limestone,
+   cobblestone_02, planks, herringbone, clay roof tiles… Glass, water, iron, cloth and plants keep their own. The UVs of
+   the delivery are in world scale; each mesh's are rescaled so the texture repeats at its real size (tile, metres). */
+const XLTEX=/[?&]xltex=1\b/.test(location.search);
+const XL_TEXSET={sd_estuco:{t:'p1:stucco',tile:2.6},sd_estuco_ocre:{t:'p1:stucco',tile:2.6,col:0xe8c995},sd_piedra:{t:'stone',tile:1.6},
+  sd_suelo_caliza:{t:'p0v3:plaza',tile:4},sd_adoquin:{t:'p0cc:cobble',tile:2.7},sd_tierra:{t:'earth',tile:4},sd_grava:{t:'earth',tile:3,col:0xc9c3b8},
+  sd_hormigon:{t:'concrete',tile:3},sd_madera:{t:'wood',tile:1.1,col:0x8a6a4a},sd_madera_pintada:{t:'p1:wood',tile:1.2,col:0xd9d2c4},
+  sd_roble:{t:'herring',tile:1.5},sd_teja:{t:'p1:rooftiles',tile:1.6}};
+function xlRetex(root){
+  const prof=GFX.profile,suffix={alto:'',medio:'m',bajo:'b'}[prof]||'';
+  // 'p1:stucco' → p1_stucco (ALTO) / p1m_stucco (MEDIO) / p1b_stucco (BAJO, colour only); plain names have _c and _n
+  const names=t=>{const [set,n]=t.split(':');return n?{c:set+suffix+'_'+n,full:prof!=='bajo',rough:prof!=='bajo'}:{c:t,full:prof!=='bajo',rough:false};};
+  const doneGeo=new Set(),doneMat=new Map();
+  root.traverse(o=>{if(!o.isMesh)return;const m=o.material,S=XL_TEXSET[m&&m.name];if(!S)return;
+    if(!doneMat.has(m)){const N=names(S.t);
+      m.map=texLoad(N.c,false);m.normalMap=N.full?texLoad(N.c,true):null;if(m.normalMap)m.normalScale=new T.Vector2(0.8,0.8);
+      m.roughnessMap=N.rough?texLoad(N.c+'_r',false,false,true):null;m.roughness=N.rough?1:0.88;m.metalnessMap=null;m.metalness=0;m.aoMap=null;
+      csHex(m.color,S.col||0xffffff);m.needsUpdate=true;doneMat.set(m,1);}
+    const g=o.geometry;if(doneGeo.has(g))return;doneGeo.add(g);
+    // metres per UV unit of this mesh (median over its triangle edges) → scale so the texture repeats every S.tile metres
+    const P=g.attributes.position,U=g.attributes.uv,I=g.index;if(!U)return;const r=[];const n=I?I.count:P.count;
+    for(let i=0;i<n&&r.length<400;i+=3){const a=I?I.getX(i):i,b=I?I.getX(i+1):i+1;
+      const l=Math.hypot(P.getX(a)-P.getX(b),P.getY(a)-P.getY(b),P.getZ(a)-P.getZ(b)),u=Math.hypot(U.getX(a)-U.getX(b),U.getY(a)-U.getY(b));if(u>1e-4&&l>1e-3)r.push(l/u);}
+    if(!r.length)return;r.sort((x,y)=>x-y);const k=r[r.length>>1]/S.tile;
+    for(let i=0;i<U.count;i++)U.setXY(i,U.getX(i)*k,U.getY(i)*k);U.needsUpdate=true;});
+}
 function casaxlLoad(){
   if(!XL.on||XL.ready||XL.loading||!T.GLTFLoader)return;XL.loading=true;
   const prof=GFX.profile,aniso=Math.min(prof==='alto'?4:prof==='medio'?2:1,renderer.capabilities.getMaxAnisotropy?renderer.capabilities.getMaxAnisotropy():1);
@@ -1489,7 +1517,7 @@ function casaxlLoad(){
       for(const t of [m.map,m.normalMap,m.roughnessMap,m.metalnessMap,m.aoMap])if(t)t.anisotropy=aniso;
       if(/vidrio/.test(m.name)){m.transparent=true;m.depthWrite=false;m.envMap=ENV;m.envMapIntensity=0.6;}
       m.needsUpdate=true;}};
-  const add=(r,name)=>{r.name=name;fix(r);scene.add(r);WORLDS.casaxl.objs.push(r);r.visible=WORLD_ID==='casaxl';return r;};
+  const add=(r,name)=>{r.name=name;fix(r);if(XLTEX)xlRetex(r);scene.add(r);WORLDS.casaxl.objs.push(r);r.visible=WORLD_ID==='casaxl';return r;};
   const fail=e=>{XL.failed=true;XL.loading=false;console.warn('casaxl load',e);for(const f of XL.wait.splice(0))f();};
   try{new T.GLTFLoader().load('assets/maps/casa_atlas_xl/casa_atlas_xl.glb?v='+BUILD_HASH,g=>{try{
       XL.root=add(g.scene,'casa_atlas_xl');XL.ready=true;XL.loading=false;try{renderer.compile(scene,camera);}catch(e){}

@@ -198,3 +198,19 @@ Sprint: vuelta al 10 % en ~0,10 s (antes ~0,23 s), calculado de las constantes.
 **Pruebas:** `npm test` completo 955/955 (tras liberar memoria: Windows se había quedado sin memoria comprometida,
 24,4/24,5 GB, y las suites de navegador no arrancaban). **Pendiente de que el propietario compare** `?feel=2` con la versión actual, en PC e iPhone.
 **Revertir:** `git revert` del commit; o simplemente no usar la bandera.
+
+---
+
+## N5-3 · CASA ATLAS XL con las texturas CC0 del juego (`&xltex=1`)
+- **Antes (MEDIDO):** las texturas de color de la entrega son casi lisas (±4/255) con mapas de relieve muy fuertes:
+  aspecto de barro o espuma. 57 texturas, 66,8 MB de GPU en ALTO y MEDIO.
+- **Solución (tras `&xltex=1`):** cada material de la entrega usa la textura aprobada del juego, con la resolución de su
+  perfil y la repetición a su tamaño real (UV reescaladas por malla): estuco `white_stucco_02` (ocre con tinte), piedra
+  del kit, caliza v3b, adoquín `cobblestone_02`, tierra, hormigón, madera del pueblo (tintada), tablones CC0 para la
+  madera pintada, espiga para el suelo interior, teja `clay_roof_tiles_02`. Vidrio, agua, hierro, tela y plantas, sin
+  cambios. Probados y descartados: guijarros para la grava (es un mosaico decorativo) y tablones blancos para el tronco.
+- **Después (MEDIDO, Chromium por software):** 40 texturas; MEDIO 66,8 → 66,2 MB; ALTO 66,8 → 118 MB (texturas CC0 de
+  2048 px, solo PC). Capturas antes/después con 4 cámaras fijas a la altura de los ojos.
+- **Pruebas:** casaxl.browser 17/17 (3 nuevas: texturas por perfil, las que se conservan, sin 404).
+- **Pendiente:** aprobación visual del propietario; iluminación interior; medir en iPhone.
+- **Revertir:** no usar la bandera, o `git revert`.
