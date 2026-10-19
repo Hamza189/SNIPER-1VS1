@@ -678,3 +678,26 @@ Original intacto en `assets/3d/imports/2026-10-18_casa_atlas_xl/`; en el juego, 
 - Sombra del sol en ±26 m; el suelo del pueblo baja 4 cm, como en CASA ATLAS. Techo opaco siempre cargado.
 - Medido: visión media 14,9 m, máxima ~40 m, 13–14 % de líneas > 25 m; salidas a 42,4 m sin verse.
 - Pendiente: texturas CC0 reales, JPEG en lugar de PNG para las normales (~55 MB en GPU), 1v1 online (servidor), iPhone.
+
+## 19. Personaje 3D — revisión 03, hecha por Claude (19/20-10-2026), tras `?pj=2`
+
+Jugador/rival online/bots. Codex dejó dos revisiones (rev. 01 procedural, rechazada: «parecen muñecos»; rev. 02 a medias
+sobre MakeHuman). La rev. 03 se rehízo entera en `assets/3d/imports/2026-10-19_personaje/revision_03/` (ficha completa:
+`PERSONAJE_REV03.md`); en el juego, `assets/personaje/`.
+- **Base anatómica:** malla de MakeHuman (CC0) con sus targets CC0 de hombre joven atlético; piernas juntas, puños
+  cerrados en empuñadura. **Ropa:** la propia superficie del cuerpo alisada y ensanchada por prenda (chaqueta, pantalón
+  cargo que cae recto desde la rodilla, guantes, braga de cuello) + equipo modelado pegado a la superficie (bolsillos con
+  solapa, tirantes, cuello, cinturón con hebilla, funda, bolsillos cargo, rodilleras con correas, botas con suela, casco
+  con carriles y cascos de comunicación, gafas). Todo por código (Blender 5.2 + numpy), sin assets comprados.
+- **Texturas 2048 (y 1024 para BAJO):** mapa de normales horneado desde una versión de alta con pliegues (codos,
+  puños, cinturón, entrepierna, rodillas, pantalón sobre la bota) + relieve fino (sarga, costuras con pespunte,
+  cremallera, cordones, tacos); color con desteñido, suciedad por zonas, desgaste de cantos y oclusión horneada.
+  Tres apariencias: A arena (bots del campo de tiro), B oliva (rival online, embebida), bots gris.
+- **Técnica:** 26 huesos (pesos automáticos por calor, 4 influencias), LOD0/1/2 = 14 598 / 5 000 / 1 500 triángulos,
+  1 material, morph `agachado`/`deslizar` (altura final de las cajas sin escalar el modelo por fuera), nodo `arma`
+  (hijo de la clavícula derecha) donde se cuelgan las armas de `viewmodels.glb`, 29 clips (los 28 del encargo +
+  `idle_knife`). Cabe en las zonas de `core/hitbox.js` (±4 cm; cabeza en reposo sin tolerancia) en los 3 LOD:
+  `node tools/check-character-hitbox.js assets/personaje/personaje.glb --lod 0`.
+- **En el juego:** `client/soldier2.js` (mezcla por capas con `AnimationMixer`) y `src/page.html` (`pj2*`,
+  `animateSoldier2`). Medido con 3 bots (SwiftShader): 42 llamadas de dibujo frente a 129 del soldado de cajas;
+  76 200 triángulos frente a 14 500 (contando la sombra).

@@ -129,6 +129,7 @@ reconciliación, interpolación del rival 110 ms, ping) · `vmrig.js` (materiale
 | `&sombra=libre`, `&sombrafade=0`, `&sombras=0` | Sombra sin ajuste a texels / sin fundido / sin sombras (diagnóstico) |
 | `?casa=1` / `?casa=0` | Muestra / oculta CASA ATLAS en los menús (se recuerda) |
 | `&techo=1` | Techo opcional en CASA ATLAS |
+| `?pj=2` | Personaje 3D (rev. 03, `client/soldier2.js`, `assets/personaje/`) en bots y rival online en vez de la figura de cajas; solo aspecto |
 | `?town=0` | Pueblo original de cajas |
 | `?vm=0` / `?vm=1` | Armas simples / forzar modelos 3D |
 | `&nm=0` | Sin mapas de normales |

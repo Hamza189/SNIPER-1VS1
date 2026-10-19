@@ -2542,6 +2542,44 @@ const SOLDIER_MERGED=(()=>{const G=SOLDIER_GEO,H=Math.PI/2;return {
   pistol:mergeGeo([[new T.BoxGeometry(0.035,0.045,0.2),0.03,0.0,0.48],[new T.BoxGeometry(0.03,0.1,0.045),0.03,-0.06,0.42,0.28]]),
   knife:mergeGeo([[new T.BoxGeometry(0.012,0.035,0.22),0.2,-0.02,0.48],[new T.BoxGeometry(0.03,0.04,0.1),0.2,-0.03,0.34]])};})();
 const SOLDIERS=[];
+/* ---- personaje 3D, revisión 03 (?pj=2, client/soldier2.js; 19-10-2026): sustituye la figura de cajas en bots y rival.
+   Mientras carga (o si falla) se ve el soldado de siempre. Las zonas de impacto no cambian. Apariencias: rival B (oliva),
+   bots del duelo 'bots' (gris), bots del campo de tiro A (arena). Perfil BAJO: texturas de 1024. ---- */
+const PJ2={on:/[?&]pj=2\b/.test(location.search)&&typeof SDSoldier2!=='undefined',tpl:null,mats:{},list:[],loading:false,failed:false};
+const PJ2_LOD={alto:[30,70],medio:[22,50],bajo:[12,30]};   // m (distancia / zoom de la mira) para pasar a LOD1 y LOD2
+const _pj2v=new T.Vector3();
+function pj2Load(){
+  if(!PJ2.on||PJ2.loading||!T.GLTFLoader)return;PJ2.loading=true;
+  const f='assets/personaje/personaje'+(GFX.profile==='bajo'?'_1k':'')+'.glb?v='+BUILD_HASH;
+  try{new T.GLTFLoader().load(f,g=>{try{PJ2.tpl=SDSoldier2.template(g,T);PJ2.mats.B=PJ2.tpl.material;
+      for(const R of PJ2.list)pj2Attach(R);try{precompileAll();}catch(e){}}catch(e){PJ2.failed=true;console.warn('pj2',e);}},
+    undefined,e=>{PJ2.failed=true;console.warn('pj2 load',e);});}catch(e){PJ2.failed=true;}
+}
+function pj2Mat(v){
+  if(PJ2.mats[v])return PJ2.mats[v];
+  const m=PJ2.tpl.material.clone(),t=new T.TextureLoader().load('assets/personaje/color_'+v+(GFX.profile==='bajo'?'_1k':'')+'.jpg?v='+BUILD_HASH);
+  t.flipY=false;t.encoding=T.sRGBEncoding;t.anisotropy=GFX.profile==='alto'?4:2;m.map=t;return PJ2.mats[v]=m;
+}
+function pj2Aim(R,w){const o=SDSoldier2.AIM_OFFSET[w]||SDSoldier2.AIM_OFFSET.rifle;R.aim.position.set(o[0],o[1],o[2]);R.v2w=w;}
+function pj2Attach(R){
+  if(R.v2||!PJ2.tpl)return;
+  const I=SDSoldier2.create(PJ2.tpl,T,pj2Mat(R.pj2v||'B'));R.v2=I;
+  for(const c of R.root.children)c.visible=false;   // fuera la figura de cajas (sigue existiendo: es la vuelta atrás)
+  R.root.add(I.root);
+  I.arma.add(R.aim);R.aim.rotation.set(0,0,0);pj2Aim(R,R.wpn||'rifle');   // armas, fogonazo y destello de la mira van con el arma
+}
+function animateSoldier2(R,st,dt){
+  const I=R.v2,dead=st.dead||0;
+  for(const k in R.w)R.w[k].visible=k===st.wpn&&dead<0.3;
+  if(st.wpn&&st.wpn!==R.v2w)pj2Aim(R,st.wpn);
+  if(R.tpPump&&R.pump)R.tpPump.position.z=-0.27+(0.56-R.pump.position.z);
+  // LOD por distancia, dividida por el zoom de la mira (con la mira de x8 el rival lejano se ve de cerca)
+  R.root.getWorldPosition(_pj2v);
+  const d=_pj2v.distanceTo(camera.position)/Math.max(1,BASE_FOV/camera.fov),L=PJ2_LOD[GFX.profile]||PJ2_LOD.medio;
+  SDSoldier2.setLod(I,d<L[0]?0:d<L[1]?1:2);
+  st.flinch=R.flinch||0;
+  R.v2plan=SDSoldier2.update(I,st,dt);
+}
 function makeSoldier(M,opts){
   opts=opts||{};const G=SOLDIER_GEO,MG=SOLDIER_MERGED,R={},mesh=(geo,mat,par,x,y,z,sx,sy,sz,shadow)=>{const m=new T.Mesh(geo,mat);m.position.set(x||0,y||0,z||0);if(sx)m.scale.set(sx,sy,sz);m.castShadow=!!shadow;par.add(m);return m;};
   R.root=new T.Group();
@@ -2575,6 +2613,7 @@ function makeSoldier(M,opts){
   R.phase=0;R.flinch=0;R.wpn=opts.unarmed?null:'rifle';R.dead=0;
   R.shL=new T.Vector3(-0.22,0.47,0.0);R.shR=new T.Vector3(0.22,0.47,0.0);
   SOLDIERS.push(R);if(VMA.ready)soldierUseModels(R);
+  if(PJ2.on){R.pj2v=opts.variant||'B';PJ2.list.push(R);if(PJ2.tpl)pj2Attach(R);else pj2Load();}
   return R;
 }
 /* the rival's weapons: the same modelled weapons as in first person (shared geometry), turned to
@@ -2598,6 +2637,7 @@ const _sv=new T.Vector3(),_sAM=new T.Matrix4(),_sTg=new T.Vector3(),_sHip=new T.
 /* st: {vx,vz (local, m/s), crouch 0..1, slide, air, pitch (rad, + = up), wpn, reload 0..1, bolt 0..1,
         stab 0..1, dead 0..1, sprint}. dt in s. */
 function animateSoldier(R,st,dt){
+  if(R.v2){animateSoldier2(R,st,dt);return;}
   const sp=Math.hypot(st.vx||0,st.vz||0),moving=sp>0.4&&!st.air&&!st.slide;
   R.phase+=dt*(moving?(2.4+sp*0.95):0);
   const cyc=Math.sin(R.phase),cyc2=Math.cos(R.phase);
@@ -2685,7 +2725,7 @@ class Bot{
     }
     add(new T.SphereGeometry(0.13,14,10),BM.skin,0,1.62,0,'head');
     add(new T.SphereGeometry(0.15,14,8,0,Math.PI*2,0,Math.PI/2),BM.helmet,0,1.65,0,'head');
-    this.rig=makeSoldier(BM,{});this.g.add(this.rig.root);this.rig.wpn='rifle';
+    this.rig=makeSoldier(BM,{variant:this.trainer?'A':'bots'});this.g.add(this.rig.root);this.rig.wpn='rifle';
     // the scope glint sits on the rifle's scope and follows the aim
     this.glint=new T.Sprite(glintMatBase.clone());this.glint.position.set(0.1,0.06,0.43);this.glint.scale.set(0.05,0.05,1);this.glint.visible=false;this.rig.aim.add(this.glint);
     this.lastX=0;this.lastZ=0;this.lvx=0;this.lvz=0;
@@ -2737,7 +2777,7 @@ class Bot{
     let pitch=0;
     if(this.alive&&(this.state==='aim'||this.aiming)){const dy=(P.pos.y+P.eye)-(g.position.y+1.5),dd=Math.hypot(P.pos.x-g.position.x,P.pos.z-g.position.z);pitch=Math.atan2(dy,dd);}
     this.rig.flinch=this.flinch||0;
-    animateSoldier(this.rig,{far:g.position.distanceToSquared(camera.position)>900,vx:this.alive?this.lvx*c-this.lvz*s:0,vz:this.alive?this.lvx*s+this.lvz*c:0,pitch,wpn:this.rig.wpn,
+    animateSoldier(this.rig,{far:g.position.distanceToSquared(camera.position)>900,vx:this.alive?this.lvx*c-this.lvz*s:0,vz:this.alive?this.lvx*s+this.lvz*c:0,pitch,wpn:this.rig.wpn,aim:this.alive&&(this.state==='aim'||this.aiming)?1:0,
       sprint:Math.hypot(this.lvx,this.lvz)>4.5,crouch:this.trainer&&this.ms&&!this.ms.sliding?clamp((1-SDHitbox.scaleOf(this.ms.eye))/(1-MOVE.eyeCrouch/MOVE.eyeStand),0,1):0,slide:this.trainer&&this.ms&&this.ms.sliding?clamp((MOVE.eyeStand-this.ms.eye)/(MOVE.eyeStand-MOVE.eyeSlide),0,1):0,air:this.trainer&&this.ms&&!this.ms.onGround,dead:this.alive?0:Math.min(1,this.deadT/0.5)},dt);
   }
   update0(dt){
@@ -2747,7 +2787,7 @@ class Bot{
       this.deadT+=dt;
       // knocked back along the bullet, then falls backwards with a small bounce
       const t=this.deadT;const fall=t<0.5?ss(t/0.5):1+Math.sin(Math.min(1,(t-0.5)/0.25)*Math.PI)*0.04;
-      g.rotation.x=-fall*Math.PI/2*0.95;
+      g.rotation.x=this.rig.v2?0:-fall*Math.PI/2*0.95;   // con ?pj=2 cae el propio personaje (death_back)
       g.position.x+=this.fallV.x*dt;g.position.z+=this.fallV.z*dt;this.fallV.multiplyScalar(Math.exp(-5*dt));
       this.yaw+=this.spin*dt*Math.exp(-4*t);g.rotation.y=this.yaw;g.rotation.z=this.spin*0.08*ss(t/0.4);
       if(t>1.8)g.position.y-=dt*0.7;
@@ -2755,7 +2795,7 @@ class Bot{
       return;
     }
     this.flinch=damp(this.flinch,0,7,dt);
-    g.rotation.x=-this.flinch*0.3;
+    g.rotation.x=this.rig.v2?0:-this.flinch*0.3;
     if(this.trainer){
       if(gameTime-this.lastDamage>4&&this.hp<100)this.hp=Math.min(100,this.hp+30*dt);
       const diff=SD_CONFIG.training[TRAIN.level]||SD_CONFIG.training.normal;
@@ -4269,7 +4309,7 @@ class RemotePlayer{
     const relDur=wp==='pistol'?PCFG.reload:wp==='shotgun'?0.8:GUNCFG.reload;
     const r=this.g.rotation.y,c=Math.cos(r),s=Math.sin(r),vx=pose.vx||0,vz=pose.vz||0;
     const slide=pose.mode==='slide'?clamp((MOVE.eyeStand-(pose.eye||MOVE.eyeStand))/(MOVE.eyeStand-MOVE.eyeSlide),0,1):0,cr=slide?0:clamp((1-k)/(1-MOVE.eyeCrouch/MOVE.eyeStand),0,1);
-    animateSoldier(this.rig,{far:this.g.position.distanceToSquared(camera.position)>900,vx:pose.alive?vx*c-vz*s:0,vz:pose.alive?vx*s+vz*c:0,crouch:cr,slide,air:!pose.g&&pose.alive,sprint:pose.mode==='sprint',
+    animateSoldier(this.rig,{far:this.g.position.distanceToSquared(camera.position)>900,vx:pose.alive?vx*c-vz*s:0,vz:pose.alive?vx*s+vz*c:0,crouch:cr,slide,air:!pose.g&&pose.alive,sprint:pose.mode==='sprint',aim:pose.ads||0,
       pitch:pose.pitch,wpn:wp,reload:this.relW,relPh:(this.relT%relDur)/relDur,bolt:wp==='rifle'&&this.boltT>0?Math.min(1,this.boltT/GUNCFG.bolt):0,
       stab:this.stabT>0?Math.min(1,this.stabT/0.3):0,dead:pose.alive?0:Math.min(1,this.deadT/0.5)},dt);
     const sp=Math.hypot(vx,vz);
@@ -4284,7 +4324,7 @@ class RemotePlayer{
     this.lastWs=pose.ws;
     if(this.flashT>0){this.flashT-=dt;this.flash.visible=this.flashT>0;}
     if(pose.alive){this.alive=true;this.deadT=0;this.g.rotation.x=0;this.g.visible=true;}
-    else{this.alive=false;this.deadT+=dt;this.g.rotation.x=-ss((this.deadT-0.12)/0.5)*Math.PI/2*0.95;this.g.visible=this.deadT<2.6;}   // knees give, then falls back
+    else{this.alive=false;this.deadT+=dt;this.g.rotation.x=this.rig.v2?0:-ss((this.deadT-0.12)/0.5)*Math.PI/2*0.95;this.g.visible=this.deadT<2.6;}   // knees give, then falls back
   }
   shoot(w){this.flashT=0.06;this.flash.material.rotation=Math.random()*6;const pi=w==='pistol',sg=w==='shotgun',g=this.rig.w[pi?'pistol':sg?'shotgun':'rifle'],m=g.userData.grips.muzzle;this.flash.position.set(m[0],m[1],m[2]+0.04);this.flash.scale.setScalar(pi?0.18:sg?0.5:0.35);}
 }
@@ -4804,6 +4844,6 @@ if(FLORA.on){const gl=new T.GLTFLoader();let n=2;
       // the town's ground must exist first (rays land on it)
       if(P3W.kit)go();else{const w=setInterval(()=>{if(P3W.kit){clearInterval(w);go();}},300);}}}}
 
-window.__SD={CASA,casaLoad,XL,casaxlLoad,FLORA,RATS,RAT_WORLD,ratsFrame,SHADOW_FADE,setDuelLethal,get DUEL_LETHAL(){return DUEL_LETHAL;},gfxDiagText,get P3ON(){return P3ON;},COBCC,damagePlayer,TEX,sunFollow,setSunSnap(on){SUN_SNAP=!!on;},sun,P0,E10,e10Lod,DIAG,setTrainMove,LIGHT:{sun,hemi,skyMat,LOOK,P3},P3W,freeze(on){SIM_FREEZE=!!on;},SHOT,VMA,makeSoldier,animateSoldier,BOT_MAT,scene,camera,RemotePlayer,PMprev,PIS,PROOT,RIF,WROOT,SHO_:null,MANUAL,advance(ms){frameBody(last+ms);},get LAST_PELLETS(){return LAST_PELLETS;},SCORE,SCFG,SROOT,SHO,setPrimaryChoice,get PRIMARY(){return PRIMARY;},PCORE,PCFG,setWorld,WORLDS,get WORLD_ID(){return WORLD_ID;},renderer,GFX,gfxApply,get NET(){return NET;},get REMOTE(){return REMOTE;},W,get NAV(){return NAV;},setOffMap,get OFFMAP(){return OFFMAP;},TOUCH,EDIT,openEditor,get SETTINGS(){return SETTINGS;},get LAYOUT(){return LAYOUT;},checkOrientation,MAT,LOAD,TRAINERS,get RANGE_BOTS(){return RANGE_BOTS;},TRAIN,setTrain,setLethal,kitNote,GINS,TDIAG,AU,get TOUCH_EVENTS(){return TOUCH_EVENTS;},impactFX,bodyFX,get DECALS(){return DECALS;},surfaceOf,soundDelay,aimSelfTest,P,PM,WS,WCORE,RECOIL,AIM,BOTS,DUMMIES,BULLETS,EVENTS,PARTS,STATS,get state(){return state;},get mode(){return mode;},setMode,input,startMatch,simTick,frame,toMenu,pause,resume};
+window.__SD={PJ2,pj2Load,CASA,casaLoad,XL,casaxlLoad,FLORA,RATS,RAT_WORLD,ratsFrame,SHADOW_FADE,setDuelLethal,get DUEL_LETHAL(){return DUEL_LETHAL;},gfxDiagText,get P3ON(){return P3ON;},COBCC,damagePlayer,TEX,sunFollow,setSunSnap(on){SUN_SNAP=!!on;},sun,P0,E10,e10Lod,DIAG,setTrainMove,LIGHT:{sun,hemi,skyMat,LOOK,P3},P3W,freeze(on){SIM_FREEZE=!!on;},SHOT,VMA,makeSoldier,animateSoldier,BOT_MAT,scene,camera,RemotePlayer,PMprev,PIS,PROOT,RIF,WROOT,SHO_:null,MANUAL,advance(ms){frameBody(last+ms);},get LAST_PELLETS(){return LAST_PELLETS;},SCORE,SCFG,SROOT,SHO,setPrimaryChoice,get PRIMARY(){return PRIMARY;},PCORE,PCFG,setWorld,WORLDS,get WORLD_ID(){return WORLD_ID;},renderer,GFX,gfxApply,get NET(){return NET;},get REMOTE(){return REMOTE;},W,get NAV(){return NAV;},setOffMap,get OFFMAP(){return OFFMAP;},TOUCH,EDIT,openEditor,get SETTINGS(){return SETTINGS;},get LAYOUT(){return LAYOUT;},checkOrientation,MAT,LOAD,TRAINERS,get RANGE_BOTS(){return RANGE_BOTS;},TRAIN,setTrain,setLethal,kitNote,GINS,TDIAG,AU,get TOUCH_EVENTS(){return TOUCH_EVENTS;},impactFX,bodyFX,get DECALS(){return DECALS;},surfaceOf,soundDelay,aimSelfTest,P,PM,WS,WCORE,RECOIL,AIM,BOTS,DUMMIES,BULLETS,EVENTS,PARTS,STATS,get state(){return state;},get mode(){return mode;},setMode,input,startMatch,simTick,frame,toMenu,pause,resume};
 })();
 </script>

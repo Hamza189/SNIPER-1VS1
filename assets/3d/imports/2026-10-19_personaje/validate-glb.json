@@ -1,0 +1,86 @@
+{
+ "file": "assets/3d/imports/2026-10-19_personaje/personaje.glb",
+ "ok": true,
+ "errors": [],
+ "warnings": [
+  "28 animaciones (el contrato las pide solo si se acuerdan)"
+ ],
+ "info": {
+  "sizeMB": 3.23,
+  "generator": "Original SNIPER DUEL character / Blender authoring script",
+  "bounds": {
+   "min": [
+    -0.353,
+    0,
+    -0.159
+   ],
+   "max": [
+    0.353,
+    1.778,
+    0.502
+   ],
+   "size": [
+    0.705,
+    1.778,
+    0.661
+   ]
+  },
+  "nodes": {
+   "personaje_LOD0": {
+    "tris": 5328,
+    "materials": 1,
+    "primitives": 1
+   },
+   "personaje_LOD1": {
+    "tris": 2604,
+    "materials": 1,
+    "primitives": 1
+   },
+   "personaje_LOD2": {
+    "tris": 924,
+    "materials": 1,
+    "primitives": 1
+   }
+  },
+  "lods": [
+   "personaje_LOD0",
+   "personaje_LOD1",
+   "personaje_LOD2"
+  ],
+  "materials": [
+   {
+    "name": "uniform_shared_atlas",
+    "alpha": "OPAQUE",
+    "double": false,
+    "baseColor": true,
+    "normal": true,
+    "orm": true,
+    "ao": true
+   }
+  ],
+  "textures": [
+   {
+    "name": "color_A.jpg",
+    "w": 1024,
+    "h": 1024,
+    "type": "jpeg",
+    "bytes": 217651
+   },
+   {
+    "name": "normal.png",
+    "w": 1024,
+    "h": 1024,
+    "type": "png",
+    "bytes": 5559
+   },
+   {
+    "name": "orm.png",
+    "w": 1024,
+    "h": 1024,
+    "type": "png",
+    "bytes": 5376
+   }
+  ],
+  "textureMB": 16
+ }
+}

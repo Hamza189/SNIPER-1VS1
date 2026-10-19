@@ -6,6 +6,49 @@ Estado: IMPLEMENTADO · PROBADO EN NAVEGADOR · PROBADO ONLINE · PENDIENTE DE V
 
 ---
 
+## N7-1 · Personaje 3D realista para bots y rival online, tras `?pj=2` (19/20-10-2026)
+
+**Antes**
+- **Problema:** el rival y los bots eran una figura de cajas y cilindros con IK procedural («monigotes», propietario).
+  Las dos entregas de Codex no valían: la rev. 01 (piezas rígidas, 5 328 triángulos) fue rechazada («parecen
+  muñecos») y la rev. 02 se quedó a medias por falta de uso.
+- **Causa del aspecto de muñeco en la rev. 01:** cuerpo hecho de primitivas, cada vértice pegado a un solo hueso
+  (articulaciones que se separan), agachado y deslizamiento a base de escalar todo el cuerpo.
+- **Solución:** revisión 03 rehecha por Claude por código (`assets/3d/imports/2026-10-19_personaje/revision_03/`,
+  ficha `PERSONAJE_REV03.md`): cuerpo de MakeHuman CC0 masculino, ropa con volumen y pliegues horneados, equipo
+  modelado, pesos suaves, texturas 2048 con suciedad y desgaste, 29 clips con IK y pies que no patinan; altura de
+  agachado/deslizamiento por morph (los brazos y la cabeza no se deforman). Integración por capas con `AnimationMixer`.
+- **Riesgos:** solo cliente y solo con la bandera. No se tocan `core/`, servidor, balística ni zonas de impacto.
+
+**Después**
+- **Archivos:** `client/soldier2.js` (nuevo), `src/page.html` (`PJ2`, `pj2Load/pj2Attach/animateSoldier2`, bots con
+  apariencia, sin girar el grupo al morir con `?pj=2`), `build.py` (incluye el módulo y los assets en el hash),
+  `assets/personaje/` (GLB 2048 y 1024, apariencias A y bots), `tools/check-character-hitbox.js` (nuevo),
+  `tools/capture-pj2.js` (nuevo), `test/soldier2.test.js` y `test/pj2.browser.test.js` (nuevos), docs.
+- **Resultado:** bots del duelo (gris), bots del campo de tiro (arena) y rival online (oliva) con el personaje nuevo:
+  rifle al hombro o bajo, marcha en 4 direcciones sincronizada con la velocidad, esprint con el rifle cruzado,
+  agachado, deslizamiento, salto, recarga/cerrojo/bombeo/navaja según el estado del juego, inclinación de la mirada
+  (capa aditiva) y caída al morir. LOD por distancia dividida por el zoom de la mira (con la mira se ve LOD0).
+- **Pruebas:** `validate-glb` ✔ (2048 y 1024); `check-character-hitbox` ✔ en los 3 LOD (±4 cm; cabeza en reposo
+  −0,15 cm); `soldier2.test` 18/18; `pj2.browser.test` 14/14 (sin la bandera no se descarga nada; zonas de impacto
+  idénticas; piernas que se mueven; agachado a la altura del servidor; tumbado al morir; LOD; rival B; BAJO = 1024);
+  `npm test` completo en verde.
+- **Antes/después (misma cámara, 3 bots a 7/14/30 m, WebGL por software):** `docs/next-level/pj2/` (PUEBLO 3.0 y
+  CASA XL, plano general y de cerca).
+
+  | 3 bots | Soldado de cajas | Personaje rev. 03 |
+  |---|---:|---|
+  | Llamadas de dibujo (con sombra) | 102–129 | **42** |
+  | Triángulos (con sombra) | 10 500–14 500 | 76 200 (LOD0, LOD0, LOD1) |
+  | CPU de animación (3 bots, por fotograma, PC) | 0,06–0,19 ms | 0,12–0,31 ms |
+  | Texturas en GPU | — | 64 MB (ALTO/MEDIO) · 16 MB (BAJO) + 21/5 MB por apariencia extra |
+- **Limitaciones:** agachado/deslizamiento comprimidos (son las cajas del servidor); dedos fijos; FPS reales en
+  iPhone/Samsung/GTX sin medir. **PENDIENTE DE VALIDACIÓN EN IPHONE** y de aprobación visual del propietario antes de
+  ser el personaje por defecto.
+- **Cómo revertir:** quitar `?pj=2` (por defecto no cambia nada). Para retirarlo del todo: revertir el commit.
+
+---
+
 ## N3-1 · Online: los eventos de la partida se perdían tras reiniciarse el servidor de la sala
 
 **Antes**

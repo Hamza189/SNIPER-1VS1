@@ -1,0 +1,86 @@
+{
+ "file": "assets/personaje/personaje.glb",
+ "ok": true,
+ "errors": [],
+ "warnings": [
+  "29 animaciones (el contrato las pide solo si se acuerdan)"
+ ],
+ "info": {
+  "sizeMB": 6.33,
+  "generator": "SNIPER DUEL personaje rev03 (MakeHuman CC0 + ropa/equipo/animación propios)",
+  "bounds": {
+   "min": [
+    -0.556,
+    -0.001,
+    -0.172
+   ],
+   "max": [
+    0.556,
+    1.755,
+    0.28
+   ],
+   "size": [
+    1.112,
+    1.756,
+    0.452
+   ]
+  },
+  "nodes": {
+   "personaje_LOD0": {
+    "tris": 14598,
+    "materials": 1,
+    "primitives": 1
+   },
+   "personaje_LOD1": {
+    "tris": 5000,
+    "materials": 1,
+    "primitives": 1
+   },
+   "personaje_LOD2": {
+    "tris": 1500,
+    "materials": 1,
+    "primitives": 1
+   }
+  },
+  "lods": [
+   "personaje_LOD0",
+   "personaje_LOD1",
+   "personaje_LOD2"
+  ],
+  "materials": [
+   {
+    "name": "soldado",
+    "alpha": "OPAQUE",
+    "double": false,
+    "baseColor": true,
+    "normal": true,
+    "orm": true,
+    "ao": true
+   }
+  ],
+  "textures": [
+   {
+    "name": "color_B",
+    "w": 2048,
+    "h": 2048,
+    "type": "jpeg",
+    "bytes": 674534
+   },
+   {
+    "name": "normal",
+    "w": 2048,
+    "h": 2048,
+    "type": "jpeg",
+    "bytes": 2308419
+   },
+   {
+    "name": "orm",
+    "w": 2048,
+    "h": 2048,
+    "type": "jpeg",
+    "bytes": 780491
+   }
+  ],
+  "textureMB": 63.8
+ }
+}

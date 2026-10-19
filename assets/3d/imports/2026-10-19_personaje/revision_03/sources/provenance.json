@@ -1,0 +1,27 @@
+{
+  "universal-male-young-averagemuscle-averageweight.target": {
+    "url": "https://raw.githubusercontent.com/makehumancommunity/makehuman/a8bc2d54ff0ac92e78ff71431b1023eda42bf482/makehuman/data/targets/macrodetails/universal-male-young-averagemuscle-averageweight.target",
+    "sha256": "4ba5396ddabda448ece15650a566fbebfbb10239256ccb201e8f883429e12249",
+    "license": "CC0-1.0 (MakeHuman LICENSE.md: assets en makehuman/data)"
+  },
+  "universal-male-young-maxmuscle-averageweight.target": {
+    "url": "https://raw.githubusercontent.com/makehumancommunity/makehuman/a8bc2d54ff0ac92e78ff71431b1023eda42bf482/makehuman/data/targets/macrodetails/universal-male-young-maxmuscle-averageweight.target",
+    "sha256": "c171ff9cc95e96273beb3e3b1969a01988c2d4982ebc6fe04bf81cf72ee3b295",
+    "license": "CC0-1.0 (MakeHuman LICENSE.md: assets en makehuman/data)"
+  },
+  "caucasian-male-young.target": {
+    "url": "https://raw.githubusercontent.com/makehumancommunity/makehuman/a8bc2d54ff0ac92e78ff71431b1023eda42bf482/makehuman/data/targets/macrodetails/caucasian-male-young.target",
+    "sha256": "70e228ba7164737dae664454394536fc5935fa48d333c1a97d77e2dc6eacc5f5",
+    "license": "CC0-1.0 (MakeHuman LICENSE.md: assets en makehuman/data)"
+  },
+  "african-male-young.target": {
+    "url": "https://raw.githubusercontent.com/makehumancommunity/makehuman/a8bc2d54ff0ac92e78ff71431b1023eda42bf482/makehuman/data/targets/macrodetails/african-male-young.target",
+    "sha256": "894abc1fbb3d28543a51fef16f89d5d4bdf9aa2e1534413339811a3d47818b7d",
+    "license": "CC0-1.0 (MakeHuman LICENSE.md: assets en makehuman/data)"
+  },
+  "asian-male-young.target": {
+    "url": "https://raw.githubusercontent.com/makehumancommunity/makehuman/a8bc2d54ff0ac92e78ff71431b1023eda42bf482/makehuman/data/targets/macrodetails/asian-male-young.target",
+    "sha256": "ed2e8c191cb6b87b4a2d97c80486acb2604fa549316c7aa2a738a5d5a14334dc",
+    "license": "CC0-1.0 (MakeHuman LICENSE.md: assets en makehuman/data)"
+  }
+}

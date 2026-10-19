@@ -1,0 +1,1141 @@
+{
+  "bones": [
+    "Root",
+    "Hips",
+    "Spine",
+    "Spine1",
+    "Spine2",
+    "Neck",
+    "Head",
+    "Eyes",
+    "LeftShoulder",
+    "LeftArm",
+    "LeftForeArm",
+    "LeftHand",
+    "LeftThumb",
+    "LeftUpLeg",
+    "LeftLeg",
+    "LeftFoot",
+    "LeftToeBase",
+    "RightShoulder",
+    "RightArm",
+    "RightForeArm",
+    "RightHand",
+    "RightThumb",
+    "RightUpLeg",
+    "RightLeg",
+    "RightFoot",
+    "RightToeBase"
+  ],
+  "parts": {
+    "personaje_LOD0": {
+      "triangles": 7994,
+      "vertices": 4514,
+      "bounds": [
+        [
+          -0.330520087011195,
+          0.0002807647387185818,
+          -0.17650000000000002
+        ],
+        [
+          0.3305200653387109,
+          1.7779537524088038,
+          0.5167960220996175
+        ]
+      ],
+      "parts": [
+        {
+          "name": "anatomical_clothed_body",
+          "zone": "per_vertex",
+          "first": 0,
+          "count": 2598,
+          "triangles": 4682
+        },
+        {
+          "name": "carrier_front",
+          "zone": 1,
+          "first": 2598,
+          "count": 20,
+          "triangles": 36
+        },
+        {
+          "name": "carrier_back",
+          "zone": 1,
+          "first": 2618,
+          "count": 20,
+          "triangles": 36
+        },
+        {
+          "name": "cummerbund",
+          "zone": 1,
+          "first": 2638,
+          "count": 44,
+          "triangles": 80
+        },
+        {
+          "name": "duty_belt",
+          "zone": 1,
+          "first": 2682,
+          "count": 44,
+          "triangles": 80
+        },
+        {
+          "name": "carrier_shoulder_strap",
+          "zone": 1,
+          "first": 2726,
+          "count": 37,
+          "triangles": 60
+        },
+        {
+          "name": "carrier_shoulder_strap",
+          "zone": 1,
+          "first": 2763,
+          "count": 37,
+          "triangles": 60
+        },
+        {
+          "name": "magazine_pouch",
+          "zone": 1,
+          "first": 2800,
+          "count": 20,
+          "triangles": 36
+        },
+        {
+          "name": "pouch_flap",
+          "zone": 1,
+          "first": 2820,
+          "count": 14,
+          "triangles": 24
+        },
+        {
+          "name": "magazine_pouch",
+          "zone": 1,
+          "first": 2834,
+          "count": 20,
+          "triangles": 36
+        },
+        {
+          "name": "pouch_flap",
+          "zone": 1,
+          "first": 2854,
+          "count": 14,
+          "triangles": 24
+        },
+        {
+          "name": "magazine_pouch",
+          "zone": 1,
+          "first": 2868,
+          "count": 20,
+          "triangles": 36
+        },
+        {
+          "name": "pouch_flap",
+          "zone": 1,
+          "first": 2888,
+          "count": 14,
+          "triangles": 24
+        },
+        {
+          "name": "identity_patch",
+          "zone": 1,
+          "first": 2902,
+          "count": 14,
+          "triangles": 24
+        },
+        {
+          "name": "molle_loop",
+          "zone": 1,
+          "first": 2916,
+          "count": 14,
+          "triangles": 24
+        },
+        {
+          "name": "molle_loop",
+          "zone": 1,
+          "first": 2930,
+          "count": 14,
+          "triangles": 24
+        },
+        {
+          "name": "molle_loop",
+          "zone": 1,
+          "first": 2944,
+          "count": 14,
+          "triangles": 24
+        },
+        {
+          "name": "molle_loop",
+          "zone": 1,
+          "first": 2958,
+          "count": 14,
+          "triangles": 24
+        },
+        {
+          "name": "molle_loop",
+          "zone": 1,
+          "first": 2972,
+          "count": 14,
+          "triangles": 24
+        },
+        {
+          "name": "molle_loop",
+          "zone": 1,
+          "first": 2986,
+          "count": 14,
+          "triangles": 24
+        },
+        {
+          "name": "molle_loop",
+          "zone": 1,
+          "first": 3000,
+          "count": 14,
+          "triangles": 24
+        },
+        {
+          "name": "molle_loop",
+          "zone": 1,
+          "first": 3014,
+          "count": 14,
+          "triangles": 24
+        },
+        {
+          "name": "back_hydration",
+          "zone": 1,
+          "first": 3028,
+          "count": 20,
+          "triangles": 36
+        },
+        {
+          "name": "back_pull_handle",
+          "zone": 1,
+          "first": 3048,
+          "count": 30,
+          "triangles": 48
+        },
+        {
+          "name": "radio",
+          "zone": 1,
+          "first": 3078,
+          "count": 14,
+          "triangles": 24
+        },
+        {
+          "name": "radio_antenna",
+          "zone": 1,
+          "first": 3092,
+          "count": 16,
+          "triangles": 24
+        },
+        {
+          "name": "belt_buckle",
+          "zone": 1,
+          "first": 3108,
+          "count": 14,
+          "triangles": 24
+        },
+        {
+          "name": "high_cut_helmet",
+          "zone": 0,
+          "first": 3122,
+          "count": 232,
+          "triangles": 392
+        },
+        {
+          "name": "Leftgoggle",
+          "zone": 0,
+          "first": 3354,
+          "count": 54,
+          "triangles": 96
+        },
+        {
+          "name": "Leftgoggle",
+          "zone": 0,
+          "first": 3408,
+          "count": 54,
+          "triangles": 96
+        },
+        {
+          "name": "Lefthelmet_rail",
+          "zone": 0,
+          "first": 3462,
+          "count": 38,
+          "triangles": 64
+        },
+        {
+          "name": "Leftearcup",
+          "zone": 0,
+          "first": 3500,
+          "count": 54,
+          "triangles": 96
+        },
+        {
+          "name": "Leftchinstrap",
+          "zone": 0,
+          "first": 3554,
+          "count": 23,
+          "triangles": 36
+        },
+        {
+          "name": "Leftkneecap",
+          "zone": 2,
+          "first": 3577,
+          "count": 20,
+          "triangles": 36
+        },
+        {
+          "name": "Leftcargo",
+          "zone": 2,
+          "first": 3597,
+          "count": 54,
+          "triangles": 96
+        },
+        {
+          "name": "Leftcargo_flap",
+          "zone": 2,
+          "first": 3651,
+          "count": 38,
+          "triangles": 64
+        },
+        {
+          "name": "Leftboot_ankle",
+          "zone": 2,
+          "first": 3689,
+          "count": 41,
+          "triangles": 72
+        },
+        {
+          "name": "Leftboot_toe",
+          "zone": 2,
+          "first": 3730,
+          "count": 70,
+          "triangles": 128
+        },
+        {
+          "name": "Leftoutsole",
+          "zone": 2,
+          "first": 3800,
+          "count": 70,
+          "triangles": 128
+        },
+        {
+          "name": "Leftlaces",
+          "zone": 2,
+          "first": 3870,
+          "count": 16,
+          "triangles": 24
+        },
+        {
+          "name": "Leftlaces",
+          "zone": 2,
+          "first": 3886,
+          "count": 16,
+          "triangles": 24
+        },
+        {
+          "name": "Leftlaces",
+          "zone": 2,
+          "first": 3902,
+          "count": 16,
+          "triangles": 24
+        },
+        {
+          "name": "Leftlaces",
+          "zone": 2,
+          "first": 3918,
+          "count": 16,
+          "triangles": 24
+        },
+        {
+          "name": "Rightgoggle",
+          "zone": 0,
+          "first": 3934,
+          "count": 54,
+          "triangles": 96
+        },
+        {
+          "name": "Rightgoggle",
+          "zone": 0,
+          "first": 3988,
+          "count": 54,
+          "triangles": 96
+        },
+        {
+          "name": "Righthelmet_rail",
+          "zone": 0,
+          "first": 4042,
+          "count": 38,
+          "triangles": 64
+        },
+        {
+          "name": "Rightearcup",
+          "zone": 0,
+          "first": 4080,
+          "count": 54,
+          "triangles": 96
+        },
+        {
+          "name": "Rightchinstrap",
+          "zone": 0,
+          "first": 4134,
+          "count": 23,
+          "triangles": 36
+        },
+        {
+          "name": "Rightkneecap",
+          "zone": 2,
+          "first": 4157,
+          "count": 20,
+          "triangles": 36
+        },
+        {
+          "name": "Rightcargo",
+          "zone": 2,
+          "first": 4177,
+          "count": 54,
+          "triangles": 96
+        },
+        {
+          "name": "Rightcargo_flap",
+          "zone": 2,
+          "first": 4231,
+          "count": 38,
+          "triangles": 64
+        },
+        {
+          "name": "Rightboot_ankle",
+          "zone": 2,
+          "first": 4269,
+          "count": 41,
+          "triangles": 72
+        },
+        {
+          "name": "Rightboot_toe",
+          "zone": 2,
+          "first": 4310,
+          "count": 70,
+          "triangles": 128
+        },
+        {
+          "name": "Rightoutsole",
+          "zone": 2,
+          "first": 4380,
+          "count": 70,
+          "triangles": 128
+        },
+        {
+          "name": "Rightlaces",
+          "zone": 2,
+          "first": 4450,
+          "count": 16,
+          "triangles": 24
+        },
+        {
+          "name": "Rightlaces",
+          "zone": 2,
+          "first": 4466,
+          "count": 16,
+          "triangles": 24
+        },
+        {
+          "name": "Rightlaces",
+          "zone": 2,
+          "first": 4482,
+          "count": 16,
+          "triangles": 24
+        },
+        {
+          "name": "Rightlaces",
+          "zone": 2,
+          "first": 4498,
+          "count": 16,
+          "triangles": 24
+        }
+      ]
+    },
+    "personaje_LOD1": {
+      "triangles": 3508,
+      "vertices": 2119,
+      "bounds": [
+        [
+          -0.33026140411788407,
+          0.0004999999999999987,
+          -0.17650000000000002
+        ],
+        [
+          0.33021987436380196,
+          1.7779537524088038,
+          0.5156958413663137
+        ]
+      ],
+      "parts": [
+        {
+          "name": "anatomical_clothed_body",
+          "zone": "per_vertex",
+          "first": 0,
+          "count": 994,
+          "triangles": 1684
+        },
+        {
+          "name": "carrier_front",
+          "zone": 1,
+          "first": 994,
+          "count": 20,
+          "triangles": 36
+        },
+        {
+          "name": "carrier_back",
+          "zone": 1,
+          "first": 1014,
+          "count": 20,
+          "triangles": 36
+        },
+        {
+          "name": "cummerbund",
+          "zone": 1,
+          "first": 1034,
+          "count": 28,
+          "triangles": 48
+        },
+        {
+          "name": "duty_belt",
+          "zone": 1,
+          "first": 1062,
+          "count": 28,
+          "triangles": 48
+        },
+        {
+          "name": "carrier_shoulder_strap",
+          "zone": 1,
+          "first": 1090,
+          "count": 27,
+          "triangles": 40
+        },
+        {
+          "name": "carrier_shoulder_strap",
+          "zone": 1,
+          "first": 1117,
+          "count": 27,
+          "triangles": 40
+        },
+        {
+          "name": "magazine_pouch",
+          "zone": 1,
+          "first": 1144,
+          "count": 20,
+          "triangles": 36
+        },
+        {
+          "name": "pouch_flap",
+          "zone": 1,
+          "first": 1164,
+          "count": 14,
+          "triangles": 24
+        },
+        {
+          "name": "magazine_pouch",
+          "zone": 1,
+          "first": 1178,
+          "count": 20,
+          "triangles": 36
+        },
+        {
+          "name": "pouch_flap",
+          "zone": 1,
+          "first": 1198,
+          "count": 14,
+          "triangles": 24
+        },
+        {
+          "name": "magazine_pouch",
+          "zone": 1,
+          "first": 1212,
+          "count": 20,
+          "triangles": 36
+        },
+        {
+          "name": "pouch_flap",
+          "zone": 1,
+          "first": 1232,
+          "count": 14,
+          "triangles": 24
+        },
+        {
+          "name": "identity_patch",
+          "zone": 1,
+          "first": 1246,
+          "count": 14,
+          "triangles": 24
+        },
+        {
+          "name": "molle_loop",
+          "zone": 1,
+          "first": 1260,
+          "count": 14,
+          "triangles": 24
+        },
+        {
+          "name": "molle_loop",
+          "zone": 1,
+          "first": 1274,
+          "count": 14,
+          "triangles": 24
+        },
+        {
+          "name": "molle_loop",
+          "zone": 1,
+          "first": 1288,
+          "count": 14,
+          "triangles": 24
+        },
+        {
+          "name": "molle_loop",
+          "zone": 1,
+          "first": 1302,
+          "count": 14,
+          "triangles": 24
+        },
+        {
+          "name": "molle_loop",
+          "zone": 1,
+          "first": 1316,
+          "count": 14,
+          "triangles": 24
+        },
+        {
+          "name": "molle_loop",
+          "zone": 1,
+          "first": 1330,
+          "count": 14,
+          "triangles": 24
+        },
+        {
+          "name": "molle_loop",
+          "zone": 1,
+          "first": 1344,
+          "count": 14,
+          "triangles": 24
+        },
+        {
+          "name": "molle_loop",
+          "zone": 1,
+          "first": 1358,
+          "count": 14,
+          "triangles": 24
+        },
+        {
+          "name": "back_hydration",
+          "zone": 1,
+          "first": 1372,
+          "count": 20,
+          "triangles": 36
+        },
+        {
+          "name": "back_pull_handle",
+          "zone": 1,
+          "first": 1392,
+          "count": 22,
+          "triangles": 32
+        },
+        {
+          "name": "radio",
+          "zone": 1,
+          "first": 1414,
+          "count": 14,
+          "triangles": 24
+        },
+        {
+          "name": "radio_antenna",
+          "zone": 1,
+          "first": 1428,
+          "count": 12,
+          "triangles": 16
+        },
+        {
+          "name": "belt_buckle",
+          "zone": 1,
+          "first": 1440,
+          "count": 14,
+          "triangles": 24
+        },
+        {
+          "name": "high_cut_helmet",
+          "zone": 0,
+          "first": 1454,
+          "count": 85,
+          "triangles": 128
+        },
+        {
+          "name": "Leftgoggle",
+          "zone": 0,
+          "first": 1539,
+          "count": 22,
+          "triangles": 32
+        },
+        {
+          "name": "Leftgoggle",
+          "zone": 0,
+          "first": 1561,
+          "count": 22,
+          "triangles": 32
+        },
+        {
+          "name": "Lefthelmet_rail",
+          "zone": 0,
+          "first": 1583,
+          "count": 22,
+          "triangles": 32
+        },
+        {
+          "name": "Leftearcup",
+          "zone": 0,
+          "first": 1605,
+          "count": 30,
+          "triangles": 48
+        },
+        {
+          "name": "Leftchinstrap",
+          "zone": 0,
+          "first": 1635,
+          "count": 17,
+          "triangles": 24
+        },
+        {
+          "name": "Leftkneecap",
+          "zone": 2,
+          "first": 1652,
+          "count": 20,
+          "triangles": 36
+        },
+        {
+          "name": "Leftcargo",
+          "zone": 2,
+          "first": 1672,
+          "count": 30,
+          "triangles": 48
+        },
+        {
+          "name": "Leftcargo_flap",
+          "zone": 2,
+          "first": 1702,
+          "count": 22,
+          "triangles": 32
+        },
+        {
+          "name": "Leftboot_ankle",
+          "zone": 2,
+          "first": 1724,
+          "count": 29,
+          "triangles": 48
+        },
+        {
+          "name": "Leftboot_toe",
+          "zone": 2,
+          "first": 1753,
+          "count": 38,
+          "triangles": 64
+        },
+        {
+          "name": "Leftoutsole",
+          "zone": 2,
+          "first": 1791,
+          "count": 38,
+          "triangles": 64
+        },
+        {
+          "name": "Rightgoggle",
+          "zone": 0,
+          "first": 1829,
+          "count": 22,
+          "triangles": 32
+        },
+        {
+          "name": "Rightgoggle",
+          "zone": 0,
+          "first": 1851,
+          "count": 22,
+          "triangles": 32
+        },
+        {
+          "name": "Righthelmet_rail",
+          "zone": 0,
+          "first": 1873,
+          "count": 22,
+          "triangles": 32
+        },
+        {
+          "name": "Rightearcup",
+          "zone": 0,
+          "first": 1895,
+          "count": 30,
+          "triangles": 48
+        },
+        {
+          "name": "Rightchinstrap",
+          "zone": 0,
+          "first": 1925,
+          "count": 17,
+          "triangles": 24
+        },
+        {
+          "name": "Rightkneecap",
+          "zone": 2,
+          "first": 1942,
+          "count": 20,
+          "triangles": 36
+        },
+        {
+          "name": "Rightcargo",
+          "zone": 2,
+          "first": 1962,
+          "count": 30,
+          "triangles": 48
+        },
+        {
+          "name": "Rightcargo_flap",
+          "zone": 2,
+          "first": 1992,
+          "count": 22,
+          "triangles": 32
+        },
+        {
+          "name": "Rightboot_ankle",
+          "zone": 2,
+          "first": 2014,
+          "count": 29,
+          "triangles": 48
+        },
+        {
+          "name": "Rightboot_toe",
+          "zone": 2,
+          "first": 2043,
+          "count": 38,
+          "triangles": 64
+        },
+        {
+          "name": "Rightoutsole",
+          "zone": 2,
+          "first": 2081,
+          "count": 38,
+          "triangles": 64
+        }
+      ]
+    },
+    "personaje_LOD2": {
+      "triangles": 950,
+      "vertices": 631,
+      "bounds": [
+        [
+          -0.329871080125906,
+          0.0004999999999999987,
+          -0.1545
+        ],
+        [
+          0.3321238154441711,
+          1.7779537524088038,
+          0.5117308345659337
+        ]
+      ],
+      "parts": [
+        {
+          "name": "anatomical_clothed_body",
+          "zone": "per_vertex",
+          "first": 0,
+          "count": 354,
+          "triangles": 534
+        },
+        {
+          "name": "carrier_front",
+          "zone": 1,
+          "first": 354,
+          "count": 20,
+          "triangles": 36
+        },
+        {
+          "name": "carrier_back",
+          "zone": 1,
+          "first": 374,
+          "count": 20,
+          "triangles": 36
+        },
+        {
+          "name": "cummerbund",
+          "zone": 1,
+          "first": 394,
+          "count": 16,
+          "triangles": 24
+        },
+        {
+          "name": "duty_belt",
+          "zone": 1,
+          "first": 410,
+          "count": 16,
+          "triangles": 24
+        },
+        {
+          "name": "high_cut_helmet",
+          "zone": 0,
+          "first": 426,
+          "count": 27,
+          "triangles": 32
+        },
+        {
+          "name": "Leftgoggle",
+          "zone": 0,
+          "first": 453,
+          "count": 12,
+          "triangles": 16
+        },
+        {
+          "name": "Leftgoggle",
+          "zone": 0,
+          "first": 465,
+          "count": 12,
+          "triangles": 16
+        },
+        {
+          "name": "Leftkneecap",
+          "zone": 2,
+          "first": 477,
+          "count": 20,
+          "triangles": 36
+        },
+        {
+          "name": "Leftboot_ankle",
+          "zone": 2,
+          "first": 497,
+          "count": 17,
+          "triangles": 24
+        },
+        {
+          "name": "Leftboot_toe",
+          "zone": 2,
+          "first": 514,
+          "count": 14,
+          "triangles": 20
+        },
+        {
+          "name": "Leftoutsole",
+          "zone": 2,
+          "first": 528,
+          "count": 14,
+          "triangles": 20
+        },
+        {
+          "name": "Rightgoggle",
+          "zone": 0,
+          "first": 542,
+          "count": 12,
+          "triangles": 16
+        },
+        {
+          "name": "Rightgoggle",
+          "zone": 0,
+          "first": 554,
+          "count": 12,
+          "triangles": 16
+        },
+        {
+          "name": "Rightkneecap",
+          "zone": 2,
+          "first": 566,
+          "count": 20,
+          "triangles": 36
+        },
+        {
+          "name": "Rightboot_ankle",
+          "zone": 2,
+          "first": 586,
+          "count": 17,
+          "triangles": 24
+        },
+        {
+          "name": "Rightboot_toe",
+          "zone": 2,
+          "first": 603,
+          "count": 14,
+          "triangles": 20
+        },
+        {
+          "name": "Rightoutsole",
+          "zone": 2,
+          "first": 617,
+          "count": 14,
+          "triangles": 20
+        }
+      ]
+    }
+  },
+  "clips": [
+    {
+      "name": "idle_rifle",
+      "duration": 2,
+      "loop": true,
+      "samples": 61
+    },
+    {
+      "name": "aim_rifle",
+      "duration": 2,
+      "loop": true,
+      "samples": 61
+    },
+    {
+      "name": "aim_up",
+      "duration": 0,
+      "loop": false,
+      "samples": 1
+    },
+    {
+      "name": "aim_down",
+      "duration": 0,
+      "loop": false,
+      "samples": 1
+    },
+    {
+      "name": "walk_fwd",
+      "duration": 0.56,
+      "loop": true,
+      "samples": 18
+    },
+    {
+      "name": "walk_back",
+      "duration": 0.56,
+      "loop": true,
+      "samples": 18
+    },
+    {
+      "name": "walk_left",
+      "duration": 0.56,
+      "loop": true,
+      "samples": 18
+    },
+    {
+      "name": "walk_right",
+      "duration": 0.56,
+      "loop": true,
+      "samples": 18
+    },
+    {
+      "name": "sprint",
+      "duration": 0.56,
+      "loop": true,
+      "samples": 18
+    },
+    {
+      "name": "crouch_idle",
+      "duration": 2,
+      "loop": true,
+      "samples": 61
+    },
+    {
+      "name": "crouch_walk",
+      "duration": 0.5,
+      "loop": true,
+      "samples": 16
+    },
+    {
+      "name": "slide",
+      "duration": 1,
+      "loop": true,
+      "samples": 31
+    },
+    {
+      "name": "jump_start",
+      "duration": 0.3,
+      "loop": false,
+      "samples": 10
+    },
+    {
+      "name": "jump_air",
+      "duration": 0.6,
+      "loop": true,
+      "samples": 19
+    },
+    {
+      "name": "jump_land",
+      "duration": 0.3,
+      "loop": false,
+      "samples": 10
+    },
+    {
+      "name": "fire_rifle",
+      "duration": 0.95,
+      "loop": false,
+      "samples": 30
+    },
+    {
+      "name": "reload_rifle",
+      "duration": 2.35,
+      "loop": false,
+      "samples": 72
+    },
+    {
+      "name": "idle_pistol",
+      "duration": 2,
+      "loop": true,
+      "samples": 61
+    },
+    {
+      "name": "aim_pistol",
+      "duration": 2,
+      "loop": true,
+      "samples": 61
+    },
+    {
+      "name": "fire_pistol",
+      "duration": 0.22,
+      "loop": false,
+      "samples": 8
+    },
+    {
+      "name": "reload_pistol",
+      "duration": 1.45,
+      "loop": false,
+      "samples": 45
+    },
+    {
+      "name": "fire_shotgun",
+      "duration": 0.25,
+      "loop": false,
+      "samples": 9
+    },
+    {
+      "name": "pump_shotgun",
+      "duration": 0.32,
+      "loop": false,
+      "samples": 11
+    },
+    {
+      "name": "reload_shell",
+      "duration": 0.32,
+      "loop": false,
+      "samples": 11
+    },
+    {
+      "name": "knife_slash",
+      "duration": 0.45,
+      "loop": false,
+      "samples": 15
+    },
+    {
+      "name": "hit_react",
+      "duration": 0.26,
+      "loop": false,
+      "samples": 9
+    },
+    {
+      "name": "death_front",
+      "duration": 1.25,
+      "loop": false,
+      "samples": 39
+    },
+    {
+      "name": "death_back",
+      "duration": 1.25,
+      "loop": false,
+      "samples": 39
+    }
+  ],
+  "source": "original procedural artwork",
+  "constraints": "ENCARGO.md",
+  "sha256": "9537050fb295a25b9487e37db435a4efab26cb4695fcedcb252efbed9fed177a"
+}

@@ -6,12 +6,12 @@ Cada entrada dice qué se decidió o cambió, quién lo decidió, y el estado re
 Las decisiones anteriores al 18-10-2026 están resumidas en `SNIPER_DUEL_MASTER_CONTEXT.md` §4.
 Detalle de cada cambio (antes/después, medidas, cómo revertir): `docs/next-level/NEXT_LEVEL_CHANGELOG.md`.
 
-## Tareas (resumen vivo, actualizado el 19-10-2026)
+## Tareas (resumen vivo, actualizado el 20-10-2026)
 
 ### Siguiente prioridad
 | Tarea | Quién la desbloquea | Estado |
 |---|---|---|
-| **Personaje del jugador, rival online y bots** (que dejen de ser monigotes) — encargo `docs/PROMPT-CHATGPT-PERSONAJE.md` | Propietario (pasarlo a ChatGPT/Codex); después Claude lo integra tras `?pj=2` | ESPERANDO ENTREGA |
+| **Personaje 3D (rev. 03) en bots y rival** — probarlo en `https://hamza189.github.io/SNIPER-1VS1/?pj=2` (PC, iPhone, Samsung) y decir si pasa a ser el de por defecto | Propietario | PUBLICADO TRAS BANDERA · PENDIENTE DE VALIDACIÓN EN IPHONE |
 
 ### Esperando pruebas o decisiones del propietario
 | Tarea | Estado |
@@ -63,6 +63,24 @@ Detalle de cada cambio (antes/después, medidas, cómo revertir): `docs/next-lev
 | **Rayas en las paredes lejanas**: z-fighting del pueblo exterior con el muro perimetral; confirmado por el propietario | 19-10 · PR #3 |
 | CASA ATLAS XL v2 de ChatGPT por defecto (mismas colisiones, detalle real) | 19-10 · directo a `main` |
 | Encargos para ChatGPT: CASA XL, CASA XL v2 y personaje | 18-10 / 19-10 |
+| Personaje 3D rev. 03 hecho por Claude e integrado tras `?pj=2` (bots y rival online) | 20-10 · directo a `main` |
+
+## 20-10-2026 — Personaje 3D (revisión 03) tras `?pj=2`
+- **Contexto:** el propietario rechazó la rev. 01 de Codex («parecen muñecos») y Codex se quedó sin uso dos veces;
+  el trabajo pasó a Claude (sesión lanzada desde la principal).
+- **Hecho:** personaje rehecho por código (MakeHuman CC0 masculino + ropa con pliegues + equipo + texturas 2048 con
+  suciedad/desgaste + 29 clips con IK) e integrado solo en cliente tras `?pj=2`: bots del duelo (gris), campo de tiro
+  (arena) y rival online (oliva). Detalle y medidas: `docs/next-level/NEXT_LEVEL_CHANGELOG.md` › N7-1 y
+  `assets/3d/imports/2026-10-19_personaje/revision_03/PERSONAJE_REV03.md`.
+- **Decisión técnica (Claude):** la altura de agachado y deslizamiento se hace con dos *morph targets* que comprimen
+  tronco y piernas como las cajas del servidor (no se escala el modelo por fuera ni los huesos; brazos y cabeza no se
+  deforman). Unas cuclillas anatómicas no caben en la caja de piernas (22 cm de fondo): cambiarlo sería tocar las
+  zonas de impacto → decisión del propietario.
+- **Decisión técnica (Claude):** el arma cuelga de un nodo `arma` (hijo de la clavícula derecha) en vez de la mano,
+  para que el cerrojo y la recarga muevan la mano sin mover el rifle. Las rev. 01/02 se conservan (no se borran).
+- **Estado:** IMPLEMENTADO · PROBADO EN NAVEGADOR (WebGL por software) · PENDIENTE DE VALIDACIÓN EN IPHONE. No
+  probado en un 1v1 online real entre dos dispositivos (el rival usa el mismo código que los bots; probado con
+  `RemotePlayer` en el navegador). Por defecto sigue el soldado de cajas.
 
 ## 19-10-2026 — Rayas, CASA XL v2, nuevas reglas de trabajo y planes de futuro
 - **Arreglado y publicado:** ratón pillado y menú de PC (PR #2), rayas de las paredes lejanas (PR #3; el propietario confirma
