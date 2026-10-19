@@ -1,0 +1,33 @@
+SNIPER DUEL
+Copyright (c) 2026 Hamza (Hamza189). Todos los derechos reservados. / All rights reserved.
+
+ESPAÑOL
+
+Este repositorio es público solo para que se pueda ver y para publicar el juego. Que el código sea visible NO concede
+ninguna licencia de uso.
+
+Sin permiso previo y por escrito del titular, queda prohibido copiar, modificar, distribuir, publicar, sublicenciar,
+vender o usar en otros proyectos (comerciales o no) el código, los modelos 3D, las texturas, los mapas, los sonidos, los
+textos y cualquier otro contenido de este repositorio, total o parcialmente. Jugar al juego en
+https://hamza189.github.io/SNIPER-1VS1/ está permitido.
+
+Excepciones (componentes de terceros, que conservan su propia licencia):
+- `vendor/three.min.js` y `vendor/GLTFLoader.js`: Three.js r128, licencia MIT (c) 2010-2021 three.js authors.
+- Texturas y modelos de Poly Haven (https://polyhaven.com) indicados en `docs/ASSETS-3D.md` y en los `FUENTE.md` /
+  `LICENSE_ASSETS.md` de `assets/3d/imports/`: CC0 (dominio público). La CC0 se aplica al recurso original de Poly Haven,
+  no al juego ni a su combinación con el resto del contenido.
+
+Para pedir permiso: abre una incidencia (Issue) en https://github.com/Hamza189/SNIPER-1VS1.
+
+ENGLISH
+
+This repository is public only so it can be viewed and the game can be published. The code being visible does NOT grant
+any licence.
+
+Without the owner's prior written permission, you may not copy, modify, distribute, publish, sublicense, sell or use in
+other projects (commercial or not) the code, 3D models, textures, maps, sounds, texts or any other content of this
+repository, in whole or in part. Playing the game at https://hamza189.github.io/SNIPER-1VS1/ is allowed.
+
+Exceptions (third-party components keep their own licence): `vendor/three.min.js` and `vendor/GLTFLoader.js` (Three.js
+r128, MIT); Poly Haven textures and models listed in `docs/ASSETS-3D.md` and in the `FUENTE.md` / `LICENSE_ASSETS.md`
+files under `assets/3d/imports/` (CC0, applies to the original Poly Haven asset only).
