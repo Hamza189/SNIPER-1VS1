@@ -71,3 +71,15 @@ Plan técnico propuesto (sin aprobar; nada empezado):
 - Antes de empaquetar: optimizar y «comprimir» el juego (texturas KTX2, minificar, carga bajo demanda) para que la app
   pese poco y vaya a los FPS que permita cada dispositivo.
 - Monetización: solo cosmética, sin ventaja competitiva (regla del plan original).
+
+## Estrategia de calidades gráficas por etapas (propietario, 19-10-2026)
+Los originales y versiones antiguas se conservan (hay espacio de sobra en el PC). Plan:
+1. Dentro de 1–2 semanas, lo que tengamos hecho de cada mapa se **congela como nivel BAJO** (versión ligera).
+2. Ese mismo mapa se sigue mejorando (mejores modelos, texturas, detalle); cuando esté bien, esa versión pasa a ser **MEDIO**.
+3. Se sigue mejorando más; la versión final más detallada es **ALTO**.
+Requisitos técnicos para hacerlo bien (Claude):
+- Las **colisiones y el servidor son los mismos en las tres calidades** (solo cambia lo que se ve): el 1v1 entre un móvil en
+  BAJO y un PC en ALTO es justo.
+- Cada calidad es un conjunto de assets propio cargado según el perfil (AUTO elige por dispositivo); se miden FPS y
+  memoria de cada una (BAJO debe ir fluido en móviles flojos, ALTO puede aprovechar el PC).
+- Primer paso ya apuntado: BAJO = PUEBLO 2.0, MEDIO/ALTO = PUEBLO 3.0.
