@@ -1,0 +1,33 @@
+<!doctype html><html lang="es"><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/><title>CASA ATLAS XL — Visor de asset</title>
+<style>body{margin:0;background:#141b20;color:#eaeae5;font:14px system-ui}canvas{display:block}#hud{position:absolute;left:15px;top:15px;z-index:1;background:#18232bdc;border:1px solid #52616a;padding:13px;border-radius:12px;max-width:300px}button{margin:4px 2px;border:1px solid #8b9ba8;background:#253844;color:white;padding:6px 9px;border-radius:6px;cursor:pointer}small{display:block;color:#b7c5cc;padding-top:7px}#status{color:#f9cd82}</style></head><body>
+<div id="hud"><b>CASA ATLAS XL · Vista de revisión</b><div><button id="roof">Techo: oculto</button><button id="coll">Colisiones: ocultas</button><button id="fps">Cámara: órbita</button></div><small>Arrastra: girar · rueda: zoom · botón derecho: mover cámara. En modo FPS: WASD y ratón con clic para capturar puntero. Este visor NO simula las colisiones del servidor.</small><small id="status">Cargando mapa…</small></div>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
+<script>
+if(!window.THREE) document.getElementById('status').textContent='No se pudo cargar Three.js desde CDN. Necesitas internet para el visor.';
+else (async function(){
+ const scene=new THREE.Scene();scene.background=new THREE.Color(0xa3bfd2);scene.fog=new THREE.Fog(0xa3bfd2,65,135);
+ const cam=new THREE.PerspectiveCamera(65,innerWidth/innerHeight,.05,190);cam.position.set(35,31,43);
+ const renderer=new THREE.WebGLRenderer({antialias:true});renderer.setSize(innerWidth,innerHeight);renderer.setPixelRatio(Math.min(window.devicePixelRatio,2));renderer.outputEncoding=THREE.sRGBEncoding;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.07;document.body.appendChild(renderer.domElement);
+ scene.add(new THREE.HemisphereLight(0xe7f1ff,0xc4b29b,1.38));const sun=new THREE.DirectionalLight(0xffedd4,2.4);sun.position.set(-25,45,25);scene.add(sun);
+ const orbit=new THREE.OrbitControls(cam,renderer.domElement);orbit.target.set(0,0,0);orbit.enableDamping=true;orbit.update();
+ const loader=new THREE.GLTFLoader();const base='../models/';let main=null,roof=null,debug=null,fps=false,roofOn=false,collOn=false;
+ const load=url=>new Promise((res,rej)=>loader.load(url,res,undefined,rej));
+ try{const gltf=await load(base+'sd_casa_atlas_xl.glb');main=gltf.scene;scene.add(main);const g2=await load(base+'sd_casa_atlas_xl_techo.glb');roof=g2.scene;roof.visible=false;scene.add(roof);
+ const data=await fetch('../collision_map.json').then(x=>x.json());debug=new THREE.Group();const a= new THREE.BoxGeometry(1,1,1);
+ for(const box of data.colliders){const mat=new THREE.MeshBasicMaterial({color:box.type==='solid'?0xe89454:0x299dce,wireframe:true,depthTest:false,transparent:true,opacity:.6});const m=new THREE.Mesh(a,mat);m.position.set(...box.center);m.scale.set(...box.size);debug.add(m)}debug.visible=false;scene.add(debug);
+ document.getElementById('status').textContent=`GLB cargados · ${data.colliders.length} colisiones · 40×32 m`;
+ }catch(e){console.error(e);document.getElementById('status').textContent='Error al cargar modelos/JSON: '+e.message}
+ document.getElementById('roof').onclick=()=>{roofOn=!roofOn;if(roof)roof.visible=roofOn;document.getElementById('roof').textContent='Techo: '+(roofOn?'visible':'oculto')};
+ document.getElementById('coll').onclick=()=>{collOn=!collOn;if(debug)debug.visible=collOn;document.getElementById('coll').textContent='Colisiones: '+(collOn?'visibles':'ocultas')};
+ document.getElementById('fps').onclick=()=>{fps=!fps;orbit.enabled=!fps;if(fps){cam.position.set(-17.25,1.62,-12.3);cam.rotation.set(0,0,0);cam.lookAt(-12,1.62,-4)}else{cam.position.set(35,31,43);orbit.target.set(0,0,0);orbit.update()}document.getElementById('fps').textContent='Cámara: '+(fps?'FPS (depuración)':'órbita')};
+ const keys={};window.addEventListener('keydown',e=>keys[e.code]=true);window.addEventListener('keyup',e=>keys[e.code]=false);
+ renderer.domElement.addEventListener('click',()=>{if(fps)renderer.domElement.requestPointerLock()});
+ window.addEventListener('mousemove',e=>{if(fps&&document.pointerLockElement===renderer.domElement){cam.rotation.order='YXZ';cam.rotation.y-=e.movementX*.002;cam.rotation.x=Math.max(-1.42,Math.min(1.42,cam.rotation.x-e.movementY*.002))}});
+ let last=performance.now();function frame(now){requestAnimationFrame(frame);const dt=Math.min(.06,(now-last)/1000);last=now;
+ if(fps){const vec=new THREE.Vector3();cam.getWorldDirection(vec);vec.y=0;vec.normalize();const right=new THREE.Vector3().crossVectors(vec,new THREE.Vector3(0,1,0)).normalize();if(keys.KeyW)cam.position.addScaledVector(vec,dt*4);if(keys.KeyS)cam.position.addScaledVector(vec,-dt*4);if(keys.KeyD)cam.position.addScaledVector(right,dt*4);if(keys.KeyA)cam.position.addScaledVector(right,-dt*4);cam.position.y=1.62}
+ if(!fps)orbit.update();renderer.render(scene,cam)}requestAnimationFrame(frame);
+ addEventListener('resize',()=>{cam.aspect=innerWidth/innerHeight;cam.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight)})
+})();
+</script></body></html>

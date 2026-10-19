@@ -30,7 +30,8 @@ async function until(page, fn, arg, ms) { try { await page.waitForFunction(fn, a
     check('A crea la sala', await until(A, () => /^[A-Z0-9]{6}$/.test(document.getElementById('mpCodeBig').textContent)));
     const code = await A.textContent('#mpCodeBig');
     const B = await open('B', '&sala=' + code);
-    check('B (sin ?casa=1) no ve el mapa experimental en su menú', await B.evaluate(() => document.querySelector('#mpMapSeg [data-map=casa]').hidden));
+    // since 18-10-2026 every map is offered by default (owner): B sees CASA ATLAS without ?casa=1 too
+    check('B (sin ?casa=1) también ve CASA ATLAS en su menú (todos los mapas por defecto)', await B.evaluate(() => !document.querySelector('#mpMapSeg [data-map=casa]').hidden));
     await B.fill('#mpName', 'Novia'); await B.click('#mpJoin');
     check('los dos en el lobby', await until(A, () => document.querySelectorAll('#mpPlayers li').length === 2) && await until(B, () => document.querySelectorAll('#mpPlayers li').length === 2));
     await A.click('#mpMapSeg button[data-map="casa"]');

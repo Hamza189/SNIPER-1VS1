@@ -470,5 +470,20 @@ console.log('\nESTRÉS (en memoria)');
   check('los mensajes pendientes no crecen sin límite', A.N.pending.length < 60, A.N.pending.length);
 }
 
+console.log('\nREINICIO DEL SERVIDOR DE LA SALA (despliegue en mitad de una sesión)');
+{ const S = createSim({ latency: 30 });
+  const { A, B } = S.setupMatch(null, null);
+  S.run(500);
+  const qBefore = A.N.lastEvQ;
+  S.restartRoom(); S.run(300);
+  check('tras el reinicio los dos vuelven a su asiento con su token', A.N.you === 'A' && B.N.you === 'B' && S.room.phase === 'lobby', 'fase ' + S.room.phase);
+  const goBefore = evs(A, 'go').length;
+  A.N.ready(true); B.N.ready(true);
+  S.until(() => S.room.phase === 'playing', 6000); S.run(300);
+  check('la partida nueva llega entera: el cliente no descarta su «go» aunque el servidor numere los eventos otra vez desde 1',
+    evs(A, 'go').length === goBefore + 1 && evs(B, 'go').length === goBefore + 1, 'go antes ' + goBefore + ', después ' + evs(A, 'go').length + ', q previo ' + qBefore);
+  check('y los dos están jugando', A.N.phase === 'playing' && B.N.phase === 'playing');
+}
+
 console.log('\n' + pass + ' correctas, ' + fail + ' fallidas');
 process.exit(fail ? 1 : 0);

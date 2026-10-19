@@ -63,8 +63,8 @@ regenerar modelos. Dependencias de Python de herramientas: numpy, Pillow.
 - `python3` es una copia de `C:\Python314\python.exe`; si desaparece, `npm test` falla al llamar a `python3 build.py`.
 - `playwright@1.56.0` y `ws` se instalan sin guardarlos: `npm install --no-save playwright@1.56.0 ws` y
   `npx playwright install chromium`.
-- `gh` no está instalado: el estado de Actions se lee con
-  `curl -s https://api.github.com/repos/Hamza189/SNIPER-1VS1/actions/runs?per_page=8`.
+- `gh` 2.102 instalado (19-10-2026, winget) en `C:\Program Files\GitHub CLI\gh.exe` y con sesión de Hamza189: PRs,
+  `gh run list`, `gh pr merge`. En Git Bash puede no estar en el PATH hasta reiniciar: usar la ruta completa.
 - `core.autocrlf=true`: un archivo regenerado puede salir «modificado» solo por fin de línea; compruébalo con
   `git diff --stat` y deshazlo con `git checkout -- <archivo>` si no hay cambio real.
 - Conectores MCP disponibles en Claude Code (Cloudflare, Context7, Linear, Sentry, Supabase, Netlify, Figma…): estado en
@@ -78,3 +78,15 @@ regenerar modelos. Dependencias de Python de herramientas: numpy, Pillow.
   no coinciden.
 - Lo que se ve (GLB, kit, texturas) nunca define colisiones ni balas: eso son siempre cajas/triángulos exportados.
 - Banderas de URL para todo lo experimental (lista en `docs/claude-code/SNIPER_DUEL_TECHNICAL_ARCHITECTURE.md`).
+
+## Decisiones técnicas (tecnologías y lenguajes)
+- 18-10-2026, propietario: Claude puede **proponer** otros lenguajes, librerías y herramientas (TypeScript, GLSL, Rust/WASM,
+  WebGPU, Python/Blender…) si demuestra con medidas que mejoran el juego. Nunca por ser más modernas. Cada migración
+  necesita una prueba previa, comparación medida y su aprobación. Compatibilidad obligatoria: PC, iPhone, Android,
+  GitHub Pages, Cloudflare Workers/Durable Objects, servidor autoritativo, Three.js y los GLB actuales.
+- No migrar el servidor ni el motor a Rust sin aprobación expresa. No sustituir el renderizador WebGL: WebGPU o Three.js
+  moderno solo como prueba aislada con vuelta a WebGL.
+- El navegador y Cloudflare reciben siempre JavaScript. Herramientas de desarrollo gratuitas y de código abierto.
+- Informe y plan por fases (T0–T6): `docs/claude-code/SNIPER_DUEL_TECHNOLOGY_EVOLUTION.md`. Estado de cada fase en
+  `docs/claude-code/SNIPER_DUEL_DECISIONS_LOG.md`. Medido el 18-10: el coste está en la GPU y en el envío de dibujo, no
+  en la lógica (tick de jugador ~5 µs), así que Rust/WASM no está justificado hoy.

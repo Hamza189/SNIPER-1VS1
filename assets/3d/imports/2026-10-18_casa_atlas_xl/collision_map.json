@@ -1,0 +1,1685 @@
+{
+  "id": "CASA_ATLAS_XL",
+  "version": "1.0.0",
+  "author": "ChatGPT — original geometry/textures",
+  "license": "Original / CC0-equivalent grant",
+  "units": "meters",
+  "axis": "+Y up; +Z front street",
+  "dimensions": {
+    "width": 40,
+    "depth": 32,
+    "height": 4.2
+  },
+  "bounds": {
+    "min": [
+      -20,
+      0,
+      -16
+    ],
+    "max": [
+      20,
+      4.2,
+      16
+    ]
+  },
+  "playerEyeHeight": 1.62,
+  "floorY": 0,
+  "spawns": [
+    {
+      "team": "A",
+      "position": [
+        -17.25,
+        0,
+        -12.3
+      ],
+      "yaw": -0.45
+    },
+    {
+      "team": "B",
+      "position": [
+        17.25,
+        0,
+        12.4
+      ],
+      "yaw": 2.55
+    }
+  ],
+  "zones": [
+    {
+      "name": "CALLE FRONTAL",
+      "bounds": [
+        -19.45,
+        10.15,
+        19.45,
+        15.55
+      ]
+    },
+    {
+      "name": "VILLA INTERIOR",
+      "bounds": [
+        -14.7,
+        -4.1,
+        1.3,
+        9.1
+      ]
+    },
+    {
+      "name": "PATIO Y ESTANQUE",
+      "bounds": [
+        1.35,
+        -1.2,
+        16.9,
+        10.0
+      ]
+    },
+    {
+      "name": "PERGOLA",
+      "bounds": [
+        2.2,
+        -8.8,
+        8.8,
+        -3.1
+      ]
+    },
+    {
+      "name": "GARAJE",
+      "bounds": [
+        10.1,
+        -9.15,
+        17.4,
+        -1.2
+      ]
+    },
+    {
+      "name": "JARDIN TRASERO",
+      "bounds": [
+        -19.1,
+        -15.45,
+        19.1,
+        -9.55
+      ]
+    },
+    {
+      "name": "CALLEJON OESTE",
+      "bounds": [
+        -19.5,
+        -10.2,
+        -14.85,
+        10.15
+      ]
+    },
+    {
+      "name": "CALLEJON ESTE",
+      "bounds": [
+        17.55,
+        -10.2,
+        19.5,
+        10.15
+      ]
+    }
+  ],
+  "colliders": [
+    {
+      "name": "perimetro_n",
+      "center": [
+        0.0,
+        1.85,
+        -15.8
+      ],
+      "size": [
+        39.8,
+        3.7,
+        0.25
+      ],
+      "type": "solid"
+    },
+    {
+      "name": "perimetro_o",
+      "center": [
+        -19.8,
+        1.85,
+        0.0
+      ],
+      "size": [
+        0.25,
+        3.7,
+        31.6
+      ],
+      "type": "solid"
+    },
+    {
+      "name": "perimetro_e",
+      "center": [
+        19.8,
+        1.85,
+        0.0
+      ],
+      "size": [
+        0.25,
+        3.7,
+        31.6
+      ],
+      "type": "solid"
+    },
+    {
+      "name": "perimetro_sur_izq",
+      "center": [
+        -11.8,
+        1.85,
+        15.8
+      ],
+      "size": [
+        16.0,
+        3.7,
+        0.25
+      ],
+      "type": "solid"
+    },
+    {
+      "name": "perimetro_porton",
+      "center": [
+        0.0,
+        1.85,
+        15.8
+      ],
+      "size": [
+        7.6,
+        3.7,
+        0.25
+      ],
+      "type": "solid"
+    },
+    {
+      "name": "perimetro_sur_der",
+      "center": [
+        11.8,
+        1.85,
+        15.8
+      ],
+      "size": [
+        16.0,
+        3.7,
+        0.25
+      ],
+      "type": "solid"
+    },
+    {
+      "name": "estanque_cubeta",
+      "center": [
+        7.55,
+        0.28,
+        3.15
+      ],
+      "size": [
+        5.55,
+        0.56,
+        3.65
+      ],
+      "type": "solid"
+    },
+    {
+      "name": "macetero_patio_01",
+      "center": [
+        4.6,
+        0.25,
+        8.6
+      ],
+      "size": [
+        1.45,
+        0.5,
+        0.6
+      ],
+      "type": "solid"
+    },
+    {
+      "name": "macetero_patio_02",
+      "center": [
+        12.6,
+        0.29,
+        7.8
+      ],
+      "size": [
+        1.65,
+        0.58,
+        0.7
+      ],
+      "type": "solid"
+    },
+    {
+      "name": "macetero_patio_03",
+      "center": [
+        -2.4,
+        0.255,
+        10.25
+      ],
+      "size": [
+        1.35,
+        0.51,
+        0.55
+      ],
+      "type": "solid"
+    },
+    {
+      "name": "macetero_patio_04",
+      "center": [
+        8.6,
+        0.25,
+        10.25
+      ],
+      "size": [
+        1.5,
+        0.5,
+        0.55
+      ],
+      "type": "solid"
+    },
+    {
+      "name": "macetero_jardin_01",
+      "center": [
+        -5.2,
+        0.28,
+        -10.6
+      ],
+      "size": [
+        1.35,
+        0.56,
+        0.62
+      ],
+      "type": "solid"
+    },
+    {
+      "name": "macetero_jardin_02",
+      "center": [
+        4.0,
+        0.27,
+        -10.5
+      ],
+      "size": [
+        1.3,
+        0.54,
+        0.58
+      ],
+      "type": "solid"
+    },
+    {
+      "name": "banco_patio",
+      "center": [
+        4.15,
+        0.4,
+        -0.1
+      ],
+      "size": [
+        1.7,
+        0.8,
+        0.48
+      ],
+      "type": "solid"
+    },
+    {
+      "name": "caja_patio",
+      "center": [
+        6.2,
+        0.43,
+        -7.7
+      ],
+      "size": [
+        1.0,
+        0.86,
+        1.0
+      ],
+      "type": "solid"
+    },
+    {
+      "name": "caja_calle_01",
+      "center": [
+        -10.3,
+        0.4,
+        10.8
+      ],
+      "size": [
+        1.25,
+        0.8,
+        0.75
+      ],
+      "type": "solid"
+    },
+    {
+      "name": "caja_calle_02",
+      "center": [
+        5.4,
+        0.4,
+        10.8
+      ],
+      "size": [
+        1.1,
+        0.8,
+        0.7
+      ],
+      "type": "solid"
+    },
+    {
+      "name": "pergola_post_0_0",
+      "center": [
+        2.4,
+        1.47,
+        -8.6
+      ],
+      "size": [
+        0.16,
+        2.94,
+        0.16
+      ],
+      "type": "solid"
+    },
+    {
+      "name": "pergola_post_0_1",
+      "center": [
+        2.4,
+        1.47,
+        -3.35
+      ],
+      "size": [
+        0.16,
+        2.94,
+        0.16
+      ],
+      "type": "solid"
+    },
+    {
+      "name": "pergola_post_1_0",
+      "center": [
+        8.6,
+        1.47,
+        -8.6
+      ],
+      "size": [
+        0.16,
+        2.94,
+        0.16
+      ],
+      "type": "solid"
+    },
+    {
+      "name": "pergola_post_1_1",
+      "center": [
+        8.6,
+        1.47,
+        -3.35
+      ],
+      "size": [
+        0.16,
+        2.94,
+        0.16
+      ],
+      "type": "solid"
+    },
+    {
+      "name": "olivo_01_trunk",
+      "center": [
+        -12.0,
+        1.1,
+        -12.15
+      ],
+      "size": [
+        0.32,
+        2.2,
+        0.32
+      ],
+      "type": "solid"
+    },
+    {
+      "name": "olivo_02_trunk",
+      "center": [
+        -1.8,
+        1.1,
+        -12.5
+      ],
+      "size": [
+        0.32,
+        2.2,
+        0.32
+      ],
+      "type": "solid"
+    },
+    {
+      "name": "olivo_03_trunk",
+      "center": [
+        17.6,
+        1.1,
+        7.9
+      ],
+      "size": [
+        0.32,
+        2.2,
+        0.32
+      ],
+      "type": "solid"
+    },
+    {
+      "name": "olivo_04_trunk",
+      "center": [
+        -17.6,
+        1.1,
+        8.65
+      ],
+      "size": [
+        0.32,
+        2.2,
+        0.32
+      ],
+      "type": "solid"
+    },
+    {
+      "name": "villa_norte_wall_0",
+      "center": [
+        -13.15,
+        1.725,
+        -4.1
+      ],
+      "size": [
+        3.1,
+        3.45,
+        0.22
+      ],
+      "type": "solid"
+    },
+    {
+      "name": "villa_norte_door_header_0",
+      "center": [
+        -10.575,
+        2.935,
+        -4.1
+      ],
+      "size": [
+        2.05,
+        1.03,
+        0.22
+      ],
+      "type": "solid"
+    },
+    {
+      "name": "villa_norte_wall_1",
+      "center": [
+        -7.525,
+        1.725,
+        -4.1
+      ],
+      "size": [
+        4.05,
+        3.45,
+        0.22
+      ],
+      "type": "solid"
+    },
+    {
+      "name": "villa_norte_sill_1",
+      "center": [
+        -4.6,
+        0.54,
+        -4.1
+      ],
+      "size": [
+        1.8,
+        1.08,
+        0.22
+      ],
+      "type": "solid"
+    },
+    {
+      "name": "villa_norte_header_1",
+      "center": [
+        -4.6,
+        2.865,
+        -4.1
+      ],
+      "size": [
+        1.8,
+        1.17,
+        0.22
+      ],
+      "type": "solid"
+    },
+    {
+      "name": "villa_norte_window_move_1",
+      "center": [
+        -4.6,
+        1.5,
+        -4.1
+      ],
+      "size": [
+        1.7999999999999998,
+        3.0,
+        0.22
+      ],
+      "type": "move"
+    },
+    {
+      "name": "villa_norte_wall_2",
+      "center": [
+        -2.75,
+        1.725,
+        -4.1
+      ],
+      "size": [
+        1.9,
+        3.45,
+        0.22
+      ],
+      "type": "solid"
+    },
+    {
+      "name": "villa_norte_sill_2",
+      "center": [
+        -1.1,
+        0.54,
+        -4.1
+      ],
+      "size": [
+        1.4,
+        1.08,
+        0.22
+      ],
+      "type": "solid"
+    },
+    {
+      "name": "villa_norte_header_2",
+      "center": [
+        -1.1,
+        2.865,
+        -4.1
+      ],
+      "size": [
+        1.4,
+        1.17,
+        0.22
+      ],
+      "type": "solid"
+    },
+    {
+      "name": "villa_norte_window_move_2",
+      "center": [
+        -1.1,
+        1.5,
+        -4.1
+      ],
+      "size": [
+        1.4,
+        3.0,
+        0.22
+      ],
+      "type": "move"
+    },
+    {
+      "name": "villa_norte_wall_end",
+      "center": [
+        0.45,
+        1.725,
+        -4.1
+      ],
+      "size": [
+        1.7,
+        3.45,
+        0.22
+      ],
+      "type": "solid"
+    },
+    {
+      "name": "villa_sur_wall_0",
+      "center": [
+        -13.35,
+        1.725,
+        9.1
+      ],
+      "size": [
+        2.7,
+        3.45,
+        0.22
+      ],
+      "type": "solid"
+    },
+    {
+      "name": "villa_sur_sill_0",
+      "center": [
+        -11.1,
+        0.54,
+        9.1
+      ],
+      "size": [
+        1.8,
+        1.08,
+        0.22
+      ],
+      "type": "solid"
+    },
+    {
+      "name": "villa_sur_header_0",
+      "center": [
+        -11.1,
+        2.865,
+        9.1
+      ],
+      "size": [
+        1.8,
+        1.17,
+        0.22
+      ],
+      "type": "solid"
+    },
+    {
+      "name": "villa_sur_window_move_0",
+      "center": [
+        -11.1,
+        1.5,
+        9.1
+      ],
+      "size": [
+        1.8000000000000007,
+        3.0,
+        0.22
+      ],
+      "type": "move"
+    },
+    {
+      "name": "villa_sur_wall_1",
+      "center": [
+        -8.8,
+        1.725,
+        9.1
+      ],
+      "size": [
+        2.8,
+        3.45,
+        0.22
+      ],
+      "type": "solid"
+    },
+    {
+      "name": "villa_sur_door_header_1",
+      "center": [
+        -6.5,
+        2.935,
+        9.1
+      ],
+      "size": [
+        1.8,
+        1.03,
+        0.22
+      ],
+      "type": "solid"
+    },
+    {
+      "name": "villa_sur_wall_2",
+      "center": [
+        -4.15,
+        1.725,
+        9.1
+      ],
+      "size": [
+        2.9,
+        3.45,
+        0.22
+      ],
+      "type": "solid"
+    },
+    {
+      "name": "villa_sur_sill_2",
+      "center": [
+        -1.8,
+        0.54,
+        9.1
+      ],
+      "size": [
+        1.8,
+        1.08,
+        0.22
+      ],
+      "type": "solid"
+    },
+    {
+      "name": "villa_sur_header_2",
+      "center": [
+        -1.8,
+        2.865,
+        9.1
+      ],
+      "size": [
+        1.8,
+        1.17,
+        0.22
+      ],
+      "type": "solid"
+    },
+    {
+      "name": "villa_sur_window_move_2",
+      "center": [
+        -1.8,
+        1.5,
+        9.1
+      ],
+      "size": [
+        1.8000000000000003,
+        3.0,
+        0.22
+      ],
+      "type": "move"
+    },
+    {
+      "name": "villa_sur_wall_end",
+      "center": [
+        0.2,
+        1.725,
+        9.1
+      ],
+      "size": [
+        2.2,
+        3.45,
+        0.22
+      ],
+      "type": "solid"
+    },
+    {
+      "name": "villa_oeste_wall_0",
+      "center": [
+        -14.7,
+        1.725,
+        -1.725
+      ],
+      "size": [
+        0.22,
+        3.45,
+        4.75
+      ],
+      "type": "solid"
+    },
+    {
+      "name": "villa_oeste_door_header_0",
+      "center": [
+        -14.7,
+        2.935,
+        1.55
+      ],
+      "size": [
+        0.22,
+        1.03,
+        1.8
+      ],
+      "type": "solid"
+    },
+    {
+      "name": "villa_oeste_wall_1",
+      "center": [
+        -14.7,
+        1.725,
+        3.95
+      ],
+      "size": [
+        0.22,
+        3.45,
+        3.0
+      ],
+      "type": "solid"
+    },
+    {
+      "name": "villa_oeste_sill_1",
+      "center": [
+        -14.7,
+        0.54,
+        6.325
+      ],
+      "size": [
+        0.22,
+        1.08,
+        1.75
+      ],
+      "type": "solid"
+    },
+    {
+      "name": "villa_oeste_header_1",
+      "center": [
+        -14.7,
+        2.865,
+        6.325
+      ],
+      "size": [
+        0.22,
+        1.17,
+        1.75
+      ],
+      "type": "solid"
+    },
+    {
+      "name": "villa_oeste_window_move_1",
+      "center": [
+        -14.7,
+        1.5,
+        6.325
+      ],
+      "size": [
+        0.22,
+        3.0,
+        1.75
+      ],
+      "type": "move"
+    },
+    {
+      "name": "villa_oeste_wall_end",
+      "center": [
+        -14.7,
+        1.725,
+        8.15
+      ],
+      "size": [
+        0.22,
+        3.45,
+        1.9
+      ],
+      "type": "solid"
+    },
+    {
+      "name": "villa_este_wall_0",
+      "center": [
+        1.3,
+        1.725,
+        -3.35
+      ],
+      "size": [
+        0.22,
+        3.45,
+        1.5
+      ],
+      "type": "solid"
+    },
+    {
+      "name": "villa_este_sill_0",
+      "center": [
+        1.3,
+        0.54,
+        -1.6
+      ],
+      "size": [
+        0.22,
+        1.08,
+        2.0
+      ],
+      "type": "solid"
+    },
+    {
+      "name": "villa_este_header_0",
+      "center": [
+        1.3,
+        2.865,
+        -1.6
+      ],
+      "size": [
+        0.22,
+        1.17,
+        2.0
+      ],
+      "type": "solid"
+    },
+    {
+      "name": "villa_este_window_move_0",
+      "center": [
+        1.3,
+        1.5,
+        -1.6
+      ],
+      "size": [
+        0.22,
+        3.0,
+        2.0
+      ],
+      "type": "move"
+    },
+    {
+      "name": "villa_este_wall_1",
+      "center": [
+        1.3,
+        1.725,
+        1.025
+      ],
+      "size": [
+        0.22,
+        3.45,
+        3.25
+      ],
+      "type": "solid"
+    },
+    {
+      "name": "villa_este_door_header_1",
+      "center": [
+        1.3,
+        2.935,
+        3.7
+      ],
+      "size": [
+        0.22,
+        1.03,
+        2.1
+      ],
+      "type": "solid"
+    },
+    {
+      "name": "villa_este_wall_2",
+      "center": [
+        1.3,
+        1.725,
+        5.375
+      ],
+      "size": [
+        0.22,
+        3.45,
+        1.25
+      ],
+      "type": "solid"
+    },
+    {
+      "name": "villa_este_sill_2",
+      "center": [
+        1.3,
+        0.54,
+        6.8
+      ],
+      "size": [
+        0.22,
+        1.08,
+        1.6
+      ],
+      "type": "solid"
+    },
+    {
+      "name": "villa_este_header_2",
+      "center": [
+        1.3,
+        2.865,
+        6.8
+      ],
+      "size": [
+        0.22,
+        1.17,
+        1.6
+      ],
+      "type": "solid"
+    },
+    {
+      "name": "villa_este_window_move_2",
+      "center": [
+        1.3,
+        1.5,
+        6.8
+      ],
+      "size": [
+        0.22,
+        3.0,
+        1.5999999999999996
+      ],
+      "type": "move"
+    },
+    {
+      "name": "villa_este_wall_end",
+      "center": [
+        1.3,
+        1.725,
+        8.35
+      ],
+      "size": [
+        0.22,
+        3.45,
+        1.5
+      ],
+      "type": "solid"
+    },
+    {
+      "name": "villa_divisor_norte_wall_0",
+      "center": [
+        -12.85,
+        1.46,
+        0.1
+      ],
+      "size": [
+        3.3,
+        2.92,
+        0.12
+      ],
+      "type": "solid"
+    },
+    {
+      "name": "villa_divisor_norte_door_header_0",
+      "center": [
+        -10.35,
+        2.67,
+        0.1
+      ],
+      "size": [
+        1.7,
+        0.5,
+        0.12
+      ],
+      "type": "solid"
+    },
+    {
+      "name": "villa_divisor_norte_wall_end",
+      "center": [
+        -8.75,
+        1.46,
+        0.1
+      ],
+      "size": [
+        1.5,
+        2.92,
+        0.12
+      ],
+      "type": "solid"
+    },
+    {
+      "name": "villa_divisor_salon_wall_0",
+      "center": [
+        -7.2,
+        1.46,
+        -3.1
+      ],
+      "size": [
+        0.12,
+        2.92,
+        1.6
+      ],
+      "type": "solid"
+    },
+    {
+      "name": "villa_divisor_salon_door_header_0",
+      "center": [
+        -7.2,
+        2.67,
+        -1.475
+      ],
+      "size": [
+        0.12,
+        0.5,
+        1.65
+      ],
+      "type": "solid"
+    },
+    {
+      "name": "villa_divisor_salon_wall_end",
+      "center": [
+        -7.2,
+        1.46,
+        -0.275
+      ],
+      "size": [
+        0.12,
+        2.92,
+        0.75
+      ],
+      "type": "solid"
+    },
+    {
+      "name": "isla_cocina",
+      "center": [
+        -1.4,
+        0.47,
+        6.85
+      ],
+      "size": [
+        2.1,
+        0.94,
+        0.85
+      ],
+      "type": "solid"
+    },
+    {
+      "name": "aparador",
+      "center": [
+        -13.35,
+        0.51,
+        7.8
+      ],
+      "size": [
+        0.65,
+        1.02,
+        1.55
+      ],
+      "type": "solid"
+    },
+    {
+      "name": "mesa_comedor",
+      "center": [
+        -4.0,
+        0.38,
+        7.25
+      ],
+      "size": [
+        1.8,
+        0.76,
+        1.05
+      ],
+      "type": "solid"
+    },
+    {
+      "name": "silla_comedor_1",
+      "center": [
+        -4.0,
+        0.43,
+        5.96
+      ],
+      "size": [
+        0.5,
+        0.86,
+        0.5
+      ],
+      "type": "solid"
+    },
+    {
+      "name": "sofa_1",
+      "center": [
+        -11.35,
+        0.46,
+        4.9
+      ],
+      "size": [
+        1.75,
+        0.92,
+        0.7
+      ],
+      "type": "solid"
+    },
+    {
+      "name": "mesa_salon",
+      "center": [
+        -9.65,
+        0.32,
+        5.25
+      ],
+      "size": [
+        1.25,
+        0.64,
+        0.78
+      ],
+      "type": "solid"
+    },
+    {
+      "name": "cama_dormitorio",
+      "center": [
+        -13.0,
+        0.27,
+        -2.0
+      ],
+      "size": [
+        1.45,
+        0.54,
+        1.7
+      ],
+      "type": "solid"
+    },
+    {
+      "name": "armario_dormitorio",
+      "center": [
+        -8.8,
+        1.05,
+        -2.4
+      ],
+      "size": [
+        0.55,
+        2.1,
+        1.25
+      ],
+      "type": "solid"
+    },
+    {
+      "name": "modulo_cocina",
+      "center": [
+        -0.15,
+        0.48,
+        7.6
+      ],
+      "size": [
+        0.75,
+        0.96,
+        0.62
+      ],
+      "type": "solid"
+    },
+    {
+      "name": "villa_roof_solid",
+      "center": [
+        -6.7,
+        3.53,
+        2.5
+      ],
+      "size": [
+        16,
+        0.16,
+        13.2
+      ],
+      "type": "solid"
+    },
+    {
+      "name": "garaje_norte_wall_0",
+      "center": [
+        11.05,
+        1.625,
+        -9.15
+      ],
+      "size": [
+        1.9,
+        3.25,
+        0.22
+      ],
+      "type": "solid"
+    },
+    {
+      "name": "garaje_norte_sill_0",
+      "center": [
+        12.7,
+        0.625,
+        -9.15
+      ],
+      "size": [
+        1.4,
+        1.25,
+        0.22
+      ],
+      "type": "solid"
+    },
+    {
+      "name": "garaje_norte_header_0",
+      "center": [
+        12.7,
+        2.7,
+        -9.15
+      ],
+      "size": [
+        1.4,
+        1.1,
+        0.22
+      ],
+      "type": "solid"
+    },
+    {
+      "name": "garaje_norte_window_move_0",
+      "center": [
+        12.7,
+        1.5,
+        -9.15
+      ],
+      "size": [
+        1.4000000000000004,
+        3.0,
+        0.22
+      ],
+      "type": "move"
+    },
+    {
+      "name": "garaje_norte_wall_end",
+      "center": [
+        15.4,
+        1.625,
+        -9.15
+      ],
+      "size": [
+        4.0,
+        3.25,
+        0.22
+      ],
+      "type": "solid"
+    },
+    {
+      "name": "garaje_sur_wall_0",
+      "center": [
+        10.55,
+        1.625,
+        -1.2
+      ],
+      "size": [
+        0.9,
+        3.25,
+        0.22
+      ],
+      "type": "solid"
+    },
+    {
+      "name": "garaje_sur_door_header_0",
+      "center": [
+        12.55,
+        2.835,
+        -1.2
+      ],
+      "size": [
+        3.1,
+        0.83,
+        0.22
+      ],
+      "type": "solid"
+    },
+    {
+      "name": "garaje_sur_wall_end",
+      "center": [
+        15.75,
+        1.625,
+        -1.2
+      ],
+      "size": [
+        3.3,
+        3.25,
+        0.22
+      ],
+      "type": "solid"
+    },
+    {
+      "name": "garaje_oeste_wall_0",
+      "center": [
+        10.1,
+        1.625,
+        -7.65
+      ],
+      "size": [
+        0.22,
+        3.25,
+        3.0
+      ],
+      "type": "solid"
+    },
+    {
+      "name": "garaje_oeste_door_header_0",
+      "center": [
+        10.1,
+        2.835,
+        -5.175
+      ],
+      "size": [
+        0.22,
+        0.83,
+        1.95
+      ],
+      "type": "solid"
+    },
+    {
+      "name": "garaje_oeste_wall_end",
+      "center": [
+        10.1,
+        1.625,
+        -2.7
+      ],
+      "size": [
+        0.22,
+        3.25,
+        3.0
+      ],
+      "type": "solid"
+    },
+    {
+      "name": "garaje_este_wall_0",
+      "center": [
+        17.4,
+        1.625,
+        -6.95
+      ],
+      "size": [
+        0.22,
+        3.25,
+        4.4
+      ],
+      "type": "solid"
+    },
+    {
+      "name": "garaje_este_door_header_0",
+      "center": [
+        17.4,
+        2.835,
+        -3.825
+      ],
+      "size": [
+        0.22,
+        0.83,
+        1.85
+      ],
+      "type": "solid"
+    },
+    {
+      "name": "garaje_este_wall_end",
+      "center": [
+        17.4,
+        1.625,
+        -2.05
+      ],
+      "size": [
+        0.22,
+        3.25,
+        1.7
+      ],
+      "type": "solid"
+    },
+    {
+      "name": "garaje_cajon_herramientas",
+      "center": [
+        15.65,
+        0.56,
+        -8.15
+      ],
+      "size": [
+        1.55,
+        1.12,
+        0.62
+      ],
+      "type": "solid"
+    },
+    {
+      "name": "garaje_almacen",
+      "center": [
+        16.72,
+        0.7,
+        -6.15
+      ],
+      "size": [
+        0.68,
+        1.4,
+        1.05
+      ],
+      "type": "solid"
+    },
+    {
+      "name": "garaje_techo_solid",
+      "center": [
+        13.75,
+        3.33,
+        -5.18
+      ],
+      "size": [
+        7.3,
+        0.16,
+        7.95
+      ],
+      "type": "solid"
+    }
+  ],
+  "renderMeshes": [
+    {
+      "name": "sd_estuco",
+      "triangles": 408,
+      "material": "sd_estuco"
+    },
+    {
+      "name": "sd_estuco_ocre",
+      "triangles": 264,
+      "material": "sd_estuco_ocre"
+    },
+    {
+      "name": "sd_piedra",
+      "triangles": 420,
+      "material": "sd_piedra"
+    },
+    {
+      "name": "sd_suelo_caliza",
+      "triangles": 24,
+      "material": "sd_suelo_caliza"
+    },
+    {
+      "name": "sd_adoquin",
+      "triangles": 12,
+      "material": "sd_adoquin"
+    },
+    {
+      "name": "sd_tierra",
+      "triangles": 84,
+      "material": "sd_tierra"
+    },
+    {
+      "name": "sd_madera",
+      "triangles": 420,
+      "material": "sd_madera"
+    },
+    {
+      "name": "sd_madera_pintada",
+      "triangles": 204,
+      "material": "sd_madera_pintada"
+    },
+    {
+      "name": "sd_hierro",
+      "triangles": 12,
+      "material": "sd_hierro"
+    },
+    {
+      "name": "sd_vidrio",
+      "triangles": 96,
+      "material": "sd_vidrio"
+    },
+    {
+      "name": "sd_agua",
+      "triangles": 12,
+      "material": "sd_agua"
+    },
+    {
+      "name": "sd_vegetacion",
+      "triangles": 1128,
+      "material": "sd_vegetacion"
+    },
+    {
+      "name": "sd_tela",
+      "triangles": 24,
+      "material": "sd_tela"
+    },
+    {
+      "name": "sd_hormigon",
+      "triangles": 12,
+      "material": "sd_hormigon"
+    },
+    {
+      "name": "sd_grava",
+      "triangles": 36,
+      "material": "sd_grava"
+    },
+    {
+      "name": "sd_roble",
+      "triangles": 48,
+      "material": "sd_roble"
+    }
+  ],
+  "roofMeshes": [
+    {
+      "name": "sd_estuco",
+      "triangles": 48,
+      "material": "sd_estuco"
+    },
+    {
+      "name": "sd_estuco_ocre",
+      "triangles": 24,
+      "material": "sd_estuco_ocre"
+    },
+    {
+      "name": "sd_teja",
+      "triangles": 24,
+      "material": "sd_teja"
+    }
+  ],
+  "measuredSightlines": [
+    {
+      "from": [
+        -10.52,
+        1.62,
+        -12.46
+      ],
+      "to": [
+        18.85,
+        1.62,
+        14.27
+      ],
+      "length_m": 39.71
+    },
+    {
+      "from": [
+        -14.48,
+        1.62,
+        12.62
+      ],
+      "to": [
+        14.56,
+        1.62,
+        -14.44
+      ],
+      "length_m": 39.69
+    },
+    {
+      "from": [
+        -18.11,
+        1.62,
+        11.96
+      ],
+      "to": [
+        18.19,
+        1.62,
+        -3.55
+      ],
+      "length_m": 39.47
+    },
+    {
+      "from": [
+        18.52,
+        1.62,
+        2.06
+      ],
+      "to": [
+        -19.1,
+        1.62,
+        10.97
+      ],
+      "length_m": 38.66
+    },
+    {
+      "from": [
+        11.26,
+        1.62,
+        -11.47
+      ],
+      "to": [
+        -16.46,
+        1.62,
+        14.6
+      ],
+      "length_m": 38.05
+    }
+  ],
+  "losSamplingMetrics": {
+    "sampling": "Random walkable-position pairs, collision AABB raycasts at player eye Y=1.62 m; NOT an exhaustive continuous visibility solution.",
+    "visible_pairs": 1295,
+    "mean_m": 14.89,
+    "maximum_sample_m": 41.18,
+    "fraction_over_25m_pct": 12.43,
+    "preset_long_los": 7
+  },
+  "notes": [
+    "One playable level at y=0. Roof is visual-only and impassable, provided as separate GLB; roof colliders in JSON must remain enabled if roof rendered.",
+    "Local coordinates: +Y up, +Z front street, center of 40x32 parcel = (0,0,0).",
+    "Spawns are separated by >30 m, each >=0.8m from body-height colliders, with no clear eye-height LOS.",
+    "Three intended routes: west alley→street; north gravel garden→east alley; west door→villa interior→east door→patio→street.",
+    "Glass windows are unbreakable movement blockers type move occupying the full opening from y=0..3 m; bullets pass through panes; opaque sill/header remain solid.",
+    "Doors are always OPEN, no animated doors; widths from 1.7 to 3.1m. No doors as decorative physical leaves.",
+    "Pool is a shallow raised reflecting basin represented by full solid collision; not swimmable; no fake cover.",
+    "Garden foliage cards are cosmetic non-cover: bullet traces and player movement ignore leaf cards; tree trunks use matching solid boxes.",
+    "Ground floor collisions use implicit floorY=0. Rendered slabs are y<=0 except pond rim and other explicit obstacles.",
+    "No accessible rooftops or elevations. Max jump should not gain access to roof; server must cap y and validate navigation.",
+    "Roof materials include proper opaque surfaces. Add suitable indoor ambient lighting when roof model is enabled.",
+    "Bench/planter crates are solid rectangular cover. Objects thinner than 6cm are cosmetic decal/edge parts that must not read as combat cover.",
+    "The frontal gate is shut and solid; there is no route outside the outer perimeter.",
+    "These line-of-sight measurements are sample-based offline geometry checks; Claude must recompute with the real engine and camera."
+  ]
+}

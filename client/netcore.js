@@ -99,7 +99,9 @@ function create(opts) {
     let m; try { m = JSON.parse(text); } catch (e) { return [{ k: 'error', code: 'json' }]; }
     const ev = [];
     switch (m.t) {
-      case 'welcome': N.you = m.you; N.token = m.token; N.code = m.code; N.phase = m.phase; N.players = m.players; N.match = m.match; ev.push({ k: 'welcome', m }); break;
+      // a welcome opens a new socket: the server only numbers events from here on, and a restarted
+      // server object (every deploy) numbers them again from 1, so the old count must not filter them
+      case 'welcome': N.you = m.you; N.token = m.token; N.code = m.code; N.phase = m.phase; N.players = m.players; N.match = m.match; N.lastEvQ = 0; ev.push({ k: 'welcome', m }); break;
       case 'lobby': N.phase = m.phase; N.players = m.players; if (m.map) N.map = m.map; if (m.maps) N.maps = m.maps; ev.push({ k: 'lobby', m }); break;
       case 'start':
         N.match = m.m; if (m.map) N.map = m.map; N.names = m.names || {}; N.phase = 'countdown'; N.startIn = m.in; N.startedAt = N.now();
