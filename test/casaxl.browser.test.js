@@ -65,6 +65,22 @@ function check(name, cond, info) { if (cond) { pass++; console.log('  ok   ' + n
   check('nunca dentro de una caja ni fuera de la parcela', bot.inBox === 0 && bot.out === 0, bot.inBox + ' / ' + bot.out);
   const back = await p.evaluate(() => { __SD.toMenu(); __SD.setOffMap('arena'); return { w: __SD.WORLD_ID, sc: __SD.LIGHT.sun.shadow.camera.right, vis: __SD.XL.root.visible }; });
   check('volver a la ARENA: sombras como antes y la villa oculta', back.w === 'arena' && back.sc === 62 && !back.vis, JSON.stringify(back));
+  await ctx.close();
+
+  console.log('\n&xltex=1 (texturas CC0 del juego en lugar de las de la entrega)');
+  { const c2 = await b.newContext({ viewport: { width: 640, height: 360 } });
+    await c2.route(/fonts\.(googleapis|gstatic)\.com/, r => r.abort());
+    await c2.addInitScript(() => { try { localStorage.setItem('sniperduel_settings', JSON.stringify({ quality: 'medio', v: 3 })); } catch (e) {} });
+    const q = await c2.newPage(), e2 = [], bad2 = [];
+    q.on('pageerror', e => e2.push(e.message)); q.on('response', r => { if (/\/assets\//.test(r.url()) && r.status() >= 400) bad2.push(r.status() + ' ' + r.url()); });
+    await q.goto(srv.url + '?vm=0&xltex=1'); await q.waitForFunction(() => window.__SD && __SD.WORLDS && __SD.WORLDS.casaxl);
+    await q.evaluate(() => { document.querySelector('#mapSeg [data-map=casaxl]').click(); __SD.setMode('duel'); __SD.setDuelLethal(false); __SD.startMatch(); });
+    await q.waitForFunction(() => __SD.XL.ready && __SD.XL.roof && __SD.state === 'playing', null, { timeout: 240000 }); await q.waitForTimeout(1500);   // ~20 more textures to decode in software WebGL: slow on a busy machine
+    const m = await q.evaluate(() => { const out = {}; for (const r of [__SD.XL.root, __SD.XL.roof]) r.traverse(o => { if (o.isMesh && o.material && o.material.map) { const s = (o.material.map.image && (o.material.map.image.currentSrc || o.material.map.image.src)) || ''; out[o.material.name] = s.split('/').pop().split('?')[0] || 'glb'; } }); return out; });
+    check('estuco, adoquín, caliza y teja usan las texturas del juego (MEDIO)', m.sd_estuco === 'p1m_stucco_c.jpg' && m.sd_adoquin === 'p0ccm_cobble_c.jpg' && m.sd_suelo_caliza === 'p0v3m_plaza_c.jpg' && m.sd_teja === 'p1m_rooftiles_c.jpg', JSON.stringify([m.sd_estuco, m.sd_adoquin, m.sd_suelo_caliza, m.sd_teja]));
+    check('vidrio, agua y vegetación conservan las suyas', m.sd_vidrio === 'glb' && m.sd_agua === 'glb' && m.sd_vegetacion === 'glb', JSON.stringify([m.sd_vidrio, m.sd_agua, m.sd_vegetacion]));
+    check('sin errores ni texturas que falten', e2.length === 0 && bad2.length === 0, e2.concat(bad2).join(' | ') || 'ninguno');
+    await c2.close(); }
   await b.close(); srv.close();
   console.log('\n' + pass + ' correctas, ' + fail + ' fallidas');
   process.exit(fail ? 1 : 0);

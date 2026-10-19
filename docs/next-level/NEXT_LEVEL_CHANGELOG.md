@@ -198,3 +198,57 @@ Sprint: vuelta al 10 % en ~0,10 s (antes ~0,23 s), calculado de las constantes.
 **Pruebas:** `npm test` completo 955/955 (tras liberar memoria: Windows se había quedado sin memoria comprometida,
 24,4/24,5 GB, y las suites de navegador no arrancaban). **Pendiente de que el propietario compare** `?feel=2` con la versión actual, en PC e iPhone.
 **Revertir:** `git revert` del commit; o simplemente no usar la bandera.
+
+---
+
+## N5-3 · CASA ATLAS XL con las texturas CC0 del juego (`&xltex=1`)
+- **Antes (MEDIDO):** las texturas de color de la entrega son casi lisas (±4/255) con mapas de relieve muy fuertes:
+  aspecto de barro o espuma. 57 texturas, 66,8 MB de GPU en ALTO y MEDIO.
+- **Solución (tras `&xltex=1`):** cada material de la entrega usa la textura aprobada del juego, con la resolución de su
+  perfil y la repetición a su tamaño real (UV reescaladas por malla): estuco `white_stucco_02` (ocre con tinte), piedra
+  del kit, caliza v3b, adoquín `cobblestone_02`, tierra, hormigón, madera del pueblo (tintada), tablones CC0 para la
+  madera pintada, espiga para el suelo interior, teja `clay_roof_tiles_02`. Vidrio, agua, hierro, tela y plantas, sin
+  cambios. Probados y descartados: guijarros para la grava (es un mosaico decorativo) y tablones blancos para el tronco.
+- **Después (MEDIDO, Chromium por software):** 40 texturas; MEDIO 66,8 → 66,2 MB; ALTO 66,8 → 118 MB (texturas CC0 de
+  2048 px, solo PC). Capturas antes/después con 4 cámaras fijas a la altura de los ojos.
+- **Pruebas:** casaxl.browser 17/17 (3 nuevas: texturas por perfil, las que se conservan, sin 404).
+- **Pendiente:** aprobación visual del propietario; iluminación interior; medir en iPhone.
+- **Revertir:** no usar la bandera, o `git revert`.
+
+---
+
+## N3-4 · «El ratón se queda pillado» (vídeo del propietario, 19-10-2026)
+- **Reproducción:** vídeo `Grabación 2026-10-19 103827` (min 0:24–0:28): jugando, la cámara deja de girar unos segundos
+  y el propietario vuelve al menú. **Causa (confirmada en el código):** si Chrome rechaza la captura del ratón (lo hace
+  si se pide menos de ~1 s después de salir de ella, p. ej. Esc → REANUDAR rápido), el juego seguía con la cámara
+  atada al **cursor libre**: al llegar al borde de la pantalla, el cursor se para y la cámara se queda clavada. Además,
+  el clic que volvía a pedir la captura disparaba.
+- **Solución:** REANUDAR espera ese segundo («UN MOMENTO…») en vez de pedir una captura que Chrome va a rechazar; sin
+  captura, la cámara no sigue al cursor libre y el clic solo recupera el ratón (no dispara). El modo de cursor libre
+  queda solo para navegadores donde la captura falla 3 veces seguidas.
+- **Pruebas:** `browser` 60/60 (2 nuevas: REANUDAR espera; sin captura ni giro ni disparo), `online.browser` 43/43
+  (reanuda pasado el segundo, como una persona), `smoke` 76/76, `touch.smoke` 82/82 (táctil no cambia).
+- **Otro hallazgo del mismo vídeo:** la línea de diagnóstico dice **«GPU: ANGLE (Intel… UHD Graphics 630)»**: el Chrome
+  del propietario dibujaba con la GPU integrada (FPS 25–46 en el vídeo). El propietario puso Chrome en «Alto
+  rendimiento (GTX 1050 Ti)» en Windows › Gráficos; pendiente de comprobar tras reiniciar Chrome (también las rayas).
+- **Revertir:** `git revert` del commit; solo cliente.
+
+## 19-10-2026 — Menú de PC sin desplazamiento
+- IMPLEMENTADO · PROBADO EN NAVEGADOR: controles en dos columnas y título adaptado al alto de la ventana; Campo de tiro oculta la descripción para conservar espacio.
+- Verificación de maquetación en Chrome, Duelo y Campo de tiro: 1536×775, 1366×657, 1280×720, 1920×969 y 1440×789 sin desbordamiento vertical. Captura local: build/menu-desktop.png (HTML sin ejecutar el juego; no es una prueba de render 3D).
+- mobile.test 74/74; touch.smoke.test 82/82. No se ha repetido npm test completo para este ajuste CSS.
+- Pendiente: aprobación visual del propietario y publicación. Se conserva el trabajo independiente de CASA ATLAS.
+
+---
+
+## N8-1 · Menú de PC sin deslizar (petición del propietario, captura 19-10-2026)
+- **Antes (MEDIDO):** el menú medía 1 061 px de alto en todos los tamaños; en 1536×775 (el Chrome del propietario)
+  sobraban 286 px y **JUGAR quedaba en y = 879, fuera de la pantalla**; también en 1366×657, 1280×720 y 1440×789.
+- **Solución (solo PC, ancho ≥ 900 px):** título que sigue la altura de la ventana, controles en dos columnas
+  (Modo | Arma, Dificultad | Bots pueden matarte; bots de entrenamiento en dos columnas en el campo de tiro), fuera la
+  línea antigua de fases; en ventanas de ≤ 700 px de alto se ocultan la descripción del modo y la lista de teclas.
+  Texto superior actualizado («Duelo de francotiradores · 1v1»). El móvil no cambia.
+- **Después:** sobra 0 px en 1536×775, 1366×657, 1280×720, 1920×969 y 1440×789; JUGAR en y = 641 de 775.
+- **Pruebas:** browser 61/61 (nueva: el menú cabe en 3 tamaños), mobile 74/74, touch.smoke 82/82, smoke 76/76.
+- También: la prueba de `&xltex=1` espera hasta 240 s a la carga (en una ejecución completa con el PC ocupado pasó de
+  120 s; sola pasa). **Revertir:** `git revert`.

@@ -335,6 +335,34 @@ body.touch #score .side span{max-width:11vw;overflow:hidden;text-overflow:ellips
   #menu .stats{gap:5px}
 }
 /* iPhone SE and other very short landscape screens: the CAMPO DE TIRO options fit without scrolling */
+/* PC (19-10-2026): the whole menu fits the window, no scrolling (it was 1 061 px tall: JUGAR at y=879 on a 775 px
+   window). The title follows the window height, the choices go in two columns, the old roadmap line goes */
+@media (min-width:900px) and (min-height:521px){
+  #menu .menuInner{align-content:center;padding-top:calc(16px + env(safe-area-inset-top,0px));padding-bottom:calc(16px + env(safe-area-inset-bottom,0px));gap:20px 40px}
+  #menu .eyebrow{font-size:10px}
+  #menu h1{font-size:clamp(52px,11vh,140px);margin:6px 0 8px}
+  #menu .sub{font-size:12.5px;line-height:1.5;min-height:3em}
+  #menu .ctrlBlock{grid-template-columns:minmax(0,1fr) minmax(0,1fr);max-width:700px;gap:12px 18px;margin-top:14px}
+  #menu #mapBlock,#menu #rangeBlock,#menu .ctrlBlock>.row,#menu .ctrlBlock>div:has(>.sens){grid-column:1/-1}
+  #menu #diffBlock{grid-column:1/-1;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);column-gap:18px}
+  #menu #diffBlock[hidden]{display:none}
+  #menu #diffBlock>.lbl:first-child{grid-area:1/1}#menu #diffSeg{grid-area:2/1}
+  #menu #lblDuelLethal{grid-area:1/2;margin:0 0 6px!important}#menu #duelLethalSeg{grid-area:2/2}
+  #menu #rangeBlock{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:4px 18px}
+  #menu #rangeBlock[hidden]{display:none}
+  #menu #rangeBlock>.lbl{margin:0!important}
+  #menu #lblTrain{grid-area:1/1}#menu #trainSeg{grid-area:2/1}#menu #lblLethal{grid-area:1/2}#menu #lethalSeg{grid-area:2/2}
+  #menu #lblMove{grid-area:3/1/3/3;margin-top:6px!important}#menu #moveSeg{grid-area:4/1/4/3}
+  #menu #rangeBlock .chk{grid-column:1/-1;margin-top:4px}
+  #menu .seg button{padding:8px 6px}
+  #menu:has(#rangeBlock:not([hidden])) .sub{display:none}
+  #menu .road{display:none}
+  #menu .card{padding:16px;gap:11px}
+}
+@media (min-width:900px) and (min-height:521px) and (max-height:700px){
+  #menu .sub{display:none}
+  #menu .card .keys{display:none}
+}
 @media (max-height:385px) and (min-width:560px){
   #menu .menuInner{padding-top:calc(6px + env(safe-area-inset-top,0px));padding-bottom:calc(6px + env(safe-area-inset-bottom,0px));gap:6px 18px}
   #menu .ctrlBlock{gap:5px 12px}
@@ -501,7 +529,7 @@ body.touch #score .side span{max-width:11vw;overflow:hidden;text-overflow:ellips
 <div id="menu" class="overlay">
   <div class="menuInner">
     <div>
-      <div class="eyebrow">Fase 1 · Prototipo de gunplay</div>
+      <div class="eyebrow">Duelo de francotiradores · 1v1</div>
       <h1>SNIPER<span>DUEL</span></h1>
       <p class="sub" id="modeSub">Pueblo abandonado. Tú contra bots francotiradores. Gana el primero que llegue a 10 bajas. Fíjate en el destello de sus miras: es lo único que te avisa antes del disparo.</p>
       <div class="ctrlBlock">
@@ -1478,6 +1506,34 @@ if(XL.on){
   WORLDS.casaxl={colliders:W.colliders,ray:W.ray,ramps:W.ramps,objs:[],nav,label:'CASA ATLAS XL',spawns:SDCasaXL.spawns,local:true};
   W.colliders=prevC;W.ray=prevR;W.ramps=prevP;
 }
+/* &xltex=1 (19-10-2026): the delivery's textures are almost flat colours (±4/255) with very strong normal maps, and take
+   55 MB of GPU. With the flag its materials use the game's approved CC0 / own textures instead (the PUEBLO 3.0 sets, one
+   resolution per profile, shared with the town when it is loaded): white_stucco_02, the kit masonry, the v3b limestone,
+   cobblestone_02, planks, herringbone, clay roof tiles… Glass, water, iron, cloth and plants keep their own. The UVs of
+   the delivery are in world scale; each mesh's are rescaled so the texture repeats at its real size (tile, metres). */
+const XLTEX=/[?&]xltex=1\b/.test(location.search);
+const XL_TEXSET={sd_estuco:{t:'p1:stucco',tile:2.6},sd_estuco_ocre:{t:'p1:stucco',tile:2.6,col:0xe8c995},sd_piedra:{t:'stone',tile:1.6},
+  sd_suelo_caliza:{t:'p0v3:plaza',tile:4},sd_adoquin:{t:'p0cc:cobble',tile:2.7},sd_tierra:{t:'earth',tile:4},sd_grava:{t:'earth',tile:3,col:0xc9c3b8},
+  sd_hormigon:{t:'concrete',tile:3},sd_madera:{t:'wood',tile:1.1,col:0x8a6a4a},sd_madera_pintada:{t:'p1:wood',tile:1.2,col:0xd9d2c4},
+  sd_roble:{t:'herring',tile:1.5},sd_teja:{t:'p1:rooftiles',tile:1.6}};
+function xlRetex(root){
+  const prof=GFX.profile,suffix={alto:'',medio:'m',bajo:'b'}[prof]||'';
+  // 'p1:stucco' → p1_stucco (ALTO) / p1m_stucco (MEDIO) / p1b_stucco (BAJO, colour only); plain names have _c and _n
+  const names=t=>{const [set,n]=t.split(':');return n?{c:set+suffix+'_'+n,full:prof!=='bajo',rough:prof!=='bajo'}:{c:t,full:prof!=='bajo',rough:false};};
+  const doneGeo=new Set(),doneMat=new Map();
+  root.traverse(o=>{if(!o.isMesh)return;const m=o.material,S=XL_TEXSET[m&&m.name];if(!S)return;
+    if(!doneMat.has(m)){const N=names(S.t);
+      m.map=texLoad(N.c,false);m.normalMap=N.full?texLoad(N.c,true):null;if(m.normalMap)m.normalScale=new T.Vector2(0.8,0.8);
+      m.roughnessMap=N.rough?texLoad(N.c+'_r',false,false,true):null;m.roughness=N.rough?1:0.88;m.metalnessMap=null;m.metalness=0;m.aoMap=null;
+      csHex(m.color,S.col||0xffffff);m.needsUpdate=true;doneMat.set(m,1);}
+    const g=o.geometry;if(doneGeo.has(g))return;doneGeo.add(g);
+    // metres per UV unit of this mesh (median over its triangle edges) → scale so the texture repeats every S.tile metres
+    const P=g.attributes.position,U=g.attributes.uv,I=g.index;if(!U)return;const r=[];const n=I?I.count:P.count;
+    for(let i=0;i<n&&r.length<400;i+=3){const a=I?I.getX(i):i,b=I?I.getX(i+1):i+1;
+      const l=Math.hypot(P.getX(a)-P.getX(b),P.getY(a)-P.getY(b),P.getZ(a)-P.getZ(b)),u=Math.hypot(U.getX(a)-U.getX(b),U.getY(a)-U.getY(b));if(u>1e-4&&l>1e-3)r.push(l/u);}
+    if(!r.length)return;r.sort((x,y)=>x-y);const k=r[r.length>>1]/S.tile;
+    for(let i=0;i<U.count;i++)U.setXY(i,U.getX(i)*k,U.getY(i)*k);U.needsUpdate=true;});
+}
 function casaxlLoad(){
   if(!XL.on||XL.ready||XL.loading||!T.GLTFLoader)return;XL.loading=true;
   const prof=GFX.profile,aniso=Math.min(prof==='alto'?4:prof==='medio'?2:1,renderer.capabilities.getMaxAnisotropy?renderer.capabilities.getMaxAnisotropy():1);
@@ -1489,7 +1545,7 @@ function casaxlLoad(){
       for(const t of [m.map,m.normalMap,m.roughnessMap,m.metalnessMap,m.aoMap])if(t)t.anisotropy=aniso;
       if(/vidrio/.test(m.name)){m.transparent=true;m.depthWrite=false;m.envMap=ENV;m.envMapIntensity=0.6;}
       m.needsUpdate=true;}};
-  const add=(r,name)=>{r.name=name;fix(r);scene.add(r);WORLDS.casaxl.objs.push(r);r.visible=WORLD_ID==='casaxl';return r;};
+  const add=(r,name)=>{r.name=name;fix(r);if(XLTEX)xlRetex(r);scene.add(r);WORLDS.casaxl.objs.push(r);r.visible=WORLD_ID==='casaxl';return r;};
   const fail=e=>{XL.failed=true;XL.loading=false;console.warn('casaxl load',e);for(const f of XL.wait.splice(0))f();};
   try{new T.GLTFLoader().load('assets/maps/casa_atlas_xl/casa_atlas_xl.glb?v='+BUILD_HASH,g=>{try{
       XL.root=add(g.scene,'casa_atlas_xl');XL.ready=true;XL.loading=false;try{renderer.compile(scene,camera);}catch(e){}
@@ -2414,7 +2470,7 @@ const AIM={ox:0,oy:0,oz:0,yaw:0,pitch:0};
 const STATS={damage:0,meleeHits:0,firstShot:-1,firstKill:0,lastKill:0,rangeHs:0,kills:0,deaths:0,hs:0,shots:0,hits:0,longest:0,start:0,botKills:0};
 let state='menu';
 const input={keys:{},fireHeld:false,firePressed:false,fireAim:false,fireAimShot:0,scope:false,scopeToggle:false,scopeHeld:false,crouchHeld:false,crouchPressed:false,jumpPressed:false,reloadPressed:false,breath:false,select:null,inspect:false,lookDX:0,lookDY:0,joyX:0,joyY:0,joySprint:false,noSprintT:0};
-let pointerLocked=false,lockFailed=false;
+let pointerLocked=false,lockFailed=false,lockFails=0,lockExitAt=-1e9;   // lockFails: refusals in a row; lockExitAt: when the lock last ended
 const compassMarks=[];
 
 /* =================== BOTS =================== */
@@ -3264,7 +3320,9 @@ window.addEventListener('keydown',e=>{
 window.addEventListener('keyup',e=>{input.keys[e.code]=false;});
 canvas.addEventListener('mousedown',e=>{
   if(isTouch)return;
-  if(state==='playing'&&!pointerLocked){requestLock();if(!lockFailed)return;} // lock refused before: ask again on every click, and still let the click shoot
+  // not captured: the click only asks for the mouse again (it used to shoot as well, wasting a bullet). Only where the
+  // capture never works (3 refusals in a row) does the click also play, with the camera following the free cursor
+  if(state==='playing'&&!pointerLocked){requestLock();if(lockFails<3)return;}
   if(state!=='playing'&&state!=='dead')return;
   if(e.button===0){input.fireHeld=true;input.firePressed=true;}
   if(e.button===2){input.scope=true;}
@@ -3273,17 +3331,20 @@ window.addEventListener('mouseup',e=>{if(e.button===0)input.fireHeld=false;if(e.
 window.addEventListener('contextmenu',e=>{if(state==='playing'||state==='dead')e.preventDefault();});
 window.addEventListener('mousemove',e=>{
   if(isTouch||(state!=='playing'&&state!=='dead'))return;
-  if(pointerLocked||lockFailed){input.lookDX+=e.movementX||0;input.lookDY+=e.movementY||0;}
+  // with the cursor free the camera stops dead when it reaches the screen edge ("the mouse gets stuck"): free-cursor look
+  // only where the capture never works; otherwise the camera waits for the click that captures the mouse again
+  if(pointerLocked||lockFails>=3){input.lookDX+=e.movementX||0;input.lookDY+=e.movementY||0;}
 });
 window.addEventListener('wheel',e=>{if(state==='playing'&&WS.ads>0.5){WS.zoom=WS.zoom===8?4:8;SFX.click(0,3000,0.15);}},{passive:true});
 function requestLock(){
   if(isTouch)return;
-  try{const r=canvas.requestPointerLock&&canvas.requestPointerLock();if(r&&r.catch)r.catch(()=>{lockFailed=true;});}catch(e){lockFailed=true;}
-  setTimeout(()=>{if(!pointerLocked&&state==='playing')lockFailed=true;},800);
+  const fail=()=>{if(pointerLocked)return;lockFails++;lockFailed=true;};
+  try{const r=canvas.requestPointerLock&&canvas.requestPointerLock();if(r&&r.catch)r.catch(fail);}catch(e){fail();}
+  setTimeout(()=>{if(!pointerLocked&&state==='playing'&&!lockFailed)fail();},800);
 }
 document.addEventListener('pointerlockchange',()=>{
   pointerLocked=document.pointerLockElement===canvas;
-  if(pointerLocked)lockFailed=false;
+  if(pointerLocked){lockFailed=false;lockFails=0;}else lockExitAt=performance.now();
   if(!pointerLocked&&(state==='playing'||state==='dead')&&!isTouch)pause();
 });
 
@@ -3616,7 +3677,9 @@ function startMatch(){
 function clearPendingInput(){if(typeof releaseAllTouches==='function')releaseAllTouches();input.firePressed=input.jumpPressed=input.crouchPressed=input.reloadPressed=false;input.fireAim=false;input.fireAimShot=0;input.select=null;input.inspect=false;input.lookDX=input.lookDY=0;}
 function pause(){if(state!=='playing'&&state!=='dead')return;pausedFrom=state;state='paused';$('#pause').hidden=false;kitNote();$('#lockHint').hidden=true;if(pointerLocked&&document.exitPointerLock)document.exitPointerLock();input.fireHeld=false;input.scope=false;input.scopeToggle=false;input.keys={};clearPendingInput();}
 let pausedFrom='playing';
-function resume(){if(state!=='paused')return;clearPendingInput();state=pausedFrom;$('#pause').hidden=true;audioInit();if(!isTouch)requestLock();}
+function resume(){if(state!=='paused')return;
+  if(!isTouch&&performance.now()-lockExitAt<1150){const b=$('#resume');if(!b.dataset.wait){b.dataset.wait='1';b.disabled=true;const txt=b.textContent;b.textContent='UN MOMENTO…';
+    setTimeout(()=>{b.disabled=false;b.textContent=txt;delete b.dataset.wait;},Math.max(50,1150-(performance.now()-lockExitAt)));}return;}clearPendingInput();state=pausedFrom;$('#pause').hidden=true;audioInit();if(!isTouch)requestLock();}
 function toMenu(){if(mode==='online'){netLeave(true);return;}state='menu';setWorld(offWorld());$('#pause').hidden=true;$('#lockHint').hidden=true;$('#over').hidden=true;$('#hud').hidden=true;$('#scope').hidden=true;$('#death').hidden=true;$('#touch').hidden=true;$('#menu').hidden=false;BOTS.concat(DUMMIES,TRAINERS).forEach(b=>{b.alive=false;b.g.visible=false;b.trainerActive=false;});BULLETS.length=0;BTR.forEach(m=>m.visible=false);scene.fog.near=45;scene.fog.far=175;if(document.exitPointerLock&&pointerLocked)document.exitPointerLock();}
 function endMatch(win){
   if(state==='over'||state==='menu')return;

@@ -89,6 +89,14 @@ const shown = page => page.evaluate(ids => ids.filter(id => { const e = document
       check('después de comprobar los mapas la página sigue en el mismo mapa', await page.evaluate(w => __SD.WORLD_ID === w, world0));
       const dup = await page.evaluate(() => { const c = {}; document.querySelectorAll('[id]').forEach(e => c[e.id] = (c[e.id] || 0) + 1); return Object.keys(c).filter(k => c[k] > 1); });
       check('ningún id repetido en la página (si se repite, un dato se escribe en el sitio equivocado)', dup.length === 0, dup.join(', ') || 'ninguno');
+      // PC: the whole menu fits the window, no scrolling (19-10-2026: it was 1 061 px tall, JUGAR below the fold)
+      { const vp = page.viewportSize(), fit = [];
+        for (const [w, h] of [[1536, 775], [1366, 657], [1920, 969]]) {
+          await page.setViewportSize({ width: w, height: h }); await page.waitForTimeout(150);
+          fit.push(await page.evaluate(() => { const i = document.querySelector('#menu .menuInner'), b = document.getElementById('play').getBoundingClientRect(); return { over: i.scrollHeight - innerHeight, play: b.bottom <= innerHeight }; }));
+        }
+        await page.setViewportSize(vp);
+        check('PC: el menú cabe entero sin deslizar y JUGAR se ve (1536×775, 1366×657, 1920×969)', fit.every(f => f.over <= 0 && f.play), JSON.stringify(fit)); }
       // real mouse click on JUGAR → the browser really captures the mouse (Pointer Lock)
       await page.evaluate(() => __SD.setMode('range'));
       await page.getByRole('button', { name: 'JUGAR', exact: true }).click();
@@ -183,15 +191,25 @@ const shown = page => page.evaluate(ids => ids.filter(id => { const e = document
       const lk = await page.evaluate(async () => {
         const c = document.querySelector('canvas'); let calls = 0;
         c.requestPointerLock = () => { calls++; return Promise.reject(new Error('denied')); };
-        __SD.pause(); await new Promise(r => setTimeout(r, 300)); __SD.resume(); await new Promise(r => setTimeout(r, 900));
+        // REANUDAR right after leaving the capture: Chrome would refuse it for ~1 s, so the button waits (19-10-2026)
+        __SD.pause(); await new Promise(r => setTimeout(r, 300)); __SD.resume();
+        const early = { state: __SD.state, txt: document.getElementById('resume').textContent };
+        await new Promise(r => setTimeout(r, 1000)); __SD.resume(); await new Promise(r => setTimeout(r, 900));
         const hint = document.getElementById('lockHint').checkVisibility();
-        const before = calls;
+        const before = calls, shots0 = __SD.STATS.shots, yaw0 = __SD.P.yaw;
+        // with the mouse not captured: moving it does not drag the camera to a dead stop at the screen edge, and the click
+        // that asks for the capture again does not fire
+        window.dispatchEvent(new MouseEvent('mousemove', { movementX: 80, movementY: 0 }));
         c.dispatchEvent(new MouseEvent('mousedown', { button: 0, bubbles: true })); window.dispatchEvent(new MouseEvent('mouseup', { button: 0 }));
+        await new Promise(r => setTimeout(r, 100));
+        const look = __SD.P.yaw - yaw0, shots = __SD.STATS.shots - shots0;
         c.dispatchEvent(new MouseEvent('mousedown', { button: 0, bubbles: true })); window.dispatchEvent(new MouseEvent('mouseup', { button: 0 }));
-        return { hint, before, after: calls };
+        return { early, hint, before, after: calls, look, shots };
       });
+      check('REANUDAR justo después de pausar espera al navegador («UN MOMENTO…») en vez de perder el ratón', lk.early.state === 'paused' && /MOMENTO/.test(lk.early.txt), JSON.stringify(lk.early));
       check('si el navegador no captura el ratón, sale el aviso HAZ CLIC', lk.hint);
       check('cada clic vuelve a pedir capturar el ratón (antes se rendía tras el primer fallo)', lk.after - lk.before === 2, lk.before + ' → ' + lk.after + ' peticiones');
+      check('sin el ratón capturado, la cámara no se arrastra con el cursor libre y el clic no dispara', Math.abs(lk.look) < 1e-6 && lk.shots === 0, 'giro ' + lk.look.toFixed(4) + ' · disparos ' + lk.shots);
       await page.evaluate(() => __SD.pause());
       check('en pausa el aviso desaparece', !(await page.evaluate(() => document.getElementById('lockHint').checkVisibility())));
       await ctx.close();
