@@ -232,3 +232,9 @@ Sprint: vuelta al 10 % en ~0,10 s (antes ~0,23 s), calculado de las constantes.
   del propietario dibujaba con la GPU integrada (FPS 25–46 en el vídeo). El propietario puso Chrome en «Alto
   rendimiento (GTX 1050 Ti)» en Windows › Gráficos; pendiente de comprobar tras reiniciar Chrome (también las rayas).
 - **Revertir:** `git revert` del commit; solo cliente.
+
+## 19-10-2026 — Menú de PC sin desplazamiento
+- IMPLEMENTADO · PROBADO EN NAVEGADOR: controles en dos columnas y título adaptado al alto de la ventana; Campo de tiro oculta la descripción para conservar espacio.
+- Verificación de maquetación en Chrome, Duelo y Campo de tiro: 1536×775, 1366×657, 1280×720, 1920×969 y 1440×789 sin desbordamiento vertical. Captura local: build/menu-desktop.png (HTML sin ejecutar el juego; no es una prueba de render 3D).
+- mobile.test 74/74; touch.smoke.test 82/82. No se ha repetido npm test completo para este ajuste CSS.
+- Pendiente: aprobación visual del propietario y publicación. Se conserva el trabajo independiente de CASA ATLAS.
