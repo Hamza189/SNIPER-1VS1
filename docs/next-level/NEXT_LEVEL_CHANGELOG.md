@@ -165,3 +165,9 @@ Estado: IMPLEMENTADO · PROBADO EN NAVEGADOR · PROBADO ONLINE · PENDIENTE DE V
 - **Comprobado en la GTX 1050 Ti (navegador integrado):** las 4 combinaciones compilan sin programas rotos; sin banderas,
   cámara y sesgo idénticos a antes. shadow.browser 7/7.
 - **Revertir:** `git revert` del commit; solo cliente.
+
+### Validación del paquete N6 (19-10-2026)
+`npm test`: 955 correctas, 0 fallidas (26 suites). Nota: una ejecución completa se cortó en `aim.browser` por falta de
+memoria **del PC** (Node no pudo reservar memoria con 22 MB de montón; 3,5 GB libres con Chrome del propietario abierto);
+las 6 suites restantes se pasaron después por separado. `online.browser` agotó una vez los 30 s de carga de la página en
+ese estado y pasó 43/43 al repetirla sola.
