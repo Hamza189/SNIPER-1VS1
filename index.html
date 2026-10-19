@@ -4181,7 +4181,7 @@ const SDCasaXL = {"id":"CASA_ATLAS_XL","version":"1.0.0","bounds":{"min":[-20,0,
 if (typeof module !== 'undefined' && module.exports) module.exports = SDCasaXL; else root.SDCasaXL = SDCasaXL;
 })(typeof window !== 'undefined' ? window : globalThis);
 
-const BUILD_ID="ae7aeeb";const BUILD_HASH="4cd8a21f07";
+const BUILD_ID="057a102";const BUILD_HASH="b998044c6d";
 </script>
 <script>
 (function(){
@@ -6023,7 +6023,11 @@ function soldierUseModels(R){
     for(const c of g.children)c.visible=false;
     const w=new T.Group();w.rotation.y=Math.PI;w.position.set(TP_FIT[k][1],TP_FIT[k][2],TP_FIT[k][3]);
     const m=src.clone(true);m.position.set(0,0,0);m.rotation.set(0,0,0);w.add(m);g.add(w);
-    m.traverse(o=>{if(o.isMesh){o.castShadow=true;o.frustumCulled=true;}});
+    // only the biggest piece of each weapon casts a sun shadow: on the ground a rifle's shadow is a few pixels, and its
+    // 11 small pieces (bolt, rings, sights…) were ~20 of the shadow pass's draw calls per soldier (audit 18-10-2026)
+    let big=null,bv=-1;m.traverse(o=>{if(!o.isMesh)return;o.castShadow=false;o.frustumCulled=true;
+      const bb=o.geometry.boundingBox||(o.geometry.computeBoundingBox(),o.geometry.boundingBox),s=bb.getSize(_sv),v=s.x*s.y*s.z;if(v>bv){bv=v;big=o;}});
+    if(big)big.castShadow=true;
     R.tp[k]=m;if(k==='shotgun')R.tpPump=m.getObjectByName('ts_pump')||m.getObjectByName('s_pump');
     const sh=m.getObjectByName('s_shell');if(sh)sh.visible=false;}
 }

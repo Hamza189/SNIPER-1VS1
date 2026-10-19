@@ -146,3 +146,12 @@ Estado: IMPLEMENTADO · PROBADO EN NAVEGADOR · PROBADO ONLINE · PENDIENTE DE V
 - **Después:** **0,1** cambios por fotograma (250 → 8 en 60 fotogramas, MutationObserver, emulación táctil 844×390).
 - **Pruebas:** mobile 74/74, touch.smoke 82/82. **Pendiente:** medir el efecto en el iPhone real (Safari Timeline).
   **Revertir:** `git revert b1601b0`.
+
+## N6-4 · Soldados (bots y rival online): solo la pieza principal de cada arma proyecta sombra
+- **Antes (MEDIDO, ARENA, MEDIO, Chromium por software):** 2 bots a la vista = **38 llamadas de dibujo** por fotograma;
+  90 piezas con sombra (cada arma en tercera persona, 11 piezas pequeñas con su propia sombra).
+- **Solución:** en `soldierUseModels`, de cada arma solo proyecta sombra la malla de mayor volumen. La sombra del cuerpo
+  (pista de juego: ver al rival por su sombra) no cambia.
+- **Después:** 2 bots = **18 llamadas**; 24 piezas con sombra. Pruebas: shadow.browser 7/7, aim.browser 14/14,
+  online.browser 43/43. **Riesgo visual:** la sombra del rifle en el suelo pierde detalles de pocos píxeles.
+- **Revertir:** `git revert` del commit; solo cliente.
