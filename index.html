@@ -4181,7 +4181,7 @@ const SDCasaXL = {"id":"CASA_ATLAS_XL","version":"1.0.0","bounds":{"min":[-20,0,
 if (typeof module !== 'undefined' && module.exports) module.exports = SDCasaXL; else root.SDCasaXL = SDCasaXL;
 })(typeof window !== 'undefined' ? window : globalThis);
 
-const BUILD_ID="057a102";const BUILD_HASH="b998044c6d";
+const BUILD_ID="9b18eb8";const BUILD_HASH="baf9ab8f62";
 </script>
 <script>
 (function(){
@@ -4216,6 +4216,17 @@ const renderer=new T.WebGLRenderer({canvas,antialias:!PERF_LOW&&GFX.profile==='a
 renderer.setPixelRatio(PERF_LOW?0.5:SDQuality.pixelRatio(GFX.profile,window.devicePixelRatio,1));
 // &sombras=0 (diagnostic, 18-10-2026): no sun shadows at all, to tell whether stripes someone sees are shadows or something else
 const NO_SHADOWS=/[?&]sombras=0\b/.test(location.search);
+/* more diagnostics for the stripes on the owner's laptop (audit 18-10-2026, docs/claude-code/SNIPER_DUEL_AUDIT_2026-10-18.md
+   G1–G7). None of them changes what is drawn unless it is in the URL; gfxDiagText() lists the ones that are on:
+   &near=0.2      camera near plane (default 0.05): 4× more depth precision → tells z-fighting of the painted bands (3–6 mm)
+   &sbias=-0.001  sun shadow bias (default -0.0004)       &kitsombra=0  the PUEBLO 3.0 kit casts no sun shadow
+   &sombrageo=1   the shadow fade uses the surface's real normal instead of the normal-mapped one (G3)
+   &dbg=sombra    paints the sun term: red = how much the shadow is applied (fade), green = lit (1) or shadowed (0) */
+const DIAG_Q=(k,re)=>{const m=location.search.match(new RegExp('[?&]'+k+'=('+re+')(?![\\w.])'));return m?m[1]:null;};
+const DIAG_NEAR=Math.min(0.5,Math.max(0.01,+(DIAG_Q('near','[0-9.]+')||0.05))),DIAG_SBIAS=DIAG_Q('sbias','-?[0-9.]+'),
+  DIAG_NOKITSH=DIAG_Q('kitsombra','0')==='0',DIAG_SGEO=DIAG_Q('sombrageo','1')==='1',DIAG_SDBG=DIAG_Q('dbg','sombra')==='sombra';
+const DIAG_ON=()=>[DIAG_NEAR!==0.05&&'near='+DIAG_NEAR,DIAG_SBIAS!==null&&'sbias='+DIAG_SBIAS,DIAG_NOKITSH&&'kitsombra=0',
+  DIAG_SGEO&&'sombrageo=1',DIAG_SDBG&&'dbg=sombra',NO_SHADOWS&&'sombras=0'].filter(Boolean).join(' ');
 renderer.shadowMap.enabled=!PERF_LOW&&!NO_SHADOWS&&SDQuality.PROFILES[GFX.profile].shadows;
 renderer.shadowMap.type=T.PCFShadowMap;
 renderer.autoClear=false;
@@ -4248,7 +4259,7 @@ const csHex=(c,hex)=>c.setHex(hex).convertSRGBToLinear();   // runtime colour ch
 const scene=new T.Scene();
 scene.fog=new T.Fog(LOOK.fog,45,175);scene.fog.color.convertSRGBToLinear();
 const BASE_FOV=isTouch?70:75;
-const camera=new T.PerspectiveCamera(BASE_FOV,1,0.05,600);
+const camera=new T.PerspectiveCamera(BASE_FOV,1,DIAG_NEAR,600);
 camera.rotation.order='YXZ';
 scene.add(camera);
 const wScene=new T.Scene();
@@ -4311,7 +4322,7 @@ sun.position.set(...LOOK.sunPos);
 sun.castShadow=true;
 {const ms=SDQuality.PROFILES[GFX.profile].shadowMap||1024;sun.shadow.mapSize.set(ms,ms);}
 const sc=sun.shadow.camera;sc.left=-62;sc.right=62;sc.top=62;sc.bottom=-62;sc.near=10;sc.far=180;
-sun.shadow.bias=-0.0004;sun.shadow.normalBias=0.025;
+sun.shadow.bias=DIAG_SBIAS!==null?+DIAG_SBIAS:-0.0004;sun.shadow.normalBias=0.025;
 // normal offset in step with the shadow texel (124 m box / map size): 0.6 texel, at least 2.5 cm (ALTO 3.6 cm, MEDIO 7 cm)
 function sunBiasFor(ms){sun.shadow.normalBias=Math.max(sc.right>20?0.025:0.012,0.6*(sc.right-sc.left)/(ms||1024));}sunBiasFor(sun.shadow.mapSize.x);sun.shadow.radius=1.6;   // PCF (cheaper than PCFSoft, same look with a small radius)
 // Shadow fade (17-10-2026, owner's video): distant walls showed shadows drawn as diagonal stripes that shimmer while walking
@@ -4324,8 +4335,9 @@ const SHADOW_FADE=!/[?&]sombrafade=0\b/.test(location.search);
 if(SHADOW_FADE&&T.ShaderChunk&&T.ShaderChunk.lights_fragment_begin){
   const A='directLight.color *= all( bvec2( directLight.visible, receiveShadow ) ) ? getShadow( directionalShadowMap[ i ], directionalLightShadow.shadowMapSize, directionalLightShadow.shadowBias, directionalLightShadow.shadowRadius, vDirectionalShadowCoord[ i ] ) : 1.0;';
   const B='{ float sdS = all( bvec2( directLight.visible, receiveShadow ) ) ? getShadow( directionalShadowMap[ i ], directionalLightShadow.shadowMapSize, directionalLightShadow.shadowBias, directionalLightShadow.shadowRadius, vDirectionalShadowCoord[ i ] ) : 1.0;'+
-    ' float sdF = smoothstep( 0.03, 0.22, dot( geometry.normal, directLight.direction ) ) * ( 1.0 - smoothstep( 40.0, 58.0, length( geometry.position ) ) );'+
-    ' directLight.color *= mix( 1.0, sdS, sdF ); }';
+    (DIAG_SGEO?'\n#ifdef FLAT_SHADED\n vec3 sdN = geometry.normal;\n#else\n vec3 sdN = normalize( vNormal ) * faceDirection;\n#endif\n':' vec3 sdN = geometry.normal;')+
+    ' float sdF = smoothstep( 0.03, 0.22, dot( sdN, directLight.direction ) ) * ( 1.0 - smoothstep( 40.0, 58.0, length( geometry.position ) ) );'+
+    (DIAG_SDBG?' directLight.color = vec3( sdF, sdS, 0.0 ) * 2.0; }':' directLight.color *= mix( 1.0, sdS, sdF ); }');
   const ch=T.ShaderChunk.lights_fragment_begin;if(ch.includes(A))T.ShaderChunk.lights_fragment_begin=ch.replace(A,B);else console.warn('sombra: no encuentro el trozo del shader');
 }
 /* the shadow box follows the camera in whole shadow-map texels: moving it by fractions of a texel redraws every
@@ -7064,7 +7076,7 @@ function setP3Pref(on){store.set('p3',!!on);if(!!on===!!P3ON)return;const u=new 
 document.querySelectorAll('#p3Seg button').forEach(b=>{b.setAttribute('aria-pressed',String((b.dataset.p3==='1')===!!P3ON));b.addEventListener('click',()=>{SFX.ui();setP3Pref(b.dataset.p3==='1');});});
 function gfxDiagText(){let gpu='?',gl2=false;try{const g=renderer.getContext();gl2=typeof WebGL2RenderingContext!=='undefined'&&g instanceof WebGL2RenderingContext;const e=g.getExtension('WEBGL_debug_renderer_info');gpu=e?g.getParameter(e.UNMASKED_RENDERER_WEBGL):g.getParameter(g.RENDERER);}catch(e){}
   return 'Pueblo 3.0: '+(P3ON?'SÍ':'NO')+(P3ON?' · suelo nuevo: '+(P0.on?'SÍ':'NO')+' · adoquín: '+(COBCC?'Poly Haven':'anterior')+' · kit: '+(P3W.kit?'cargado':'NO cargado'):'')+' · calidad: '+String(GFX.profile).toUpperCase()+
-    ' · sombras: '+(renderer.shadowMap.enabled?sun.shadow.mapSize.x:'NO')+' · píxeles ×'+renderer.getPixelRatio().toFixed(2)+' · WebGL '+(gl2?'2':'1')+' · GPU: '+String(gpu).slice(0,60)+' · texturas: '+(TEX.ok||0)+'/'+(TEX.asked||0)+' cargadas'+(TEX.fail?' · FALLAN '+TEX.fail+': '+TEX.failed.slice(0,4).join(', '):'');}
+    ' · sombras: '+(renderer.shadowMap.enabled?sun.shadow.mapSize.x:'NO')+(DIAG_ON()?' · DIAGNÓSTICO: '+DIAG_ON():'')+' · píxeles ×'+renderer.getPixelRatio().toFixed(2)+' · WebGL '+(gl2?'2':'1')+' · GPU: '+String(gpu).slice(0,60)+' · texturas: '+(TEX.ok||0)+'/'+(TEX.asked||0)+' cargadas'+(TEX.fail?' · FALLAN '+TEX.fail+': '+TEX.failed.slice(0,4).join(', '):'');}
 $('#infAmmo').addEventListener('change',()=>{TRAIN.infAmmo=$('#infAmmo').checked;store.set('infAmmo',TRAIN.infAmmo);});
 function updateRangeHud(){if(mode!=='range')return;$('#rK').textContent=STATS.kills;$('#rD').textContent=Math.round(STATS.damage);$('#rN').textContent=STATS.meleeHits+'/'+(STATS.meleeSwings||0);$('#rT').textContent=STATS.kills>=2?((STATS.lastKill-STATS.firstKill)/(STATS.kills-1)).toFixed(2):'–';$('#rS').textContent=STATS.shots;$('#rH').textContent=STATS.hits;$('#rC').textContent=STATS.rangeHs;$('#rA').textContent=(STATS.shots?Math.round(STATS.hits/STATS.shots*100):0)+'%';}
 const sensEl=$('#sens');
@@ -8089,6 +8101,7 @@ if(P3ON&&T.GLTFLoader){
     const r=KIT3D.merge(T,kit,list,P3W.ctx,regionOf);P3W.kitTris=r.tris;
     for(const m of r.meshes){scene.add(m);WORLDS.pueblo.objs.push(m);m.visible=WORLD_ID==='pueblo';P3W.meshes.push(m);}
     p3Signs(kit);
+    if(DIAG_NOKITSH)for(const m of P3W.meshes)m.castShadow=false;   // &kitsombra=0 (diagnostic)
     try{renderer.compile(scene,camera);}catch(e){}
   }catch(e){console.warn('kit',e);}},e=>console.warn('kit load',e));
 }

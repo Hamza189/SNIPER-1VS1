@@ -155,3 +155,13 @@ Estado: IMPLEMENTADO · PROBADO EN NAVEGADOR · PROBADO ONLINE · PENDIENTE DE V
 - **Después:** 2 bots = **18 llamadas**; 24 piezas con sombra. Pruebas: shadow.browser 7/7, aim.browser 14/14,
   online.browser 43/43. **Riesgo visual:** la sombra del rifle en el suelo pierde detalles de pocos píxeles.
 - **Revertir:** `git revert` del commit; solo cliente.
+
+## N5-2 · Banderas de diagnóstico para las rayas del PC del propietario
+- **Por qué:** la auditoría encontró causas posibles comprobadas en el código (capas de pintura a 3–6 mm de la pared,
+  fundido de sombra que usa la normal con relieve, toldos que se sombrean, sesgo de sombra) pero ninguna se ha
+  reproducido; solo el Chrome del propietario las muestra (portátil con Intel + NVIDIA).
+- **Añadido (sin cambiar nada por defecto):** `&near=`, `&sbias=`, `&kitsombra=0`, `&sombrageo=1`, `&dbg=sombra`; la línea
+  de diagnóstico de AJUSTES › GRÁFICOS dice cuáles están activas. Guía para el propietario: `PRUEBA_RAYAS_PC.md`.
+- **Comprobado en la GTX 1050 Ti (navegador integrado):** las 4 combinaciones compilan sin programas rotos; sin banderas,
+  cámara y sesgo idénticos a antes. shadow.browser 7/7.
+- **Revertir:** `git revert` del commit; solo cliente.
