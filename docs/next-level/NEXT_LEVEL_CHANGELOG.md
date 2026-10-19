@@ -214,3 +214,21 @@ Sprint: vuelta al 10 % en ~0,10 s (antes ~0,23 s), calculado de las constantes.
 - **Pruebas:** casaxl.browser 17/17 (3 nuevas: texturas por perfil, las que se conservan, sin 404).
 - **Pendiente:** aprobación visual del propietario; iluminación interior; medir en iPhone.
 - **Revertir:** no usar la bandera, o `git revert`.
+
+---
+
+## N3-4 · «El ratón se queda pillado» (vídeo del propietario, 19-10-2026)
+- **Reproducción:** vídeo `Grabación 2026-10-19 103827` (min 0:24–0:28): jugando, la cámara deja de girar unos segundos
+  y el propietario vuelve al menú. **Causa (confirmada en el código):** si Chrome rechaza la captura del ratón (lo hace
+  si se pide menos de ~1 s después de salir de ella, p. ej. Esc → REANUDAR rápido), el juego seguía con la cámara
+  atada al **cursor libre**: al llegar al borde de la pantalla, el cursor se para y la cámara se queda clavada. Además,
+  el clic que volvía a pedir la captura disparaba.
+- **Solución:** REANUDAR espera ese segundo («UN MOMENTO…») en vez de pedir una captura que Chrome va a rechazar; sin
+  captura, la cámara no sigue al cursor libre y el clic solo recupera el ratón (no dispara). El modo de cursor libre
+  queda solo para navegadores donde la captura falla 3 veces seguidas.
+- **Pruebas:** `browser` 60/60 (2 nuevas: REANUDAR espera; sin captura ni giro ni disparo), `online.browser` 43/43
+  (reanuda pasado el segundo, como una persona), `smoke` 76/76, `touch.smoke` 82/82 (táctil no cambia).
+- **Otro hallazgo del mismo vídeo:** la línea de diagnóstico dice **«GPU: ANGLE (Intel… UHD Graphics 630)»**: el Chrome
+  del propietario dibujaba con la GPU integrada (FPS 25–46 en el vídeo). El propietario puso Chrome en «Alto
+  rendimiento (GTX 1050 Ti)» en Windows › Gráficos; pendiente de comprobar tras reiniciar Chrome (también las rayas).
+- **Revertir:** `git revert` del commit; solo cliente.

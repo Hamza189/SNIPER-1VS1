@@ -4184,7 +4184,7 @@ const SDCasaXL = {"id":"CASA_ATLAS_XL","version":"1.0.0","bounds":{"min":[-20,0,
 if (typeof module !== 'undefined' && module.exports) module.exports = SDCasaXL; else root.SDCasaXL = SDCasaXL;
 })(typeof window !== 'undefined' ? window : globalThis);
 
-const BUILD_ID="7cd7d0e";const BUILD_HASH="6e8c661ec4";
+const BUILD_ID="40d0e8c";const BUILD_HASH="703c556a50";
 </script>
 <script>
 (function(){
@@ -5963,7 +5963,7 @@ const AIM={ox:0,oy:0,oz:0,yaw:0,pitch:0};
 const STATS={damage:0,meleeHits:0,firstShot:-1,firstKill:0,lastKill:0,rangeHs:0,kills:0,deaths:0,hs:0,shots:0,hits:0,longest:0,start:0,botKills:0};
 let state='menu';
 const input={keys:{},fireHeld:false,firePressed:false,fireAim:false,fireAimShot:0,scope:false,scopeToggle:false,scopeHeld:false,crouchHeld:false,crouchPressed:false,jumpPressed:false,reloadPressed:false,breath:false,select:null,inspect:false,lookDX:0,lookDY:0,joyX:0,joyY:0,joySprint:false,noSprintT:0};
-let pointerLocked=false,lockFailed=false;
+let pointerLocked=false,lockFailed=false,lockFails=0,lockExitAt=-1e9;   // lockFails: refusals in a row; lockExitAt: when the lock last ended
 const compassMarks=[];
 
 /* =================== BOTS =================== */
@@ -6813,7 +6813,9 @@ window.addEventListener('keydown',e=>{
 window.addEventListener('keyup',e=>{input.keys[e.code]=false;});
 canvas.addEventListener('mousedown',e=>{
   if(isTouch)return;
-  if(state==='playing'&&!pointerLocked){requestLock();if(!lockFailed)return;} // lock refused before: ask again on every click, and still let the click shoot
+  // not captured: the click only asks for the mouse again (it used to shoot as well, wasting a bullet). Only where the
+  // capture never works (3 refusals in a row) does the click also play, with the camera following the free cursor
+  if(state==='playing'&&!pointerLocked){requestLock();if(lockFails<3)return;}
   if(state!=='playing'&&state!=='dead')return;
   if(e.button===0){input.fireHeld=true;input.firePressed=true;}
   if(e.button===2){input.scope=true;}
@@ -6822,17 +6824,20 @@ window.addEventListener('mouseup',e=>{if(e.button===0)input.fireHeld=false;if(e.
 window.addEventListener('contextmenu',e=>{if(state==='playing'||state==='dead')e.preventDefault();});
 window.addEventListener('mousemove',e=>{
   if(isTouch||(state!=='playing'&&state!=='dead'))return;
-  if(pointerLocked||lockFailed){input.lookDX+=e.movementX||0;input.lookDY+=e.movementY||0;}
+  // with the cursor free the camera stops dead when it reaches the screen edge ("the mouse gets stuck"): free-cursor look
+  // only where the capture never works; otherwise the camera waits for the click that captures the mouse again
+  if(pointerLocked||lockFails>=3){input.lookDX+=e.movementX||0;input.lookDY+=e.movementY||0;}
 });
 window.addEventListener('wheel',e=>{if(state==='playing'&&WS.ads>0.5){WS.zoom=WS.zoom===8?4:8;SFX.click(0,3000,0.15);}},{passive:true});
 function requestLock(){
   if(isTouch)return;
-  try{const r=canvas.requestPointerLock&&canvas.requestPointerLock();if(r&&r.catch)r.catch(()=>{lockFailed=true;});}catch(e){lockFailed=true;}
-  setTimeout(()=>{if(!pointerLocked&&state==='playing')lockFailed=true;},800);
+  const fail=()=>{if(pointerLocked)return;lockFails++;lockFailed=true;};
+  try{const r=canvas.requestPointerLock&&canvas.requestPointerLock();if(r&&r.catch)r.catch(fail);}catch(e){fail();}
+  setTimeout(()=>{if(!pointerLocked&&state==='playing'&&!lockFailed)fail();},800);
 }
 document.addEventListener('pointerlockchange',()=>{
   pointerLocked=document.pointerLockElement===canvas;
-  if(pointerLocked)lockFailed=false;
+  if(pointerLocked){lockFailed=false;lockFails=0;}else lockExitAt=performance.now();
   if(!pointerLocked&&(state==='playing'||state==='dead')&&!isTouch)pause();
 });
 
@@ -7165,7 +7170,9 @@ function startMatch(){
 function clearPendingInput(){if(typeof releaseAllTouches==='function')releaseAllTouches();input.firePressed=input.jumpPressed=input.crouchPressed=input.reloadPressed=false;input.fireAim=false;input.fireAimShot=0;input.select=null;input.inspect=false;input.lookDX=input.lookDY=0;}
 function pause(){if(state!=='playing'&&state!=='dead')return;pausedFrom=state;state='paused';$('#pause').hidden=false;kitNote();$('#lockHint').hidden=true;if(pointerLocked&&document.exitPointerLock)document.exitPointerLock();input.fireHeld=false;input.scope=false;input.scopeToggle=false;input.keys={};clearPendingInput();}
 let pausedFrom='playing';
-function resume(){if(state!=='paused')return;clearPendingInput();state=pausedFrom;$('#pause').hidden=true;audioInit();if(!isTouch)requestLock();}
+function resume(){if(state!=='paused')return;
+  if(!isTouch&&performance.now()-lockExitAt<1150){const b=$('#resume');if(!b.dataset.wait){b.dataset.wait='1';b.disabled=true;const txt=b.textContent;b.textContent='UN MOMENTO…';
+    setTimeout(()=>{b.disabled=false;b.textContent=txt;delete b.dataset.wait;},Math.max(50,1150-(performance.now()-lockExitAt)));}return;}clearPendingInput();state=pausedFrom;$('#pause').hidden=true;audioInit();if(!isTouch)requestLock();}
 function toMenu(){if(mode==='online'){netLeave(true);return;}state='menu';setWorld(offWorld());$('#pause').hidden=true;$('#lockHint').hidden=true;$('#over').hidden=true;$('#hud').hidden=true;$('#scope').hidden=true;$('#death').hidden=true;$('#touch').hidden=true;$('#menu').hidden=false;BOTS.concat(DUMMIES,TRAINERS).forEach(b=>{b.alive=false;b.g.visible=false;b.trainerActive=false;});BULLETS.length=0;BTR.forEach(m=>m.visible=false);scene.fog.near=45;scene.fog.far=175;if(document.exitPointerLock&&pointerLocked)document.exitPointerLock();}
 function endMatch(win){
   if(state==='over'||state==='menu')return;

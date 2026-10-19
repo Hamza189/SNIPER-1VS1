@@ -143,7 +143,7 @@ async function until(page, fn, arg, ms) { try { await page.waitForFunction(fn, a
     await A.evaluate(() => __SD.pause()); await sleep(300);
     if (process.env.SHOTS) await A.screenshot({ path: process.env.SHOTS + '/pausa-movil.png' });
     await A.locator('#pause .kitSeg button[data-kit="shotgun"]').click(); await sleep(400);
-    await A.evaluate(() => __SD.resume());
+    await sleep(1200); await A.evaluate(() => __SD.resume());   // REANUDAR waits ~1 s after leaving the mouse capture (browser rule)
     check('A elige FURIA 12 en la pausa: el servidor lo sabe, pero A sigue con su arma hasta reaparecer', room.seats.A.kit === 'shotgun' && room.seats.A.p.load.active !== 'shotgun');
     { const sa = room.debug.seat('A'); sa.alive = false; sa.diedAt = room.now; }
     check('al reaparecer, A lleva la escopeta (servidor, su página y lo que ve B)', await until(A, () => __SD.LOAD.active === 'shotgun' && __SD.P.alive, null, 8000) && room.seats.A.p.load.active === 'shotgun' && await until(B, () => __SD.NET.N.remotePose() && __SD.NET.N.remotePose().wpn === 'shotgun', null, 5000));
@@ -159,7 +159,7 @@ async function until(page, fn, arg, ms) { try { await page.waitForFunction(fn, a
     // the pause menu does not stop the online match, and B dropping shows RECONECTANDO
     await A.evaluate(() => __SD.pause()); await sleep(500);
     check('pausa en online: el servidor sigue y A no dispara', room.phase === 'playing' && await A.evaluate(() => __SD.state) === 'paused');
-    await A.evaluate(() => __SD.resume());
+    await sleep(1200); await A.evaluate(() => __SD.resume());   // REANUDAR waits ~1 s after leaving the mouse capture (browser rule)
     await B.evaluate(() => { __SD.NET.ws.close(); });
     check('B pierde la conexión: A ve que el rival se ha desconectado', await until(A, () => !document.getElementById('netBanner').hidden, null, 4000));
     check('B reconecta solo y la partida sigue', await until(B, () => __SD.NET.status === 'online' && __SD.NET.N.phase === 'playing', null, 8000) && await until(A, () => document.getElementById('netBanner').hidden, null, 4000));
