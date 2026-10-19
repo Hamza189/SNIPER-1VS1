@@ -195,7 +195,6 @@ ese estado y pasó 43/43 al repetirla sola.
 | feel=2 | 0,55 | 0,16 | −0,05 (rebote) | 0,003 |
 Sprint: vuelta al 10 % en ~0,10 s (antes ~0,23 s), calculado de las constantes.
 
-**Pruebas:** phase2 64/64, pistol 15/15, shotgun 27/27, smoke 76/76. **Pendiente:** suites de navegador (`aim.browser`,
-`browser`…): no se pudieron ejecutar porque Windows se quedó sin memoria comprometida (24,4/24,5 GB). **Pendiente de
-que el propietario compare** `?feel=2` con la versión actual, en PC e iPhone.
+**Pruebas:** `npm test` completo 955/955 (tras liberar memoria: Windows se había quedado sin memoria comprometida,
+24,4/24,5 GB, y las suites de navegador no arrancaban). **Pendiente de que el propietario compare** `?feel=2` con la versión actual, en PC e iPhone.
 **Revertir:** `git revert` del commit; o simplemente no usar la bandera.
