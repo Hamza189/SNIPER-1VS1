@@ -39,7 +39,8 @@ aproximados y cambian.
 
 ### `client/` (orden de inclusión en `build.py`)
 `settings.js` (ajustes, versión 3, `localStorage` `sniperduel_*`) · `layout.js` (botones táctiles) · `touch.js` (joystick y
-multitáctil) · `quality.js` (perfiles BAJO/MEDIO/ALTO/AUTO y resolución adaptativa) · `netcore.js` (predicción,
+multitáctil) · `hudicons.js` (**generado** por `tools/hud-icons/make.js`: iconos del HUD 2) · `hud2.js` (HUD 2 tras
+`?hud=2`: barra de armas, inventario, diseño con migración, teclas de asomarse) · `quality.js` (perfiles BAJO/MEDIO/ALTO/AUTO y resolución adaptativa) · `netcore.js` (predicción,
 reconciliación, interpolación del rival 110 ms, ping) · `vmrig.js` (materiales y poses de brazos/manos) · `town.js`
 (PUEBLO 2.0) · `kit3d.js` (horneado del kit modular) · `town3.js` (PUEBLO 3.0) · `rats.js` (ratas) · `flora.js`
 (vegetación) · `casa.js` (**generado**: cajas de CASA ATLAS).
@@ -88,6 +89,9 @@ reconciliación, interpolación del rival 110 ms, ping) · `vmrig.js` (materiale
 - Móvil (Touch Events, no Pointer Events, por el gesto de iOS): joystick izquierdo (al fondo = sprint), arrastre a la
   derecha para la cámara, botones FUEGO, MIRA (mantener y arrastrar, o PULSAR), AIRE, AGACH, SALTO, R, ARMA, INSP;
   editor de botones (posición, tamaño, opacidad); diagnóstico táctil (`?diag=touch`).
+- HUD 2 (`?hud=2`, `docs/HUD-2.md`): botones con iconos (`assets/hud/`), barra de armas abajo (1/2/3, toque, rueda
+  opcional), inventario (I / Tab / mochila), asomarse en móvil (botones, PULSAR o MANTENER) y teclas de asomarse
+  configurables; editor con barra, visibilidad y opacidad por elemento (`hudLayout2`, migra desde `touchLayout`).
 - AJUSTES por pestañas: CONTROLES, SENSIBILIDAD (sensibilidad con mira táctil por defecto 0,8), GRÁFICOS
   (AUTO/BAJO/MEDIO/ALTO, 30 FPS, mostrar FPS, Pueblo CLÁSICO/3.0, línea de diagnóstico con GPU, sombras, escala de
   píxeles y texturas), AUDIO (canales Web Audio), JUGABILIDAD, ACCESIBILIDAD.
@@ -130,6 +134,7 @@ reconciliación, interpolación del rival 110 ms, ping) · `vmrig.js` (materiale
 | `?casa=1` / `?casa=0` | Muestra / oculta CASA ATLAS en los menús (se recuerda) |
 | `&techo=1` | Techo opcional en CASA ATLAS |
 | `?pj=2` | Personaje 3D (rev. 03, `client/soldier2.js`, `assets/personaje/`) en bots y rival online en vez de la figura de cajas; solo aspecto |
+| `?hud=2` | HUD 2: iconos, barra de armas, inventario, asomarse en móvil, teclas de asomarse y editor ampliado (`client/hud2.js`, `docs/HUD-2.md`); solo presentación y entrada |
 | `?town=0` | Pueblo original de cajas |
 | `?vm=0` / `?vm=1` | Armas simples / forzar modelos 3D |
 | `&nm=0` | Sin mapas de normales |

@@ -46,3 +46,49 @@ Estado: ver la última sección.
   existen con la bandera. Ni `core/` ni `server/` cambian: **ninguna regla, daño, balística ni zona de impacto cambia**.
 - Asomarse en móvil: reutiliza exactamente la mecánica de PC (mismo `P.lean`, mismo límite de 0,45 m que el servidor ya
   acepta). Que las zonas de impacto sigan al asomado sería un cambio del servidor → **pregunta abierta al propietario**.
+
+## 2. Iconos (fase 2)
+Pack original en `assets/hud/` (detalle en `assets/hud/HUD_ICONS.md`): 15 iconos de botón con estados normal, pulsado,
+activo y alerta; variantes de los dudosos (asomarse, inspeccionar, aguantar la respiración) con la recomendada; siluetas
+de las 4 armas; PNG 64/96/128/256; hoja de sprites; vistas previas sobre fondo oscuro y claro; `hud_icons.json`.
+Se generan por código: `node tools/hud-icons/make.js` (también escribe `client/hudicons.js`, 6 KB, lo que usa el juego).
+
+## 3. Lo que hace `?hud=2` (fases 3–6)
+| Pieza | Cómo funciona | Reglas que respeta |
+|---|---|---|
+| **Botones con iconos** | El mismo botón táctil de siempre, con icono en vez de texto (el nombre queda para accesibilidad). Pulsado = invertido; activo (MIRA en modo pulsar, AGACH, AIRE, asomarse) = ámbar; RECARGAR en rojo con el cargador vacío. Con la navaja, FUEGO muestra la navaja. | Ninguna nueva |
+| **Barra de armas** abajo, semitransparente | Principal / VÍBORA 9 / NAVAJA con silueta, nombre (expandida), munición `cargador/∞` y tecla. Activa con borde ámbar; la pedida parpadea mientras se guarda la actual; destello al sacarla; barra de progreso al recargar; número en rojo sin balas; «SIGUIENTE: FURIA 12» si eliges la otra principal en partida. Con la mira puesta baja al 35 % de opacidad. | Un toque pide el arma con el mismo `select` de siempre: guardar + sacar con los tiempos de `core/config.js`, igual en el servidor. La otra principal solo al reaparecer. |
+| Toque en la barra (móvil) | Selecciona al **levantar** el dedo. Si el dedo se desliza más de 14 px, no era para la barra: pasa a ser joystick (o cámara) desde donde tocó, porque la barra está en la parte baja de la zona del joystick. | — |
+| PC | Teclas 1/2/3 (como siempre) y rueda del ratón opcional (AJUSTES › CONTROLES, desactivada por defecto; con la mira la rueda sigue cambiando el zoom). | — |
+| **Inventario táctico** | Mochila al final de la barra, tecla I o Tab. Armamento (estado, tiempo de sacar, munición y reserva ∞), arma principal al reaparecer (con el aviso «SE APLICARÁ EN EL PRÓXIMO RESPAWN»), estado (salud, aire, arma pendiente) y restricciones. En móvil se toca para equipar o elegir la principal; en PC, con el ratón capturado, es informativo. No pausa la partida. | Solo lo que existe: no hay objetos inventados. Las categorías están preparadas para objetos futuros, que antes tendrían que existir en el servidor. |
+| **Asomarse** | PC: Q/E como siempre (configurables, MANTENER o PULSAR). Móvil: dos botones a la izquierda, por encima del joystick; PULSAR (por defecto) = un toque inclina y se queda, otro vuelve; MANTENER = mientras se pulsa. Se puede apuntar y disparar asomado. | Es la inclinación de cámara que ya existía (máx. 0,45 m, nunca a través de una pared); el servidor ya acepta ese origen del disparo (≤ 0,9 m del ojo). **Zonas de impacto y balística sin cambios.** |
+| **Editor de HUD** | Botones y barra: posición (arrastrar), tamaño, opacidad global y por elemento, visible/oculto (PAUSA no se puede ocultar), barra compacta o expandida. Se guarda en `hudLayout2`; la primera vez parte de los botones que el jugador ya movió (`touchLayout`), que no se toca. La barra por defecto encoge o se aparta si fuera a tapar un botón (iPhone 8 apaisado incluido). | Datos guardados rotos o trucados se limitan (tamaños, opacidades, posiciones). |
+
+Sin la bandera, el juego es exactamente el de siempre (comprobado en `test/hud2.browser.test.js`).
+
+## 4. Pregunta abierta para el propietario: asomarse y las zonas de impacto
+Asomarse mueve **solo la cámara** (y el origen de la bala). Las zonas de impacto del servidor no se mueven y el rival no ve
+la inclinación. Esto ya pasa hoy en PC con Q/E; con `?hud=2` también se puede hacer en el móvil. En una esquina, quien
+se asoma ve y dispara desde 45 cm a un lado mientras su cabeza sigue detrás de la pared en el servidor.
+Opciones (necesitan tu aprobación porque cambian reglas del servidor):
+1. Dejarlo como está (igual para los dos jugadores, ya existe en PC).
+2. Que el servidor mueva la cabeza y el pecho con la inclinación (viaja en el comando; el rival lo ve inclinado). Es lo
+   justo, pero cambia las zonas de impacto y el protocolo: requiere pruebas del servidor y tu OK.
+3. Limitar el asomado a menos distancia (p. ej. 0,25 m).
+
+## 5. Pruebas
+- `node test/hud2.test.js` (47): barra, inventario, diseño y migración, teclas, iconos.
+- `node test/hud2.browser.test.js` (56, Chromium real): sin bandera nada cambia; PC (1/2/3, rueda, munición al disparar
+  y recargar, cargador vacío, principal en el próximo respawn, inventario, Q/E mantener y pulsar, tecla nueva desde
+  AJUSTES, disparo apuntando y asomado, coste por fotograma ~3 µs); móvil con multitáctil real (toques en la barra,
+  deslizar = joystick, inventario, joystick + asomarse + MIRA + FUEGO a la vez, editor guardado y restaurado al recargar,
+  migración); online con servidor local (el servidor cambia de arma con las teclas y acepta y cuenta un disparo hecho
+  apuntando y asomado).
+- Capturas: `node tools/capture-hud2.js` → `docs/hud2/` (iPhone 15 Pro Max, iPhone 8, Samsung, PC; actual vs HUD 2,
+  inventario y editor). WebGL por software: sirven para el aspecto, no para FPS.
+- Rendimiento: el HUD es DOM, no WebGL (no añade llamadas de dibujo ni triángulos). La actualización por fotograma solo
+  toca el DOM cuando cambia lo que se ve (~3 µs por fotograma medidos en el PC de pruebas).
+
+## 6. Cómo volver atrás
+Basta con no usar `?hud=2`. Para quitarlo del código: revertir los commits «HUD 2: …». Los ajustes guardados del HUD 2
+(`sniperduel_hudLayout2` y las teclas de asomarse) no afectan al juego sin la bandera.

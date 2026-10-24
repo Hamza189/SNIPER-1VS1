@@ -6,12 +6,14 @@ Cada entrada dice qué se decidió o cambió, quién lo decidió, y el estado re
 Las decisiones anteriores al 18-10-2026 están resumidas en `SNIPER_DUEL_MASTER_CONTEXT.md` §4.
 Detalle de cada cambio (antes/después, medidas, cómo revertir): `docs/next-level/NEXT_LEVEL_CHANGELOG.md`.
 
-## Tareas (resumen vivo, actualizado el 20-10-2026)
+## Tareas (resumen vivo, actualizado el 25-10-2026)
 
 ### Siguiente prioridad
 | Tarea | Quién la desbloquea | Estado |
 |---|---|---|
 | **Personaje 3D (rev. 03) en bots y rival** — probarlo en `https://hamza189.github.io/SNIPER-1VS1/?pj=2` (PC, iPhone, Samsung) y decir si pasa a ser el de por defecto | Propietario | PUBLICADO TRAS BANDERA · PENDIENTE DE VALIDACIÓN EN IPHONE |
+| **HUD 2** (iconos, barra de armas, inventario, asomarse en móvil, editor) — probarlo en `https://hamza189.github.io/SNIPER-1VS1/?hud=2` (iPhone, Samsung, PC) y decir si pasa a ser el de por defecto | Propietario | PUBLICADO TRAS BANDERA · PENDIENTE DE VALIDACIÓN EN IPHONE |
+| **Asomarse y zonas de impacto**: ¿el servidor debe mover cabeza y pecho con la inclinación? (`docs/HUD-2.md` §4) | Propietario | NECESITA APROBACIÓN |
 
 ### Esperando pruebas o decisiones del propietario
 | Tarea | Estado |
@@ -64,6 +66,26 @@ Detalle de cada cambio (antes/después, medidas, cómo revertir): `docs/next-lev
 | CASA ATLAS XL v2 de ChatGPT por defecto (mismas colisiones, detalle real) | 19-10 · directo a `main` |
 | Encargos para ChatGPT: CASA XL, CASA XL v2 y personaje | 18-10 / 19-10 |
 | Personaje 3D rev. 03 hecho por Claude e integrado tras `?pj=2` (bots y rival online) | 20-10 · directo a `main` |
+
+## 25-10-2026 — HUD 2 tras `?hud=2` (iconos, barra de armas, inventario, asomarse en móvil)
+- **Petición (propietario, encargo largo con capturas de PUBG y COD Mobile como referencia ergonómica):** HUD renovado,
+  original y profesional, con prioridad móvil, armas abajo en una barra transparente, inventario ligero, asomarse a
+  izquierda y derecha, todo en el editor de HUD y tras una bandera hasta que lo apruebe en su iPhone.
+- **Auditoría:** el asomado ya existía en PC (Q/E, solo cámara, máx. 0,45 m) y el servidor ya acepta disparos desde
+  ahí (≤ 0,9 m del ojo), pero sus zonas de impacto no se inclinan. No hay munición de reserva (es ilimitada).
+- **Hecho:** pack de 15 iconos originales hechos por código (`assets/hud/`, SVG + PNG + hoja de sprites + vistas previas
+  + `HUD_ICONS.md` + JSON) y, tras `?hud=2`: botones con iconos y estados, barra de armas (toque, 1/2/3, rueda opcional;
+  activa, pendiente, recarga, vacía, «siguiente» para la principal del próximo respawn), inventario (I/Tab/mochila),
+  botones de asomarse en móvil (PULSAR por defecto) y teclas de asomarse configurables, editor con barra, visibilidad y
+  opacidad por elemento (`hudLayout2`, migra desde los botones clásicos). Detalle: `docs/HUD-2.md`.
+- **Decisión técnica (Claude):** nada de `core/` ni `server/` cambia: la barra usa el mismo `select` y el asomado móvil la
+  misma inclinación de cámara que el PC. Sin la bandera el juego es exactamente el de siempre (comprobado).
+- **Decisión técnica (Claude):** en móvil la barra selecciona al levantar el dedo y, si el dedo se desliza, pasa a ser
+  joystick (la barra queda en la parte baja de la zona del joystick: así no se cambia de arma sin querer).
+- **Pregunta abierta al propietario:** ¿mover las zonas de impacto con el asomado? (cambio del servidor, `docs/HUD-2.md` §4).
+- **Pruebas:** `test/hud2.test.js` (47) y `test/hud2.browser.test.js` (56: PC, multitáctil real por CDP, editor con
+  recarga, migración y online con servidor local, incluido un disparo apuntando y asomado aceptado por el servidor).
+- **Estado:** IMPLEMENTADO · PROBADO EN NAVEGADOR · PROBADO ONLINE (servidor local) · PENDIENTE DE VALIDACIÓN EN IPHONE.
 
 ## 20-10-2026 — Personaje 3D: segunda pasada (chaleco, camuflaje, postura)
 - **Opinión del propietario** sobre la rev. 03 en el juego: «bastante bien para empezar»; pide más agresividad,
