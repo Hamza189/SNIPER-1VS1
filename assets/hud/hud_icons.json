@@ -1,0 +1,184 @@
+{
+  "version": 1,
+  "grid": 64,
+  "stroke": 3.5,
+  "icons": {
+    "fire_main": {
+      "action": "Disparar",
+      "toggle": false,
+      "states": {
+        "normal": "icons/fire_main.svg",
+        "pressed": "icons/fire_main_pressed.svg"
+      }
+    },
+    "fire_left": {
+      "action": "Disparar (botón izquierdo)",
+      "toggle": false,
+      "states": {
+        "normal": "icons/fire_left.svg",
+        "pressed": "icons/fire_left_pressed.svg"
+      },
+      "note": "misma bala que FUEGO (misma acción) y una barra a la izquierda para distinguir el botón"
+    },
+    "aim_ads": {
+      "action": "Apuntar con la mira",
+      "toggle": true,
+      "states": {
+        "normal": "icons/aim_ads.svg",
+        "pressed": "icons/aim_ads_pressed.svg",
+        "active": "icons/aim_ads_active.svg"
+      },
+      "toggleNote": "solo con MIRA en modo PULSAR"
+    },
+    "reload": {
+      "action": "Recargar",
+      "toggle": false,
+      "states": {
+        "normal": "icons/reload.svg",
+        "pressed": "icons/reload_pressed.svg",
+        "alert": "icons/reload_alert.svg"
+      },
+      "alertNote": "cargador vacío"
+    },
+    "crouch": {
+      "action": "Agacharse / deslizarse",
+      "toggle": true,
+      "states": {
+        "normal": "icons/crouch.svg",
+        "pressed": "icons/crouch_pressed.svg",
+        "active": "icons/crouch_active.svg"
+      },
+      "toggleNote": "en móvil: un toque agacha, otro levanta"
+    },
+    "jump": {
+      "action": "Saltar",
+      "toggle": false,
+      "states": {
+        "normal": "icons/jump.svg",
+        "pressed": "icons/jump_pressed.svg"
+      }
+    },
+    "peak_left": {
+      "action": "Asomarse a la izquierda",
+      "toggle": true,
+      "states": {
+        "normal": "icons/peak_left.svg",
+        "pressed": "icons/peak_left_pressed.svg",
+        "active": "icons/peak_left_active.svg"
+      },
+      "toggleNote": "en móvil: un toque inclina y otro vuelve (o mantener, según AJUSTES)",
+      "variants": {
+        "a": "icons/variants/peak_left_a.svg",
+        "b": "icons/variants/peak_left_b.svg",
+        "c": "icons/variants/peak_left_c.svg"
+      },
+      "recommended": "a"
+    },
+    "peak_right": {
+      "action": "Asomarse a la derecha",
+      "toggle": true,
+      "states": {
+        "normal": "icons/peak_right.svg",
+        "pressed": "icons/peak_right_pressed.svg",
+        "active": "icons/peak_right_active.svg"
+      },
+      "toggleNote": "igual que peak_left",
+      "variants": {
+        "a": "icons/variants/peak_right_a.svg",
+        "b": "icons/variants/peak_right_b.svg",
+        "c": "icons/variants/peak_right_c.svg"
+      },
+      "recommended": "a"
+    },
+    "weapon_swap": {
+      "action": "Cambiar de arma",
+      "toggle": false,
+      "states": {
+        "normal": "icons/weapon_swap.svg",
+        "pressed": "icons/weapon_swap_pressed.svg"
+      }
+    },
+    "knife": {
+      "action": "Navaja",
+      "toggle": false,
+      "states": {
+        "normal": "icons/knife.svg",
+        "pressed": "icons/knife_pressed.svg"
+      }
+    },
+    "pause": {
+      "action": "Pausa",
+      "toggle": false,
+      "states": {
+        "normal": "icons/pause.svg",
+        "pressed": "icons/pause_pressed.svg"
+      }
+    },
+    "inspect": {
+      "action": "Inspeccionar el arma",
+      "toggle": false,
+      "states": {
+        "normal": "icons/inspect.svg",
+        "pressed": "icons/inspect_pressed.svg"
+      },
+      "variants": {
+        "a": "icons/variants/inspect_a.svg",
+        "b": "icons/variants/inspect_b.svg"
+      },
+      "recommended": "a"
+    },
+    "hold_breath": {
+      "action": "Aguantar la respiración",
+      "toggle": true,
+      "states": {
+        "normal": "icons/hold_breath.svg",
+        "pressed": "icons/hold_breath_pressed.svg",
+        "active": "icons/hold_breath_active.svg"
+      },
+      "toggleNote": "activo mientras se mantiene (aguantando)",
+      "variants": {
+        "a": "icons/variants/hold_breath_a.svg",
+        "b": "icons/variants/hold_breath_b.svg"
+      },
+      "recommended": "a"
+    },
+    "sprint": {
+      "action": "Esprintar",
+      "toggle": true,
+      "states": {
+        "normal": "icons/sprint.svg",
+        "pressed": "icons/sprint_pressed.svg",
+        "active": "icons/sprint_active.svg"
+      },
+      "toggleNote": "activo mientras se esprinta (indicador)"
+    },
+    "inventory": {
+      "action": "Inventario",
+      "toggle": true,
+      "states": {
+        "normal": "icons/inventory.svg",
+        "pressed": "icons/inventory_pressed.svg",
+        "active": "icons/inventory_active.svg"
+      },
+      "toggleNote": "activo con el inventario abierto"
+    }
+  },
+  "weapons": {
+    "rifle": {
+      "name": "HALCÓN R7",
+      "file": "icons/weapons/weapon_rifle.svg"
+    },
+    "shotgun": {
+      "name": "FURIA 12",
+      "file": "icons/weapons/weapon_shotgun.svg"
+    },
+    "pistol": {
+      "name": "VÍBORA 9",
+      "file": "icons/weapons/weapon_pistol.svg"
+    },
+    "knife": {
+      "name": "NAVAJA",
+      "file": "icons/weapons/weapon_knife.svg"
+    }
+  }
+}
