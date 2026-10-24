@@ -372,6 +372,84 @@ body.touch #score .side span{max-width:11vw;overflow:hidden;text-overflow:ellips
   #callout.on{animation-duration:1.2s}
   #feed div{animation:none}
 }
+/* ---------- HUD 2 (?hud=2, client/hud2.js): icon buttons, weapon bar, tactical inventory ----------
+   Light glyphs on a dark translucent base; amber only for "on"; red only for alerts (empty magazine). */
+body.hud2 #ammo{display:none}
+body.hud2 .tb{background:rgba(14,13,11,.5);border:2px solid rgba(240,236,228,.55);color:#f2efe8;box-shadow:0 1px 6px rgba(0,0,0,.35)}
+body.hud2 .tb svg{width:58%;height:58%;display:block;pointer-events:none}
+body.hud2 .tb.press{background:rgba(242,239,232,.92);color:#14120f;border-color:#f2efe8;transform:scale(.93)}
+body.hud2 .tb.on{background:rgba(255,176,32,.22);border-color:#ffb020;color:#ffc247}
+body.hud2 .tb.alert{border-color:#ff4b3e;box-shadow:0 0 0 2px rgba(255,75,62,.35)}
+body.hud2 #tbFire,body.hud2 #tbFire2{border-color:rgba(240,236,228,.8);background:rgba(14,13,11,.55)}
+body.hud2 #tbFire svg,body.hud2 #tbFire2 svg{width:52%;height:52%}
+body.hud2 #tbPause svg{width:62%;height:62%}
+body.hud2 .tb.off{display:none!important}
+body.hud2 #touch.editing .tb.off{display:grid!important;opacity:.28}
+body.hud2 #stickKnob svg{display:none;width:70%;height:70%;margin:15%;color:#ffc247}
+body.hud2 #stickBase.sprint #stickKnob svg{display:block}
+#wbar{position:absolute;left:0;top:0;display:flex;gap:6px;align-items:stretch;transform-origin:0 0;pointer-events:none;--wbOp:1;opacity:var(--wbOp);transition:opacity .15s;z-index:2}
+#touch #wbar{pointer-events:auto}
+#wbar.scoped{opacity:calc(var(--wbOp) * .35)}
+#wbar.off{display:none}
+#touch.editing #wbar.off{display:flex;opacity:.28}
+#touch.editing #wbar{outline:1px dashed rgba(244,234,216,.5);outline-offset:3px}
+#touch.editing #wbar.sel{outline:2px solid var(--signal)}
+#wbar .ws,#wbar .wsInv{position:relative;box-sizing:border-box;width:108px;height:52px;background:rgba(12,11,9,.55);border:1px solid rgba(240,236,228,.2);border-radius:6px;color:#f2efe8;overflow:hidden;touch-action:none;text-shadow:0 1px 3px rgba(0,0,0,.7)}
+#wbar .ws:not(.on){opacity:.82}
+#wbar .ws.on{background:rgba(12,11,9,.62);border-color:rgba(255,176,32,.85);box-shadow:inset 0 3px 0 #ffb020}
+#wbar .ws.pend{border-color:rgba(255,176,32,.7);animation:wsPend .45s ease-in-out infinite alternate}
+#wbar .ws.flash{animation:wsFlash .35s ease-out}
+#wbar .ws.tap{transform:scale(.95)}
+#wbar .ws.empty .wa{color:#ff4b3e}
+#wbar .ws.empty.on{border-color:#ff4b3e;box-shadow:inset 0 3px 0 #ff4b3e}
+#wbar .wk{position:absolute;left:5px;top:5px;font:600 9px/1 var(--f-mono);padding:2px 4px;border:1px solid rgba(240,236,228,.35);border-radius:3px;color:rgba(242,239,232,.75);display:none}
+#wbar.keys .wk{display:block}
+#wbar .ws svg{position:absolute;left:7px;top:19px;width:60px;height:20px;color:#f2efe8}
+#wbar .wa{position:absolute;right:7px;top:6px;font:500 24px/.8 var(--f-display);font-variant-numeric:tabular-nums;letter-spacing:.02em}
+#wbar .wa small{font-size:13px;color:rgba(242,239,232,.6);margin-left:1px}
+#wbar .wn{position:absolute;left:7px;right:5px;bottom:4px;font:500 9px/1 var(--f-mono);letter-spacing:.08em;color:rgba(242,239,232,.78);white-space:nowrap;overflow:hidden}
+#wbar .wx{position:absolute;left:0;right:0;bottom:0;padding:2px 4px 3px;font:600 8px/1 var(--f-mono);letter-spacing:.05em;color:#14120f;background:#ffc247;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-align:center;text-shadow:none}
+#wbar .wr{position:absolute;left:0;bottom:0;height:3px;width:var(--p,0%);background:#ffb020;display:none}
+#wbar .ws.rel .wr{display:block}
+#wbar .wsInv{width:44px;display:grid;place-items:center}
+#wbar .wsInv svg{width:30px;height:30px}
+#wbar .wsInv.on{border-color:#ffb020;color:#ffc247;background:rgba(255,176,32,.2)}
+#wbar .wsInv .wk{left:auto;right:4px;top:4px}
+#wbar.compact .ws{width:80px;height:42px}
+#wbar.compact .wsInv{width:38px;height:42px}
+#wbar.compact .wsInv svg{width:26px;height:26px}
+#wbar.compact .wn{display:none}
+#wbar.compact .ws svg{left:5px;top:16px;width:44px;height:15px}
+#wbar.compact .wa{font-size:21px;right:5px;top:5px}
+#wbar.compact .wa small{font-size:11px}
+#wbar.compact .wx{font-size:7px}
+@keyframes wsPend{from{background:rgba(12,11,9,.45)}to{background:rgba(255,176,32,.28)}}
+@keyframes wsFlash{0%{background:rgba(255,194,71,.55)}100%{background:rgba(12,11,9,.62)}}
+#inv2{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);z-index:20;box-sizing:border-box;width:min(600px,calc(100% - 32px));max-height:calc(100% - 20px);overflow:auto;padding:12px 14px 14px;background:rgba(16,14,11,.9);border:1px solid rgba(240,236,228,.22);border-radius:8px;display:grid;gap:10px;color:#f2efe8;font:500 12px/1.3 var(--f-mono);touch-action:pan-y;-webkit-overflow-scrolling:touch}
+#inv2 .ihead{display:flex;align-items:center;gap:10px}
+#inv2 .ihead h3{margin:0;flex:1;font:600 26px/.9 var(--f-display);letter-spacing:.05em}
+#inv2 .ihead button{width:40px;height:40px;border-radius:50%;border:2px solid rgba(240,236,228,.55);background:rgba(14,13,11,.5);color:#f2efe8;font:600 18px/1 var(--f-mono);cursor:pointer}
+#inv2 .irows{display:grid;gap:6px}
+#inv2 .irow{display:grid;grid-template-columns:22px 70px minmax(0,1fr) auto;gap:8px;align-items:center;padding:6px 8px;border:1px solid rgba(240,236,228,.18);border-radius:6px;background:rgba(255,255,255,.03);text-align:left;color:inherit;font:inherit;cursor:pointer;touch-action:manipulation}
+#inv2 .irow.on{border-color:#ffb020;box-shadow:inset 3px 0 0 #ffb020}
+#inv2 .irow.pend{border-color:rgba(255,176,32,.6)}
+#inv2 .irow svg{width:70px;height:23px;color:#f2efe8}
+#inv2 .irow .ik{font-size:10px;padding:2px 4px;border:1px solid rgba(240,236,228,.35);border-radius:3px;text-align:center}
+#inv2 .irow b{display:block;font:500 18px/.9 var(--f-display);letter-spacing:.04em}
+#inv2 .irow small{color:rgba(242,239,232,.65);font-size:10px;letter-spacing:.06em}
+#inv2 .irow .iam{text-align:right;font:500 20px/.9 var(--f-display);font-variant-numeric:tabular-nums}
+#inv2 .irow .iam small{display:block;font:500 9px/1.2 var(--f-mono)}
+#inv2 .isec{display:grid;gap:6px}
+#inv2 .inext{color:#ffc247;font-size:11px;letter-spacing:.06em;min-height:1em}
+#inv2 .istat{display:flex;flex-wrap:wrap;gap:6px 16px}
+#inv2 .istat b{font:500 18px/.9 var(--f-display);margin-left:5px}
+#inv2 ul{margin:0;padding-left:16px;display:grid;gap:3px;color:rgba(242,239,232,.78);font-size:11px}
+#inv2 .ihint{color:rgba(242,239,232,.55);font-size:10px;letter-spacing:.06em}
+#inv2 .seg button{font-size:14px}
+.h2keys{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;font-size:12px;color:var(--sand)}
+.h2keys .keyCap{min-width:64px;font:500 18px/1 var(--f-display);padding:7px 10px 4px}
+.h2keys .keyCap.wait{border-color:var(--signal);color:var(--signal)}
+@media (max-height:440px){#inv2{padding:8px 10px 10px;gap:7px}#inv2 .ihead h3{font-size:22px}#inv2 .irow{padding:4px 8px}#inv2 ul{display:none}}
 </style>
 
 <canvas id="c"></canvas>
@@ -732,6 +810,10 @@ const NO_SHADOWS=/[?&]sombras=0\b/.test(location.search);
    instead of a plain fade; 3) kill / headshot marker: bigger pop and held longer; 4) impacts on walls and ground grow with
    distance like the ones on bodies (far shots stay readable; the bullet hole keeps its real size) */
 const FEEL2=/[?&]feel=2\b/.test(location.search);if(FEEL2)document.body.classList.add('feel2');
+/* ?hud=2 (24-10-2026, docs/HUD-2.md): the new HUD to try before it replaces the current one: icon buttons, a weapon bar at the
+   bottom, a tactical inventory, peek buttons on touch, configurable peek keys and a fuller HUD editor. Presentation and input
+   only: the commands sent to the simulation and the server are the same ones as always (select, the existing camera lean) */
+const HUD2=/[?&]hud=2\b/.test(location.search)&&typeof SDHud2!=='undefined';if(HUD2)document.body.classList.add('hud2');
 /* more diagnostics for the stripes on the owner's laptop (audit 18-10-2026, docs/claude-code/SNIPER_DUEL_AUDIT_2026-10-18.md
    G1–G7). None of them changes what is drawn unless it is in the URL; gfxDiagText() lists the ones that are on:
    &near=0.2      camera near plane (default 0.05): 4× more depth precision → tells z-fighting of the painted bands (3–6 mm)
@@ -3360,9 +3442,11 @@ window.addEventListener('keydown',e=>{
     if(e.code==='Digit2'||e.code==='Numpad2')input.select='pistol';
     if(e.code==='Digit3'||e.code==='Numpad3')input.select='knife';
     if(e.code==='KeyF')input.inspect=true;
+    if(HUD2)h2KeyDown(e);
   }
   input.keys[e.code]=true;
   if(['Space','ArrowUp','ArrowDown','KeyW','KeyS','KeyA','KeyD','ControlLeft'].includes(e.code))e.preventDefault();
+  if(HUD2&&e.code==='Tab')e.preventDefault();
 });
 window.addEventListener('keyup',e=>{input.keys[e.code]=false;});
 canvas.addEventListener('mousedown',e=>{
@@ -3382,7 +3466,7 @@ window.addEventListener('mousemove',e=>{
   // only where the capture never works; otherwise the camera waits for the click that captures the mouse again
   if(pointerLocked||lockFails>=3){input.lookDX+=e.movementX||0;input.lookDY+=e.movementY||0;}
 });
-window.addEventListener('wheel',e=>{if(state==='playing'&&WS.ads>0.5){WS.zoom=WS.zoom===8?4:8;SFX.click(0,3000,0.15);}},{passive:true});
+window.addEventListener('wheel',e=>{if(state==='playing'&&WS.ads>0.5){WS.zoom=WS.zoom===8?4:8;SFX.click(0,3000,0.15);}else if(HUD2&&state==='playing')h2Wheel(e);},{passive:true});
 function requestLock(){
   if(isTouch)return;
   const fail=()=>{if(pointerLocked)return;lockFails++;lockFailed=true;};
@@ -3422,19 +3506,197 @@ TDIAG.reset=function(){this.yaw0=P.yaw;this.pitch0=P.pitch;this.acc=[0,0];this.m
 /* =================== INPUT: TOUCH (Pointer Events + client/touch.js) =================== */
 const touchEl=$('#touch');const stickBase=$('#stickBase'),stickKnob=$('#stickKnob');
 const TOUCH=SDTouch.create();
-let LAYOUT=SDLayout.load(store);
+const LY=HUD2?SDHud2:SDLayout;   // HUD 2: same layout API + peek buttons, visibility/opacity per element and the weapon bar
+let LAYOUT=LY.load(store,isTouch);
 const EDIT={on:false,sel:null,offX:0,offY:0,dragId:null,backup:null};
+/* ---- HUD 2 (?hud=2): weapon bar, tactical inventory, peek on touch, icons (client/hud2.js + client/hudicons.js) ----
+   Nothing here decides a rule: a slot asks for the weapon with the normal 'select' (the loadout and the server apply the
+   holster/draw times), the next-spawn primary is the existing choice, peeking is the existing camera lean. */
+const leanIn={keyL:false,keyR:false,touchL:false,touchR:false};
+// camera lean target (−1 left … 1 right). Without ?hud=2: Q/E held, exactly as always
+function leanTargetNow(){
+  if(!HUD2)return (input.keys.KeyE?1:0)-(input.keys.KeyQ?1:0);
+  const hold=SETTINGS.leanMode!=='toggle';
+  return SDHud2.leanTarget({keyL:hold?!!input.keys[SETTINGS.leanKeyL]:leanIn.keyL,keyR:hold?!!input.keys[SETTINGS.leanKeyR]:leanIn.keyR,touchL:leanIn.touchL,touchR:leanIn.touchR});
+}
+const H2={bar:null,invBtn:null,slots:[],inv:null,invOpen:false,invKey:'',invT:0,tap:null,rect:{left:0,top:0,w:0,h:0,scale:1},base:{w:0,h:0},wheelT:0,fireIcon:'',capture:null};
+const H2_SLOT={full:[108,52,44],compact:[80,42,38]},H2_GAP=6;   // slot width, height, inventory button width (match the CSS)
+const h2Glyph=n=>SDHudIcons.glyphs[n]||'';
+function h2Build(){
+  for(const name in SDHud2.ICONS){const el=btnEl(name);if(el)el.innerHTML=h2Glyph(SDHud2.ICONS[name]);}   // the aria-label stays the name
+  for(const [name,lbl] of [['peekL','Asomarse a la izquierda'],['peekR','Asomarse a la derecha']]){
+    const b=document.createElement('button');b.className='tb';b.id=name==='peekL'?'tbPeekL':'tbPeekR';b.type='button';b.dataset.btn=name;b.setAttribute('aria-label',lbl);
+    b.innerHTML=h2Glyph(SDHud2.ICONS[name]);touchEl.insertBefore(b,btnEl('pause'));}
+  stickKnob.innerHTML=h2Glyph('sprint');   // shown only while the stick is sprinting
+  const bar=document.createElement('div');bar.id='wbar';
+  for(const S of SDHud2.SLOTS){const d=document.createElement('div');d.className='ws';d.dataset.wslot=String(S.slot);
+    d.innerHTML='<i class="wk">'+S.key+'</i><span class="wsil"></span><span class="wa"></span><span class="wn"></span><span class="wx" hidden></span><i class="wr"></i>';
+    bar.appendChild(d);H2.slots.push({el:d,key:'',weapon:''});}
+  const ib=document.createElement('div');ib.className='wsInv';ib.dataset.wslot='inv';ib.setAttribute('aria-label','Inventario');ib.innerHTML=h2Glyph('inventory')+'<i class="wk">I</i>';bar.appendChild(ib);
+  if(!isTouch)bar.classList.add('keys');
+  (isTouch?touchEl:$('#hud')).appendChild(bar);H2.bar=bar;H2.invBtn=ib;
+  const p=document.createElement('div');p.id='inv2';p.hidden=true;p.setAttribute('role','dialog');p.setAttribute('aria-label','Inventario');document.body.appendChild(p);H2.inv=p;
+  p.addEventListener('pointerdown',e=>{const t=e.target.closest?e.target.closest('[data-isel],[data-ikit],[data-iclose]'):null;if(!t)return;e.preventDefault();audioInit();SFX.ui();
+    if(t.dataset.iclose!==undefined){h2Inv(false);return;}
+    if(t.dataset.ikit)setPrimaryChoice(t.dataset.ikit);else h2Select(+t.dataset.isel);
+    H2.invKey='';h2InvRender();});
+  // editor: visibility and opacity of the chosen element, compact / expanded bar
+  const ep=$('#editPanel'),row=ep.querySelector('.row'),x=document.createElement('div');x.style.display='contents';
+  x.innerHTML='<label class="edRow"><span>Visible</span><input id="edVis" type="checkbox" style="flex:0 0 auto;width:22px;height:22px"><span class="hint">PAUSA no se puede ocultar</span></label>'+
+    '<label class="edRow"><span>Opacidad (este)</span><input id="edOpOne" type="range" min="0.2" max="1" step="0.05" value="1"><output id="edOpOneOut">1.00</output></label>'+
+    '<div class="edRow"><span>Barra de armas</span><div class="seg" id="edBarSeg" role="group" aria-label="Barra de armas"><button type="button" data-bm="compact">COMPACTA</button><button type="button" data-bm="full">EXPANDIDA</button></div></div>';
+  ep.insertBefore(x,row);
+  $('#edVis').addEventListener('change',()=>{const v=$('#edVis').checked;if(EDIT.sel==='wbar')LAYOUT.bar.visible=v;else if(EDIT.sel&&EDIT.sel!=='pause')LAYOUT.vis[EDIT.sel]=v;applyLayout();});
+  $('#edOpOne').addEventListener('input',()=>{const v=+$('#edOpOne').value;$('#edOpOneOut').textContent=v.toFixed(2);if(EDIT.sel==='wbar')LAYOUT.bar.op=v;else if(EDIT.sel)LAYOUT.op[EDIT.sel]=v;applyLayout();});
+  document.querySelectorAll('#edBarSeg button').forEach(b=>b.addEventListener('click',()=>{LAYOUT.bar.compact=b.dataset.bm==='compact';applyLayout();h2EditorSelect(EDIT.sel);}));
+  const oe=$('#openEditor');if(oe)oe.textContent='EDITAR HUD (BOTONES Y BARRA)';
+  h2SettingsBuild();
+}
+// the weapon bar: bottom centre, never on top of a button (it shrinks or slides first)
+function h2PlaceBar(W,H){
+  if(!H2.bar)return;
+  const L=LAYOUT.bar,c=L.compact?H2_SLOT.compact:H2_SLOT.full;
+  H2.bar.classList.toggle('compact',!!L.compact);
+  H2.base={w:3*c[0]+c[2]+3*H2_GAP,h:c[1]};
+  const obs=[];
+  if(isTouch&&!EDIT.on)for(const name in LY.BUTTONS){if(/^(pause|breath|zoom|inspect|fire2)$/.test(name)||LAYOUT.vis[name]===false||!btnEl(name))continue;obs.push(LY.rect(name,LAYOUT.buttons[name],W,H));}
+  const r=SDHud2.barRect(L,W,H,H2.base.w,H2.base.h,obs);
+  H2.rect=r;
+  H2.bar.style.left=r.left.toFixed(1)+'px';H2.bar.style.top=r.top.toFixed(1)+'px';H2.bar.style.transform='scale('+r.scale.toFixed(3)+')';
+  H2.bar.style.setProperty('--wbOp',String(L.op));H2.bar.classList.toggle('off',!L.visible);
+}
+function h2State(){
+  const g=w=>({ammo:w.ammo,mag:w.cfg.mag,state:w.state,t:w.t,reload:w.cfg.reload,shells:!!w.cfg.shells}),lc=SD_CONFIG.loadout;
+  return {primary:LOAD.primary||'rifle',nextPrimary:PRIMARY,active:LOAD.active,pending:LOAD.pending,phase:LOAD.phase,guns:{rifle:g(WCORE),shotgun:g(SCORE),pistol:g(PCORE)},
+    hp:P.hp,breath:LOAD.active==='rifle'?P.breath:null,draw:{rifle:lc.rifleDraw,shotgun:lc.shotgunDraw,pistol:lc.pistolDraw,knife:KCFG.draw}};
+}
+// every frame: the DOM is only touched when what a slot shows changes
+function h2Frame(scoped){
+  const m=SDHud2.barModel(h2State());
+  for(let i=0;i<3;i++){const o=m[i],S=H2.slots[i],k=SDHud2.slotKey(o);if(k===S.key)continue;S.key=k;const el=S.el;
+    if(S.weapon!==o.weapon){S.weapon=o.weapon;el.querySelector('.wsil').innerHTML=SDHudIcons.weapons[o.weapon]||'';el.querySelector('.wn').textContent=o.name;el.setAttribute('aria-label',o.name);}
+    el.querySelector('.wa').innerHTML=o.ammo===null?'':o.ammo+'<small>/'+o.reserve+'</small>';
+    el.classList.toggle('on',o.active);el.classList.toggle('pend',o.pending);el.classList.toggle('empty',o.empty);el.classList.toggle('rel',o.state==='reload');
+    el.style.setProperty('--p',Math.round(o.reloadP*100)+'%');
+    const wx=el.querySelector('.wx');setHidden(wx,!o.next);if(o.next)setText(wx,(LAYOUT.bar.compact?'PRÓX.: ':'SIGUIENTE: ')+o.next);
+  }
+  H2.bar.classList.toggle('scoped',!!scoped);
+  H2.invBtn.classList.toggle('on',H2.invOpen);
+  if(isTouch&&!EDIT.on){
+    const kn=LOAD.active==='knife',fi=kn?'knife':'fire_main';
+    if(H2.fireIcon!==fi){H2.fireIcon=fi;btnEl('fire').innerHTML=h2Glyph(fi);btnEl('fire2').innerHTML=h2Glyph(kn?'knife':'fire_left');}
+    btnEl('reload').classList.toggle('alert',!kn&&AG().ammo<=0);
+    btnEl('peekL').classList.toggle('on',leanIn.touchL);btnEl('peekR').classList.toggle('on',leanIn.touchR);
+  }
+  if(H2.invOpen&&++H2.invT%6===0)h2InvRender();
+}
+function h2Flash(weapon){const S=H2.slots[SDHud2.slotOfWeapon(weapon)-1];if(!S)return;S.el.classList.remove('flash');void S.el.offsetWidth;S.el.classList.add('flash');}
+// a slot asks for its weapon (the loadout applies the holster/draw times, the same on the server)
+function h2Select(slot){if(slot==='inv'){h2Inv();return;}const S=SDHud2.SLOTS[slot-1];if(!S)return;input.fireAim=false;input.select=S.select;}
+/* a finger on the bar: a TAP selects. If it slides more than 14 px it was never meant for the bar (the bar sits at the
+   bottom of the joystick zone): it becomes the joystick or the camera, from where it landed */
+function h2TapDown(id,x,y,el){if(H2.tap)h2TapUp(true);H2.tap={id,x,y,el,slot:el.dataset.wslot};el.classList.add('tap');}
+function h2TapMove(id,x,y){
+  const t=H2.tap;if(Math.hypot(x-t.x,y-t.y)<14)return;
+  H2.tap=null;t.el.classList.remove('tap');
+  TOUCH.dragScope=SETTINGS.adsMode!=='hold';TOUCH.cfg.dead=SETTINGS.touchDead;
+  const r=SDTouch.down(TOUCH,{id,x:t.x,y:t.y,button:null,W:window.innerWidth});
+  if(r.stickStart){stickBase.hidden=false;stickBase.style.left=r.stickStart.x+'px';stickBase.style.top=r.stickStart.y+'px';stickKnob.style.transform='';}
+  SDTouch.move(TOUCH,{id,x,y});
+}
+function h2TapUp(cancel){const t=H2.tap;H2.tap=null;if(!t)return;t.el.classList.remove('tap');if(cancel)return;audioInit();h2Select(t.slot==='inv'?'inv':+t.slot);}
+// touch peek: PULSAR (default) = tap in, tap out, so the left thumb can go back to the stick; MANTENER = while held
+function h2PeekPress(side){
+  const k='touch'+side,o=side==='L'?'touchR':'touchL';
+  if(SETTINGS.leanTouch==='hold'){leanIn[k]=true;leanIn[o]=false;}
+  else{leanIn[k]=!leanIn[k];if(leanIn[k])leanIn[o]=false;}
+}
+function h2KeyDown(e){
+  if(e.code==='KeyI'||e.code==='Tab')h2Inv();
+  if(SETTINGS.leanMode==='toggle'){
+    if(e.code===SETTINGS.leanKeyL){leanIn.keyL=!leanIn.keyL;if(leanIn.keyL)leanIn.keyR=false;}
+    else if(e.code===SETTINGS.leanKeyR){leanIn.keyR=!leanIn.keyR;if(leanIn.keyR)leanIn.keyL=false;}
+  }
+}
+function h2Wheel(e){
+  if(!SETTINGS.wheelSwap||!e.deltaY)return;const now=performance.now();if(now-H2.wheelT<160)return;H2.wheelT=now;
+  h2Select(SDHud2.cycle(SDHud2.slotOfWeapon(LOAD.pending||LOAD.active),e.deltaY>0?1:-1));
+}
+// pause, respawn, menu: no peek left on, inventory closed, no key capture pending
+function h2Clear(){leanIn.keyL=leanIn.keyR=leanIn.touchL=leanIn.touchR=false;if(H2.invOpen)h2Inv(false);if(H2.tap)h2TapUp(true);}
+function h2Inv(open){if(!H2.inv)return;H2.invOpen=open===undefined?!H2.invOpen:!!open;H2.inv.hidden=!H2.invOpen;H2.invBtn.classList.toggle('on',H2.invOpen);H2.invKey='';if(H2.invOpen)h2InvRender();}
+function h2InvRender(){
+  const M=SDHud2.inventoryModel(h2State());
+  let h='<div class="ihead"><h3>INVENTARIO</h3>'+(isTouch?'':'<span class="lbl">I · CERRAR</span>')+'<button type="button" data-iclose aria-label="Cerrar">✕</button></div>';
+  h+='<div class="isec"><span class="lbl">Armamento · munición</span><div class="irows">';
+  for(const w of M.weapons)h+='<button type="button" class="irow'+(w.active?' on':'')+(w.pending?' pend':'')+'" data-isel="'+w.slot+'"><span class="ik">'+w.key+'</span>'+SDHudIcons.weapons[w.weapon]+
+    '<span><b>'+w.name+'</b><small>'+w.state+(w.draw!=null?' · SACAR '+w.draw.toFixed(2).replace('.',',')+' s':'')+'</small></span><span class="iam">'+w.ammo+'<small>'+w.reserve+'</small></span></button>';
+  h+='</div></div><div class="isec"><span class="lbl">Arma principal · al reaparecer</span><div class="seg" role="group" aria-label="Arma principal"><button type="button" data-ikit="rifle" aria-pressed="'+(PRIMARY==='rifle')+'">HALCÓN R7</button><button type="button" data-ikit="shotgun" aria-pressed="'+(PRIMARY==='shotgun')+'">FURIA 12</button></div>'+
+    '<div class="inext">'+(M.nextDiffers?'SE APLICARÁ EN EL PRÓXIMO RESPAWN · AHORA LLEVAS '+M.primaryNow:'')+'</div></div>';
+  h+='<div class="isec"><span class="lbl">Estado</span><div class="istat"><span>SALUD<b>'+M.hp+'</b></span>'+(M.breath!=null?'<span>AIRE<b>'+M.breath+'%</b></span>':'')+'<span>ARMA PENDIENTE<b>'+(M.pending||'—')+'</b></span></div></div>';
+  h+='<div class="isec"><span class="lbl">Restricciones</span><ul>'+M.rules.map(r=>'<li>'+r+'</li>').join('')+'</ul></div>';
+  if(!isTouch)h+='<div class="ihint">1 / 2 / 3 EQUIPAN · CON EL RATÓN CAPTURADO ESTE PANEL ES INFORMATIVO: LA PRINCIPAL SE ELIGE EN PAUSA (ESC)</div>';
+  if(h===H2.invKey)return;H2.invKey=h;H2.inv.innerHTML=h;
+}
+function h2EditorSelect(name){
+  H2.bar.classList.toggle('sel',name==='wbar');
+  const isBar=name==='wbar',sz=$('#edSize'),vis=$('#edVis'),op=$('#edOpOne');
+  $('#edName').textContent=!name?'Toca un botón o la barra de armas':isBar?SDHud2.BAR.label:SDHud2.BUTTONS[name].label+' ('+name+')';
+  sz.disabled=vis.disabled=op.disabled=!name;
+  if(isBar){sz.min=60;sz.max=160;sz.step=5;sz.value=Math.round(LAYOUT.bar.scale*100);$('#edSizeOut').textContent=sz.value+'%';vis.checked=LAYOUT.bar.visible;op.value=LAYOUT.bar.op;}
+  else if(name){sz.min=36;sz.max=140;sz.step=2;sz.value=LAYOUT.buttons[name].size;$('#edSizeOut').textContent=LAYOUT.buttons[name].size;vis.checked=LAYOUT.vis[name]!==false;vis.disabled=name==='pause';op.value=LAYOUT.op[name]==null?1:LAYOUT.op[name];}
+  $('#edOpOneOut').textContent=(+op.value).toFixed(2);
+  document.querySelectorAll('#edBarSeg button').forEach(b=>b.setAttribute('aria-pressed',String((b.dataset.bm==='compact')===!!LAYOUT.bar.compact)));
+}
+// on PC the bar lives in the HUD; while editing it joins the touch layer so it can be dragged like a button
+function h2EditorOpen(){if(!isTouch)touchEl.appendChild(H2.bar);}
+function h2EditorClose(){H2.bar.classList.remove('sel');if(!isTouch)$('#hud').appendChild(H2.bar);}
+// AJUSTES → CONTROLES (only with ?hud=2): peek keys, peek modes, mouse wheel
+function h2SettingsBuild(){
+  const pane=document.querySelector('.setPane[data-pane="controles"]'),oe=$('#openEditor');if(!pane||!oe)return;
+  const d=document.createElement('div');d.className='setGrid';d.id='h2Set';
+  d.innerHTML='<div class="lbl" style="margin:6px 0 0">HUD 2 · Asomarse</div>'+
+    '<div class="h2keys"><span>Izquierda</span><button class="btn ghost keyCap" type="button" data-lean="L">Q</button><span>Derecha</span><button class="btn ghost keyCap" type="button" data-lean="R">E</button><span class="lbl" id="h2KeyMsg"></span></div>'+
+    '<div class="lbl">Teclas (PC)</div><div class="seg" id="h2LeanMode" role="group" aria-label="Teclas de asomarse"><button type="button" data-lm="hold">MANTENER</button><button type="button" data-lm="toggle">PULSAR</button></div>'+
+    '<div class="lbl">Botones (móvil)</div><div class="seg" id="h2LeanTouch" role="group" aria-label="Botones de asomarse"><button type="button" data-lt="toggle">PULSAR</button><button type="button" data-lt="hold">MANTENER</button></div>'+
+    '<p class="setHelp">Asomarse solo mueve la cámara a un lado (hasta 45 cm, nunca a través de una pared) y se puede apuntar y disparar asomado. En móvil, PULSAR deja el pulgar libre para el joystick. Las zonas de impacto no cambian.</p>'+
+    '<label class="chk"><input type="checkbox" id="h2Wheel"> Rueda del ratón: cambiar de arma cuando no apuntas (apuntando sigue cambiando el zoom)</label>';
+  pane.insertBefore(d,oe.parentNode);
+  d.querySelectorAll('.keyCap').forEach(b=>b.addEventListener('click',()=>{H2.capture=b.dataset.lean;b.textContent='PULSA UNA TECLA…';b.classList.add('wait');setText($('#h2KeyMsg'),'ESC CANCELA');}));
+  d.querySelectorAll('#h2LeanMode button').forEach(b=>b.addEventListener('click',()=>{SETTINGS.leanMode=b.dataset.lm;leanIn.keyL=leanIn.keyR=false;settingsChanged();}));
+  d.querySelectorAll('#h2LeanTouch button').forEach(b=>b.addEventListener('click',()=>{SETTINGS.leanTouch=b.dataset.lt;leanIn.touchL=leanIn.touchR=false;settingsChanged();}));
+  $('#h2Wheel').addEventListener('change',()=>{SETTINGS.wheelSwap=$('#h2Wheel').checked;settingsChanged();});
+  // the next key press goes to the peek key being set (before the game sees it); keys the game uses are refused
+  window.addEventListener('keydown',e=>{
+    if(!H2.capture)return;e.preventDefault();e.stopImmediatePropagation();const side=H2.capture;H2.capture=null;
+    if(e.code==='Escape'){h2SettingsToUI();setText($('#h2KeyMsg'),'');return;}
+    const other=side==='L'?SETTINGS.leanKeyR:SETTINGS.leanKeyL;
+    if(!SDHud2.keyAllowed(e.code)||e.code===other){h2SettingsToUI();setText($('#h2KeyMsg'),SDHud2.keyLabel(e.code)+' NO: YA LA USA EL JUEGO');return;}
+    SETTINGS[side==='L'?'leanKeyL':'leanKeyR']=e.code;settingsChanged();setText($('#h2KeyMsg'),'');
+  },true);
+}
+function h2SettingsToUI(){
+  const d=$('#h2Set');if(!d)return;
+  d.querySelectorAll('.keyCap').forEach(b=>{if(H2.capture===b.dataset.lean)return;b.classList.remove('wait');b.textContent=SDHud2.keyLabel(b.dataset.lean==='L'?SETTINGS.leanKeyL:SETTINGS.leanKeyR);});
+  d.querySelectorAll('#h2LeanMode button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.lm===SETTINGS.leanMode)));
+  d.querySelectorAll('#h2LeanTouch button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.lt===SETTINGS.leanTouch)));
+  $('#h2Wheel').checked=!!SETTINGS.wheelSwap;
+}
+if(HUD2)h2Build();
 function btnEl(name){return touchEl.querySelector('[data-btn="'+name+'"]');}
 function applyLayout(){
   const W=window.innerWidth,H=window.innerHeight;
   touchEl.style.setProperty('--tbOp',LAYOUT.opacity);
-  for(const name in SDLayout.BUTTONS){const el=btnEl(name);if(!el)continue;const r=SDLayout.rect(name,LAYOUT.buttons[name],W,H);
-    el.style.left=r.left.toFixed(1)+'px';el.style.top=r.top.toFixed(1)+'px';el.style.width=el.style.height=r.size+'px';el.style.right=el.style.bottom='auto';}
+  for(const name in LY.BUTTONS){const el=btnEl(name);if(!el)continue;const r=LY.rect(name,LAYOUT.buttons[name],W,H);
+    el.style.left=r.left.toFixed(1)+'px';el.style.top=r.top.toFixed(1)+'px';el.style.width=el.style.height=r.size+'px';el.style.right=el.style.bottom='auto';
+    if(HUD2){el.classList.toggle('off',LAYOUT.vis[name]===false);el.style.setProperty('--tbOp',(LAYOUT.opacity*(LAYOUT.op[name]==null?1:LAYOUT.op[name])).toFixed(3));}}
+  if(HUD2)h2PlaceBar(W,H);
 }
 function btnPress(name,down,cancel){ // cancel: the system took the finger (call, notification, edge swipe) — never a shot
   const el=btnEl(name);if(el)el.classList.toggle('press',down);
   if(!down){
     if(name==='breath')input.breath=false;
+    if((name==='peekL'||name==='peekR')&&SETTINGS.leanTouch==='hold'){if(name==='peekL')leanIn.touchL=false;else leanIn.touchR=false;}
     if(name==='scope'&&SETTINGS.adsMode!=='toggle')input.scopeHeld=false;   // MIRA held: lifting the finger leaves the sight
     if(name==='fire'||name==='fire2'){
       input.fireHeld=false;
@@ -3457,6 +3719,7 @@ function btnPress(name,down,cancel){ // cancel: the system took the finger (call
     case 'pause':pause();break;
     case 'swap':{input.fireAim=false;const cur=LOAD.pending||LOAD.active;input.select=cur==='rifle'||cur==='shotgun'?'pistol':cur==='pistol'?'knife':'rifle';break;}
     case 'inspect':input.inspect=true;break;
+    case 'peekL':case 'peekR':h2PeekPress(name==='peekL'?'L':'R');break;
   }
 }
 function touchFeed(){ // touch state → the same input fields the keyboard/mouse use
@@ -3465,7 +3728,7 @@ function touchFeed(){ // touch state → the same input fields the keyboard/mous
   stickKnob.style.transform='translate('+TOUCH.knobX.toFixed(1)+'px,'+TOUCH.knobY.toFixed(1)+'px)';
   stickBase.classList.toggle('sprint',TOUCH.sprint);
 }
-function releaseAllTouches(){for(const name of new Set(TOUCH.held.values()))btnPress(name,false,true);SDTouch.reset(TOUCH);stickBase.hidden=true;input.joyX=input.joyY=0;input.joySprint=false;}
+function releaseAllTouches(){if(HUD2&&H2.tap)h2TapUp(true);for(const name of new Set(TOUCH.held.values()))btnPress(name,false,true);SDTouch.reset(TOUCH);stickBase.hidden=true;input.joyX=input.joyY=0;input.joySprint=false;}
 /* One finger = one id, from either source:
    - Touch Events on phones/tablets (iOS Safari's native model: each touch keeps reporting to the element
      it started on, with its own identifier — the most reliable way to follow a finger that starts on MIRA
@@ -3477,9 +3740,12 @@ function fingerDown(id,x,y,target,src){
   const b=target&&target.closest?target.closest('.tb'):null;
   const name=b&&b.dataset?b.dataset.btn:null;
   TDIAG.ev(src+' down #'+id+' '+(name||'—'));
+  const wsl=HUD2&&target&&target.closest?target.closest('[data-wslot]'):null;
+  if(EDIT.on&&wsl){const r=H2.rect;EDIT.sel='wbar';EDIT.dragId=id;EDIT.offX=x-(r.left+r.w/2);EDIT.offY=y-(r.top+r.h/2);editorSelect('wbar');return;}
+  if(wsl&&!EDIT.on){h2TapDown(id,x,y,wsl);return;}
   if(EDIT.on){ // layout editor: pick and drag buttons
     if(!name||name==='pause')return;
-    const r=SDLayout.rect(name,LAYOUT.buttons[name],window.innerWidth,window.innerHeight);
+    const r=LY.rect(name,LAYOUT.buttons[name],window.innerWidth,window.innerHeight);
     EDIT.sel=name;EDIT.dragId=id;EDIT.offX=x-r.cx;EDIT.offY=y-r.cy;editorSelect(name);return;
   }
   TOUCH.dragScope=SETTINGS.adsMode!=='hold';TOUCH.cfg.dead=SETTINGS.touchDead;
@@ -3488,14 +3754,18 @@ function fingerDown(id,x,y,target,src){
   if(r.stickStart){stickBase.hidden=false;stickBase.style.left=r.stickStart.x+'px';stickBase.style.top=r.stickStart.y+'px';stickKnob.style.transform='';}
 }
 function fingerMove(id,x,y,src){
-  if(EDIT.on){if(id!==EDIT.dragId||!EDIT.sel)return;const b=LAYOUT.buttons[EDIT.sel];
-    const m=SDLayout.moveTo(EDIT.sel,b,x-EDIT.offX,y-EDIT.offY,window.innerWidth,window.innerHeight);b.dx=m.dx;b.dy=m.dy;applyLayout();return;}
+  if(EDIT.on){if(id!==EDIT.dragId||!EDIT.sel)return;
+    if(EDIT.sel==='wbar'){Object.assign(LAYOUT.bar,SDHud2.barMoveTo(LAYOUT.bar,x-EDIT.offX,y-EDIT.offY,window.innerWidth,window.innerHeight,H2.base.h));applyLayout();return;}
+    const b=LAYOUT.buttons[EDIT.sel];
+    const m=LY.moveTo(EDIT.sel,b,x-EDIT.offX,y-EDIT.offY,window.innerWidth,window.innerHeight);b.dx=m.dx;b.dy=m.dy;applyLayout();return;}
+  if(HUD2&&H2.tap&&H2.tap.id===id){h2TapMove(id,x,y);return;}
   TDIAG.move(id,src);
   SDTouch.move(TOUCH,{id,x,y});
 }
 function fingerUp(id,cancel,src){
   TDIAG.ev(src+(cancel?' CANCEL #':' up #')+id);
   if(EDIT.on){if(id===EDIT.dragId)EDIT.dragId=null;return;}
+  if(HUD2&&H2.tap&&H2.tap.id===id){h2TapUp(cancel);return;}
   const r=SDTouch.up(TOUCH,id);
   if(r.release)btnPress(r.release,false,cancel);
   if(r.stickEnd)stickBase.hidden=true;
@@ -3517,7 +3787,7 @@ const tid=t=>'t'+t.identifier;
 // a finger the system ended without telling us (an edge swipe, a notification): close it so it never sticks
 function touchReconcile(e){
   if(!e.touches)return;const live=new Set();for(let i=0;i<e.touches.length;i++)live.add(tid(e.touches[i]));
-  const ids=new Set([...TOUCH.held.keys(),...TOUCH.look.keys()]);if(TOUCH.stickId!==null)ids.add(TOUCH.stickId);
+  const ids=new Set([...TOUCH.held.keys(),...TOUCH.look.keys()]);if(TOUCH.stickId!==null)ids.add(TOUCH.stickId);if(HUD2&&H2.tap)ids.add(H2.tap.id);
   for(const id of ids)if(typeof id==='string'&&!live.has(id))fingerUp(id,true,'tch-lost');
 }
 touchEl.addEventListener('touchstart',e=>{
@@ -3546,6 +3816,7 @@ applyLayout();
 /* ---- layout editor ---- */
 function editorSelect(name){
   for(const el of touchEl.querySelectorAll('.tb'))el.classList.toggle('sel',el.dataset&&el.dataset.btn===name);
+  if(HUD2){h2EditorSelect(name);return;}
   $('#edName').textContent=name?SDLayout.BUTTONS[name].label+' ('+name+')':'Toca un botón para elegirlo';
   if(name){$('#edSize').value=LAYOUT.buttons[name].size;$('#edSizeOut').textContent=LAYOUT.buttons[name].size;}
 }
@@ -3553,21 +3824,25 @@ function openEditor(){
   EDIT.on=true;EDIT.sel=null;EDIT.backup=JSON.parse(JSON.stringify(LAYOUT));
   releaseAllTouches();
   $('#settings').hidden=true;touchEl.hidden=false;touchEl.classList.add('editing');
-  for(const name in SDLayout.BUTTONS){const el=btnEl(name);if(el)el.hidden=(name==='fire2'&&!SETTINGS.leftFire);}
+  for(const name in LY.BUTTONS){const el=btnEl(name);if(el)el.hidden=(name==='fire2'&&!SETTINGS.leftFire);}
+  if(HUD2)h2EditorOpen();
   $('#edOp').value=LAYOUT.opacity;$('#edOpOut').textContent=(+LAYOUT.opacity).toFixed(2);
   $('#editPanel').hidden=false;editorSelect(null);applyLayout();checkOrientation();
 }
 function closeEditor(saveIt){
-  if(saveIt)SDLayout.save(store,LAYOUT);else LAYOUT=SDLayout.sanitize(EDIT.backup);
+  if(saveIt)LY.save(store,LAYOUT,isTouch);else LAYOUT=LY.sanitize(EDIT.backup,isTouch);
+  if(HUD2)h2EditorClose();
   EDIT.on=false;touchEl.classList.remove('editing');$('#editPanel').hidden=true;editorSelect(null);
   touchEl.hidden=!(isTouch&&(state==='playing'||state==='dead'));
   applyLayout();$('#settings').hidden=false;checkOrientation();
 }
-$('#edSize').addEventListener('input',()=>{if(!EDIT.sel)return;LAYOUT.buttons[EDIT.sel].size=+$('#edSize').value;$('#edSizeOut').textContent=$('#edSize').value;applyLayout();});
+$('#edSize').addEventListener('input',()=>{if(!EDIT.sel)return;
+  if(EDIT.sel==='wbar'){LAYOUT.bar.scale=+$('#edSize').value/100;$('#edSizeOut').textContent=$('#edSize').value+'%';applyLayout();return;}
+  LAYOUT.buttons[EDIT.sel].size=+$('#edSize').value;$('#edSizeOut').textContent=$('#edSize').value;applyLayout();});
 $('#edOp').addEventListener('input',()=>{LAYOUT.opacity=+$('#edOp').value;$('#edOpOut').textContent=(+$('#edOp').value).toFixed(2);applyLayout();});
 $('#edSave').addEventListener('click',()=>closeEditor(true));
 $('#edCancel').addEventListener('click',()=>closeEditor(false));
-$('#edReset').addEventListener('click',()=>{LAYOUT=SDLayout.defaults();$('#edOp').value=LAYOUT.opacity;$('#edOpOut').textContent=LAYOUT.opacity.toFixed(2);editorSelect(EDIT.sel);applyLayout();});
+$('#edReset').addEventListener('click',()=>{LAYOUT=LY.defaults(isTouch);$('#edOp').value=LAYOUT.opacity;$('#edOpOut').textContent=LAYOUT.opacity.toFixed(2);editorSelect(EDIT.sel);applyLayout();});
 
 /* ---- settings panel ---- */
 let SETTINGS=SDSettings.load(store,isTouch);
@@ -3577,7 +3852,7 @@ const SET_UI=[['sH','sensH'],['sV','sensV'],['sA','adsSens'],['sAH','adsH'],['sA
 const SET_CHK=[['sInv','invertY'],['sLeft','leftFire'],['sRel','releaseFire'],['sShowFps','showFps'],['sCalm','calmVM'],['sMute','mute'],['sHit','hitmarkers'],['sDmg','dmgDir'],['sFlash','lowFlash']];
 const ADS_HELP={holdDrag:'Mantén MIRA para apuntar y arrastra ese mismo dedo para mover la mira. Al soltar sales del visor.',hold:'Mantén MIRA para apuntar; la cámara se mueve con otro dedo. Al soltar sales del visor.',toggle:'Toca MIRA una vez para entrar en el visor y otra para salir. Mueve la cámara con cualquier dedo libre.'};
 function settingsToUI(){for(const [id,k] of SET_UI){$('#'+id).value=SETTINGS[k];$('#'+id+'o').textContent=/^vol/.test(k)?Math.round(SETTINGS[k]*100)+'%':(+SETTINGS[k]).toFixed(2);}for(const [id,k] of SET_CHK)$('#'+id).checked=!!SETTINGS[k];$('#sFps30').checked=SETTINGS.fpsCap===30;$('#sDiag').checked=TDIAG.on;$('#adsHelp').textContent=ADS_HELP[SETTINGS.adsMode]||'';document.querySelectorAll('#adsSeg button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.a===SETTINGS.adsMode)));document.querySelectorAll('#qSeg button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.q===SETTINGS.quality)));gfxNote();
-  const g=(SETTINGS.sensH+SETTINGS.sensV)/2;$('#sens').value=g;$('#sensOut').textContent=g.toFixed(2);}
+  const g=(SETTINGS.sensH+SETTINGS.sensV)/2;$('#sens').value=g;$('#sensOut').textContent=g.toFixed(2);if(HUD2)h2SettingsToUI();}
 function applyControlSettings(){TOUCH.dragScope=SETTINGS.adsMode!=='hold';TOUCH.cfg.dead=SETTINGS.touchDead;MOTION=(reduceMotion||SETTINGS.calmVM)?0.35:1;if(SETTINGS.adsMode!=='toggle')input.scopeToggle=false;
   const B=document.body.classList;B.toggle('noHit',!SETTINGS.hitmarkers);B.toggle('noDmgDir',!SETTINGS.dmgDir);B.toggle('lowFlash',!!SETTINGS.lowFlash);}
 function settingsChanged(){SETTINGS=SDSettings.sanitize(SETTINGS,isTouch);SDSettings.save(store,SETTINGS,isTouch);gfxApply();applyControlSettings();audioLevels();settingsToUI();}
@@ -3721,13 +3996,13 @@ function startMatch(){
 }
 // one-shot inputs (clicks, key presses) that have not been used yet are thrown away whenever
 // the game is interrupted, so nothing fires, jumps or switches on its own afterwards
-function clearPendingInput(){if(typeof releaseAllTouches==='function')releaseAllTouches();input.firePressed=input.jumpPressed=input.crouchPressed=input.reloadPressed=false;input.fireAim=false;input.fireAimShot=0;input.select=null;input.inspect=false;input.lookDX=input.lookDY=0;}
+function clearPendingInput(){if(HUD2)h2Clear();if(typeof releaseAllTouches==='function')releaseAllTouches();input.firePressed=input.jumpPressed=input.crouchPressed=input.reloadPressed=false;input.fireAim=false;input.fireAimShot=0;input.select=null;input.inspect=false;input.lookDX=input.lookDY=0;}
 function pause(){if(state!=='playing'&&state!=='dead')return;pausedFrom=state;state='paused';$('#pause').hidden=false;kitNote();$('#lockHint').hidden=true;if(pointerLocked&&document.exitPointerLock)document.exitPointerLock();input.fireHeld=false;input.scope=false;input.scopeToggle=false;input.keys={};clearPendingInput();}
 let pausedFrom='playing';
 function resume(){if(state!=='paused')return;
   if(!isTouch&&performance.now()-lockExitAt<1150){const b=$('#resume');if(!b.dataset.wait){b.dataset.wait='1';b.disabled=true;const txt=b.textContent;b.textContent='UN MOMENTO…';
     setTimeout(()=>{b.disabled=false;b.textContent=txt;delete b.dataset.wait;},Math.max(50,1150-(performance.now()-lockExitAt)));}return;}clearPendingInput();state=pausedFrom;$('#pause').hidden=true;audioInit();if(!isTouch)requestLock();}
-function toMenu(){if(mode==='online'){netLeave(true);return;}state='menu';setWorld(offWorld());$('#pause').hidden=true;$('#lockHint').hidden=true;$('#over').hidden=true;$('#hud').hidden=true;$('#scope').hidden=true;$('#death').hidden=true;$('#touch').hidden=true;$('#menu').hidden=false;BOTS.concat(DUMMIES,TRAINERS).forEach(b=>{b.alive=false;b.g.visible=false;b.trainerActive=false;});BULLETS.length=0;BTR.forEach(m=>m.visible=false);scene.fog.near=45;scene.fog.far=175;if(document.exitPointerLock&&pointerLocked)document.exitPointerLock();}
+function toMenu(){if(mode==='online'){netLeave(true);return;}if(HUD2)h2Clear();state='menu';setWorld(offWorld());$('#pause').hidden=true;$('#lockHint').hidden=true;$('#over').hidden=true;$('#hud').hidden=true;$('#scope').hidden=true;$('#death').hidden=true;$('#touch').hidden=true;$('#menu').hidden=false;BOTS.concat(DUMMIES,TRAINERS).forEach(b=>{b.alive=false;b.g.visible=false;b.trainerActive=false;});BULLETS.length=0;BTR.forEach(m=>m.visible=false);scene.fog.near=45;scene.fog.far=175;if(document.exitPointerLock&&pointerLocked)document.exitPointerLock();}
 function endMatch(win){
   if(state==='over'||state==='menu')return;
   state='over';
@@ -3825,7 +4100,7 @@ function onShotgunEvent(e,hol){
 function onLoadoutEvent(e){
   switch(e.type){
     case 'holster':input.scopeToggle=false;if(e.weapon==='rifle'||e.weapon==='shotgun')SFX.holsterRifle();else if(e.weapon==='pistol')SFX.pHolster();else SFX.knifeHolster();break;
-    case 'draw':if(e.weapon==='knife')SFX.knifeDraw();else if(e.weapon==='pistol')SFX.pDraw();else if(e.weapon==='shotgun')SFX.sDraw();else SFX.raise();updateWeaponHud();updateAmmoUI();break;
+    case 'draw':if(HUD2)h2Flash(e.weapon);if(e.weapon==='knife')SFX.knifeDraw();else if(e.weapon==='pistol')SFX.pDraw();else if(e.weapon==='shotgun')SFX.sDraw();else SFX.raise();updateWeaponHud();updateAmmoUI();break;
     case 'swing':SFX.swing();SDWeapon.kickRecoil(RECOIL,0.006,e.side*0.018,GUNCFG.recoil);STATS.meleeSwings=(STATS.meleeSwings||0)+1;break;
     case 'knifeHit':doKnifeHit();break;
     case 'inspect':SFX.knifeFlick();break;
@@ -3930,7 +4205,7 @@ function updateCamera(dt,alpha){
   if(FEEL2){   // spring (k 420, c 26 → ζ≈0.63): back into the shoulder at once, a little past rest, settles in ~0.25 s
     for(let h=dt;h>1e-6;h-=1/120){const s=Math.min(h,1/120);WS.kickV+=(-420*WS.kick-26*WS.kickV)*s;WS.kick+=WS.kickV*s;}
   }else WS.kick=damp(WS.kick,0,9,dt);
-  P.lean=damp(P.lean,P.alive?(input.keys.KeyE?1:0)-(input.keys.KeyQ?1:0):0,10,dt);
+  P.lean=damp(P.lean,P.alive?leanTargetNow():0,10,dt);
   // interpolated position between the last two sim ticks
   const px=lerp(PMprev.x,PM.x,alpha),py=lerp(PMprev.y,PM.y,alpha),pz=lerp(PMprev.z,PM.z,alpha);
   _rt.set(Math.cos(P.yaw),0,-Math.sin(P.yaw));
@@ -3980,7 +4255,8 @@ function updateCamera(dt,alpha){
     $('#airVig').style.opacity=P.exhausted>0?(0.55+Math.sin(P.swayT*7)*0.2).toFixed(2):P.holding?(0.15*clamp(1-P.breath,0,1)+0.08).toFixed(2):0;
   }
   {const lh=document.getElementById('lockHint'),want=!isTouch&&!pointerLocked&&state==='playing';if(lh.hidden===want)lh.hidden=!want;}
-  if(isTouch&&!EDIT.on){const bz=$('#tbZoom'),bb=$('#tbBreath'),kn=LOAD.active==='knife';setHidden($('#tbScope'),kn);{const ih=!kn&&(ads>0.05||PM.sprinting);if($('#tbInspect').hidden!==ih)$('#tbInspect').hidden=ih;}setHidden($('#tbFire2'),!SETTINGS.leftFire);{const ft=kn?'ATACAR':'FUEGO';setText($('#tbFire'),ft);setText($('#tbFire2'),ft);}if(bz.hidden===showScope){bz.hidden=!showScope;bb.hidden=!showScope;}setText(bz,WS.zoom+'×');bb.classList.toggle('on',P.holding);$('#tbScope').classList.toggle('on',input.scopeToggle||input.scopeHeld);$('#tbCrouch').classList.toggle('on',input.crouchHeld);}
+  if(isTouch&&!EDIT.on){const bz=$('#tbZoom'),bb=$('#tbBreath'),kn=LOAD.active==='knife';setHidden($('#tbScope'),kn);{const ih=!kn&&(ads>0.05||PM.sprinting);if($('#tbInspect').hidden!==ih)$('#tbInspect').hidden=ih;}setHidden($('#tbFire2'),!SETTINGS.leftFire);if(!HUD2){const ft=kn?'ATACAR':'FUEGO';setText($('#tbFire'),ft);setText($('#tbFire2'),ft);}if(bz.hidden===showScope){bz.hidden=!showScope;bb.hidden=!showScope;}setText(bz,WS.zoom+'×');bb.classList.toggle('on',P.holding);$('#tbScope').classList.toggle('on',input.scopeToggle||input.scopeHeld);$('#tbCrouch').classList.toggle('on',input.crouchHeld);}
+  if(HUD2)h2Frame(showScope);
   // hip crosshair shows the real spread cone
   const cr=$('#cross');
   const knife=LOAD.active==='knife';
@@ -4844,6 +5120,6 @@ if(FLORA.on){const gl=new T.GLTFLoader();let n=2;
       // the town's ground must exist first (rays land on it)
       if(P3W.kit)go();else{const w=setInterval(()=>{if(P3W.kit){clearInterval(w);go();}},300);}}}}
 
-window.__SD={PJ2,pj2Load,CASA,casaLoad,XL,casaxlLoad,FLORA,RATS,RAT_WORLD,ratsFrame,SHADOW_FADE,setDuelLethal,get DUEL_LETHAL(){return DUEL_LETHAL;},gfxDiagText,get P3ON(){return P3ON;},COBCC,damagePlayer,TEX,sunFollow,setSunSnap(on){SUN_SNAP=!!on;},sun,P0,E10,e10Lod,DIAG,setTrainMove,LIGHT:{sun,hemi,skyMat,LOOK,P3},P3W,freeze(on){SIM_FREEZE=!!on;},SHOT,VMA,makeSoldier,animateSoldier,BOT_MAT,scene,camera,RemotePlayer,PMprev,PIS,PROOT,RIF,WROOT,SHO_:null,MANUAL,advance(ms){frameBody(last+ms);},get LAST_PELLETS(){return LAST_PELLETS;},SCORE,SCFG,SROOT,SHO,setPrimaryChoice,get PRIMARY(){return PRIMARY;},PCORE,PCFG,setWorld,WORLDS,get WORLD_ID(){return WORLD_ID;},renderer,GFX,gfxApply,get NET(){return NET;},get REMOTE(){return REMOTE;},W,get NAV(){return NAV;},setOffMap,get OFFMAP(){return OFFMAP;},TOUCH,EDIT,openEditor,get SETTINGS(){return SETTINGS;},get LAYOUT(){return LAYOUT;},checkOrientation,MAT,LOAD,TRAINERS,get RANGE_BOTS(){return RANGE_BOTS;},TRAIN,setTrain,setLethal,kitNote,GINS,TDIAG,AU,get TOUCH_EVENTS(){return TOUCH_EVENTS;},impactFX,bodyFX,get DECALS(){return DECALS;},surfaceOf,soundDelay,aimSelfTest,P,PM,WS,WCORE,RECOIL,AIM,BOTS,DUMMIES,BULLETS,EVENTS,PARTS,STATS,get state(){return state;},get mode(){return mode;},setMode,input,startMatch,simTick,frame,toMenu,pause,resume};
+window.__SD={HUD2,get H2(){return HUD2?H2:null;},leanIn:HUD2?leanIn:null,h2Frame:HUD2?h2Frame:null,PJ2,pj2Load,CASA,casaLoad,XL,casaxlLoad,FLORA,RATS,RAT_WORLD,ratsFrame,SHADOW_FADE,setDuelLethal,get DUEL_LETHAL(){return DUEL_LETHAL;},gfxDiagText,get P3ON(){return P3ON;},COBCC,damagePlayer,TEX,sunFollow,setSunSnap(on){SUN_SNAP=!!on;},sun,P0,E10,e10Lod,DIAG,setTrainMove,LIGHT:{sun,hemi,skyMat,LOOK,P3},P3W,freeze(on){SIM_FREEZE=!!on;},SHOT,VMA,makeSoldier,animateSoldier,BOT_MAT,scene,camera,RemotePlayer,PMprev,PIS,PROOT,RIF,WROOT,SHO_:null,MANUAL,advance(ms){frameBody(last+ms);},get LAST_PELLETS(){return LAST_PELLETS;},SCORE,SCFG,SROOT,SHO,setPrimaryChoice,get PRIMARY(){return PRIMARY;},PCORE,PCFG,setWorld,WORLDS,get WORLD_ID(){return WORLD_ID;},renderer,GFX,gfxApply,get NET(){return NET;},get REMOTE(){return REMOTE;},W,get NAV(){return NAV;},setOffMap,get OFFMAP(){return OFFMAP;},TOUCH,EDIT,openEditor,get SETTINGS(){return SETTINGS;},get LAYOUT(){return LAYOUT;},checkOrientation,MAT,LOAD,TRAINERS,get RANGE_BOTS(){return RANGE_BOTS;},TRAIN,setTrain,setLethal,kitNote,GINS,TDIAG,AU,get TOUCH_EVENTS(){return TOUCH_EVENTS;},impactFX,bodyFX,get DECALS(){return DECALS;},surfaceOf,soundDelay,aimSelfTest,P,PM,WS,WCORE,RECOIL,AIM,BOTS,DUMMIES,BULLETS,EVENTS,PARTS,STATS,get state(){return state;},get mode(){return mode;},setMode,input,startMatch,simTick,frame,toMenu,pause,resume};
 })();
 </script>
