@@ -27,11 +27,16 @@ const DEFAULTS = {
   // gameplay info (only what the player sees; never the rules)
   hitmarkers: true, dmgDir: true,
   // accessibility
-  lowFlash: false   // softer red damage flash and screen shake (visual only)
+  lowFlash: false,  // softer red damage flash and screen shake (visual only)
+  // HUD 2 (?hud=2) only: peek keys and modes, mouse wheel to switch weapons
+  leanKeyL: 'KeyQ', leanKeyR: 'KeyE',
+  leanMode: 'hold',   // PC keys: hold (lean while the key is down) | toggle (press in, press out)
+  leanTouch: 'toggle', // touch buttons: toggle (tap in, tap out: the left thumb stays on the stick) | hold
+  wheelSwap: false    // mouse wheel switches weapons when not aiming (aiming: it still changes the zoom)
 };
 // which settings each tab of AJUSTES owns (its RESTAURAR resets only these)
 const CATEGORIES = {
-  controles: ['adsMode', 'leftFire', 'releaseFire'],
+  controles: ['adsMode', 'leftFire', 'releaseFire', 'leanKeyL', 'leanKeyR', 'leanMode', 'leanTouch', 'wheelSwap'],
   sensibilidad: ['sensH', 'sensV', 'adsSens', 'adsH', 'adsV', 'touchLook', 'touchDead', 'smooth', 'invertY'],
   graficos: ['quality', 'fpsCap', 'showFps'],
   audio: ['volMaster', 'volShots', 'volFx', 'volSteps', 'volAmb', 'mute'],
@@ -57,7 +62,12 @@ function sanitize(o, touch) {
     const v = Number(o[k]);
     if (o[k] !== undefined && o[k] !== null && o[k] !== '' && isFinite(v)) s[k] = clamp(v, RANGES[k][0], RANGES[k][1]);
   }
-  for (const k of ['invertY', 'leftFire', 'releaseFire', 'showFps', 'calmVM', 'mute', 'hitmarkers', 'dmgDir', 'lowFlash']) if (typeof o[k] === 'boolean') s[k] = o[k];
+  for (const k of ['invertY', 'leftFire', 'releaseFire', 'showFps', 'calmVM', 'mute', 'hitmarkers', 'dmgDir', 'lowFlash', 'wheelSwap']) if (typeof o[k] === 'boolean') s[k] = o[k];
+  // peek keys: a key code (the HUD 2 settings only offer free keys); never the same key for both sides
+  const KEY = /^[A-Za-z][A-Za-z0-9]{1,19}$/;
+  if (KEY.test(o.leanKeyL) && KEY.test(o.leanKeyR) && o.leanKeyL !== o.leanKeyR) { s.leanKeyL = o.leanKeyL; s.leanKeyR = o.leanKeyR; }
+  if (o.leanMode === 'hold' || o.leanMode === 'toggle') s.leanMode = o.leanMode;
+  if (o.leanTouch === 'hold' || o.leanTouch === 'toggle') s.leanTouch = o.leanTouch;
   if (ADS_MODES.includes(o.adsMode)) s.adsMode = o.adsMode;
   if (['auto', 'bajo', 'medio', 'alto'].includes(o.quality)) s.quality = o.quality;
   if (o.fpsCap === 30 || o.fpsCap === 60) s.fpsCap = o.fpsCap;
