@@ -78,6 +78,8 @@ console.log('\nDISEÑO DEL HUD 2 Y MIGRACIÓN');
   check('el diseño clásico sigue intacto tras guardar el HUD 2', JSON.parse(st.raw.touchLayout).buttons.fire.dx === 100 && !JSON.parse(st.raw.touchLayout).buttons.peekL);
   const bad = H.sanitize({ opacity: 9, buttons: { fire: { dx: -5, dy: 'x', size: 900 }, peekL: { size: 1 } }, vis: { pause: false, jump: 'no' }, op: { fire: 7 }, bar: { scale: 50, dy: -9, op: -1, compact: 'sí' } }, true);
   check('datos guardados rotos o trucados se limitan', bad.opacity === 1 && bad.buttons.fire.dx === 0 && bad.buttons.fire.size === 140 && bad.buttons.peekL.size === 36 && bad.op.fire === 1 && bad.bar.scale === 1.6 && bad.bar.dy === 0 && bad.bar.op === 0.2 && bad.bar.compact === true);
+  check('fondo de la barra: oscuro por defecto, 0 = transparente, se limita a 0–1', H.defaults(true).bar.bg === 1 && H.sanitize({ bar: { bg: 0 } }, true).bar.bg === 0 && H.sanitize({ bar: { bg: 5 } }, true).bar.bg === 1 && H.sanitize({ bar: { bg: 'x' } }, true).bar.bg === 1);
+  check('agacharse: móvil PULSAR y levantarse al deslizar; PC MANTENER (como siempre); valores raros se ignoran', ST.defaults(true).crouchMode === 'slide' && ST.defaults(false).crouchMode === 'hold' && ST.sanitize({ crouchMode: 'x' }, true).crouchMode === 'slide' && ST.sanitize({ crouchMode: 'toggle' }, false).crouchMode === 'toggle');
   check('PAUSA nunca se puede ocultar', bad.vis.pause === true && bad.vis.jump === true);
   check('basura total → valores por defecto', JSON.stringify(H.sanitize('basura', true)) === JSON.stringify(H.defaults(true)));
   // geometry

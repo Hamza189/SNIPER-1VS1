@@ -92,3 +92,7 @@ Opciones (necesitan tu aprobación porque cambian reglas del servidor):
 ## 6. Cómo volver atrás
 Basta con no usar `?hud=2`. Para quitarlo del código: revertir los commits «HUD 2: …». Los ajustes guardados del HUD 2
 (`sniperduel_hudLayout2` y las teclas de asomarse) no afectan al juego sin la bandera.
+
+## 7. Añadido el 25-10-2026 (petición del propietario)
+- Fondo de la barra de armas regulable (AJUSTES › CONTROLES › HUD 2 y en el editor): 0 = transparente, solo armas y números con sombra.
+- AJUSTES › CONTROLES › Agacharse (para todos, no solo con ?hud=2): PULSAR · TE LEVANTAS AL DESLIZAR (por defecto en móvil), PULSAR, MANTENER (por defecto en PC, como siempre). Solo cambia la entrada; el movimiento y el servidor no cambian.

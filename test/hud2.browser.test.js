@@ -143,6 +143,16 @@ function fingers(cdp) {
       check('X otra vez: vuelve al centro', await until(p, () => Math.abs(__SD.P.lean) < 0.05, null, 3000));
       await p.keyboard.down('KeyE'); await sleep(500); const eNow = await p.evaluate(() => __SD.P.lean); await p.keyboard.up('KeyE');
       check('E ya no se asoma (la tecla ahora es X)', Math.abs(eNow) < 0.05);
+      // bar background from AJUSTES: fully transparent, saved with the HUD layout
+      await p.evaluate(() => { const e = document.getElementById('h2BarBg'); e.value = '0'; e.dispatchEvent(new Event('input')); });
+      const bg = await p.evaluate(() => ({ v: document.getElementById('wbar').style.getPropertyValue('--wbBg'), clear: document.getElementById('wbar').classList.contains('clear'), saved: JSON.parse(localStorage.getItem('sniperduel_hudLayout2')).bar.bg, back: getComputedStyle(document.querySelector('#wbar .ws')).backgroundColor }));
+      check('AJUSTES: fondo de la barra a 0 = transparente (solo armas y números) y se guarda', bg.v === '0' && bg.clear && bg.saved === 0 && /rgba\(12, 11, 9, 0\)|transparent/.test(bg.back), bg.back);
+      // crouch on PC: C toggles with PULSAR · TE LEVANTAS AL DESLIZAR (MANTENER stays the PC default)
+      check('PC: agacharse por defecto sigue siendo MANTENER', await p.evaluate(() => __SD.SETTINGS.crouchMode === 'hold'));
+      await p.evaluate(() => document.querySelector('#crouchSeg button[data-c="slide"]').click());
+      await p.keyboard.press('KeyC'); const cr = await until(p, () => __SD.PM.crouch, null, 2000); await sleep(300);
+      const stays = await p.evaluate(() => __SD.PM.crouch); await p.keyboard.press('KeyC');
+      check('PC en modo PULSAR: C una vez agacha sin mantener, otra vez levanta', cr && stays && await until(p, () => !__SD.PM.crouch, null, 2000));
       // cost of the per-frame HUD update
       const ms = await p.evaluate(() => { const n = 3000, t = performance.now(); for (let i = 0; i < n; i++) __SD.h2Frame(false); return (performance.now() - t) / n; });
       check('la actualización por fotograma del HUD 2 cuesta poco (< 0,05 ms)', ms < 0.05, (ms * 1000).toFixed(1) + ' µs');

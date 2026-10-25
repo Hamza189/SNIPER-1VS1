@@ -387,16 +387,18 @@ body.hud2 .tb.off{display:none!important}
 body.hud2 #touch.editing .tb.off{display:grid!important;opacity:.28}
 body.hud2 #stickKnob svg{display:none;width:70%;height:70%;margin:15%;color:#ffc247}
 body.hud2 #stickBase.sprint #stickKnob svg{display:block}
-#wbar{position:absolute;left:0;top:0;display:flex;gap:6px;align-items:stretch;transform-origin:0 0;pointer-events:none;--wbOp:1;opacity:var(--wbOp);transition:opacity .15s;z-index:2}
+#wbar{position:absolute;left:0;top:0;display:flex;gap:6px;align-items:stretch;transform-origin:0 0;pointer-events:none;--wbOp:1;--wbBg:1;opacity:var(--wbOp);transition:opacity .15s;z-index:2}
 #touch #wbar{pointer-events:auto}
 #wbar.scoped{opacity:calc(var(--wbOp) * .35)}
 #wbar.off{display:none}
 #touch.editing #wbar.off{display:flex;opacity:.28}
 #touch.editing #wbar{outline:1px dashed rgba(244,234,216,.5);outline-offset:3px}
 #touch.editing #wbar.sel{outline:2px solid var(--signal)}
-#wbar .ws,#wbar .wsInv{position:relative;box-sizing:border-box;width:108px;height:52px;background:rgba(12,11,9,.55);border:1px solid rgba(240,236,228,.2);border-radius:6px;color:#f2efe8;overflow:hidden;touch-action:none;text-shadow:0 1px 3px rgba(0,0,0,.7)}
+#wbar .ws,#wbar .wsInv{position:relative;box-sizing:border-box;width:108px;height:52px;background:rgba(12,11,9,calc(.55 * var(--wbBg)));border:1px solid rgba(240,236,228,calc(.06 + .14 * var(--wbBg)));border-radius:6px;color:#f2efe8;overflow:hidden;touch-action:none;text-shadow:0 1px 3px rgba(0,0,0,.7)}
 #wbar .ws:not(.on){opacity:.82}
-#wbar .ws.on{background:rgba(12,11,9,.62);border-color:rgba(255,176,32,.85);box-shadow:inset 0 3px 0 #ffb020}
+#wbar.clear .ws,#wbar.clear .wsInv{text-shadow:0 0 3px #000,0 1px 4px rgba(0,0,0,.9)}
+#wbar.clear .ws svg,#wbar.clear .wsInv svg{filter:drop-shadow(0 1px 2px rgba(0,0,0,.9))}
+#wbar .ws.on{background:rgba(12,11,9,calc(.62 * var(--wbBg)));border-color:rgba(255,176,32,.85);box-shadow:inset 0 3px 0 #ffb020}
 #wbar .ws.pend{border-color:rgba(255,176,32,.7);animation:wsPend .45s ease-in-out infinite alternate}
 #wbar .ws.flash{animation:wsFlash .35s ease-out}
 #wbar .ws.tap{transform:scale(.95)}
@@ -423,8 +425,8 @@ body.hud2 #stickBase.sprint #stickKnob svg{display:block}
 #wbar.compact .wa{font-size:21px;right:5px;top:5px}
 #wbar.compact .wa small{font-size:11px}
 #wbar.compact .wx{font-size:7px}
-@keyframes wsPend{from{background:rgba(12,11,9,.45)}to{background:rgba(255,176,32,.28)}}
-@keyframes wsFlash{0%{background:rgba(255,194,71,.55)}100%{background:rgba(12,11,9,.62)}}
+@keyframes wsPend{from{background:rgba(12,11,9,calc(.45 * var(--wbBg)))}to{background:rgba(255,176,32,.28)}}
+@keyframes wsFlash{0%{background:rgba(255,194,71,.55)}100%{background:rgba(12,11,9,calc(.62 * var(--wbBg)))}}
 #inv2{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);z-index:20;box-sizing:border-box;width:min(600px,calc(100% - 32px));max-height:calc(100% - 20px);overflow:auto;padding:12px 14px 14px;background:rgba(16,14,11,.9);border:1px solid rgba(240,236,228,.22);border-radius:8px;display:grid;gap:10px;color:#f2efe8;font:500 12px/1.3 var(--f-mono);touch-action:pan-y;-webkit-overflow-scrolling:touch}
 #inv2 .ihead{display:flex;align-items:center;gap:10px}
 #inv2 .ihead h3{margin:0;flex:1;font:600 26px/.9 var(--f-display);letter-spacing:.05em}
@@ -537,6 +539,9 @@ body.hud2 #stickBase.sprint #stickKnob svg{display:block}
       <button type="button" role="tab" data-tab="controles" aria-selected="true">CONTROLES</button><button type="button" role="tab" data-tab="sensibilidad">SENSIBILIDAD</button><button type="button" role="tab" data-tab="graficos">GRÁFICOS</button><button type="button" role="tab" data-tab="audio">AUDIO</button><button type="button" role="tab" data-tab="jugabilidad">JUGABILIDAD</button><button type="button" role="tab" data-tab="accesibilidad">ACCESIBILIDAD</button>
     </nav>
     <section class="setPane" data-pane="controles" role="tabpanel">
+      <div class="lbl" style="margin:4px 0 6px">Agacharse (botón AGACH y tecla C / Ctrl)</div>
+      <div class="seg" id="crouchSeg" role="group" aria-label="Agacharse"><button type="button" data-c="slide">PULSAR · TE LEVANTAS AL DESLIZAR</button><button type="button" data-c="toggle">PULSAR</button><button type="button" data-c="hold">MANTENER</button></div>
+      <p class="setHelp" id="crouchHelp"></p>
       <div class="lbl" style="margin:4px 0 6px">Botón MIRA (móvil)</div>
       <div class="seg" id="adsSeg" role="group" aria-label="Botón MIRA"><button type="button" data-a="holdDrag">MANTENER Y ARRASTRAR</button><button type="button" data-a="hold">MANTENER</button><button type="button" data-a="toggle">PULSAR</button></div>
       <p class="setHelp" id="adsHelp"></p>
@@ -3434,7 +3439,7 @@ window.addEventListener('keydown',e=>{
   if(state!=='playing'&&state!=='dead'){if(e.code==='Escape'&&state==='paused')resume();return;}
   if(e.code==='Escape'&&lockFailed){pause();return;}
   if(!input.keys[e.code]){
-    if(e.code==='KeyC'||e.code==='ControlLeft'){input.crouchPressed=true;}
+    if(e.code==='KeyC'||e.code==='ControlLeft'){input.crouchPressed=true;if(SETTINGS.crouchMode!=='hold')input.crouchHeld=!input.crouchHeld;}
     if(e.code==='Space')input.jumpPressed=true;
     if(e.code==='KeyR')input.reloadPressed=true;
     if(e.code==='KeyP')pause();
@@ -3544,11 +3549,13 @@ function h2Build(){
   const ep=$('#editPanel'),row=ep.querySelector('.row'),x=document.createElement('div');x.style.display='contents';
   x.innerHTML='<label class="edRow"><span>Visible</span><input id="edVis" type="checkbox" style="flex:0 0 auto;width:22px;height:22px"><span class="hint">PAUSA no se puede ocultar</span></label>'+
     '<label class="edRow"><span>Opacidad (este)</span><input id="edOpOne" type="range" min="0.2" max="1" step="0.05" value="1"><output id="edOpOneOut">1.00</output></label>'+
+    '<label class="edRow"><span>Fondo de la barra</span><input id="edBarBg" type="range" min="0" max="1" step="0.05" value="1"><output id="edBarBgOut">100%</output></label>'+
     '<div class="edRow"><span>Barra de armas</span><div class="seg" id="edBarSeg" role="group" aria-label="Barra de armas"><button type="button" data-bm="compact">COMPACTA</button><button type="button" data-bm="full">EXPANDIDA</button></div></div>';
   ep.insertBefore(x,row);
   $('#edVis').addEventListener('change',()=>{const v=$('#edVis').checked;if(EDIT.sel==='wbar')LAYOUT.bar.visible=v;else if(EDIT.sel&&EDIT.sel!=='pause')LAYOUT.vis[EDIT.sel]=v;applyLayout();});
   $('#edOpOne').addEventListener('input',()=>{const v=+$('#edOpOne').value;$('#edOpOneOut').textContent=v.toFixed(2);if(EDIT.sel==='wbar')LAYOUT.bar.op=v;else if(EDIT.sel)LAYOUT.op[EDIT.sel]=v;applyLayout();});
   document.querySelectorAll('#edBarSeg button').forEach(b=>b.addEventListener('click',()=>{LAYOUT.bar.compact=b.dataset.bm==='compact';applyLayout();h2EditorSelect(EDIT.sel);}));
+  $('#edBarBg').addEventListener('input',()=>{LAYOUT.bar.bg=+$('#edBarBg').value;$('#edBarBgOut').textContent=Math.round(LAYOUT.bar.bg*100)+'%';applyLayout();});
   const oe=$('#openEditor');if(oe)oe.textContent='EDITAR HUD (BOTONES Y BARRA)';
   h2SettingsBuild();
 }
@@ -3563,7 +3570,7 @@ function h2PlaceBar(W,H){
   const r=SDHud2.barRect(L,W,H,H2.base.w,H2.base.h,obs);
   H2.rect=r;
   H2.bar.style.left=r.left.toFixed(1)+'px';H2.bar.style.top=r.top.toFixed(1)+'px';H2.bar.style.transform='scale('+r.scale.toFixed(3)+')';
-  H2.bar.style.setProperty('--wbOp',String(L.op));H2.bar.classList.toggle('off',!L.visible);
+  H2.bar.style.setProperty('--wbOp',String(L.op));H2.bar.style.setProperty('--wbBg',String(L.bg));H2.bar.classList.toggle('clear',L.bg<0.35);H2.bar.classList.toggle('off',!L.visible);
 }
 function h2State(){
   const g=w=>({ammo:w.ammo,mag:w.cfg.mag,state:w.state,t:w.t,reload:w.cfg.reload,shells:!!w.cfg.shells}),lc=SD_CONFIG.loadout;
@@ -3647,6 +3654,7 @@ function h2EditorSelect(name){
   else if(name){sz.min=36;sz.max=140;sz.step=2;sz.value=LAYOUT.buttons[name].size;$('#edSizeOut').textContent=LAYOUT.buttons[name].size;vis.checked=LAYOUT.vis[name]!==false;vis.disabled=name==='pause';op.value=LAYOUT.op[name]==null?1:LAYOUT.op[name];}
   $('#edOpOneOut').textContent=(+op.value).toFixed(2);
   document.querySelectorAll('#edBarSeg button').forEach(b=>b.setAttribute('aria-pressed',String((b.dataset.bm==='compact')===!!LAYOUT.bar.compact)));
+  $('#edBarBg').value=LAYOUT.bar.bg;$('#edBarBgOut').textContent=Math.round(LAYOUT.bar.bg*100)+'%';
 }
 // on PC the bar lives in the HUD; while editing it joins the touch layer so it can be dragged like a button
 function h2EditorOpen(){if(!isTouch)touchEl.appendChild(H2.bar);}
@@ -3660,12 +3668,15 @@ function h2SettingsBuild(){
     '<div class="lbl">Teclas (PC)</div><div class="seg" id="h2LeanMode" role="group" aria-label="Teclas de asomarse"><button type="button" data-lm="hold">MANTENER</button><button type="button" data-lm="toggle">PULSAR</button></div>'+
     '<div class="lbl">Botones (móvil)</div><div class="seg" id="h2LeanTouch" role="group" aria-label="Botones de asomarse"><button type="button" data-lt="toggle">PULSAR</button><button type="button" data-lt="hold">MANTENER</button></div>'+
     '<p class="setHelp">Asomarse solo mueve la cámara a un lado (hasta 45 cm, nunca a través de una pared) y se puede apuntar y disparar asomado. En móvil, PULSAR deja el pulgar libre para el joystick. Las zonas de impacto no cambian.</p>'+
-    '<label class="chk"><input type="checkbox" id="h2Wheel"> Rueda del ratón: cambiar de arma cuando no apuntas (apuntando sigue cambiando el zoom)</label>';
+    '<label class="chk"><input type="checkbox" id="h2Wheel"> Rueda del ratón: cambiar de arma cuando no apuntas (apuntando sigue cambiando el zoom)</label>'+
+    '<div class="lbl" style="margin:6px 0 0">HUD 2 · Barra de armas</div>'+
+    '<label class="sens"><span class="lbl">Fondo (0 = transparente)</span><input id="h2BarBg" type="range" min="0" max="1" step="0.05"><output id="h2BarBgOut"></output></label>';
   pane.insertBefore(d,oe.parentNode);
   d.querySelectorAll('.keyCap').forEach(b=>b.addEventListener('click',()=>{H2.capture=b.dataset.lean;b.textContent='PULSA UNA TECLA…';b.classList.add('wait');setText($('#h2KeyMsg'),'ESC CANCELA');}));
   d.querySelectorAll('#h2LeanMode button').forEach(b=>b.addEventListener('click',()=>{SETTINGS.leanMode=b.dataset.lm;leanIn.keyL=leanIn.keyR=false;settingsChanged();}));
   d.querySelectorAll('#h2LeanTouch button').forEach(b=>b.addEventListener('click',()=>{SETTINGS.leanTouch=b.dataset.lt;leanIn.touchL=leanIn.touchR=false;settingsChanged();}));
   $('#h2Wheel').addEventListener('change',()=>{SETTINGS.wheelSwap=$('#h2Wheel').checked;settingsChanged();});
+  $('#h2BarBg').addEventListener('input',()=>{LAYOUT.bar.bg=+$('#h2BarBg').value;LY.save(store,LAYOUT,isTouch);applyLayout();h2SettingsToUI();});
   // the next key press goes to the peek key being set (before the game sees it); keys the game uses are refused
   window.addEventListener('keydown',e=>{
     if(!H2.capture)return;e.preventDefault();e.stopImmediatePropagation();const side=H2.capture;H2.capture=null;
@@ -3681,6 +3692,7 @@ function h2SettingsToUI(){
   d.querySelectorAll('#h2LeanMode button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.lm===SETTINGS.leanMode)));
   d.querySelectorAll('#h2LeanTouch button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.lt===SETTINGS.leanTouch)));
   $('#h2Wheel').checked=!!SETTINGS.wheelSwap;
+  $('#h2BarBg').value=LAYOUT.bar.bg;$('#h2BarBgOut').textContent=Math.round(LAYOUT.bar.bg*100)+'%';
 }
 if(HUD2)h2Build();
 function btnEl(name){return touchEl.querySelector('[data-btn="'+name+'"]');}
@@ -3696,6 +3708,7 @@ function btnPress(name,down,cancel){ // cancel: the system took the finger (call
   const el=btnEl(name);if(el)el.classList.toggle('press',down);
   if(!down){
     if(name==='breath')input.breath=false;
+    if(name==='crouch'&&SETTINGS.crouchMode==='hold')input.crouchHeld=false;
     if((name==='peekL'||name==='peekR')&&SETTINGS.leanTouch==='hold'){if(name==='peekL')leanIn.touchL=false;else leanIn.touchR=false;}
     if(name==='scope'&&SETTINGS.adsMode!=='toggle')input.scopeHeld=false;   // MIRA held: lifting the finger leaves the sight
     if(name==='fire'||name==='fire2'){
@@ -3711,7 +3724,7 @@ function btnPress(name,down,cancel){ // cancel: the system took the finger (call
       if(SETTINGS.releaseFire&&LOAD.active==='rifle'&&!LOAD.pending&&!input.scopeToggle&&!input.scopeHeld){input.fireAim=true;break;} // hold: scope up, aim with the same finger (already aiming with MIRA: shoots at once)
       input.fireHeld=true;input.firePressed=true;break;
     case 'scope':if(SETTINGS.adsMode==='toggle')input.scopeToggle=!input.scopeToggle;else input.scopeHeld=true;break;   // holdDrag: the same finger now turns the camera
-    case 'crouch':input.crouchHeld=!input.crouchHeld;input.crouchPressed=true;break;
+    case 'crouch':input.crouchHeld=SETTINGS.crouchMode==='hold'?true:!input.crouchHeld;input.crouchPressed=true;break;
     case 'jump':input.jumpPressed=true;break;
     case 'reload':input.reloadPressed=true;break;
     case 'breath':input.breath=true;break;
@@ -3850,8 +3863,9 @@ gfxApply();
 const SET_UI=[['sH','sensH'],['sV','sensV'],['sA','adsSens'],['sAH','adsH'],['sAV','adsV'],['sT','touchLook'],['sDZ','touchDead'],['sSM','smooth'],['vM','volMaster'],['vS','volShots'],['vF','volFx'],['vP','volSteps'],['vA','volAmb']];
 // on/off settings: checkbox id → setting
 const SET_CHK=[['sInv','invertY'],['sLeft','leftFire'],['sRel','releaseFire'],['sShowFps','showFps'],['sCalm','calmVM'],['sMute','mute'],['sHit','hitmarkers'],['sDmg','dmgDir'],['sFlash','lowFlash']];
+const CROUCH_HELP={slide:'Un toque te agacha y otro te levanta. Si te deslizas corriendo, al acabar el deslizamiento te levantas solo.',toggle:'Un toque te agacha y otro te levanta; después de deslizarte sigues agachado.',hold:'Agachado mientras mantienes el botón o la tecla; al soltar te levantas.'};
 const ADS_HELP={holdDrag:'Mantén MIRA para apuntar y arrastra ese mismo dedo para mover la mira. Al soltar sales del visor.',hold:'Mantén MIRA para apuntar; la cámara se mueve con otro dedo. Al soltar sales del visor.',toggle:'Toca MIRA una vez para entrar en el visor y otra para salir. Mueve la cámara con cualquier dedo libre.'};
-function settingsToUI(){for(const [id,k] of SET_UI){$('#'+id).value=SETTINGS[k];$('#'+id+'o').textContent=/^vol/.test(k)?Math.round(SETTINGS[k]*100)+'%':(+SETTINGS[k]).toFixed(2);}for(const [id,k] of SET_CHK)$('#'+id).checked=!!SETTINGS[k];$('#sFps30').checked=SETTINGS.fpsCap===30;$('#sDiag').checked=TDIAG.on;$('#adsHelp').textContent=ADS_HELP[SETTINGS.adsMode]||'';document.querySelectorAll('#adsSeg button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.a===SETTINGS.adsMode)));document.querySelectorAll('#qSeg button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.q===SETTINGS.quality)));gfxNote();
+function settingsToUI(){for(const [id,k] of SET_UI){$('#'+id).value=SETTINGS[k];$('#'+id+'o').textContent=/^vol/.test(k)?Math.round(SETTINGS[k]*100)+'%':(+SETTINGS[k]).toFixed(2);}for(const [id,k] of SET_CHK)$('#'+id).checked=!!SETTINGS[k];$('#sFps30').checked=SETTINGS.fpsCap===30;$('#sDiag').checked=TDIAG.on;$('#adsHelp').textContent=ADS_HELP[SETTINGS.adsMode]||'';document.querySelectorAll('#adsSeg button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.a===SETTINGS.adsMode)));document.querySelectorAll('#crouchSeg button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.c===SETTINGS.crouchMode)));$('#crouchHelp').textContent=CROUCH_HELP[SETTINGS.crouchMode]||'';document.querySelectorAll('#qSeg button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.q===SETTINGS.quality)));gfxNote();
   const g=(SETTINGS.sensH+SETTINGS.sensV)/2;$('#sens').value=g;$('#sensOut').textContent=g.toFixed(2);if(HUD2)h2SettingsToUI();}
 function applyControlSettings(){TOUCH.dragScope=SETTINGS.adsMode!=='hold';TOUCH.cfg.dead=SETTINGS.touchDead;MOTION=(reduceMotion||SETTINGS.calmVM)?0.35:1;if(SETTINGS.adsMode!=='toggle')input.scopeToggle=false;
   const B=document.body.classList;B.toggle('noHit',!SETTINGS.hitmarkers);B.toggle('noDmgDir',!SETTINGS.dmgDir);B.toggle('lowFlash',!!SETTINGS.lowFlash);}
@@ -3875,6 +3889,7 @@ for(const [id,k] of SET_CHK)$('#'+id).addEventListener('change',()=>{SETTINGS[k]
 $('#sFps30').addEventListener('change',()=>{SETTINGS.fpsCap=$('#sFps30').checked?30:60;settingsChanged();});
 document.querySelectorAll('#qSeg button').forEach(b=>b.addEventListener('click',()=>{SETTINGS.quality=b.dataset.q;settingsChanged();SFX.ui();}));
 document.querySelectorAll('#adsSeg button').forEach(b=>b.addEventListener('click',()=>{SETTINGS.adsMode=b.dataset.a;settingsChanged();SFX.ui();}));
+document.querySelectorAll('#crouchSeg button').forEach(b=>b.addEventListener('click',()=>{SETTINGS.crouchMode=b.dataset.c;input.crouchHeld=false;settingsChanged();SFX.ui();}));
 $('#sDiag').addEventListener('change',()=>{TDIAG.set($('#sDiag').checked);TDIAG.reset();});
 let settingsFrom='menu';
 // tabs: one section at a time; the last one opened is remembered on this device
@@ -4040,7 +4055,7 @@ function buildCmd(){
   input.noSprintT=Math.max(0,(input.noSprintT||0)-TICK_DT);
   const cmd={mx,mz,yaw:P.yaw,
     sprint:(shift||input.joySprint)&&!noSprint,
-    crouch:isTouch?input.crouchHeld:!!(k.KeyC||k.ControlLeft),
+    crouch:isTouch||SETTINGS.crouchMode!=='hold'?input.crouchHeld:!!(k.KeyC||k.ControlLeft),
     crouchPressed:input.crouchPressed,jump:input.jumpPressed,
     ads:WCORE.ads,reloading:WCORE.state==='reload',
     fire:input.firePressed,adsHeld:adsWanted,reload:input.reloadPressed,breath:shift||input.breath};
@@ -4051,6 +4066,7 @@ function onMoveEvent(e){
   switch(e.type){
     case 'jump':SFX.jump();break;
     case 'land':if(e.impact>3.5){VM.landV-=e.impact*FEEL.landKick*12*MOTION;SFX.land();}break;
+    case 'slideEnd':if(SETTINGS.crouchMode==='slide')input.crouchHeld=false;break;   // PULSAR · TE LEVANTAS AL DESLIZAR: the slide ends standing
     case 'slideStart':nz(0,0.6,{type:'bandpass',f:500,q:0.6,g:0.25});P.shake=Math.max(P.shake,0.15);break;
   }
 }

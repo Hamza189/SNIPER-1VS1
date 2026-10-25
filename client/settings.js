@@ -16,6 +16,9 @@ const DEFAULTS = {
   fpsCap: 60,       // 60 or 30 (30 saves battery and heat on phones)
   showFps: false,   // small FPS counter on screen
   // aiming (ADS)
+  // crouch button/key: slide = tap to crouch, and after a slide you stand up on your own (phones) | toggle = tap in, tap out
+  // (stays crouched after a slide) | hold = crouched while held (PC: C / Ctrl held, as always)
+  crouchMode: 'hold',
   adsMode: 'holdDrag', // touch MIRA button: holdDrag (hold = aim, drag the same finger) | hold | toggle (tap in, tap out; turn with any free finger)
   adsH: 1,          // horizontal multiplier while aiming (any weapon)
   adsV: 1,          // vertical multiplier while aiming (any weapon)
@@ -36,7 +39,7 @@ const DEFAULTS = {
 };
 // which settings each tab of AJUSTES owns (its RESTAURAR resets only these)
 const CATEGORIES = {
-  controles: ['adsMode', 'leftFire', 'releaseFire', 'leanKeyL', 'leanKeyR', 'leanMode', 'leanTouch', 'wheelSwap'],
+  controles: ['crouchMode', 'adsMode', 'leftFire', 'releaseFire', 'leanKeyL', 'leanKeyR', 'leanMode', 'leanTouch', 'wheelSwap'],
   sensibilidad: ['sensH', 'sensV', 'adsSens', 'adsH', 'adsV', 'touchLook', 'touchDead', 'smooth', 'invertY'],
   graficos: ['quality', 'fpsCap', 'showFps'],
   audio: ['volMaster', 'volShots', 'volFx', 'volSteps', 'volAmb', 'mute'],
@@ -46,11 +49,12 @@ const CATEGORIES = {
 // Phones start from different values (agreed after testing on iPhone); PC defaults are unchanged.
 // A device that already saved its settings keeps them; RESTAURAR goes back to these.
 // adsSens 1.3 → 0.8 on 12-10-2026 (owner's choice: aiming on the move was too twitchy compared with COD Mobile)
-const TOUCH_DEFAULTS = { touchLook: 1.6, adsSens: 0.8 };
+const TOUCH_DEFAULTS = { touchLook: 1.6, adsSens: 0.8, crouchMode: 'slide' };   // crouchMode 'slide': owner's request 25-10-2026
 function defaults(touch) { return Object.assign({}, DEFAULTS, touch ? TOUCH_DEFAULTS : {}, { v: VERSION }); }
 const RANGES = { sensH: [0.2, 3], sensV: [0.2, 3], adsSens: [0.3, 2], touchLook: [0.3, 4], adsH: [0.3, 2], adsV: [0.3, 2], touchDead: [0, 12], smooth: [0, 0.8],
   volMaster: [0, 1], volShots: [0, 1], volFx: [0, 1], volSteps: [0, 1], volAmb: [0, 1] };
 const ADS_MODES = ['holdDrag', 'hold', 'toggle'];
+const CROUCH_MODES = ['slide', 'toggle', 'hold'];
 
 // any stored object → a complete, valid settings object (unknown keys dropped, numbers clamped)
 // settings format version (stored as v), for future migrations
@@ -69,6 +73,7 @@ function sanitize(o, touch) {
   if (o.leanMode === 'hold' || o.leanMode === 'toggle') s.leanMode = o.leanMode;
   if (o.leanTouch === 'hold' || o.leanTouch === 'toggle') s.leanTouch = o.leanTouch;
   if (ADS_MODES.includes(o.adsMode)) s.adsMode = o.adsMode;
+  if (CROUCH_MODES.includes(o.crouchMode)) s.crouchMode = o.crouchMode;
   if (['auto', 'bajo', 'medio', 'alto'].includes(o.quality)) s.quality = o.quality;
   if (o.fpsCap === 30 || o.fpsCap === 60) s.fpsCap = o.fpsCap;
   s.v = VERSION;
@@ -112,6 +117,6 @@ function smoothLook(st, dx, dy, smooth, dt) {
   return o;
 }
 
-const SDSettings = { VERSION, CATEGORIES, resetCategory, DEFAULTS, TOUCH_DEFAULTS, ADS_MODES, defaults, RANGES, sanitize, load, save, lookDelta, smoothLook };
+const SDSettings = { VERSION, CATEGORIES, resetCategory, DEFAULTS, TOUCH_DEFAULTS, ADS_MODES, CROUCH_MODES, defaults, RANGES, sanitize, load, save, lookDelta, smoothLook };
 if (typeof module !== 'undefined' && module.exports) module.exports = SDSettings; else root.SDSettings = SDSettings;
 })(typeof window !== 'undefined' ? window : globalThis);

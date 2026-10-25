@@ -96,7 +96,8 @@ const ICONS = { fire: 'fire_main', fire2: 'fire_left', scope: 'aim_ads', crouch:
 const BAR = { label: 'BARRA DE ARMAS', scale: [0.6, 1.6], op: [0.2, 1] };
 const OP_MUL = [0.2, 1];
 const VERSION = 1;
-function barDefaults(touch) { return { dx: touch ? -60 : 0, dy: touch ? 10 : 14, scale: 1, compact: !!touch, visible: true, op: 1 }; }
+// bg: how dark the slots' background is (0 = fully transparent: only the weapons and numbers, 1 = the dark plate)
+function barDefaults(touch) { return { dx: touch ? -60 : 0, dy: touch ? 10 : 14, scale: 1, compact: !!touch, visible: true, op: 1, bg: 1 }; }
 function defaults(touch) {
   const b = {}, vis = {}, op = {};
   for (const k in BUTTONS) { b[k] = { dx: BUTTONS[k].dx, dy: BUTTONS[k].dy, size: BUTTONS[k].size }; vis[k] = true; op[k] = 1; }
@@ -126,6 +127,7 @@ function sanitize(o, touch) {
     d.bar.dy = Math.max(0, d.bar.dy);
     if (isFinite(Number(B.scale))) d.bar.scale = clamp(Number(B.scale), BAR.scale[0], BAR.scale[1]);
     if (isFinite(Number(B.op))) d.bar.op = clamp(Number(B.op), BAR.op[0], BAR.op[1]);
+    if (B.bg !== undefined && B.bg !== null && isFinite(Number(B.bg))) d.bar.bg = clamp(Number(B.bg), 0, 1);
     if (typeof B.compact === 'boolean') d.bar.compact = B.compact;
     if (typeof B.visible === 'boolean') d.bar.visible = B.visible;
   }
