@@ -1,0 +1,64 @@
+{
+ "pueblo_pj2": {
+  "cam": {
+   "x": -10,
+   "y": 0,
+   "z": 20,
+   "yaw": 0,
+   "free": 45
+  },
+  "world": "pueblo",
+  "free": 45,
+  "bots": 3,
+  "animMs": 0.14833333333333334,
+  "calls": 42,
+  "tris": 76212,
+  "total": {
+   "calls": 232,
+   "tris": 366061
+  },
+  "lods": [
+   0,
+   0,
+   1
+  ],
+  "v2": [
+   true,
+   true,
+   true
+  ],
+  "errors": [],
+  "http": []
+ },
+ "pueblo_pj3": {
+  "cam": {
+   "x": -10,
+   "y": 0,
+   "z": 20,
+   "yaw": 0,
+   "free": 45
+  },
+  "world": "pueblo",
+  "free": 45,
+  "bots": 3,
+  "animMs": 0.15833333333333333,
+  "calls": 42,
+  "tris": 76200,
+  "total": {
+   "calls": 223,
+   "tris": 357596
+  },
+  "lods": [
+   0,
+   0,
+   1
+  ],
+  "v2": [
+   true,
+   true,
+   true
+  ],
+  "errors": [],
+  "http": []
+ }
+}

@@ -1,0 +1,45 @@
+<!doctype html><meta charset="utf-8"><title>SNIPER DUEL · personaje rev04</title>
+<link rel="icon" href="data:,">
+<style>body{margin:0;background:#2b3138;color:#f3ede1;font:14px system-ui}canvas{display:block}#ui{position:absolute;left:16px;top:12px;z-index:2}button,select{background:#39434d;color:#fff;border:1px solid #7b858d;padding:6px;margin:2px}#info{margin-top:8px;max-width:460px;color:#d3d7d8}</style>
+<div id="ui"><select id="clips"></select><select id="variant"><option>B</option><option>A</option><option>bots</option></select><select id="lod"><option>LOD0</option><option>LOD1</option><option>LOD2</option></select><select id="wpn"><option>rifle</option><option>shotgun</option><option>pistol</option><option>knife</option><option>-</option></select><br>
+<button onclick="setView('front')">Frente</button><button onclick="setView('side')">Perfil</button><button onclick="setView('back')">Espalda</button><button onclick="setView('angle')">3/4</button><button onclick="paused=!paused">Pausa</button><button onclick="boxes.visible=!boxes.visible">Cajas</button><div id="info"></div></div>
+<script src="../../../../../vendor/three.min.js"></script><script src="../../../../../vendor/GLTFLoader.js"></script>
+<script>
+/* Visor de revisión (no es el juego). ?glb=personaje_1k.glb para la versión ligera. */
+const Q=new URLSearchParams(location.search);
+const scene=new THREE.Scene();scene.background=new THREE.Color('#8a949c');
+const camera=new THREE.PerspectiveCamera(30,innerWidth/innerHeight,.01,60);
+const renderer=new THREE.WebGLRenderer({antialias:true,preserveDrawingBuffer:true});renderer.setSize(innerWidth,innerHeight);renderer.setPixelRatio(1);
+renderer.outputEncoding=THREE.sRGBEncoding;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.0;document.body.appendChild(renderer.domElement);
+scene.add(new THREE.HemisphereLight(0xdfe9f5,0x6b5f4c,.9));const key=new THREE.DirectionalLight(0xfff0d8,2.2);key.position.set(-3,6,5);scene.add(key);const rim=new THREE.DirectionalLight(0xc0d9ff,.7);rim.position.set(3,2,-4);scene.add(rim);
+const floor=new THREE.Mesh(new THREE.PlaneGeometry(20,20),new THREE.MeshStandardMaterial({color:0xb8a98c,roughness:1}));floor.rotation.x=-Math.PI/2;scene.add(floor);
+let model,mixer,anims,meshes,active='idle_rifle',paused=true,time=0,arma,weapons={},wkind='rifle';const boxes=new THREE.Group();scene.add(boxes);boxes.visible=false;
+function wire(g,color){return new THREE.LineSegments(new THREE.EdgesGeometry(g),new THREE.LineBasicMaterial({color,depthTest:false,transparent:true,opacity:.75}))}
+const head=wire(new THREE.SphereGeometry(.15,20,14),0xff635d),torso=wire(new THREE.BoxGeometry(.49,.62,.32),0x62c5ff),legs=wire(new THREE.BoxGeometry(.38,.86,.22),0xffd96a);boxes.add(head,torso,legs);
+function hitboxes(name){const k=name.startsWith('crouch')?1/1.62:name==='slide'?.85/1.62:1;head.position.y=1.63*k;torso.position.y=1.17*k;legs.position.y=.43*k;torso.scale.y=legs.scale.y=k;}
+const VIEWS={front:[0,1.0,4.6],side:[4.6,1.0,0],back:[0,1.0,-4.6],angle:[2.6,1.55,3.6],close:[0.9,1.55,1.5],closeside:[1.6,1.45,0.2]};
+function setView(name){const v=VIEWS[name];camera.position.set(v[0],v[1],v[2]);camera.lookAt(0,name.startsWith('close')?1.45:0.9,0);render()}
+function render(){renderer.render(scene,camera)}
+const W_GRIP={rifle:['TP_HALCON',[0,0.086,0.12]],shotgun:['TP_FURIA12',[0,0.082,0.12]],pistol:['TP_VIBORA9',[0,0.07,0.03]],knife:['TP_NAVAJA',[0,0,0.07]]};
+function setWeapon(k){wkind=k;for(const n in weapons)weapons[n].visible=n===k;render()}
+function setClip(name,t=0,draw=true){active=name;time=t;mixer.stopAllAction();for(const m of meshes)m.skeleton.pose();
+  const clip=anims.find(a=>a.name===name),a=mixer.clipAction(clip);a.reset();a.setLoop(THREE.LoopOnce,1);a.clampWhenFinished=true;a.play();mixer.setTime(t);
+  scene.updateMatrixWorld(true);hitboxes(name);document.querySelector('#clips').value=name;if(draw)render()}
+document.addEventListener('boxes',e=>{boxes.visible=e.detail});
+function setLOD(n){meshes.forEach((m,i)=>m.visible=i===n);render()}
+const texCache={};
+async function setVariant(v){const name=(Q.get('textures')||'textures/')+'color_'+v+(Q.get('glb')==='personaje_1k.glb'?'_1k':'')+'.jpg';const tex=texCache[name]||(texCache[name]=await new THREE.TextureLoader().loadAsync(name));tex.flipY=false;tex.encoding=THREE.sRGBEncoding;
+  for(const m of meshes){m.material.map=tex;m.material.needsUpdate=true;}render()}
+new THREE.GLTFLoader().load(Q.get('glb')||'personaje.glb',g=>{model=g.scene;scene.add(model);anims=g.animations;mixer=new THREE.AnimationMixer(model);
+  meshes=[0,1,2].map(i=>model.getObjectByName('personaje_LOD'+i));const mat=meshes[0].material;for(const m of meshes){m.material=mat;m.frustumCulled=false;}
+  arma=model.getObjectByName('arma');
+  for(const c of anims){const o=document.createElement('option');o.value=o.textContent=c.name;document.querySelector('#clips').appendChild(o)}
+  document.querySelector('#clips').onchange=e=>setClip(e.target.value);document.querySelector('#variant').onchange=e=>setVariant(e.target.value);
+  document.querySelector('#lod').onchange=e=>setLOD(e.target.selectedIndex);document.querySelector('#wpn').onchange=e=>setWeapon(e.target.value);
+  setLOD(0);setClip('idle_rifle');setView('front');
+  new THREE.GLTFLoader().load('../../../../viewmodels.glb',v=>{for(const k in W_GRIP){const src=v.scene.getObjectByName(W_GRIP[k][0]);if(!src)continue;const w=new THREE.Group();w.rotation.y=Math.PI;w.position.fromArray(W_GRIP[k][1]);
+      const m=src.clone(true);m.position.set(0,0,0);m.rotation.set(0,0,0);w.add(m);arma.add(w);weapons[k]=w;}setWeapon('rifle');window.ready=true;},undefined,()=>{window.ready=true;});
+  document.querySelector('#info').textContent='rev04 · 26 huesos · '+anims.length+' clips · LOD '+meshes.map(m=>m.geometry.index.count/3).join(' / ')+' triángulos';
+},undefined,e=>window.error=String(e));
+let last=performance.now();function tick(now){requestAnimationFrame(tick);if(window.ready&&!paused){const dt=Math.min(.05,(now-last)/1000);const clip=anims.find(a=>a.name===active);time=(time+dt)%Math.max(.001,clip.duration);setClip(active,time)}last=now;}requestAnimationFrame(tick);
+</script>

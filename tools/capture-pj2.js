@@ -11,20 +11,22 @@ const ss = require('./static-server.js');
 const out = path.resolve(process.argv[2] || 'docs/next-level/pj2');
 const maps = (process.argv[3] || 'pueblo,casaxl').split(',');
 const Q = process.argv[4] || 'alto';
+const versions = (process.env.PJ_COMPARE || '2,0').split(',').map(Number);
+const portrait = process.env.PJ_PORTRAIT === '1';
 fs.mkdirSync(out, { recursive: true });
 (async () => {
   const srv = await ss.start();
   const b = await chromium.launch({ args: ['--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist'] });
   const report = {};
   try {
-    for (const map of maps) { let fixedCam = null; for (const pj of [true, false]) {
+    for (const map of maps) { let fixedCam = null; for (const pj of versions) {
       const ctx = await b.newContext({ viewport: { width: 1100, height: 620 } });
       await ctx.route(/fonts\.(googleapis|gstatic)\.com/, r => r.abort());
       await ctx.addInitScript(q => { try { localStorage.setItem('sniperduel_settings', JSON.stringify({ quality: q, v: 3 })); } catch (e) {} }, Q);
       const p = await ctx.newPage(), errs = [], bad = [];
       p.on('pageerror', e => errs.push(e.message));
       p.on('response', r => { if (r.status() >= 400) bad.push(r.status() + ' ' + r.url()); });
-      const url = srv.url + '?vm=1' + (map === 'pueblo' ? '&pueblo=3' : '') + (pj ? '&pj=2' : '');
+      const url = srv.url + '?vm=1' + (map === 'pueblo' ? '&pueblo=3' : '') + (pj ? '&pj=' + pj : '');
       await p.goto(url);
       await p.waitForFunction(() => window.__SD && __SD.WORLDS, null, { timeout: 120000 });
       if (map === 'pueblo') await p.waitForFunction(() => __SD.P3W && __SD.P3W.kit, null, { timeout: 180000 });
@@ -76,13 +78,14 @@ fs.mkdirSync(out, { recursive: true });
         return { cam: { x: P0.x, y: P0.y, z: P0.z, yaw: bestYaw, free: best }, world: S.WORLD_ID, free: +best.toFixed(1), bots: used.length, animMs, calls: withB.calls - without.calls, tris: withB.tris - without.tris, total: withB, lods, v2: used.map(bt => !!bt.rig.v2) };
       }, fixedCam);
       fixedCam = r.cam;
-      const name = map + (pj ? '_pj2' : '_antes');
+      const name = map + (pj ? '_pj' + pj : '_antes');
       await p.locator('canvas').first().screenshot({ path: path.join(out, name + '.png') });
       // primer plano del bot que apunta
-      await p.evaluate(() => { const S = __SD, bt = S.BOTS[0], cam = S.camera, q = bt.g.position;
+      await p.evaluate(portrait => { const S = __SD, bt = S.BOTS[0], cam = S.camera, q = bt.g.position;
         const c0 = cam.position.clone(), dx = c0.x - q.x, dz = c0.z - q.z, L = Math.hypot(dx, dz) || 1;
         cam.position.set(q.x + dx / L * 3.0, q.y + 1.45, q.z + dz / L * 3.0); cam.lookAt(q.x, q.y + 0.95, q.z);
-        S.renderer.render(S.scene, cam); });
+        if (portrait) { cam.fov = 42; cam.updateProjectionMatrix(); }
+        S.renderer.render(S.scene, cam); }, portrait);
       await p.locator('canvas').first().screenshot({ path: path.join(out, name + '_cerca.png') });
       report[name] = Object.assign(r, { errors: errs.slice(0, 5), http: bad.slice(0, 5) });
       console.log(name, JSON.stringify(report[name]));
