@@ -255,6 +255,8 @@ h1 span{display:block;color:var(--sand)}
 #updBanner{position:fixed;top:calc(8px + env(safe-area-inset-top));left:50%;transform:translateX(-50%);z-index:60;display:flex;gap:12px;align-items:center;padding:8px 10px 8px 14px;background:var(--ink-2);border:1px solid var(--signal);font:600 12px/1.2 var(--f-mono);letter-spacing:.06em;color:var(--hud);white-space:nowrap}
 #updBanner button{font:500 18px/1 var(--f-display);letter-spacing:.06em;padding:7px 12px 4px;border:0;background:var(--signal);color:var(--ink);cursor:pointer}
 #lockHint{position:fixed;top:14%;left:50%;transform:translateX(-50%);z-index:30;pointer-events:none;padding:8px 14px;background:rgba(15,13,10,.82);border:1px solid var(--amber,#ff9a3c);color:#f3e9d6;font:600 13px/1.3 'IBM Plex Mono',monospace;letter-spacing:.06em;text-align:center}
+#perfStat{position:fixed;left:50%;top:calc(46px + env(safe-area-inset-top,0px));transform:translateX(-50%);z-index:45;pointer-events:none;padding:6px 12px;background:rgba(15,13,10,.85);border:1px solid var(--signal);font:600 12px/1.3 var(--f-mono);letter-spacing:.08em;color:var(--hud);white-space:nowrap}
+#perfBox{z-index:46}
 #loadErr{position:fixed;inset:0;display:grid;place-items:center;padding:24px;text-align:center;z-index:50;background:var(--ink)}
 
 /* ---------- Touch controls ---------- */
@@ -517,6 +519,13 @@ body.hud2 #stickBase.sprint #stickKnob svg{display:block}
 </div>
 
 <div id="dbg" hidden><pre id="dbgTxt"></pre></div>
+<div id="perfStat" hidden></div>
+<div id="perfBox" class="overlay center" hidden><div class="panel" style="width:min(760px,calc(100% - 24px));max-height:calc(100% - 24px);overflow:auto;display:grid;gap:10px">
+  <div class="eyebrow">Medición de rendimiento</div>
+  <pre id="perfTxt" style="margin:0;white-space:pre-wrap;font:500 11px/1.4 var(--f-mono);color:var(--hud);user-select:text;-webkit-user-select:text"></pre>
+  <div class="row"><button class="btn" id="perfShare" type="button">COMPARTIR</button><button class="btn ghost" id="perfCopy" type="button">COPIAR</button><button class="btn ghost" id="perfClose" type="button">CERRAR</button></div>
+  <p class="setHelp" id="perfMsg" style="margin:0"></p>
+</div></div>
 <pre id="tdiag" hidden></pre>
 <pre id="shotDiag" hidden></pre>
 <div id="fpsBox" hidden>– FPS</div>
@@ -591,6 +600,8 @@ body.hud2 #stickBase.sprint #stickKnob svg{display:block}
         <label class="chk"><input type="checkbox" id="sFps30"> Limitar a 30 FPS (ahorra batería y calor)</label>
         <label class="chk"><input type="checkbox" id="sShowFps"> Mostrar FPS en pantalla</label>
       </div>
+      <div class="row"><button class="btn ghost" id="perfRun" type="button" style="font-size:18px">MEDIR RENDIMIENTO</button></div>
+      <p class="setHelp">Juega solo unos 45 s (ARENA, PUEBLO y CASA ATLAS XL) con la cámara girando y la mira puesta, y da un informe para mandárselo a Claude: fotogramas, CPU, dibujo, memoria de texturas y tiempos de carga. Mejor en horizontal, sin otras apps abiertas y sin tocar la pantalla.</p>
     </section>
     <section class="setPane" data-pane="audio" role="tabpanel" hidden>
       <div class="setGrid">
@@ -2383,6 +2394,76 @@ const SDHud2 = { SLOTS, SHORT, slotOfWeapon, weaponOfSlot, cycle, barModel, slot
   BUTTONS, ICONS, BAR, VERSION, SIZE: SDLayout.SIZE, OPACITY: SDLayout.OPACITY, defaults, sanitize, load, save, clampToScreen, rect, moveTo, barRect, barMoveTo,
   RESERVED, keyAllowed, keyLabel, leanTarget };
 if (isNode) module.exports = SDHud2; else root.SDHud2 = SDHud2;
+})(typeof window !== 'undefined' ? window : globalThis);
+
+/* SNIPER DUEL — performance probe (AJUSTES › GRÁFICOS › MEDIR RENDIMIENTO, or ?medir=1).
+   Pure: no DOM. The page records real frames on the device (frame interval, CPU time of the frame, draw calls,
+   triangles) while a fixed camera turns in each map, and this module turns them into numbers and a plain-text
+   report the owner can copy from the phone and paste in the chat. Nothing here changes how the game plays. */
+(function (root) {
+'use strict';
+const r1 = v => Math.round(v * 10) / 10;
+function pct(sorted, p) { if (!sorted.length) return 0; const i = Math.min(sorted.length - 1, Math.max(0, Math.round(p / 100 * (sorted.length - 1)))); return sorted[i]; }
+/* frame intervals or CPU times in ms → summary. target: ms of one frame at the display/cap rate (16.7 at 60 Hz) */
+function stats(list, target) {
+  const a = list.filter(v => isFinite(v) && v > 0), s = a.slice().sort((x, y) => x - y), n = a.length;
+  if (!n) return { n: 0, avg: 0, p50: 0, p95: 0, p99: 0, max: 0, fps: 0, jank: 0, over33: 0 };
+  const sum = a.reduce((x, y) => x + y, 0), t = target || 1000 / 60;
+  return { n, avg: r1(sum / n), p50: r1(pct(s, 50)), p95: r1(pct(s, 95)), p99: r1(pct(s, 99)), max: r1(s[n - 1]), fps: r1(1000 * n / sum),
+    jank: r1(100 * a.filter(v => v > t * 1.5).length / n),          // % of frames that took more than 1.5 display frames
+    over33: r1(100 * a.filter(v => v > 33.4).length / n) };          // % below 30 FPS
+}
+function avgMax(list) { const a = list.filter(isFinite); if (!a.length) return { avg: 0, max: 0 }; return { avg: Math.round(a.reduce((x, y) => x + y, 0) / a.length), max: Math.max(...a) }; }
+/* textures → estimated GPU memory (RGBA8 + mipmaps ×4/3; what WebGL keeps for an uncompressed texture) */
+function textureMB(list) {
+  let b = 0; for (const t of list) { const w = t.w | 0, h = t.h | 0; if (w > 0 && h > 0) b += w * h * 4 * (t.mip === false ? 1 : 4 / 3); }
+  return r1(b / 1048576);
+}
+// where the time goes: if the frame takes much longer than its JavaScript, the wait is the GPU (or the display)
+function bound(frame, cpu, target) {
+  if (!frame.n) return '—';
+  if (frame.p50 <= target * 1.08) return 'va a la frecuencia de la pantalla';
+  return cpu.p50 > frame.p50 * 0.6 ? 'limitado por la CPU (JavaScript)' : 'limitado por la GPU (dibujo)';
+}
+function fmtMs(ms) { return ms >= 1000 ? (ms / 1000).toFixed(1).replace('.', ',') + ' s' : Math.round(ms) + ' ms'; }
+/* report = { when, build, device: {...}, settings: {...}, load: {...}, maps: [{ id, name, loadMs, frame, cpu, calls, tris, texMB, textures, geometries, scoped }] } */
+function format(R) {
+  const L = [];
+  L.push('SNIPER DUEL · MEDICIÓN DE RENDIMIENTO · ' + R.when + ' · versión ' + R.build);
+  const d = R.device || {};
+  L.push('Dispositivo: ' + (d.model || '?') + ' · pantalla ' + d.screen + ' · DPR ' + d.dpr + ' · ' + (d.touch ? 'táctil' : 'ratón'));
+  L.push('GPU: ' + d.gpu + ' · WebGL ' + d.webgl + ' · textura máx. ' + d.maxTex + (d.heapMB ? ' · memoria JS ' + d.heapMB + ' MB' : ''));
+  const s = R.settings || {};
+  L.push('Ajustes: calidad ' + s.quality + ' (' + s.profile + ') · píxeles ×' + s.pixelRatio + ' (resolución fija durante la prueba) · límite ' + s.fpsCap + ' FPS · pantalla ~' + s.hz + ' Hz · pueblo ' + s.pueblo + (s.flags ? ' · banderas ' + s.flags : ''));
+  const l = R.load || {};
+  L.push('Carga de la página: HTML ' + fmtMs(l.html || 0) + ' · lista ' + fmtMs(l.dom || 0) + ' · todo cargado ' + fmtMs(l.load || 0) + ' · primer fotograma ' + fmtMs(l.firstFrame || 0) + ' · descargado ' + (l.mb || 0) + ' MB');
+  if (l.big && l.big.length) L.push('  más pesados: ' + l.big.map(b => b.name + ' ' + b.mb + ' MB/' + fmtMs(b.ms)).join(' · '));
+  for (const m of R.maps || []) {
+    const f = m.frame, c = m.cpu, sc = m.scoped;
+    L.push('');
+    L.push('[' + m.name + '] entrar en la partida ' + fmtMs(m.loadMs));
+    L.push('  fotograma: media ' + f.avg + ' ms · p50 ' + f.p50 + ' · p95 ' + f.p95 + ' · p99 ' + f.p99 + ' · máx ' + f.max + ' → ' + f.fps + ' FPS · tirones ' + f.jank + ' % · bajo 30 FPS ' + f.over33 + ' %');
+    L.push('  CPU por fotograma (JavaScript + envío de dibujo): media ' + c.avg + ' ms · p95 ' + c.p95 + ' · ' + m.bound);
+    if (sc && sc.n) L.push('  con la mira 8×: p50 ' + sc.p50 + ' ms · p95 ' + sc.p95 + ' → ' + sc.fps + ' FPS');
+    L.push('  dibujo: ' + m.calls.avg + ' llamadas (máx ' + m.calls.max + ') · ' + Math.round(m.tris.avg / 1000) + ' mil triángulos (máx ' + Math.round(m.tris.max / 1000) + ' mil) · ' + m.textures + ' texturas ≈ ' + m.texMB + ' MB · ' + m.geometries + ' geometrías');
+  }
+  return L.join('\n');
+}
+// the device's own name where the browser gives it (iPhone does not say which model: the screen size tells most)
+function deviceName(ua, w, h, dpr) {
+  ua = ua || '';
+  const big = Math.max(w, h), small = Math.min(w, h);
+  if (/iPhone/.test(ua)) {
+    const k = big + 'x' + small + '@' + dpr;
+    const T = { '932x430@3': 'iPhone Pro Max / Plus (14–16)', '926x428@3': 'iPhone 12–13 Pro Max', '852x393@3': 'iPhone 14 Pro–16', '844x390@3': 'iPhone 12–14', '896x414@2': 'iPhone XR/11', '667x375@2': 'iPhone 8/SE' };
+    return T[k] || 'iPhone (' + k + ')';
+  }
+  const a = /Android[^;]*;\s*([^;)]+)/.exec(ua); if (a) return 'Android · ' + a[1].trim();
+  if (/Windows/.test(ua)) return 'Windows PC'; if (/Macintosh/.test(ua)) return 'Mac';
+  return 'desconocido';
+}
+const SDPerf = { stats, avgMax, textureMB, bound, format, deviceName, fmtMs };
+if (typeof module !== 'undefined' && module.exports) module.exports = SDPerf; else root.SDPerf = SDPerf;
 })(typeof window !== 'undefined' ? window : globalThis);
 
 /* SNIPER DUEL — graphics profiles and automatic resolution (Stage C). Pure: no DOM.
@@ -4696,7 +4777,7 @@ const SDSoldier2 = (() => {
 })();
 if (typeof module !== 'undefined' && module.exports) module.exports = SDSoldier2;
 
-const BUILD_ID="f24dd8e";const BUILD_HASH="210ef16a3e";
+const BUILD_ID="18e11d3";const BUILD_HASH="251deedb37";
 </script>
 <script>
 (function(){
@@ -6554,19 +6635,20 @@ const SOLDIERS=[];
 /* ---- personaje 3D, revisión 03 (?pj=2, client/soldier2.js; 19-10-2026): sustituye la figura de cajas en bots y rival.
    Mientras carga (o si falla) se ve el soldado de siempre. Las zonas de impacto no cambian. Apariencias: rival B (oliva),
    bots del duelo 'bots' (gris), bots del campo de tiro A (arena). Perfil BAJO: texturas de 1024. ---- */
-const PJ2={on:/[?&]pj=2\b/.test(location.search)&&typeof SDSoldier2!=='undefined',tpl:null,mats:{},list:[],loading:false,failed:false};
+const PJ_VERSION=new URLSearchParams(location.search).get('pj');
+const PJ2={on:['2','3'].includes(PJ_VERSION)&&typeof SDSoldier2!=='undefined',assetRoot:PJ_VERSION==='3'?'assets/personaje/v4/':'assets/personaje/',tpl:null,mats:{},list:[],loading:false,failed:false};
 const PJ2_LOD={alto:[30,70],medio:[22,50],bajo:[12,30]};   // m (distancia / zoom de la mira) para pasar a LOD1 y LOD2
 const _pj2v=new T.Vector3();
 function pj2Load(){
   if(!PJ2.on||PJ2.loading||!T.GLTFLoader)return;PJ2.loading=true;
-  const f='assets/personaje/personaje'+(GFX.profile==='bajo'?'_1k':'')+'.glb?v='+BUILD_HASH;
+  const f=PJ2.assetRoot+'personaje'+(GFX.profile==='bajo'?'_1k':'')+'.glb?v='+BUILD_HASH;
   try{new T.GLTFLoader().load(f,g=>{try{PJ2.tpl=SDSoldier2.template(g,T);PJ2.mats.B=PJ2.tpl.material;
       for(const R of PJ2.list)pj2Attach(R);try{precompileAll();}catch(e){}}catch(e){PJ2.failed=true;console.warn('pj2',e);}},
     undefined,e=>{PJ2.failed=true;console.warn('pj2 load',e);});}catch(e){PJ2.failed=true;}
 }
 function pj2Mat(v){
   if(PJ2.mats[v])return PJ2.mats[v];
-  const m=PJ2.tpl.material.clone(),t=new T.TextureLoader().load('assets/personaje/color_'+v+(GFX.profile==='bajo'?'_1k':'')+'.jpg?v='+BUILD_HASH);
+  const m=PJ2.tpl.material.clone(),t=new T.TextureLoader().load(PJ2.assetRoot+'color_'+v+(GFX.profile==='bajo'?'_1k':'')+'.jpg?v='+BUILD_HASH);
   t.flipY=false;t.encoding=T.sRGBEncoding;t.anisotropy=GFX.profile==='alto'?4:2;m.map=t;return PJ2.mats[v]=m;
 }
 function pj2Aim(R,w){const o=SDSoldier2.AIM_OFFSET[w]||SDSoldier2.AIM_OFFSET.rifle;R.aim.position.set(o[0],o[1],o[2]);R.v2w=w;}
@@ -8832,11 +8914,13 @@ function frame(now){
   if(!MANUAL.on)frameBody(now);
 }
 function frameBody(now){
+  const perfT0=PERF.rec?performance.now():0;if(!PERF.first)PERF.first=now;
   const rdt=Math.min(PERF_LOW?0.34:0.1,(now-last)/1000);last=now; // test mode: very low FPS still simulates in real time
   if(slowmo>0)slowmo-=rdt;
   const fxdt=rdt*(slowmo>0?0.35:1); // slow motion touches only particles and tracers
   if(calloutTimer>0)calloutTimer-=rdt;
   if(state==='playing'||state==='dead'||(mode==='online'&&state==='paused')){
+    if(PERF.spin&&state==='playing'){P.yaw+=rdt*PERF.spin;P.pitch=-0.04;}   // MEDIR RENDIMIENTO: the same slow turn on every device
     if(state!=='paused'){lookDt=rdt;applyLook();}
     simAcc+=rdt;let n=0;
     const maxN=PERF_LOW?41:12;
@@ -8865,13 +8949,73 @@ function frameBody(now){
   if(!PERF_LOW&&GFX.adapt){if(SDQuality.feed(GFX.adapt,drawDt))renderer.setPixelRatio(SDQuality.pixelRatio(GFX.profile,window.devicePixelRatio,GFX.adapt.scale));
     if(SETTINGS.showFps&&GFX.adapt.frames===0)$('#fpsBox').textContent=Math.round(GFX.adapt.fps)+' FPS · '+Math.round(renderer.getPixelRatio()*100)/100+'×';}
   if(GFX.frame%10===1){csFix(scene);csFix(wScene);}
+  if(PERF.rec)renderer.info.reset();
   renderer.clear();
   if(E10.ready)e10Lod(false);
   if(RATS.ready)ratsFrame(drawDt);
   if(FLORA.ready)FLORA.time.value=now/1000%1000;
   renderer.render(scene,camera);
   if(!SHOT.noVM&&(WROOT.visible||KROOT.visible||PROOT.visible||SROOT.visible)&&(state==='playing'||state==='dead')){renderer.clearDepth();renderer.render(wScene,wCam);}
+  if(PERF.rec){const R=PERF.rec;if(R.last)R.dt.push(now-R.last);R.last=now;R.cpu.push(performance.now()-perfT0);R.calls.push(renderer.info.render.calls);R.tris.push(renderer.info.render.triangles);}
 }
+/* =================== MEDIR RENDIMIENTO (AJUSTES › GRÁFICOS, or ?medir=1; client/perfprobe.js) ===================
+   On the real phone: three maps against bots that cannot hurt you, the camera turning at the same speed everywhere, then
+   3 s with the 8× scope. Resolution stays fixed during the test (AUTO would hide the cost). Records every drawn frame:
+   interval, CPU time of the frame, draw calls, triangles; plus page and match loading times and texture memory.
+   Only measures: the settings and the match state are restored afterwards. */
+const PERF={on:false,rec:null,spin:0,first:0,last:null};
+const perfSleep=ms=>new Promise(r=>setTimeout(r,ms));
+async function perfUntil(fn,ms){const t=performance.now();while(!fn()){if(performance.now()-t>ms)return false;await perfSleep(50);}return true;}
+function perfTextures(){const seen=new Set(),out=[];const up=o=>{const ms=o.material?(Array.isArray(o.material)?o.material:[o.material]):[];for(const m of ms)for(const k of ['map','normalMap','roughnessMap','metalnessMap','aoMap','emissiveMap','alphaMap','envMap'])
+  {const tx=m[k];if(!tx||seen.has(tx)||tx.isCubeTexture)continue;seen.add(tx);const im=tx.image||{};out.push({w:im.videoWidth||im.naturalWidth||im.width||0,h:im.videoHeight||im.naturalHeight||im.height||0,mip:tx.generateMipmaps!==false});}};
+  scene.traverse(up);wScene.traverse(up);return out;}
+function perfStatus(t){const e=$('#perfStat');if(t==null){e.hidden=true;return;}e.hidden=false;e.textContent=t;}
+async function perfRun(quick){
+  if(PERF.on||state!=='menu')return;PERF.on=true;
+  const keep={map:OFFMAP,mode,lethal:DUEL_LETHAL,adapt:GFX.adapt?GFX.adapt.enabled:false};
+  $('#settings').hidden=true;$('#perfBox').hidden=true;renderer.info.autoReset=false;
+  if(GFX.adapt){GFX.adapt.enabled=false;GFX.adapt.scale=1;}
+  if(!PERF_LOW)renderer.setPixelRatio(SDQuality.pixelRatio(GFX.profile,window.devicePixelRatio,1));
+  const target=1000/Math.min(SETTINGS.fpsCap,Math.max(30,Math.round(GFX.hz||60)));
+  const spinS=quick?1.5:10,scopeS=quick?0.8:3,warm=quick?400:2000,maps=[];
+  for(const [id,name] of [['arena','ARENA DE PRUEBAS'],['pueblo','PUEBLO'],['casaxl','CASA ATLAS XL']]){
+    perfStatus('MIDIENDO · '+name+' · NO TOQUES LA PANTALLA');
+    setMode('duel');setDuelLethal(false);setOffMap(id);
+    const t0=performance.now();startMatch();
+    const ok=await perfUntil(()=>state==='playing'&&LOAD.phase==='ready',90000);const loadMs=performance.now()-t0;
+    if(!ok){maps.push({id,name,loadMs,failed:true});continue;}
+    PERF.spin=2*Math.PI/spinS;await perfSleep(warm);
+    PERF.rec={dt:[],cpu:[],calls:[],tris:[],last:0};await perfSleep(spinS*1000);const main=PERF.rec;
+    PERF.rec=null;PERF.spin=2*Math.PI/40;input.scope=true;await perfUntil(()=>WCORE.ads>=1,3000);
+    PERF.rec={dt:[],cpu:[],calls:[],tris:[],last:0};await perfSleep(scopeS*1000);const sc=PERF.rec;
+    PERF.rec=null;PERF.spin=0;input.scope=false;
+    const tx=perfTextures(),frame=SDPerf.stats(main.dt,target),cpu=SDPerf.stats(main.cpu,target);
+    maps.push({id,name,loadMs,frame,cpu,bound:SDPerf.bound(frame,cpu,target),scoped:SDPerf.stats(sc.dt,target),calls:SDPerf.avgMax(main.calls),tris:SDPerf.avgMax(main.tris),
+      textures:tx.length,texMB:SDPerf.textureMB(tx),geometries:renderer.info.memory.geometries});
+    toMenu();await perfSleep(300);
+  }
+  perfStatus(null);renderer.info.autoReset=true;
+  if(GFX.adapt)GFX.adapt.enabled=keep.adapt;gfxApply();
+  setMode(keep.mode);setDuelLethal(keep.lethal);setOffMap(keep.map);
+  let gpu='?',gl2=false,maxTex=0;try{const g=renderer.getContext();gl2=typeof WebGL2RenderingContext!=='undefined'&&g instanceof WebGL2RenderingContext;const e=g.getExtension('WEBGL_debug_renderer_info');gpu=e?g.getParameter(e.UNMASKED_RENDERER_WEBGL):g.getParameter(g.RENDERER);maxTex=g.getParameter(g.MAX_TEXTURE_SIZE);}catch(e){}
+  const nav=(performance.getEntriesByType&&performance.getEntriesByType('navigation')[0])||{},res=performance.getEntriesByType?performance.getEntriesByType('resource'):[];
+  const size=e=>e.transferSize||e.encodedBodySize||0,big=res.slice().sort((a,b)=>size(b)-size(a)).slice(0,5);
+  const sw=Math.round(screen.width||innerWidth),sh=Math.round(screen.height||innerHeight),dpr=window.devicePixelRatio||1;
+  const R={when:new Date().toLocaleString('es-ES'),build:BUILD_HASH,
+    device:{model:SDPerf.deviceName(navigator.userAgent,sw,sh,dpr),screen:sw+'×'+sh,dpr,touch:isTouch,gpu:String(gpu).slice(0,80),webgl:gl2?2:1,maxTex,heapMB:performance.memory?Math.round(performance.memory.usedJSHeapSize/1048576):0},
+    settings:{quality:SETTINGS.quality,profile:String(GFX.profile).toUpperCase(),pixelRatio:SDQuality.pixelRatio(GFX.profile,dpr,1).toFixed(2),fpsCap:SETTINGS.fpsCap,hz:Math.round(GFX.hz||0),pueblo:P3ON?'3.0':'clásico',flags:location.search.replace(/^\?/,'').replace(/(^|&)medir=[^&]*/,'')},
+    load:{html:nav.responseEnd||0,dom:nav.domContentLoadedEventEnd||0,load:nav.loadEventEnd||0,firstFrame:PERF.first,mb:Math.round(res.reduce((a,e)=>a+size(e),0)/104857.6)/10,
+      big:big.map(e=>({name:e.name.replace(/[?#].*$/,'').split('/').pop(),mb:Math.round(size(e)/104857.6)/10,ms:e.duration}))},
+    maps};
+  PERF.last=R;const txt=SDPerf.format(R);store.set('perfReport',txt);console.log(txt);
+  $('#perfTxt').textContent=txt;$('#perfMsg').textContent='';$('#perfBox').hidden=false;PERF.on=false;return R;
+}
+$('#perfRun').addEventListener('click',()=>{audioInit();SFX.ui();perfRun(false);});
+$('#perfClose').addEventListener('click',()=>{$('#perfBox').hidden=true;$('#menu').hidden=state!=='menu';});
+$('#perfCopy').addEventListener('click',async()=>{const t=$('#perfTxt').textContent;try{await navigator.clipboard.writeText(t);$('#perfMsg').textContent='COPIADO: pégalo en el chat con Claude.';}catch(e){$('#perfMsg').textContent='Mantén pulsado el texto para seleccionarlo y copiarlo.';}});
+$('#perfShare').addEventListener('click',async()=>{const t=$('#perfTxt').textContent;try{if(navigator.share){await navigator.share({title:'Sniper Duel · rendimiento',text:t});return;}}catch(e){if(e&&e.name==='AbortError')return;}
+  try{await navigator.clipboard.writeText(t);$('#perfMsg').textContent='COPIADO (este navegador no permite compartir): pégalo en el chat.';}catch(e){$('#perfMsg').textContent='Mantén pulsado el texto para copiarlo.';}});
+{const q=/[?&]medir=(1|rapido)\b/.exec(location.search);if(q)setTimeout(()=>perfRun(q[1]==='rapido'),1500);}
 resize();
 // compile every shader of the visible world now, during the menu, instead of in the middle of the first
 // seconds of play (the town and its props use several material variants)
@@ -9058,7 +9202,7 @@ if(FLORA.on){const gl=new T.GLTFLoader();let n=2;
       // the town's ground must exist first (rays land on it)
       if(P3W.kit)go();else{const w=setInterval(()=>{if(P3W.kit){clearInterval(w);go();}},300);}}}}
 
-window.__SD={HUD2,get H2(){return HUD2?H2:null;},leanIn:HUD2?leanIn:null,h2Frame:HUD2?h2Frame:null,PJ2,pj2Load,CASA,casaLoad,XL,casaxlLoad,FLORA,RATS,RAT_WORLD,ratsFrame,SHADOW_FADE,setDuelLethal,get DUEL_LETHAL(){return DUEL_LETHAL;},gfxDiagText,get P3ON(){return P3ON;},COBCC,damagePlayer,TEX,sunFollow,setSunSnap(on){SUN_SNAP=!!on;},sun,P0,E10,e10Lod,DIAG,setTrainMove,LIGHT:{sun,hemi,skyMat,LOOK,P3},P3W,freeze(on){SIM_FREEZE=!!on;},SHOT,VMA,makeSoldier,animateSoldier,BOT_MAT,scene,camera,RemotePlayer,PMprev,PIS,PROOT,RIF,WROOT,SHO_:null,MANUAL,advance(ms){frameBody(last+ms);},get LAST_PELLETS(){return LAST_PELLETS;},SCORE,SCFG,SROOT,SHO,setPrimaryChoice,get PRIMARY(){return PRIMARY;},PCORE,PCFG,setWorld,WORLDS,get WORLD_ID(){return WORLD_ID;},renderer,GFX,gfxApply,get NET(){return NET;},get REMOTE(){return REMOTE;},W,get NAV(){return NAV;},setOffMap,get OFFMAP(){return OFFMAP;},TOUCH,EDIT,openEditor,get SETTINGS(){return SETTINGS;},get LAYOUT(){return LAYOUT;},checkOrientation,MAT,LOAD,TRAINERS,get RANGE_BOTS(){return RANGE_BOTS;},TRAIN,setTrain,setLethal,kitNote,GINS,TDIAG,AU,get TOUCH_EVENTS(){return TOUCH_EVENTS;},impactFX,bodyFX,get DECALS(){return DECALS;},surfaceOf,soundDelay,aimSelfTest,P,PM,WS,WCORE,RECOIL,AIM,BOTS,DUMMIES,BULLETS,EVENTS,PARTS,STATS,get state(){return state;},get mode(){return mode;},setMode,input,startMatch,simTick,frame,toMenu,pause,resume};
+window.__SD={PERF,perfRun,HUD2,get H2(){return HUD2?H2:null;},leanIn:HUD2?leanIn:null,h2Frame:HUD2?h2Frame:null,PJ2,pj2Load,CASA,casaLoad,XL,casaxlLoad,FLORA,RATS,RAT_WORLD,ratsFrame,SHADOW_FADE,setDuelLethal,get DUEL_LETHAL(){return DUEL_LETHAL;},gfxDiagText,get P3ON(){return P3ON;},COBCC,damagePlayer,TEX,sunFollow,setSunSnap(on){SUN_SNAP=!!on;},sun,P0,E10,e10Lod,DIAG,setTrainMove,LIGHT:{sun,hemi,skyMat,LOOK,P3},P3W,freeze(on){SIM_FREEZE=!!on;},SHOT,VMA,makeSoldier,animateSoldier,BOT_MAT,scene,camera,RemotePlayer,PMprev,PIS,PROOT,RIF,WROOT,SHO_:null,MANUAL,advance(ms){frameBody(last+ms);},get LAST_PELLETS(){return LAST_PELLETS;},SCORE,SCFG,SROOT,SHO,setPrimaryChoice,get PRIMARY(){return PRIMARY;},PCORE,PCFG,setWorld,WORLDS,get WORLD_ID(){return WORLD_ID;},renderer,GFX,gfxApply,get NET(){return NET;},get REMOTE(){return REMOTE;},W,get NAV(){return NAV;},setOffMap,get OFFMAP(){return OFFMAP;},TOUCH,EDIT,openEditor,get SETTINGS(){return SETTINGS;},get LAYOUT(){return LAYOUT;},checkOrientation,MAT,LOAD,TRAINERS,get RANGE_BOTS(){return RANGE_BOTS;},TRAIN,setTrain,setLethal,kitNote,GINS,TDIAG,AU,get TOUCH_EVENTS(){return TOUCH_EVENTS;},impactFX,bodyFX,get DECALS(){return DECALS;},surfaceOf,soundDelay,aimSelfTest,P,PM,WS,WCORE,RECOIL,AIM,BOTS,DUMMIES,BULLETS,EVENTS,PARTS,STATS,get state(){return state;},get mode(){return mode;},setMode,input,startMatch,simTick,frame,toMenu,pause,resume};
 })();
 </script>
 

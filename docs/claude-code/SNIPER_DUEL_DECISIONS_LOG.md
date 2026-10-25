@@ -12,6 +12,8 @@ Detalle de cada cambio (antes/después, medidas, cómo revertir): `docs/next-lev
 | Tarea | Quién la desbloquea | Estado |
 |---|---|---|
 | **Personaje 3D (rev. 03) en bots y rival** — probarlo en `https://hamza189.github.io/SNIPER-1VS1/?pj=2` (PC, iPhone, Samsung) y decir si pasa a ser el de por defecto | Propietario | PUBLICADO TRAS BANDERA · PENDIENTE DE VALIDACIÓN EN IPHONE |
+| **Medir el rendimiento en el iPhone** — AJUSTES › GRÁFICOS › MEDIR RENDIMIENTO (o `?medir=1`), mandar el informe a Claude; idealmente en BAJO, MEDIO y ALTO (`docs/RENDIMIENTO-IPHONE.md`) | Propietario | LISTO PARA MEDIR |
+| **Personaje LINCE (rev. 04)** — compararlo con la rev. 03 en `?pj=3` frente a `?pj=2` | Propietario | PUBLICADO TRAS BANDERA · PENDIENTE DE VALIDACIÓN EN IPHONE |
 | **HUD 2** (iconos, barra de armas, inventario, asomarse en móvil, editor) — probarlo en `https://hamza189.github.io/SNIPER-1VS1/?hud=2` (iPhone, Samsung, PC) y decir si pasa a ser el de por defecto | Propietario | PUBLICADO TRAS BANDERA · PENDIENTE DE VALIDACIÓN EN IPHONE |
 | **Asomarse y zonas de impacto**: ¿el servidor debe mover cabeza y pecho con la inclinación? (`docs/HUD-2.md` §4) | Propietario | NECESITA APROBACIÓN |
 
@@ -66,6 +68,20 @@ Detalle de cada cambio (antes/después, medidas, cómo revertir): `docs/next-lev
 | CASA ATLAS XL v2 de ChatGPT por defecto (mismas colisiones, detalle real) | 19-10 · directo a `main` |
 | Encargos para ChatGPT: CASA XL, CASA XL v2 y personaje | 18-10 / 19-10 |
 | Personaje 3D rev. 03 hecho por Claude e integrado tras `?pj=2` (bots y rival online) | 20-10 · directo a `main` |
+
+## 25-10-2026 (tarde) — LINCE terminado tras `?pj=3`, medidor de rendimiento, barra transparente y agacharse
+- **Petición (propietario):** acabar el personaje que Codex dejó a medias al quedarse sin uso, preparar la optimización
+  medida en el iPhone real (propuesta de Claude), fondo de la barra de armas regulable y levantarse solo tras deslizarse.
+- **LINCE (rev. 04):** Codex lo dejó generado e integrado tras `?pj=3`, sin verificar ni subir. No pasaba la prueba de
+  zonas de impacto (cabeza 4,2–5 cm fuera de su esfera por el visor nuevo) y había perdido el camuflaje. **Decisión
+  (Claude):** se conservan sus mejoras (chaleco, portacargadores, rodilleras, botas, costuras, codos) y vuelven las gafas
+  y el camuflaje de la rev. 03. Ahora cabe (2,7–3,7 cm) y cuesta lo mismo que la rev. 03 (42 llamadas, 76 200 triángulos
+  con 3 bots). Detalle: `assets/3d/imports/2026-10-19_personaje/revision_04/PERSONAJE_REV04.md`.
+- **Medidor:** AJUSTES › GRÁFICOS › MEDIR RENDIMIENTO / `?medir=1` (`client/perfprobe.js`, `docs/RENDIMIENTO-IPHONE.md`).
+  Siguiente paso: el propietario mide en su iPhone y su Samsung y Claude optimiza con esas cifras.
+- **Barra de armas:** fondo regulable de oscuro a transparente (AJUSTES y editor). **Agacharse:** PULSAR · TE LEVANTAS AL
+  DESLIZAR (por defecto en móvil), PULSAR, MANTENER (por defecto en PC). Solo entrada: movimiento y servidor sin cambios.
+- **Estado:** IMPLEMENTADO · PROBADO EN NAVEGADOR · PENDIENTE DE VALIDACIÓN EN IPHONE.
 
 ## 25-10-2026 — HUD 2 tras `?hud=2` (iconos, barra de armas, inventario, asomarse en móvil)
 - **Petición (propietario, encargo largo con capturas de PUBG y COD Mobile como referencia ergonómica):** HUD renovado,

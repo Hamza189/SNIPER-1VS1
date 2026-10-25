@@ -9,6 +9,7 @@ let chromium;
 try { ({ chromium } = require('playwright')); } catch (e) { console.log('\nONLINE EN NAVEGADOR: playwright no está instalado, se omite'); process.exit(0); }
 const { startServer } = require('../server/node.js');
 const statics = require('../tools/static-server.js');
+const pj3 = process.argv.includes('--pj3');
 let pass = 0, fail = 0;
 const check = (n, c, i) => { (c ? pass++ : fail++); console.log((c ? '  ok   ' : '  FAIL ') + n + (i !== undefined ? '  (' + i + ')' : '')); };
 const sleep = ms => new Promise(r => setTimeout(r, ms));
@@ -25,7 +26,7 @@ async function until(page, fn, arg, ms) { try { await page.waitForFunction(fn, a
     await ctx.route(/fonts\.(googleapis|gstatic)\.com/, r => r.abort());
     const page = await ctx.newPage();
     page.on('pageerror', e => errors.push(e.message));
-    await page.goto(web.url + '?perf=low&server=' + encodeURIComponent(server) + (q || ''));  // perf=low: no GPU on the test machine
+    await page.goto(web.url + '?perf=low&server=' + encodeURIComponent(server) + (pj3 ? '&pj=3' : '') + (q || ''));  // perf=low: no GPU on the test machine
     await page.waitForFunction(() => window.__SD);
     return page;
   };
@@ -55,6 +56,10 @@ async function until(page, fn, arg, ms) { try { await page.waitForFunction(fn, a
     check('los dos juegan en la ARENA (mapa del servidor = mapa dibujado)', await until(A, () => __SD.WORLD_ID === 'arena', null, 9000) && await until(B, () => __SD.WORLD_ID === 'arena', null, 9000) && srv.rooms.get(code).debug.mapId === 'arena');
     check('empieza la partida en los dos', await until(A, () => __SD.NET.N.phase === 'playing' && __SD.state === 'playing', null, 9000) && await until(B, () => __SD.NET.N.phase === 'playing', null, 9000));
     check('el marcador muestra el nombre del rival', (await A.textContent('#kBotsLbl')) === 'NOVIA' && (await B.textContent('#kBotsLbl')) === 'HAMZA');
+    if (pj3) {
+      const loaded = pg => until(pg, () => __SD.PJ2.assetRoot.endsWith('/v4/') && !!(__SD.REMOTE && __SD.REMOTE.rig.v2), null, 120000);
+      check('los dos clientes ven al rival con LINCE (?pj=3)', await loaded(A) && await loaded(B));
+    }
     // face to face across the arena, 36 m apart on an open lane
     const room = srv.rooms.get(code);
     room.debug.place('A', -18, -3, -Math.PI / 2); room.debug.place('B', 18, -3, Math.PI / 2);

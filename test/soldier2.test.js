@@ -45,15 +45,18 @@ check('en todos los estados: inferior + cuerpo entero = 1 y superior + cuerpo en
 
 console.log('\nMODELO');
 const root = path.join(__dirname, '..');
+for (const assetRoot of ['assets/personaje/', 'assets/personaje/v4/']) {
+console.log(assetRoot);
 for (const f of ['personaje.glb', 'personaje_1k.glb']) {
   let o = '', code = 0;
-  try { o = execFileSync('node', ['tools/validate-glb.js', 'assets/personaje/' + f, '--lod0', '15000', '--lod1', '5000', '--lod2', '1500'], { cwd: root, encoding: 'utf8' }); } catch (e) { code = 1; o = String(e.stdout); }
+  try { o = execFileSync('node', ['tools/validate-glb.js', assetRoot + f, '--lod0', '15000', '--lod1', '5000', '--lod2', '1500'], { cwd: root, encoding: 'utf8' }); } catch (e) { code = 1; o = String(e.stdout); }
   check(f + ': cumple el contrato de GLB (LOD0 ≤ 15 000, LOD1 ≤ 5 000, LOD2 ≤ 1 500, 1 material)', code === 0, (o.match(/nodos: (.*)/) || [])[1]);
 }
 for (const lod of [0, 1, 2]) {
   let o = '', code = 0;
-  try { o = execFileSync('node', ['tools/check-character-hitbox.js', 'assets/personaje/personaje.glb', '--lod', String(lod)], { cwd: root, encoding: 'utf8' }); } catch (e) { code = 1; o = String(e.stdout); }
+  try { o = execFileSync('node', ['tools/check-character-hitbox.js', assetRoot + 'personaje.glb', '--lod', String(lod)], { cwd: root, encoding: 'utf8' }); } catch (e) { code = 1; o = String(e.stdout); }
   check('LOD' + lod + ': cabe en las zonas de impacto (±4 cm; cabeza en reposo sin tolerancia)', code === 0, (o.match(/reposo: (.*)/) || [])[1] || o.split('\n').filter(l => /✘/.test(l)).slice(0, 2).join(' | '));
+}
 }
 console.log('\n' + pass + ' correctas, ' + fail + ' fallidas');
 process.exit(fail ? 1 : 0);
