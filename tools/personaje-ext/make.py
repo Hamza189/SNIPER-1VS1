@@ -24,7 +24,25 @@ DEST = ROOT / 'assets' / 'personaje' / 'pro' / name
 BL = os.environ.get('BLENDER', r'D:\Blender\blender.exe')
 WORK.mkdir(parents=True, exist_ok=True)
 (WORK / 'cfg.json').write_text(json.dumps(P.get('cfg', {}), indent=1))
-src = os.path.expandvars(os.path.expanduser(P['input']))
+import glob, zipfile
+src = None
+for pat in (P['input'] if isinstance(P['input'], list) else [P['input']]):
+    hits = sorted(glob.glob(os.path.expandvars(os.path.expanduser(pat))), key=os.path.getmtime, reverse=True)
+    if hits:
+        src = hits[0]; break
+if not src:
+    raise SystemExit('no encuentro el modelo: ' + str(P['input']) + ' (descárgalo de ' + P['url'] + ' en formato glTF)')
+if src.lower().endswith('.zip'):          # descarga de Sketchfab: se descomprime en su propia carpeta de trabajo
+    dz = WORK / 'src'
+    if dz.exists():
+        shutil.rmtree(dz)
+    with zipfile.ZipFile(src) as z:
+        z.extractall(dz)
+    found = sorted(list(dz.rglob('*.gltf')) + list(dz.rglob('*.glb')) + list(dz.rglob('*.fbx')))
+    if not found:
+        raise SystemExit('el zip no trae glTF/GLB/FBX: ' + src)
+    src = str(found[0])
+print('modelo:', src)
 
 
 def run(cmd, env=None, quiet=False):
