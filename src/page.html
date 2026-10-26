@@ -2644,25 +2644,40 @@ const SOLDIERS=[];
    Mientras carga (o si falla) se ve el soldado de siempre. Las zonas de impacto no cambian. Apariencias: rival B (oliva),
    bots del duelo 'bots' (gris), bots del campo de tiro A (arena). Perfil BAJO: texturas de 1024. ---- */
 const PJ_VERSION=new URLSearchParams(location.search).get('pj');
-const PJ2={on:['2','3'].includes(PJ_VERSION)&&typeof SDSoldier2!=='undefined',assetRoot:PJ_VERSION==='3'?'assets/personaje/v4/':'assets/personaje/',tpl:null,mats:{},list:[],loading:false,failed:false};
+/* ?pj=pro (26-10-2026, docs/PERSONAJES-PRO.md): personajes realistas con licencia CC-BY convertidos con tools/personaje-ext,
+   uno por calidad: ALTO → rival online 'op2' y bots 'op3' (texturas 4K); MEDIO → 'op4' para todos (2K); BAJO → el soldado
+   de cajas de siempre. Mismo esqueleto, animaciones y morphs que ?pj=2: las zonas de impacto no cambian. */
+const PJ_PRO=PJ_VERSION==='pro';
+const PJ2={on:(['2','3'].includes(PJ_VERSION)||(PJ_PRO&&GFX.profile!=='bajo'))&&typeof SDSoldier2!=='undefined',assetRoot:PJ_VERSION==='3'?'assets/personaje/v4/':'assets/personaje/',tpl:null,mats:{},list:[],loading:false,failed:false,
+  tpls:{},loadingRoots:{},failedRoots:{}};
+// carpeta del personaje de cada apariencia (B rival online, bots, A campo de tiro)
+function pj2Root(v){
+  if(!PJ_PRO)return PJ2.assetRoot;
+  if(GFX.profile==='alto')return 'assets/personaje/pro/'+(v==='B'?'op2':'op3')+'/';
+  return 'assets/personaje/pro/op4/';
+}
 const PJ2_LOD={alto:[30,70],medio:[22,50],bajo:[12,30]};   // m (distancia / zoom de la mira) para pasar a LOD1 y LOD2
 const _pj2v=new T.Vector3();
-function pj2Load(){
-  if(!PJ2.on||PJ2.loading||!T.GLTFLoader)return;PJ2.loading=true;
-  const f=PJ2.assetRoot+'personaje'+(GFX.profile==='bajo'?'_1k':'')+'.glb?v='+BUILD_HASH;
-  try{new T.GLTFLoader().load(f,g=>{try{PJ2.tpl=SDSoldier2.template(g,T);PJ2.mats.B=PJ2.tpl.material;
-      for(const R of PJ2.list)pj2Attach(R);try{precompileAll();}catch(e){}}catch(e){PJ2.failed=true;console.warn('pj2',e);}},
-    undefined,e=>{PJ2.failed=true;console.warn('pj2 load',e);});}catch(e){PJ2.failed=true;}
+function pj2Load(root){
+  root=root||pj2Root('B');
+  if(!PJ2.on||PJ2.loadingRoots[root]||PJ2.tpls[root]||!T.GLTFLoader)return;PJ2.loadingRoots[root]=true;PJ2.loading=true;
+  const f=root+'personaje'+(GFX.profile==='bajo'?'_1k':'')+'.glb?v='+BUILD_HASH;
+  const fail=e=>{PJ2.failedRoots[root]=true;if(!Object.keys(PJ2.tpls).length)PJ2.failed=true;console.warn('pj2 load',root,e);};
+  try{new T.GLTFLoader().load(f,g=>{try{const tpl=SDSoldier2.template(g,T);PJ2.tpls[root]=tpl;if(!PJ2.tpl)PJ2.tpl=tpl;PJ2.mats[PJ_PRO?root+'B':'B']=tpl.material;
+      for(const R of PJ2.list)pj2Attach(R);try{precompileAll();}catch(e){}}catch(e){fail(e);}},undefined,fail);}catch(e){fail(e);}
 }
-function pj2Mat(v){
-  if(PJ2.mats[v])return PJ2.mats[v];
-  const m=PJ2.tpl.material.clone(),t=new T.TextureLoader().load(PJ2.assetRoot+'color_'+v+(GFX.profile==='bajo'?'_1k':'')+'.jpg?v='+BUILD_HASH);
-  t.flipY=false;t.encoding=T.sRGBEncoding;t.anisotropy=GFX.profile==='alto'?4:2;m.map=t;return PJ2.mats[v]=m;
+function pj2Mat(v,root){
+  root=root||pj2Root(v);const key=PJ_PRO?root+v:v;
+  if(PJ2.mats[key])return PJ2.mats[key];
+  const m=PJ2.tpls[root].material.clone(),t=new T.TextureLoader().load(root+'color_'+v+(GFX.profile==='bajo'?'_1k':'')+'.jpg?v='+BUILD_HASH);
+  t.flipY=false;t.encoding=T.sRGBEncoding;t.anisotropy=GFX.profile==='alto'?(PJ_PRO?8:4):2;m.map=t;return PJ2.mats[key]=m;
 }
 function pj2Aim(R,w){const o=SDSoldier2.AIM_OFFSET[w]||SDSoldier2.AIM_OFFSET.rifle;R.aim.position.set(o[0],o[1],o[2]);R.v2w=w;}
 function pj2Attach(R){
-  if(R.v2||!PJ2.tpl)return;
-  const I=SDSoldier2.create(PJ2.tpl,T,pj2Mat(R.pj2v||'B'));R.v2=I;
+  const v=R.pj2v||'B',root=pj2Root(v),tpl=PJ2.tpls[root];
+  if(R.v2)return;
+  if(!tpl){if(!PJ2.failedRoots[root])pj2Load(root);return;}
+  const I=SDSoldier2.create(tpl,T,pj2Mat(v,root));R.v2=I;
   for(const c of R.root.children)c.visible=false;   // fuera la figura de cajas (sigue existiendo: es la vuelta atrás)
   R.root.add(I.root);
   I.arma.add(R.aim);R.aim.rotation.set(0,0,0);pj2Aim(R,R.wpn||'rifle');   // armas, fogonazo y destello de la mira van con el arma
@@ -2712,7 +2727,7 @@ function makeSoldier(M,opts){
   R.phase=0;R.flinch=0;R.wpn=opts.unarmed?null:'rifle';R.dead=0;
   R.shL=new T.Vector3(-0.22,0.47,0.0);R.shR=new T.Vector3(0.22,0.47,0.0);
   SOLDIERS.push(R);if(VMA.ready)soldierUseModels(R);
-  if(PJ2.on){R.pj2v=opts.variant||'B';PJ2.list.push(R);if(PJ2.tpl)pj2Attach(R);else pj2Load();}
+  if(PJ2.on){R.pj2v=opts.variant||'B';PJ2.list.push(R);pj2Attach(R);}
   return R;
 }
 /* the rival's weapons: the same modelled weapons as in first person (shared geometry), turned to

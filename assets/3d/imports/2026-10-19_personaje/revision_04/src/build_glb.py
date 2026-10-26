@@ -8,7 +8,7 @@ las texturas y los clips. glTF 2.0 sin extensiones (Three.js r128 lo lee tal cua
   * 29 animaciones lineales a 30 Hz con extras {loop, duration, speed, layer}.
 Uso: C:/Python314/python.exe build_glb.py
 """
-import json, math, struct, hashlib, sys
+import json, math, struct, hashlib, sys, os
 from pathlib import Path
 import numpy as np
 
@@ -18,8 +18,12 @@ from anim import Skel, Pose, quat, squash_positions, morph_delta, K_CROUCH, K_SL
 from clips import make
 
 REV = HERE.parent
-WORK = REV.parent / '.work' / 'rev04'
-TEX = REV / 'textures'
+# por defecto la rev. 04; tools/personaje-ext usa el mismo generador con otra malla (SD_WORK), otras texturas (SD_TEX),
+# otra salida (SD_OUT) y otros juegos de texturas (SD_SETS: sufijos separados por comas, '' = tamaño completo)
+WORK = Path(os.environ.get('SD_WORK', REV.parent / '.work' / 'rev04'))
+TEX = Path(os.environ.get('SD_TEX', REV / 'textures'))
+OUTD = Path(os.environ.get('SD_OUT', REV))
+GEN = os.environ.get('SD_GEN', 'SNIPER DUEL personaje rev04 (MakeHuman CC0 + ropa/equipo/animación propios)')
 FPS = 30
 M = np.load(WORK / 'model.npz')
 J = json.loads((WORK / 'joints.json').read_text())
@@ -107,7 +111,7 @@ print('huesos con traslación animada:', sorted(sk.names[b] for b in var_t))
 
 # ------------------------------------------------------------------ escritor glTF
 def write(path, texsuffix):
-    doc = {'asset': {'version': '2.0', 'generator': 'SNIPER DUEL personaje rev04 (MakeHuman CC0 + ropa/equipo/animación propios)'},
+    doc = {'asset': {'version': '2.0', 'generator': GEN},
            'scene': 0, 'scenes': [{'nodes': [0]}], 'nodes': [{'name': 'personaje', 'children': []}],
            'buffers': [{}], 'bufferViews': [], 'accessors': [], 'meshes': [], 'skins': [], 'animations': [],
            'images': [], 'textures': [], 'materials': [],
@@ -229,5 +233,5 @@ def write(path, texsuffix):
     print(path.name, len(blob), 'bytes', hashlib.sha256(blob).hexdigest()[:16])
 
 
-write(REV / 'personaje.glb', '')
-write(REV / 'personaje_1k.glb', '_1k')
+for suf in os.environ.get('SD_SETS', ',_1k').split(','):
+    write(OUTD / ('personaje' + suf + '.glb'), suf)

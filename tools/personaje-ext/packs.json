@@ -1,0 +1,29 @@
+{
+  "op2": {
+    "title": "S.W.A.T. Operator - 4k Followers Special Remaster",
+    "author": "jeandiz (con piezas de bobeer, VassKacsoHunor, Simon Coenen y otros autores CC-BY citados en la ficha)",
+    "url": "https://sketchfab.com/3d-models/f6923917c8014578b1c1cb2b4c249268",
+    "license": "CC BY 4.0", "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+    "use": "ALTO · rival online", "size": 4096,
+    "input": "C:/Users/Hamza/Downloads/op2/scene.gltf",
+    "cfg": {"lod": [40000, 12000, 3000], "footScale": [0.8, 0.9], "fitMargin": 0.012}
+  },
+  "op3": {
+    "title": "FSB Operator",
+    "author": "jeandiz (con piezas de ErhanMatur, Bzovius, SrGeneroso, shedmon, Albin y Mayess, CC-BY)",
+    "url": "https://sketchfab.com/3d-models/43a561e941704eefb1ab0614be4f0049",
+    "license": "CC BY 4.0", "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+    "use": "ALTO · bots", "size": 4096,
+    "input": "C:/Users/Hamza/Downloads/op3/scene.gltf",
+    "cfg": {"lod": [40000, 12000, 3000], "footScale": [0.8, 0.9], "fitMargin": 0.012}
+  },
+  "op4": {
+    "title": "Military tactical suit (LowPolyGameReady)",
+    "author": "1799danly",
+    "url": "https://sketchfab.com/3d-models/ef698ce36b1545a78ce592dd3db4c7ed",
+    "license": "CC BY 4.0", "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+    "use": "MEDIO · todos", "size": 2048,
+    "input": "C:/Users/Hamza/Downloads/op4/scene.gltf",
+    "cfg": {"lod": [20000, 7000, 2000], "footScale": [0.8, 0.9], "fitMargin": 0.012}
+  }
+}
