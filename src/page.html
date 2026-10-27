@@ -179,6 +179,12 @@ h1 span{display:block;color:var(--sand)}
 .skinPick b{font:500 22px/1 var(--f-display);letter-spacing:.04em;flex:1;padding-top:3px}
 .skinPick .lbl{color:var(--signal)}
 #skinOv{z-index:23;background:rgba(12,10,8,.96)}
+#profOv{z-index:22;background:rgba(12,10,8,.96)}
+.profGrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.profGrid div{display:grid;gap:2px;padding:8px;border:1px solid var(--line);background:var(--ink-2)}
+.profGrid b{font:500 26px/1 var(--f-display);letter-spacing:.03em}
+#profOv input{width:100%;box-sizing:border-box;background:var(--ink-2);border:1px solid var(--line);color:var(--hud);font:inherit;padding:10px}
+#profCode{font-size:11px;word-break:break-all;user-select:text;-webkit-user-select:text;max-height:5em;overflow:auto;margin:0;color:var(--sand)}
 .skinGrid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
 .skinCard{display:grid;gap:4px;align-content:start;padding:6px;background:var(--ink-2);border:1px solid var(--line);cursor:pointer;text-align:left}
 .skinCard img{width:100%;aspect-ratio:4/5;max-height:calc(100vh - 210px);object-fit:cover;object-position:50% 20%;display:block;background:#000}
@@ -343,7 +349,7 @@ body.touch #score .side span{max-width:11vw;overflow:hidden;text-overflow:ellips
   #menu #rangeBlock .chk{margin-top:2px;font-size:10px}
   #menu .row{gap:8px}
   #menu .btn{font-size:20px;padding:9px 16px 6px}
-  #menu #openSettings{font-size:15px!important}
+  #menu #openSettings,#menu #openProfile{font-size:15px!important}
   #menu .sens{gap:8px}
   #menu .card{padding:12px 14px;gap:8px}
   #menu .card h2{font-size:24px}
@@ -635,6 +641,21 @@ body.hud2 #stickBase.sprint #stickKnob svg{display:block}
 
 <div id="rotate" hidden><div class="box"><div class="phone"></div><h3>GIRA EL MÓVIL</h3><p>Sniper Duel se juega en horizontal.</p></div></div>
 
+<div id="profOv" class="overlay center" hidden>
+  <div class="panel" style="width:min(640px,calc(100% - 24px));gap:12px">
+    <div class="eyebrow">Tu perfil · en este dispositivo</div>
+    <div class="row" style="align-items:end"><div style="flex:1;min-width:160px;display:grid;gap:6px"><span class="lbl">Apodo (lo ve tu rival online)</span><input type="text" id="profName" maxlength="16" autocomplete="off" spellcheck="false" placeholder="Tu apodo"></div>
+      <div style="flex:1;min-width:160px;display:grid;gap:6px"><span class="lbl">Tu personaje</span><button type="button" class="skinPick" aria-label="Elegir personaje"><img alt=""><b></b><span class="lbl">CAMBIAR</span></button></div></div>
+    <div class="profGrid" id="profStats"></div>
+    <p class="setHelp" style="margin:0" id="profId"></p>
+    <div style="display:grid;gap:6px"><span class="lbl">Pasar el perfil a otro dispositivo</span>
+      <div class="row"><button class="btn ghost" id="profCopy" type="button" style="font-size:18px">COPIAR CÓDIGO</button><button class="btn ghost" id="profPaste" type="button" style="font-size:18px">RESTAURAR</button></div>
+      <p id="profCode" hidden></p><input type="text" id="profIn" placeholder="Pega aquí el código (SD1.…)" autocomplete="off" spellcheck="false" hidden><span class="lbl kitNote" id="profMsg"></span></div>
+    <p class="setHelp" style="margin:0">Jugar no pide cuenta. Las cuentas en la nube (entrar desde cualquier dispositivo, amigos, objetos) están en preparación.</p>
+    <div class="row"><button class="btn ghost" id="profClose" type="button" style="font-size:20px">VOLVER</button></div>
+  </div>
+</div>
+
 <div id="skinOv" class="overlay center" hidden>
   <div class="panel" style="width:min(780px,calc(100% - 24px));gap:12px">
     <div class="eyebrow">Tu personaje</div>
@@ -709,6 +730,7 @@ body.hud2 #stickBase.sprint #stickKnob svg{display:block}
           <button class="btn" id="play" type="button">JUGAR</button>
           <button class="btn" id="mpBtn" type="button">MULTIJUGADOR</button>
           <button class="btn ghost" id="openSettings" type="button" style="font-size:22px">AJUSTES</button>
+          <button class="btn ghost" id="openProfile" type="button" style="font-size:22px" hidden>PERFIL</button>
           <span class="hint" id="orientHint"></span>
         </div>
         <div class="road"><span class="now">1 · Gunplay</span><span>2 · Segundo rifle</span><span>3 · 1v1 online</span><span>4 · Salas</span></div>
@@ -2687,6 +2709,10 @@ const SKINS={swat:{pack:'op2',name:'S.W.A.T.',by:'Mateusz Woliński · CC BY'},f
   militar:{pack:'op4',name:'MILITAR',by:'DanlyVostok · CC BY'},clasico:{pack:null,name:'CLÁSICO',by:'Sniper Duel'}};
 const SKIN_ON=PJ_PRO||PJ_MIX;
 let SKIN=SKINS[store.get('skin')]?store.get('skin'):'swat';
+const LS=(()=>{try{return window.localStorage;}catch(e){return {getItem(){return null;},setItem(){}};}})();   // modo privado / iframe sin almacenamiento
+let PROFILE=SDProfile.load(LS);   // perfil local (client/profile.js)
+if(store.get('skin')==null&&SKINS[PROFILE.skin])SKIN=PROFILE.skin;else if(PROFILE.skin!==SKIN){PROFILE.skin=SKIN;SDProfile.save(LS,PROFILE);}
+if(!PROFILE.name&&store.get('mpName','')){PROFILE.name=SDProfile.clean({name:store.get('mpName','')}).name;SDProfile.save(LS,PROFILE);}
 const skinImg=id=>'assets/personaje/retratos/'+id+'.jpg?v='+BUILD_HASH;
 const PJ2={on:(['2','3'].includes(PJ_VERSION)||(PJ_PRO&&GFX.profile!=='bajo')||PJ_MIX)&&typeof SDSoldier2!=='undefined',assetRoot:PJ_VERSION==='3'?'assets/personaje/v4/':'assets/personaje/',tpl:null,mats:{},list:[],loading:false,failed:false,
   tpls:{},loadingRoots:{},failedRoots:{}};
@@ -4121,6 +4147,7 @@ function endMatch(win){
   const secs=Math.round(gameTime-STATS.start);$('#oT').textContent=Math.floor(secs/60)+':'+String(secs%60).padStart(2,'0');
   $('#over').hidden=false;$('#scope').hidden=true;$('#death').hidden=true;$('#touch').hidden=true;
   if(document.exitPointerLock&&pointerLocked)document.exitPointerLock();
+  profileMatch({win,kills:STATS.kills,deaths:STATS.deaths,hs:STATS.hs,shots:STATS.shots,hits:STATS.hits,longest:STATS.longest});
 }
 document.addEventListener('visibilitychange',()=>{if(document.hidden)pause();});
 // the browser loses focus (control centre, notification, app switcher): pause, which drops every held finger without shooting
@@ -4723,7 +4750,7 @@ async function netServerUrl(){
 }
 function mpShow(view){NET.view=view;$('#mp').hidden=false;$('#menu').hidden=true;$('#mpHome').hidden=view!=='home';$('#mpLobby').hidden=view!=='lobby';}
 function mpMsg(t,err){const m=$('#mpMsg');m.textContent=t||'';m.classList.toggle('err',!!err);}
-function mpName(){const n=SDProto.cleanName($('#mpName').value)||'JUGADOR';store.set('mpName',n);return n;}
+function mpName(){const n=SDProto.cleanName($('#mpName').value)||'JUGADOR';store.set('mpName',n);if(n!=='JUGADOR'&&PROFILE.name!==n){PROFILE.name=n;SDProfile.save(LS,PROFILE);}return n;}
 function inviteLink(code){return location.origin+location.pathname+'?sala='+code;}
 async function netCreate(){
   audioInit();SFX.ui();mpName();mpMsg('Creando sala…');
@@ -4928,6 +4955,7 @@ function netOver(e){
   $('#again').textContent=e.why==='abandono'?'ESPERAR OTRO RIVAL':'REVANCHA';
   $('#over').hidden=false;$('#scope').hidden=true;$('#death').hidden=true;$('#touch').hidden=true;
   state='over';if(document.exitPointerLock&&pointerLocked)document.exitPointerLock();
+  profileMatch({win,online:true,kills:st.kills,deaths:st.deaths,hs:st.hs,shots:st.shots,hits:st.hits,longest:STATS.longest});
   if(win){SFX.headshot();}
 }
 function netRematch(){if(!NET.N)return;NET.N.rematch();$('#overEyebrow').textContent='Esperando al rival…';SFX.ui();}
@@ -4969,7 +4997,7 @@ document.addEventListener('visibilitychange',()=>{if(document.hidden&&NET.want&&
 document.addEventListener('visibilitychange',()=>{if(!document.hidden&&NET.want&&(!NET.ws||NET.ws.readyState>1)){NET.retries=0;NET.retryAt=0;if(NET.status!=='reconnecting')netRetry();NET.retryAt=0;}});
 window.addEventListener('online',()=>{if(NET.want&&!NET.ws){NET.retryAt=0;}});
 // menu wiring
-$('#mpName').value=store.get('mpName','')||'';
+$('#mpName').value=store.get('mpName','')||PROFILE.name||'';
 $('#mpBtn').addEventListener('click',()=>{audioInit();SFX.ui();mpShow(NET.N&&NET.code?'lobby':'home');mpMsg('');netServerUrl();});
 document.querySelectorAll('#mpMapSeg button').forEach(b=>b.addEventListener('click',()=>{const N=NET.N;if(!N||N.you!=='A')return;N.chooseMap(b.dataset.map);SFX.ui();}));
 // primary weapon: the same choice in the menu, the lobby, the pause menu and the end screen.
@@ -4983,13 +5011,13 @@ function kitNote(){const el=$('#kitNote');if(!el)return;const inMatch=state==='p
 document.querySelectorAll('.kitSeg button').forEach(b=>b.addEventListener('click',()=>{setPrimaryChoice(b.dataset.kit);audioInit();SFX.ui();}));
 setPrimaryChoice(PRIMARY);
 // your character (?pj=pro / ?pj=mix): chosen in the menu or the room before playing; the online rival sees it
-function setSkin(id){if(!SKINS[id])return;SKIN=id;store.set('skin',id);skinUI();if(SKIN_ON&&NET.N&&NET.N.you)NET.N.chooseSkin(id);}
+function setSkin(id){if(!SKINS[id])return;SKIN=id;store.set('skin',id);if(PROFILE.skin!==id){PROFILE.skin=id;SDProfile.save(LS,PROFILE);}skinUI();if(SKIN_ON&&NET.N&&NET.N.you)NET.N.chooseSkin(id);}
 function skinUI(){
   document.querySelectorAll('.skinPick').forEach(b=>{const im=b.querySelector('img'),src=skinImg(SKIN);if(im.getAttribute('src')!==src)im.src=src;b.querySelector('b').textContent=SKINS[SKIN].name;});
   document.querySelectorAll('.skinCard').forEach(c=>c.setAttribute('aria-pressed',String(c.dataset.skin===SKIN)));
 }
-function openSkins(){$('#skinOv').hidden=false;$('#skinOv').scrollTop=0;for(const id of ['menu','mp'])$('#'+id).classList.add('under');const c=$('.skinCard[aria-pressed="true"]');if(c)c.focus();}
-function closeSkins(){$('#skinOv').hidden=true;for(const id of ['menu','mp'])$('#'+id).classList.remove('under');}
+function openSkins(){$('#skinOv').hidden=false;$('#skinOv').scrollTop=0;for(const id of ['menu','mp','profOv'])$('#'+id).classList.add('under');const c=$('.skinCard[aria-pressed="true"]');if(c)c.focus();}
+function closeSkins(){$('#skinOv').hidden=true;for(const id of ['menu','mp','profOv'])$('#'+id).classList.remove('under');}
 if(SKIN_ON){
   $('#skinBlock').hidden=false;document.querySelectorAll('.skinOnly').forEach(e=>e.hidden=false);
   for(const id in SKINS){const c=document.createElement('button');c.type='button';c.className='skinCard';c.dataset.skin=id;
@@ -5000,6 +5028,33 @@ if(SKIN_ON){
   $('#skinClose').addEventListener('click',()=>{closeSkins();SFX.ui();});
   $('#skinOv').addEventListener('keydown',e=>{if(e.key==='Escape'){e.stopPropagation();closeSkins();}});
   skinUI();
+}
+/* PERFIL (paso A de las cuentas, client/profile.js, docs/CUENTAS-Y-MONETIZACION.md): apodo, personaje, estadísticas de
+   todas tus partidas y un código para pasarlo a otro dispositivo. Se guarda siempre; el botón se ve con ?pj=pro/mix o
+   ?perfil=1 mientras se prueba. */
+const PROFILE_ON=SKIN_ON||/[?&]perfil=1\b/.test(location.search);
+function profileUI(){
+  const S=SDProfile.summary(PROFILE),cell=(l,v)=>'<div><span class="lbl">'+l+'</span><b>'+v+'</b></div>';
+  $('#profStats').innerHTML=cell('Partidas',S.matches)+cell('Victorias',S.wins)+cell('Bajas / muertes',S.kd)+cell('Precisión',S.acc+' %')+cell('A la cabeza',S.hsPct+' %')+cell('Tiro más largo',S.longest+' m');
+  $('#profId').textContent='Tu identificador: '+PROFILE.id+' · online: '+PROFILE.stats.online+' partidas, '+PROFILE.stats.onlineWins+' victorias';
+  $('#profName').value=PROFILE.name||'';
+}
+function openProfile(){profileUI();$('#profMsg').textContent='';$('#profCode').hidden=true;$('#profIn').hidden=true;$('#profOv').hidden=false;$('#profOv').scrollTop=0;$('#menu').classList.add('under');}
+function closeProfile(){$('#profOv').hidden=true;$('#menu').classList.remove('under');}
+function setProfileName(v){const n=SDProfile.clean({name:v}).name;PROFILE.name=n;SDProfile.save(LS,PROFILE);if(n){store.set('mpName',n);$('#mpName').value=n;}}
+function profileMatch(r){try{SDProfile.addMatch(PROFILE,r);SDProfile.save(LS,PROFILE);}catch(e){}}
+if(PROFILE_ON){
+  $('#openProfile').hidden=false;
+  $('#openProfile').addEventListener('click',()=>{openProfile();audioInit();SFX.ui();});
+  $('#profClose').addEventListener('click',()=>{closeProfile();SFX.ui();});
+  $('#profOv').addEventListener('keydown',e=>{if(e.key==='Escape'&&$('#skinOv').hidden){e.stopPropagation();closeProfile();}});
+  $('#profName').addEventListener('change',e=>setProfileName(e.target.value));
+  $('#profCopy').addEventListener('click',()=>{const c=SDProfile.exportCode(PROFILE);const el=$('#profCode');el.textContent=c;el.hidden=false;SFX.ui();
+    const ok=()=>{$('#profMsg').textContent='CÓDIGO COPIADO · pégalo en PERFIL › RESTAURAR del otro dispositivo';};
+    try{navigator.clipboard.writeText(c).then(ok,()=>{$('#profMsg').textContent='Copia el código de arriba a mano';});}catch(e){$('#profMsg').textContent='Copia el código de arriba a mano';}});
+  $('#profPaste').addEventListener('click',()=>{const inp=$('#profIn');if(inp.hidden){inp.hidden=false;inp.focus();$('#profMsg').textContent='Pega el código y pulsa RESTAURAR otra vez';return;}
+    const q=SDProfile.importCode(inp.value);if(!q){$('#profMsg').textContent='Ese código no es válido (¿está entero?)';return;}
+    PROFILE=q;SDProfile.save(LS,PROFILE);setSkin(PROFILE.skin);if(PROFILE.name)setProfileName(PROFILE.name);profileUI();inp.value='';inp.hidden=true;$('#profMsg').textContent='PERFIL RESTAURADO';SFX.ui();});
 }
 $('#mpBack').addEventListener('click',()=>{$('#mp').hidden=true;$('#menu').hidden=false;SFX.ui();});
 $('#mpCreate').addEventListener('click',netCreate);
@@ -5312,6 +5367,6 @@ if(FLORA.on){const gl=new T.GLTFLoader();let n=2;
       // the town's ground must exist first (rays land on it)
       if(P3W.kit)go();else{const w=setInterval(()=>{if(P3W.kit){clearInterval(w);go();}},300);}}}}
 
-window.__SD={PJ_MIX,MIX_ORDER,SKINS,get SKIN(){return SKIN;},setSkin,pj2SetPack,rivalSkin,PERF,perfRun,HUD2,get H2(){return HUD2?H2:null;},leanIn:HUD2?leanIn:null,h2Frame:HUD2?h2Frame:null,PJ2,pj2Load,CASA,casaLoad,XL,casaxlLoad,FLORA,RATS,RAT_WORLD,ratsFrame,SHADOW_FADE,setDuelLethal,get DUEL_LETHAL(){return DUEL_LETHAL;},gfxDiagText,get P3ON(){return P3ON;},COBCC,damagePlayer,TEX,sunFollow,setSunSnap(on){SUN_SNAP=!!on;},sun,P0,E10,e10Lod,DIAG,setTrainMove,LIGHT:{sun,hemi,skyMat,LOOK,P3},P3W,freeze(on){SIM_FREEZE=!!on;},SHOT,VMA,makeSoldier,animateSoldier,BOT_MAT,scene,camera,RemotePlayer,PMprev,PIS,PROOT,RIF,WROOT,SHO_:null,MANUAL,advance(ms){frameBody(last+ms);},get LAST_PELLETS(){return LAST_PELLETS;},SCORE,SCFG,SROOT,SHO,setPrimaryChoice,get PRIMARY(){return PRIMARY;},PCORE,PCFG,setWorld,WORLDS,get WORLD_ID(){return WORLD_ID;},renderer,GFX,gfxApply,get NET(){return NET;},get REMOTE(){return REMOTE;},W,get NAV(){return NAV;},setOffMap,get OFFMAP(){return OFFMAP;},TOUCH,EDIT,openEditor,get SETTINGS(){return SETTINGS;},get LAYOUT(){return LAYOUT;},checkOrientation,MAT,LOAD,TRAINERS,get RANGE_BOTS(){return RANGE_BOTS;},TRAIN,setTrain,setLethal,kitNote,GINS,TDIAG,AU,get TOUCH_EVENTS(){return TOUCH_EVENTS;},impactFX,bodyFX,get DECALS(){return DECALS;},surfaceOf,soundDelay,aimSelfTest,P,PM,WS,WCORE,RECOIL,AIM,BOTS,DUMMIES,BULLETS,EVENTS,PARTS,STATS,get state(){return state;},get mode(){return mode;},setMode,input,startMatch,simTick,frame,toMenu,pause,resume};
+window.__SD={get PROFILE(){return PROFILE;},openProfile,endMatch,PJ_MIX,MIX_ORDER,SKINS,get SKIN(){return SKIN;},setSkin,pj2SetPack,rivalSkin,PERF,perfRun,HUD2,get H2(){return HUD2?H2:null;},leanIn:HUD2?leanIn:null,h2Frame:HUD2?h2Frame:null,PJ2,pj2Load,CASA,casaLoad,XL,casaxlLoad,FLORA,RATS,RAT_WORLD,ratsFrame,SHADOW_FADE,setDuelLethal,get DUEL_LETHAL(){return DUEL_LETHAL;},gfxDiagText,get P3ON(){return P3ON;},COBCC,damagePlayer,TEX,sunFollow,setSunSnap(on){SUN_SNAP=!!on;},sun,P0,E10,e10Lod,DIAG,setTrainMove,LIGHT:{sun,hemi,skyMat,LOOK,P3},P3W,freeze(on){SIM_FREEZE=!!on;},SHOT,VMA,makeSoldier,animateSoldier,BOT_MAT,scene,camera,RemotePlayer,PMprev,PIS,PROOT,RIF,WROOT,SHO_:null,MANUAL,advance(ms){frameBody(last+ms);},get LAST_PELLETS(){return LAST_PELLETS;},SCORE,SCFG,SROOT,SHO,setPrimaryChoice,get PRIMARY(){return PRIMARY;},PCORE,PCFG,setWorld,WORLDS,get WORLD_ID(){return WORLD_ID;},renderer,GFX,gfxApply,get NET(){return NET;},get REMOTE(){return REMOTE;},W,get NAV(){return NAV;},setOffMap,get OFFMAP(){return OFFMAP;},TOUCH,EDIT,openEditor,get SETTINGS(){return SETTINGS;},get LAYOUT(){return LAYOUT;},checkOrientation,MAT,LOAD,TRAINERS,get RANGE_BOTS(){return RANGE_BOTS;},TRAIN,setTrain,setLethal,kitNote,GINS,TDIAG,AU,get TOUCH_EVENTS(){return TOUCH_EVENTS;},impactFX,bodyFX,get DECALS(){return DECALS;},surfaceOf,soundDelay,aimSelfTest,P,PM,WS,WCORE,RECOIL,AIM,BOTS,DUMMIES,BULLETS,EVENTS,PARTS,STATS,get state(){return state;},get mode(){return mode;},setMode,input,startMatch,simTick,frame,toMenu,pause,resume};
 })();
 </script>

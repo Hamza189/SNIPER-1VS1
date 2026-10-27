@@ -19,6 +19,12 @@ Este documento separa lo que Claude puede hacer ya (gratis, sin servicios nuevos
   guarda en este dispositivo y el rival online lo ve (el servidor solo reenvía un nombre de una lista cerrada; no cambia
   nada del juego).
 - Es la base de las «skins»: cada personaje es un objeto con nombre, retrato y licencia.
+- **Perfil local (paso A)**: botón PERFIL en el menú (con `?pj=pro`, `?pj=mix` o `?perfil=1`): apodo (es el nombre del
+  online), personaje, identificador `SD-XXXX-XXXX`, estadísticas de todas las partidas (contra bots y online) y un
+  **código de copia** para pasar el perfil a otro dispositivo (COPIAR CÓDIGO → RESTAURAR). Se guarda en el dispositivo
+  (`sniperduel_profile`), siempre, aunque no se abra. Hoy los cuatro personajes son de todos; los objetos de pago, si
+  llegan, los concederá el servidor (paso D), nunca este archivo. Código: `client/profile.js`; pruebas:
+  `test/profile.test.js` y `test/profile.browser.test.js`.
 
 ## 2. Cuentas: cómo hacerlo sin coste y sin contraseñas
 Recomendación, por pasos (cada uno se puede publicar solo):

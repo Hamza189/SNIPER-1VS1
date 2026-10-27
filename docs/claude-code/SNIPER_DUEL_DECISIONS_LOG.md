@@ -41,7 +41,6 @@ Detalle de cada cambio (antes/después, medidas, cómo revertir): `docs/next-lev
 | Perfil BAJO = PUEBLO 2.0 automáticamente; MEDIO/ALTO = PUEBLO 3.0 (mismas colisiones) | PENDIENTE |
 | Calidades por etapas: congelar lo hecho como BAJO (~finales de octubre), mejorar a MEDIO y luego ALTO (plan en la hoja de ruta) | PLANIFICADO |
 | Resto de la auditoría que no cambia reglas: seguridad del servidor (Q3, Q4, Q6, Q7), CI con `test:fast` y reversión (Q8), pruebas del Worker (Q9), navaja contra bots agachados (J4), daño del bot tras el retardo (J7), FUEGO doble táctil (J8), giro residual al reanudar (J9), textura de rata y E10 por perfil (R3, R4), unir mallas del kit (R6), partículas instanciadas (R8), liberar CASA al salir (R10), LOD y anisotropía (G4, G10, G11) | PENDIENTE |
-| Perfil local (apodo, personaje, estadísticas, objetos) como paso A de las cuentas | PENDIENTE |
 | Caras de los personajes (ojos blancos), contorno y sombras; LINCE y rev. 03 con el paso lateral nuevo | PENDIENTE |
 | Caso pequeño de z-fighting: piedra del kit contra estuco del pueblo (x ≈ 23–33, 4 puntos) | PENDIENTE |
 | Paredes blancas lisas de la CASA ATLAS original que deslumbran de cerca | PENDIENTE |
@@ -87,6 +86,8 @@ cómo monetizar.
 - **Paso**: medido con `tools/gait-sheet.js`; cadencia según la velocidad, piernas hacia la marcha con el pecho al
   frente y paso lateral nuevo en S.W.A.T., FSB y MILITAR (zonas de impacto comprobadas en los 3 LOD). Detalle y cifras en
   `docs/PERSONAJES-PRO.md`. IMPLEMENTADO · PROBADO EN NAVEGADOR · PENDIENTE DE VALIDACIÓN EN IPHONE.
+- **Perfil local** (paso A de las cuentas): botón PERFIL (apodo, personaje, estadísticas de cada partida, código para
+  pasarlo a otro dispositivo). Sin servicios nuevos. IMPLEMENTADO · PROBADO EN NAVEGADOR.
 - **Cuentas y monetización**: plan con decisiones en `docs/CUENTAS-Y-MONETIZACION.md` (passkeys en el mismo Cloudflare,
   cajas gratuitas ganadas jugando, portales web con anuncios entre partidas, aviso sobre ingresos estando de baja).
   NECESITA APROBACIÓN: nada de la nube ni de pagos se ha creado.

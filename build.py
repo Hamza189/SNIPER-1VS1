@@ -8,7 +8,7 @@
 import pathlib
 root = pathlib.Path(__file__).parent
 CORE = ["config.js", "movement.js", "weapon.js", "melee.js", "trainer.js", "player.js", "protocol.js", "hitbox.js"]
-CLIENT = ["settings.js", "layout.js", "touch.js", "hudicons.js", "hud2.js", "perfprobe.js", "quality.js", "netcore.js", "vmrig.js", "town.js", "kit3d.js", "town3.js", "rats.js", "flora.js", "casa.js", "casaxl.js", "soldier2.js"]
+CLIENT = ["settings.js", "layout.js", "touch.js", "hudicons.js", "hud2.js", "perfprobe.js", "quality.js", "netcore.js", "vmrig.js", "town.js", "kit3d.js", "town3.js", "rats.js", "flora.js", "casa.js", "casaxl.js", "soldier2.js", "profile.js"]
 code = "\n".join((root / "core" / f).read_text(encoding="utf-8") for f in CORE) + "\n" + \
        "\n".join((root / "client" / f).read_text(encoding="utf-8") for f in CLIENT)
 page = (root / "src" / "page.html").read_text(encoding="utf-8")
