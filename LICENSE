@@ -16,6 +16,11 @@ Excepciones (componentes de terceros, que conservan su propia licencia):
 - Texturas y modelos de Poly Haven (https://polyhaven.com) indicados en `docs/ASSETS-3D.md` y en los `FUENTE.md` /
   `LICENSE_ASSETS.md` de `assets/3d/imports/`: CC0 (dominio público). La CC0 se aplica al recurso original de Poly Haven,
   no al juego ni a su combinación con el resto del contenido.
+- Personajes de `assets/personaje/pro/` (op2, op3, op4): basados en «S.W.A.T. Operator - 4k Followers Special Remaster» y
+  «FSB Operator» de Mateusz Woliński (jeandiz) y en «Military tactical suit (LowPolyGameReady)» de DanlyVostok
+  (Sketchfab), con licencia CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/); modificados para el juego (esqueleto,
+  animaciones, LOD, texturas y ajuste a las zonas de impacto). Detalle y enlaces en cada `CREDITOS.md` de esa carpeta y
+  en `docs/PERSONAJES-PRO.md`. Esos modelos conservan su licencia CC BY 4.0.
 
 Para pedir permiso: abre una incidencia (Issue) en https://github.com/Hamza189/SNIPER-1VS1.
 
@@ -30,4 +35,7 @@ repository, in whole or in part. Playing the game at https://hamza189.github.io/
 
 Exceptions (third-party components keep their own licence): `vendor/three.min.js` and `vendor/GLTFLoader.js` (Three.js
 r128, MIT); Poly Haven textures and models listed in `docs/ASSETS-3D.md` and in the `FUENTE.md` / `LICENSE_ASSETS.md`
-files under `assets/3d/imports/` (CC0, applies to the original Poly Haven asset only).
+files under `assets/3d/imports/` (CC0, applies to the original Poly Haven asset only). Characters in `assets/personaje/pro/`: based on
+"S.W.A.T. Operator - 4k Followers Special Remaster" and "FSB Operator" by Mateusz Woliński (jeandiz) and "Military tactical
+suit (LowPolyGameReady)" by DanlyVostok (Sketchfab), licensed under CC BY 4.0; modified for the game. Those models keep
+their CC BY 4.0 licence.

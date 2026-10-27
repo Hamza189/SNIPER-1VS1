@@ -135,6 +135,7 @@ reconciliación, interpolación del rival 110 ms, ping) · `vmrig.js` (materiale
 | `&techo=1` | Techo opcional en CASA ATLAS |
 | `?pj=2` | Personaje 3D (rev. 03, `client/soldier2.js`, `assets/personaje/`) en bots y rival online en vez de la figura de cajas; solo aspecto |
 | `?hud=2` | HUD 2: iconos, barra de armas, inventario, asomarse en móvil, teclas de asomarse y editor ampliado (`client/hud2.js`, `docs/HUD-2.md`); solo presentación y entrada |
+| `?pj=pro` | Personajes realistas CC BY por calidad: ALTO op2 (rival) / op3 (bots) con 4K, MEDIO op4, BAJO soldado de cajas (`tools/personaje-ext`, `docs/PERSONAJES-PRO.md`) |
 | `?pj=3` | Personaje LINCE (rev. 04, `assets/personaje/v4/`) en bots y rival online; solo aspecto |
 | `?medir=1` | Ejecuta MEDIR RENDIMIENTO al cargar (`client/perfprobe.js`, `docs/RENDIMIENTO-IPHONE.md`); `?medir=rapido` para pruebas |
 | `?town=0` | Pueblo original de cajas |

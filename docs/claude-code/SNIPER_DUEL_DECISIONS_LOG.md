@@ -12,6 +12,7 @@ Detalle de cada cambio (antes/después, medidas, cómo revertir): `docs/next-lev
 | Tarea | Quién la desbloquea | Estado |
 |---|---|---|
 | **Personaje 3D (rev. 03) en bots y rival** — probarlo en `https://hamza189.github.io/SNIPER-1VS1/?pj=2` (PC, iPhone, Samsung) y decir si pasa a ser el de por defecto | Propietario | PUBLICADO TRAS BANDERA · PENDIENTE DE VALIDACIÓN EN IPHONE |
+| **Personajes realistas `?pj=pro`** — probar `https://hamza189.github.io/SNIPER-1VS1/?pj=pro` en ALTO (PC) y MEDIO (iPhone) y decidir si pasan a ser los de por defecto | Propietario | PUBLICADO TRAS BANDERA · PENDIENTE DE VALIDACIÓN EN IPHONE |
 | **Medir el rendimiento en el iPhone** — AJUSTES › GRÁFICOS › MEDIR RENDIMIENTO (o `?medir=1`), mandar el informe a Claude; idealmente en BAJO, MEDIO y ALTO (`docs/RENDIMIENTO-IPHONE.md`) | Propietario | LISTO PARA MEDIR |
 | **Personaje LINCE (rev. 04)** — compararlo con la rev. 03 en `?pj=3` frente a `?pj=2` | Propietario | PUBLICADO TRAS BANDERA · PENDIENTE DE VALIDACIÓN EN IPHONE |
 | **HUD 2** (iconos, barra de armas, inventario, asomarse en móvil, editor) — probarlo en `https://hamza189.github.io/SNIPER-1VS1/?hud=2` (iPhone, Samsung, PC) y decir si pasa a ser el de por defecto | Propietario | PUBLICADO TRAS BANDERA · PENDIENTE DE VALIDACIÓN EN IPHONE |
@@ -68,6 +69,19 @@ Detalle de cada cambio (antes/después, medidas, cómo revertir): `docs/next-lev
 | CASA ATLAS XL v2 de ChatGPT por defecto (mismas colisiones, detalle real) | 19-10 · directo a `main` |
 | Encargos para ChatGPT: CASA XL, CASA XL v2 y personaje | 18-10 / 19-10 |
 | Personaje 3D rev. 03 hecho por Claude e integrado tras `?pj=2` (bots y rival online) | 20-10 · directo a `main` |
+
+## 27-10-2026 — Personajes realistas CC BY por calidad (`?pj=pro`) y conversor de personajes
+- **Petición (propietario):** implantar el Tactical Soldier 02 (TurboSquid) modificado. **No se hizo:** su licencia
+  (estándar de TurboSquid) prohíbe usarlo en juegos web en formatos abiertos y que el jugador pueda obtener el modelo;
+  modificarlo no lo cambia. Claude lo explicó y propuso modelos CC BY de Sketchfab.
+- **Decisión (propietario):** nº 4 «Military tactical suit» (DanlyVostok) para MEDIO; nº 2 «S.W.A.T. Operator Remaster» y
+  nº 3 «FSB Operator» (Mateusz Woliński) como principales en ALTO con 4K; BAJO con los muñecos de siempre. Los descargó
+  él (Sketchfab pide cuenta).
+- **Hecho:** `tools/personaje-ext` (lector glTF propio, conversor, atlas y comprobaciones; reutiliza el generador de
+  animaciones de la rev. 04) y `?pj=pro`. Los tres pasan el contrato GLB y las zonas de impacto en los 3 LOD sin tocar el
+  servidor. Créditos CC BY en AJUSTES, `LICENSE` y `CREDITOS.md`. Detalle: `docs/PERSONAJES-PRO.md`.
+- **Aviso:** ALTO con dos personajes 4K usa ~500 MB de texturas en la GPU; en el iPhone, AUTO usa MEDIO.
+- **Estado:** IMPLEMENTADO · PROBADO EN NAVEGADOR · PENDIENTE DE VALIDACIÓN EN IPHONE.
 
 ## 25-10-2026 (tarde) — LINCE terminado tras `?pj=3`, medidor de rendimiento, barra transparente y agacharse
 - **Petición (propietario):** acabar el personaje que Codex dejó a medias al quedarse sin uso, preparar la optimización

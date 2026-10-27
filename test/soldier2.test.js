@@ -58,5 +58,22 @@ for (const lod of [0, 1, 2]) {
   check('LOD' + lod + ': cabe en las zonas de impacto (±4 cm; cabeza en reposo sin tolerancia)', code === 0, (o.match(/reposo: (.*)/) || [])[1] || o.split('\n').filter(l => /✘/.test(l)).slice(0, 2).join(' | '));
 }
 }
+// personajes realistas de ?pj=pro (tools/personaje-ext): límites de triángulos de su ficha (packs.json), 1 material,
+// 29 animaciones del juego y las mismas zonas de impacto
+const fs = require('fs');
+const PACKS = JSON.parse(fs.readFileSync(path.join(root, 'tools/personaje-ext/packs.json'), 'utf8'));
+for (const k of ['op2', 'op3', 'op4']) {
+  const f = 'assets/personaje/pro/' + k + '/personaje.glb', lod = PACKS[k].cfg.lod;
+  console.log(f + ' (' + PACKS[k].use + ')');
+  let o = '', code = 0;
+  try { o = execFileSync('node', ['tools/validate-glb.js', f, '--lod0', String(Math.round(lod[0] * 1.02)), '--lod1', String(Math.round(lod[1] * 1.02)), '--lod2', String(Math.round(lod[2] * 1.05))], { cwd: root, encoding: 'utf8' }); } catch (e) { code = 1; o = String(e.stdout); }
+  check(k + ': contrato de GLB (LOD0 ≤ ' + lod[0] + ', LOD1 ≤ ' + lod[1] + ', LOD2 ≤ ' + lod[2] + ', 1 material) y 29 animaciones', code === 0 && /29 animaciones/.test(o), (o.match(/nodos: (.*)/) || [])[1]);
+  for (const L of [0, 1, 2]) {
+    let h = '', c2 = 0;
+    try { h = execFileSync('node', ['tools/check-character-hitbox.js', f, '--lod', String(L)], { cwd: root, encoding: 'utf8' }); } catch (e) { c2 = 1; h = String(e.stdout); }
+    check(k + ' LOD' + L + ': cabe en las zonas de impacto (±4 cm; cabeza en reposo sin tolerancia)', c2 === 0, (h.match(/reposo: (.*)/) || [])[1] || h.split('\n').filter(l => /✘/.test(l)).slice(0, 2).join(' | '));
+  }
+  check(k + ': lleva los créditos de la licencia CC BY 4.0', /CC BY 4\.0/.test(fs.readFileSync(path.join(root, 'assets/personaje/pro', k, 'CREDITOS.md'), 'utf8')));
+}
 console.log('\n' + pass + ' correctas, ' + fail + ' fallidas');
 process.exit(fail ? 1 : 0);
