@@ -12,6 +12,7 @@ Detalle de cada cambio (antes/después, medidas, cómo revertir): `docs/next-lev
 | Tarea | Quién la desbloquea | Estado |
 |---|---|---|
 | **Personaje 3D (rev. 03) en bots y rival** — probarlo en `https://hamza189.github.io/SNIPER-1VS1/?pj=2` (PC, iPhone, Samsung) y decir si pasa a ser el de por defecto | Propietario | PUBLICADO TRAS BANDERA · PENDIENTE DE VALIDACIÓN EN IPHONE |
+| **Los 4 personajes a la vez contra bots** — `https://hamza189.github.io/SNIPER-1VS1/?pj=mix` (y medir con `&medir=1`) en iPhone y PC | Propietario | PUBLICADO TRAS BANDERA · PENDIENTE DE MEDIR EN IPHONE |
 | **Personajes realistas `?pj=pro`** — probar `https://hamza189.github.io/SNIPER-1VS1/?pj=pro` en ALTO (PC) y MEDIO (iPhone) y decidir si pasan a ser los de por defecto | Propietario | PUBLICADO TRAS BANDERA · PENDIENTE DE VALIDACIÓN EN IPHONE |
 | **Medir el rendimiento en el iPhone** — AJUSTES › GRÁFICOS › MEDIR RENDIMIENTO (o `?medir=1`), mandar el informe a Claude; idealmente en BAJO, MEDIO y ALTO (`docs/RENDIMIENTO-IPHONE.md`) | Propietario | LISTO PARA MEDIR |
 | **Personaje LINCE (rev. 04)** — compararlo con la rev. 03 en `?pj=3` frente a `?pj=2` | Propietario | PUBLICADO TRAS BANDERA · PENDIENTE DE VALIDACIÓN EN IPHONE |
@@ -69,6 +70,13 @@ Detalle de cada cambio (antes/después, medidas, cómo revertir): `docs/next-lev
 | CASA ATLAS XL v2 de ChatGPT por defecto (mismas colisiones, detalle real) | 19-10 · directo a `main` |
 | Encargos para ChatGPT: CASA XL, CASA XL v2 y personaje | 18-10 / 19-10 |
 | Personaje 3D rev. 03 hecho por Claude e integrado tras `?pj=2` (bots y rival online) | 20-10 · directo a `main` |
+
+## 27-10-2026 (tarde) — `?pj=mix`: los 4 personajes a la vez contra bots
+- **Petición (propietario):** antes de mejorar la cara (ojos blancos), el contorno y las sombras, ver los 3 personajes
+  nuevos y el muñeco de siempre en la misma partida contra bots para probar y medir el rendimiento en el iPhone y el PC.
+  Prioridad siguiente del propietario: empezar a ver cómo monetizar el juego.
+- **Hecho:** `?pj=mix` (4 bots: S.W.A.T., FSB, Military suit y soldado de cajas; texturas 4K/2K/1K según la calidad).
+- **Estado:** IMPLEMENTADO · PROBADO EN NAVEGADOR · PENDIENTE DE MEDIR EN IPHONE.
 
 ## 27-10-2026 — Personajes realistas CC BY por calidad (`?pj=pro`) y conversor de personajes
 - **Petición (propietario):** implantar el Tactical Soldier 02 (TurboSquid) modificado. **No se hizo:** su licencia

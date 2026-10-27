@@ -72,6 +72,21 @@ const zones = p => p.evaluate(() => __SD.BOTS.map(b => b.hit.map(m => [m.userDat
     const rl = await L.p.evaluate(() => ({ on: __SD.PJ2.on, v2: __SD.BOTS.some(b => !!b.rig.v2) }));
     check('BAJO: el soldado de siempre, sin descargar nada de pro/', !rl.on && !rl.v2 && L.files.length === 0 && L.errs.length === 0, L.files.join(' '));
     await L.ctx.close();
+
+    // ?pj=mix: los 4 tipos a la vez contra bots (para comparar y medir en el iPhone y el PC)
+    const zone1 = z0.split(';')[0];
+    for (const [q, suf] of [['alto', ''], ['medio', '_2k'], ['bajo', '_1k']]) {
+      console.log('\nMEZCLA ?pj=mix (' + q.toUpperCase() + ')');
+      const X = await open(b, srv.url + '?vm=1&pj=mix', q);
+      const ok = await X.p.waitForFunction(() => __SD.BOTS.length >= 4 && __SD.BOTS.slice(0, 3).every(b => b.rig.v2), null, { timeout: 240000 }).then(() => true, () => false);
+      const r = await X.p.evaluate(() => __SD.BOTS.slice(0, 4).map(b => ({ pack: b.rig.mixPack, v2: !!b.rig.v2, box: b.rig.root.children.some(c => c.visible && (!b.rig.v2 || c !== b.rig.v2.root)), alive: b.alive })));
+      check(q + ': 4 bots, cada uno con su personaje (S.W.A.T., FSB, Military suit y el soldado de cajas)', ok && r.length === 4 && r[0].pack === 'op2' && r[1].pack === 'op3' && r[2].pack === 'op4' && r[3].pack === null && r[0].v2 && r[1].v2 && r[2].v2 && !r[3].v2 && r[3].box && r.every(x => x.alive),
+        r.map(x => (x.pack || 'cajas') + (x.v2 ? '·3D' : '')).join(' '));
+      const want = ['op2/personaje' + suf + '.glb', 'op3/personaje' + suf + '.glb', 'op4/personaje' + (q === 'bajo' ? '_1k' : '') + '.glb'];
+      check(q + ': texturas ' + (suf ? suf.slice(1).toUpperCase() : '4K/2K') + ' para el iPhone y el PC, sin 404 ni errores', want.every(f => X.files.includes(f)) && X.bad.length === 0 && X.errs.length === 0, X.files.filter(f => f.endsWith('.glb')).join(' ') + (X.bad.length ? ' · ' + X.bad[0] : '') + (X.errs.length ? ' · ' + X.errs[0] : ''));
+      check(q + ': las zonas de impacto de los 4 bots son las de siempre', (await zones(X.p)).split(';').every(z => z === zone1));
+      await X.ctx.close();
+    }
   } catch (e) { fail++; console.log('  FAIL ' + (e && e.stack || e)); }
   await b.close(); srv.close();
   console.log('\n' + pass + ' correctas, ' + fail + ' fallidas');

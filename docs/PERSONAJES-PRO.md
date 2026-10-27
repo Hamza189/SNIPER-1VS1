@@ -41,3 +41,11 @@ Sin la bandera nada cambia. `?pj=2` (rev. 03) y `?pj=3` (LINCE) siguen como esta
   se pone ALTO a mano, conviene medirlo con AJUSTES › GRÁFICOS › MEDIR RENDIMIENTO.
 - Descarga: op2 15 MB, op3 12 MB (solo en ALTO), op4 5,6 MB (MEDIO).
 - Pruebas: `node test/soldier2.test.js` (contrato y zonas de los tres), `node test/pro.browser.test.js` (ALTO, MEDIO, BAJO).
+
+## Modo mezcla para comparar y medir (`?pj=mix`, 27-10-2026)
+Petición del propietario: en una partida contra bots, los 4 tipos a la vez para compararlos y medir el rendimiento en el
+iPhone y el PC. Con `?pj=mix` el duelo pasa a 4 bots (salvo CASA ATLAS, que es 1 contra 1):
+bot 1 S.W.A.T. (op2) · bot 2 FSB (op3) · bot 3 Military suit (op4) · bot 4 el soldado de cajas de siempre.
+Texturas según la calidad: ALTO 4K (op4 2K), MEDIO 2K, BAJO 1K. El rival online es el S.W.A.T.
+Medir: `https://hamza189.github.io/SNIPER-1VS1/?pj=mix&medir=1` (el informe lleva «banderas pj=mix»).
+Prueba: `node test/pro.browser.test.js` (ALTO, MEDIO y BAJO).

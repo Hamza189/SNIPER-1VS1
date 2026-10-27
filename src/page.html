@@ -2649,34 +2649,46 @@ const PJ_VERSION=new URLSearchParams(location.search).get('pj');
    uno por calidad: ALTO → rival online 'op2' y bots 'op3' (texturas 4K); MEDIO → 'op4' para todos (2K); BAJO → el soldado
    de cajas de siempre. Mismo esqueleto, animaciones y morphs que ?pj=2: las zonas de impacto no cambian. */
 const PJ_PRO=PJ_VERSION==='pro';
-const PJ2={on:(['2','3'].includes(PJ_VERSION)||(PJ_PRO&&GFX.profile!=='bajo'))&&typeof SDSoldier2!=='undefined',assetRoot:PJ_VERSION==='3'?'assets/personaje/v4/':'assets/personaje/',tpl:null,mats:{},list:[],loading:false,failed:false,
+/* ?pj=mix (27-10-2026): para comparar y medir, los 4 tipos a la vez contra bots: bot 1 S.W.A.T. (op2), bot 2 FSB (op3),
+   bot 3 Military suit (op4), bot 4 el soldado de cajas de siempre (el duelo pasa a 4 bots, salvo CASA ATLAS). Texturas por
+   calidad: ALTO 4K, MEDIO 2K, BAJO 1K. El rival online es el S.W.A.T. */
+const PJ_MIX=PJ_VERSION==='mix';
+const MIX_ORDER=['op2','op3','op4',null];
+const PJ2={on:(['2','3'].includes(PJ_VERSION)||(PJ_PRO&&GFX.profile!=='bajo')||PJ_MIX)&&typeof SDSoldier2!=='undefined',assetRoot:PJ_VERSION==='3'?'assets/personaje/v4/':'assets/personaje/',tpl:null,mats:{},list:[],loading:false,failed:false,
   tpls:{},loadingRoots:{},failedRoots:{}};
 // carpeta del personaje de cada apariencia (B rival online, bots, A campo de tiro)
-function pj2Root(v){
+function pj2Root(v,R){
+  if(PJ_MIX){const k=R&&R.mixPack!==undefined?R.mixPack:'op2';return k?'assets/personaje/pro/'+k+'/':null;}
   if(!PJ_PRO)return PJ2.assetRoot;
   if(GFX.profile==='alto')return 'assets/personaje/pro/'+(v==='B'?'op2':'op3')+'/';
   return 'assets/personaje/pro/op4/';
 }
 const PJ2_LOD={alto:[30,70],medio:[22,50],bajo:[12,30]};   // m (distancia / zoom de la mira) para pasar a LOD1 y LOD2
 const _pj2v=new T.Vector3();
+// tamaño de las texturas de cada personaje: BAJO 1K; con ?pj=mix en MEDIO, los de 4K (op2/op3) a 2K
+function pj2Suffix(root){
+  if(GFX.profile==='bajo')return '_1k';
+  if(PJ_MIX&&GFX.profile!=='alto'&&/\/(op2|op3)\/$/.test(root))return '_2k';
+  return '';
+}
 function pj2Load(root){
   root=root||pj2Root('B');
   if(!PJ2.on||PJ2.loadingRoots[root]||PJ2.tpls[root]||!T.GLTFLoader)return;PJ2.loadingRoots[root]=true;PJ2.loading=true;
-  const f=root+'personaje'+(GFX.profile==='bajo'?'_1k':'')+'.glb?v='+BUILD_HASH;
+  const f=root+'personaje'+pj2Suffix(root)+'.glb?v='+BUILD_HASH;
   const fail=e=>{PJ2.failedRoots[root]=true;if(!Object.keys(PJ2.tpls).length)PJ2.failed=true;console.warn('pj2 load',root,e);};
-  try{new T.GLTFLoader().load(f,g=>{try{const tpl=SDSoldier2.template(g,T);PJ2.tpls[root]=tpl;if(!PJ2.tpl)PJ2.tpl=tpl;PJ2.mats[PJ_PRO?root+'B':'B']=tpl.material;
+  try{new T.GLTFLoader().load(f,g=>{try{const tpl=SDSoldier2.template(g,T);PJ2.tpls[root]=tpl;if(!PJ2.tpl)PJ2.tpl=tpl;PJ2.mats[PJ_PRO||PJ_MIX?root+'B':'B']=tpl.material;
       for(const R of PJ2.list)pj2Attach(R);try{precompileAll();}catch(e){}}catch(e){fail(e);}},undefined,fail);}catch(e){fail(e);}
 }
 function pj2Mat(v,root){
-  root=root||pj2Root(v);const key=PJ_PRO?root+v:v;
+  root=root||pj2Root(v);const key=PJ_PRO||PJ_MIX?root+v:v;
   if(PJ2.mats[key])return PJ2.mats[key];
-  const m=PJ2.tpls[root].material.clone(),t=new T.TextureLoader().load(root+'color_'+v+(GFX.profile==='bajo'?'_1k':'')+'.jpg?v='+BUILD_HASH);
+  const m=PJ2.tpls[root].material.clone(),t=new T.TextureLoader().load(root+'color_'+v+pj2Suffix(root)+'.jpg?v='+BUILD_HASH);
   t.flipY=false;t.encoding=T.sRGBEncoding;t.anisotropy=GFX.profile==='alto'?(PJ_PRO?8:4):2;m.map=t;return PJ2.mats[key]=m;
 }
 function pj2Aim(R,w){const o=SDSoldier2.AIM_OFFSET[w]||SDSoldier2.AIM_OFFSET.rifle;R.aim.position.set(o[0],o[1],o[2]);R.v2w=w;}
 function pj2Attach(R){
-  const v=R.pj2v||'B',root=pj2Root(v),tpl=PJ2.tpls[root];
-  if(R.v2)return;
+  const v=R.pj2v||'B',root=pj2Root(v,R),tpl=root&&PJ2.tpls[root];
+  if(R.v2||!root)return;
   if(!tpl){if(!PJ2.failedRoots[root])pj2Load(root);return;}
   const I=SDSoldier2.create(tpl,T,pj2Mat(v,root));R.v2=I;
   for(const c of R.root.children)c.visible=false;   // fuera la figura de cajas (sigue existiendo: es la vuelta atrás)
@@ -2728,7 +2740,7 @@ function makeSoldier(M,opts){
   R.phase=0;R.flinch=0;R.wpn=opts.unarmed?null:'rifle';R.dead=0;
   R.shL=new T.Vector3(-0.22,0.47,0.0);R.shR=new T.Vector3(0.22,0.47,0.0);
   SOLDIERS.push(R);if(VMA.ready)soldierUseModels(R);
-  if(PJ2.on){R.pj2v=opts.variant||'B';PJ2.list.push(R);pj2Attach(R);}
+  if(PJ2.on){R.pj2v=opts.variant||'B';if(PJ_MIX)R.mixPack=MIX_ORDER[(opts.mix||0)%MIX_ORDER.length];PJ2.list.push(R);pj2Attach(R);}
   return R;
 }
 /* the rival's weapons: the same modelled weapons as in first person (shared geometry), turned to
@@ -2840,7 +2852,7 @@ class Bot{
     }
     add(new T.SphereGeometry(0.13,14,10),BM.skin,0,1.62,0,'head');
     add(new T.SphereGeometry(0.15,14,8,0,Math.PI*2,0,Math.PI/2),BM.helmet,0,1.65,0,'head');
-    this.rig=makeSoldier(BM,{variant:this.trainer?'A':'bots'});this.g.add(this.rig.root);this.rig.wpn='rifle';
+    this.rig=makeSoldier(BM,{variant:this.trainer?'A':'bots',mix:i});this.g.add(this.rig.root);this.rig.wpn='rifle';
     // the scope glint sits on the rifle's scope and follows the aim
     this.glint=new T.Sprite(glintMatBase.clone());this.glint.position.set(0.1,0.06,0.43);this.glint.scale.set(0.05,0.05,1);this.glint.visible=false;this.rig.aim.add(this.glint);
     this.lastX=0;this.lastZ=0;this.lvx=0;this.lvz=0;
@@ -4011,7 +4023,8 @@ function startMatch(){
   if(WORLD_ID==='casaxl'&&!XL.ready&&!XL.failed){$('#modeSub').textContent='Cargando CASA ATLAS XL…';if(!XL.wait.includes(startMatch))XL.wait.push(startMatch);casaxlLoad();return;}
   if(WORLD_ID==='casa'&&!CASA.ready&&!CASA.failed){$('#modeSub').textContent='Cargando CASA ATLAS…';if(!CASA.wait.includes(startMatch))CASA.wait.push(startMatch);casaLoad();return;}
   // the arena is small: fewer bots (2, or 3 on ÉLITE); CASA ATLAS is a 1v1 flat: 1 bot (2 on ÉLITE)
-  const nBots=WORLD_ID==='arena'||WORLD_ID==='casaxl'?Math.min(df.bots,diff===2?3:2):WORLD_ID==='casa'?Math.min(df.bots,diff===2?2:1):df.bots;
+  let nBots=WORLD_ID==='arena'||WORLD_ID==='casaxl'?Math.min(df.bots,diff===2?3:2):WORLD_ID==='casa'?Math.min(df.bots,diff===2?2:1):df.bots;
+  if(PJ_MIX&&WORLD_ID!=='casa')nBots=Math.max(nBots,MIX_ORDER.length);   // ?pj=mix: los 4 tipos de personaje a la vez
   while(BOTS.length<nBots)BOTS.push(new Bot(BOTS.length));
   while(DUMMIES.length<RANGE_SLOTS.length)DUMMIES.push(new Bot(DUMMIES.length,RANGE_SLOTS[DUMMIES.length]));
   const tcount=TRAIN.level==='off'?0:SD_CONFIG.training[TRAIN.level].count;
@@ -5226,6 +5239,6 @@ if(FLORA.on){const gl=new T.GLTFLoader();let n=2;
       // the town's ground must exist first (rays land on it)
       if(P3W.kit)go();else{const w=setInterval(()=>{if(P3W.kit){clearInterval(w);go();}},300);}}}}
 
-window.__SD={PERF,perfRun,HUD2,get H2(){return HUD2?H2:null;},leanIn:HUD2?leanIn:null,h2Frame:HUD2?h2Frame:null,PJ2,pj2Load,CASA,casaLoad,XL,casaxlLoad,FLORA,RATS,RAT_WORLD,ratsFrame,SHADOW_FADE,setDuelLethal,get DUEL_LETHAL(){return DUEL_LETHAL;},gfxDiagText,get P3ON(){return P3ON;},COBCC,damagePlayer,TEX,sunFollow,setSunSnap(on){SUN_SNAP=!!on;},sun,P0,E10,e10Lod,DIAG,setTrainMove,LIGHT:{sun,hemi,skyMat,LOOK,P3},P3W,freeze(on){SIM_FREEZE=!!on;},SHOT,VMA,makeSoldier,animateSoldier,BOT_MAT,scene,camera,RemotePlayer,PMprev,PIS,PROOT,RIF,WROOT,SHO_:null,MANUAL,advance(ms){frameBody(last+ms);},get LAST_PELLETS(){return LAST_PELLETS;},SCORE,SCFG,SROOT,SHO,setPrimaryChoice,get PRIMARY(){return PRIMARY;},PCORE,PCFG,setWorld,WORLDS,get WORLD_ID(){return WORLD_ID;},renderer,GFX,gfxApply,get NET(){return NET;},get REMOTE(){return REMOTE;},W,get NAV(){return NAV;},setOffMap,get OFFMAP(){return OFFMAP;},TOUCH,EDIT,openEditor,get SETTINGS(){return SETTINGS;},get LAYOUT(){return LAYOUT;},checkOrientation,MAT,LOAD,TRAINERS,get RANGE_BOTS(){return RANGE_BOTS;},TRAIN,setTrain,setLethal,kitNote,GINS,TDIAG,AU,get TOUCH_EVENTS(){return TOUCH_EVENTS;},impactFX,bodyFX,get DECALS(){return DECALS;},surfaceOf,soundDelay,aimSelfTest,P,PM,WS,WCORE,RECOIL,AIM,BOTS,DUMMIES,BULLETS,EVENTS,PARTS,STATS,get state(){return state;},get mode(){return mode;},setMode,input,startMatch,simTick,frame,toMenu,pause,resume};
+window.__SD={PJ_MIX,MIX_ORDER,PERF,perfRun,HUD2,get H2(){return HUD2?H2:null;},leanIn:HUD2?leanIn:null,h2Frame:HUD2?h2Frame:null,PJ2,pj2Load,CASA,casaLoad,XL,casaxlLoad,FLORA,RATS,RAT_WORLD,ratsFrame,SHADOW_FADE,setDuelLethal,get DUEL_LETHAL(){return DUEL_LETHAL;},gfxDiagText,get P3ON(){return P3ON;},COBCC,damagePlayer,TEX,sunFollow,setSunSnap(on){SUN_SNAP=!!on;},sun,P0,E10,e10Lod,DIAG,setTrainMove,LIGHT:{sun,hemi,skyMat,LOOK,P3},P3W,freeze(on){SIM_FREEZE=!!on;},SHOT,VMA,makeSoldier,animateSoldier,BOT_MAT,scene,camera,RemotePlayer,PMprev,PIS,PROOT,RIF,WROOT,SHO_:null,MANUAL,advance(ms){frameBody(last+ms);},get LAST_PELLETS(){return LAST_PELLETS;},SCORE,SCFG,SROOT,SHO,setPrimaryChoice,get PRIMARY(){return PRIMARY;},PCORE,PCFG,setWorld,WORLDS,get WORLD_ID(){return WORLD_ID;},renderer,GFX,gfxApply,get NET(){return NET;},get REMOTE(){return REMOTE;},W,get NAV(){return NAV;},setOffMap,get OFFMAP(){return OFFMAP;},TOUCH,EDIT,openEditor,get SETTINGS(){return SETTINGS;},get LAYOUT(){return LAYOUT;},checkOrientation,MAT,LOAD,TRAINERS,get RANGE_BOTS(){return RANGE_BOTS;},TRAIN,setTrain,setLethal,kitNote,GINS,TDIAG,AU,get TOUCH_EVENTS(){return TOUCH_EVENTS;},impactFX,bodyFX,get DECALS(){return DECALS;},surfaceOf,soundDelay,aimSelfTest,P,PM,WS,WCORE,RECOIL,AIM,BOTS,DUMMIES,BULLETS,EVENTS,PARTS,STATS,get state(){return state;},get mode(){return mode;},setMode,input,startMatch,simTick,frame,toMenu,pause,resume};
 })();
 </script>
