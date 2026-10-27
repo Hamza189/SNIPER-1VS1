@@ -6,12 +6,14 @@ Cada entrada dice qué se decidió o cambió, quién lo decidió, y el estado re
 Las decisiones anteriores al 18-10-2026 están resumidas en `SNIPER_DUEL_MASTER_CONTEXT.md` §4.
 Detalle de cada cambio (antes/después, medidas, cómo revertir): `docs/next-level/NEXT_LEVEL_CHANGELOG.md`.
 
-## Tareas (resumen vivo, actualizado el 25-10-2026)
+## Tareas (resumen vivo, actualizado el 27-10-2026)
 
 ### Siguiente prioridad
 | Tarea | Quién la desbloquea | Estado |
 |---|---|---|
 | **Personaje 3D (rev. 03) en bots y rival** — probarlo en `https://hamza189.github.io/SNIPER-1VS1/?pj=2` (PC, iPhone, Samsung) y decir si pasa a ser el de por defecto | Propietario | PUBLICADO TRAS BANDERA · PENDIENTE DE VALIDACIÓN EN IPHONE |
+| **Cuentas y monetización** — decidir los 5 puntos de `docs/CUENTAS-Y-MONETIZACION.md` §5 (passkeys en Cloudflare, portal web, pagos, cajas gratuitas, consulta de la baja) | Propietario | NECESITA APROBACIÓN |
+| **Elegir personaje y paso nuevo** — probar en `https://hamza189.github.io/SNIPER-1VS1/?pj=pro` (menú › Tu personaje; online con otro dispositivo) cómo andan de frente, de lado y en diagonal | Propietario | PUBLICADO TRAS BANDERA · PENDIENTE DE VALIDACIÓN EN IPHONE |
 | **Los 4 personajes a la vez contra bots** — `https://hamza189.github.io/SNIPER-1VS1/?pj=mix` (y medir con `&medir=1`) en iPhone y PC | Propietario | PUBLICADO TRAS BANDERA · PENDIENTE DE MEDIR EN IPHONE |
 | **Personajes realistas `?pj=pro`** — probar `https://hamza189.github.io/SNIPER-1VS1/?pj=pro` en ALTO (PC) y MEDIO (iPhone) y decidir si pasan a ser los de por defecto | Propietario | PUBLICADO TRAS BANDERA · PENDIENTE DE VALIDACIÓN EN IPHONE |
 | **Medir el rendimiento en el iPhone** — AJUSTES › GRÁFICOS › MEDIR RENDIMIENTO (o `?medir=1`), mandar el informe a Claude; idealmente en BAJO, MEDIO y ALTO (`docs/RENDIMIENTO-IPHONE.md`) | Propietario | LISTO PARA MEDIR |
@@ -39,6 +41,8 @@ Detalle de cada cambio (antes/después, medidas, cómo revertir): `docs/next-lev
 | Perfil BAJO = PUEBLO 2.0 automáticamente; MEDIO/ALTO = PUEBLO 3.0 (mismas colisiones) | PENDIENTE |
 | Calidades por etapas: congelar lo hecho como BAJO (~finales de octubre), mejorar a MEDIO y luego ALTO (plan en la hoja de ruta) | PLANIFICADO |
 | Resto de la auditoría que no cambia reglas: seguridad del servidor (Q3, Q4, Q6, Q7), CI con `test:fast` y reversión (Q8), pruebas del Worker (Q9), navaja contra bots agachados (J4), daño del bot tras el retardo (J7), FUEGO doble táctil (J8), giro residual al reanudar (J9), textura de rata y E10 por perfil (R3, R4), unir mallas del kit (R6), partículas instanciadas (R8), liberar CASA al salir (R10), LOD y anisotropía (G4, G10, G11) | PENDIENTE |
+| Perfil local (apodo, personaje, estadísticas, objetos) como paso A de las cuentas | PENDIENTE |
+| Caras de los personajes (ojos blancos), contorno y sombras; LINCE y rev. 03 con el paso lateral nuevo | PENDIENTE |
 | Caso pequeño de z-fighting: piedra del kit contra estuco del pueblo (x ≈ 23–33, 4 puntos) | PENDIENTE |
 | Paredes blancas lisas de la CASA ATLAS original que deslumbran de cerca | PENDIENTE |
 
@@ -70,6 +74,23 @@ Detalle de cada cambio (antes/después, medidas, cómo revertir): `docs/next-lev
 | CASA ATLAS XL v2 de ChatGPT por defecto (mismas colisiones, detalle real) | 19-10 · directo a `main` |
 | Encargos para ChatGPT: CASA XL, CASA XL v2 y personaje | 18-10 / 19-10 |
 | Personaje 3D rev. 03 hecho por Claude e integrado tras `?pj=2` (bots y rival online) | 20-10 · directo a `main` |
+
+## 27-10-2026 (noche) — Elegir personaje, paso más natural y plan de cuentas y monetización
+Petición del propietario: el paso «parece un poco falso», las texturas tardan en cargar, elegir uno de los personajes
+antes de la partida, cuentas (local o nube, opcionales: obligatorias solo para skins, armas y cajas) y empezar a ver
+cómo monetizar.
+- **Elegir personaje** (`?pj=pro` / `?pj=mix`): botón con retrato en el menú y en la sala; el rival online lo ve
+  (mensaje `skin` de lista cerrada en `core/protocol.js`; el servidor solo lo reenvía). Retratos dibujados por el motor
+  (`tools/skin-portraits.js`). IMPLEMENTADO · PROBADO EN NAVEGADOR · PROBADO ONLINE (servidor local, dos navegadores).
+- **Texturas**: sin negro mientras llega el color; subida a la GPU al llegar; precarga del rival en la sala y de los 4 en
+  `?pj=mix`. IMPLEMENTADO · PROBADO EN NAVEGADOR.
+- **Paso**: medido con `tools/gait-sheet.js`; cadencia según la velocidad, piernas hacia la marcha con el pecho al
+  frente y paso lateral nuevo en S.W.A.T., FSB y MILITAR (zonas de impacto comprobadas en los 3 LOD). Detalle y cifras en
+  `docs/PERSONAJES-PRO.md`. IMPLEMENTADO · PROBADO EN NAVEGADOR · PENDIENTE DE VALIDACIÓN EN IPHONE.
+- **Cuentas y monetización**: plan con decisiones en `docs/CUENTAS-Y-MONETIZACION.md` (passkeys en el mismo Cloudflare,
+  cajas gratuitas ganadas jugando, portales web con anuncios entre partidas, aviso sobre ingresos estando de baja).
+  NECESITA APROBACIÓN: nada de la nube ni de pagos se ha creado.
+- Toca `core/` (mensaje `skin`): se despliega el servidor. Las reglas, armas y zonas de impacto no cambian.
 
 ## 27-10-2026 (tarde) — `?pj=mix`: los 4 personajes a la vez contra bots
 - **Petición (propietario):** antes de mejorar la cara (ojos blancos), el contorno y las sombras, ver los 3 personajes

@@ -1,6 +1,7 @@
 """SNIPER DUEL — convierte un personaje externo y lo deja listo en el juego (?pj=pro).
 
   python tools/personaje-ext/make.py <pack>        (pack de tools/personaje-ext/packs.json: op2, op3, op4…)
+  python tools/personaje-ext/make.py <pack> --glb  (solo los pasos 3-5: animaciones nuevas con la malla ya convertida)
 
 1. Blender (extract.py): esqueleto → 26 huesos del juego, pesos, LOD, encaje en las zonas de impacto.
 2. atlas.py: un material, texturas a <size> (+ 2K y 1K) y variantes de color.
@@ -24,15 +25,18 @@ DEST = ROOT / 'assets' / 'personaje' / 'pro' / name
 BL = os.environ.get('BLENDER', r'D:\Blender\blender.exe')
 WORK.mkdir(parents=True, exist_ok=True)
 (WORK / 'cfg.json').write_text(json.dumps(P.get('cfg', {}), indent=1))
+ONLY_GLB = '--glb' in sys.argv
+if ONLY_GLB and not (WORK / 'model.npz').exists():
+    raise SystemExit('--glb necesita una conversión completa antes (falta ' + str(WORK / 'model.npz') + ')')
 import glob, zipfile
 src = None
 for pat in (P['input'] if isinstance(P['input'], list) else [P['input']]):
     hits = sorted(glob.glob(os.path.expandvars(os.path.expanduser(pat))), key=os.path.getmtime, reverse=True)
     if hits:
         src = hits[0]; break
-if not src:
+if not src and not ONLY_GLB:
     raise SystemExit('no encuentro el modelo: ' + str(P['input']) + ' (descárgalo de ' + P['url'] + ' en formato glTF)')
-if src.lower().endswith('.zip'):          # descarga de Sketchfab: se descomprime en su propia carpeta de trabajo
+if src and not ONLY_GLB and src.lower().endswith('.zip'):          # descarga de Sketchfab: se descomprime en su propia carpeta de trabajo
     dz = WORK / 'src'
     if dz.exists():
         shutil.rmtree(dz)
@@ -56,8 +60,9 @@ def run(cmd, env=None, quiet=False):
     return out
 
 
-run([BL, '--background', '--factory-startup', '--python', HERE / 'extract.py', '--', src, WORK, WORK / 'cfg.json'], quiet=True)
-run([sys.executable, HERE / 'atlas.py', WORK, OUT, P.get('size', 2048), WORK / 'cfg.json'])
+if not ONLY_GLB:
+    run([BL, '--background', '--factory-startup', '--python', HERE / 'extract.py', '--', src, WORK, WORK / 'cfg.json'], quiet=True)
+    run([sys.executable, HERE / 'atlas.py', WORK, OUT, P.get('size', 2048), WORK / 'cfg.json'])
 sets = ',_2k,_1k' if P.get('size', 2048) > 2048 else ',_1k'
 env = {'SD_WORK': str(WORK), 'SD_TEX': str(OUT), 'SD_OUT': str(OUT), 'SD_SETS': sets,
        'SD_GEN': 'SNIPER DUEL — %s (%s, %s) convertido con tools/personaje-ext' % (P['title'], P['author'], P['license'])}
@@ -79,6 +84,8 @@ for L in (0, 1, 2):
         print('   ', f)
 (WORK / 'report.json').write_text(json.dumps(report, indent=1, ensure_ascii=False), encoding='utf-8')
 
+if not (ok and all(r['ok'] for r in report.values())):
+    raise SystemExit('NO se copia al juego: hay fallos en las comprobaciones (ver arriba)')
 if not P.get('copy', True):
     print('(prueba: no se copia al juego)'); sys.exit(0)
 DEST.mkdir(parents=True, exist_ok=True)

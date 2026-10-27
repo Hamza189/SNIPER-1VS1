@@ -111,7 +111,8 @@ const SDSoldier2 = (() => {
     const root = cloneSkinned(tpl.scene, T);
     const meshes = [0, 1, 2].map(i => root.getObjectByName('personaje_LOD' + i));
     for (const m of meshes) { m.material = material; m.castShadow = true; m.receiveShadow = false; m.morphTargetInfluences && m.morphTargetInfluences.fill(0); }
-    const I = { root, meshes, arma: root.getObjectByName('arma'), mixer: new T.AnimationMixer(root), actions: {}, phase: 0, lod: -1, dead: 0, T, tpl };
+    const I = { root, meshes, arma: root.getObjectByName('arma'), mixer: new T.AnimationMixer(root), actions: {}, phase: 0, lod: -1, dead: 0, T, tpl,
+      hips: root.getObjectByName('Hips'), spine1: root.getObjectByName('Spine1'), legYaw: 0, legW: { fwd: 1, back: 0, left: 0, right: 0 }, legMode: 'fwd' };
     setLod(I, 0);
     return I;
   }
@@ -132,14 +133,76 @@ const SDSoldier2 = (() => {
   }
   const TT = (a, t) => { a.time = clamp(t, 0, Math.max(0, a.getClip().duration - 1e-4)); };
 
+  /* paso según la velocidad (27-10-2026, medido con tools/gait-sheet.js): más despacio que el clip, la zancada se acorta
+     y la cadencia baja con la raíz de la velocidad, como al andar de verdad (antes: correr a cámara lenta, 93 pasos/min
+     a 2,3 m/s); más deprisa, la cadencia sube como mucho un 15 % (antes: 304 pasos/min de lado). stride 1 = zancada del
+     clip; rate = fracción de la cadencia del clip. Sin patinar: stride · rate · velocidad del clip = velocidad real. */
+  const GAIT_MAX = 1.15;
+  function gait(sp, speed) {
+    const r = sp / Math.max(0.5, speed);
+    if (r >= 1) return { stride: 1, rate: Math.min(r, GAIT_MAX) };
+    const k = Math.sqrt(r);
+    return { stride: k, rate: k };
+  }
+
+  /* piernas hacia donde va (27-10-2026): mezclar el clip de frente y el lateral al 50 % en diagonal hacía que cada pie
+     recorriese la mitad (patinaba 1,9 m/s). Como en los juegos grandes, las piernas giran hacia la marcha y el pecho
+     contragira lo mismo (sigue mirando y apuntando al frente). De frente hasta 67,5°, de lado hasta 112,5°, hacia atrás
+     el resto; 8° de margen para no saltar de uno a otro en el límite. Las zonas de impacto no cambian. */
+  const LEG_B1 = 67.5 * Math.PI / 180, LEG_B2 = 112.5 * Math.PI / 180, LEG_HYS = 8 * Math.PI / 180;
+  function legPlan(vx, vz, prev) {
+    const a = Math.atan2(vx, vz), s = a < 0 ? -1 : 1, A = Math.abs(a);
+    let mode = A <= LEG_B1 ? 'fwd' : A >= LEG_B2 ? 'back' : 'side';
+    if (prev === 'fwd' && A <= LEG_B1 + LEG_HYS) mode = 'fwd';
+    else if (prev === 'back' && A >= LEG_B2 - LEG_HYS) mode = 'back';
+    else if (prev === 'side' && A > LEG_B1 - LEG_HYS && A < LEG_B2 + LEG_HYS) mode = 'side';
+    if (mode === 'fwd') return { mode, w: { fwd: 1 }, yaw: a };
+    if (mode === 'back') return { mode, w: { back: 1 }, yaw: a - s * Math.PI };
+    return { mode, w: { [s > 0 ? 'left' : 'right']: 1 }, yaw: a - s * Math.PI / 2 };
+  }
+  // gira un hueso alrededor de la vertical del personaje (no de la del hueso)
+  let _qa, _qb, _Y;
+  function yawBone(I, b, ang) {
+    const T = I.T; if (!_qa) { _qa = new T.Quaternion(); _qb = new T.Quaternion(); _Y = new T.Vector3(0, 1, 0); }
+    _qa.set(0, 0, 0, 1);
+    for (let o = b.parent; o && o !== I.root; o = o.parent) _qa.premultiply(o.quaternion);
+    _qb.setFromAxisAngle(_Y, ang).premultiply(_qa.clone().invert()).multiply(_qa);
+    b.quaternion.premultiply(_qb);
+  }
+
   function update(I, st, dt) {
     const P = plan(st), clips = I.tpl.clips, used = new Set();
-    // fase de la marcha: avanza con la velocidad real dividida por la del clip (pie apoyado sin patinar)
-    const walkSpeed = ['fwd', 'back', 'left', 'right'].reduce((s, k) => s + P.dir[k] * ((clips['walk_' + k].info.speed) || 4.5), 0);
     const crouchT = P.crouch > 0.5, spr = P.full.sprint > 0.5;
+    // piernas: qué clip de marcha y cuánto giran (suavizado: ~0,1 s al cambiar de dirección)
+    const DIRS = ['fwd', 'back', 'left', 'right'];
+    const walkW = DIRS.reduce((a, k) => a + (P.lower['walk_' + k] || 0), 0), moveW = walkW + (P.lower.crouch_walk || 0);
+    const k10 = Math.min(1, dt * 10);
+    let back = false;
+    if (P.sp > 0.3) {
+      const L = legPlan(st.vx || 0, st.vz || 0, I.legMode); I.legMode = L.mode;
+      let yaw = L.yaw;
+      if (crouchT) {   // agachado solo hay clip de frente: hacia atrás se reproduce al revés; giro máximo 60°
+        const a = Math.atan2(st.vx || 0, st.vz || 0); back = Math.abs(a) > Math.PI / 2;
+        yaw = clamp(back ? a - (a < 0 ? -1 : 1) * Math.PI : a, -1.05, 1.05);
+      }
+      for (const d of DIRS) I.legW[d] += ((L.w[d] || 0) - I.legW[d]) * k10;
+      I.legYaw += (yaw - I.legYaw) * k10;
+    } else I.legYaw += (0 - I.legYaw) * k10;
+    const wsum = DIRS.reduce((a, d) => a + I.legW[d], 0) || 1;
+    if (walkW > 0) for (const d of DIRS) { const w = walkW * I.legW[d] / wsum; if (w > 1e-3) P.lower['walk_' + d] = w; else delete P.lower['walk_' + d]; }
+    // fase de la marcha: avanza con la velocidad real dividida por la del clip (pie apoyado sin patinar)
+    const nat = DIRS.reduce((v, d) => { const sp = (clips['walk_' + d].info.speed) || 4.5, w = I.legW[d] / wsum;
+      v[0] += w * sp * (d === 'left' ? 1 : d === 'right' ? -1 : 0); v[1] += w * sp * (d === 'fwd' ? 1 : d === 'back' ? -1 : 0); return v; }, [0, 0]);
+    const walkSpeed = Math.hypot(nat[0], nat[1]);
     const speed = spr ? (clips.sprint.info.speed || 6.5) : crouchT ? (clips.crouch_walk.info.speed || 2.2) : walkSpeed;
     const period = (spr ? clips.sprint : crouchT ? clips.crouch_walk : clips.walk_fwd).full.duration;
-    I.phase = (I.phase + dt * P.sp / Math.max(0.5, speed) / period) % 1;
+    const G = spr ? { stride: 1, rate: P.sp / Math.max(0.5, speed) } : gait(P.sp, speed);
+    I.phase = ((I.phase + (back ? -1 : 1) * dt * G.rate / period) % 1 + 1) % 1;
+    // zancada corta: parte del peso de la marcha pasa a la postura quieta (el pie recorre menos y sigue sin patinar)
+    if (G.stride < 1) for (const k of Object.keys(P.lower)) {
+      const rest = k.startsWith('walk_') ? 'idle_rifle' : k === 'crouch_walk' ? 'crouch_idle' : null;
+      if (rest) { const w = P.lower[k] * (1 - G.stride); P.lower[k] -= w; P.lower[rest] = (P.lower[rest] || 0) + w; }
+    }
     I.t = (I.t || 0) + dt;
     if ((st.dead || 0) > 0) I.dead += dt; else I.dead = 0;
     const set = (name, layer, w, t) => { if (w <= 1e-3) return; const a = action(I, name, layer); if (!a) return; a.enabled = true; a.setEffectiveWeight(w); TT(a, t); used.add(a); };
@@ -158,9 +221,11 @@ const SDSoldier2 = (() => {
     for (const [k, w] of Object.entries(P.add)) set(k, 'add', w, 0);
     for (const key in I.actions) { const a = I.actions[key]; if (!used.has(a)) { a.setEffectiveWeight(0); a.enabled = false; } }
     I.mixer.update(0);
+    const yaw = I.legYaw * Math.min(1, moveW);
+    if (Math.abs(yaw) > 1e-3 && I.hips && I.spine1) { yawBone(I, I.hips, yaw); yawBone(I, I.spine1, -yaw); }
     return P;
   }
 
-  return { plan, template, create, update, setLod, cloneSkinned, AIM_OFFSET, LOWER_BONES };
+  return { plan, gait, legPlan, template, create, update, setLod, cloneSkinned, AIM_OFFSET, LOWER_BONES };
 })();
 if (typeof module !== 'undefined' && module.exports) module.exports = SDSoldier2;

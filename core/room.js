@@ -56,15 +56,15 @@ function create(opts) {
   const evq = obj => { if (obj.t === 'ev') obj.q = ++R.evSeq; return obj; };
   const sendAll = obj => { evq(obj); const s = JSON.stringify(obj); for (const id of ['A', 'B']) { const st = R.seats[id]; if (st && st.conn != null) R.send(st.conn, s); } };
   const log = (msg) => { R.log.push(Math.round(R.now) + ' ' + msg); if (R.log.length > 200) R.log.shift(); };
-  const pubPlayers = () => ['A', 'B'].map(id => { const s = R.seats[id]; return s ? { id, name: s.name, connected: s.conn != null, ready: s.ready, kills: s.kills, kit: s.kit } : null; });
+  const pubPlayers = () => ['A', 'B'].map(id => { const s = R.seats[id]; return s ? { id, name: s.name, connected: s.conn != null, ready: s.ready, kills: s.kills, kit: s.kit, skin: s.skin } : null; });
   const lobbyMsg = () => ({ t: 'lobby', phase: R.phase, players: pubPlayers(), match: R.match, map: mapId, maps: Object.keys(MAPS), winner: R.winner === undefined ? undefined : R.winner, rematch: R.rematch });
   function save() {
     if (!R.persist) return;
     R.persist({ code: R.code, map: mapId, phase: R.phase === 'playing' || R.phase === 'countdown' || R.phase === 'paused' ? 'interrupted' : R.phase, match: R.match,
-      seats: ['A', 'B'].map(id => { const s = R.seats[id]; return s ? { id, name: s.name, token: s.token, kills: s.kills, deaths: s.deaths, kit: s.kit } : null; }) });
+      seats: ['A', 'B'].map(id => { const s = R.seats[id]; return s ? { id, name: s.name, token: s.token, kills: s.kills, deaths: s.deaths, kit: s.kit, skin: s.skin } : null; }) });
   }
   function newSeat(id, name, token) {
-    return { id, name: name || (id === 'A' ? 'JUGADOR 1' : 'JUGADOR 2'), token, conn: null, ready: false, leftAt: 0, kit: 'rifle',
+    return { id, name: name || (id === 'A' ? 'JUGADOR 1' : 'JUGADOR 2'), token, conn: null, ready: false, leftAt: 0, kit: 'rifle', skin: null,
       p: SDP.create(0, 0, 0), hp: RULES.hp, alive: false, diedAt: 0, lastHit: -1e9, kills: 0, deaths: 0,
       lastSeq: -1, budget: PR.LIMITS.cmdBurst, budgetAt: R.now, yaw: 0, pitch: 0, shots: 0, hits: 0, hs: 0 };
   }
@@ -208,6 +208,9 @@ function create(opts) {
         break;
       case 'kit':   // my primary for my next spawn (any time: the rival sees it in the lobby)
         if (s.kit !== m.id) { s.kit = m.id; if (R.phase === 'lobby' || R.phase === 'over') sendAll(lobbyMsg()); save(); }
+        break;
+      case 'skin':  // my character: looks only (the rival draws it; nothing in the rules changes)
+        if (s.skin !== m.id) { s.skin = m.id; if (R.phase === 'lobby' || R.phase === 'over') sendAll(lobbyMsg()); save(); }
         break;
       case 'ready': R.lastPlay = now; if (R.phase === 'lobby') { s.ready = m.on; sendAll(lobbyMsg()); maybeStart(); } break;
       case 'rematch':
@@ -444,7 +447,7 @@ function create(opts) {
   // restore seats after the server object was evicted (names, tokens, score)
   function restore(d) {
     if (!d || !d.seats) return;
-    for (const x of d.seats) if (x) { const s = newSeat(x.id, x.name, x.token); s.kills = x.kills || 0; s.deaths = x.deaths || 0; if (x.kit === 'shotgun') s.kit = 'shotgun'; s.leftAt = R.now; R.seats[x.id] = s; }
+    for (const x of d.seats) if (x) { const s = newSeat(x.id, x.name, x.token); s.kills = x.kills || 0; s.deaths = x.deaths || 0; if (x.kit === 'shotgun') s.kit = 'shotgun'; if (PR.SKINS.includes(x.skin)) s.skin = x.skin; s.leftAt = R.now; R.seats[x.id] = s; }
     R.match = d.match || 0;
     if (d.map && MAPS[d.map]) mapId = d.map;
     R.phase = d.phase === 'over' ? 'over' : 'lobby'; // a match cut by a restart goes back to the lobby

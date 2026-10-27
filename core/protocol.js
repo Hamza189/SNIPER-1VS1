@@ -6,6 +6,7 @@
      ready   { t, on }                       lobby: I am ready / not ready
      map     { t, id }                       lobby, creator only: choose the map ('pueblo', 'arena')
      kit     { t, id }                       my primary: 'rifle' (HALCÓN R7) or 'shotgun' (FURIA 12), used from my next spawn
+     skin    { t, id }                       my character (looks only): 'clasico', 'swat', 'fsb' or 'militar'
      in      { t, m, s, c:[cmd...] }         commands of match m, first sequence number s
      rematch { t }                           after the end: play again
      ping    { t, c }                        c = client clock (ms)
@@ -17,6 +18,8 @@
 (function (root) {
 'use strict';
 const VERSION = 1;
+// characters a player can show (looks only: the hit zones are the same for all)
+const SKINS = ['clasico', 'swat', 'fsb', 'militar'];
 const LIMITS = {
   maxBytes: 4096,          // a bigger message is dropped
   maxMsgPerSec: 90,        // per connection; more is dropped, far more closes the socket
@@ -89,6 +92,7 @@ function parse(text) {
       return { msg: { t: 'in', m: m.m, s: m.s, c } };
     }
     case 'kit': return m.id === 'rifle' || m.id === 'shotgun' ? { msg: { t: 'kit', id: m.id } } : { error: 'shape' };
+    case 'skin': return SKINS.includes(m.id) ? { msg: { t: 'skin', id: m.id } } : { error: 'shape' };
     case 'map': return typeof m.id === 'string' && /^[a-z]{2,16}$/.test(m.id) ? { msg: { t: 'map', id: m.id } } : { error: 'shape' };
     case 'rematch': return { msg: { t: 'rematch' } };
     case 'ping': return num(m.c, 0, 1e15) && (m.r === undefined || num(m.r, 0, 1e5)) ? { msg: { t: 'ping', c: m.c, r: m.r === undefined ? undefined : Math.min(600, m.r) } } : { error: 'shape' };
@@ -103,6 +107,6 @@ function isCode(s) { return typeof s === 'string' && s.length === 6 && [...s].ev
 function codeFrom(bytes) { let s = ''; for (let i = 0; i < 6; i++) s += CODE_ALPHABET[bytes[i] % CODE_ALPHABET.length]; return s; }
 function tokenFrom(bytes) { const A = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_'; let s = ''; for (const b of bytes) s += A[b & 63]; return s; }
 
-const SDProto = { VERSION, LIMITS, B, quantize, packCmd, unpackCmd, parse, cleanName, CODE_ALPHABET, isCode, codeFrom, tokenFrom };
+const SDProto = { VERSION, SKINS, LIMITS, B, quantize, packCmd, unpackCmd, parse, cleanName, CODE_ALPHABET, isCode, codeFrom, tokenFrom };
 if (typeof module !== 'undefined' && module.exports) module.exports = SDProto; else root.SDProto = SDProto;
 })(typeof window !== 'undefined' ? window : globalThis);

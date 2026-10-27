@@ -87,6 +87,45 @@ const zones = p => p.evaluate(() => __SD.BOTS.map(b => b.hit.map(m => [m.userDat
       check(q + ': las zonas de impacto de los 4 bots son las de siempre', (await zones(X.p)).split(';').every(z => z === zone1));
       await X.ctx.close();
     }
+
+    // elegir personaje (27-10-2026): cada uno elige el suyo antes de jugar y el rival online lo ve (servidor local real)
+    console.log('\nELEGIR PERSONAJE · ONLINE (MEDIO)');
+    const { startServer } = require('../server/node.js');
+    const gs = await startServer({ port: 0 });
+    const on = async (skin) => {
+      const ctx = await b.newContext({ viewport: { width: 667, height: 375 } });
+      await ctx.route(/fonts\.(googleapis|gstatic)\.com/, r => r.abort());
+      await ctx.addInitScript(sk => { try { localStorage.setItem('sniperduel_settings', JSON.stringify({ quality: 'medio', v: 3 })); localStorage.setItem('sniperduel_skin', JSON.stringify(sk)); } catch (e) {} }, skin);
+      const p = await ctx.newPage(), errs = [], files = [];
+      p.on('pageerror', e => errs.push(e.message));
+      p.on('response', r => { const u = r.url(); if (/\/assets\/personaje\//.test(u) && r.status() >= 400) errs.push(r.status() + ' ' + u); if (/\/assets\/personaje\/pro\/.*\.glb/.test(u)) files.push(u.replace(/^.*\/assets\/personaje\/pro\//, '').replace(/\?.*/, '')); });
+      await p.goto(srv.url + '?pj=pro&server=' + encodeURIComponent('http://127.0.0.1:' + gs.port));
+      await p.waitForFunction(() => window.__SD && __SD.WORLDS, null, { timeout: 120000 });
+      return { ctx, p, errs, files };
+    };
+    const OA = await on('fsb'), OB = await on('militar');
+    const ui = await OA.p.evaluate(() => ({ shown: !document.getElementById('skinBlock').hidden, name: document.querySelector('#skinBlock .skinPick b').textContent, cards: document.querySelectorAll('.skinCard').length }));
+    check('el menú muestra «Tu personaje» con el elegido y la ventana tiene los 4', ui.shown && ui.name === 'FSB' && ui.cards === 4, JSON.stringify(ui));
+    await OA.p.click('#mpBtn'); await OA.p.fill('#mpName', 'Hamza'); await OA.p.click('#mpCreate');
+    await OA.p.waitForFunction(() => /^[A-Z0-9]{6}$/.test(document.getElementById('mpCodeBig').textContent), null, { timeout: 15000 });
+    const code = await OA.p.textContent('#mpCodeBig');
+    await OB.p.click('#mpBtn'); await OB.p.fill('#mpName', 'Novia'); await OB.p.fill('#mpCode', code); await OB.p.click('#mpJoin');
+    const inLobby = await OA.p.waitForFunction(() => /MILITAR/.test(document.getElementById('mpPlayers').textContent) && /FSB/.test(document.getElementById('mpPlayers').textContent), null, { timeout: 15000 }).then(() => true, () => false);
+    check('en la sala cada uno ve el personaje del otro', inLobby, await OA.p.textContent('#mpPlayers'));
+    // B cambia de personaje en la sala: A lo ve al momento
+    await OB.p.evaluate(() => __SD.setSkin('swat'));
+    check('B cambia a S.W.A.T. en la sala y A lo ve', await OA.p.waitForFunction(() => /S\.W\.A\.T\./.test(document.getElementById('mpPlayers').textContent), null, { timeout: 8000 }).then(() => true, () => false));
+    await OA.p.click('#mpReady'); await OB.p.click('#mpReady');
+    const vA = await OA.p.waitForFunction(() => __SD.REMOTE && __SD.REMOTE.rig.v2 && __SD.REMOTE.rig.skinPack === 'op2', null, { timeout: 180000 }).then(() => true, () => false);
+    const vB = await OB.p.waitForFunction(() => __SD.REMOTE && __SD.REMOTE.rig.v2 && __SD.REMOTE.rig.skinPack === 'op3', null, { timeout: 180000 }).then(() => true, () => false);
+    check('en la partida A ve a B como S.W.A.T. y B ve a A como FSB (texturas 2K en MEDIO)', vA && vB && OA.files.includes('op2/personaje_2k.glb') && OB.files.includes('op3/personaje_2k.glb'), OA.files.join(' ') + ' | ' + OB.files.join(' '));
+    const hz = await OA.p.evaluate(() => __SD.REMOTE.hit.map(m => m.userData.part + ':' + m.position.y).join(' '));
+    check('las zonas de impacto del rival son las del servidor (no dependen del personaje)', hz === 'head:1.63 torso:1.17 legs:0.43', hz);
+    // cambiar el personaje dibujado vuelve a montar el modelo (CLÁSICO = el de cajas)
+    const sw = await OA.p.evaluate(() => { const R = __SD.REMOTE.rig; __SD.pj2SetPack(R, null); const box = !R.v2 && R.root.children.some(c => c.visible); __SD.pj2SetPack(R, 'op2'); return { box, back: !!R.v2 }; });
+    check('pasar al CLÁSICO vuelve a la figura de cajas y se puede volver', sw.box && sw.back, JSON.stringify(sw));
+    check('sin errores en las dos páginas', OA.errs.length === 0 && OB.errs.length === 0, OA.errs.concat(OB.errs).slice(0, 3).join(' | '));
+    await OA.ctx.close(); await OB.ctx.close(); await gs.close();
   } catch (e) { fail++; console.log('  FAIL ' + (e && e.stack || e)); }
   await b.close(); srv.close();
   console.log('\n' + pass + ' correctas, ' + fail + ' fallidas');

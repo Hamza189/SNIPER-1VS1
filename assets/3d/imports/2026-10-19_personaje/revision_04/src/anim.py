@@ -344,7 +344,7 @@ class Builder:
         ank = ank + np.array([0, height, 0])
         return ank, H @ Rp
 
-    def gait(self, P, t, T, D, direction, H=0.2, stance=0.32, bob=0.022, lean=0.0, sway_deg=7.0, cross=0.015, lateral=False):
+    def gait(self, P, t, T, D, direction, H=0.2, stance=0.32, bob=0.022, lean=0.0, sway_deg=7.0, cross=0.015, lateral=False, lead=0.30, trail=0.13):
         sk = self.sk
         u = (t / T) % 1.0
         dirv = unit(direction)
@@ -353,7 +353,7 @@ class Builder:
             ph = (u + off) % 1.0
             ank0 = self.R[self.I[side + 'Foot']].copy()
             if lateral:
-                ank0[0] = sx * (0.30 if np.dot(dirv, [sx, 0, 0]) > 0 else 0.13)
+                ank0[0] = sx * (lead if np.dot(dirv, [sx, 0, 0]) > 0 else trail)   # centro del pie que abre / del que empuja
             ank0[0] -= sx * cross
             heading = yaw(sx * math.radians(1))
             if ph < stance:                        # apoyo: retrocede a velocidad constante
@@ -385,7 +385,7 @@ class Builder:
             hyaw *= 0.35
         P.local('Hips', yaw(hyaw) @ up(-lean) @ roll(math.radians(0.8) * math.sin(TAU * 2 * (u - stance / 2) + 0.6) * (0.5 if lateral else 1)))
         P.local('Spine', yaw(-hyaw * 1.25) @ up(lean * 0.3))
-        self.legs_to(P, {k: (v[0], v[1]) for k, v in feet.items()}, knee_out=0.9 if lateral else 0.12)
+        self.legs_to(P, {k: (v[0], v[1]) for k, v in feet.items()}, knee_out=1.8 if lateral else 0.12)
         for side in ('Left', 'Right'):
             P.local(side + 'ToeBase', rx(-math.radians(30) * feet[side][2]))
 

@@ -173,6 +173,20 @@ h1 span{display:block;color:var(--sand)}
 .seg button[aria-pressed="true"]{background:var(--hud);color:var(--ink)}
 .kitRow{display:grid;gap:6px;justify-items:center;margin:4px 0 2px}.kitNote{color:var(--signal);min-height:1em;text-align:center}.kitRow .seg button{font-size:15px}.kitSeg button{white-space:nowrap}
 @media (max-height:480px){.kitRow{margin:0;gap:3px}.kitRow .seg button{font-size:13px;padding-top:6px;padding-bottom:6px}}
+/* elegir personaje (?pj=pro / ?pj=mix): botón con retrato en el menú y la sala, ventana con las 4 fichas */
+.skinPick{display:flex;align-items:center;gap:10px;width:100%;min-height:44px;padding:3px 12px 3px 3px;background:none;border:1px solid var(--line);cursor:pointer;text-align:left}
+.skinPick img{width:34px;height:42px;object-fit:cover;background:var(--ink-2);flex:none}
+.skinPick b{font:500 22px/1 var(--f-display);letter-spacing:.04em;flex:1;padding-top:3px}
+.skinPick .lbl{color:var(--signal)}
+#skinOv{z-index:23;background:rgba(12,10,8,.96)}
+.skinGrid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+.skinCard{display:grid;gap:4px;align-content:start;padding:6px;background:var(--ink-2);border:1px solid var(--line);cursor:pointer;text-align:left}
+.skinCard img{width:100%;aspect-ratio:4/5;max-height:calc(100vh - 210px);object-fit:cover;object-position:50% 20%;display:block;background:#000}
+.skinCard b{font:500 24px/1 var(--f-display);letter-spacing:.04em;padding-top:4px}
+.skinCard[aria-pressed="true"]{border-color:var(--signal);box-shadow:inset 0 0 0 1px var(--signal)}
+.skinCard:focus-visible,.skinPick:focus-visible{outline:2px solid var(--signal);outline-offset:2px}
+@media (max-width:560px) and (min-height:481px){.skinGrid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-height:480px){#skinOv .panel{margin-block:8px;padding:12px 16px;gap:8px}.skinCard b{font-size:20px}}
 .seg button:disabled{cursor:default}.seg button:disabled:not([aria-pressed="true"]){opacity:.45}
 .seg button:focus-visible,.btn:focus-visible{outline:2px solid var(--signal);outline-offset:2px}
 .chk{display:flex;align-items:center;gap:8px;margin-top:10px;font-size:12px;color:var(--sand);cursor:pointer}
@@ -621,6 +635,15 @@ body.hud2 #stickBase.sprint #stickKnob svg{display:block}
 
 <div id="rotate" hidden><div class="box"><div class="phone"></div><h3>GIRA EL MÓVIL</h3><p>Sniper Duel se juega en horizontal.</p></div></div>
 
+<div id="skinOv" class="overlay center" hidden>
+  <div class="panel" style="width:min(780px,calc(100% - 24px));gap:12px">
+    <div class="eyebrow">Tu personaje</div>
+    <div class="skinGrid" id="skinGrid" role="group" aria-label="Personajes"></div>
+    <p class="setHelp" style="margin:0">Solo cambia el aspecto: las zonas de impacto son las mismas para todos. Tu rival online ve el que elijas. En calidad BAJA todos se ven como el soldado clásico.</p>
+    <div class="row"><button class="btn ghost" id="skinClose" type="button" style="font-size:20px">VOLVER</button></div>
+  </div>
+</div>
+
 <div id="menu" class="overlay">
   <div class="menuInner">
     <div>
@@ -638,6 +661,10 @@ body.hud2 #stickBase.sprint #stickKnob svg{display:block}
         <div>
           <div class="lbl" style="margin-bottom:6px">Arma principal</div>
           <div class="seg kitSeg" role="group" aria-label="Arma principal"><button type="button" data-kit="rifle">HALCÓN R7</button><button type="button" data-kit="shotgun">FURIA 12</button></div>
+        </div>
+        <div id="skinBlock" hidden>
+          <div class="lbl" style="margin-bottom:6px">Tu personaje</div>
+          <button type="button" class="skinPick" aria-label="Elegir personaje"><img alt=""><b></b><span class="lbl">CAMBIAR</span></button>
         </div>
         <div id="mapBlock">
           <div class="lbl" style="margin-bottom:6px">Mapa</div>
@@ -769,7 +796,7 @@ body.hud2 #stickBase.sprint #stickKnob svg{display:block}
     <div id="mpLobby" hidden style="display:grid;gap:14px">
       <div style="display:grid;gap:4px"><span class="lbl">Código de sala</span><div id="mpCodeBig">------</div></div>
       <div class="row"><button class="btn ghost" id="mpCopy" type="button" style="font-size:20px">COPIAR CÓDIGO</button><button class="btn ghost" id="mpShare" type="button" style="font-size:20px">COMPARTIR INVITACIÓN</button></div>
-      <div style="display:grid;gap:6px"><p class="mpLink" id="mpLink" style="margin:0"></p><span class="lbl">Mapa (lo elige quien crea la sala)</span><div class="seg" id="mpMapSeg" role="group" aria-label="Mapa"><button type="button" data-map="arena">ARENA DE PRUEBAS</button><button type="button" data-map="pueblo">PUEBLO</button><button type="button" data-map="casa" hidden>CASA ATLAS · EXP.</button></div><span class="lbl">Tu arma principal</span><div class="seg kitSeg" role="group" aria-label="Arma principal"><button type="button" data-kit="rifle">HALCÓN R7</button><button type="button" data-kit="shotgun">FURIA 12</button></div></div>
+      <div style="display:grid;gap:6px"><p class="mpLink" id="mpLink" style="margin:0"></p><span class="lbl">Mapa (lo elige quien crea la sala)</span><div class="seg" id="mpMapSeg" role="group" aria-label="Mapa"><button type="button" data-map="arena">ARENA DE PRUEBAS</button><button type="button" data-map="pueblo">PUEBLO</button><button type="button" data-map="casa" hidden>CASA ATLAS · EXP.</button></div><span class="lbl">Tu arma principal</span><div class="seg kitSeg" role="group" aria-label="Arma principal"><button type="button" data-kit="rifle">HALCÓN R7</button><button type="button" data-kit="shotgun">FURIA 12</button></div><span class="lbl skinOnly" hidden>Tu personaje (tu rival lo verá)</span><button type="button" class="skinPick skinOnly" aria-label="Elegir personaje" hidden><img alt=""><b></b><span class="lbl">CAMBIAR</span></button></div>
       <ul id="mpPlayers"></ul>
       <p class="mpMsg" id="mpStatus">ESPERANDO AL SEGUNDO JUGADOR…</p>
       <div class="row"><button class="btn" id="mpReady" type="button">LISTO</button><button class="btn ghost" id="mpLeave" type="button" style="font-size:20px">SALIR</button></div>
@@ -2654,10 +2681,18 @@ const PJ_PRO=PJ_VERSION==='pro';
    calidad: ALTO 4K, MEDIO 2K, BAJO 1K. El rival online es el S.W.A.T. */
 const PJ_MIX=PJ_VERSION==='mix';
 const MIX_ORDER=['op2','op3','op4',null];
+/* elegir personaje (27-10-2026): con ?pj=pro o ?pj=mix cada jugador elige el suyo antes de la partida. Solo aspecto: las
+   zonas de impacto son las mismas. El rival online lo ve (mensaje 'skin' del servidor); en BAJO con ?pj=pro, el de cajas. */
+const SKINS={swat:{pack:'op2',name:'S.W.A.T.',by:'Mateusz Woliński · CC BY'},fsb:{pack:'op3',name:'FSB',by:'Mateusz Woliński · CC BY'},
+  militar:{pack:'op4',name:'MILITAR',by:'DanlyVostok · CC BY'},clasico:{pack:null,name:'CLÁSICO',by:'Sniper Duel'}};
+const SKIN_ON=PJ_PRO||PJ_MIX;
+let SKIN=SKINS[store.get('skin')]?store.get('skin'):'swat';
+const skinImg=id=>'assets/personaje/retratos/'+id+'.jpg?v='+BUILD_HASH;
 const PJ2={on:(['2','3'].includes(PJ_VERSION)||(PJ_PRO&&GFX.profile!=='bajo')||PJ_MIX)&&typeof SDSoldier2!=='undefined',assetRoot:PJ_VERSION==='3'?'assets/personaje/v4/':'assets/personaje/',tpl:null,mats:{},list:[],loading:false,failed:false,
   tpls:{},loadingRoots:{},failedRoots:{}};
 // carpeta del personaje de cada apariencia (B rival online, bots, A campo de tiro)
 function pj2Root(v,R){
+  if(R&&R.skinPack!==undefined)return R.skinPack?'assets/personaje/pro/'+R.skinPack+'/':null;   // elegido por el jugador
   if(PJ_MIX){const k=R&&R.mixPack!==undefined?R.mixPack:'op2';return k?'assets/personaje/pro/'+k+'/':null;}
   if(!PJ_PRO)return PJ2.assetRoot;
   if(GFX.profile==='alto')return 'assets/personaje/pro/'+(v==='B'?'op2':'op3')+'/';
@@ -2665,10 +2700,10 @@ function pj2Root(v,R){
 }
 const PJ2_LOD={alto:[30,70],medio:[22,50],bajo:[12,30]};   // m (distancia / zoom de la mira) para pasar a LOD1 y LOD2
 const _pj2v=new T.Vector3();
-// tamaño de las texturas de cada personaje: BAJO 1K; con ?pj=mix en MEDIO, los de 4K (op2/op3) a 2K
+// tamaño de las texturas de cada personaje: BAJO 1K; en MEDIO, los de 4K (op2/op3) a 2K
 function pj2Suffix(root){
   if(GFX.profile==='bajo')return '_1k';
-  if(PJ_MIX&&GFX.profile!=='alto'&&/\/(op2|op3)\/$/.test(root))return '_2k';
+  if((PJ_MIX||PJ_PRO)&&GFX.profile!=='alto'&&/\/(op2|op3)\/$/.test(root))return '_2k';
   return '';
 }
 function pj2Load(root){
@@ -2677,13 +2712,15 @@ function pj2Load(root){
   const f=root+'personaje'+pj2Suffix(root)+'.glb?v='+BUILD_HASH;
   const fail=e=>{PJ2.failedRoots[root]=true;if(!Object.keys(PJ2.tpls).length)PJ2.failed=true;console.warn('pj2 load',root,e);};
   try{new T.GLTFLoader().load(f,g=>{try{const tpl=SDSoldier2.template(g,T);PJ2.tpls[root]=tpl;if(!PJ2.tpl)PJ2.tpl=tpl;PJ2.mats[PJ_PRO||PJ_MIX?root+'B':'B']=tpl.material;
+      if(PJ_MIX)pj2Mat('bots',root);
       for(const R of PJ2.list)pj2Attach(R);try{precompileAll();}catch(e){}}catch(e){fail(e);}},undefined,fail);}catch(e){fail(e);}
 }
 function pj2Mat(v,root){
   root=root||pj2Root(v);const key=PJ_PRO||PJ_MIX?root+v:v;
   if(PJ2.mats[key])return PJ2.mats[key];
-  const m=PJ2.tpls[root].material.clone(),t=new T.TextureLoader().load(root+'color_'+v+pj2Suffix(root)+'.jpg?v='+BUILD_HASH);
-  t.flipY=false;t.encoding=T.sRGBEncoding;t.anisotropy=GFX.profile==='alto'?(PJ_PRO?8:4):2;m.map=t;return PJ2.mats[key]=m;
+  // mientras llega el color de la variante se ve el del propio GLB (no negro); al llegar se sube a la GPU (sin tirón al verlo)
+  const m=PJ2.tpls[root].material.clone(),t=new T.TextureLoader().load(root+'color_'+v+pj2Suffix(root)+'.jpg?v='+BUILD_HASH,tx=>{m.map=tx;try{renderer.initTexture(tx);}catch(e){}});
+  t.flipY=false;t.encoding=T.sRGBEncoding;t.anisotropy=GFX.profile==='alto'?(PJ_PRO||PJ_MIX?8:4):2;return PJ2.mats[key]=m;
 }
 function pj2Aim(R,w){const o=SDSoldier2.AIM_OFFSET[w]||SDSoldier2.AIM_OFFSET.rifle;R.aim.position.set(o[0],o[1],o[2]);R.v2w=w;}
 function pj2Attach(R){
@@ -2691,9 +2728,23 @@ function pj2Attach(R){
   if(R.v2||!root)return;
   if(!tpl){if(!PJ2.failedRoots[root])pj2Load(root);return;}
   const I=SDSoldier2.create(tpl,T,pj2Mat(v,root));R.v2=I;
-  for(const c of R.root.children)c.visible=false;   // fuera la figura de cajas (sigue existiendo: es la vuelta atrás)
+  R.v2hid=R.root.children.filter(c=>c.visible);for(const c of R.v2hid)c.visible=false;   // fuera la figura de cajas (sigue existiendo: es la vuelta atrás)
   R.root.add(I.root);
   I.arma.add(R.aim);R.aim.rotation.set(0,0,0);pj2Aim(R,R.wpn||'rifle');   // armas, fogonazo y destello de la mira van con el arma
+}
+// cambiar de personaje (el rival online elige el suyo): vuelve la figura de cajas y se pone el nuevo cuando esté cargado
+function pj2Detach(R){
+  const I=R.v2;if(!I)return;R.root.remove(I.root);R.v2=null;R.v2w=null;
+  R.chest.add(R.aim);R.aim.position.set(0,0.46,0.02);R.aim.rotation.set(0,0,0);
+  for(const c of R.v2hid||[])c.visible=true;R.v2hid=null;
+}
+function pj2SetPack(R,pack){if(!PJ2.on||R.skinPack===pack)return;pj2Detach(R);R.skinPack=pack;pj2Attach(R);}
+// el rival online: su personaje elegido (se precarga en la sala, antes de empezar)
+function rivalSkin(){
+  const N=NET.N;if(!N||!SKIN_ON||!PJ2.on)return;
+  const op=(N.players||[]).find(p=>p&&p.id!==N.you),S=op&&SKINS[op.skin];if(!S)return;
+  if(S.pack)pj2Load('assets/personaje/pro/'+S.pack+'/');
+  if(REMOTE)pj2SetPack(REMOTE.rig,S.pack);
 }
 function animateSoldier2(R,st,dt){
   const I=R.v2,dead=st.dead||0;
@@ -4743,7 +4794,7 @@ function renderLobby(){
   $('#mpCodeBig').textContent=NET.code||'------';$('#mpLink').textContent=inviteLink(NET.code);
   const ul=$('#mpPlayers');ul.innerHTML='';
   for(const p of N.players||[]){if(!p)continue;const li=document.createElement('li');
-    const nm=document.createElement('span');nm.textContent=p.name+(p.id===N.you?' (tú)':'')+' · '+(p.kit==='shotgun'?'FURIA 12':'HALCÓN R7');
+    const nm=document.createElement('span');nm.textContent=p.name+(p.id===N.you?' (tú)':'')+' · '+(p.kit==='shotgun'?'FURIA 12':'HALCÓN R7')+(SKIN_ON&&SKINS[p.skin]?' · '+SKINS[p.skin].name:'');
     const st=document.createElement('span');st.className='st'+(p.connected?(p.ready?' ok':''):' off');st.textContent=p.connected?(p.ready?'PREPARADO':'EN LA SALA'):'DESCONECTADO';
     li.append(nm,st);ul.append(li);}
   const two=(N.players||[]).filter(Boolean).length===2;const me=(N.players||[]).find(p=>p&&p.id===N.you);
@@ -4757,10 +4808,12 @@ function netEvent(e){
   switch(e.k){
     case 'welcome':
       store.set('tok_'+NET.code,N.token);netBanner(null);N.chooseKit(PRIMARY);   // my primary (also after a reconnect)
+      if(SKIN_ON)N.chooseSkin(SKIN);rivalSkin();
       if(N.phase==='lobby'){mpShow('lobby');renderLobby();history.replaceState(null,'',location.pathname+'?sala='+NET.code);}
       if(N.phase==='over'){mpShow('lobby');renderLobby();}
       break;
     case 'lobby':
+      rivalSkin();
       if(NET.view==='lobby'||mode!=='online')renderLobby();
       if(N.phase==='lobby'&&mode==='online'&&state!=='menu'){netEndOnline();mpShow('lobby');renderLobby();mpMsg('');}
       if(N.phase==='paused'&&mode==='online'){const off=(N.players||[]).find(p=>p&&!p.connected);if(off&&off.id!==N.you){if(!NET.goneAt)NET.goneAt=performance.now();netGoneBanner();}}
@@ -4840,6 +4893,7 @@ function netStart(m){
   setWorld(m.map||'pueblo');
   if(mode!=='online'){NET.prevMode=mode;mode='online';}
   if(!REMOTE)REMOTE=new RemotePlayer();
+  rivalSkin();
   clearPendingInput();audioInit();
   if(!m.resume){
     BOTS.concat(DUMMIES,TRAINERS).forEach(b=>{b.alive=false;b.g.visible=false;b.glint.visible=false;});
@@ -4928,6 +4982,25 @@ function kitNote(){const el=$('#kitNote');if(!el)return;const inMatch=state==='p
   el.textContent=inMatch&&now!==PRIMARY?'SE APLICARÁ EN EL PRÓXIMO RESPAWN · AHORA LLEVAS '+(now==='shotgun'?'FURIA 12':'HALCÓN R7'):'';}
 document.querySelectorAll('.kitSeg button').forEach(b=>b.addEventListener('click',()=>{setPrimaryChoice(b.dataset.kit);audioInit();SFX.ui();}));
 setPrimaryChoice(PRIMARY);
+// your character (?pj=pro / ?pj=mix): chosen in the menu or the room before playing; the online rival sees it
+function setSkin(id){if(!SKINS[id])return;SKIN=id;store.set('skin',id);skinUI();if(SKIN_ON&&NET.N&&NET.N.you)NET.N.chooseSkin(id);}
+function skinUI(){
+  document.querySelectorAll('.skinPick').forEach(b=>{const im=b.querySelector('img'),src=skinImg(SKIN);if(im.getAttribute('src')!==src)im.src=src;b.querySelector('b').textContent=SKINS[SKIN].name;});
+  document.querySelectorAll('.skinCard').forEach(c=>c.setAttribute('aria-pressed',String(c.dataset.skin===SKIN)));
+}
+function openSkins(){$('#skinOv').hidden=false;$('#skinOv').scrollTop=0;for(const id of ['menu','mp'])$('#'+id).classList.add('under');const c=$('.skinCard[aria-pressed="true"]');if(c)c.focus();}
+function closeSkins(){$('#skinOv').hidden=true;for(const id of ['menu','mp'])$('#'+id).classList.remove('under');}
+if(SKIN_ON){
+  $('#skinBlock').hidden=false;document.querySelectorAll('.skinOnly').forEach(e=>e.hidden=false);
+  for(const id in SKINS){const c=document.createElement('button');c.type='button';c.className='skinCard';c.dataset.skin=id;
+    const im=document.createElement('img');im.alt='';im.src=skinImg(id);const b=document.createElement('b');b.textContent=SKINS[id].name;
+    const by=document.createElement('span');by.className='lbl';by.textContent=SKINS[id].by;c.append(im,b,by);
+    c.addEventListener('click',()=>{setSkin(id);audioInit();SFX.ui();closeSkins();});$('#skinGrid').append(c);}
+  document.querySelectorAll('.skinPick').forEach(b=>b.addEventListener('click',()=>{openSkins();audioInit();SFX.ui();}));
+  $('#skinClose').addEventListener('click',()=>{closeSkins();SFX.ui();});
+  $('#skinOv').addEventListener('keydown',e=>{if(e.key==='Escape'){e.stopPropagation();closeSkins();}});
+  skinUI();
+}
 $('#mpBack').addEventListener('click',()=>{$('#mp').hidden=true;$('#menu').hidden=false;SFX.ui();});
 $('#mpCreate').addEventListener('click',netCreate);
 $('#mpJoin').addEventListener('click',()=>netJoin($('#mpCode').value));
@@ -5239,6 +5312,6 @@ if(FLORA.on){const gl=new T.GLTFLoader();let n=2;
       // the town's ground must exist first (rays land on it)
       if(P3W.kit)go();else{const w=setInterval(()=>{if(P3W.kit){clearInterval(w);go();}},300);}}}}
 
-window.__SD={PJ_MIX,MIX_ORDER,PERF,perfRun,HUD2,get H2(){return HUD2?H2:null;},leanIn:HUD2?leanIn:null,h2Frame:HUD2?h2Frame:null,PJ2,pj2Load,CASA,casaLoad,XL,casaxlLoad,FLORA,RATS,RAT_WORLD,ratsFrame,SHADOW_FADE,setDuelLethal,get DUEL_LETHAL(){return DUEL_LETHAL;},gfxDiagText,get P3ON(){return P3ON;},COBCC,damagePlayer,TEX,sunFollow,setSunSnap(on){SUN_SNAP=!!on;},sun,P0,E10,e10Lod,DIAG,setTrainMove,LIGHT:{sun,hemi,skyMat,LOOK,P3},P3W,freeze(on){SIM_FREEZE=!!on;},SHOT,VMA,makeSoldier,animateSoldier,BOT_MAT,scene,camera,RemotePlayer,PMprev,PIS,PROOT,RIF,WROOT,SHO_:null,MANUAL,advance(ms){frameBody(last+ms);},get LAST_PELLETS(){return LAST_PELLETS;},SCORE,SCFG,SROOT,SHO,setPrimaryChoice,get PRIMARY(){return PRIMARY;},PCORE,PCFG,setWorld,WORLDS,get WORLD_ID(){return WORLD_ID;},renderer,GFX,gfxApply,get NET(){return NET;},get REMOTE(){return REMOTE;},W,get NAV(){return NAV;},setOffMap,get OFFMAP(){return OFFMAP;},TOUCH,EDIT,openEditor,get SETTINGS(){return SETTINGS;},get LAYOUT(){return LAYOUT;},checkOrientation,MAT,LOAD,TRAINERS,get RANGE_BOTS(){return RANGE_BOTS;},TRAIN,setTrain,setLethal,kitNote,GINS,TDIAG,AU,get TOUCH_EVENTS(){return TOUCH_EVENTS;},impactFX,bodyFX,get DECALS(){return DECALS;},surfaceOf,soundDelay,aimSelfTest,P,PM,WS,WCORE,RECOIL,AIM,BOTS,DUMMIES,BULLETS,EVENTS,PARTS,STATS,get state(){return state;},get mode(){return mode;},setMode,input,startMatch,simTick,frame,toMenu,pause,resume};
+window.__SD={PJ_MIX,MIX_ORDER,SKINS,get SKIN(){return SKIN;},setSkin,pj2SetPack,rivalSkin,PERF,perfRun,HUD2,get H2(){return HUD2?H2:null;},leanIn:HUD2?leanIn:null,h2Frame:HUD2?h2Frame:null,PJ2,pj2Load,CASA,casaLoad,XL,casaxlLoad,FLORA,RATS,RAT_WORLD,ratsFrame,SHADOW_FADE,setDuelLethal,get DUEL_LETHAL(){return DUEL_LETHAL;},gfxDiagText,get P3ON(){return P3ON;},COBCC,damagePlayer,TEX,sunFollow,setSunSnap(on){SUN_SNAP=!!on;},sun,P0,E10,e10Lod,DIAG,setTrainMove,LIGHT:{sun,hemi,skyMat,LOOK,P3},P3W,freeze(on){SIM_FREEZE=!!on;},SHOT,VMA,makeSoldier,animateSoldier,BOT_MAT,scene,camera,RemotePlayer,PMprev,PIS,PROOT,RIF,WROOT,SHO_:null,MANUAL,advance(ms){frameBody(last+ms);},get LAST_PELLETS(){return LAST_PELLETS;},SCORE,SCFG,SROOT,SHO,setPrimaryChoice,get PRIMARY(){return PRIMARY;},PCORE,PCFG,setWorld,WORLDS,get WORLD_ID(){return WORLD_ID;},renderer,GFX,gfxApply,get NET(){return NET;},get REMOTE(){return REMOTE;},W,get NAV(){return NAV;},setOffMap,get OFFMAP(){return OFFMAP;},TOUCH,EDIT,openEditor,get SETTINGS(){return SETTINGS;},get LAYOUT(){return LAYOUT;},checkOrientation,MAT,LOAD,TRAINERS,get RANGE_BOTS(){return RANGE_BOTS;},TRAIN,setTrain,setLethal,kitNote,GINS,TDIAG,AU,get TOUCH_EVENTS(){return TOUCH_EVENTS;},impactFX,bodyFX,get DECALS(){return DECALS;},surfaceOf,soundDelay,aimSelfTest,P,PM,WS,WCORE,RECOIL,AIM,BOTS,DUMMIES,BULLETS,EVENTS,PARTS,STATS,get state(){return state;},get mode(){return mode;},setMode,input,startMatch,simTick,frame,toMenu,pause,resume};
 })();
 </script>

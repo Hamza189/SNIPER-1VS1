@@ -43,6 +43,15 @@ for (const st of [{}, { vz: 2 }, { vx: -4, crouch: 0.3 }, { air: true }, { slide
 }
 check('en todos los estados: inferior + cuerpo entero = 1 y superior + cuerpo entero = 1', ok);
 
+console.log('\nPASO SEGÚN LA VELOCIDAD Y PIERNAS HACIA LA MARCHA (27-10-2026, tools/gait-sheet.js)');
+const g23 = S.gait(2.3, 4.49), g46 = S.gait(4.6, 4.04), g7 = S.gait(7, 4.04);
+check('apuntando a 2,3 m/s: zancada más corta y cadencia ~130 pasos/min (no correr a cámara lenta) sin patinar', near(g23.stride * g23.rate, 2.3 / 4.49) && Math.round(182 * g23.rate) === 130, JSON.stringify(g23));
+check('más rápido que el clip: zancada entera y la cadencia sube como mucho un 15 %', g46.stride === 1 && near(g46.rate, 4.6 / 4.04) && g7.rate === 1.15);
+const deg = d => d * Math.PI / 180, L = d => S.legPlan(Math.sin(deg(d)), Math.cos(deg(d)));
+check('W+A (45°): clip de frente con las piernas giradas 45° (el pecho contragira)', L(45).mode === 'fwd' && near(L(45).yaw, deg(45)));
+check('de lado (90°): clip lateral sin giro; S+A (135°): hacia atrás girado −45°', L(90).mode === 'side' && L(90).w.left === 1 && near(L(90).yaw, 0) && L(135).mode === 'back' && near(L(135).yaw, deg(-45)) && L(-90).w.right === 1);
+check('8° de margen en el límite: a 72° sigue de frente si venía de frente, y lateral si venía de lado', S.legPlan(Math.sin(deg(72)), Math.cos(deg(72)), 'fwd').mode === 'fwd' && S.legPlan(Math.sin(deg(72)), Math.cos(deg(72)), 'side').mode === 'side');
+
 console.log('\nMODELO');
 const root = path.join(__dirname, '..');
 for (const assetRoot of ['assets/personaje/', 'assets/personaje/v4/']) {

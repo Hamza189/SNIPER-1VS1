@@ -32,6 +32,8 @@ function create(opts) {
   // my primary ('rifle' | 'shotgun'): the server uses it from my next spawn, and so does my prediction
   N.kit = 'rifle';
   N.chooseKit = id => { if (id !== 'rifle' && id !== 'shotgun') return; N.kit = id; out({ t: 'kit', id }); };
+  N.skin = null;
+  N.chooseSkin = id => { if (!['clasico', 'swat', 'fsb', 'militar'].includes(id)) return; N.skin = id; out({ t: 'skin', id }); };
   N.leave = () => out({ t: 'leave' });
   N.ping = () => { N.lastPing = N.now(); out({ t: 'ping', c: N.now(), r: N.rtts.length ? Math.round(N.rtt) : undefined }); };
   N.serverNow = () => N.now() + N.offset;

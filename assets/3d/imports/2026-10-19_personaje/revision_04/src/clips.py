@@ -3,9 +3,17 @@
 Velocidades de referencia (core/config.js): andar/correr 4,6 m/s, esprint 7, agachado 2,4. El juego ajusta
 timeScale = velocidad real / 'speed' del clip. Pies apoyados sin patinar a esa velocidad.
 """
+import json
 import math
+import os
 import numpy as np
 from anim import *
+
+# ajustes de marcha por personaje (tools/personaje-ext/packs.json → cfg.gait): altura del pie que vuela en el paso
+# lateral; cuanto más abultadas las rodilleras, menos (las rodillas no pueden salir de la caja de piernas por delante)
+_CFG = os.path.join(os.environ.get('SD_WORK', ''), 'cfg.json')
+_GAIT_CFG = json.load(open(_CFG, encoding='utf-8')).get('gait', {}) if os.environ.get('SD_WORK') and os.path.exists(_CFG) else {}
+LAT_LIFT = _GAIT_CFG.get('latLift', 0.03)
 
 R_ = math.radians
 
@@ -100,7 +108,10 @@ def make(sk):
 
     # ---------------------------------------------------------------- locomoción
     # (ciclo s, distancia del pie apoyado m, fracción de apoyo): velocidad sin patinar = D / (apoyo · ciclo)
-    GAIT = {'fwd': (0.66, 0.80, 0.27), 'left': (0.66, 0.40, 0.22), 'right': (0.66, 0.40, 0.22), 'sprint': (0.62, 0.80, 0.19),
+    # de lado (27-10-2026, medido con tools/gait-sheet.js): antes 0,40 m de apoyo → 2,75 m/s y el juego, a 4,6 m/s, lo ponía
+    # a 304 pasos/min. Ahora un paso lateral largo con fase de vuelo (el pie de delante abre, el de atrás empuja): 4,0 m/s.
+    # Los pies salen de la caja de piernas solo en el eje de la marcha y dentro de los 45 cm aprobados.
+    GAIT = {'fwd': (0.66, 0.80, 0.27), 'left': (0.66, 0.56, 0.21), 'right': (0.66, 0.56, 0.21), 'sprint': (0.62, 0.80, 0.19),
             'crouch': (0.70, 0.62, 0.40)}
     SPEED = {k: round(D / (s * T), 3) for k, (T, D, s) in GAIT.items()}
 
@@ -109,9 +120,9 @@ def make(sk):
         if kind == 'fwd':
             B.gait(P, t, T, D, (0, 0, 1), H=0.24, stance=s, bob=0.022, lean=R_(3), sway_deg=6)
         elif kind == 'left':
-            B.gait(P, t, T, D, (1, 0, 0), H=0.022, stance=s, bob=0.004, lateral=True, sway_deg=4)
+            B.gait(P, t, T, D, (1, 0, 0), H=LAT_LIFT, stance=s, bob=0.012, lateral=True, sway_deg=4, lead=0.31, trail=0.22)
         elif kind == 'right':
-            B.gait(P, t, T, D, (-1, 0, 0), H=0.022, stance=s, bob=0.004, lateral=True, sway_deg=4)
+            B.gait(P, t, T, D, (-1, 0, 0), H=LAT_LIFT, stance=s, bob=0.012, lateral=True, sway_deg=4, lead=0.31, trail=0.22)
         elif kind == 'sprint':
             B.gait(P, t, T, D, (0, 0, 1), H=0.32, stance=s, bob=0.018, lean=R_(2.5), sway_deg=8, cross=0.025)
 

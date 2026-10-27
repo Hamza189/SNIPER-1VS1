@@ -13,6 +13,7 @@
    "C:/Users/Hamza/Downloads/*followers*special*.zip"
   ],
   "cfg": {
+   "gait": {"latLift": 0.07},
    "lod": [
     40000,
     12000,
@@ -107,6 +108,7 @@
    "C:/Users/Hamza/Downloads/*fsb*operator*.zip"
   ],
   "cfg": {
+   "gait": {"latLift": 0.07},
    "lod": [
     40000,
     12000,
@@ -219,6 +221,7 @@
    "C:/Users/Hamza/Downloads/*military*tactical*suit*.zip"
   ],
   "cfg": {
+   "gait": {"latLift": 0.03},
    "lod": [
     20000,
     7000,

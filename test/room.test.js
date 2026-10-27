@@ -419,6 +419,16 @@ console.log('\nESCOPETA FURIA 12 ONLINE');
   A.N.ready(true); B.N.ready(true); S.until(() => A.N.phase === 'playing' && B.N.phase === 'playing', 6000);
   check('la partida empieza con la escopeta en la mano de B (servidor y su predicción)', S.room.seats.B.p.load.active === 'shotgun' && B.local.load.active === 'shotgun' && S.room.seats.A.p.load.active === 'rifle');
 }
+{ // the character (looks only): each player sees the other's choice; nothing else changes
+  const S = createSim({ maps: 'arena' });
+  const A = S.addClient('Hamza'), B = S.addClient('Novia');
+  A.N.hello('Hamza'); S.run(100); B.N.hello('Novia'); S.run(100);
+  B.N.chooseSkin('fsb'); A.N.chooseSkin('swat'); S.run(100);
+  check('personaje: A ve que B ha elegido el FSB y B ve el S.W.A.T. de A', (A.N.players || []).some(p => p && p.id === 'B' && p.skin === 'fsb') && (B.N.players || []).some(p => p && p.id === 'A' && p.skin === 'swat'));
+  check('un personaje inventado se rechaza', PR.parse(JSON.stringify({ t: 'skin', id: 'robot' })).error === 'shape' && PR.parse(JSON.stringify({ t: 'skin', id: 'militar' })).msg.id === 'militar');
+  A.N.ready(true); B.N.ready(true); S.until(() => A.N.phase === 'playing' && B.N.phase === 'playing', 6000);
+  check('el personaje no cambia nada del juego: mismas armas y vida', S.room.seats.A.p.load.active === 'rifle' && S.room.seats.B.p.load.active === 'rifle' && S.room.seats.A.hp === 100 && S.room.seats.B.hp === 100);
+}
 
 console.log('\nCOMPENSACIÓN DE LATENCIA (rival en movimiento)');
 // an open lane where the rival can strafe ±4 m and stay in plain sight the whole time
