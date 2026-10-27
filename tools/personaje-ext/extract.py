@@ -27,13 +27,13 @@ DROPMAT = [re.compile(p, re.I) for p in CFG.get('dropMat', [])]
 log = lambda *a: print('[ext]', *a, flush=True)
 
 # ------------------------------------------------------------------ cargar
-if SRC.lower().endswith('.blend'):
-    bpy.ops.wm.open_mainfile(filepath=SRC)
-else:
-    bpy.ops.wm.read_factory_settings(use_empty=True)
-    if SRC.lower().endswith(('.gltf', '.glb')):
-        bpy.ops.import_scene.gltf(filepath=SRC)
+# glTF/GLB: lector propio (tools/personaje-ext/gltfread.py) en el espacio de la piel y en doble precisión; FBX y .blend: Blender
+GLTF = SRC.lower().endswith(('.gltf', '.glb'))
+if not GLTF:
+    if SRC.lower().endswith('.blend'):
+        bpy.ops.wm.open_mainfile(filepath=SRC)
     elif SRC.lower().endswith('.fbx'):
+        bpy.ops.wm.read_factory_settings(use_empty=True)
         bpy.ops.import_scene.fbx(filepath=SRC, use_anim=False, ignore_leaf_bones=True)
     else:
         raise SystemExit('formato no soportado: ' + SRC)
@@ -71,33 +71,83 @@ CAND.update(side_names('Left', 'l')); CAND.update(side_names('Right', 'r'))
 FINGER = {'idx': ['handindex1', 'index1', 'f_index01', 'findex01'], 'mid': ['handmiddle1', 'mid1', 'middle1', 'fmiddle01'],
           'pinky': ['handpinky1', 'pinky1', 'fpinky01'], 'eye': ['eye']}
 
-arms = [o for o in bpy.data.objects if o.type == 'ARMATURE']
-meshes_all = [o for o in bpy.data.objects if o.type == 'MESH' and any(m.type == 'ARMATURE' for m in o.modifiers)]
-def arm_of(o):
-    for m in o.modifiers:
-        if m.type == 'ARMATURE' and m.object:
-            return m.object
-use = {}
-for o in meshes_all:
-    a = arm_of(o)
-    if a:
-        use[a] = use.get(a, 0) + 1
-ARM = max(use, key=use.get) if use else max(arms, key=lambda a: len(a.data.bones))
-log('esqueleto', ARM.name, len(ARM.data.bones), 'huesos')
-ARM.data.pose_position = 'REST'
-bpy.context.view_layer.update()
-bones = {b.name: b for b in ARM.data.bones}
+if GLTF:
+    sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+    import gltfread
+    RD = gltfread.read(SRC)
+    ALLJ = dict(RD['joints'])
+    for k_, v_ in RD['extra'].items():
+        ALLJ.setdefault(k_, {'pos': v_['pos'], 'parent': v_['parent']})
+    NAMES = list(ALLJ.keys())
+    def s_pos(n): return np.array(ALLJ[n]['pos'], float)
+    def s_parent(n): return ALLJ[n]['parent']
+    log('esqueleto glTF', len(RD['jnames']), 'huesos con piel,', len(NAMES), 'nodos de esqueleto')
+else:
+    arms = [o for o in bpy.data.objects if o.type == 'ARMATURE']
+    meshes_all = [o for o in bpy.data.objects if o.type == 'MESH' and any(m.type == 'ARMATURE' for m in o.modifiers)]
+    def arm_of(o):
+        for m in o.modifiers:
+            if m.type == 'ARMATURE' and m.object:
+                return m.object
+    def bone_parent(o):
+        """(armadura, hueso) si el objeto cuelga de un hueso (directamente o a través de otros objetos)"""
+        q = o
+        while q.parent is not None:
+            if q.parent_type == 'BONE' and q.parent.type == 'ARMATURE':
+                return q.parent, q.parent_bone
+            q = q.parent
+        return None, None
+    rigid = [o for o in bpy.data.objects if o.type == 'MESH' and not any(m.type == 'ARMATURE' for m in o.modifiers) and bone_parent(o)[0] is not None]
+    use = {}
+    for o in meshes_all:
+        a = arm_of(o)
+        if a:
+            use[a] = use.get(a, 0) + 1
+    ARM = max(use, key=use.get) if use else max(arms, key=lambda a: len(a.data.bones))
+    log('esqueleto', ARM.name, len(ARM.data.bones), 'huesos')
+    ARM.data.pose_position = 'REST'
+    bpy.context.view_layer.update()
+    bones = {b.name: b for b in ARM.data.bones}
+    MW = ARM.matrix_world
+    NAMES = list(bones.keys())
+    def s_pos(n): return np.array(MW @ bones[n].head_local, float)
+    def s_parent(n): return bones[n].parent.name if bones[n].parent else None
+CHILDREN = {n: [] for n in NAMES}
+for n in NAMES:
+    p_ = s_parent(n)
+    if p_ in CHILDREN:
+        CHILDREN[p_].append(n)
+def s_desc(n):
+    out, st = [], list(CHILDREN.get(n, []))
+    while st:
+        c = st.pop(); out.append(c); st += CHILDREN.get(c, [])
+    return out
+def s_anc(n):
+    out = []
+    p_ = s_parent(n)
+    while p_ is not None:
+        out.append(p_); p_ = s_parent(p_)
+    return out
+def s_tail(n):
+    if not GLTF:
+        return np.array(MW @ bones[n].tail_local, float)
+    ch = CHILDREN.get(n, [])
+    if ch:
+        return s_pos(ch[0])
+    p_ = s_parent(n)
+    return s_pos(n) + (s_pos(n) - s_pos(p_)) * 0.5 if p_ else s_pos(n)
 byn = {}
-for b in ARM.data.bones:
-    byn.setdefault(norm(b.name), b)
-# mano izquierda y derecha: los dedos se buscan bajo la mano
+for n in NAMES:
+    byn.setdefault(norm(n), n)
+for n in NAMES:                              # Sketchfab numera los nodos: mixamorig:Spine_02 → Spine
+    byn.setdefault(norm(re.sub(r'_\d+$', '', n)), n)
 def find(cands, under=None):
     for c in cands:
-        if c in byn and (under is None or under in [p.name for p in byn[c].parent_recursive] + [byn[c].name]):
+        if c in byn and (under is None or under in s_anc(byn[c]) + [byn[c]]):
             return byn[c]
     if under is not None:      # dedos: por subcadena bajo la mano
-        for b in bones[under].children_recursive:
-            nb = norm(b.name)
+        for b in s_desc(under):
+            nb = norm(re.sub(r'_\d+$', '', b))
             if any(nb.endswith(c) or c in nb for c in cands):
                 return b
     return None
@@ -105,44 +155,28 @@ MAP = {}
 for k, cs in CAND.items():
     b = find(cs)
     if b:
-        MAP[k] = b.name
-# columna: si Spine1/Spine2 coinciden, repartir por la cadena
-missing = [k for k in CAND if k not in MAP]
+        MAP[k] = b
+SYN_SPINE2 = 'Spine2' not in MAP and 'Spine1' in MAP and 'Neck' in MAP   # Mixamo de 3 vértebras: Spine2 se crea a mitad
+missing = [k for k in CAND if k not in MAP and not (k == 'Spine2' and SYN_SPINE2)]
 log('mapa', MAP)
 if missing:
     raise SystemExit('faltan huesos: ' + ', '.join(missing))
 
-MW = ARM.matrix_world
-def wpos(bname, tail=False):
-    b = bones[bname]
-    return MW @ (b.tail_local if tail else b.head_local)
-
-# orientación: el juego mira a +Z; en Blender el personaje mira a -Y (glTF/Mixamo/CC). Se comprueba con los pies.
-foot, toe = wpos(MAP['LeftFoot']), wpos(MAP['LeftToeBase'])
-fwd_sign = -1 if toe.y < foot.y else 1          # -1: mira a -Y (lo normal)
+# orientación deducida del esqueleto (no del exportador): arriba = pies → cabeza, izquierda = cadera der. → izq.,
+# delante = izquierda × arriba (el juego: +X izquierda, +Y arriba, +Z delante)
+def unit(v): return v / np.linalg.norm(v)
+O_ = (s_pos(MAP['LeftFoot']) + s_pos(MAP['RightFoot'])) / 2
+U_ = unit(s_pos(MAP['Head']) - O_)
+L_ = s_pos(MAP['LeftUpLeg']) - s_pos(MAP['RightUpLeg']); L_ = unit(L_ - U_ * np.dot(L_, U_))
+F_ = np.cross(L_, U_)
+if np.dot(s_pos(MAP['LeftToeBase']) - s_pos(MAP['LeftFoot']), F_) < 0:
+    log('aviso: los dedos de los pies miran hacia atrás con izquierda/derecha del esqueleto; se invierte el lado')
+    L_ = -L_; F_ = np.cross(L_, U_)
+BASIS = np.stack([L_, U_, F_], 1)
 def to_game(v):
-    return np.array([v.x if fwd_sign < 0 else -v.x, v.z, -v.y if fwd_sign < 0 else v.y])
-
-# ojos (o, si no hay, un punto delante de la cabeza) → escala para que queden a 1,62 m
-eyes = [b for b in ARM.data.bones if 'eye' in norm(b.name) and 'brow' not in norm(b.name) and 'lid' not in norm(b.name)]
-head_g = to_game(wpos(MAP['Head']))
-headtop = to_game(wpos(MAP['Head'], tail=True))
-if eyes:
-    eye_g = np.mean([to_game(MW @ b.head_local) for b in eyes[:2]], axis=0)
-else:
-    eye_g = head_g + (headtop - head_g) * 0.45
-log('ojos sin escalar', eye_g)
-
-# ------------------------------------------------------------------ mallas en reposo
-keep = []
-for o in meshes_all:
-    if arm_of(o) != ARM or any(p.search(o.name) for p in DROP) or o.hide_render:
-        if arm_of(o) == ARM:
-            log('quito malla', o.name)
-        continue
-    keep.append(o)
-log('mallas', [o.name for o in keep])
-deps = bpy.context.evaluated_depsgraph_get()
+    return (np.asarray(v, float) - O_) @ BASIS
+def to_game_dir(v):
+    return np.asarray(v, float) @ BASIS
 
 ours = list(CAND.keys())
 GAME = ['Root', 'Hips', 'Spine', 'Spine1', 'Spine2', 'Neck', 'Head', 'Eyes', 'LeftShoulder', 'LeftArm', 'LeftForeArm', 'LeftHand', 'LeftThumb',
@@ -150,71 +184,141 @@ GAME = ['Root', 'Hips', 'Spine', 'Spine1', 'Spine2', 'Neck', 'Head', 'Eyes', 'Le
         'RightUpLeg', 'RightLeg', 'RightFoot', 'RightToeBase']
 GI = {n: i for i, n in enumerate(GAME)}
 inv = {v: k for k, v in MAP.items()}
-# grupo de vértices → hueso del juego: el propio hueso o el antepasado más cercano que tenga correspondencia
+# hueso de origen → hueso del juego: el propio o el antepasado más cercano que tenga correspondencia
 def target_of(gname):
-    b = bones.get(gname)
-    if b is None:
-        b = byn.get(norm(gname))
+    b = gname if gname in CHILDREN else byn.get(norm(gname))
     while b is not None:
-        if b.name in inv:
-            return GI[inv[b.name]]
-        b = b.parent
+        if b in inv:
+            return GI[inv[b]]
+        b = s_parent(b)
     return GI['Hips']
 
-P, N, UV, F, FM, WJ, WW = [], [], [], [], [], [], []
-mats = []
-voff = 0
-for o in keep:
-    ev = o.evaluated_get(deps)
-    me = ev.to_mesh()
-    me.calc_loop_triangles()
-    M4 = ev.matrix_world
-    nm3 = M4.to_3x3().inverted().transposed()
-    # pesos (del objeto original: el evaluado conserva los grupos)
-    gmap = {g.index: target_of(g.name) for g in o.vertex_groups}
-    nv = len(me.vertices)
-    W = np.zeros((nv, len(GAME)), np.float32)
-    for v in me.vertices:
-        for g in v.groups:
-            t = gmap.get(g.group)
-            if t is not None:
-                W[v.index, t] += g.weight
-    uvl = me.uv_layers.active
-    # materiales globales
-    lm = []
-    for s in o.material_slots:
-        m = s.material
-        if m is None or any(p.search(m.name) for p in DROPMAT):
-            lm.append(-1); continue
-        if m not in mats:
-            mats.append(m)
-        lm.append(mats.index(m))
-    # un vértice por esquina de triángulo; se juntan después
-    for tri in me.loop_triangles:
-        mi = lm[tri.material_index] if tri.material_index < len(lm) else -1
-        if mi < 0:
+# ------------------------------------------------------------------ mallas en reposo
+eye_pts = []
+if GLTF:
+    keep_t = np.ones(len(RD['F']), bool)
+    for m in RD['meshes']:
+        nm_ = ' / '.join(m['chain'][:3])
+        if any(p.search(n) for p in DROP for n in m['chain']):
+            keep_t[m['t0']:m['t1']] = False
+            log('quito', nm_, m['tris'], 'triángulos')
+        elif m['rigid'] and any('eye' in n.lower() for n in m['chain'][:2]):
+            eye_pts.append(RD['P'][RD['F'][m['t0']:m['t1']].reshape(-1)])
+    MATN = [m['name'] for m in RD['mats']]
+    dropm = np.array([any(p.search(n) for p in DROPMAT) for n in MATN] + [True])   # -1 (sin material) se quita
+    fm = RD['FM'].copy(); fm[fm < 0] = len(MATN)
+    keep_t &= ~dropm[fm]
+    for i, n in enumerate(MATN):
+        if dropm[i]:
+            log('quito material', n)
+        elif RD['mats'][i]['alpha'] != 'OPAQUE':
+            log('aviso: material con transparencia', n, RD['mats'][i]['alpha'], '(en el juego será opaco)')
+    used = sorted(set(fm[keep_t].tolist()))
+    remap = {m: i for i, m in enumerate(used)}
+    mats = [RD['mats'][m] for m in used]
+    F = RD['F'][keep_t]; FM = np.array([remap[m] for m in fm[keep_t]], np.int32)
+    P = to_game(RD['P']); N = to_game_dir(RD['N']); UV = RD['UV'].astype(np.float32).copy()
+    UV[:, 1] = 1 - UV[:, 1]                    # glTF: v hacia abajo; aquí, como en Blender, hacia arriba
+    TJ = np.array([target_of(n) for n in RD['jnames']])
+    WJ = np.zeros((len(P), len(GAME)), np.float32)
+    for j in range(len(TJ)):
+        WJ[:, TJ[j]] += RD['W'][:, j]
+    log('mallas', [m['name'] for m in RD['meshes'] if m['tris']][:40])
+else:
+    keep = []
+    def chain(o):
+        out = []
+        while o is not None:
+            out.append(o.name); o = o.parent
+        return out
+    def dropped(o):
+        return any(p.search(n) for p in DROP for n in chain(o))
+    for o in rigid:
+        a, bn = bone_parent(o)
+        if a == ARM and not dropped(o) and not o.hide_render:
+            keep.append(o)
+            if 'eye' in o.name.lower() or (o.parent and 'eye' in o.parent.name.lower()):
+                eye_pts.append(np.array([o.matrix_world @ Vector(c) for c in o.bound_box]))
+        elif a == ARM:
+            log('quito pieza', o.name, '←', ' / '.join(chain(o)[1:3]))
+    for o in meshes_all:
+        if arm_of(o) != ARM or dropped(o) or o.hide_render:
+            if arm_of(o) == ARM:
+                log('quito malla', o.name)
             continue
-        ids = []
-        for li in tri.loops:
-            lp = me.loops[li]
-            vi = lp.vertex_index
-            p = M4 @ me.vertices[vi].co
-            n = (nm3 @ lp.normal).normalized()
-            P.append(to_game(p)); N.append(to_game(n))
-            UV.append(tuple(uvl.data[li].uv) if uvl else (0.0, 0.0))
-            WJ.append(W[vi])
-            ids.append(len(P) - 1)
-        F.append(ids); FM.append(mi)
-    ev.to_mesh_clear()
-P = np.array(P, np.float64); N = np.array(N, np.float64); UV = np.array(UV, np.float32); F = np.array(F, np.int64); FM = np.array(FM, np.int32)
-WJ = np.array(WJ, np.float32)
-log('triángulos', len(F), 'materiales', [m.name for m in mats])
+        keep.append(o)
+    log('mallas', [o.name for o in keep])
+    deps = bpy.context.evaluated_depsgraph_get()
+    P, N, UV, F, FM, WJ = [], [], [], [], [], []
+    mats = []
+    for o in keep:
+        ev = o.evaluated_get(deps)
+        me = ev.to_mesh()
+        me.calc_loop_triangles()
+        M4 = ev.matrix_world
+        nm3 = M4.to_3x3().inverted().transposed()
+        gmap = {g.index: target_of(g.name) for g in o.vertex_groups}
+        nv = len(me.vertices)
+        W = np.zeros((nv, len(GAME)), np.float32)
+        if o in rigid:                       # pegada a un hueso: todo su peso a ese hueso
+            W[:, target_of(bone_parent(o)[1])] = 1
+        else:
+            for v in me.vertices:
+                for g in v.groups:
+                    t = gmap.get(g.group)
+                    if t is not None:
+                        W[v.index, t] += g.weight
+        uvl = me.uv_layers.active
+        lm = []
+        for s_ in o.material_slots:
+            m = s_.material
+            if m is None or any(p.search(m.name) for p in DROPMAT):
+                lm.append(-1); continue
+            if m not in mats:
+                mats.append(m)
+            lm.append(mats.index(m))
+        for tri in me.loop_triangles:
+            mi = lm[tri.material_index] if tri.material_index < len(lm) else -1
+            if mi < 0:
+                continue
+            ids = []
+            for li in tri.loops:
+                lp = me.loops[li]
+                vi = lp.vertex_index
+                P.append(np.array(M4 @ me.vertices[vi].co)); N.append(np.array((nm3 @ lp.normal).normalized()))
+                UV.append(tuple(uvl.data[li].uv) if uvl else (0.0, 0.0))
+                WJ.append(W[vi])
+                ids.append(len(P) - 1)
+            F.append(ids); FM.append(mi)
+        ev.to_mesh_clear()
+    P = to_game(np.array(P, np.float64)); N = to_game_dir(np.array(N, np.float64)); UV = np.array(UV, np.float32)
+    F = np.array(F, np.int64); FM = np.array(FM, np.int32); WJ = np.array(WJ, np.float32)
+    MATN = None
+MATNAMES = [m['name'] if isinstance(m, dict) else m.name for m in mats]
+# compactar: solo las esquinas que usan los triángulos que quedan
+sel_ = F.reshape(-1)
+P, N, UV, WJ = P[sel_], N[sel_], UV[sel_], WJ[sel_]
+F = np.arange(len(sel_)).reshape(-1, 3)
+log('triángulos', len(F), 'materiales', MATNAMES)
+
+# ojos → escala (ojos a 1,62 m): huesos de ojos, malla de los ojos o, si no hay, un punto de la cabeza
+eyes = [n for n in (RD['jnames'] if GLTF else NAMES) if 'eye' in norm(n) and 'brow' not in norm(n) and 'lid' not in norm(n)]
+head_g = to_game(s_pos(MAP['Head']))
+headtop = to_game(s_tail(MAP['Head']))
+if eyes:
+    eye_g = np.mean([to_game(s_pos(n)) for n in eyes[:2]], axis=0)
+elif eye_pts:
+    eye_g = to_game(np.concatenate(eye_pts)).mean(0)
+    log('ojos por la malla de los ojos')
+else:
+    eye_g = head_g + (headtop - head_g) * 0.45
+log('ojos sin escalar', eye_g)
 
 # piel tapada por la ropa: un triángulo de piel cuyo frente choca con ropa a menos de 'hideDist' no se ve nunca
 HIDE = [re.compile(p, re.I) for p in CFG.get('hide', [])]
 if HIDE:
     from mathutils.bvhtree import BVHTree
-    hm = np.array([any(p.search(m.name) for p in HIDE) for m in mats])
+    hm = np.array([any(p.search(n) for p in HIDE) for n in MATNAMES])
     skin = hm[FM]
     cover = np.where(~skin)[0]
     tree = BVHTree.FromPolygons([Vector(v) for v in P.tolist()], F[cover].tolist(), all_triangles=True)
@@ -242,10 +346,10 @@ def G(v):
     return np.array([v[0] * s, (v[1] - ground) * s, v[2] * s])
 P = np.stack([P[:, 0] * s, (P[:, 1] - ground) * s, P[:, 2] * s], 1)
 # centrar en X/Z sobre la cadera
-hip = G(to_game(wpos(MAP['Hips'])))
+hip = G(to_game(s_pos(MAP['Hips'])))
 P[:, 0] -= hip[0]; P[:, 2] -= hip[2]
 def J(name, tail=False):
-    g = G(to_game(wpos(MAP[name], tail)))
+    g = G(to_game(s_tail(MAP[name]) if tail else s_pos(MAP[name])))
     g[0] -= hip[0]; g[2] -= hip[2]
     return g
 
@@ -253,7 +357,12 @@ def J(name, tail=False):
 rest = {}
 rest['Root'] = np.array([0.0, 0.0, 0.0])
 for k in ours:
+    if k == 'Spine2' and SYN_SPINE2:
+        continue
     rest[k] = J(k)
+if SYN_SPINE2:
+    rest['Spine2'] = (rest['Spine1'] + rest['Neck']) / 2
+    log('Spine2 creado a mitad entre Spine1 y Neck')
 eye_s = G(eye_g); eye_s[0] -= hip[0]; eye_s[2] -= hip[2]
 rest['Eyes'] = np.array([0.0, eye_s[1], eye_s[2]])
 for side in ('Left', 'Right'):
@@ -289,6 +398,44 @@ REST = np.array([rest[n] for n in GAME]); TAILS = np.array(tails)
 # para que la cabeza quepa en su esfera en reposo y el resto quede lo más dentro posible.
 BN = np.array(GAME)
 Wsum = lambda names_: WJ[:, [GI[n] for n in names_]].sum(1)
+# piernas de exhibición (separadas, una atrás): cada pierna gira desde su cadera hasta dejar el tobillo debajo, a la
+# separación del esqueleto del juego (±legX) y sin cambiar su longitud; el giro se reparte con el peso de la pierna
+LEGX = CFG.get('legX', 0.105)
+if LEGX:
+    def rot_between(a, b):
+        a = a / np.linalg.norm(a); b = b / np.linalg.norm(b)
+        v = np.cross(a, b); c = float(np.dot(a, b)); sn = np.linalg.norm(v)
+        if sn < 1e-9:
+            return np.zeros(3), 0.0
+        return v / sn, math.atan2(sn, c)
+    def rodr(axis, ang):
+        K = np.array([[0, -axis[2], axis[1]], [axis[2], 0, -axis[0]], [-axis[1], axis[0], 0]])
+        return np.eye(3) + math.sin(ang) * K + (1 - math.cos(ang)) * K @ K
+    for side, sg in (('Left', 1), ('Right', -1)):
+        hipj, ank = rest[side + 'UpLeg'], rest[side + 'Foot']
+        L_ = np.linalg.norm(ank - hipj)
+        tx = sg * LEGX
+        dy = math.sqrt(max(1e-6, L_ * L_ - (tx - hipj[0]) ** 2))
+        target = np.array([tx, hipj[1] - dy, hipj[2]])
+        axis, ang = rot_between(ank - hipj, target - hipj)
+        if ang < 1e-4:
+            continue
+        w = np.clip(Wsum([side + 'UpLeg', side + 'Leg', side + 'Foot', side + 'ToeBase']), 0, 1)
+        sel = w > 1e-4
+        for wv in np.unique(np.round(w[sel], 3)):
+            m_ = sel & (np.round(w, 3) == wv)
+            R_ = rodr(axis, ang * wv)
+            P[m_] = hipj + (P[m_] - hipj) @ R_.T
+            N[m_] = N[m_] @ R_.T
+        R1 = rodr(axis, ang)
+        for n in (side + 'Leg', side + 'Foot', side + 'ToeBase'):
+            rest[n] = hipj + R1 @ (rest[n] - hipj)
+        for n in (side + 'UpLeg', side + 'Leg', side + 'Foot', side + 'ToeBase'):
+            TAILS[GI[n]] = hipj + R1 @ (TAILS[GI[n]] - hipj)
+        log('pierna', side, 'girada', round(math.degrees(ang), 1), 'grados (tobillo a x', tx, ')')
+    REST = np.array([rest[n] for n in GAME])
+    TAILS[GI['LeftUpLeg']] = rest['LeftLeg']; TAILS[GI['RightUpLeg']] = rest['RightLeg']
+    TAILS[GI['LeftLeg']] = rest['LeftFoot']; TAILS[GI['RightLeg']] = rest['RightFoot']
 footw = np.clip(Wsum(['LeftFoot', 'LeftToeBase', 'RightFoot', 'RightToeBase']), 0, 1)
 kf, kb = CFG.get('footScale', [1.0, 1.0])
 if kf != 1.0 or kb != 1.0:
@@ -330,6 +477,12 @@ log('desplazamiento z', round(float(DZ), 4), 'cabeza', round(float(h) * 100, 1),
 P[:, 2] += DZ; REST[:, 2] += DZ; TAILS[:, 2] += DZ
 for k in rest:
     rest[k] = rest[k] + [0, 0, DZ]
+if SYN_SPINE2:
+    y2 = rest['Spine2'][1]
+    t = np.clip((P[:, 1] - (y2 - 0.05)) / 0.10, 0, 1)
+    c1, c2 = GI['Spine1'], GI['Spine2']
+    mv = WJ[:, c1] * t
+    WJ[:, c1] -= mv; WJ[:, c2] += mv
 # lo que aún sobresale de las cajas (bolsillos, bolsas del chaleco) se acerca a ellas con una curva suave: nunca más
 # de 'fitMargin' fuera en reposo, sin escalones (exceso e → m·(1 − e^(−e/m)))
 FM_ = CFG.get('fitMargin', 0.025)
@@ -360,12 +513,47 @@ if FM_ > 0:
         nd = np.where(e > 0, np.sign(d) * (h + es), d)
         moved += int((e > 0).any(1).sum())
         q[sel] = c + nd
+    # franja entre cajas (cintura): al andar baja a la caja de piernas, que es menos profunda; aquí se exige también
+    # el fondo de la caja de piernas (con su inset trasero) en z
+    BAND = CFG.get('waistBand', [0.78, 0.97])
+    if BAND:
+        bm = (q[:, 1] >= BAND[0]) & (q[:, 1] <= BAND[1])
+        hzb = 0.11 - max([i_.get('inset', 0) for i_ in CFG.get('fitInset', []) if i_.get('box') == 'legs' and i_.get('side', -1) == -1 and i_['y'][0] <= 0.85 <= i_['y'][1]] + [0])
+        zz = q[bm, 2]
+        e = np.maximum(0, -zz - hzb)              # solo hacia atrás (glúteos, cinturón trasero)
+        q[bm, 2] = np.where(e > 0, -(hzb + FM_ * (1 - np.exp(-e / FM_))), zz)
+        log('cintura: ', int((e > 0).sum()), 'vértices metidos al fondo de la caja de piernas')
     P[zb] = q
     log('ajuste suave a las cajas:', moved, 'vértices (máx', FM_ * 100, 'cm fuera en reposo)')
+# piezas sueltas de la cabeza que sobresalen mucho de la esfera (gafas de visión nocturna, antenas): fuera enteras
+HDO = CFG.get('headDropOutside')
+if HDO and zh.any():
+    key = np.round(P, 4)
+    _, vid = np.unique(key, axis=0, return_inverse=True); vid = vid.reshape(-1)
+    tri_h = zh[F].all(1)
+    par = np.arange(vid.max() + 1)
+    def find_(x):
+        while par[x] != x:
+            par[x] = par[par[x]]; x = par[x]
+        return x
+    for t in np.where(tri_h)[0]:
+        a_, b_, c_ = find_(vid[F[t, 0]]), find_(vid[F[t, 1]]), find_(vid[F[t, 2]])
+        par[b_] = a_; par[find_(c_)] = a_
+    comp = np.array([find_(vid[F[t, 0]]) for t in range(len(F))])
+    cen = np.array([0, 1.63, 0]); dist = np.linalg.norm(P - cen, axis=1) - 0.15
+    drop_t = np.zeros(len(F), bool); nd = 0
+    for cid in np.unique(comp[tri_h]):
+        ts = np.where(tri_h & (comp == cid))[0]
+        ex = dist[F[ts].reshape(-1)].max()
+        if ex > HDO:
+            drop_t[ts] = True; nd += 1
+    F, FM = F[~drop_t], FM[~drop_t]
+    log('cabeza: quitadas', nd, 'piezas que salían más de', HDO * 100, 'cm de la esfera (', int(drop_t.sum()), 'triángulos)')
 # la cabeza tiene que caber en su esfera en reposo sin tolerancia: lo que sobra (punta de la visera, casco) entra con
 # una curva suave que empieza 1,2 cm antes del borde y nunca llega a él
 if zh.any():
-    c = np.array([0, 1.63, 0]); r = 0.15; rin = r - 0.012; rout = r - 0.002
+    hf = CFG.get('headFit', [0.012, 0.002])        # la curva empieza hf[0] antes del borde y se queda a hf[1] de él
+    c = np.array([0, 1.63, 0]); r = 0.15; rin = r - hf[0]; rout = r - hf[1]
     v = P[zh] - c; d = np.linalg.norm(v, axis=1)
     sel = d > rin
     dn = rin + (rout - rin) * (1 - np.exp(-(d[sel] - rin) / (rout - rin)))
@@ -391,7 +579,7 @@ for side, sh in (('Left', 'l'), ('Right', 'r')):
     pts = {}
     for k in ('idx', 'mid', 'pinky'):
         b = find(FINGER[k], under=hand)
-        pts[k] = G(to_game(MW @ b.head_local)) - [hip[0], 0, hip[2] - DZ] if b else None
+        pts[k] = G(to_game(s_pos(b))) - [hip[0], 0, hip[2] - DZ] if b else None
     w = rest[side + 'Hand']
     fwd = (rest[side + 'Hand'] - rest[side + 'ForeArm']); fwd /= np.linalg.norm(fwd)
     for k, d in (('idx', 0.09), ('mid', 0.095), ('pinky', 0.085)):
@@ -487,7 +675,11 @@ def export_lod(ob, target):
 out = {'bones': np.array(GAME), 'rest': REST, 'parents': np.array(parents), 'tails': TAILS}
 for i, tgt in enumerate(LOD):
     L = export_lod(base, tgt)
-    log('LOD%d' % i, len(L['idx']), 'triángulos', len(L['pos']), 'vértices')
+    # el Decimate mueve vértices: la cabeza vuelve a quedar dentro de su esfera en reposo (sin tolerancia)
+    hw = sum(L['weights'][:, c] * np.isin(L['joints'][:, c], [GI['Head'], GI['Eyes']]) for c in range(4)) > 0.5
+    v = L['pos'][hw] - [0, 1.63, 0]; d = np.linalg.norm(v, axis=1); over = d > 0.148
+    v[over] *= (0.148 / d[over])[:, None]; L['pos'][hw] = v + [0, 1.63, 0]
+    log('LOD%d' % i, len(L['idx']), 'triángulos', len(L['pos']), 'vértices', '· cabeza recolocada', int(over.sum()))
     for k, v in L.items():
         out['lod%d_%s' % (i, k)] = v
     out['lod%d_part' % i] = L['mat'].copy()
@@ -534,7 +726,28 @@ def save(img):
     return fn
 
 MJ = []
-for m in mats:
+if GLTF:
+    import shutil
+    def tex_file(t, tag):
+        if t is None:
+            return None
+        if isinstance(t, tuple):            # imagen dentro del .bin / .glb
+            bv = RD['J']['bufferViews'][t[1]]
+            raw = RD['bufs'][bv['buffer']][bv.get('byteOffset', 0): bv.get('byteOffset', 0) + bv['byteLength']]
+            fn = '%s_%d%s' % (tag, t[1], '.jpg' if 'jpeg' in t[2] else '.png')
+            open(os.path.join(WORK, 'tex', fn), 'wb').write(raw)
+            return fn
+        fn = os.path.basename(t)
+        shutil.copy2(t, os.path.join(WORK, 'tex', fn))
+        return fn
+    for m in mats:
+        d = {'name': m['name'], 'color': tex_file(m['color'], 'c'), 'colorFactor': m['colorFactor'], 'normal': tex_file(m['normal'], 'n')}
+        mr = tex_file(m['mr'], 'mr')
+        d.update({'rough': mr, 'roughCh': 'G' if mr else None, 'metal': mr, 'metalCh': 'B' if mr else None,
+                  'roughness': m['roughness'], 'metallic': m['metallic'], 'roughMul': m['roughness'], 'metalMul': m['metallic'],
+                  'ao': tex_file(m['ao'], 'ao'), 'alpha': m['alpha']})
+        MJ.append(d)
+for m in ([] if GLTF else mats):
     d = {'name': m.name}
     bsdf = next((n for n in (m.node_tree.nodes if m.node_tree else []) if n.type == 'BSDF_PRINCIPLED'), None)
     if bsdf:

@@ -82,8 +82,12 @@ for L in (0, 1, 2):
 if not P.get('copy', True):
     print('(prueba: no se copia al juego)'); sys.exit(0)
 DEST.mkdir(parents=True, exist_ok=True)
+for f in DEST.glob('*'):
+    if f.name != 'CREDITOS.md':
+        f.unlink()
+# solo lo que carga el juego con ?pj=pro (ALTO/MEDIO: tamaño completo; en BAJO se usa el soldado de siempre)
 for f in OUT.iterdir():
-    if f.suffix == '.glb' or f.name.startswith('color_'):
+    if f.name == 'personaje.glb' or (f.name.startswith('color_') and not f.stem.endswith(('_1k', '_2k'))):
         shutil.copy2(f, DEST / f.name)
 (DEST / 'CREDITOS.md').write_text('# %s\n\n- Autor: %s (%s)\n- Licencia: %s — %s\n- Cambios: convertido para SNIPER DUEL con tools/personaje-ext '
                                   '(esqueleto de 26 huesos, animaciones propias del juego, LOD, atlas de texturas, colores y ajuste a las zonas de impacto).\n'

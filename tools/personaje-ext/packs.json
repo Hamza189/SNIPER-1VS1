@@ -1,8 +1,8 @@
 {
  "op2": {
   "title": "S.W.A.T. Operator - 4k Followers Special Remaster",
-  "author": "jeandiz (con piezas de bobeer, VassKacsoHunor, Simon Coenen y otros autores CC-BY citados en la ficha)",
-  "url": "https://sketchfab.com/3d-models/f6923917c8014578b1c1cb2b4c249268",
+  "author": "Mateusz Woliński (jeandiz), con piezas CC-BY de otros autores citados en su ficha",
+  "url": "https://sketchfab.com/3d-models/swat-operator-4k-followers-special-remaster-f6923917c8014578b1c1cb2b4c249268",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
   "use": "ALTO · rival online",
@@ -22,13 +22,82 @@
     0.8,
     0.9
    ],
-   "fitMargin": 0.012
+   "fitMargin": 0.004,
+   "dropMat": [
+    "KSVR",
+    "Eyelash"
+   ],
+   "headDropOutside": 0.03,
+   "fitInset": [
+    {
+     "box": "legs",
+     "axis": "z",
+     "side": -1,
+     "y": [
+      0.62,
+      0.95
+     ],
+     "inset": 0.03
+    },
+    {
+     "box": "torso",
+     "axis": "z",
+     "side": -1,
+     "y": [
+      0.8,
+      1.6
+     ],
+     "inset": 0.022
+    },
+    {
+     "box": "legs",
+     "axis": "z",
+     "side": 1,
+     "y": [
+      0.15,
+      0.75
+     ],
+     "inset": 0.015
+    },
+    {
+     "box": "legs",
+     "axis": "z",
+     "side": 1,
+     "y": [
+      0.38,
+      0.64
+     ],
+     "inset": 0.008
+    },
+    {
+     "box": "legs",
+     "axis": "z",
+     "side": 1,
+     "y": [
+      0.1,
+      0.45
+     ],
+     "inset": 0.012
+    }
+   ],
+   "variants": {
+    "A": [
+     18,
+     0.8,
+     1.1
+    ],
+    "bots": [
+     -14,
+     0.9,
+     1.0
+    ]
+   }
   }
  },
  "op3": {
   "title": "FSB Operator",
-  "author": "jeandiz (con piezas de ErhanMatur, Bzovius, SrGeneroso, shedmon, Albin y Mayess, CC-BY)",
-  "url": "https://sketchfab.com/3d-models/43a561e941704eefb1ab0614be4f0049",
+  "author": "Mateusz Woliński (jeandiz), con piezas CC-BY de ErhanMatur, Bzovius, SrGeneroso, shedmon, Albin y Mayess",
+  "url": "https://sketchfab.com/3d-models/fsb-operator-43a561e941704eefb1ab0614be4f0049",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
   "use": "ALTO · bots",
@@ -47,13 +116,100 @@
     0.8,
     0.9
    ],
-   "fitMargin": 0.012
+   "fitMargin": 0.004,
+   "drop": [
+    "^(Gun|Stock|Magazine)_\\d+$"
+   ],
+   "dropMat": [
+    "night_vis",
+    "Null",
+    "Krinkov"
+   ],
+   "headDropOutside": 0.03,
+   "fitInset": [
+    {
+     "box": "legs",
+     "axis": "z",
+     "side": -1,
+     "y": [
+      0.62,
+      0.95
+     ],
+     "inset": 0.03
+    },
+    {
+     "box": "torso",
+     "axis": "z",
+     "side": -1,
+     "y": [
+      0.8,
+      1.6
+     ],
+     "inset": 0.022
+    },
+    {
+     "box": "legs",
+     "axis": "z",
+     "side": 1,
+     "y": [
+      0.15,
+      0.75
+     ],
+     "inset": 0.015
+    },
+    {
+     "box": "legs",
+     "axis": "z",
+     "side": 1,
+     "y": [
+      0.38,
+      0.64
+     ],
+     "inset": 0.008
+    },
+    {
+     "box": "legs",
+     "axis": "z",
+     "side": 1,
+     "y": [
+      0.1,
+      0.45
+     ],
+     "inset": 0.012
+    },
+    {
+     "box": "legs",
+     "axis": "z",
+     "side": 1,
+     "y": [
+      0.33,
+      0.47
+     ],
+     "inset": 0.012
+    }
+   ],
+   "variants": {
+    "A": [
+     18,
+     0.8,
+     1.1
+    ],
+    "bots": [
+     -14,
+     0.9,
+     1.0
+    ]
+   },
+   "headFit": [
+    0.025,
+    0.008
+   ]
   }
  },
  "op4": {
   "title": "Military tactical suit (LowPolyGameReady)",
-  "author": "1799danly",
-  "url": "https://sketchfab.com/3d-models/ef698ce36b1545a78ce592dd3db4c7ed",
+  "author": "DanlyVostok (1799danly)",
+  "url": "https://sketchfab.com/3d-models/military-tactical-suit-lowpolygameready-ef698ce36b1545a78ce592dd3db4c7ed",
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
   "use": "MEDIO · todos",
@@ -72,7 +228,64 @@
     0.8,
     0.9
    ],
-   "fitMargin": 0.012
+   "fitMargin": 0.004,
+   "dropMat": [
+    "HeadphonesT"
+   ],
+   "fitInset": [
+    {
+     "box": "legs",
+     "axis": "z",
+     "side": -1,
+     "y": [
+      0.62,
+      0.95
+     ],
+     "inset": 0.015
+    },
+    {
+     "box": "torso",
+     "axis": "z",
+     "side": -1,
+     "y": [
+      0.8,
+      1.6
+     ],
+     "inset": 0.022
+    },
+    {
+     "box": "legs",
+     "axis": "z",
+     "side": 1,
+     "y": [
+      0.15,
+      0.75
+     ],
+     "inset": 0.015
+    },
+    {
+     "box": "legs",
+     "axis": "z",
+     "side": 1,
+     "y": [
+      0.38,
+      0.64
+     ],
+     "inset": 0.008
+    }
+   ],
+   "variants": {
+    "A": [
+     18,
+     0.8,
+     1.1
+    ],
+    "bots": [
+     -14,
+     0.9,
+     1.0
+    ]
+   }
   }
  }
 }

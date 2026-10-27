@@ -156,6 +156,10 @@ for i, (x, y, s) in best.items():
     ao = chan(load(m.get('ao'), 'L', s, 255), 'R')
     ro = chan(load(m.get('rough'), 'RGB', s, (int(255 * m.get('roughness', 0.6)),) * 3), m.get('roughCh') or 'G') if m.get('rough') else np.full((s, s), m.get('roughness', 0.6), np.float32)
     me = chan(load(m.get('metal'), 'RGB', s, (0, 0, 0)), m.get('metalCh') or 'B') if m.get('metal') else np.full((s, s), m.get('metallic', 0.0), np.float32)
+    if m.get('rough') and m.get('roughMul') is not None:
+        ro = ro * m['roughMul']
+    if m.get('metal') and m.get('metalMul') is not None:
+        me = me * m['metalMul']
     orm[y:y + s, x:x + s] = np.stack([ao, ro, me], -1)
 
 
