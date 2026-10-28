@@ -31,12 +31,25 @@ Recomendación, por pasos (cada uno se puede publicar solo):
 
 | Paso | Qué | Coste | Estado |
 |---|---|---|---|
-| A | **Perfil local**: apodo, personaje, estadísticas y objetos en el dispositivo. Jugar nunca pide nada. | 0 € | SE PUEDE HACER YA |
-| B | **Cuenta en la nube sin contraseña**: al «crear cuenta» el juego genera una identidad y la guarda con una **llave de acceso (passkey)** del iPhone/Android/Windows (Face ID, huella o PIN). Entrar en otro dispositivo = la misma passkey (iCloud/Google la sincronizan). Sin correos, sin contraseñas que robar, sin servicios externos. | 0 € dentro del plan gratuito de Cloudflare | **DECISIÓN** |
-| C | **Amigos**: código de amigo (p. ej. `HAMZA#4821`), solicitudes, lista con «en línea», invitar a una sala privada (las salas ya existen). | 0 € | después de B |
+| A | **Perfil local**: apodo, personaje, estadísticas y objetos en el dispositivo. Jugar nunca pide nada. | 0 € | HECHO (27-10) |
+| B | **Cuenta en la nube sin contraseña**: al «crear cuenta» el juego genera una identidad y la guarda con una **llave de acceso (passkey)** del iPhone/Android/Windows (Face ID, huella o PIN). Entrar en otro dispositivo = la misma passkey (iCloud/Google la sincronizan). Sin correos, sin contraseñas que robar, sin servicios externos. | 0 € dentro del plan gratuito de Cloudflare | HECHO (28-10) |
+| C | **Amigos**: código de amigo (p. ej. `HAMZA#4821`), solicitudes, lista con «en línea», invitar a una sala privada (las salas ya existen). | 0 € | HECHO (28-10): código de amigo = SD-XXXX-XXXX, solicitudes, invitar a tu sala; «en línea» aún no |
 | D | **Inventario en el servidor**: lo que tienes lo concede y lo guarda el servidor (el cliente no puede inventarse una skin). | 0 € | después de B |
 
-Dónde guardar las cuentas (decisión): en el **mismo Worker de Cloudflare** que ya usa el online, con un Durable Object
+**Hecho (28-10-2026, decisión del propietario: «Sí, cuentas»):** cuentas con **passkey** en el **mismo Worker de
+Cloudflare** del online (plan gratuito, sin servicios nuevos): un Durable Object por cuenta y uno de «directorio» para los
+retos de entrada. Código: `server/accounts.js` (lo usan igual Cloudflare y el servidor Node de pruebas). En el juego:
+PERFIL › **Cuenta en la nube** (con `?pj=pro` mientras se prueba): CREAR CUENTA, ENTRAR, tu código de amigo, AÑADIR,
+ACEPTAR/RECHAZAR, INVITAR a tu sala y UNIRSE desde una invitación.
+- Seguridad: el servidor guarda solo la **llave pública**; comprueba la firma (ECDSA P-256 o RSA), que la página sea la del
+  juego, que el reto sea suyo, de un solo uso y de menos de 5 minutos, y que el contador de la llave no vuelva atrás. Las
+  sesiones son fichas aleatorias de las que solo se guarda el resumen (SHA-256); caducan a los 60 días; SALIR la anula.
+  Crear cuentas y pedir retos: como mucho 10 por minuto y dirección. Ver `test/accounts.test.js` (23 comprobaciones) y
+  `test/cuentas.browser.test.js` (llave virtual de Chromium, servidor local y el motor real de Cloudflare con wrangler dev).
+- Pasar de dispositivo: la passkey se sincroniza con iCloud (iPhone/Mac) o con Google (Android/Chrome). En un dispositivo sin
+  ella, el móvil puede firmar por QR desde el diálogo del sistema.
+
+Dónde guardar las cuentas (decisión, ya tomada): en el **mismo Worker de Cloudflare** que ya usa el online, con un Durable Object
 por jugador (almacenamiento SQLite) o con **D1** (base de datos de Cloudflare). Los dos tienen plan gratuito suficiente
 para empezar, pero son productos nuevos en tu cuenta: **Claude no los crea sin tu OK**. Alternativa externa (Supabase,
 Firebase): más piezas y datos fuera de Cloudflare; no la recomiendo.
@@ -71,7 +84,7 @@ Recomendación para empezar (sin gastar): **1)** perfil local y cuentas con pass
 el duelo); **3)** tienda de cosméticos cuando haya jugadores. Todo apagado hasta que confirmes lo de la baja (§0).
 
 ## 5. Decisiones que necesito del propietario
-1. ¿Cuentas con **passkey** en el **mismo Cloudflare** (Durable Objects o D1, plan gratuito)? → crear la base de datos.
+1. ~~¿Cuentas con **passkey** en el **mismo Cloudflare** (Durable Objects o D1, plan gratuito)? → crear la base de datos.~~ HECHO (28-10)
 2. ¿Portal web para monetizar con anuncios (CrazyGames / itch.io / otro)? → leo sus condiciones y preparo la versión.
 3. ¿Tienda de cosméticos con Stripe o con un «merchant of record» (Paddle / Lemon Squeezy)?
 4. Cajas: ¿de acuerdo con que sean **gratuitas** (ganadas jugando) y lo de pago con precio a la vista?

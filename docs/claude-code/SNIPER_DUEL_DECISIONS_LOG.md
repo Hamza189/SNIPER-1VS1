@@ -12,7 +12,8 @@ Detalle de cada cambio (antes/después, medidas, cómo revertir): `docs/next-lev
 | Tarea | Quién la desbloquea | Estado |
 |---|---|---|
 | **Personaje 3D (rev. 03) en bots y rival** — probarlo en `https://hamza189.github.io/SNIPER-1VS1/?pj=2` (PC, iPhone, Samsung) y decir si pasa a ser el de por defecto | Propietario | PUBLICADO TRAS BANDERA · PENDIENTE DE VALIDACIÓN EN IPHONE |
-| **Cuentas y monetización** — decidir los 5 puntos de `docs/CUENTAS-Y-MONETIZACION.md` §5 (passkeys en Cloudflare, portal web, pagos, cajas gratuitas, consulta de la baja) | Propietario | NECESITA APROBACIÓN |
+| **Cuentas** — probar en el iPhone: PERFIL › CREAR CUENTA (Face ID), ENTRAR en otro dispositivo, amigos e invitación (`?pj=pro`) | Propietario | PUBLICADO TRAS BANDERA · PENDIENTE DE VALIDACIÓN EN IPHONE |
+| **Monetización** — decidir los puntos 2–5 de `docs/CUENTAS-Y-MONETIZACION.md` §5 (portal web, pagos, cajas gratuitas, consulta de ingresos) | Propietario | NECESITA APROBACIÓN |
 | **Probar 3ª persona (tecla V / AJUSTES; permitida online) y el quickscope**; decidir si el agua de `?pulido=1` pasa a ser la de siempre | Propietario | PUBLICADO · PENDIENTE DE VALIDACIÓN EN IPHONE |
 | **Elegir personaje y paso nuevo** — probar en `https://hamza189.github.io/SNIPER-1VS1/?pj=pro` (menú › Tu personaje; online con otro dispositivo) cómo andan de frente, de lado y en diagonal | Propietario | PUBLICADO TRAS BANDERA · PENDIENTE DE VALIDACIÓN EN IPHONE |
 | **Los 4 personajes a la vez contra bots** — `https://hamza189.github.io/SNIPER-1VS1/?pj=mix` (y medir con `&medir=1`) en iPhone y PC | Propietario | PUBLICADO TRAS BANDERA · PENDIENTE DE MEDIR EN IPHONE |
@@ -75,6 +76,18 @@ Detalle de cada cambio (antes/después, medidas, cómo revertir): `docs/next-lev
 | CASA ATLAS XL v2 de ChatGPT por defecto (mismas colisiones, detalle real) | 19-10 · directo a `main` |
 | Encargos para ChatGPT: CASA XL, CASA XL v2 y personaje | 18-10 / 19-10 |
 | Personaje 3D rev. 03 hecho por Claude e integrado tras `?pj=2` (bots y rival online) | 20-10 · directo a `main` |
+
+## 28-10-2026 (noche) — Cuentas en la nube con passkey, amigos e invitaciones
+Decisión del propietario: «Sí, cuentas» (passkeys en el mismo Cloudflare, plan gratuito, como proponía el plan).
+- `server/accounts.js` (compartido por el Worker y el servidor Node): crear y entrar con passkey (WebAuthn), sesiones,
+  nombre, amigos (pedir, aceptar, rechazar, quitar) e invitación a sala. Cloudflare: Durable Objects `AccountDO` (uno por
+  cuenta) y `DirDO` (retos de entrada), migración v2 en `wrangler.toml`. Sin servicios nuevos ni gastos.
+- Cliente: PERFIL › Cuenta en la nube (con `?pj=pro`). Jugar sigue sin pedir cuenta.
+- Pruebas: `test/accounts.test.js` (también antes de cada despliegue), `test/cuentas.browser.test.js` (llave virtual; pasa
+  contra el servidor Node y contra el motor real de Cloudflare con `wrangler dev`), y `test/public.test.js` comprueba las
+  cuentas en el servidor público tras desplegar. IMPLEMENTADO · PROBADO EN NAVEGADOR · PENDIENTE DE VALIDACIÓN EN IPHONE.
+- Siguiente: inventario en el servidor (paso D), «en línea» de los amigos, y el personaje y las armas elegidas enviados al
+  rival desde la cuenta.
 
 ## 28-10-2026 (tarde) — Botón de vista en el móvil y armas de la carpeta SNIPER DUEL ASSETSS
 - **Botón 3ª / 1ª** en la pantalla táctil (encima de INSP, editable). IMPLEMENTADO · PROBADO EN NAVEGADOR (táctil).

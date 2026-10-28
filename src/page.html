@@ -184,6 +184,10 @@ h1 span{display:block;color:var(--sand)}
 .profGrid div{display:grid;gap:2px;padding:8px;border:1px solid var(--line);background:var(--ink-2)}
 .profGrid b{font:500 26px/1 var(--f-display);letter-spacing:.03em}
 #profOv input{width:100%;box-sizing:border-box;background:var(--ink-2);border:1px solid var(--line);color:var(--hud);font:inherit;padding:10px}
+#accBox{display:grid;gap:8px;border-top:1px solid var(--line);padding-top:10px}
+#accBox .row{gap:8px}#accBox .btn{font-size:17px;padding:9px 16px 6px}
+.accList{display:grid;gap:4px}.accList div{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:6px 8px;background:var(--ink-2);border:1px solid var(--line)}
+.accList b{font:500 20px/1 var(--f-display);flex:1;min-width:120px}.accList button{background:none;border:1px solid var(--line);color:var(--hud);padding:6px 10px;cursor:pointer;font-size:11px;letter-spacing:.1em}
 #profCode{font-size:11px;word-break:break-all;user-select:text;-webkit-user-select:text;max-height:5em;overflow:auto;margin:0;color:var(--sand)}
 .skinGrid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
 .skinCard{display:grid;gap:4px;align-content:start;padding:6px;background:var(--ink-2);border:1px solid var(--line);cursor:pointer;text-align:left}
@@ -657,7 +661,8 @@ body.hud2 #stickBase.sprint #stickKnob svg{display:block}
     <div style="display:grid;gap:6px"><span class="lbl">Pasar el perfil a otro dispositivo</span>
       <div class="row"><button class="btn ghost" id="profCopy" type="button" style="font-size:18px">COPIAR CÓDIGO</button><button class="btn ghost" id="profPaste" type="button" style="font-size:18px">RESTAURAR</button></div>
       <p id="profCode" hidden></p><input type="text" id="profIn" placeholder="Pega aquí el código (SD1.…)" autocomplete="off" spellcheck="false" hidden><span class="lbl kitNote" id="profMsg"></span></div>
-    <p class="setHelp" style="margin:0">Jugar no pide cuenta. Las cuentas en la nube (entrar desde cualquier dispositivo, amigos, objetos) están en preparación.</p>
+    <div id="accBox" aria-live="polite"></div>
+    <p class="setHelp" style="margin:0">Jugar no pide cuenta. Con cuenta entras desde cualquier dispositivo con una llave (passkey: Face ID, huella o el PIN del móvil; sin contraseñas) y tienes amigos e invitaciones.</p>
     <div class="row"><button class="btn ghost" id="profClose" type="button" style="font-size:20px">VOLVER</button></div>
   </div>
 </div>
@@ -5185,6 +5190,84 @@ if(SKIN_ON){
   $('#skinOv').addEventListener('keydown',e=>{if(e.key==='Escape'){e.stopPropagation();closeSkins();}});
   skinUI();
 }
+/* CUENTA EN LA NUBE (28-10-2026, server/accounts.js, docs/CUENTAS-Y-MONETIZACION.md): crear y entrar con una passkey
+   (WebAuthn: la llave privada nunca sale del móvil/PC), código de amigo = identificador, amigos e invitaciones a tu sala.
+   Jugar nunca la pide. La sesión se guarda en el dispositivo (sniperduel_accToken). */
+const ACC={token:store.get('accToken',null),acc:null,msg:''};
+const accB64=u8=>{let s='';for(let i=0;i<u8.length;i++)s+=String.fromCharCode(u8[i]);return btoa(s).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');};
+const accUnb64=str=>{let s=str.replace(/-/g,'+').replace(/_/g,'/');while(s.length%4)s+='=';const b=atob(s),u=new Uint8Array(b.length);for(let i=0;i<b.length;i++)u[i]=b.charCodeAt(i);return u;};
+async function accApi(p,body){
+  const base=await netServerUrl();if(!base)throw Object.assign(new Error('sin servidor'),{status:0});
+  const r=await fetch(base+p,{method:'POST',headers:Object.assign({'content-type':'application/json'},ACC.token?{authorization:'Bearer '+ACC.token}:{}),body:JSON.stringify(body||{})});
+  let j={};try{j=await r.json();}catch(e){}
+  if(!r.ok)throw Object.assign(new Error(j.error||('http '+r.status)),{status:r.status});
+  return j;
+}
+const ACC_ERR={session:'La sesión ha caducado: vuelve a entrar.',no_account:'Esa cuenta no existe.',not_friends:'Solo puedes invitar a tus amigos.',id:'Ese código no es válido (SD-XXXX-XXXX).',
+  busy:'Demasiados intentos: espera un minuto.',full:'Lista llena.',signature:'La llave no coincide.',cred:'Esa llave no es de esta cuenta.',challenge:'Ha pasado demasiado tiempo: vuelve a intentarlo.',expired:'Ha pasado demasiado tiempo: vuelve a intentarlo.'};
+function accMsg(t){ACC.msg=t||'';const m=document.getElementById('accMsg');if(m)m.textContent=ACC.msg;}
+const accFail=e=>accMsg(e&&e.name==='NotAllowedError'?'Cancelado.':e&&e.status===0?'No hay conexión con el servidor.':ACC_ERR[e&&e.message]||('No se pudo ('+(e&&e.message||'error')+').'));
+function accSet(tok,acc){ACC.token=tok;ACC.acc=acc;store.set('accToken',tok);
+  if(acc){if(PROFILE.id!==acc.id){PROFILE.id=acc.id;}if(acc.name&&acc.name!=='JUGADOR')PROFILE.name=acc.name;SDProfile.save(LS,PROFILE);if(PROFILE.name){store.set('mpName',PROFILE.name);$('#mpName').value=PROFILE.name;}}
+  profileUI();accUI();}
+async function accCreate(){
+  if(!window.PublicKeyCredential||!navigator.credentials){accMsg('Este navegador no admite llaves (passkeys).');return;}
+  accMsg('Creando la llave…');
+  try{
+    const name=PROFILE.name||SDProto.cleanName($('#profName').value)||'JUGADOR';
+    const r=await accApi('/cuenta/nueva',{name,id:PROFILE.id});
+    const c=await navigator.credentials.create({publicKey:{challenge:accUnb64(r.challenge),rp:{name:'SNIPER DUEL',id:location.hostname},
+      user:{id:new TextEncoder().encode(r.id),name:r.id,displayName:name},pubKeyCredParams:[{type:'public-key',alg:-7},{type:'public-key',alg:-257}],
+      authenticatorSelection:{residentKey:'required',requireResidentKey:true,userVerification:'preferred'},attestation:'none',timeout:120000}});
+    const j=await accApi('/cuenta/registrar',{id:r.id,cred:{id:accB64(new Uint8Array(c.rawId)),clientDataJSON:accB64(new Uint8Array(c.response.clientDataJSON)),attestationObject:accB64(new Uint8Array(c.response.attestationObject))}});
+    accSet(j.token,j.account);accMsg('CUENTA CREADA');
+  }catch(e){accFail(e);}
+}
+async function accLogin(){
+  if(!window.PublicKeyCredential||!navigator.credentials){accMsg('Este navegador no admite llaves (passkeys).');return;}
+  accMsg('Esperando a tu llave…');
+  try{
+    const r=await accApi('/cuenta/entrar/reto');
+    const a=await navigator.credentials.get({publicKey:{challenge:accUnb64(r.challenge),rpId:location.hostname,userVerification:'preferred',timeout:120000}});
+    const u=x=>accB64(new Uint8Array(x));
+    const j=await accApi('/cuenta/entrar',{cred:{id:u(a.rawId),clientDataJSON:u(a.response.clientDataJSON),authenticatorData:u(a.response.authenticatorData),signature:u(a.response.signature),userHandle:u(a.response.userHandle)}});
+    accSet(j.token,j.account);accMsg('DENTRO');
+  }catch(e){accFail(e);}
+}
+async function accRefresh(){
+  if(!ACC.token){accUI();return;}
+  try{const j=await accApi('/cuenta/yo');ACC.acc=j.account;}catch(e){if(e.status===401){ACC.token=null;ACC.acc=null;store.set('accToken',null);}}
+  accUI();
+}
+async function accDo(act,id){
+  try{
+    if(act==='salir'){await accApi('/cuenta/salir').catch(()=>{});ACC.token=null;ACC.acc=null;store.set('accToken',null);accUI();accMsg('Has salido de la cuenta (tu perfil sigue en este dispositivo).');return;}
+    if(act==='pedir'){const code=String($('#accFriend').value||'').trim().toUpperCase();const j=await accApi('/cuenta/amigos/pedir',{id:code});accMsg(j.already?'Ya sois amigos.':'SOLICITUD ENVIADA');$('#accFriend').value='';return;}
+    if(act==='invitar'){if(!NET.code){accMsg('Crea o entra en una sala (MULTIJUGADOR) y luego invita.');return;}await accApi('/cuenta/amigos/invitar',{id,sala:NET.code});accMsg('INVITACIÓN ENVIADA a la sala '+NET.code);return;}
+    if(act==='unirse'){const q=new URLSearchParams(location.search);q.set('sala',id);location.search=q.toString();return;}
+    if(act==='copiar'){try{await navigator.clipboard.writeText(ACC.acc.id);accMsg('CÓDIGO COPIADO');}catch(e){accMsg('Tu código: '+ACC.acc.id);}return;}
+    const j=await accApi('/cuenta/amigos/'+act,{id});ACC.acc=j.account||ACC.acc;accUI();
+  }catch(e){accFail(e);}
+}
+function accUI(){
+  const box=document.getElementById('accBox');if(!box)return;
+  const A=ACC.acc,e=escapeHtml,row=(name,id,btns)=>'<div><b>'+e(name||'JUGADOR')+'</b><span class="lbl">'+e(id)+'</span>'+btns.map(([l,a,v])=>'<button type="button" data-acc="'+a+'" data-id="'+e(v||id)+'">'+l+'</button>').join('')+'</div>';
+  let h='<span class="lbl">Cuenta en la nube</span>';
+  if(!ACC.token||!A){
+    h+=ACC.token?'<span class="lbl">Cargando la cuenta…</span>':'<div class="row"><button class="btn" type="button" data-acc="crear">CREAR CUENTA</button><button class="btn ghost" type="button" data-acc="entrar">ENTRAR</button></div>';
+  }else{
+    h+='<div class="row"><span class="lbl" style="flex:1">Tu código de amigo: <b style="font-size:16px;color:var(--hud)">'+e(A.id)+'</b></span><button class="btn ghost" type="button" data-acc="copiar">COPIAR</button><button class="btn ghost" type="button" data-acc="salir">SALIR</button></div>';
+    h+='<div class="row"><input type="text" id="accFriend" maxlength="12" placeholder="Código de un amigo (SD-…)" autocomplete="off" spellcheck="false" style="flex:1;min-width:150px"><button class="btn ghost" type="button" data-acc="pedir">AÑADIR</button></div>';
+    if(A.invites.length)h+='<span class="lbl">Invitaciones</span><div class="accList">'+A.invites.map(i=>row(i.name+' · sala '+i.sala,i.id,[['UNIRSE','unirse',i.sala]])).join('')+'</div>';
+    if(A.requests.length)h+='<span class="lbl">Solicitudes</span><div class="accList">'+A.requests.map(r=>row(r.name,r.id,[['ACEPTAR','aceptar'],['RECHAZAR','rechazar']])).join('')+'</div>';
+    h+='<span class="lbl">Amigos ('+A.friends.length+')</span><div class="accList">'+(A.friends.length?A.friends.map(f=>row(f.name,f.id,[['INVITAR','invitar'],['QUITAR','quitar']])).join(''):'<div><span class="lbl">Aún no tienes amigos: pásales tu código.</span></div>')+'</div>';
+  }
+  h+='<span class="lbl kitNote" id="accMsg">'+e(ACC.msg)+'</span>';
+  box.innerHTML=h;
+}
+document.addEventListener('click',ev=>{const b=ev.target.closest&&ev.target.closest('#accBox [data-acc]');if(!b)return;SFX.ui();const a=b.dataset.acc,id=b.dataset.id;
+  if(a==='crear')accCreate();else if(a==='entrar')accLogin();else accDo(a,id);});
+
 /* PERFIL (paso A de las cuentas, client/profile.js, docs/CUENTAS-Y-MONETIZACION.md): apodo, personaje, estadísticas de
    todas tus partidas y un código para pasarlo a otro dispositivo. Se guarda siempre; el botón se ve con ?pj=pro/mix o
    ?perfil=1 mientras se prueba. */
@@ -5195,9 +5278,9 @@ function profileUI(){
   $('#profId').textContent='Tu identificador: '+PROFILE.id+' · online: '+PROFILE.stats.online+' partidas, '+PROFILE.stats.onlineWins+' victorias';
   $('#profName').value=PROFILE.name||'';
 }
-function openProfile(){profileUI();$('#profMsg').textContent='';$('#profCode').hidden=true;$('#profIn').hidden=true;$('#profOv').hidden=false;$('#profOv').scrollTop=0;$('#menu').classList.add('under');}
+function openProfile(){profileUI();accRefresh();$('#profMsg').textContent='';$('#profCode').hidden=true;$('#profIn').hidden=true;$('#profOv').hidden=false;$('#profOv').scrollTop=0;$('#menu').classList.add('under');}
 function closeProfile(){$('#profOv').hidden=true;$('#menu').classList.remove('under');}
-function setProfileName(v){const n=SDProfile.clean({name:v}).name;PROFILE.name=n;SDProfile.save(LS,PROFILE);if(n){store.set('mpName',n);$('#mpName').value=n;}}
+function setProfileName(v){const n=SDProfile.clean({name:v}).name;PROFILE.name=n;SDProfile.save(LS,PROFILE);if(n&&ACC.token)accApi('/cuenta/nombre',{name:n}).then(j=>{ACC.acc=j.account;accUI();}).catch(()=>{});if(n){store.set('mpName',n);$('#mpName').value=n;}}
 function profileMatch(r){try{SDProfile.addMatch(PROFILE,r);SDProfile.save(LS,PROFILE);}catch(e){}}
 if(PROFILE_ON){
   $('#openProfile').hidden=false;
@@ -5525,6 +5608,6 @@ if(FLORA.on){const gl=new T.GLTFLoader();let n=2;
       // the town's ground must exist first (rays land on it)
       if(P3W.kit)go();else{const w=setInterval(()=>{if(P3W.kit){clearInterval(w);go();}},300);}}}}
 
-window.__SD={WSKIN,WS_ST,setWskin,get RIF(){return RIF;},TPV,SELF,get PROFILE(){return PROFILE;},openProfile,endMatch,PJ_MIX,MIX_ORDER,SKINS,get SKIN(){return SKIN;},setSkin,pj2SetPack,rivalSkin,PERF,perfRun,HUD2,get H2(){return HUD2?H2:null;},leanIn:HUD2?leanIn:null,h2Frame:HUD2?h2Frame:null,PJ2,pj2Load,CASA,casaLoad,XL,casaxlLoad,FLORA,RATS,RAT_WORLD,ratsFrame,SHADOW_FADE,setDuelLethal,get DUEL_LETHAL(){return DUEL_LETHAL;},gfxDiagText,get P3ON(){return P3ON;},COBCC,damagePlayer,TEX,sunFollow,setSunSnap(on){SUN_SNAP=!!on;},sun,P0,E10,e10Lod,DIAG,setTrainMove,LIGHT:{sun,hemi,skyMat,LOOK,P3},P3W,freeze(on){SIM_FREEZE=!!on;},SHOT,VMA,makeSoldier,animateSoldier,BOT_MAT,scene,camera,RemotePlayer,PMprev,PIS,PROOT,RIF,WROOT,SHO_:null,MANUAL,advance(ms){frameBody(last+ms);},get LAST_PELLETS(){return LAST_PELLETS;},SCORE,SCFG,SROOT,SHO,setPrimaryChoice,get PRIMARY(){return PRIMARY;},PCORE,PCFG,setWorld,WORLDS,get WORLD_ID(){return WORLD_ID;},renderer,GFX,gfxApply,get NET(){return NET;},get REMOTE(){return REMOTE;},W,get NAV(){return NAV;},setOffMap,get OFFMAP(){return OFFMAP;},TOUCH,EDIT,openEditor,get SETTINGS(){return SETTINGS;},get LAYOUT(){return LAYOUT;},checkOrientation,MAT,LOAD,TRAINERS,get RANGE_BOTS(){return RANGE_BOTS;},TRAIN,setTrain,setLethal,kitNote,GINS,TDIAG,AU,get TOUCH_EVENTS(){return TOUCH_EVENTS;},impactFX,bodyFX,get DECALS(){return DECALS;},surfaceOf,soundDelay,aimSelfTest,P,PM,WS,WCORE,RECOIL,AIM,BOTS,DUMMIES,BULLETS,EVENTS,PARTS,STATS,get state(){return state;},get mode(){return mode;},setMode,input,startMatch,simTick,frame,toMenu,pause,resume};
+window.__SD={ACC,accRefresh,WSKIN,WS_ST,setWskin,get RIF(){return RIF;},TPV,SELF,get PROFILE(){return PROFILE;},openProfile,endMatch,PJ_MIX,MIX_ORDER,SKINS,get SKIN(){return SKIN;},setSkin,pj2SetPack,rivalSkin,PERF,perfRun,HUD2,get H2(){return HUD2?H2:null;},leanIn:HUD2?leanIn:null,h2Frame:HUD2?h2Frame:null,PJ2,pj2Load,CASA,casaLoad,XL,casaxlLoad,FLORA,RATS,RAT_WORLD,ratsFrame,SHADOW_FADE,setDuelLethal,get DUEL_LETHAL(){return DUEL_LETHAL;},gfxDiagText,get P3ON(){return P3ON;},COBCC,damagePlayer,TEX,sunFollow,setSunSnap(on){SUN_SNAP=!!on;},sun,P0,E10,e10Lod,DIAG,setTrainMove,LIGHT:{sun,hemi,skyMat,LOOK,P3},P3W,freeze(on){SIM_FREEZE=!!on;},SHOT,VMA,makeSoldier,animateSoldier,BOT_MAT,scene,camera,RemotePlayer,PMprev,PIS,PROOT,RIF,WROOT,SHO_:null,MANUAL,advance(ms){frameBody(last+ms);},get LAST_PELLETS(){return LAST_PELLETS;},SCORE,SCFG,SROOT,SHO,setPrimaryChoice,get PRIMARY(){return PRIMARY;},PCORE,PCFG,setWorld,WORLDS,get WORLD_ID(){return WORLD_ID;},renderer,GFX,gfxApply,get NET(){return NET;},get REMOTE(){return REMOTE;},W,get NAV(){return NAV;},setOffMap,get OFFMAP(){return OFFMAP;},TOUCH,EDIT,openEditor,get SETTINGS(){return SETTINGS;},get LAYOUT(){return LAYOUT;},checkOrientation,MAT,LOAD,TRAINERS,get RANGE_BOTS(){return RANGE_BOTS;},TRAIN,setTrain,setLethal,kitNote,GINS,TDIAG,AU,get TOUCH_EVENTS(){return TOUCH_EVENTS;},impactFX,bodyFX,get DECALS(){return DECALS;},surfaceOf,soundDelay,aimSelfTest,P,PM,WS,WCORE,RECOIL,AIM,BOTS,DUMMIES,BULLETS,EVENTS,PARTS,STATS,get state(){return state;},get mode(){return mode;},setMode,input,startMatch,simTick,frame,toMenu,pause,resume};
 })();
 </script>

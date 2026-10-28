@@ -38,6 +38,11 @@ function client(code) {
     check('crea una sala desde el origen del juego', PR.isCode(code) && r.headers.get('access-control-allow-origin') === 'https://hamza189.github.io', code);
     const evil = await fetch(base + '/create', { method: 'POST', headers: { Origin: 'https://evil.example' } });
     check('rechaza crear salas desde otra web', evil.status === 403);
+    // accounts (server/accounts.js): a login challenge from the game, refused from another site; a session nobody has: 401
+    const ac = await fetch(base + '/cuenta/entrar/reto', { method: 'POST', headers: { Origin: 'https://hamza189.github.io' } }), acj = await ac.json().catch(() => ({}));
+    const acEvil = await fetch(base + '/cuenta/entrar/reto', { method: 'POST', headers: { Origin: 'https://evil.example' } });
+    const acYo = await fetch(base + '/cuenta/yo', { method: 'POST', headers: { Origin: 'https://hamza189.github.io', Authorization: 'Bearer SD-AAAA-AAAA.' + 'x'.repeat(43) } });
+    check('cuentas: reto para entrar desde el juego, rechazo desde otra web y sesión inventada sin acceso', typeof acj.challenge === 'string' && acj.challenge.length > 30 && acEvil.status === 403 && acYo.status === 401, ac.status + ' / ' + acEvil.status + ' / ' + acYo.status);
     A = client(code); B = client(code);
     await A.open(); await B.open();
     check('dos conexiones WSS abiertas', A.ws.readyState === 1 && B.ws.readyState === 1);

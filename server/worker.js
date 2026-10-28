@@ -1,12 +1,14 @@
 /* SNIPER DUEL — multiplayer server on Cloudflare (Worker + one Durable Object per room).
    The rules are core/room.js, the same code the Node server and the tests run.
      POST /create → { code }    GET /health    WS /room/<CODE>
+     POST /cuenta/…  accounts (server/accounts.js): one Durable Object per account + one directory (login challenges)
    Deployed by .github/workflows/deploy-server.yml (wrangler) with the repository secrets
    CLOUDFLARE_API_TOKEN and CLOUDFLARE_ACCOUNT_ID. Config: wrangler.toml. */
 import SDRoom from '../core/room.js';
 import MAP from '../core/mapdata.js';
 import G from '../core/geom.js';
 import PR from '../core/protocol.js';
+import SDAccounts from './accounts.js';
 
 const json = (obj, status, extra) => new Response(JSON.stringify(obj), { status: status || 200, headers: Object.assign({ 'content-type': 'application/json' }, extra || {}) });
 function originOk(env, o) {
@@ -16,7 +18,7 @@ function originOk(env, o) {
 }
 function cors(env, req) {
   const o = req.headers.get('Origin');
-  return o && originOk(env, o) ? { 'Access-Control-Allow-Origin': o, 'Vary': 'Origin', 'Access-Control-Allow-Methods': 'POST, GET', 'Access-Control-Allow-Headers': 'content-type' } : {};
+  return o && originOk(env, o) ? { 'Access-Control-Allow-Origin': o, 'Vary': 'Origin', 'Access-Control-Allow-Methods': 'POST, GET', 'Access-Control-Allow-Headers': 'content-type, authorization' } : {};
 }
 
 export default {
@@ -36,6 +38,20 @@ export default {
       }
       return json({ error: 'busy' }, 503, h);
     }
+    if (url.pathname.startsWith('/cuenta/') && req.method === 'POST') {
+      if (!originOk(env, req.headers.get('Origin'))) return json({ error: 'origin' }, 403, h);
+      // creating accounts and login challenges: no more than 10 a minute from one address
+      if (env.CREATE_LIMITER && (url.pathname === '/cuenta/nueva' || url.pathname === '/cuenta/entrar/reto')) {
+        try { const ip = req.headers.get('CF-Connecting-IP') || 'x'; const { success } = await env.CREATE_LIMITER.limit({ key: 'acc:' + ip }); if (!success) return json({ error: 'busy' }, 429, h); } catch (e) {}
+      }
+      let body = {}; try { const t = await req.text(); if (t.length > 16384) return json({ error: 'big' }, 413, h); body = t ? JSON.parse(t) : {}; } catch (e) { return json({ error: 'bad' }, 400, h); }
+      const call = (ns, name) => async (action, b, token) => {
+        const r = await ns.get(ns.idFromName(name)).fetch('https://acc/x', { method: 'POST', body: JSON.stringify({ action, body: b, token }) });
+        return r.json();
+      };
+      const r = await SDAccounts.api(url.pathname, body, req.headers.get('Authorization'), { acc: id => call(env.ACCOUNTS, id), dir: call(env.DIR, 'directorio') });
+      return json(r.body, r.status, h);
+    }
     const m = /^\/room\/([A-Z0-9]{6})$/.exec(url.pathname);
     if (m) {
       if (req.headers.get('Upgrade') !== 'websocket') return json({ error: 'upgrade' }, 426, h);
@@ -46,6 +62,17 @@ export default {
     return json({ error: 'not_found' }, 404, h);
   }
 };
+
+// accounts: one Durable Object per account and one directory; their storage is the account module's store
+const allowed = env => (env.ALLOWED_ORIGINS || 'https://hamza189.github.io').split(',').map(s => s.trim());
+export class AccountDO {
+  constructor(state, env) { this.h = SDAccounts.account(state.storage, { origins: allowed(env) }); }
+  async fetch(req) { const { action, body, token } = await req.json(); return Response.json(await this.h(action, body, token)); }
+}
+export class DirDO {
+  constructor(state) { this.h = SDAccounts.directory(state.storage, {}); }
+  async fetch(req) { const { action, body } = await req.json(); return Response.json(await this.h(action, body)); }
+}
 
 let INDEX = null; // map index, built once per isolate
 export class RoomDO {

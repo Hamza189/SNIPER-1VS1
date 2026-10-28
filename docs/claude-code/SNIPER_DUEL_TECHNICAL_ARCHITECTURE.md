@@ -137,6 +137,7 @@ reconciliación, interpolación del rival 110 ms, ping) · `vmrig.js` (materiale
 | `?hud=2` | HUD 2: iconos, barra de armas, inventario, asomarse en móvil, teclas de asomarse y editor ampliado (`client/hud2.js`, `docs/HUD-2.md`); solo presentación y entrada |
 | `?pj=mix` | Los 4 personajes a la vez contra bots (op2, op3, op4 y el de cajas; 4 bots; texturas 4K/2K/1K por calidad) para comparar y medir |
 | `?pj=pro` / `?pj=mix` (27-10) | Además: «Tu personaje» en el menú y la sala (mensaje `skin` del servidor) y botón PERFIL |
+| `?pj=pro` (28-10) | Además: PERFIL › Cuenta en la nube (passkeys, amigos, invitaciones; `server/accounts.js`, rutas `/cuenta/…` del Worker) |
 | `?pulido=1` (28-10) | Agua de las fuentes con ondas en movimiento y reflejo suave (para comparar con la de siempre) |
 | `?perfil=1` | Botón PERFIL sin cambiar de personajes (perfil local: `client/profile.js`, `docs/CUENTAS-Y-MONETIZACION.md`) |
 | `?pj=pro` | Personajes realistas CC BY por calidad: ALTO op2 (rival) / op3 (bots) con 4K, MEDIO op4, BAJO soldado de cajas (`tools/personaje-ext`, `docs/PERSONAJES-PRO.md`) |

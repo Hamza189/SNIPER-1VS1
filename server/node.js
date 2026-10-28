@@ -3,6 +3,7 @@
      POST /create        → { code }            creates a private room
      GET  /health        → { ok, rooms }
      WS   /room/<CODE>   → the room protocol (docs/PROTOCOLO.md)
+     POST /cuenta/…      → accounts (server/accounts.js), kept in memory here (tests)
    Env: PORT (default 8787), ALLOWED_ORIGINS (comma list; default GitHub Pages + localhost),
         MAX_ROOMS (default 200).
    Needs the "ws" package. Run: node server/node.js */
@@ -11,6 +12,9 @@ const http = require('http'), crypto = require('crypto');
 let WebSocketServer;
 try { ({ WebSocketServer } = require('ws')); } catch (e) { ({ WebSocketServer } = require('/opt/npm-tools/node_modules/ws')); }
 const SDRoom = require('../core/room.js'), PR = require('../core/protocol.js'), MAP = require('../core/mapdata.js'), G = require('../core/geom.js');
+const SDAccounts = require('./accounts.js');
+// in-memory store with the Durable Object storage shape ({get, put, delete}, async; values copied like structured clone)
+function memStore() { const m = new Map(); return { get: async k => (m.has(k) ? JSON.parse(m.get(k)) : undefined), put: async (k, v) => { m.set(k, JSON.stringify(v)); }, delete: async k => { m.delete(k); } }; }
 
 function startServer(opts) {
   opts = opts || {};
@@ -23,6 +27,10 @@ function startServer(opts) {
   const okOrigin = o => !o || origins.some(a => o === a || o.startsWith(a + ':'));
   const cors = (req, res) => { const o = req.headers.origin; if (o && okOrigin(o)) { res.setHeader('Access-Control-Allow-Origin', o); res.setHeader('Vary', 'Origin'); } };
   const createLimit = new Map();   // ip → [timestamps]  (no more than 10 rooms a minute per address)
+  // accounts: one store per account and one directory, like the Durable Objects on Cloudflare
+  const accStores = new Map(), dirStore = memStore(), accOpts = { origins, now: () => clock() };
+  const accounts = { acc: id => { if (!accStores.has(id)) accStores.set(id, memStore()); return SDAccounts.account(accStores.get(id), accOpts); },
+    dir: SDAccounts.directory(dirStore, accOpts) };
 
   function makeRoom() {
     let code; do { code = PR.codeFrom(crypto.randomBytes(6)); } while (rooms.has(code));
@@ -35,7 +43,17 @@ function startServer(opts) {
   }
   const server = http.createServer((req, res) => {
     cors(req, res);
-    if (req.method === 'OPTIONS') { res.setHeader('Access-Control-Allow-Methods', 'POST, GET'); res.setHeader('Access-Control-Allow-Headers', 'content-type'); res.writeHead(204); return res.end(); }
+    if (req.method === 'OPTIONS') { res.setHeader('Access-Control-Allow-Methods', 'POST, GET'); res.setHeader('Access-Control-Allow-Headers', 'content-type, authorization'); res.writeHead(204); return res.end(); }
+    if (req.url.startsWith('/cuenta/') && req.method === 'POST') {
+      if (!okOrigin(req.headers.origin)) { res.writeHead(403); return res.end(); }
+      let raw = ''; req.on('data', d => { raw += d; if (raw.length > 16384) req.destroy(); });
+      req.on('end', async () => {
+        let body = {}; try { body = raw ? JSON.parse(raw) : {}; } catch (e) { res.writeHead(400); return res.end('{"error":"bad"}'); }
+        const r = await SDAccounts.api(req.url, body, req.headers.authorization, accounts);
+        res.writeHead(r.status, { 'content-type': 'application/json' }); res.end(JSON.stringify(r.body));
+      });
+      return;
+    }
     if (req.url === '/health') { res.writeHead(200, { 'content-type': 'application/json' }); return res.end(JSON.stringify({ ok: true, rooms: rooms.size, v: PR.VERSION })); }
     if (req.url === '/create' && req.method === 'POST') {
       if (!okOrigin(req.headers.origin)) { res.writeHead(403); return res.end(); }
@@ -66,7 +84,7 @@ function startServer(opts) {
     for (const [code, r] of rooms) { r.tick(t); if (r.isIdle(t)) { r.closed = true; rooms.delete(code); } }
   }, 1000 / 60);
   return new Promise(res => server.listen(opts.port === undefined ? (+process.env.PORT || 8787) : opts.port, opts.host || '0.0.0.0', () => res({
-    port: server.address().port, rooms, close: () => new Promise(r => { clearInterval(timer); for (const ws of sockets.values()) ws.terminate(); wss.close(); server.close(() => r()); }) })));
+    port: server.address().port, rooms, accStores, close: () => new Promise(r => { clearInterval(timer); for (const ws of sockets.values()) ws.terminate(); wss.close(); server.close(() => r()); }) })));
 }
 module.exports = { startServer };
 if (require.main === module) startServer().then(s => console.log('Sniper Duel server on :' + s.port));
