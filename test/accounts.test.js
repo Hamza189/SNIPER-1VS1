@@ -108,6 +108,8 @@ async function login(acc, o) {
   const K = await newAccount('Cajas');
   let iv = await invOf(K);
   check('cuenta nueva: una caja de bienvenida, sin objetos, caja diaria disponible', iv.boxes === 1 && iv.items.length === 0 && iv.daily === true && iv.pts === 0, JSON.stringify(iv).slice(0, 90));
+  { const old = await stores.get(N.id).get('acc'); delete old.inv; await stores.get(N.id).put('acc', old); }   // an account made before the boxes
+  check('una cuenta de antes de las cajas recibe también su caja de bienvenida', (await invOf(N)).boxes === 1);
   check('caja diaria: una al día', (await api('/cuenta/caja/diaria', {}, K.token)).body.account.inv.boxes === 2 && (await api('/cuenta/caja/diaria', {}, K.token)).status === 409);
   const o1 = await api('/cuenta/caja/abrir', {}, K.token), o2 = await api('/cuenta/caja/abrir', {}, K.token), o3 = await api('/cuenta/caja/abrir', {}, K.token);
   iv = await invOf(K);

@@ -7,7 +7,8 @@ Con eso acepta la parte gratuita de la decisión 4 de `docs/CUENTAS-Y-MONETIZACI
 - **Inventario en el servidor.** Lo que tienes lo guarda tu cuenta en Cloudflare (el mismo Durable Object de la
   cuenta) y solo el servidor lo concede. El navegador no puede inventarse un objeto: equipar algo que no es tuyo da 403.
 - **Cajas gratuitas.** No se compran: solo se ganan jugando.
-  - **Caja de bienvenida** al crear la cuenta.
+  - **Caja de bienvenida** al crear la cuenta. Las cuentas creadas antes de las cajas la reciben la primera vez que
+    entran.
   - **Caja diaria**: una al día; el día cambia a las 00:00 UTC (la 1:00 o las 2:00 en España).
   - **Puntos de caja**: 100 puntos = una caja. Valores en `core/items.js` → `PTS`.
 

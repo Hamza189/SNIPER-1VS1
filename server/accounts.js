@@ -105,10 +105,10 @@ function clientData(b64, type, origins) {
 }
 function originOk(origins, o) { return typeof o === 'string' && origins.some(a => o === a || o.startsWith(a + ':')); }
 const err = (status, error) => ({ status, body: { error } });
-// ---- inventario (dentro de la ficha de la cuenta; las cuentas de antes lo reciben vacío la primera vez)
+// ---- inventario (dentro de la ficha de la cuenta; las cuentas de antes lo reciben la primera vez, con su caja de bienvenida)
 const DAY = 86400000, dayOf = t => Math.floor(t / DAY);   // el día cambia a las 00:00 UTC (la 1:00 o las 2:00 en España)
 function inv(a) {
-  if (!a.inv) a.inv = { boxes: 0, pts: 0, frag: 0, items: {}, equip: {}, daily: -1, day: { d: -1, bots: 0, online: 0 }, lastBots: 0, keys: [] };
+  if (!a.inv) a.inv = { boxes: PTS.welcome, pts: 0, frag: 0, items: {}, equip: {}, daily: -1, day: { d: -1, bots: 0, online: 0 }, lastBots: 0, keys: [] };
   return a.inv;
 }
 function today(I, t) { const d = dayOf(t); if (I.day.d !== d) I.day = { d, bots: 0, online: 0 }; return I.day; }
@@ -168,7 +168,7 @@ function account(store, opts) {
           const k = coseKey(ad.cose);
           const a = { id: pending.id, name: pending.name, created: now(), creds: [{ id: c.id, alg: k.alg, jwk: k.jwk, counter: ad.counter }],
             friends: {}, requests: {}, invites: {}, tokens: {} };
-          inv(a).boxes = PTS.welcome;   // caja de bienvenida
+          inv(a);   // con la caja de bienvenida
           const tokenOut = await issue(a);
           await store.put('acc', a); await store.delete('pending');
           return ok({ token: tokenOut, account: pub(a) });
