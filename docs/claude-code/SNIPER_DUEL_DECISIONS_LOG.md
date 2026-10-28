@@ -42,6 +42,7 @@ Detalle de cada cambio (antes/después, medidas, cómo revertir): `docs/next-lev
 | Perfil BAJO = PUEBLO 2.0 automáticamente; MEDIO/ALTO = PUEBLO 3.0 (mismas colisiones) | PENDIENTE |
 | Calidades por etapas: congelar lo hecho como BAJO (~finales de octubre), mejorar a MEDIO y luego ALTO (plan en la hoja de ruta) | PLANIFICADO |
 | Resto de la auditoría que no cambia reglas: seguridad del servidor (Q3, Q4, Q6, Q7), CI con `test:fast` y reversión (Q8), pruebas del Worker (Q9), navaja contra bots agachados (J4), daño del bot tras el retardo (J7), FUEGO doble táctil (J8), giro residual al reanudar (J9), textura de rata y E10 por perfil (R3, R4), unir mallas del kit (R6), partículas instanciadas (R8), liberar CASA al salir (R10), LOD y anisotropía (G4, G10, G11) | PENDIENTE |
+| Riggear el «Modern Tactical Soldier» (CC BY, sin esqueleto) como 5º personaje; aspectos de arma también en la 3ª persona y para el rival online | PENDIENTE |
 | Contorno y sombras de los personajes; ojos algo rojizos del MILITAR (textura original); LINCE y rev. 03 con el paso lateral nuevo; botón de vista en el HUD táctil | PENDIENTE |
 | Caso pequeño de z-fighting: piedra del kit contra estuco del pueblo (x ≈ 23–33, 4 puntos) | PENDIENTE |
 | Paredes blancas lisas de la CASA ATLAS original que deslumbran de cerca | PENDIENTE |
@@ -74,6 +75,15 @@ Detalle de cada cambio (antes/después, medidas, cómo revertir): `docs/next-lev
 | CASA ATLAS XL v2 de ChatGPT por defecto (mismas colisiones, detalle real) | 19-10 · directo a `main` |
 | Encargos para ChatGPT: CASA XL, CASA XL v2 y personaje | 18-10 / 19-10 |
 | Personaje 3D rev. 03 hecho por Claude e integrado tras `?pj=2` (bots y rival online) | 20-10 · directo a `main` |
+
+## 28-10-2026 (tarde) — Botón de vista en el móvil y armas de la carpeta SNIPER DUEL ASSETSS
+- **Botón 3ª / 1ª** en la pantalla táctil (encima de INSP, editable). IMPLEMENTADO · PROBADO EN NAVEGADOR (táctil).
+- **Carpeta de assets** (12 modelos): 5 con CC BY entran como **aspectos** (rifles TITÁN, ÚLTIMA, VECTOR, SAHARA y cuchillo
+  TÁCTICA) con conversor nuevo `tools/arma-ext` y retratos; se eligen en «Tu personaje» con `?pj=pro`. Solo aspecto.
+  Los 6 con licencia Sketchfab **Standard** (Beretta ×5, Remington XM2010) **no** se pueden usar en un juego web (prohíbe que
+  se puedan descargar o extraer). El «Modern Tactical Soldier» (CC BY) viene **sin esqueleto**: pendiente de riggear.
+  Aviso: la textura del SAHARA lleva el logotipo CADEX. Detalle en `docs/ARMAS-EXT.md`. IMPLEMENTADO · PROBADO EN NAVEGADOR.
+- Próximo (propietario): cuentas.
 
 ## 28-10-2026 — Personajes pulidos, quickscope, 3ª persona y agua (vídeo del propietario)
 Petición: personajes sin transparencias de lado y pulidos, ver en 3ª persona, mejorar el quickscope en PC y móvil y

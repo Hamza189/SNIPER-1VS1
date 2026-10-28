@@ -1,0 +1,249 @@
+{
+ "titan": {
+  "title": "CheyTac M200 «Intervention» sniper rifle",
+  "author": "Aleksandr (sannf4)",
+  "url": "https://sketchfab.com/3d-models/cheytac-m200-intervention-sniper-rifle-231bc2d38c4c4cf2bbe882112caa1ba4",
+  "license": "CC BY 4.0",
+  "zip": "cheytac_m200_intervention_sniper_rifle.zip",
+  "slot": "rifle",
+  "name": "TITÁN",
+  "cfg": {
+   "len": 1.45,
+   "up": "+Z",
+   "mag": [
+    "magaz"
+   ],
+   "tris": 22000,
+   "trisTp": 2500,
+   "tex": 2048,
+   "bore": -0.115,
+   "grip": [
+    -0.835,
+    -0.19
+   ],
+   "bolt": [
+    [
+     0.02,
+     -1.14,
+     -0.18
+    ],
+    [
+     0.11,
+     -1.03,
+     -0.085
+    ]
+   ],
+   "boltPivot": [
+    -1.09,
+    -0.115
+   ],
+   "dropBox": [
+    [
+     [
+      0.05,
+      -0.8,
+      -0.4
+     ],
+     [
+      0.16,
+      -0.6,
+      -0.2
+     ]
+    ],
+    [
+     [
+      0.04,
+      -0.6,
+      -0.45
+     ],
+     [
+      0.25,
+      -0.45,
+      -0.05
+     ]
+    ],
+    [
+     [
+      -0.25,
+      -0.6,
+      -0.45
+     ],
+     [
+      -0.04,
+      -0.45,
+      -0.05
+     ]
+    ],
+    [
+     [
+      -0.04,
+      -0.56,
+      -0.42
+     ],
+     [
+      0.04,
+      -0.47,
+      -0.17
+     ]
+    ]
+   ]
+  }
+ },
+ "ratio": {
+  "title": "PGM Ultima Ratio – Game-Ready Sniper Rifle",
+  "author": "drepi.3d",
+  "url": "https://sketchfab.com/3d-models/pgm-ultima-ratio-game-ready-sniper-rifle-34611493b4104bdba2ce6beabfeb4465",
+  "license": "CC BY 4.0",
+  "zip": "pgm_ultima_ratio__game-ready_sniper_rifle.zip",
+  "slot": "rifle",
+  "name": "ÚLTIMA",
+  "cfg": {
+   "len": 1.2,
+   "up": "+Z",
+   "tris": 22000,
+   "trisTp": 2500,
+   "tex": 2048,
+   "bore": -0.11,
+   "grip": [
+    -0.815,
+    -0.195
+   ],
+   "bolt": [
+    [
+     0.04,
+     -0.87,
+     -0.17
+    ],
+    [
+     0.135,
+     -0.75,
+     -0.075
+    ]
+   ],
+   "boltPivot": [
+    -0.81,
+    -0.11
+   ],
+   "magBox": [
+    [
+     -0.045,
+     -0.76,
+     -0.27
+    ],
+    [
+     0.045,
+     -0.63,
+     -0.155
+    ]
+   ]
+  }
+ },
+ "vector": {
+  "title": "Modern Sniper Rifle | Free Lowpoly",
+  "author": "Vlasov Daniil (dan741vlasov)",
+  "url": "https://sketchfab.com/3d-models/modern-sniper-rifle-free-lowpoly-45c99509f1ee4c2a8c9c3336d3e2ff5a",
+  "license": "CC BY 4.0",
+  "zip": "modern_sniper_rifle__free_lowpoly.zip",
+  "slot": "rifle",
+  "name": "VECTOR",
+  "cfg": {
+   "len": 1.2,
+   "up": "+Z",
+   "tris": 20000,
+   "trisTp": 2500,
+   "tex": 2048,
+   "bore": -0.165,
+   "grip": [
+    -0.795,
+    -0.245
+   ],
+   "boltPivot": [
+    -0.74,
+    -0.165
+   ],
+   "magBox": [
+    [
+     -0.045,
+     -0.745,
+     -0.38
+    ],
+    [
+     0.045,
+     -0.625,
+     -0.25
+    ]
+   ]
+  }
+ },
+ "lince": {
+  "title": "Sniper Rifle",
+  "author": "awakov_dawid",
+  "url": "https://sketchfab.com/3d-models/sniper-rifle-e5930a4ddbec4cae9909706e29c8d55a",
+  "license": "CC BY 4.0",
+  "zip": "sniper_rifle.zip",
+  "slot": "rifle",
+  "name": "SAHARA",
+  "cfg": {
+   "len": 1.22,
+   "up": "+Z",
+   "drop": [
+    "^Cartridge",
+    "^Bullet"
+   ],
+   "tris": 22000,
+   "trisTp": 2500,
+   "tex": 2048,
+   "pitch": -4,
+   "bore": -0.1,
+   "grip": [
+    -0.885,
+    -0.17
+   ],
+   "bolt": [
+    [
+     0.02,
+     -0.93,
+     -0.16
+    ],
+    [
+     0.085,
+     -0.83,
+     -0.075
+    ]
+   ],
+   "boltPivot": [
+    -0.88,
+    -0.1
+   ]
+  },
+  "note": "La textura lleva el logotipo CADEX DEFENCE (marca real): taparlo antes de usarlo en una versión de pago."
+ },
+ "tactica": {
+  "title": "Tactical Knife",
+  "author": "lunea",
+  "url": "https://sketchfab.com/3d-models/tactical-knife-5fb333837f1343caa6a0e80a46b68ac1",
+  "license": "CC BY 4.0",
+  "zip": "tactical_knife.zip",
+  "slot": "knife",
+  "name": "TÁCTICA",
+  "cfg": {
+   "len": 0.33,
+   "drop": [
+    "scabbard"
+   ],
+   "tris": 4000,
+   "trisTp": 600,
+   "tex": 1024,
+   "rot": [
+    36.6,
+    0,
+    16.9
+   ],
+   "bore": -0.042,
+   "grip": [
+    -0.2,
+    -0.042
+   ]
+  }
+ }
+}

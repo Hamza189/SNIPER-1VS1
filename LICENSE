@@ -21,6 +21,9 @@ Excepciones (componentes de terceros, que conservan su propia licencia):
   (Sketchfab), con licencia CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/); modificados para el juego (esqueleto,
   animaciones, LOD, texturas y ajuste a las zonas de impacto). Detalle y enlaces en cada `CREDITOS.md` de esa carpeta y
   en `docs/PERSONAJES-PRO.md`. Esos modelos conservan su licencia CC BY 4.0.
+- Armas de `assets/armas/` (aspectos): basadas en «CheyTac M200 «Intervention» sniper rifle» de Aleksandr (sannf4); «PGM Ultima Ratio – Game-Ready Sniper Rifle» de drepi.3d; «Modern Sniper Rifle | Free Lowpoly» de Vlasov Daniil (dan741vlasov); «Sniper Rifle» de awakov_dawid; «Tactical Knife» de lunea (Sketchfab), con licencia CC BY 4.0;
+  modificadas para el juego (orientación, escala, piezas móviles, menos triángulos, texturas). Detalle en cada `CREDITOS.md`
+  y en `docs/ARMAS-EXT.md`. Esos modelos conservan su licencia CC BY 4.0.
 
 Para pedir permiso: abre una incidencia (Issue) en https://github.com/Hamza189/SNIPER-1VS1.
 
@@ -38,4 +41,5 @@ r128, MIT); Poly Haven textures and models listed in `docs/ASSETS-3D.md` and in 
 files under `assets/3d/imports/` (CC0, applies to the original Poly Haven asset only). Characters in `assets/personaje/pro/`: based on
 "S.W.A.T. Operator - 4k Followers Special Remaster" and "FSB Operator" by Mateusz Woliński (jeandiz) and "Military tactical
 suit (LowPolyGameReady)" by DanlyVostok (Sketchfab), licensed under CC BY 4.0; modified for the game. Those models keep
-their CC BY 4.0 licence.
+their CC BY 4.0 licence. Weapons in `assets/armas/`: based on «CheyTac M200 «Intervention» sniper rifle» de Aleksandr (sannf4); «PGM Ultima Ratio – Game-Ready Sniper Rifle» de drepi.3d; «Modern Sniper Rifle | Free Lowpoly» de Vlasov Daniil (dan741vlasov); «Sniper Rifle» de awakov_dawid; «Tactical Knife» de lunea (Sketchfab), licensed under CC BY 4.0;
+modified for the game. Those models keep their CC BY 4.0 licence.

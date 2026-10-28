@@ -104,7 +104,7 @@ const zones = p => p.evaluate(() => __SD.BOTS.map(b => b.hit.map(m => [m.userDat
       return { ctx, p, errs, files };
     };
     const OA = await on('fsb'), OB = await on('militar');
-    const ui = await OA.p.evaluate(() => ({ shown: !document.getElementById('skinBlock').hidden, name: document.querySelector('#skinBlock .skinPick b').textContent, cards: document.querySelectorAll('.skinCard').length }));
+    const ui = await OA.p.evaluate(() => ({ shown: !document.getElementById('skinBlock').hidden, name: document.querySelector('#skinBlock .skinPick b').textContent, cards: document.querySelectorAll('#skinGrid .skinCard').length }));
     check('el menú muestra «Tu personaje» con el elegido y la ventana tiene los 4', ui.shown && ui.name === 'FSB' && ui.cards === 4, JSON.stringify(ui));
     await OA.p.click('#mpBtn'); await OA.p.fill('#mpName', 'Hamza'); await OA.p.click('#mpCreate');
     await OA.p.waitForFunction(() => /^[A-Z0-9]{6}$/.test(document.getElementById('mpCodeBig').textContent), null, { timeout: 15000 });

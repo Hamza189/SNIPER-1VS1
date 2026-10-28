@@ -40,7 +40,11 @@ function check(name, cond, info) { if (cond) { pass++; console.log('  ok   ' + n
     check('al terminar una partida se suma y se guarda: 1 partida, 1 victoria, 10 bajas, tiro de 142 m', st.matches === 1 && st.wins === 1 && st.kills === 10 && st.longest === 142, JSON.stringify(st));
     await A.p.evaluate(() => { __SD.toMenu(); __SD.openProfile(); });
     check('el perfil enseña las cifras', /Partidas1/.test(await A.p.textContent('#profStats')) && /3\.33/.test(await A.p.textContent('#profStats')), await A.p.textContent('#profStats'));
-    await A.p.click('#profCopy');
+    // the button is on top where it is drawn (nothing covers it), then pressed. A plain page.click sometimes timed out here
+    // while the 3D menu behind redrew in software WebGL (the hit test caught the panel mid-layout); the user's tap is fine.
+    const tap = (pg, sel) => pg.evaluate(sel => { const e = document.querySelector(sel); e.scrollIntoView({ block: 'center' }); const r = e.getBoundingClientRect(), h = document.elementFromPoint(r.x + r.width / 2, r.y + r.height / 2); if (h !== e && !e.contains(h)) return 'tapado por ' + (h && h.outerHTML.slice(0, 60)); e.click(); return 'ok'; }, sel);
+    const t1 = await tap(A.p, '#profCopy');
+    check('COPIAR CÓDIGO se ve y no lo tapa nada', t1 === 'ok', t1);
     const code = await A.p.textContent('#profCode');
     check('COPIAR CÓDIGO enseña el código (SD1.…)', /^SD1\./.test(code), code.slice(0, 20) + '…');
     const B = await open('&pj=pro');

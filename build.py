@@ -23,6 +23,7 @@ import hashlib, json
 glb = root / "assets" / "viewmodels.glb"
 tex = b"".join(p.read_bytes() for p in sorted((root / "assets" / "tex").glob("*.jpg")))
 tex += b"".join(p.read_bytes() for p in sorted((root / "assets" / "personaje").rglob("*")) if p.is_file())   # personajes opcionales (?pj=2/3)
+tex += b"".join(p.read_bytes() for p in sorted((root / "assets" / "armas").rglob("*")) if p.is_file())       # aspectos de arma (?pj=pro)
 kit = root / "assets" / "kit.glb"
 build_hash = hashlib.sha1((code + page).encode() + (glb.read_bytes() if glb.exists() else b"") + (kit.read_bytes() if kit.exists() else b"") + tex).hexdigest()[:10]
 fragment = page.replace("/*@@CORE@@*/", code + "\nconst BUILD_ID=" + repr(build_id).replace("'", '"') + ";const BUILD_HASH=" + json.dumps(build_hash) + ";", 1)
