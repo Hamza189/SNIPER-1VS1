@@ -20,5 +20,25 @@ Las pruebas del PC usan WebGL por software: sirven para contar llamadas y trián
 - Durante la prueba la resolución automática se congela (si no, AUTO escondería el coste); al acabar todo vuelve a como
   estaba y el informe queda guardado en el dispositivo.
 
+## Resultados
+
+### iPhone Pro Max (14–16), calidad ALTO — 28-10-2026, 22:13
+Informe del propietario, versión `3af783c030` (la de las salas personalizadas, **antes** del límite de 2K para los
+personajes en el móvil). Pantalla 430×932, DPR 3, píxeles ×2, límite de 60 FPS, PUEBLO 3.0, WebGL 2 (Apple GPU).
+
+| Mapa | Fotograma (media / p95 / máx.) | FPS | CPU por fotograma | Llamadas | Triángulos | Texturas |
+|---|---|---|---|---|---|---|
+| ARENA | 16,7 / 17 / 20 ms | 60 | 2,8 ms | 57 (máx. 83) | 98 mil (máx. 133) | 91 ≈ 801 MB |
+| PUEBLO | 16,7 / 17 / 23 ms | 60 | 3,3 ms | 212 (máx. 337) | 349 mil (máx. 485) | 91 ≈ 801 MB |
+| CASA ATLAS XL | 16,7 / 17 / 21 ms | 60 | 2,9 ms | 76 (máx. 107) | 131 mil (máx. 173) | 117 ≈ 851 MB |
+
+Las tres van a 60 FPS clavados: 0 % de tirones, 0 % por debajo de 30, y con la mira 8× igual. La carga de la página
+tarda 0,6 s (3,8 MB).
+
+**Lo que sobra es la memoria, no el tiempo**: ~800 MB de texturas en ALTO. Casi 680 MB son los dos personajes
+realistas de 4K (rival y bots, 340 MB cada uno). Es lo que hacía que Safari cerrara la página con varios personajes.
+Desde `ead572a` el móvil nunca carga personajes de 4K: los mismos a 2K, unos 85 MB cada uno. Con esta misma prueba
+debería quedar en unos **290 MB**. PENDIENTE de repetir la medida en el iPhone para confirmarlo.
+
 Código: `client/perfprobe.js` (cálculos e informe, puro) y el bloque «MEDIR RENDIMIENTO» de `src/page.html`.
 Prueba: `node test/perf.test.js`.
