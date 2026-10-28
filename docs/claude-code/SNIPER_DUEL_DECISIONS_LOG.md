@@ -6,14 +6,16 @@ Cada entrada dice qué se decidió o cambió, quién lo decidió, y el estado re
 Las decisiones anteriores al 18-10-2026 están resumidas en `SNIPER_DUEL_MASTER_CONTEXT.md` §4.
 Detalle de cada cambio (antes/después, medidas, cómo revertir): `docs/next-level/NEXT_LEVEL_CHANGELOG.md`.
 
-## Tareas (resumen vivo, actualizado el 27-10-2026)
+## Tareas (resumen vivo, actualizado el 28-10-2026)
 
 ### Siguiente prioridad
 | Tarea | Quién la desbloquea | Estado |
 |---|---|---|
 | **Personaje 3D (rev. 03) en bots y rival** — probarlo en `https://hamza189.github.io/SNIPER-1VS1/?pj=2` (PC, iPhone, Samsung) y decir si pasa a ser el de por defecto | Propietario | PUBLICADO TRAS BANDERA · PENDIENTE DE VALIDACIÓN EN IPHONE |
 | **Cuentas** — probar en el iPhone: PERFIL › CREAR CUENTA (Face ID), ENTRAR en otro dispositivo, amigos e invitación (`?pj=pro`) | Propietario | PUBLICADO TRAS BANDERA · PENDIENTE DE VALIDACIÓN EN IPHONE |
-| **Monetización** — decidir los puntos 2–5 de `docs/CUENTAS-Y-MONETIZACION.md` §5 (portal web, pagos, cajas gratuitas, consulta de ingresos) | Propietario | NECESITA APROBACIÓN |
+| **Cajas y objetos** — probar en el iPhone con `?pj=pro`: menú › CAJAS (abrir, caja diaria, equipar camuflaje, mira y título), y una partida online de más de 1 min con cuenta los dos | Propietario | PUBLICADO TRAS BANDERA · PENDIENTE DE VALIDACIÓN EN IPHONE |
+| **Balas del servidor a la mitad de velocidad** — la sala avanza las balas según el tiempo desde el último mensaje, no desde el último tick: medido ~284 m/s en vez de 600 (afecta a blancos que se mueven, a distancia). Arreglo listo para proponer; toca la balística autoritativa | Propietario | NECESITA APROBACIÓN |
+| **Monetización** — decidir los puntos 2, 3 y 5 de `docs/CUENTAS-Y-MONETIZACION.md` §5 (portal web, pagos, consulta de ingresos); el 4 (cajas gratuitas) ya está | Propietario | NECESITA APROBACIÓN |
 | **Probar 3ª persona (tecla V / AJUSTES; permitida online) y el quickscope**; decidir si el agua de `?pulido=1` pasa a ser la de siempre | Propietario | PUBLICADO · PENDIENTE DE VALIDACIÓN EN IPHONE |
 | **Elegir personaje y paso nuevo** — probar en `https://hamza189.github.io/SNIPER-1VS1/?pj=pro` (menú › Tu personaje; online con otro dispositivo) cómo andan de frente, de lado y en diagonal | Propietario | PUBLICADO TRAS BANDERA · PENDIENTE DE VALIDACIÓN EN IPHONE |
 | **Los 4 personajes a la vez contra bots** — `https://hamza189.github.io/SNIPER-1VS1/?pj=mix` (y medir con `&medir=1`) en iPhone y PC | Propietario | PUBLICADO TRAS BANDERA · PENDIENTE DE MEDIR EN IPHONE |
@@ -43,7 +45,7 @@ Detalle de cada cambio (antes/después, medidas, cómo revertir): `docs/next-lev
 | Perfil BAJO = PUEBLO 2.0 automáticamente; MEDIO/ALTO = PUEBLO 3.0 (mismas colisiones) | PENDIENTE |
 | Calidades por etapas: congelar lo hecho como BAJO (~finales de octubre), mejorar a MEDIO y luego ALTO (plan en la hoja de ruta) | PLANIFICADO |
 | Resto de la auditoría que no cambia reglas: seguridad del servidor (Q3, Q4, Q6, Q7), CI con `test:fast` y reversión (Q8), pruebas del Worker (Q9), navaja contra bots agachados (J4), daño del bot tras el retardo (J7), FUEGO doble táctil (J8), giro residual al reanudar (J9), textura de rata y E10 por perfil (R3, R4), unir mallas del kit (R6), partículas instanciadas (R8), liberar CASA al salir (R10), LOD y anisotropía (G4, G10, G11) | PENDIENTE |
-| Riggear el «Modern Tactical Soldier» (CC BY, sin esqueleto) como 5º personaje; aspectos de arma también en la 3ª persona y para el rival online | PENDIENTE |
+| Riggear el «Modern Tactical Soldier» (CC BY, sin esqueleto) como 5º personaje; aspectos de arma y camuflajes también en la 3ª persona y para el rival online (el servidor los leería de la cuenta, como el título) | PENDIENTE |
 | Contorno y sombras de los personajes; ojos algo rojizos del MILITAR (textura original); LINCE y rev. 03 con el paso lateral nuevo; botón de vista en el HUD táctil | PENDIENTE |
 | Caso pequeño de z-fighting: piedra del kit contra estuco del pueblo (x ≈ 23–33, 4 puntos) | PENDIENTE |
 | Paredes blancas lisas de la CASA ATLAS original que deslumbran de cerca | PENDIENTE |
@@ -76,6 +78,24 @@ Detalle de cada cambio (antes/después, medidas, cómo revertir): `docs/next-lev
 | CASA ATLAS XL v2 de ChatGPT por defecto (mismas colisiones, detalle real) | 19-10 · directo a `main` |
 | Encargos para ChatGPT: CASA XL, CASA XL v2 y personaje | 18-10 / 19-10 |
 | Personaje 3D rev. 03 hecho por Claude e integrado tras `?pj=2` (bots y rival online) | 20-10 · directo a `main` |
+
+## 28-10-2026 (noche, 2) — Inventario en el servidor y cajas gratuitas (paso D)
+Decisión del propietario: «Inventario y cajas» (seguir con el paso D y las cajas gratuitas que se ganan jugando). Es la
+parte gratuita de la decisión 4 del plan de monetización; nada de pago.
+- Lo que tienes lo guarda y lo concede el servidor (ficha de la cuenta). Cajas: bienvenida, una al día y puntos por
+  partidas (online los cuenta el servidor de la sala al terminar: dos cuentas distintas y más de 1 min jugado; contra bots
+  los cuenta el navegador, con tope de una caja al día). Probabilidades a la vista (55/30/12/3 %), nunca repite.
+- 33 objetos solo de aspecto (`core/items.js`): 16 camuflajes del rifle de 1ª persona (también sobre los aspectos de
+  arma), 7 colores del punto de la mira (mismo tamaño: no ayuda a apuntar) y 10 títulos que el rival ve en la sala (los lee
+  el servidor de la cuenta). Lo que ya era de todos sigue siéndolo.
+- Sala (`core/room.js`): mensaje opcional `acct`, `opts.account` y `opts.onOver`; las reglas de la partida no cambian. El
+  tiempo jugado se mide entre ticks (sin pausas).
+- Encontrado al medirlo: la sala avanza las balas según el tiempo desde el último mensaje recibido, no desde el último tick;
+  con el tráfico normal de una partida vuelan a ~284 m/s en vez de 600 (simulación, `test/simnet.js`). No se ha tocado:
+  es balística autoritativa (regla 3); propuesto como tarea aparte.
+- Pruebas: `test/accounts.test.js` (44), `test/room.test.js` (120), `test/cajas.browser.test.js` (15, nueva, en `npm test`).
+  Hojas de camuflajes dibujadas por el juego: `docs/img/camuflajes*.jpg` (`tools/camo-sheet.js`).
+  IMPLEMENTADO · PROBADO EN NAVEGADOR · PENDIENTE DE VALIDACIÓN EN IPHONE.
 
 ## 28-10-2026 (noche) — Cuentas en la nube con passkey, amigos e invitaciones
 Decisión del propietario: «Sí, cuentas» (passkeys en el mismo Cloudflare, plan gratuito, como proponía el plan).

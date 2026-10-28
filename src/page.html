@@ -188,6 +188,52 @@ h1 span{display:block;color:var(--sand)}
 #accBox .row{gap:8px}#accBox .btn{font-size:17px;padding:9px 16px 6px}
 .accList{display:grid;gap:4px}.accList div{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:6px 8px;background:var(--ink-2);border:1px solid var(--line)}
 .accList b{font:500 20px/1 var(--f-display);flex:1;min-width:120px}.accList button{background:none;border:1px solid var(--line);color:var(--hud);padding:6px 10px;cursor:pointer;font-size:11px;letter-spacing:.1em}
+/* cajas y objetos (paso D): ventana CAJAS, fichas por rareza y la caja que se abre */
+#invOv{z-index:22;background:rgba(12,10,8,.96)}
+#invHead{display:grid;gap:10px}
+.invTop{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.invBoxes{font:500 46px/1 var(--f-display);letter-spacing:.03em;min-width:92px}
+.invBoxes small{font-size:13px;letter-spacing:.16em;color:var(--dust);margin-left:6px}
+.invBar{height:8px;background:var(--ink-2);border:1px solid var(--line);position:relative}
+.invBar i{position:absolute;left:0;top:0;bottom:0;background:var(--signal)}
+.invGrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px}
+.invCard{--rc:#6b6358;display:grid;gap:4px;align-content:start;padding:6px;background:var(--ink-2);border:1px solid var(--line);border-top:3px solid var(--rc);cursor:pointer;text-align:left;position:relative}
+.invCard canvas,.invCard .pv{width:100%;aspect-ratio:200/70;height:auto;background:#0a0908}.invCard canvas{display:block}
+.invCard b{font:500 19px/1 var(--f-display);letter-spacing:.04em;padding-top:3px}
+.invCard .lbl{color:var(--rc)}
+.invCard[aria-pressed="true"]{border-color:var(--signal);box-shadow:inset 0 0 0 1px var(--signal)}
+.invCard.lock{cursor:default;opacity:.62}
+.invCard.lock canvas,.invCard.lock .pv{filter:saturate(.7) brightness(.62)}
+.invCard .tag{position:absolute;right:8px;top:10px;font-size:9px;letter-spacing:.14em;background:rgba(0,0,0,.7);padding:3px 5px;color:var(--hud)}
+.invCard:focus-visible{outline:2px solid var(--signal);outline-offset:2px}
+.pv{display:grid;place-items:center;font:500 20px/1.05 var(--f-display);letter-spacing:.05em;text-align:center;padding:4px;box-sizing:border-box}
+.pv svg{width:100%;height:100%;display:block}
+#boxOv{z-index:30;background:rgba(6,5,4,.93);display:grid;place-items:center}
+#boxOv[hidden]{display:none}
+.boxStage{display:grid;justify-items:center;gap:18px;padding:24px 16px;text-align:center}
+.crate{width:min(44vw,170px);aspect-ratio:1;position:relative}
+.crate .cb{position:absolute;inset:22% 0 0 0;background:linear-gradient(180deg,#666b43,#3b3e26);border:3px solid #202217;box-shadow:inset 0 0 0 6px rgba(0,0,0,.2),0 18px 40px rgba(0,0,0,.6)}
+.crate .cb::before{content:'';position:absolute;left:0;right:0;top:36%;height:15%;background:#2a2c1d}
+.crate .cb::after{content:'SD';position:absolute;inset:0;display:grid;place-items:center;font:500 48px/1 var(--f-display);color:rgba(240,230,200,.5);letter-spacing:.12em}
+.crate .cl{position:absolute;left:-4%;right:-4%;top:6%;height:19%;background:linear-gradient(180deg,#747a4c,#4b4f31);border:3px solid #202217;transform-origin:10% 100%}
+.crate.shake{animation:crShake .5s ease-in-out infinite}
+@keyframes crShake{0%,100%{transform:none}20%{transform:rotate(-5deg) translateY(-4px)}40%{transform:rotate(4deg)}60%{transform:rotate(-3deg) translateY(-2px)}80%{transform:rotate(2deg)}}
+.crate.open .cl{animation:crLid .5s cubic-bezier(.2,.8,.3,1) forwards}
+.crate.open .cb{animation:crGone .45s .12s forwards}
+@keyframes crLid{to{transform:translate(-30%,-120%) rotate(-38deg);opacity:0}}
+@keyframes crGone{to{opacity:0;transform:scale(.8)}}
+.boxFlash{position:fixed;inset:0;pointer-events:none;background:radial-gradient(circle,var(--rc,#fff) 0,transparent 62%);opacity:0}
+.boxFlash.on{animation:bxFlash .8s ease-out}
+@keyframes bxFlash{0%{opacity:.85}100%{opacity:0}}
+.reveal{display:grid;gap:10px;justify-items:center;animation:rvIn .45s cubic-bezier(.2,.9,.3,1.25)}
+.reveal[hidden]{display:none}
+@keyframes rvIn{from{transform:scale(.6);opacity:0}to{transform:none;opacity:1}}
+.rvCard{width:min(82vw,360px);box-sizing:border-box;padding:10px;background:var(--ink-2);border:2px solid var(--rc);box-shadow:0 0 42px var(--rc),inset 0 0 24px rgba(0,0,0,.5)}
+.rvCard canvas,.rvCard .pv{width:100%;aspect-ratio:200/70;height:auto;background:#0a0908}.rvCard canvas{display:block}
+.rvR{font-size:12px;letter-spacing:.26em;color:var(--rc)}
+.reveal h3{margin:0;font:500 42px/1 var(--f-display);letter-spacing:.04em}
+#overInv{margin:0;color:var(--gold);font-size:12px;letter-spacing:.1em}
+@media (prefers-reduced-motion:reduce){.crate.shake{animation:none}.reveal{animation:none}}
 #profCode{font-size:11px;word-break:break-all;user-select:text;-webkit-user-select:text;max-height:5em;overflow:auto;margin:0;color:var(--sand)}
 .skinGrid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
 .skinCard{display:grid;gap:4px;align-content:start;padding:6px;background:var(--ink-2);border:1px solid var(--line);cursor:pointer;text-align:left}
@@ -522,7 +568,7 @@ body.hud2 #stickBase.sprint #stickKnob svg{display:block}
         <path id="retMarks" d="" stroke-width=".4"/>
       </g>
       <g id="retLabels" fill="#0b0b0b" font-size="3.2" font-family="'IBM Plex Mono',monospace"></g>
-      <circle r=".75" fill="#ff3b2f"/>
+      <circle id="retDot" r=".75" fill="#ff3b2f"/>
     </svg>
   </div>
   <div class="data"><span>RNG <b id="rng">---</b> m</span><span><b id="zoomLbl">8×</b></span><span id="chamber">● LISTO</span></div>
@@ -667,6 +713,22 @@ body.hud2 #stickBase.sprint #stickKnob svg{display:block}
   </div>
 </div>
 
+<div id="invOv" class="overlay center" hidden>
+  <div class="panel" style="width:min(780px,calc(100% - 24px));gap:12px">
+    <div class="eyebrow">Cajas y objetos · solo aspecto, gratis</div>
+    <div id="invHead" aria-live="polite"></div>
+    <div class="seg" id="invTabs" role="group" aria-label="Tipo de objeto"><button type="button" data-tab="camo">CAMUFLAJES</button><button type="button" data-tab="ret">MIRA</button><button type="button" data-tab="titulo">TÍTULOS</button></div>
+    <div class="invGrid" id="invGrid" role="group" aria-label="Objetos"></div>
+    <span class="lbl kitNote" id="invMsg"></span>
+    <p class="setHelp" style="margin:0" id="invHelp"></p>
+    <div class="row"><button class="btn ghost" id="invClose" type="button" style="font-size:20px">VOLVER</button></div>
+  </div>
+</div>
+<div id="boxOv" class="overlay" hidden>
+  <div class="boxFlash" id="boxFlash"></div>
+  <div class="boxStage"><div class="crate" id="crate"><div class="cb"></div><div class="cl"></div></div><div class="reveal" id="reveal" hidden></div></div>
+</div>
+
 <div id="skinOv" class="overlay center" hidden>
   <div class="panel" style="width:min(780px,calc(100% - 24px));gap:12px">
     <div class="eyebrow">Tu personaje</div>
@@ -746,6 +808,7 @@ body.hud2 #stickBase.sprint #stickKnob svg{display:block}
           <button class="btn" id="mpBtn" type="button">MULTIJUGADOR</button>
           <button class="btn ghost" id="openSettings" type="button" style="font-size:22px">AJUSTES</button>
           <button class="btn ghost" id="openProfile" type="button" style="font-size:22px" hidden>PERFIL</button>
+          <button class="btn ghost" id="openInv" type="button" style="font-size:22px" hidden>CAJAS</button>
           <span class="hint" id="orientHint"></span>
         </div>
         <div class="road"><span class="now">1 · Gunplay</span><span>2 · Segundo rifle</span><span>3 · 1v1 online</span><span>4 · Salas</span></div>
@@ -814,6 +877,7 @@ body.hud2 #stickBase.sprint #stickKnob svg{display:block}
       <div><span class="lbl">Tiro más largo</span><b id="oL">0 m</b></div>
       <div><span class="lbl">Tiempo</span><b id="oT">0:00</b></div>
     </div>
+    <p id="overInv" hidden></p>
     <div class="kitRow"><span class="lbl">Arma principal</span><div class="seg kitSeg" role="group" aria-label="Arma principal"><button type="button" data-kit="rifle">HALCÓN R7</button><button type="button" data-kit="shotgun">FURIA 12</button></div></div>
     <div class="row"><button class="btn" id="again" type="button">REVANCHA</button><button class="btn ghost" id="toMenu2" type="button">MENÚ</button></div>
   </div>
@@ -1822,6 +1886,9 @@ const SFX={
   casing(at){at=at||0;tone(at,0.13,{f:3600,g:0.06});tone(at,0.1,{f:5300,g:0.04});tone(at+0.14,0.09,{f:3500,g:0.035});tone(at+0.23,0.06,{f:3450,g:0.02});},
   reload(){SFX.click(0.18,1900,0.4);nz(0.3,0.12,{type:'bandpass',f:1200,q:2,g:0.2});nz(0.95,0.09,{f:900,g:0.55});SFX.click(1.0,2100,0.6);SFX.bolt(1.38);},
   hit(){tone(0,0.06,{f:1500,type:'triangle',g:0.22});tone(0.005,0.05,{f:950,g:0.12});},
+  // a box opens: a whoosh and a chord, longer and higher the rarer the object
+  boxOpen(r){const k={comun:0,rara:1,epica:2,legendaria:3}[r]||0;nz(0,0.32,{type:'bandpass',f:700,f2:2600,q:1,g:0.3});
+    [0,4,7,12].slice(0,1+k).forEach((s,i)=>tone(0.06+i*0.07,0.5+k*0.15,{f:523*Math.pow(2,s/12),type:'triangle',g:0.11}));if(k>=2)tone(0.32,0.9,{f:k>2?1568:1046,g:0.07});},
   knifeDraw(){nz(0,0.22,{type:'bandpass',f:2800,f2:6500,q:3,g:0.16});SFX.click(0.2,4200,0.18);},
   knifeHolster(){nz(0,0.12,{type:'bandpass',f:5000,f2:2200,q:3,g:0.12});},
   holsterRifle(){nz(0,0.15,{type:'bandpass',f:1200,q:1,g:0.12});SFX.click(0.08,1800,0.18);},
@@ -2306,6 +2373,7 @@ function setupViewmodels(g){
   VMA.ready=true;
   for(const R of SOLDIERS)soldierUseModels(R);
   if(ARMAS_ON){wskinRifle(WSKIN.rifle);wskinKnife(WSKIN.knife);}
+  camoApply();   // your camouflage (cajas): on the HALCÓN or on the weapon skin
 }
 // hand pose helpers: a spec (vmrig ARMPOSE format) → wrist position + rotation in camera space
 const _hp=[0,1,2,3,4,5,6].map(()=>({p:new T.Vector3(),q:new T.Quaternion(),f:null}));
@@ -4189,6 +4257,7 @@ function endMatch(win){
   $('#over').hidden=false;$('#scope').hidden=true;$('#death').hidden=true;$('#touch').hidden=true;
   if(document.exitPointerLock&&pointerLocked)document.exitPointerLock();
   profileMatch({win,kills:STATS.kills,deaths:STATS.deaths,hs:STATS.hs,shots:STATS.shots,hits:STATS.hits,longest:STATS.longest});
+  invBots(win,secs);
 }
 document.addEventListener('visibilitychange',()=>{if(document.hidden)pause();});
 // the browser loses focus (control centre, notification, app switcher): pause, which drops every held finger without shooting
@@ -4918,7 +4987,7 @@ function renderLobby(){
   $('#mpCodeBig').textContent=NET.code||'------';$('#mpLink').textContent=inviteLink(NET.code);
   const ul=$('#mpPlayers');ul.innerHTML='';
   for(const p of N.players||[]){if(!p)continue;const li=document.createElement('li');
-    const nm=document.createElement('span');nm.textContent=p.name+(p.id===N.you?' (tú)':'')+' · '+(p.kit==='shotgun'?'FURIA 12':'HALCÓN R7')+(SKIN_ON&&SKINS[p.skin]?' · '+SKINS[p.skin].name:'');
+    const nm=document.createElement('span');nm.textContent=p.name+(p.title?' «'+p.title+'»':'')+(p.id===N.you?' (tú)':'')+' · '+(p.kit==='shotgun'?'FURIA 12':'HALCÓN R7')+(SKIN_ON&&SKINS[p.skin]?' · '+SKINS[p.skin].name:'');
     const st=document.createElement('span');st.className='st'+(p.connected?(p.ready?' ok':''):' off');st.textContent=p.connected?(p.ready?'PREPARADO':'EN LA SALA'):'DESCONECTADO';
     li.append(nm,st);ul.append(li);}
   const two=(N.players||[]).filter(Boolean).length===2;const me=(N.players||[]).find(p=>p&&p.id===N.you);
@@ -4932,6 +5001,7 @@ function netEvent(e){
   switch(e.k){
     case 'welcome':
       store.set('tok_'+NET.code,N.token);netBanner(null);N.chooseKit(PRIMARY);   // my primary (also after a reconnect)
+      if(ACC.token)N.account(ACC.token);   // my cloud account: the server shows my title and gives box points
       if(SKIN_ON)N.chooseSkin(SKIN);rivalSkin();
       if(N.phase==='lobby'){mpShow('lobby');renderLobby();history.replaceState(null,'',location.pathname+'?sala='+NET.code);}
       if(N.phase==='over'){mpShow('lobby');renderLobby();}
@@ -5053,6 +5123,7 @@ function netOver(e){
   $('#over').hidden=false;$('#scope').hidden=true;$('#death').hidden=true;$('#touch').hidden=true;
   state='over';if(document.exitPointerLock&&pointerLocked)document.exitPointerLock();
   profileMatch({win,online:true,kills:st.kills,deaths:st.deaths,hs:st.hs,shots:st.shots,hits:st.hits,longest:STATS.longest});
+  invOnline();
   if(win){SFX.headshot();}
 }
 function netRematch(){if(!NET.N)return;NET.N.rematch();$('#overEyebrow').textContent='Esperando al rival…';SFX.ui();}
@@ -5137,7 +5208,7 @@ function wskinRifle(id){
   RIF.bolt.position.copy(S.base.bolt);RIF.boltZ=S.base.bolt.z;RIF.mag.position.copy(S.base.mag);RIF.magY=S.base.magY;RIF.flash.position.copy(S.base.flash);
   const def=id==='halcon'||!WSKINS.rifle[id];
   for(const m of S.base.meshes)m.visible=def;
-  if(def)return;
+  if(def){camoApply();return;}
   wsLoad('rifle',id,A=>{
     if(S.cur!==id)return;
     const sc=A.scene,body=sc.getObjectByName('cuerpo'),bolt=sc.getObjectByName('cerrojo'),mag=sc.getObjectByName('carg'),I=A.info||{};
@@ -5147,6 +5218,7 @@ function wskinRifle(id){
     if(bolt){bolt.position.set(0,0,0);RIF.bolt.add(bolt);S.objs.push(bolt);}
     if(mag){const p=mag.position.clone();RIF.mag.position.copy(p);RIF.magY=p.y;mag.position.set(0,0,0);RIF.mag.add(mag);S.objs.push(mag);}
     if(I.muzzle)RIF.flash.position.set(I.muzzle[0],I.muzzle[1],I.muzzle[2]-0.015);
+    camoApply();
   });
 }
 function wskinKnife(id){
@@ -5204,12 +5276,14 @@ async function accApi(p,body){
   return j;
 }
 const ACC_ERR={session:'La sesión ha caducado: vuelve a entrar.',no_account:'Esa cuenta no existe.',not_friends:'Solo puedes invitar a tus amigos.',id:'Ese código no es válido (SD-XXXX-XXXX).',
-  busy:'Demasiados intentos: espera un minuto.',full:'Lista llena.',signature:'La llave no coincide.',cred:'Esa llave no es de esta cuenta.',challenge:'Ha pasado demasiado tiempo: vuelve a intentarlo.',expired:'Ha pasado demasiado tiempo: vuelve a intentarlo.'};
+  busy:'Demasiados intentos: espera un minuto.',full:'Lista llena.',signature:'La llave no coincide.',cred:'Esa llave no es de esta cuenta.',challenge:'Ha pasado demasiado tiempo: vuelve a intentarlo.',expired:'Ha pasado demasiado tiempo: vuelve a intentarlo.',
+  no_boxes:'No te quedan cajas: se ganan jugando.',daily_done:'Ya has recogido la caja de hoy.',not_owned:'Ese objeto aún no es tuyo.',wait:'Puntos de caja: espera un minuto entre partidas.',short:'Partida demasiado corta para sumar puntos de caja.'};
 function accMsg(t){ACC.msg=t||'';const m=document.getElementById('accMsg');if(m)m.textContent=ACC.msg;}
-const accFail=e=>accMsg(e&&e.name==='NotAllowedError'?'Cancelado.':e&&e.status===0?'No hay conexión con el servidor.':ACC_ERR[e&&e.message]||('No se pudo ('+(e&&e.message||'error')+').'));
+const accErrText=e=>e&&e.name==='NotAllowedError'?'Cancelado.':e&&e.status===0?'No hay conexión con el servidor.':ACC_ERR[e&&e.message]||('No se pudo ('+(e&&e.message||'error')+').');
+const accFail=e=>accMsg(accErrText(e));
 function accSet(tok,acc){ACC.token=tok;ACC.acc=acc;store.set('accToken',tok);
   if(acc){if(PROFILE.id!==acc.id){PROFILE.id=acc.id;}if(acc.name&&acc.name!=='JUGADOR')PROFILE.name=acc.name;SDProfile.save(LS,PROFILE);if(PROFILE.name){store.set('mpName',PROFILE.name);$('#mpName').value=PROFILE.name;}}
-  profileUI();accUI();}
+  profileUI();accUI();invSync();}
 async function accCreate(){
   if(!window.PublicKeyCredential||!navigator.credentials){accMsg('Este navegador no admite llaves (passkeys).');return;}
   accMsg('Creando la llave…');
@@ -5236,12 +5310,13 @@ async function accLogin(){
 }
 async function accRefresh(){
   if(!ACC.token){accUI();return;}
-  try{const j=await accApi('/cuenta/yo');ACC.acc=j.account;}catch(e){if(e.status===401){ACC.token=null;ACC.acc=null;store.set('accToken',null);}}
+  try{const j=await accApi('/cuenta/yo');ACC.acc=j.account;invSync();}catch(e){if(e.status===401){ACC.token=null;ACC.acc=null;store.set('accToken',null);invSync();}}
   accUI();
 }
 async function accDo(act,id){
   try{
-    if(act==='salir'){await accApi('/cuenta/salir').catch(()=>{});ACC.token=null;ACC.acc=null;store.set('accToken',null);accUI();accMsg('Has salido de la cuenta (tu perfil sigue en este dispositivo).');return;}
+    if(act==='salir'){await accApi('/cuenta/salir').catch(()=>{});ACC.token=null;ACC.acc=null;store.set('accToken',null);accUI();invSync();accMsg('Has salido de la cuenta (tu perfil sigue en este dispositivo).');return;}
+    if(act==='cajas'){closeProfile();openInv();return;}
     if(act==='pedir'){const code=String($('#accFriend').value||'').trim().toUpperCase();const j=await accApi('/cuenta/amigos/pedir',{id:code});accMsg(j.already?'Ya sois amigos.':'SOLICITUD ENVIADA');$('#accFriend').value='';return;}
     if(act==='invitar'){if(!NET.code){accMsg('Crea o entra en una sala (MULTIJUGADOR) y luego invita.');return;}await accApi('/cuenta/amigos/invitar',{id,sala:NET.code});accMsg('INVITACIÓN ENVIADA a la sala '+NET.code);return;}
     if(act==='unirse'){const q=new URLSearchParams(location.search);q.set('sala',id);location.search=q.toString();return;}
@@ -5257,6 +5332,7 @@ function accUI(){
     h+=ACC.token?'<span class="lbl">Cargando la cuenta…</span>':'<div class="row"><button class="btn" type="button" data-acc="crear">CREAR CUENTA</button><button class="btn ghost" type="button" data-acc="entrar">ENTRAR</button></div>';
   }else{
     h+='<div class="row"><span class="lbl" style="flex:1">Tu código de amigo: <b style="font-size:16px;color:var(--hud)">'+e(A.id)+'</b></span><button class="btn ghost" type="button" data-acc="copiar">COPIAR</button><button class="btn ghost" type="button" data-acc="salir">SALIR</button></div>';
+    if(A.inv)h+='<div class="row"><span class="lbl" style="flex:1">Cajas: <b style="font-size:16px;color:var(--hud)">'+A.inv.boxes+'</b> · objetos: '+A.inv.items.length+'/'+SDItems.ITEMS.length+(A.inv.title?' · título: <b style="color:var(--hud)">'+e(A.inv.title)+'</b>':'')+'</span><button class="btn ghost" type="button" data-acc="cajas">CAJAS Y OBJETOS</button></div>';
     h+='<div class="row"><input type="text" id="accFriend" maxlength="12" placeholder="Código de un amigo (SD-…)" autocomplete="off" spellcheck="false" style="flex:1;min-width:150px"><button class="btn ghost" type="button" data-acc="pedir">AÑADIR</button></div>';
     if(A.invites.length)h+='<span class="lbl">Invitaciones</span><div class="accList">'+A.invites.map(i=>row(i.name+' · sala '+i.sala,i.id,[['UNIRSE','unirse',i.sala]])).join('')+'</div>';
     if(A.requests.length)h+='<span class="lbl">Solicitudes</span><div class="accList">'+A.requests.map(r=>row(r.name,r.id,[['ACEPTAR','aceptar'],['RECHAZAR','rechazar']])).join('')+'</div>';
@@ -5267,6 +5343,134 @@ function accUI(){
 }
 document.addEventListener('click',ev=>{const b=ev.target.closest&&ev.target.closest('#accBox [data-acc]');if(!b)return;SFX.ui();const a=b.dataset.acc,id=b.dataset.id;
   if(a==='crear')accCreate();else if(a==='entrar')accLogin();else accDo(a,id);});
+
+/* CAJAS Y OBJETOS (paso D, 28-10-2026; core/items.js, client/camo.js, docs/INVENTARIO-Y-CAJAS.md): lo que tienes lo
+   guarda y lo concede el servidor en tu cuenta; aquí solo se dibuja y se elige qué llevar. Cajas gratuitas (bienvenida,
+   una al día y puntos por partidas: las online las cuenta el servidor de la sala; contra bots, este navegador, con tope
+   diario). Solo aspecto: camuflaje del rifle en tu 1ª persona, color del punto de la mira y un título que tu rival ve en
+   la sala. Lo que llevas se recuerda en el dispositivo (sniperduel_accEquip) para verlo antes de que conteste el servidor. */
+const INV={equip:store.get('accEquip',{})||{},time:{value:0},tex:{},tab:'camo',busy:false};
+const RAR=SDItems.RARITY,INV_DEF={camo:'SIN CAMUFLAJE',ret:'ROJO · DE SERIE',titulo:'SIN TÍTULO'},INV_SAND={id:'de_serie',pat:'liso',c:['#a38b66','#947d5a']};
+// what takes the camouflage: body and scope of the HALCÓN and of each weapon skin (never lenses, barrel or small parts)
+const CAMO_RE=/^(R_chassis|R_scope|material|Rifle_magazine|0[1235]_.*|Mat[12]|Base|Butt|Zoom)$/;
+const CAMO_ORIG=new WeakMap(),CAMO_MADE=new WeakMap();
+const invItem=slot=>{const id=INV.equip&&INV.equip[slot],it=id&&SDItems.byId(id);return it&&it.type===slot?it:null;};
+function camoMat(m,it){let by=CAMO_MADE.get(m);if(!by)CAMO_MADE.set(m,by={});if(by[it.id])return by[it.id];
+  if(!INV.tex[it.id])INV.tex[it.id]=SDCamo.texture(T,it,renderer);
+  return by[it.id]=SDCamo.patch(T,m,it,INV.tex[it.id],INV.time,m.map?SDCamo.detail(m):0);}
+function camoApply(){
+  const hal=VMA.R&&VMA.R.root;if(!hal)return;const it=invItem('camo');
+  hal.traverse(o=>{if(!o.isMesh)return;if(!CAMO_ORIG.has(o))CAMO_ORIG.set(o,o.material);const base=CAMO_ORIG.get(o),arr=Array.isArray(base)?base:[base];
+    const out=it?arr.map(m=>m&&CAMO_RE.test(m.name)?camoMat(m,it):m):arr;o.material=Array.isArray(base)?out:out[0];});
+  // in the menu: compile the new shader now, not in the first frame of the match
+  if(it&&state==='menu'){try{const v=WROOT.visible;WROOT.visible=true;renderer.compile(wScene,wCam);WROOT.visible=v;}catch(e){}}
+}
+function retApply(){const it=invItem('ret'),d=document.getElementById('retDot');if(d)d.setAttribute('fill',it?it.c[0]:'#ff3b2f');}
+// the account changed (entered, refreshed, opened a box, left): what you wear follows it
+function invSync(){
+  const I=ACC.acc&&ACC.acc.inv;if(I)INV.equip=Object.assign({},I.equip);else if(!ACC.token)INV.equip={};
+  store.set('accEquip',INV.equip);camoApply();retApply();invBadge();if(!$('#invOv').hidden)invUI();
+}
+function invBadge(){const b=$('#openInv'),I=ACC.acc&&ACC.acc.inv,n=I?I.boxes+(I.daily?1:0):0;b.textContent=n?'CAJAS ('+n+')':'CAJAS';}
+function invMsg(t){const m=$('#invMsg');if(m)m.textContent=t||'';}
+function invPreview(slot,it,big){
+  if(slot==='camo')return SDCamo.swatch(it||INV_SAND,big?600:300,big?210:105);   // none: the HALCÓN's own sand Cerakote
+  const d=document.createElement('div');d.className='pv';
+  if(slot==='ret')d.innerHTML='<svg viewBox="-35 -12.25 70 24.5" aria-hidden="true"><rect x="-35" y="-12.25" width="70" height="24.5" fill="#b9b2a0"/><path d="M-35 0H-2.6M2.6 0H35M0 -12.25V-2.6M0 2.6V12.25" stroke="#0b0b0b" stroke-width=".45" fill="none"/><circle r="1.35" fill="'+(it?it.c[0]:'#ff3b2f')+'"/></svg>';
+  else{d.textContent=it?'«'+it.name+'»':'—';d.style.color=it?RAR[it.r].color:'var(--dust)';if(big)d.style.fontSize='34px';}
+  return d;
+}
+function invUI(){
+  const A=ACC.acc,I=A&&A.inv,P=SDItems.PTS,head=$('#invHead');
+  if(!I)head.innerHTML=ACC.token?'<span class="lbl">Cargando tu cuenta…</span>':'<p class="setHelp" style="margin:0">Las cajas y los objetos van con tu <b>cuenta</b> (gratis y sin contraseña: tu llave del móvil o del PC). Créala en PERFIL › Cuenta en la nube y recibes una caja de bienvenida.</p><div class="row"><button class="btn" type="button" data-inv="perfil">IR A PERFIL</button></div>';
+  else{const h=Math.floor(I.dailyIn/3600000),m=Math.floor(I.dailyIn%3600000/60000);
+    head.innerHTML='<div class="invTop"><div class="invBoxes">'+I.boxes+'<small>'+(I.boxes===1?'CAJA':'CAJAS')+'</small></div><button class="btn" type="button" data-inv="abrir"'+(I.boxes?'':' disabled')+'>ABRIR CAJA</button>'
+      +(I.daily?'<button class="btn ghost" type="button" data-inv="diaria">RECOGER CAJA DIARIA</button>':'<span class="lbl">Caja diaria: la próxima en '+h+' h '+m+' min</span>')+'</div>'
+      +'<div style="display:grid;gap:5px"><span class="lbl">Siguiente caja · '+I.pts+' / '+P.box+' puntos · hoy contra bots te quedan '+I.botsLeft+'</span><div class="invBar"><i style="width:'+Math.round(I.pts/P.box*100)+'%"></i></div></div>';}
+  const owned=new Set(I?I.items:[]),cnt=t=>SDItems.ITEMS.filter(x=>x.type===t&&owned.has(x.id)).length+'/'+SDItems.ITEMS.filter(x=>x.type===t).length;
+  document.querySelectorAll('#invTabs button').forEach(b=>{b.setAttribute('aria-pressed',String(b.dataset.tab===INV.tab));b.textContent={camo:'CAMUFLAJES',ret:'MIRA',titulo:'TÍTULOS'}[b.dataset.tab]+' '+cnt(b.dataset.tab);});
+  const grid=$('#invGrid');grid.innerHTML='';const cur=INV.equip[INV.tab]||null;
+  for(const it of [null].concat(SDItems.ITEMS.filter(x=>x.type===INV.tab))){
+    const own=!it||owned.has(it.id),on=own&&cur===(it?it.id:null),c=document.createElement('button');
+    c.type='button';c.className='invCard'+(own?'':' lock');c.dataset.id=it?it.id:'';c.setAttribute('aria-pressed',String(on));c.disabled=!own||!I&&!!it;
+    if(it)c.style.setProperty('--rc',RAR[it.r].color);
+    const b=document.createElement('b');b.textContent=it?it.name:INV_DEF[INV.tab];const l=document.createElement('span');l.className='lbl';l.textContent=it?RAR[it.r].name:'DE SERIE';
+    c.append(invPreview(INV.tab,it,false),b,l);
+    if(!own||on){const t=document.createElement('span');t.className='tag';t.textContent=on?'EQUIPADO':'BLOQUEADO';c.append(t);}
+    grid.append(c);}
+  const pr=SDItems.ORDER.map(k=>RAR[k].name.charAt(0)+RAR[k].name.slice(1).toLowerCase()+' '+Math.round(RAR[k].p*100)+' %').join(' · ');
+  $('#invHelp').textContent='Cómo se ganan: una caja de bienvenida y una cada día. Online (los dos con cuenta, más de 1 min jugado): ganar +'+P.onlineWin+', empatar +'+P.onlineDraw+', perder +'+P.onlineLoss+', si el rival abandona +'+P.abandonWin
+    +'. Contra bots que disparan: ganar +'+P.botWin+', perder +'+P.botLoss+' (hasta '+P.botsDay+' al día). '+P.box+' puntos = 1 caja. Probabilidades: '+pr+'. Nunca sale algo que ya tienes. Las cajas no se compran: solo se ganan jugando. Solo cambian el aspecto: ni daño, ni cadencia, ni zonas de impacto.';
+}
+function openInv(){invMsg('');invUI();$('#invOv').hidden=false;$('#invOv').scrollTop=0;for(const id of ['menu','profOv'])$('#'+id).classList.add('under');if(ACC.token)accRefresh();}
+function closeInv(){$('#invOv').hidden=true;for(const id of ['menu','profOv'])$('#'+id).classList.remove('under');}
+async function invEquipSet(slot,id){
+  if(!ACC.acc||INV.busy)return;const prev=Object.assign({},INV.equip);
+  if(id)INV.equip[slot]=id;else delete INV.equip[slot];camoApply();retApply();invUI();   // at once; the server confirms
+  try{const j=await accApi('/cuenta/equipar',{slot,id:id||null});ACC.acc=j.account;invSync();invMsg('');}
+  catch(e){INV.equip=prev;camoApply();retApply();invUI();invMsg(accErrText(e));}
+}
+async function invDaily(){try{const j=await accApi('/cuenta/caja/diaria');ACC.acc=j.account;invSync();invMsg('CAJA DIARIA RECOGIDA');}catch(e){invMsg(accErrText(e));}}
+// open a box: the crate shakes while the server draws the object (at least 1.1 s), then opens in the rarity's colour
+async function invOpenBox(){
+  if(INV.busy||!ACC.acc||!ACC.acc.inv||!ACC.acc.inv.boxes)return;INV.busy=true;
+  const ov=$('#boxOv'),cr=$('#crate'),rv=$('#reveal'),fl=$('#boxFlash');
+  ov.hidden=false;rv.hidden=true;rv.innerHTML='';cr.hidden=false;cr.className='crate shake';fl.classList.remove('on');
+  const t0=performance.now(),tick=setInterval(()=>SFX.click(0,1300+Math.random()*900,0.22),170);let j=null,err=null;
+  try{j=await accApi('/cuenta/caja/abrir');}catch(e){err=e;}
+  await new Promise(r=>setTimeout(r,Math.max(0,1100-(performance.now()-t0))));
+  clearInterval(tick);INV.busy=false;
+  if(err){ov.hidden=true;cr.className='crate';invMsg(accErrText(err));return;}
+  ACC.acc=j.account;invSync();
+  const it=j.item&&SDItems.byId(j.item),rc=it?RAR[it.r].color:'#ffd25e';
+  ov.style.setProperty('--rc',rc);cr.className='crate open';void fl.offsetWidth;fl.classList.add('on');SFX.boxOpen(it?it.r:'comun');vibrate(it&&it.r==='legendaria'?[40,60,90]:30);
+  setTimeout(()=>{
+    cr.hidden=true;const left=ACC.acc.inv.boxes;
+    const card=document.createElement('div');card.className='rvCard';card.append(it?invPreview(it.type,it,true):invPreview('titulo',null,true));
+    const r=document.createElement('div');r.className='rvR';r.textContent=it?RAR[it.r].name+' · '+SDItems.SLOTS[it.type]:'¡LO TIENES TODO!';
+    const h=document.createElement('h3');h.textContent=it?it.name:'+'+j.frag+' FRAGMENTOS';
+    const row=document.createElement('div');row.className='row';row.style.justifyContent='center';
+    const btn=(t,a,main)=>{const b=document.createElement('button');b.type='button';b.className='btn'+(main?'':' ghost');b.dataset.inv=a;b.textContent=t;if(it)b.dataset.id=it.id;row.append(b);return b;};
+    const first=it?btn('EQUIPAR','equipar',true):null;if(left)btn('ABRIR OTRA ('+left+')','otra',!it);btn('SEGUIR','seguir',!it&&!left);
+    rv.append(r,h,card,row);if(!it){const p=document.createElement('p');p.className='setHelp';p.style.margin='0';p.textContent='Servirán para los objetos que lleguen.';rv.append(p);}
+    rv.hidden=false;(first||row.querySelector('button')).focus();
+  },380);
+}
+function boxClose(){$('#boxOv').hidden=true;$('#crate').className='crate';$('#reveal').hidden=true;}
+document.addEventListener('click',ev=>{
+  const t=ev.target.closest&&ev.target.closest('#invOv [data-inv],#boxOv [data-inv],#invGrid .invCard,#invTabs button');if(!t)return;SFX.ui();
+  if(t.matches('#invTabs button')){INV.tab=t.dataset.tab;invUI();return;}
+  if(t.classList.contains('invCard')){invEquipSet(INV.tab,t.dataset.id||null);return;}
+  const a=t.dataset.inv;
+  if(a==='perfil'){closeInv();openProfile();}else if(a==='abrir'||a==='otra')invOpenBox();else if(a==='diaria')invDaily();else if(a==='seguir')boxClose();
+  else if(a==='equipar'){const it=SDItems.byId(t.dataset.id);boxClose();if(it){INV.tab=it.type;invEquipSet(it.type,it.id);}}
+});
+// box points at the end of a match: against bots the browser tells the server; online the room server already did it
+function invOverLine(t){const el=$('#overInv');el.textContent=t||'';el.hidden=!t;}
+function invOverMsg(pts,boxes,src){
+  const I=ACC.acc&&ACC.acc.inv;if(!I)return;
+  if(!pts){invOverLine(src==='bots'?'Puntos de caja contra bots: tope de hoy alcanzado (online sigue sumando).':'');return;}
+  invOverLine('+'+pts+' PUNTOS DE CAJA'+(boxes>0?' · ¡'+(boxes>1?boxes+' CAJAS NUEVAS':'CAJA NUEVA')+'! Ábrela en CAJAS':' · '+I.pts+' / '+SDItems.PTS.box));
+}
+function invBots(win,secs){
+  invOverLine('');if(mode!=='duel'||!DUEL_LETHAL||PERF.on||!ACC.token)return;
+  accApi('/cuenta/partida',{won:!!win,secs}).then(j=>{ACC.acc=j.account;invSync();invOverMsg(j.pts,j.boxes,'bots');}).catch(e=>{if(ACC_ERR[e.message]&&(e.message==='wait'||e.message==='short'))invOverLine(ACC_ERR[e.message]);});
+}
+function invOnline(){
+  invOverLine('');if(!ACC.token||!ACC.acc||!ACC.acc.inv)return;const b0={pts:ACC.acc.inv.pts,boxes:ACC.acc.inv.boxes};
+  const look=async n=>{await accRefresh();const I=ACC.acc&&ACC.acc.inv;if(!I||state!=='over')return;const got=(I.boxes-b0.boxes)*SDItems.PTS.box+(I.pts-b0.pts);
+    if(got>0)invOverMsg(got,I.boxes-b0.boxes,'online');else if(n<2)setTimeout(()=>look(n+1),2500);};
+  setTimeout(()=>look(0),1200);
+}
+function invInit(){   // with the PERFIL button (?pj=pro, ?pj=mix or ?perfil=1 while it is being tested)
+  $('#openInv').hidden=false;
+  $('#openInv').addEventListener('click',()=>{openInv();audioInit();SFX.ui();});
+  $('#invClose').addEventListener('click',()=>{closeInv();SFX.ui();});
+  $('#invOv').addEventListener('keydown',e=>{if(e.key==='Escape'&&$('#boxOv').hidden){e.stopPropagation();closeInv();}});
+  $('#boxOv').addEventListener('keydown',e=>{if(e.key==='Escape'&&!INV.busy){e.stopPropagation();boxClose();}});
+}
+retApply();invBadge();
+if(ACC.token)setTimeout(accRefresh,400);   // your objects follow your account on every device
 
 /* PERFIL (paso A de las cuentas, client/profile.js, docs/CUENTAS-Y-MONETIZACION.md): apodo, personaje, estadísticas de
    todas tus partidas y un código para pasarlo a otro dispositivo. Se guarda siempre; el botón se ve con ?pj=pro/mix o
@@ -5283,6 +5487,7 @@ function closeProfile(){$('#profOv').hidden=true;$('#menu').classList.remove('un
 function setProfileName(v){const n=SDProfile.clean({name:v}).name;PROFILE.name=n;SDProfile.save(LS,PROFILE);if(n&&ACC.token)accApi('/cuenta/nombre',{name:n}).then(j=>{ACC.acc=j.account;accUI();}).catch(()=>{});if(n){store.set('mpName',n);$('#mpName').value=n;}}
 function profileMatch(r){try{SDProfile.addMatch(PROFILE,r);SDProfile.save(LS,PROFILE);}catch(e){}}
 if(PROFILE_ON){
+  invInit();
   $('#openProfile').hidden=false;
   $('#openProfile').addEventListener('click',()=>{openProfile();audioInit();SFX.ui();});
   $('#profClose').addEventListener('click',()=>{closeProfile();SFX.ui();});
@@ -5343,6 +5548,7 @@ function frameBody(now){
     WROOT.visible=false;KROOT.visible=false;PROOT.visible=false;SROOT.visible=false;
   }
   if(WATER_N){WATER_N.offset.x+=fxdt*0.025;WATER_N.offset.y+=fxdt*0.011;}   // ?pulido=1: the water ripples move
+  INV.time.value=now/1000%1000;   // legendary camouflages pulse
   if(state!=='paused'){updateParts(fxdt);updateTracers(fxdt);for(const f of FLASHES){if(f.s.visible){f.t-=fxdt;if(f.t<=0)f.s.visible=false;}}}
   if(mode==='online')netFrame(rdt);
   updateDebug(rdt);
@@ -5608,6 +5814,6 @@ if(FLORA.on){const gl=new T.GLTFLoader();let n=2;
       // the town's ground must exist first (rays land on it)
       if(P3W.kit)go();else{const w=setInterval(()=>{if(P3W.kit){clearInterval(w);go();}},300);}}}}
 
-window.__SD={ACC,accRefresh,WSKIN,WS_ST,setWskin,get RIF(){return RIF;},TPV,SELF,get PROFILE(){return PROFILE;},openProfile,endMatch,PJ_MIX,MIX_ORDER,SKINS,get SKIN(){return SKIN;},setSkin,pj2SetPack,rivalSkin,PERF,perfRun,HUD2,get H2(){return HUD2?H2:null;},leanIn:HUD2?leanIn:null,h2Frame:HUD2?h2Frame:null,PJ2,pj2Load,CASA,casaLoad,XL,casaxlLoad,FLORA,RATS,RAT_WORLD,ratsFrame,SHADOW_FADE,setDuelLethal,get DUEL_LETHAL(){return DUEL_LETHAL;},gfxDiagText,get P3ON(){return P3ON;},COBCC,damagePlayer,TEX,sunFollow,setSunSnap(on){SUN_SNAP=!!on;},sun,P0,E10,e10Lod,DIAG,setTrainMove,LIGHT:{sun,hemi,skyMat,LOOK,P3},P3W,freeze(on){SIM_FREEZE=!!on;},SHOT,VMA,makeSoldier,animateSoldier,BOT_MAT,scene,camera,RemotePlayer,PMprev,PIS,PROOT,RIF,WROOT,SHO_:null,MANUAL,advance(ms){frameBody(last+ms);},get LAST_PELLETS(){return LAST_PELLETS;},SCORE,SCFG,SROOT,SHO,setPrimaryChoice,get PRIMARY(){return PRIMARY;},PCORE,PCFG,setWorld,WORLDS,get WORLD_ID(){return WORLD_ID;},renderer,GFX,gfxApply,get NET(){return NET;},get REMOTE(){return REMOTE;},W,get NAV(){return NAV;},setOffMap,get OFFMAP(){return OFFMAP;},TOUCH,EDIT,openEditor,get SETTINGS(){return SETTINGS;},get LAYOUT(){return LAYOUT;},checkOrientation,MAT,LOAD,TRAINERS,get RANGE_BOTS(){return RANGE_BOTS;},TRAIN,setTrain,setLethal,kitNote,GINS,TDIAG,AU,get TOUCH_EVENTS(){return TOUCH_EVENTS;},impactFX,bodyFX,get DECALS(){return DECALS;},surfaceOf,soundDelay,aimSelfTest,P,PM,WS,WCORE,RECOIL,AIM,BOTS,DUMMIES,BULLETS,EVENTS,PARTS,STATS,get state(){return state;},get mode(){return mode;},setMode,input,startMatch,simTick,frame,toMenu,pause,resume};
+window.__SD={ACC,accRefresh,INV,invSync,camoApply,openInv,invOpenBox,WSKIN,WS_ST,setWskin,get RIF(){return RIF;},TPV,SELF,get PROFILE(){return PROFILE;},openProfile,endMatch,PJ_MIX,MIX_ORDER,SKINS,get SKIN(){return SKIN;},setSkin,pj2SetPack,rivalSkin,PERF,perfRun,HUD2,get H2(){return HUD2?H2:null;},leanIn:HUD2?leanIn:null,h2Frame:HUD2?h2Frame:null,PJ2,pj2Load,CASA,casaLoad,XL,casaxlLoad,FLORA,RATS,RAT_WORLD,ratsFrame,SHADOW_FADE,setDuelLethal,get DUEL_LETHAL(){return DUEL_LETHAL;},gfxDiagText,get P3ON(){return P3ON;},COBCC,damagePlayer,TEX,sunFollow,setSunSnap(on){SUN_SNAP=!!on;},sun,P0,E10,e10Lod,DIAG,setTrainMove,LIGHT:{sun,hemi,skyMat,LOOK,P3},P3W,freeze(on){SIM_FREEZE=!!on;},SHOT,VMA,makeSoldier,animateSoldier,BOT_MAT,scene,camera,RemotePlayer,PMprev,PIS,PROOT,RIF,WROOT,SHO_:null,MANUAL,advance(ms){frameBody(last+ms);},get LAST_PELLETS(){return LAST_PELLETS;},SCORE,SCFG,SROOT,SHO,setPrimaryChoice,get PRIMARY(){return PRIMARY;},PCORE,PCFG,setWorld,WORLDS,get WORLD_ID(){return WORLD_ID;},renderer,GFX,gfxApply,get NET(){return NET;},get REMOTE(){return REMOTE;},W,get NAV(){return NAV;},setOffMap,get OFFMAP(){return OFFMAP;},TOUCH,EDIT,openEditor,get SETTINGS(){return SETTINGS;},get LAYOUT(){return LAYOUT;},checkOrientation,MAT,LOAD,TRAINERS,get RANGE_BOTS(){return RANGE_BOTS;},TRAIN,setTrain,setLethal,kitNote,GINS,TDIAG,AU,get TOUCH_EVENTS(){return TOUCH_EVENTS;},impactFX,bodyFX,get DECALS(){return DECALS;},surfaceOf,soundDelay,aimSelfTest,P,PM,WS,WCORE,RECOIL,AIM,BOTS,DUMMIES,BULLETS,EVENTS,PARTS,STATS,get state(){return state;},get mode(){return mode;},setMode,input,startMatch,simTick,frame,toMenu,pause,resume};
 })();
 </script>

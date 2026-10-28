@@ -34,6 +34,7 @@ function create(opts) {
   N.chooseKit = id => { if (id !== 'rifle' && id !== 'shotgun') return; N.kit = id; out({ t: 'kit', id }); };
   N.skin = null;
   N.chooseSkin = id => { if (!['clasico', 'swat', 'fsb', 'militar'].includes(id)) return; N.skin = id; out({ t: 'skin', id }); };
+  N.account = tok => { if (typeof tok === 'string') out({ t: 'acct', tok }); };   // my cloud account (server/accounts.js)
   N.leave = () => out({ t: 'leave' });
   N.ping = () => { N.lastPing = N.now(); out({ t: 'ping', c: N.now(), r: N.rtts.length ? Math.round(N.rtt) : undefined }); };
   N.serverNow = () => N.now() + N.offset;

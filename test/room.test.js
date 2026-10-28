@@ -495,5 +495,35 @@ console.log('\nREINICIO DEL SERVIDOR DE LA SALA (despliegue en mitad de una sesi
   check('y los dos están jugando', A.N.phase === 'playing' && B.N.phase === 'playing');
 }
 
+(async () => {   // the account check is asynchronous (the server asks the account): the test lets it finish
+const settle = () => new Promise(r => setImmediate(r));
+console.log('\nCUENTAS EN LA SALA (título y puntos de caja: opts.account / opts.onOver)');
+{ const TA = 'SD-AAAA-AAAA.' + 'a'.repeat(43), TB = 'SD-BBBB-BBBB.' + 'b'.repeat(43), overs = [];
+  const fake = { [TA]: { id: 'SD-AAAA-AAAA', title: 'LEYENDA' }, [TB]: { id: 'SD-BBBB-BBBB', title: '<b>CAZADOR</b>' } };
+  let shoot = false;
+  const S = createSim({ latency: 30, room: { account: tok => Promise.resolve(fake[tok] || null), onOver: info => { overs.push(info); } } });
+  const A = S.addClient('Hamza', (c, S) => { const s = S.room.seats.B.p.ms; return Object.assign(lookAt(c, [s.x, s.y + 1.63, s.z]), { fire: shoot, adsHeld: true }); });
+  const B = S.addClient('Novia', () => ({ yaw: 0 }));
+  A.N.hello('Hamza'); S.run(100); B.N.hello('Novia'); S.run(200);
+  A.N.account(TA); B.N.account(TB); S.run(200); await settle(); S.run(200);
+  const pl = B.N.players;
+  check('la sala comprueba la cuenta y enseña el título que dice la cuenta (limpio)', pl[0].title === 'LEYENDA' && pl[0].acc === 1 && pl[1].acc === 1 && pl[1].title === 'bCAZADOR/b', JSON.stringify(pl.map(p => p.title)));
+  const errs = evs(A, 'error').length; S.room.message(A.conn, JSON.stringify({ t: 'acct', tok: 'SD-AAAA-AAAA.corta' }), S.t); S.run(100); await settle();
+  check('una ficha mal formada: error y nada cambia', evs(A, 'error').length === errs + 1 && S.room.accOf.A === 'SD-AAAA-AAAA');
+  A.N.ready(true); B.N.ready(true); S.until(() => A.N.phase === 'playing' && B.N.phase === 'playing', 6000);
+  place(S, A, B, pair[0], pair[1]);
+  S.run(70000);
+  S.drop(B); S.run(5000); S.reconnect(B); S.run(1500);
+  S.room.debug.set('A', 'kills', 9); shoot = true; S.run(20); shoot = false; S.run(600);
+  const o = overs[0];
+  check('al terminar: las dos cuentas comprobadas y el tiempo jugado sin las pausas', overs.length === 1 && o.winner === 'A' && o.why === 'bajas' && o.acc.A === 'SD-AAAA-AAAA' && o.acc.B === 'SD-BBBB-BBBB' && o.ms >= 70000 && o.ms < 74000 && o.code === 'TESTAA' && o.match === 1, o && JSON.stringify(o));
+}
+{ // a room without accounts (an old adapter): the message is ignored, nothing breaks
+  const S = createSim({ latency: 20 }), A = S.addClient('Hamza');
+  A.N.hello('Hamza'); S.run(100); A.N.account('SD-AAAA-AAAA.' + 'a'.repeat(43)); S.run(200); await settle(); S.run(100);
+  check('sin cuentas en el servidor: la ficha se ignora sin errores', A.N.players[0].acc === 0 && evs(A, 'error').length === 0);
+}
+
 console.log('\n' + pass + ' correctas, ' + fail + ' fallidas');
 process.exit(fail ? 1 : 0);
+})();

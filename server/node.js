@@ -35,6 +35,7 @@ function startServer(opts) {
   function makeRoom() {
     let code; do { code = PR.codeFrom(crypto.randomBytes(6)); } while (rooms.has(code));
     const room = SDRoom.create({ code, maps: MAP.maps, indexes, defaultMap: 'arena', now: clock(), debug: !!opts.debug,
+      account: tok => SDAccounts.roomAccount(tok, accounts.acc), onOver: info => SDAccounts.matchReward(info, accounts.acc),
       send: (c, t) => { const ws = sockets.get(c); if (ws && ws.readyState === 1) ws.send(t); },
       close: (c, code2, why) => { const ws = sockets.get(c); if (ws) try { ws.close(code2, why); } catch (e) {} },
       randBytes: n => crypto.randomBytes(n) });

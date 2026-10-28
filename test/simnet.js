@@ -30,7 +30,7 @@ function createSim(o) {
   const makeRoom = () => SDRoom.create(Object.assign(o.maps ? { maps: MAP.maps, defaultMap: o.maps } : { map: MAP, index: INDEX }, { code: 'TESTAA', now: S.t, debug: true, rand: rng(o.seed + 1),
     send: (conn, text) => { const c = S.byConn[conn]; if (c && c.open) wire('s' + conn, () => c.recv(text), text); },
     close: (conn) => { const c = S.byConn[conn]; if (c) c.open = false; },
-    persist: d => { S.saved = JSON.parse(JSON.stringify(d)); } }));
+    persist: d => { S.saved = JSON.parse(JSON.stringify(d)); } }, o.room || {}));   // o.room: extra room options (accounts)
   let room = makeRoom();
   S.room = room; S.byConn = {};
   let nextConn = 1;

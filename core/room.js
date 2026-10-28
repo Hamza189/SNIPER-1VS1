@@ -14,7 +14,11 @@
    - Two kills in the same server tick: both count. If both reach 10 in the same tick, the
      match is a draw (winner null).
    - A player that drops out during the match pauses it for both (RECONECTANDO) up to 60 s;
-     after that the one still connected wins.                                             */
+     after that the one still connected wins.
+   Cloud accounts (optional, server/accounts.js): a player may send its account session ('acct'); the adapter checks it
+   (opts.account → { id, title }), the lobby then shows the title read from the account, and at the end of the match
+   opts.onOver gets both verified account ids and the time actually played (box points: matchReward). Nothing of this
+   touches the rules of the match.                                                           */
 (function (root) {
 'use strict';
 const isNode = typeof module !== 'undefined' && module.exports;
@@ -47,7 +51,8 @@ function create(opts) {
     code: opts.code, phase: 'lobby', match: 0, startAt: 0, tickN: 0, now: opts.now || 0,
     seats: { A: null, B: null }, conns: new Map(), evSeq: 0, bullets: [], bulletId: 0, shotId: 0, winner: undefined,
     pausedAt: 0, lastSnap: 0, lastActive: opts.now || 0, lastPlay: opts.now || 0, closed: false, rematch: { A: false, B: false }, log: [],
-    send: opts.send || (() => {}), close: opts.close || (() => {}), randBytes: opts.randBytes, persist: opts.persist || null
+    send: opts.send || (() => {}), close: opts.close || (() => {}), randBytes: opts.randBytes, persist: opts.persist || null,
+    account: opts.account || null, onOver: opts.onOver || null, accOf: { A: null, B: null }, playMs: 0
   };
 
   /* ---------- helpers ---------- */
@@ -56,7 +61,8 @@ function create(opts) {
   const evq = obj => { if (obj.t === 'ev') obj.q = ++R.evSeq; return obj; };
   const sendAll = obj => { evq(obj); const s = JSON.stringify(obj); for (const id of ['A', 'B']) { const st = R.seats[id]; if (st && st.conn != null) R.send(st.conn, s); } };
   const log = (msg) => { R.log.push(Math.round(R.now) + ' ' + msg); if (R.log.length > 200) R.log.shift(); };
-  const pubPlayers = () => ['A', 'B'].map(id => { const s = R.seats[id]; return s ? { id, name: s.name, connected: s.conn != null, ready: s.ready, kills: s.kills, kit: s.kit, skin: s.skin } : null; });
+  const pubPlayers = () => ['A', 'B'].map(id => { const s = R.seats[id]; return s ? { id, name: s.name, connected: s.conn != null, ready: s.ready, kills: s.kills, kit: s.kit, skin: s.skin, acc: s.acc ? 1 : 0, title: s.acc && s.acc.title || undefined } : null; });
+  const cleanTitle = t => typeof t === 'string' ? t.replace(/[\u0000-\u001f\u007f<>&"'`]/g, '').trim().slice(0, 24) : '';
   const lobbyMsg = () => ({ t: 'lobby', phase: R.phase, players: pubPlayers(), match: R.match, map: mapId, maps: Object.keys(MAPS), winner: R.winner === undefined ? undefined : R.winner, rematch: R.rematch });
   function save() {
     if (!R.persist) return;
@@ -105,7 +111,7 @@ function create(opts) {
   }
   function startMatch() {
     ix = indexOf(mapId); MAP = MAPS[mapId];
-    R.match++; R.phase = 'countdown'; R.startAt = R.now + RULES.countdownMs; R.bullets.length = 0; R.winner = undefined;
+    R.match++; R.phase = 'countdown'; R.startAt = R.now + RULES.countdownMs; R.bullets.length = 0; R.winner = undefined; R.playMs = 0;
     R.rematch = { A: false, B: false };
     const a = R.seats.A, b = R.seats.B;
     a.kills = b.kills = a.deaths = b.deaths = 0; a.shots = b.shots = a.hits = b.hits = a.hs = b.hs = 0;
@@ -125,6 +131,7 @@ function create(opts) {
     sendAll({ t: 'ev', m: R.match, e: [{ k: 'over', winner, why, sc: score(), stats: statsOf() }] });
     sendAll(lobbyMsg());
     log('over ' + winner + ' ' + why); save();
+    if (R.onOver) { try { const p = R.onOver({ code: R.code, match: R.match, winner, why, ms: Math.round(R.playMs), acc: { A: R.accOf.A, B: R.accOf.B } }); if (p && p.catch) p.catch(() => {}); } catch (e) {} }
   }
   const score = () => ({ A: R.seats.A ? R.seats.A.kills : 0, B: R.seats.B ? R.seats.B.kills : 0 });
   const statsOf = () => { const o = {}; for (const id of ['A', 'B']) { const s = R.seats[id]; if (s) o[id] = { kills: s.kills, deaths: s.deaths, shots: s.shots, hits: s.hits, hs: s.hs }; } return o; };
@@ -164,7 +171,7 @@ function create(opts) {
     }
     let id = !R.seats.A ? 'A' : !R.seats.B ? 'B' : null;
     if (!id || R.phase !== 'lobby') { R.send(conn, JSON.stringify({ t: 'error', code: id ? 'in_progress' : 'full' })); R.close(conn, 4003, 'full'); return; }
-    const s = newSeat(id, m.name, token()); R.seats[id] = s; s.conn = conn; c.seat = id;
+    const s = newSeat(id, m.name, token()); R.seats[id] = s; s.conn = conn; c.seat = id; R.accOf[id] = null;
     log('join ' + id); welcome(s); sendAll(lobbyMsg()); save();
   }
   function welcome(s) {
@@ -211,6 +218,16 @@ function create(opts) {
         break;
       case 'skin':  // my character: looks only (the rival draws it; nothing in the rules changes)
         if (s.skin !== m.id) { s.skin = m.id; if (R.phase === 'lobby' || R.phase === 'over') sendAll(lobbyMsg()); save(); }
+        break;
+      case 'acct':  // my cloud account: the adapter checks the session; a wrong one is just ignored
+        if (R.account && s.accTok !== m.tok) {
+          s.accTok = m.tok; const seat = s;
+          Promise.resolve().then(() => R.account(m.tok)).then(info => {
+            if (R.seats[seat.id] !== seat || seat.accTok !== m.tok) return;
+            seat.acc = info && typeof info.id === 'string' ? { id: info.id, title: cleanTitle(info.title) } : null;
+            R.accOf[seat.id] = seat.acc ? seat.acc.id : null; sendAll(lobbyMsg());
+          }, () => {});
+        }
         break;
       case 'ready': R.lastPlay = now; if (R.phase === 'lobby') { s.ready = m.on; sendAll(lobbyMsg()); maybeStart(); } break;
       case 'rematch':
@@ -384,10 +401,12 @@ function create(opts) {
   /* ---------- time ---------- */
   function tick(now) {
     const dtMs = Math.min(250, Math.max(0, now - R.now)); R.now = now;
+    const tickMs = R.lastTick ? Math.min(250, Math.max(0, now - R.lastTick)) : 0; R.lastTick = now;   // between ticks (messages move R.now too)
     if (R.closed) return;
     R.tickN++;
     if (R.phase === 'countdown' && now >= R.startAt) { R.phase = 'playing'; sendAll({ t: 'ev', m: R.match, e: [{ k: 'go' }] }); }
     if (R.phase === 'playing') {
+      R.playMs += tickMs;   // time actually played (pauses do not count): box points need a real match
       // bullets fly in steps of 1/120 s whatever the server tick
       let n = Math.round(dtMs / (DT * 1000)); n = Math.max(1, Math.min(30, n));
       for (let i = 0; i < n && R.phase === 'playing'; i++) { stepBullets(DT, now - (n - 1 - i) * DT * 1000); checkWin(); }

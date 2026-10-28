@@ -34,7 +34,7 @@ Recomendación, por pasos (cada uno se puede publicar solo):
 | A | **Perfil local**: apodo, personaje, estadísticas y objetos en el dispositivo. Jugar nunca pide nada. | 0 € | HECHO (27-10) |
 | B | **Cuenta en la nube sin contraseña**: al «crear cuenta» el juego genera una identidad y la guarda con una **llave de acceso (passkey)** del iPhone/Android/Windows (Face ID, huella o PIN). Entrar en otro dispositivo = la misma passkey (iCloud/Google la sincronizan). Sin correos, sin contraseñas que robar, sin servicios externos. | 0 € dentro del plan gratuito de Cloudflare | HECHO (28-10) |
 | C | **Amigos**: código de amigo (p. ej. `HAMZA#4821`), solicitudes, lista con «en línea», invitar a una sala privada (las salas ya existen). | 0 € | HECHO (28-10): código de amigo = SD-XXXX-XXXX, solicitudes, invitar a tu sala; «en línea» aún no |
-| D | **Inventario en el servidor**: lo que tienes lo concede y lo guarda el servidor (el cliente no puede inventarse una skin). | 0 € | después de B |
+| D | **Inventario en el servidor**: lo que tienes lo concede y lo guarda el servidor (el cliente no puede inventarse una skin). | 0 € | HECHO (28-10): cajas gratuitas, 33 objetos de aspecto, ver `docs/INVENTARIO-Y-CAJAS.md` |
 
 **Hecho (28-10-2026, decisión del propietario: «Sí, cuentas»):** cuentas con **passkey** en el **mismo Worker de
 Cloudflare** del online (plan gratuito, sin servicios nuevos): un Durable Object por cuenta y uno de «directorio» para los
@@ -87,5 +87,7 @@ el duelo); **3)** tienda de cosméticos cuando haya jugadores. Todo apagado hast
 1. ~~¿Cuentas con **passkey** en el **mismo Cloudflare** (Durable Objects o D1, plan gratuito)? → crear la base de datos.~~ HECHO (28-10)
 2. ¿Portal web para monetizar con anuncios (CrazyGames / itch.io / otro)? → leo sus condiciones y preparo la versión.
 3. ¿Tienda de cosméticos con Stripe o con un «merchant of record» (Paddle / Lemon Squeezy)?
-4. Cajas: ¿de acuerdo con que sean **gratuitas** (ganadas jugando) y lo de pago con precio a la vista?
+4. ~~Cajas: ¿de acuerdo con que sean **gratuitas** (ganadas jugando) y lo de pago con precio a la vista?~~ HECHO (28-10) lo
+   gratuito: caja de bienvenida, una diaria y puntos por partidas, probabilidades a la vista (`docs/INVENTARIO-Y-CAJAS.md`).
+   Lo de pago espera a la decisión 3.
 5. Confirmar con un gestor si puedes tener ingresos del juego mientras estás de baja.

@@ -15,10 +15,16 @@
      /cuenta/yo *                         → {account}                 nombre, amigos, solicitudes, invitaciones
      /cuenta/nombre * {name}   /cuenta/salir *
      /cuenta/amigos/pedir * {id}   aceptar * {id}   rechazar * {id}   quitar * {id}   invitar * {id, sala}
+     /cuenta/caja/abrir *  /cuenta/caja/diaria *  /cuenta/equipar * {slot, id}  /cuenta/partida * {won, secs}  (paso D)
+   Inventario y cajas (paso D, docs/INVENTARIO-Y-CAJAS.md): lo que tienes lo guarda y lo concede el servidor. Las cajas
+   son gratuitas (bienvenida, una al día y puntos por partidas); qué objetos hay y qué da cada partida: core/items.js.
+   Las partidas online las premia el servidor de la sala (matchReward, al terminar); las de bots las cuenta el navegador
+   (/cuenta/partida), con tope diario.
    Puro salvo WebCrypto (crypto.subtle, en Workers y en Node 18+). */
 (function (root) {
 'use strict';
-const C = globalThis.crypto;   // WebCrypto: Workers y Node 19+ (sin require: el Worker se empaqueta sin módulos de Node)
+const C = globalThis.crypto;   // WebCrypto: Workers y Node 19+ (sin módulos de Node: el Worker se empaqueta sin ellos)
+const IT = typeof module !== 'undefined' && module.exports ? require('../core/items.js') : root.SDItems, PTS = IT.PTS;
 const ID_ABC = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
 const LIM = { name: 16, friends: 100, requests: 50, tokens: 8, tokenDays: 60, challengeMs: 5 * 60000, inviteMs: 15 * 60000, dirChallenges: 2000 };
 const isId = s => typeof s === 'string' && /^SD-[A-Z2-9]{4}-[A-Z2-9]{4}$/.test(s);
@@ -99,6 +105,21 @@ function clientData(b64, type, origins) {
 }
 function originOk(origins, o) { return typeof o === 'string' && origins.some(a => o === a || o.startsWith(a + ':')); }
 const err = (status, error) => ({ status, body: { error } });
+// ---- inventario (dentro de la ficha de la cuenta; las cuentas de antes lo reciben vacío la primera vez)
+const DAY = 86400000, dayOf = t => Math.floor(t / DAY);   // el día cambia a las 00:00 UTC (la 1:00 o las 2:00 en España)
+function inv(a) {
+  if (!a.inv) a.inv = { boxes: 0, pts: 0, frag: 0, items: {}, equip: {}, daily: -1, day: { d: -1, bots: 0, online: 0 }, lastBots: 0, keys: [] };
+  return a.inv;
+}
+function today(I, t) { const d = dayOf(t); if (I.day.d !== d) I.day = { d, bots: 0, online: 0 }; return I.day; }
+// puntos → cajas (100 = una); con el máximo de cajas guardadas, los puntos esperan
+function addPts(I, n) {
+  I.pts += n; const nb = Math.min(Math.floor(I.pts / PTS.box), PTS.maxBoxes - I.boxes);
+  if (nb > 0) { I.boxes += nb; I.pts -= nb * PTS.box; }
+  if (I.boxes >= PTS.maxBoxes) I.pts = Math.min(I.pts, PTS.box - 1);
+}
+const titleOf = I => { const it = I.equip.titulo && IT.byId(I.equip.titulo); return it ? it.name : ''; };
+const u01 = () => { const b = rand(4); return ((b[0] << 24 >>> 0) + (b[1] << 16) + (b[2] << 8) + b[3]) / 4294967296; };
 const ok = body => ({ status: 200, body });
 
 // ---- una cuenta (su almacenamiento: {get, put, delete} asíncronos, como el de un Durable Object)
@@ -107,7 +128,11 @@ function account(store, opts) {
   const pub = a => { const t = now(); return { id: a.id, name: a.name, created: a.created,
     friends: Object.entries(a.friends).map(([id, f]) => ({ id, name: f.name })),
     requests: Object.entries(a.requests).map(([id, r]) => ({ id, name: r.name })),
-    invites: Object.entries(a.invites).filter(([, v]) => v.exp > t).map(([id, v]) => ({ id, name: v.name, sala: v.sala })) }; };
+    invites: Object.entries(a.invites).filter(([, v]) => v.exp > t).map(([id, v]) => ({ id, name: v.name, sala: v.sala })),
+    inv: pubInv(a, t) }; };
+  const pubInv = (a, t) => { const I = inv(a), D = today(I, t);
+    return { boxes: I.boxes, pts: I.pts, frag: I.frag, items: Object.keys(I.items), equip: Object.assign({}, I.equip), title: titleOf(I),
+      daily: I.daily < dayOf(t), dailyIn: (dayOf(t) + 1) * DAY - t, botsLeft: Math.max(0, PTS.botsDay - D.bots), onlineLeft: Math.max(0, PTS.onlineDay - D.online) }; };
   async function issue(a) {
     const tok = b64u(rand(32)), h = hex(await sha256(new TextEncoder().encode(tok))), t = now();
     for (const k in a.tokens) if (a.tokens[k] < t) delete a.tokens[k];
@@ -143,6 +168,7 @@ function account(store, opts) {
           const k = coseKey(ad.cose);
           const a = { id: pending.id, name: pending.name, created: now(), creds: [{ id: c.id, alg: k.alg, jwk: k.jwk, counter: ad.counter }],
             friends: {}, requests: {}, invites: {}, tokens: {} };
+          inv(a).boxes = PTS.welcome;   // caja de bienvenida
           const tokenOut = await issue(a);
           await store.put('acc', a); await store.delete('pending');
           return ok({ token: tokenOut, account: pub(a) });
@@ -182,6 +208,14 @@ function account(store, opts) {
           a.invites[body.from] = { name: cleanName(body.name), sala: body.sala, exp: now() + LIM.inviteMs }; await store.put('acc', a); return ok({});
         }
         case 'existe': { const a = await store.get('acc'); return a ? ok({ id: a.id, name: a.name }) : err(404, 'no_account'); }
+        case 'premio': {   // puntos de una partida online (matchReward); cada partida cuenta una sola vez
+          const a = await store.get('acc'); if (!a) return err(404, 'no_account');
+          const I = inv(a), D = today(I, now()), pts = Number.isInteger(body.pts) && body.pts > 0 && body.pts <= PTS.box ? body.pts : 0;
+          if (typeof body.key !== 'string' || body.key.length > 40 || I.keys.includes(body.key)) return ok({ dup: true, pts: 0 });
+          I.keys.push(body.key); if (I.keys.length > 40) I.keys.shift();
+          const give = Math.max(0, Math.min(pts, PTS.onlineDay - D.online)); D.online += give; addPts(I, give);
+          await store.put('acc', a); return ok({ pts: give });
+        }
       }
       // con sesión
       const s = await auth(token); if (!s) return err(401, 'session');
@@ -195,7 +229,31 @@ function account(store, opts) {
           a.friends[body.id] = { name: a.requests[body.id].name, since: now() }; delete a.requests[body.id]; await store.put('acc', a); return ok({ me: { id: a.id, name: a.name }, account: pub(a) });
         case 'rechazar': delete a.requests[body.id]; await store.put('acc', a); return ok({ account: pub(a) });
         case 'quitar': delete a.friends[body.id]; delete a.invites[body.id]; await store.put('acc', a); return ok({ me: { id: a.id }, account: pub(a) });
-        case 'yo-interno': return ok({ me: { id: a.id, name: a.name }, friends: a.friends });
+        case 'yo-interno': return ok({ me: { id: a.id, name: a.name, title: titleOf(inv(a)) }, friends: a.friends });
+        case 'abrir': {
+          const I = inv(a); if (I.boxes < 1) return err(409, 'no_boxes');
+          const r = IT.roll(u01(), u01(), I.items); I.boxes--;
+          if (r.item) I.items[r.item.id] = now(); else I.frag += r.frag;
+          await store.put('acc', a); return ok({ item: r.item ? r.item.id : null, frag: r.frag || 0, account: pub(a) });
+        }
+        case 'diaria': {
+          const I = inv(a), d = dayOf(now()); if (I.daily >= d) return err(409, 'daily_done');
+          I.daily = d; I.boxes = Math.min(PTS.maxBoxes, I.boxes + PTS.daily); await store.put('acc', a); return ok({ account: pub(a) });
+        }
+        case 'equipar': {
+          const I = inv(a); if (!IT.SLOTS[body.slot]) return err(400, 'slot');
+          if (body.id == null || body.id === '') delete I.equip[body.slot];
+          else { const it = IT.byId(body.id); if (!it || it.type !== body.slot) return err(400, 'item'); if (!I.items[it.id]) return err(403, 'not_owned'); I.equip[body.slot] = it.id; }
+          await store.put('acc', a); return ok({ account: pub(a) });
+        }
+        case 'partida': {   // una partida contra bots, contada por el navegador: tope diario y un minuto entre partidas
+          const I = inv(a), t = now(), D = today(I, t), secs = +body.secs;
+          if (!(secs >= PTS.minBotSecs && secs < 4 * 3600)) return err(400, 'short');
+          if (t - I.lastBots < PTS.botGapMs) return err(429, 'wait');
+          const give = Math.max(0, Math.min(body.won ? PTS.botWin : PTS.botLoss, PTS.botsDay - D.bots)), b0 = I.boxes;
+          I.lastBots = t; D.bots += give; addPts(I, give);
+          await store.put('acc', a); return ok({ pts: give, boxes: I.boxes - b0, account: pub(a) });
+        }
       }
       return err(404, 'action');
     } catch (e) { return err(400, 'bad'); }
@@ -265,6 +323,10 @@ async function api(path, body, authHeader, deps) {
       return ok({ account: r.body.account });
     }
     case '/cuenta/amigos/rechazar': return isId(body.id) ? me('rechazar', { id: body.id }, tok) : err(400, 'id');
+    case '/cuenta/caja/abrir': return me('abrir', {}, tok);
+    case '/cuenta/caja/diaria': return me('diaria', {}, tok);
+    case '/cuenta/equipar': return me('equipar', { slot: body.slot, id: body.id }, tok);
+    case '/cuenta/partida': return me('partida', { won: !!body.won, secs: body.secs }, tok);
     case '/cuenta/amigos/quitar': {
       if (!isId(body.id)) return err(400, 'id');
       const r = await me('quitar', { id: body.id }, tok); if (r.status !== 200) return r;
@@ -281,6 +343,30 @@ async function api(path, body, authHeader, deps) {
   return err(404, 'not_found');
 }
 
-const SDAccounts = { account, directory, api, isId, newId, cbor, authData, coseKey, derToRaw, b64u, unb64u, LIM };
+// ---- para el servidor de la sala (core/room.js: opts.account y opts.onOver), igual en Cloudflare y en Node
+// la ficha que manda el jugador al entrar en la sala → su cuenta comprobada { id, title } o null
+const TOKEN_RE = /^SD-[A-Z2-9]{4}-[A-Z2-9]{4}\.[A-Za-z0-9_-]{20,64}$/;
+async function roomAccount(tok, acc) {
+  if (typeof tok !== 'string' || !TOKEN_RE.test(tok)) return null;
+  const r = await acc(tok.split('.')[0])('yo-interno', {}, tok);
+  return r.status === 200 ? { id: r.body.me.id, title: r.body.me.title || '' } : null;
+}
+// fin de una partida online: puntos para cada cuenta. Hacen falta dos cuentas distintas y al menos un minuto jugado
+// (sin contar pausas); quien abandona no recibe nada. info: { code, match, winner, why, ms, acc: { A, B } }
+async function matchReward(info, acc) {
+  const ids = (info && info.acc) || {}, out = {};
+  if (!isId(ids.A) || !isId(ids.B) || ids.A === ids.B || !(info.ms >= PTS.minOnlineMs)) return out;
+  for (const seat of ['A', 'B']) {
+    let pts = 0;
+    if (info.why === 'bajas') pts = info.winner === null ? PTS.onlineDraw : info.winner === seat ? PTS.onlineWin : PTS.onlineLoss;
+    else if (info.why === 'abandono' && info.winner === seat) pts = PTS.abandonWin;
+    if (!pts) continue;
+    const r = await acc(ids[seat])('premio', { key: info.code + ':' + info.match + ':' + seat, pts });
+    out[seat] = r.status === 200 ? r.body.pts : 0;
+  }
+  return out;
+}
+
+const SDAccounts = { account, directory, api, roomAccount, matchReward, isId, newId, cbor, authData, coseKey, derToRaw, b64u, unb64u, LIM, PTS };
 if (typeof module !== 'undefined' && module.exports) module.exports = SDAccounts; else root.SDAccounts = SDAccounts;
 })(typeof window !== 'undefined' ? window : globalThis);

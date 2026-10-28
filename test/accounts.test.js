@@ -101,6 +101,62 @@ async function login(acc, o) {
   await api('/cuenta/salir', {}, H.token);
   check('salir: esa sesión ya no vale (las otras sí)', (await api('/cuenta/yo', {}, H.token)).status === 401 && (await api('/cuenta/yo', {}, l.body.token)).status === 200);
   check('basura en las rutas: 400 sin romperse', (await api('/cuenta/entrar', { cred: { userHandle: '!!', clientDataJSON: 5 } })).status === 400 && (await api('/cuenta/registrar', { id: 'x' })).status === 400);
+
+  console.log('\nINVENTARIO Y CAJAS');
+  const IT = require('../core/items.js'), P = IT.PTS;
+  const invOf = async acc => (await api('/cuenta/yo', {}, acc.token)).body.account.inv;
+  const K = await newAccount('Cajas');
+  let iv = await invOf(K);
+  check('cuenta nueva: una caja de bienvenida, sin objetos, caja diaria disponible', iv.boxes === 1 && iv.items.length === 0 && iv.daily === true && iv.pts === 0, JSON.stringify(iv).slice(0, 90));
+  check('caja diaria: una al día', (await api('/cuenta/caja/diaria', {}, K.token)).body.account.inv.boxes === 2 && (await api('/cuenta/caja/diaria', {}, K.token)).status === 409);
+  const o1 = await api('/cuenta/caja/abrir', {}, K.token), o2 = await api('/cuenta/caja/abrir', {}, K.token), o3 = await api('/cuenta/caja/abrir', {}, K.token);
+  iv = await invOf(K);
+  check('abrir: cada caja da un objeto que existe, distinto, y la caja se gasta; sin cajas, 409', o1.status === 200 && o2.status === 200 && IT.byId(o1.body.item) && IT.byId(o2.body.item) && o1.body.item !== o2.body.item && iv.boxes === 0 && iv.items.length === 2 && o3.status === 409, o1.body.item + ', ' + o2.body.item);
+  // the draw itself (core/items.js): rarity by the first number, never something you own, everything owned → fragments
+  const all = {}; for (const it of IT.ITEMS) all[it.id] = true;
+  const legOwned = {}; for (const it of IT.ITEMS) if (it.r === 'legendaria') legOwned[it.id] = true;
+  check('sorteo: 0,10 → común, 0,70 → rara, 0,90 → épica, 0,99 → legendaria', IT.roll(0.1, 0, {}).item.r === 'comun' && IT.roll(0.7, 0, {}).item.r === 'rara' && IT.roll(0.9, 0, {}).item.r === 'epica' && IT.roll(0.99, 0, {}).item.r === 'legendaria');
+  check('sorteo: con todas las legendarias, una legendaria se cambia por una épica; con todo, fragmentos', IT.roll(0.99, 0.5, legOwned).item.r === 'epica' && IT.roll(0.99, 0.5, all).frag === 50 && !IT.roll(0.5, 0.3, all).item);
+  { const r = () => Math.random(), n = 20000, c = { comun: 0, rara: 0, epica: 0, legendaria: 0 }; for (let i = 0; i < n; i++) c[IT.roll(r(), r(), {}).item.r]++;
+    check('sorteo: las probabilidades anunciadas (20 000 cajas, ±1,5 %)', Object.keys(c).every(k => Math.abs(c[k] / n - IT.RARITY[k].p) < 0.015), Object.keys(c).map(k => k + ' ' + (c[k] / n * 100).toFixed(1) + '%').join(' · ')); }
+  check('probabilidades: suman 100 %', Math.abs(IT.ORDER.reduce((s, k) => s + IT.RARITY[k].p, 0) - 1) < 1e-9);
+  // equip: only what you own, only in its slot
+  const ks = await stores.get(K.id).get('acc'); ks.inv.items.camo_oro = 1; ks.inv.items.tit_leyenda = 1; await stores.get(K.id).put('acc', ks);
+  const e1 = await api('/cuenta/equipar', { slot: 'camo', id: 'camo_oro' }, K.token);
+  const notOwned = IT.ITEMS.find(it => it.type === 'camo' && !(e1.body.account.inv.items.includes(it.id)));
+  check('equipar: lo tuyo sí; lo que no tienes, 403; en otro hueco o inventado, 400', e1.status === 200 && e1.body.account.inv.equip.camo === 'camo_oro'
+    && (await api('/cuenta/equipar', { slot: 'camo', id: notOwned.id }, K.token)).status === 403
+    && (await api('/cuenta/equipar', { slot: 'ret', id: 'camo_oro' }, K.token)).status === 400 && (await api('/cuenta/equipar', { slot: 'x', id: 'camo_oro' }, K.token)).status === 400);
+  await api('/cuenta/equipar', { slot: 'titulo', id: 'tit_leyenda' }, K.token);
+  check('el título equipado: en la cuenta y para la sala (roomAccount)', (await invOf(K)).title === 'LEYENDA' && JSON.stringify(await A.roomAccount(K.token, deps.acc)) === JSON.stringify({ id: K.id, title: 'LEYENDA' }));
+  check('roomAccount: una ficha falsa o inventada no vale', await A.roomAccount(K.id + '.' + 'x'.repeat(43), deps.acc) === null && await A.roomAccount('hola', deps.acc) === null);
+  check('quitar lo equipado (id null)', (await api('/cuenta/equipar', { slot: 'camo', id: null }, K.token)).body.account.inv.equip.camo === undefined);
+  // games against bots: counted by the browser → capped
+  check('contra bots: partida de menos de 45 s no suma', (await api('/cuenta/partida', { won: true, secs: 20 }, K.token)).status === 400);
+  const g1 = await api('/cuenta/partida', { won: true, secs: 300 }, K.token);
+  check('contra bots: ganar +25; otra antes de un minuto, 429', g1.status === 200 && g1.body.pts === P.botWin && g1.body.account.inv.pts === 25 && (await api('/cuenta/partida', { won: true, secs: 300 }, K.token)).status === 429);
+  let gotBots = 25; for (let i = 0; i < 6; i++) { T += 61000; gotBots += (await api('/cuenta/partida', { won: true, secs: 300 }, K.token)).body.pts; }
+  iv = await invOf(K);
+  check('contra bots: como mucho 100 puntos al día (una caja)', gotBots === P.botsDay && iv.boxes === 1 && iv.pts === 0 && iv.botsLeft === 0, gotBots + ' puntos, ' + iv.boxes + ' caja');
+  T += 86400000;
+  check('al día siguiente vuelve a sumar', (await api('/cuenta/partida', { won: false, secs: 300 }, K.token)).body.pts === P.botLoss);
+  // online: the room server gives the points at the end of the match (matchReward)
+  const L = await newAccount('Rival');
+  const before = { k: await invOf(K), l: await invOf(L) }, info = (o) => Object.assign({ code: 'ABC234', match: 1, winner: 'A', why: 'bajas', ms: 90000, acc: { A: K.id, B: L.id } }, o);
+  const rw1 = await A.matchReward(info(), deps.acc);
+  const after = { k: await invOf(K), l: await invOf(L) }, ptsOf = i => i.boxes * 100 + i.pts;
+  check('online: gana +100 y pierde +50', rw1.A === 100 && rw1.B === 50 && ptsOf(after.k) - ptsOf(before.k) === 100 && ptsOf(after.l) - ptsOf(before.l) === 50, JSON.stringify(rw1));
+  check('online: la misma partida no cuenta dos veces', JSON.stringify(await A.matchReward(info(), deps.acc)) === '{"A":0,"B":0}' && ptsOf(await invOf(K)) === ptsOf(after.k));
+  check('online: menos de 1 min jugado, una sola cuenta en los dos sitios o un invitado sin cuenta: nada',
+    JSON.stringify(await A.matchReward(info({ match: 2, ms: 59000 }), deps.acc)) === '{}' && JSON.stringify(await A.matchReward(info({ match: 3, acc: { A: K.id, B: K.id } }), deps.acc)) === '{}'
+    && JSON.stringify(await A.matchReward(info({ match: 4, acc: { A: K.id, B: null } }), deps.acc)) === '{}');
+  check('online: empate +75 a los dos; abandono: +50 al que se queda y nada al que se va',
+    JSON.stringify(await A.matchReward(info({ match: 5, winner: null }), deps.acc)) === '{"A":75,"B":75}' && JSON.stringify(await A.matchReward(info({ match: 6, winner: 'B', why: 'abandono' }), deps.acc)) === '{"B":50}');
+  let online = 0; for (let m = 10; m < 25; m++) { const r = await A.matchReward(info({ match: m }), deps.acc); online += r.A; }
+  check('online: tope de 1000 puntos al día (10 cajas)', (await invOf(K)).onlineLeft === 0 && online < 15 * 100, online + ' puntos más');
+  const full = await stores.get(K.id).get('acc'); full.inv.boxes = P.maxBoxes; full.inv.pts = 0; await stores.get(K.id).put('acc', full); T += 86400000;
+  await A.matchReward(info({ match: 40 }), deps.acc);
+  check('con 99 cajas guardadas no se pasa de 99 (los puntos esperan)', (await invOf(K)).boxes === P.maxBoxes && (await invOf(K)).pts === 99);
   console.log('\n' + pass + ' correctas, ' + fail + ' fallidas');
   process.exit(fail ? 1 : 0);
 })().catch(e => { console.log('  FAIL ' + (e && e.stack || e)); process.exit(1); });

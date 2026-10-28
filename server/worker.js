@@ -86,7 +86,10 @@ export class RoomDO {
   }
   makeRoom() {
     if (!INDEX) { INDEX = {}; for (const id in MAP.maps) INDEX[id] = G.createMapIndex(MAP.maps[id]); }
+    // cloud accounts: the room checks a player's session and, at the end, gives box points (server/accounts.js)
+    const acc = id => async (action, b, token) => { const ns = this.env.ACCOUNTS; const r = await ns.get(ns.idFromName(id)).fetch('https://acc/x', { method: 'POST', body: JSON.stringify({ action, body: b, token }) }); return r.json(); };
     this.room = SDRoom.create({ code: this.code, maps: MAP.maps, indexes: INDEX, defaultMap: 'arena', now: Date.now(),
+      account: tok => SDAccounts.roomAccount(tok, acc), onOver: info => SDAccounts.matchReward(info, acc),
       send: (c, t) => { const ws = this.socks.get(c); if (ws) try { ws.send(t); } catch (e) {} },
       close: (c, code, why) => { const ws = this.socks.get(c); if (ws) try { ws.close(code, why); } catch (e) {} },
       randBytes: n => crypto.getRandomValues(new Uint8Array(n)),
