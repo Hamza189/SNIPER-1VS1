@@ -1,5 +1,5 @@
 /* Perfil local en la página real (client/profile.js cableado en src/page.html):
-   - el botón PERFIL sale con ?pj=pro (y ?perfil=1) y no sin bandera
+   - el botón PERFIL sale sin bandera (por defecto es ?pj=pro desde el 28-10) y no con ?pj=0
    - el apodo del perfil es el nombre del online; cada partida terminada suma en las estadísticas y se guarda
    - el código de copia pasa el perfil a otro «dispositivo» (otro contexto del navegador); un código roto se rechaza
    Run: node test/profile.browser.test.js */
@@ -23,11 +23,11 @@ function check(name, cond, info) { if (cond) { pass++; console.log('  ok   ' + n
   };
   try {
     console.log('\nPERFIL EN LA PÁGINA');
-    const off = await open('');
-    check('sin bandera no hay botón PERFIL (el juego de siempre), pero el perfil existe', await off.p.evaluate(() => document.getElementById('openProfile').hidden && /^SD-/.test(__SD.PROFILE.id)));
+    const off = await open('&pj=0');
+    check('con ?pj=0 (el juego de antes) no hay botón PERFIL, pero el perfil existe', await off.p.evaluate(() => document.getElementById('openProfile').hidden && /^SD-/.test(__SD.PROFILE.id)));
     await off.ctx.close();
-    const A = await open('&pj=pro');
-    check('con ?pj=pro sale PERFIL junto a AJUSTES y se ve entero', await A.p.evaluate(() => { const r = document.getElementById('openProfile').getBoundingClientRect(); return !document.getElementById('openProfile').hidden && r.bottom <= innerHeight && r.right <= innerWidth; }));
+    const A = await open('');
+    check('sin bandera (= ?pj=pro desde el 28-10) sale PERFIL junto a AJUSTES y se ve entero, y el personaje es el SOLDADO', await A.p.evaluate(() => __SD.SKIN === 'soldado' && document.querySelectorAll('#skinGrid .skinCard').length === 5) && await A.p.evaluate(() => { const r = document.getElementById('openProfile').getBoundingClientRect(); return !document.getElementById('openProfile').hidden && r.bottom <= innerHeight && r.right <= innerWidth; }));
     await A.p.click('#openProfile');
     await A.p.fill('#profName', 'Hamza'); await A.p.press('#profName', 'Tab');
     check('el apodo del perfil es el nombre del online', await A.p.evaluate(() => __SD.PROFILE.name === 'Hamza' && document.getElementById('mpName').value === 'Hamza' && JSON.parse(localStorage.getItem('sniperduel_mpName')) === 'Hamza'));

@@ -6,7 +6,7 @@
      ready   { t, on }                       lobby: I am ready / not ready
      map     { t, id }                       lobby, creator only: choose the map ('pueblo', 'arena')
      kit     { t, id }                       my primary: 'rifle' (HALCÓN R7) or 'shotgun' (FURIA 12), used from my next spawn
-     skin    { t, id }                       my character (looks only): 'clasico', 'swat', 'fsb' or 'militar'
+     skin    { t, id }                       my character (looks only): 'soldado', 'clasico', 'swat', 'fsb' or 'militar'
      acct    { t, tok }                      my cloud account session (optional): title in the lobby, box points
      in      { t, m, s, c:[cmd...] }         commands of match m, first sequence number s
      rematch { t }                           after the end: play again
@@ -20,7 +20,7 @@
 'use strict';
 const VERSION = 1;
 // characters a player can show (looks only: the hit zones are the same for all)
-const SKINS = ['clasico', 'swat', 'fsb', 'militar'];
+const SKINS = ['clasico', 'swat', 'fsb', 'militar', 'soldado'];
 const LIMITS = {
   maxBytes: 4096,          // a bigger message is dropped
   maxMsgPerSec: 90,        // per connection; more is dropped, far more closes the socket

@@ -9,11 +9,11 @@ const mem = () => { const m = {}; return { getItem: k => (k in m ? m[k] : null),
 console.log('\nPERFIL LOCAL');
 const st = mem(), p = P.load(st);
 check('la primera vez crea un perfil con identificador SD-XXXX-XXXX y lo guarda', /^SD-[A-Z2-9]{4}-[A-Z2-9]{4}$/.test(p.id) && JSON.parse(st.m[P.KEY]).id === p.id, p.id);
-check('los cuatro personajes son tuyos y el elegido es el S.W.A.T.', p.owned.join() === 'swat,fsb,militar,clasico' && p.skin === 'swat');
+check('los cinco personajes son tuyos y el elegido es el SOLDADO', p.owned.join() === 'soldado,swat,fsb,militar,clasico' && p.skin === 'soldado');
 check('al volver a cargar es el mismo perfil', P.load(st).id === p.id);
 const broken = mem(); broken.setItem(P.KEY, '{"id":"<script>","name":"<b>Hamza</b>","skin":"robot","stats":{"kills":-5,"wins":"x","longest":1e9}}');
 const b = P.load(broken);
-check('lo guardado roto o editado a mano se limpia: id nuevo, nombre sin etiquetas, personaje válido, números sanos', /^SD-/.test(b.id) && b.name === 'bHamza/b' && b.skin === 'swat' && b.stats.kills === 0 && b.stats.wins === 0 && b.stats.longest === 2000, JSON.stringify(b).slice(0, 120));
+check('lo guardado roto o editado a mano se limpia: id nuevo, nombre sin etiquetas, personaje válido, números sanos', /^SD-/.test(b.id) && b.name === 'bHamza/b' && b.skin === 'soldado' && b.stats.kills === 0 && b.stats.wins === 0 && b.stats.longest === 2000, JSON.stringify(b).slice(0, 120));
 const bad = mem(); bad.setItem(P.KEY, 'no es json');
 check('texto que no es JSON: perfil nuevo', /^SD-/.test(P.load(bad).id));
 P.addMatch(p, { win: true, kills: 10, deaths: 4, hs: 3, shots: 20, hits: 12, longest: 187.6, online: true });

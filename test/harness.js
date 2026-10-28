@@ -36,7 +36,7 @@ function boot(opts) {
     matchMedia: q => ({ matches: !!opts.touch && /coarse/.test(q) }), AudioContext: undefined, navigator: { maxTouchPoints: opts.touch ? 5 : 0 },
     document, localStorage: { getItem: k => storage[k] ?? null, setItem: (k, v) => { storage[k] = v; } },
     performance: { now: () => clock.now }, requestAnimationFrame: cb => { rafCb = cb; }, screen: {},
-    URLSearchParams, location: { search: '', origin: 'http://test', pathname: '/' }, history: { replaceState() {} },
+    URLSearchParams, location: { search: opts.search || '', origin: 'http://test', pathname: '/' }, history: { replaceState() {} },
     setTimeout: (f) => 0, setInterval: () => 0, console, Math, JSON, Object, Array, Map, Set, Int32Array, Float32Array, Uint16Array, Uint32Array, Number, String, Symbol, Proxy, Error
   });
   if (opts.touch) ctx.ontouchstart = null;

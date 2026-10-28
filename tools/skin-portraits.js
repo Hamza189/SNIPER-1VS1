@@ -19,10 +19,13 @@ const OUT = path.join(__dirname, '..', 'assets', 'personaje', 'retratos');
   p.on('pageerror', e => console.log('error de la página: ' + e.message));
   await p.goto(srv.url + '?vm=1&pj=mix');
   await p.waitForFunction(() => window.__SD && __SD.WORLDS && __SD.VMA.ready, null, { timeout: 120000 });
-  for (const k of ['op2', 'op3', 'op4']) await p.evaluate(r => __SD.pj2Load(r), 'assets/personaje/pro/' + k + '/');
-  await p.waitForFunction(() => ['op2', 'op3', 'op4'].every(k => __SD.PJ2.tpls['assets/personaje/pro/' + k + '/']), null, { timeout: 240000 });
+  const roots = ['op2', 'op3', 'op4'].map(k => 'assets/personaje/pro/' + k + '/').concat('assets/personaje/');   // + SOLDADO (?pj=2)
+  for (const r of roots) await p.evaluate(r => __SD.pj2Load(r), r);
+  await p.waitForFunction(roots => roots.every(r => __SD.PJ2.tpls[r]), roots, { timeout: 240000 });
+  // ONLY=soldado node tools/skin-portraits.js → solo ese retrato
+  const only = process.env.ONLY ? process.env.ONLY.split(',') : null;
   await p.waitForTimeout(500);
-  for (const id of Object.keys(await p.evaluate(() => __SD.SKINS))) {
+  for (const id of Object.keys(await p.evaluate(() => __SD.SKINS)).filter(id => !only || only.includes(id))) {
     const url = await p.evaluate(id => {
       const S = __SD, T = THREE, r = S.renderer, cam = S.camera;
       const sc = new T.Scene();
