@@ -142,7 +142,8 @@ SD.setMode('range'); SD.startMatch();
 check('campo de tiro: 8 dianas vivas', SD.DUMMIES.filter(b => b.alive).length === 8 && SD.BOTS.every(b => !b.alive));
 SD.input.scope = true; const s0 = SD.STATS.shots;
 let presses = 0;
-for (let k = 0; k < 600; k++) { if (SD.WCORE.state === 'ready' && presses < 12) { SD.input.firePressed = true; presses++; } frames(1, 16); }
+// (with the scope held a press waits for the scope to come back after the bolt: quickscope, 28-10-2026; it is not pressed again)
+for (let k = 0; k < 600; k++) { if (SD.WCORE.state === 'ready' && !(SD.WCORE.fireBuf > 0) && presses < 12) { SD.input.firePressed = true; presses++; } frames(1, 16); }
 check('campo de tiro: cada pulsación con el arma lista dispara', SD.STATS.shots - s0 === presses, (SD.STATS.shots - s0) + '/' + presses);
 check('campo de tiro: el jugador no recibe daño', SD.P.hp === 100);
 // kill a dummy directly, it must come back after ~3 s

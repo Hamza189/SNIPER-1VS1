@@ -87,9 +87,15 @@ function tick(w, cmd, dt, ctx) {
     }
   }
 
+  // quickscope (28-10-2026): with the aim button held and the scope still coming up, the press waits for the scope
+  // picture (at most adsTime·scopeAt, 0.17 s) and the bullet leaves exactly along the reticle. Before, it left at once
+  // with half the hip spread (a hair-early click missed). Scoped weapons only; the same for both players and the server.
+  const raising = !!c.quickscope && canAds && w.ads < c.scopeAt;
+  if (raising && w.fireBuf > 0) w.fireBuf = Math.max(w.fireBuf, dt * 1.5);
+
   // trigger: fires on the same tick the bolt locks if the press was buffered
   if (hol) w.fireBuf = 0;
-  if (w.fireBuf > 0 && ctx.alive && w.state === 'ready' && w.sprintRecover <= 0) {
+  if (w.fireBuf > 0 && ctx.alive && w.state === 'ready' && w.sprintRecover <= 0 && !raising) {
     if (w.ammo > 0) {
       w.ammo--; w.shots++; w.fireBuf = 0;
       if (c.bloomPerShot) w.bloom = Math.min(c.bloomMax, (w.bloom || 0) + c.bloomPerShot);

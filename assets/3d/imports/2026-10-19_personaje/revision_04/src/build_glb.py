@@ -23,6 +23,10 @@ REV = HERE.parent
 WORK = Path(os.environ.get('SD_WORK', REV.parent / '.work' / 'rev04'))
 TEX = Path(os.environ.get('SD_TEX', REV / 'textures'))
 OUTD = Path(os.environ.get('SD_OUT', REV))
+# tools/personaje-ext: material de dos caras si el original lo usaba (ropa de una capa: cuellos, cintas, bolsillos);
+# si no, se ve a través de ellos de lado o por detrás
+_MJ = WORK / 'materials.json'
+DOUBLE = bool(os.environ.get('SD_WORK')) and _MJ.exists() and any(m.get('double') for m in json.loads(_MJ.read_text()))
 GEN = os.environ.get('SD_GEN', 'SNIPER DUEL personaje rev04 (MakeHuman CC0 + ropa/equipo/animación propios)')
 FPS = 30
 M = np.load(WORK / 'model.npz')
@@ -147,7 +151,7 @@ def write(path, texsuffix):
         doc['textures'].append({'sampler': 0, 'source': len(doc['images']) - 1})
     doc['materials'].append({'name': 'soldado', 'pbrMetallicRoughness': {'baseColorTexture': {'index': 0}, 'metallicRoughnessTexture': {'index': 2},
                              'metallicFactor': 1, 'roughnessFactor': 1}, 'normalTexture': {'index': 1, 'scale': 1.0},
-                             'occlusionTexture': {'index': 2, 'strength': 0.8}})
+                             'occlusionTexture': {'index': 2, 'strength': 0.8}, **({'doubleSided': True} if DOUBLE else {})})
     # huesos
     nid = []
     for b, n in enumerate(sk.names):

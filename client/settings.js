@@ -19,6 +19,7 @@ const DEFAULTS = {
   // crouch button/key: slide = tap to crouch, and after a slide you stand up on your own (phones) | toggle = tap in, tap out
   // (stays crouched after a slide) | hold = crouched while held (PC: C / Ctrl held, as always)
   crouchMode: 'hold',
+  view: 'fp',       // fp = 1ª persona | tp = 3ª persona (cámara detrás del hombro; con la mira, siempre 1ª persona)
   adsMode: 'holdDrag', // touch MIRA button: holdDrag (hold = aim, drag the same finger) | hold | toggle (tap in, tap out; turn with any free finger)
   adsH: 1,          // horizontal multiplier while aiming (any weapon)
   adsV: 1,          // vertical multiplier while aiming (any weapon)
@@ -39,7 +40,7 @@ const DEFAULTS = {
 };
 // which settings each tab of AJUSTES owns (its RESTAURAR resets only these)
 const CATEGORIES = {
-  controles: ['crouchMode', 'adsMode', 'leftFire', 'releaseFire', 'leanKeyL', 'leanKeyR', 'leanMode', 'leanTouch', 'wheelSwap'],
+  controles: ['view', 'crouchMode', 'adsMode', 'leftFire', 'releaseFire', 'leanKeyL', 'leanKeyR', 'leanMode', 'leanTouch', 'wheelSwap'],
   sensibilidad: ['sensH', 'sensV', 'adsSens', 'adsH', 'adsV', 'touchLook', 'touchDead', 'smooth', 'invertY'],
   graficos: ['quality', 'fpsCap', 'showFps'],
   audio: ['volMaster', 'volShots', 'volFx', 'volSteps', 'volAmb', 'mute'],
@@ -74,6 +75,7 @@ function sanitize(o, touch) {
   if (o.leanTouch === 'hold' || o.leanTouch === 'toggle') s.leanTouch = o.leanTouch;
   if (ADS_MODES.includes(o.adsMode)) s.adsMode = o.adsMode;
   if (CROUCH_MODES.includes(o.crouchMode)) s.crouchMode = o.crouchMode;
+  if (o.view === 'fp' || o.view === 'tp') s.view = o.view;
   if (['auto', 'bajo', 'medio', 'alto'].includes(o.quality)) s.quality = o.quality;
   if (o.fpsCap === 30 || o.fpsCap === 60) s.fpsCap = o.fpsCap;
   s.v = VERSION;

@@ -52,6 +52,7 @@ const SD_CONFIG = {
       adsTime: 0.2,        // s hip → scope
       adsOutTime: 0.1,     // s scope → hip
       scopeAt: 0.85,       // ADS progress at which the scope picture appears AND the shot becomes perfectly accurate
+      quickscope: true,    // a press while the scope comes up (aim held) waits for it instead of leaving inaccurate
       sprintOut: 0.1,      // s after sprinting before you can fire (a press in between is kept)
       fireBuffer: 0.12,    // s a trigger press is remembered (fires the instant the bolt locks)
       hipSpread: 0.05,     // rad, hip-fire cone

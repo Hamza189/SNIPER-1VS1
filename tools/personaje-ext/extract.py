@@ -208,11 +208,36 @@ if GLTF:
     dropm = np.array([any(p.search(n) for p in DROPMAT) for n in MATN] + [True])   # -1 (sin material) se quita
     fm = RD['FM'].copy(); fm[fm < 0] = len(MATN)
     keep_t &= ~dropm[fm]
+    # el material del juego es opaco: lo que en el original se ve a través (córnea con transmisión, tarjetas con alfa)
+    # se quita triángulo a triángulo mirando su textura (si se pintase opaco, los ojos salen blancos)
+    for i, m in enumerate(RD['mats']):
+        tf, mode = m.get('transFactor', 0.0), m['alpha']
+        if dropm[i] or (tf <= 0 and mode not in ('BLEND', 'MASK')):
+            continue
+        sel = np.where(keep_t & (fm == i))[0]
+        src = m.get('trans') if tf > 0 else m['color']
+        if not len(sel):
+            continue
+        if tf > 0 and not src:
+            see = np.full(len(sel), tf > 0.5)
+        elif isinstance(src, str) and os.path.exists(src):
+            img = bpy.data.images.load(src); w_, h_ = img.size
+            px = np.empty(w_ * h_ * img.channels, np.float32); img.pixels.foreach_get(px); px = px.reshape(h_, w_, img.channels)
+            uv = RD['UV'][RD['F'][sel]].mean(1) % 1.0          # glTF: v desde arriba; Blender: fila 0 abajo
+            xi = np.clip((uv[:, 0] * w_).astype(int), 0, w_ - 1); yi = np.clip(h_ - 1 - (uv[:, 1] * h_).astype(int), 0, h_ - 1)
+            if tf > 0:
+                see = px[yi, xi, 0] * tf > 0.5
+            else:
+                see = (px[yi, xi, 3] if img.channels > 3 else np.ones(len(sel))) * m.get('alphaFactor', 1.0) < m.get('cutoff', 0.5)
+        else:
+            continue
+        keep_t[sel[see]] = False
+        log('transparente fuera:', m['name'], int(see.sum()), 'de', len(sel), 'triángulos')
     for i, n in enumerate(MATN):
         if dropm[i]:
             log('quito material', n)
         elif RD['mats'][i]['alpha'] != 'OPAQUE':
-            log('aviso: material con transparencia', n, RD['mats'][i]['alpha'], '(en el juego será opaco)')
+            log('aviso: material con transparencia', n, RD['mats'][i]['alpha'], '(lo transparente se quita; el resto, opaco)')
     used = sorted(set(fm[keep_t].tolist()))
     remap = {m: i for i, m in enumerate(used)}
     mats = [RD['mats'][m] for m in used]
@@ -679,7 +704,32 @@ for i, tgt in enumerate(LOD):
     hw = sum(L['weights'][:, c] * np.isin(L['joints'][:, c], [GI['Head'], GI['Eyes']]) for c in range(4)) > 0.5
     v = L['pos'][hw] - [0, 1.63, 0]; d = np.linalg.norm(v, axis=1); over = d > 0.148
     v[over] *= (0.148 / d[over])[:, None]; L['pos'][hw] = v + [0, 1.63, 0]
-    log('LOD%d' % i, len(L['idx']), 'triángulos', len(L['pos']), 'vértices', '· cabeza recolocada', int(over.sum()))
+    # y el cuerpo, a su caja (tronco o piernas) con el mismo margen que el LOD0: el Decimate también lo empuja hacia fuera
+    moved_b = 0
+    if FM_ > 0:
+        ARMS = [GI[n] for n in ('LeftArm', 'LeftForeArm', 'LeftHand', 'LeftThumb', 'RightArm', 'RightForeArm', 'RightHand', 'RightThumb') if n in GI]
+        aw = sum(L['weights'][:, c] * np.isin(L['joints'][:, c], ARMS) for c in range(4)) > 0.5
+        bw = ~(hw | aw)
+        q = L['pos'][bw].copy()
+        BOX = [(1.17, .245, .31, .16), (.43, .19, .43, .11)]
+        exb = [np.linalg.norm(np.maximum(0, np.abs(q - [0, y, 0]) - [hx, hy, hz]), axis=1) for (y, hx, hy, hz) in BOX]
+        pick = exb[0] <= exb[1]
+        for bi, (y, hx, hy, hz) in enumerate(BOX):
+            sel = pick if bi == 0 else ~pick
+            d = q[sel] - [0, y, 0]
+            hh = np.tile([hx, hy, hz], (len(d), 1)).astype(float)
+            for ins in CFG.get('fitInset', []):
+                if ins.get('box', 'legs') != ('torso', 'legs')[bi]:
+                    continue
+                ax = 'xyz'.index(ins.get('axis', 'z'))
+                m_ = (q[sel][:, 1] >= ins['y'][0]) & (q[sel][:, 1] <= ins['y'][1]) & (np.sign(d[:, ax]) == ins.get('side', -1))
+                hh[m_, ax] -= ins.get('inset', 0.01)
+            lim = hh + FM_
+            nd = np.clip(d, -lim, lim)
+            moved_b += int((np.abs(nd - d) > 1e-6).any(1).sum())
+            q[sel] = nd + [0, y, 0]
+        L['pos'][bw] = q
+    log('LOD%d' % i, len(L['idx']), 'triángulos', len(L['pos']), 'vértices', '· cabeza recolocada', int(over.sum()), '· cuerpo recolocado', moved_b)
     for k, v in L.items():
         out['lod%d_%s' % (i, k)] = v
     out['lod%d_part' % i] = L['mat'].copy()
@@ -745,7 +795,7 @@ if GLTF:
         mr = tex_file(m['mr'], 'mr')
         d.update({'rough': mr, 'roughCh': 'G' if mr else None, 'metal': mr, 'metalCh': 'B' if mr else None,
                   'roughness': m['roughness'], 'metallic': m['metallic'], 'roughMul': m['roughness'], 'metalMul': m['metallic'],
-                  'ao': tex_file(m['ao'], 'ao'), 'alpha': m['alpha']})
+                  'ao': tex_file(m['ao'], 'ao'), 'alpha': m['alpha'], 'double': m.get('double', False)})
         MJ.append(d)
 for m in ([] if GLTF else mats):
     d = {'name': m.name}

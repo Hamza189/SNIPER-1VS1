@@ -568,6 +568,9 @@ body.hud2 #stickBase.sprint #stickKnob svg{display:block}
       <button type="button" role="tab" data-tab="controles" aria-selected="true">CONTROLES</button><button type="button" role="tab" data-tab="sensibilidad">SENSIBILIDAD</button><button type="button" role="tab" data-tab="graficos">GRÁFICOS</button><button type="button" role="tab" data-tab="audio">AUDIO</button><button type="button" role="tab" data-tab="jugabilidad">JUGABILIDAD</button><button type="button" role="tab" data-tab="accesibilidad">ACCESIBILIDAD</button>
     </nav>
     <section class="setPane" data-pane="controles" role="tabpanel">
+      <div class="lbl" style="margin:4px 0 6px">Vista (tecla V)</div>
+      <div class="seg" id="viewSeg" role="group" aria-label="Vista"><button type="button" data-v="fp">1ª PERSONA</button><button type="button" data-v="tp">3ª PERSONA</button></div>
+      <p class="setHelp">En 3ª persona la cámara va detrás de tu hombro y ves a tu personaje; al apuntar con la mira vuelves a 1ª persona. La bala sale siempre de tus ojos: la cruceta marca dónde va.</p>
       <div class="lbl" style="margin:4px 0 6px">Agacharse (botón AGACH y tecla C / Ctrl)</div>
       <div class="seg" id="crouchSeg" role="group" aria-label="Agacharse"><button type="button" data-c="slide">PULSAR · TE LEVANTAS AL DESLIZAR</button><button type="button" data-c="toggle">PULSAR</button><button type="button" data-c="hold">MANTENER</button></div>
       <p class="setHelp" id="crouchHelp"></p>
@@ -1722,6 +1725,7 @@ function setWorld(id){
   const half=casa?16:xl?26:62;if(sc.right!==half){sc.left=sc.bottom=-half;sc.right=sc.top=half;sc.updateProjectionMatrix();sunBiasFor(sun.shadow.mapSize.x);}
   if(casa)casaLoad();
   if(xl)casaxlLoad();
+  waterPolish();
 }
 
 /* =================== AUDIO =================== */
@@ -1913,9 +1917,28 @@ const WROOT=new T.Group();wScene.add(WROOT);
 const GUN=new T.Group();WROOT.add(GUN);
 const RIF={};
 // small environment map so metal reads as metal (without one, metallic surfaces render almost black)
+/* ?pulido=1 (28-10-2026, para comparar): el agua de las fuentes refleja el cielo y tiene ondas que se mueven (antes, un
+   plano verde opaco: el material del kit no recibía el reflejo). Solo aspecto. */
+const PULIDO=/[?&]pulido=1\b/.test(location.search);
+const WATER_N=PULIDO?(()=>{const n=128,c=document.createElement('canvas');c.width=c.height=n;const g=c.getContext('2d');if(!g)return null;
+  const im=g.createImageData(n,n),h=(x,y)=>Math.sin(2*Math.PI*(x*3+y*1)/n)*0.5+Math.sin(2*Math.PI*(x*-2+y*4)/n)*0.35+Math.sin(2*Math.PI*(x*5-y*2)/n)*0.2+Math.sin(2*Math.PI*(x*1+y*7)/n)*0.12;
+  for(let y=0;y<n;y++)for(let x=0;x<n;x++){const dx=h(x+1,y)-h(x-1,y),dy=h(x,y+1)-h(x,y-1),l=Math.hypot(dx,dy,0.6),i=(y*n+x)*4;
+    im.data[i]=(-dx/l*0.5+0.5)*255;im.data[i+1]=(-dy/l*0.5+0.5)*255;im.data[i+2]=(0.6/l*0.5+0.5)*255;im.data[i+3]=255;}
+  g.putImageData(im,0,0);const t=new T.CanvasTexture(c);t.wrapS=t.wrapT=T.RepeatWrapping;t.repeat.set(1.4,1.4);return t;})():null;
+function waterPolish(){
+  if(!PULIDO||!WATER_N)return;
+  const ms=new Set([MAT.water]);   // PUEBLO 2.0 (town_water), 3.0 (kit_water) and the old plane
+  scene.traverse(o=>{if(o.isMesh&&o.material&&(/_water$/.test(o.name)||o.material.name==='kit_water'))ms.add(o.material);});
+  for(const m of ms){
+    if(!m||m.userData.pulido)continue;m.userData.pulido=1;
+    // same colour as always; light moving ripples and a soft reflection of the sky
+    m.roughness=Math.min(m.roughness,0.12);if(!m.envMap){m.envMap=ENV;m.envMapIntensity=0.5;}
+    m.normalMap=WATER_N;m.normalScale=new T.Vector2(0.12,0.12);m.needsUpdate=true;}
+}
 const ENV=(()=>{const face=(top,mid,bot)=>{const c=document.createElement('canvas');c.width=c.height=64;const g=c.getContext('2d');if(g){const gr=g.createLinearGradient(0,0,0,64);gr.addColorStop(0,top);gr.addColorStop(0.5,mid);gr.addColorStop(1,bot);g.fillStyle=gr;g.fillRect(0,0,64,64);}return c;};
   const side=()=>face('#7d8fb0','#f1c08e','#b08a5e');
   const t=new T.CubeTexture([side(),side(),face('#9fb4d8','#9fb4d8','#9fb4d8'),face('#9a7a52','#9a7a52','#9a7a52'),side(),side()]);t.encoding=T.sRGBEncoding;t.needsUpdate=true;return t;})();   // painted in sRGB
+waterPolish();
 /* ---- hands for the viewmodels: gloved hands built from rounded pieces (palm, finger segments,
    thumb, wrist) and forearms that are NOT glued to the gun: every frame each sleeve runs from the
    wrist to an elbow that stays below the screen (HANDS.place), so turning the weapon never swings
@@ -3557,6 +3580,7 @@ window.addEventListener('keydown',e=>{
   if(e.code==='Escape'&&lockFailed){pause();return;}
   if(!input.keys[e.code]){
     if(e.code==='KeyC'||e.code==='ControlLeft'){input.crouchPressed=true;if(SETTINGS.crouchMode!=='hold')input.crouchHeld=!input.crouchHeld;}
+    if(e.code==='KeyV'){SETTINGS.view=SETTINGS.view==='tp'?'fp':'tp';settingsChanged();}   // 1ª / 3ª persona
     if(e.code==='Space')input.jumpPressed=true;
     if(e.code==='KeyR')input.reloadPressed=true;
     if(e.code==='KeyP')pause();
@@ -3831,7 +3855,8 @@ function btnPress(name,down,cancel){ // cancel: the system took the finger (call
     if(name==='fire'||name==='fire2'){
       input.fireHeld=false;
       // release-to-fire: the shot goes when the finger lifts, still with the rifle in hand
-      if(input.fireAim){input.fireAim=false;if(!cancel&&LOAD.active==='rifle'&&!LOAD.pending){input.firePressed=true;input.fireAimShot=GUNCFG.fireBuffer+0.02;}}
+      // (the scope keeps coming up until the shot: a quick tap is a quickscope, never a hip shot)
+      if(input.fireAim){input.fireAim=false;if(!cancel&&LOAD.active==='rifle'&&!LOAD.pending){input.firePressed=true;input.fireAimShot=Math.max(GUNCFG.fireBuffer,GUNCFG.adsTime*GUNCFG.scopeAt)+0.03;}}
     }
     return;
   }
@@ -3982,7 +4007,7 @@ const SET_UI=[['sH','sensH'],['sV','sensV'],['sA','adsSens'],['sAH','adsH'],['sA
 const SET_CHK=[['sInv','invertY'],['sLeft','leftFire'],['sRel','releaseFire'],['sShowFps','showFps'],['sCalm','calmVM'],['sMute','mute'],['sHit','hitmarkers'],['sDmg','dmgDir'],['sFlash','lowFlash']];
 const CROUCH_HELP={slide:'Un toque te agacha y otro te levanta. Si te deslizas corriendo, al acabar el deslizamiento te levantas solo.',toggle:'Un toque te agacha y otro te levanta; después de deslizarte sigues agachado.',hold:'Agachado mientras mantienes el botón o la tecla; al soltar te levantas.'};
 const ADS_HELP={holdDrag:'Mantén MIRA para apuntar y arrastra ese mismo dedo para mover la mira. Al soltar sales del visor.',hold:'Mantén MIRA para apuntar; la cámara se mueve con otro dedo. Al soltar sales del visor.',toggle:'Toca MIRA una vez para entrar en el visor y otra para salir. Mueve la cámara con cualquier dedo libre.'};
-function settingsToUI(){for(const [id,k] of SET_UI){$('#'+id).value=SETTINGS[k];$('#'+id+'o').textContent=/^vol/.test(k)?Math.round(SETTINGS[k]*100)+'%':(+SETTINGS[k]).toFixed(2);}for(const [id,k] of SET_CHK)$('#'+id).checked=!!SETTINGS[k];$('#sFps30').checked=SETTINGS.fpsCap===30;$('#sDiag').checked=TDIAG.on;$('#adsHelp').textContent=ADS_HELP[SETTINGS.adsMode]||'';document.querySelectorAll('#adsSeg button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.a===SETTINGS.adsMode)));document.querySelectorAll('#crouchSeg button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.c===SETTINGS.crouchMode)));$('#crouchHelp').textContent=CROUCH_HELP[SETTINGS.crouchMode]||'';document.querySelectorAll('#qSeg button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.q===SETTINGS.quality)));gfxNote();
+function settingsToUI(){for(const [id,k] of SET_UI){$('#'+id).value=SETTINGS[k];$('#'+id+'o').textContent=/^vol/.test(k)?Math.round(SETTINGS[k]*100)+'%':(+SETTINGS[k]).toFixed(2);}for(const [id,k] of SET_CHK)$('#'+id).checked=!!SETTINGS[k];$('#sFps30').checked=SETTINGS.fpsCap===30;$('#sDiag').checked=TDIAG.on;$('#adsHelp').textContent=ADS_HELP[SETTINGS.adsMode]||'';document.querySelectorAll('#adsSeg button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.a===SETTINGS.adsMode)));document.querySelectorAll('#crouchSeg button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.c===SETTINGS.crouchMode)));document.querySelectorAll('#viewSeg button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.v===SETTINGS.view)));$('#crouchHelp').textContent=CROUCH_HELP[SETTINGS.crouchMode]||'';document.querySelectorAll('#qSeg button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.q===SETTINGS.quality)));gfxNote();
   const g=(SETTINGS.sensH+SETTINGS.sensV)/2;$('#sens').value=g;$('#sensOut').textContent=g.toFixed(2);if(HUD2)h2SettingsToUI();}
 function applyControlSettings(){TOUCH.dragScope=SETTINGS.adsMode!=='hold';TOUCH.cfg.dead=SETTINGS.touchDead;MOTION=(reduceMotion||SETTINGS.calmVM)?0.35:1;if(SETTINGS.adsMode!=='toggle')input.scopeToggle=false;
   const B=document.body.classList;B.toggle('noHit',!SETTINGS.hitmarkers);B.toggle('noDmgDir',!SETTINGS.dmgDir);B.toggle('lowFlash',!!SETTINGS.lowFlash);}
@@ -4007,6 +4032,7 @@ $('#sFps30').addEventListener('change',()=>{SETTINGS.fpsCap=$('#sFps30').checked
 document.querySelectorAll('#qSeg button').forEach(b=>b.addEventListener('click',()=>{SETTINGS.quality=b.dataset.q;settingsChanged();SFX.ui();}));
 document.querySelectorAll('#adsSeg button').forEach(b=>b.addEventListener('click',()=>{SETTINGS.adsMode=b.dataset.a;settingsChanged();SFX.ui();}));
 document.querySelectorAll('#crouchSeg button').forEach(b=>b.addEventListener('click',()=>{SETTINGS.crouchMode=b.dataset.c;input.crouchHeld=false;settingsChanged();SFX.ui();}));
+document.querySelectorAll('#viewSeg button').forEach(b=>b.addEventListener('click',()=>{SETTINGS.view=b.dataset.v;settingsChanged();SFX.ui();}));
 $('#sDiag').addEventListener('change',()=>{TDIAG.set($('#sDiag').checked);TDIAG.reset();});
 let settingsFrom='menu';
 // tabs: one section at a time; the last one opened is remembered on this device
@@ -4325,6 +4351,60 @@ function applyLook(){
   WS.swayY=clamp(input.lookDY*0.0009,-0.05,0.05)*0.25*MOTION+WS.swayY*0.75;
   input.lookDX=0;input.lookDY=0;
 }
+/* 3ª PERSONA (28-10-2026, AJUSTES › CONTROLES › Vista o tecla V): la cámara se aparta detrás del hombro derecho sin
+   atravesar paredes y se ve tu personaje (el mismo soldado y animaciones que el rival; con ?pj=pro, el que elegiste).
+   Al apuntar con la mira vuelve a los ojos. De dónde sale la bala (AIM, los ojos) no cambia nunca: la cruceta se mueve
+   al punto real al que apuntas. Nada de esto llega al servidor. */
+const TP_OFF={r:0.55,u:0.22,b:2.3};
+const TPV={k:0,on:false,cx:0,cy:0,rayT:0,pt:new T.Vector3(),dir:new T.Vector3()};
+const SELF={g:null,rig:null,deadT:0,relW:0};
+function tpCamera(dt,ads,px,py,pz){
+  const want=SETTINGS.view==='tp'&&(state==='playing'||state==='dead'||state==='paused')?1:0;
+  TPV.k=damp(TPV.k,want,8,dt);
+  const k=TPV.k*(1-seg(ads,0.02,0.3));
+  TPV.on=k>0.3;
+  if(k>0.002){
+    const cp=Math.cos(AIM.pitch),fx=-Math.sin(AIM.yaw)*cp,fy=Math.sin(AIM.pitch),fz=-Math.cos(AIM.yaw)*cp;
+    _a.copy(camera.position);
+    _b.set(_rt.x*TP_OFF.r-fx*TP_OFF.b,TP_OFF.u-fy*TP_OFF.b,_rt.z*TP_OFF.r-fz*TP_OFF.b).multiplyScalar(k);
+    let len=_b.length();
+    if(len>1e-3){
+      _b.divideScalar(len);RAY.set(_a,_b);RAY.near=0;RAY.far=len+0.3;
+      const h=RAY.intersectObjects(W.ray,false);if(h.length)len=Math.max(0,h[0].distance-0.3);   // never through a wall
+      camera.position.addScaledVector(_b,len);
+      camera.position.y=Math.max(camera.position.y,py+0.35);
+    }
+  }
+  selfFrame(dt,px,py,pz);
+  // where the bullet really goes (from the eyes, along the aim): 20 times a second, then projected every frame
+  if(TPV.on){
+    TPV.rayT-=dt;
+    if(TPV.rayT<=0){TPV.rayT=0.05;const cp=Math.cos(AIM.pitch);TPV.dir.set(-Math.sin(AIM.yaw)*cp,Math.sin(AIM.pitch),-Math.cos(AIM.yaw)*cp);
+      _a.set(AIM.ox,AIM.oy,AIM.oz);RAY.set(_a,TPV.dir);RAY.near=0;RAY.far=400;const h=RAY.intersectObjects(shotTargets(),false);
+      TPV.pt.copy(_a).addScaledVector(TPV.dir,h.length?h[0].distance:400);}
+    camera.updateMatrixWorld();_a.copy(TPV.pt).project(camera);
+    TPV.cx=_a.z<1?_a.x*innerWidth/2:0;TPV.cy=_a.z<1?-_a.y*innerHeight/2:0;
+  }
+}
+// your own body for the 3rd person
+function selfFrame(dt,px,py,pz){
+  const show=TPV.on&&(state==='playing'||state==='dead'||state==='paused');
+  if(!show){if(SELF.g)SELF.g.visible=false;return;}
+  if(!SELF.g){const g=new T.Group();g.rotation.order='YXZ';SELF.g=g;SELF.rig=makeSoldier(RIVAL_MAT);g.add(SELF.rig.root);scene.add(g);
+    if(SKIN_ON)pj2SetPack(SELF.rig,SKINS[SKIN].pack);}
+  const R=SELF.rig,G=AG(),wp=LOAD.active==='knife'||LOAD.active==='pistol'||LOAD.active==='shotgun'?LOAD.active:'rifle';
+  SELF.deadT=P.alive?0:SELF.deadT+dt;
+  SELF.g.visible=P.alive||SELF.deadT<2.6;
+  SELF.g.position.set(px,py,pz);SELF.g.rotation.y=SDHitbox.bodyYaw(P.yaw);
+  const r=SELF.g.rotation.y,c=Math.cos(r),s=Math.sin(r),vx=P.alive?PM.vx:0,vz=P.alive?PM.vz:0;
+  const kk=SDHitbox.scaleOf(PM.eye),slide=PM.sliding?1:0,cr=slide?0:clamp((1-kk)/(1-MOVE.eyeCrouch/MOVE.eyeStand),0,1);
+  SELF.relW+=((G.state==='reload'?1:0)-SELF.relW)*Math.min(1,dt*8);
+  const relDur=wp==='pistol'?PCFG.reload:wp==='shotgun'?0.8:GUNCFG.reload;
+  animateSoldier(R,{far:false,vx:vx*c-vz*s,vz:vx*s+vz*c,crouch:cr,slide,air:!PM.onGround&&P.alive,sprint:!!PM.sprinting,aim:G.ads||0,
+    pitch:P.pitch,wpn:wp,reload:SELF.relW,relPh:G.state==='reload'?clamp(G.t/relDur,0,1):0,bolt:wp==='rifle'&&WCORE.state==='bolt'?clamp(WCORE.t/GUNCFG.bolt,0,1):0,
+    stab:0,dead:P.alive?0:Math.min(1,SELF.deadT/0.5)},dt);
+  SELF.g.rotation.x=R.v2||P.alive?0:-ss((SELF.deadT-0.12)/0.5)*Math.PI/2*0.95;
+}
 function updateCamera(dt,alpha){
   const G0=AG(),C0=ACFG(),iron=IRON();
   const ads=G0.ads,adsE=ss(ads),scoped=!iron&&ads>=GUNCFG.scopeAt,free=1-adsE;
@@ -4362,6 +4442,7 @@ function updateCamera(dt,alpha){
   camera.position.set(px+_rt.x*(P.leanOff+bobX),py+VM.eye+VM.land+bobY,pz+_rt.z*(P.leanOff+bobX));
   // what the player aims with (no recoil, no shake)
   AIM.ox=camera.position.x;AIM.oy=camera.position.y;AIM.oz=camera.position.z;AIM.yaw=P.yaw+swY;AIM.pitch=P.pitch+swP;
+  tpCamera(dt,ads,px,py,pz);
   // visual-only layers on top
   const shk=P.shake*FEEL.shake*MOTION*free*(SETTINGS.lowFlash?0.35:1);
   P.roll=P.alive?damp(P.roll,-P.lean*0.13+VM.slideW*0.07*free,10,dt):damp(P.roll,0.5,3,dt);
@@ -4394,6 +4475,7 @@ function updateCamera(dt,alpha){
   if(HUD2)h2Frame(showScope);
   // hip crosshair shows the real spread cone
   const cr=$('#cross');
+  {const t=TPV.on?'translate('+TPV.cx.toFixed(1)+'px,'+TPV.cy.toFixed(1)+'px)':'';if(cr.style.transform!==t)cr.style.transform=t;}
   const knife=LOAD.active==='knife';
   cr.classList.toggle('dot',knife);
   const showCross=knife?(P.alive&&!PM.sprinting):(ads<0.3&&!PM.sprinting&&P.alive&&AG().state!=='reload'&&LOAD.phase==='ready');
@@ -5011,7 +5093,7 @@ function kitNote(){const el=$('#kitNote');if(!el)return;const inMatch=state==='p
 document.querySelectorAll('.kitSeg button').forEach(b=>b.addEventListener('click',()=>{setPrimaryChoice(b.dataset.kit);audioInit();SFX.ui();}));
 setPrimaryChoice(PRIMARY);
 // your character (?pj=pro / ?pj=mix): chosen in the menu or the room before playing; the online rival sees it
-function setSkin(id){if(!SKINS[id])return;SKIN=id;store.set('skin',id);if(PROFILE.skin!==id){PROFILE.skin=id;SDProfile.save(LS,PROFILE);}skinUI();if(SKIN_ON&&NET.N&&NET.N.you)NET.N.chooseSkin(id);}
+function setSkin(id){if(!SKINS[id])return;SKIN=id;store.set('skin',id);if(SELF.rig&&SKIN_ON)pj2SetPack(SELF.rig,SKINS[id].pack);if(PROFILE.skin!==id){PROFILE.skin=id;SDProfile.save(LS,PROFILE);}skinUI();if(SKIN_ON&&NET.N&&NET.N.you)NET.N.chooseSkin(id);}
 function skinUI(){
   document.querySelectorAll('.skinPick').forEach(b=>{const im=b.querySelector('img'),src=skinImg(SKIN);if(im.getAttribute('src')!==src)im.src=src;b.querySelector('b').textContent=SKINS[SKIN].name;});
   document.querySelectorAll('.skinCard').forEach(c=>c.setAttribute('aria-pressed',String(c.dataset.skin===SKIN)));
@@ -5103,6 +5185,7 @@ function frameBody(now){
     if(Math.abs(camera.fov-BASE_FOV)>0.01){camera.fov=BASE_FOV;camera.updateProjectionMatrix();}
     WROOT.visible=false;KROOT.visible=false;PROOT.visible=false;SROOT.visible=false;
   }
+  if(WATER_N){WATER_N.offset.x+=fxdt*0.025;WATER_N.offset.y+=fxdt*0.011;}   // ?pulido=1: the water ripples move
   if(state!=='paused'){updateParts(fxdt);updateTracers(fxdt);for(const f of FLASHES){if(f.s.visible){f.t-=fxdt;if(f.t<=0)f.s.visible=false;}}}
   if(mode==='online')netFrame(rdt);
   updateDebug(rdt);
@@ -5120,7 +5203,7 @@ function frameBody(now){
   if(RATS.ready)ratsFrame(drawDt);
   if(FLORA.ready)FLORA.time.value=now/1000%1000;
   renderer.render(scene,camera);
-  if(!SHOT.noVM&&(WROOT.visible||KROOT.visible||PROOT.visible||SROOT.visible)&&(state==='playing'||state==='dead')){renderer.clearDepth();renderer.render(wScene,wCam);}
+  if(!SHOT.noVM&&!TPV.on&&(WROOT.visible||KROOT.visible||PROOT.visible||SROOT.visible)&&(state==='playing'||state==='dead')){renderer.clearDepth();renderer.render(wScene,wCam);}
   if(PERF.rec){const R=PERF.rec;if(R.last)R.dt.push(now-R.last);R.last=now;R.cpu.push(performance.now()-perfT0);R.calls.push(renderer.info.render.calls);R.tris.push(renderer.info.render.triangles);}
 }
 /* =================== MEDIR RENDIMIENTO (AJUSTES › GRÁFICOS, or ?medir=1; client/perfprobe.js) ===================
@@ -5226,6 +5309,7 @@ if(P3ON&&T.GLTFLoader){
     for(const m of r.meshes){scene.add(m);WORLDS.pueblo.objs.push(m);m.visible=WORLD_ID==='pueblo';P3W.meshes.push(m);}
     p3Signs(kit);
     if(DIAG_NOKITSH)for(const m of P3W.meshes)m.castShadow=false;   // &kitsombra=0 (diagnostic)
+    waterPolish();
     try{renderer.compile(scene,camera);}catch(e){}
   }catch(e){console.warn('kit',e);}},e=>console.warn('kit load',e));
 }
@@ -5367,6 +5451,6 @@ if(FLORA.on){const gl=new T.GLTFLoader();let n=2;
       // the town's ground must exist first (rays land on it)
       if(P3W.kit)go();else{const w=setInterval(()=>{if(P3W.kit){clearInterval(w);go();}},300);}}}}
 
-window.__SD={get PROFILE(){return PROFILE;},openProfile,endMatch,PJ_MIX,MIX_ORDER,SKINS,get SKIN(){return SKIN;},setSkin,pj2SetPack,rivalSkin,PERF,perfRun,HUD2,get H2(){return HUD2?H2:null;},leanIn:HUD2?leanIn:null,h2Frame:HUD2?h2Frame:null,PJ2,pj2Load,CASA,casaLoad,XL,casaxlLoad,FLORA,RATS,RAT_WORLD,ratsFrame,SHADOW_FADE,setDuelLethal,get DUEL_LETHAL(){return DUEL_LETHAL;},gfxDiagText,get P3ON(){return P3ON;},COBCC,damagePlayer,TEX,sunFollow,setSunSnap(on){SUN_SNAP=!!on;},sun,P0,E10,e10Lod,DIAG,setTrainMove,LIGHT:{sun,hemi,skyMat,LOOK,P3},P3W,freeze(on){SIM_FREEZE=!!on;},SHOT,VMA,makeSoldier,animateSoldier,BOT_MAT,scene,camera,RemotePlayer,PMprev,PIS,PROOT,RIF,WROOT,SHO_:null,MANUAL,advance(ms){frameBody(last+ms);},get LAST_PELLETS(){return LAST_PELLETS;},SCORE,SCFG,SROOT,SHO,setPrimaryChoice,get PRIMARY(){return PRIMARY;},PCORE,PCFG,setWorld,WORLDS,get WORLD_ID(){return WORLD_ID;},renderer,GFX,gfxApply,get NET(){return NET;},get REMOTE(){return REMOTE;},W,get NAV(){return NAV;},setOffMap,get OFFMAP(){return OFFMAP;},TOUCH,EDIT,openEditor,get SETTINGS(){return SETTINGS;},get LAYOUT(){return LAYOUT;},checkOrientation,MAT,LOAD,TRAINERS,get RANGE_BOTS(){return RANGE_BOTS;},TRAIN,setTrain,setLethal,kitNote,GINS,TDIAG,AU,get TOUCH_EVENTS(){return TOUCH_EVENTS;},impactFX,bodyFX,get DECALS(){return DECALS;},surfaceOf,soundDelay,aimSelfTest,P,PM,WS,WCORE,RECOIL,AIM,BOTS,DUMMIES,BULLETS,EVENTS,PARTS,STATS,get state(){return state;},get mode(){return mode;},setMode,input,startMatch,simTick,frame,toMenu,pause,resume};
+window.__SD={TPV,SELF,get PROFILE(){return PROFILE;},openProfile,endMatch,PJ_MIX,MIX_ORDER,SKINS,get SKIN(){return SKIN;},setSkin,pj2SetPack,rivalSkin,PERF,perfRun,HUD2,get H2(){return HUD2?H2:null;},leanIn:HUD2?leanIn:null,h2Frame:HUD2?h2Frame:null,PJ2,pj2Load,CASA,casaLoad,XL,casaxlLoad,FLORA,RATS,RAT_WORLD,ratsFrame,SHADOW_FADE,setDuelLethal,get DUEL_LETHAL(){return DUEL_LETHAL;},gfxDiagText,get P3ON(){return P3ON;},COBCC,damagePlayer,TEX,sunFollow,setSunSnap(on){SUN_SNAP=!!on;},sun,P0,E10,e10Lod,DIAG,setTrainMove,LIGHT:{sun,hemi,skyMat,LOOK,P3},P3W,freeze(on){SIM_FREEZE=!!on;},SHOT,VMA,makeSoldier,animateSoldier,BOT_MAT,scene,camera,RemotePlayer,PMprev,PIS,PROOT,RIF,WROOT,SHO_:null,MANUAL,advance(ms){frameBody(last+ms);},get LAST_PELLETS(){return LAST_PELLETS;},SCORE,SCFG,SROOT,SHO,setPrimaryChoice,get PRIMARY(){return PRIMARY;},PCORE,PCFG,setWorld,WORLDS,get WORLD_ID(){return WORLD_ID;},renderer,GFX,gfxApply,get NET(){return NET;},get REMOTE(){return REMOTE;},W,get NAV(){return NAV;},setOffMap,get OFFMAP(){return OFFMAP;},TOUCH,EDIT,openEditor,get SETTINGS(){return SETTINGS;},get LAYOUT(){return LAYOUT;},checkOrientation,MAT,LOAD,TRAINERS,get RANGE_BOTS(){return RANGE_BOTS;},TRAIN,setTrain,setLethal,kitNote,GINS,TDIAG,AU,get TOUCH_EVENTS(){return TOUCH_EVENTS;},impactFX,bodyFX,get DECALS(){return DECALS;},surfaceOf,soundDelay,aimSelfTest,P,PM,WS,WCORE,RECOIL,AIM,BOTS,DUMMIES,BULLETS,EVENTS,PARTS,STATS,get state(){return state;},get mode(){return mode;},setMode,input,startMatch,simTick,frame,toMenu,pause,resume};
 })();
 </script>

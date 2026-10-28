@@ -13,6 +13,7 @@ Detalle de cada cambio (antes/después, medidas, cómo revertir): `docs/next-lev
 |---|---|---|
 | **Personaje 3D (rev. 03) en bots y rival** — probarlo en `https://hamza189.github.io/SNIPER-1VS1/?pj=2` (PC, iPhone, Samsung) y decir si pasa a ser el de por defecto | Propietario | PUBLICADO TRAS BANDERA · PENDIENTE DE VALIDACIÓN EN IPHONE |
 | **Cuentas y monetización** — decidir los 5 puntos de `docs/CUENTAS-Y-MONETIZACION.md` §5 (passkeys en Cloudflare, portal web, pagos, cajas gratuitas, consulta de la baja) | Propietario | NECESITA APROBACIÓN |
+| **Probar 3ª persona (tecla V / AJUSTES) y el quickscope**; decidir si la 3ª persona se permite online y si el agua de `?pulido=1` pasa a ser la de siempre | Propietario | PUBLICADO · PENDIENTE DE VALIDACIÓN EN IPHONE |
 | **Elegir personaje y paso nuevo** — probar en `https://hamza189.github.io/SNIPER-1VS1/?pj=pro` (menú › Tu personaje; online con otro dispositivo) cómo andan de frente, de lado y en diagonal | Propietario | PUBLICADO TRAS BANDERA · PENDIENTE DE VALIDACIÓN EN IPHONE |
 | **Los 4 personajes a la vez contra bots** — `https://hamza189.github.io/SNIPER-1VS1/?pj=mix` (y medir con `&medir=1`) en iPhone y PC | Propietario | PUBLICADO TRAS BANDERA · PENDIENTE DE MEDIR EN IPHONE |
 | **Personajes realistas `?pj=pro`** — probar `https://hamza189.github.io/SNIPER-1VS1/?pj=pro` en ALTO (PC) y MEDIO (iPhone) y decidir si pasan a ser los de por defecto | Propietario | PUBLICADO TRAS BANDERA · PENDIENTE DE VALIDACIÓN EN IPHONE |
@@ -41,7 +42,7 @@ Detalle de cada cambio (antes/después, medidas, cómo revertir): `docs/next-lev
 | Perfil BAJO = PUEBLO 2.0 automáticamente; MEDIO/ALTO = PUEBLO 3.0 (mismas colisiones) | PENDIENTE |
 | Calidades por etapas: congelar lo hecho como BAJO (~finales de octubre), mejorar a MEDIO y luego ALTO (plan en la hoja de ruta) | PLANIFICADO |
 | Resto de la auditoría que no cambia reglas: seguridad del servidor (Q3, Q4, Q6, Q7), CI con `test:fast` y reversión (Q8), pruebas del Worker (Q9), navaja contra bots agachados (J4), daño del bot tras el retardo (J7), FUEGO doble táctil (J8), giro residual al reanudar (J9), textura de rata y E10 por perfil (R3, R4), unir mallas del kit (R6), partículas instanciadas (R8), liberar CASA al salir (R10), LOD y anisotropía (G4, G10, G11) | PENDIENTE |
-| Caras de los personajes (ojos blancos), contorno y sombras; LINCE y rev. 03 con el paso lateral nuevo | PENDIENTE |
+| Contorno y sombras de los personajes; ojos algo rojizos del MILITAR (textura original); LINCE y rev. 03 con el paso lateral nuevo; botón de vista en el HUD táctil | PENDIENTE |
 | Caso pequeño de z-fighting: piedra del kit contra estuco del pueblo (x ≈ 23–33, 4 puntos) | PENDIENTE |
 | Paredes blancas lisas de la CASA ATLAS original que deslumbran de cerca | PENDIENTE |
 
@@ -73,6 +74,19 @@ Detalle de cada cambio (antes/después, medidas, cómo revertir): `docs/next-lev
 | CASA ATLAS XL v2 de ChatGPT por defecto (mismas colisiones, detalle real) | 19-10 · directo a `main` |
 | Encargos para ChatGPT: CASA XL, CASA XL v2 y personaje | 18-10 / 19-10 |
 | Personaje 3D rev. 03 hecho por Claude e integrado tras `?pj=2` (bots y rival online) | 20-10 · directo a `main` |
+
+## 28-10-2026 — Personajes pulidos, quickscope, 3ª persona y agua (vídeo del propietario)
+Petición: personajes sin transparencias de lado y pulidos, ver en 3ª persona, mejorar el quickscope en PC y móvil y
+retocar el mapa. Sobre cobrar a nombre de su hermano: decisión suya (que lo confirme un gestor).
+- **Personajes** (S.W.A.T., FSB, MILITAR): sin agujeros en la cabeza, materiales de dos caras, ojos del FSB con iris,
+  LOD ajustados a sus cajas; zonas de impacto bien en los 3 LOD. Herramienta `tools/skin-turntable.js`. Detalle en
+  `docs/PERSONAJES-PRO.md`. IMPLEMENTADO · PROBADO EN NAVEGADOR.
+- **Quickscope** (`core/weapon.js`, servidor): con la mira subiendo el disparo espera a la mira (≤ 0,17 s) y sale exacto;
+  igual para todos. No cambia daño, cadencia, munición ni balística. `docs/VISTA-Y-QUICKSCOPE.md`. IMPLEMENTADO ·
+  PROBADO (núcleo, sala) · PENDIENTE DE VALIDACIÓN EN IPHONE.
+- **3ª persona**: AJUSTES › CONTROLES › Vista o tecla V; con la mira vuelve a 1ª. Solo visual. IMPLEMENTADO · PROBADO EN
+  NAVEGADOR. Online da ventaja al asomarse (como en cualquier juego): decide si se limita a 1ª persona en salas.
+- **Agua** de las fuentes tras `?pulido=1` (cambio sutil, para comparar). IMPLEMENTADO · PROBADO EN NAVEGADOR.
 
 ## 27-10-2026 (noche) — Elegir personaje, paso más natural y plan de cuentas y monetización
 Petición del propietario: el paso «parece un poco falso», las texturas tardan en cargar, elegir uno de los personajes

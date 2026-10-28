@@ -85,3 +85,17 @@ Cómo:
 3. Zonas de impacto: las tres, en sus 3 LOD, pasan `tools/check-character-hitbox.js` (±4 cm; los pies, dentro de la
    excepción ya aprobada de 45 cm en el eje de la marcha). `make.py` ya **no copia** al juego si alguna comprobación falla.
 LINCE (`?pj=3`) y la rev. 03 (`?pj=2`) llevan la mejora del punto 1, pero no se han regenerado con el clip lateral nuevo.
+
+## Pulido: sin transparencias, ojos y LOD (28-10-2026)
+El propietario (vídeo): «que no se vean transparentes de lado… que los 3 se vean pulidos». Revisado con
+`node tools/skin-turntable.js op2|op3|op4` (8 ángulos de cuerpo entero y de la cabeza, mismo motor que el juego):
+- **Agujeros en la cabeza** (FSB: se veía el cielo a través de la nuca y de la cara de lado): la opción `headDropOutside`
+  quitaba **piezas enteras** si un vértice salía más de 3 cm de la esfera, y se llevaba el pasamontañas. Quitada: ahora
+  todo entra en la esfera con la curva suave (`headFit`). El S.W.A.T. recupera sus gafas de visión nocturna.
+- **Una sola cara**: el conversor juntaba todo en un material de una cara y los originales usan ropa de **dos caras**
+  (cuellos, cintas, bolsillos). Ahora el GLB lleva `doubleSided` si el original lo usaba (los tres).
+- **Ojos blancos** (FSB): la córnea usa transmisión (`KHR_materials_transmission`) y, opaca, tapaba el iris. El
+  conversor quita los triángulos transparentes (transmisión o alfa) mirando su textura: 980 de córnea.
+- **LOD**: tras simplificar cada LOD, el cuerpo vuelve a su caja con el mismo margen que el LOD0 (el S.W.A.T. salía
+  4,2 cm en el LOD2). Los tres pasan las zonas de impacto en los 3 LOD con 0,4 cm en reposo.
+- Retratos rehechos (`node tools/skin-portraits.js`).

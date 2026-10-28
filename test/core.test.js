@@ -177,6 +177,23 @@ console.log('\nARMA');
   check('antes de la mira: dispersión reducida respecto a cadera', s1 < s0 && s1 > 0, (s0 * 1000).toFixed(1) + ' → ' + (s1 * 1000).toFixed(1) + ' mrad');
   check('cadera: moverse y saltar abre el cono', W.spread(w, { speed: 7, airborne: true }) > s0 * 2);
 }
+{ // quickscope (28-10-2026): apuntar + disparar a la vez (o un pelo antes de que salga la mira)
+  const ready = () => { const w = W.createState(rc), ctx = { sprinting: false, alive: true }; for (let i = 0; i < 70; i++) W.tick(w, {}, DT, ctx); return { w, ctx }; };
+  { const { w, ctx } = ready(); let t = 0, shot = null;
+    W.tick(w, { ads: true, fire: true }, DT, ctx); t += DT;
+    for (let i = 0; i < 60 && !shot; i++) { const ev = W.tick(w, { ads: true }, DT, ctx); t += DT; shot = ev.find(e => e.type === 'fire'); }
+    check('quickscope: apuntar y disparar en el mismo instante → el tiro espera a la mira y sale exacto', shot && shot.scoped && W.spread(w, { speed: 0 }) === 0 && t <= rc.adsTime * rc.scopeAt + DT * 2, t.toFixed(3) + ' s · ads ' + (shot && shot.ads.toFixed(2))); }
+  { const { w, ctx } = ready(); for (let i = 0; i < 9; i++) W.tick(w, { ads: true }, DT, ctx);
+    const a0 = w.ads, ev = W.tick(w, { ads: true, fire: true }, DT, ctx);
+    let shot = ev.find(e => e.type === 'fire'); for (let i = 0; i < 30 && !shot; i++) shot = W.tick(w, { ads: true }, DT, ctx).find(e => e.type === 'fire');
+    check('un pelo antes de que salga la mira (' + a0.toFixed(2) + '): ya no sale con dispersión, sale con la mira', shot && shot.scoped); }
+  { const { w, ctx } = ready(); const ev = W.tick(w, { fire: true }, DT, ctx);
+    check('sin apuntar el disparo de cadera sale en el acto (como siempre)', ev.some(e => e.type === 'fire' && !e.scoped)); }
+  { const { w, ctx } = ready(); for (let i = 0; i < 5; i++) W.tick(w, { ads: true }, DT, ctx);
+    W.tick(w, { ads: false, fire: true }, DT, ctx); const ev2 = W.tick(w, {}, DT, ctx);
+    check('si se suelta apuntar antes de la mira, no se queda el disparo colgado', w.state === 'bolt' || ev2.some(e => e.type === 'fire')); }
+  check('solo el rifle con mira: pistola y escopeta (miras de hierro) no esperan', rc.quickscope === true && !CFG.pistols.vibora.quickscope && !CFG.shotguns.furia.quickscope);
+}
 { const w = W.createState(rc); let ctx = { sprinting: true, alive: true };
   for (let i = 0; i < 70; i++) W.tick(w, { ads: true }, DT, ctx);
   check('esprintando no hay ADS', w.ads === 0);

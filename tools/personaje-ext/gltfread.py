@@ -158,7 +158,11 @@ def read(path):
     mats = []
     for m in J.get('materials', []):
         pbr = m.get('pbrMetallicRoughness', {})
+        tr = m.get('extensions', {}).get('KHR_materials_transmission', {})
+        bcf = pbr.get('baseColorFactor', [1, 1, 1, 1])
         mats.append({'name': m.get('name', 'mat%d' % len(mats)), 'color': tex_uri(pbr.get('baseColorTexture')),
+                     'trans': tex_uri(tr.get('transmissionTexture')), 'transFactor': tr.get('transmissionFactor', 0.0),
+                     'alphaFactor': bcf[3] if len(bcf) > 3 else 1.0, 'cutoff': m.get('alphaCutoff', 0.5), 'double': bool(m.get('doubleSided')),
                      'colorFactor': pbr.get('baseColorFactor', [1, 1, 1, 1])[:3], 'normal': tex_uri(m.get('normalTexture')),
                      'mr': tex_uri(pbr.get('metallicRoughnessTexture')), 'roughness': pbr.get('roughnessFactor', 1.0),
                      'metallic': pbr.get('metallicFactor', 1.0), 'ao': tex_uri(m.get('occlusionTexture')),

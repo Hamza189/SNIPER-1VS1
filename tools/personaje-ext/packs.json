@@ -28,7 +28,7 @@
     "KSVR",
     "Eyelash"
    ],
-   "headDropOutside": 0.03,
+   
    "fitInset": [
     {
      "box": "legs",
@@ -127,7 +127,7 @@
     "Null",
     "Krinkov"
    ],
-   "headDropOutside": 0.03,
+   
    "fitInset": [
     {
      "box": "legs",
