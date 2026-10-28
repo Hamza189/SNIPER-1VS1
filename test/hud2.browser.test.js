@@ -53,8 +53,11 @@ function fingers(cdp) {
   const b = await chromium.launch({ args: ARGS });
   const base = srv.url + '?perf=low';
   try {
-    console.log('\nSIN BANDERA (el juego de siempre)');
-    { const { ctx, p, errs } = await page(b, base);
+    console.log('\nCON ?hud=1 (el HUD anterior; sin bandera es el HUD 2 desde el 28-10)');
+    { const { ctx, p } = await page(b, base);
+      check('sin bandera el HUD es el HUD 2', await p.evaluate(() => __SD.HUD2 && document.body.classList.contains('hud2')));
+      await ctx.close(); }
+    { const { ctx, p, errs } = await page(b, base + '&hud=1');
       await start(p);
       const r = await p.evaluate(() => ({ bar: !!document.getElementById('wbar'), peek: !!document.getElementById('tbPeekL'), inv: !!document.getElementById('inv2'), cls: document.body.classList.contains('hud2'), ammo: getComputedStyle(document.getElementById('ammo')).display !== 'none', h2: __SD.HUD2 }));
       check('sin barra, sin botones de asomarse, sin inventario y con la munición de siempre', !r.bar && !r.peek && !r.inv && !r.cls && r.ammo && !r.h2);
@@ -228,8 +231,8 @@ function fingers(cdp) {
       const m = await p.evaluate(() => ({ fire: __SD.LAYOUT.buttons.fire, op: __SD.LAYOUT.opacity, peek: __SD.LAYOUT.buttons.peekL, saved: localStorage.getItem('sniperduel_hudLayout2') }));
       check('con ?hud=2 por primera vez: FUEGO sigue donde lo puso el jugador y aparecen los botones nuevos', m.fire.dx === 100 && m.fire.dy === 90 && m.op === 0.6 && m.peek && m.peek.dx === 50 && m.saved === null);
       await ctx.close();
-      const q = await page(b, base, { vp: { width: 844, height: 390 }, touch: true, storage });
-      check('y sin la bandera el diseño clásico sigue igual', await q.p.evaluate(() => __SD.LAYOUT.buttons.fire.dx === 100 && !__SD.LAYOUT.buttons.peekL));
+      const q = await page(b, base + '&hud=1', { vp: { width: 844, height: 390 }, touch: true, storage });
+      check('y con ?hud=1 (HUD anterior) el diseño clásico sigue igual', await q.p.evaluate(() => __SD.LAYOUT.buttons.fire.dx === 100 && !__SD.LAYOUT.buttons.peekL));
       check('sin errores de JavaScript', errs.length === 0 && q.errs.length === 0);
       await q.ctx.close(); }
 

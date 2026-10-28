@@ -1,6 +1,7 @@
 # HUD 2 — renovación del HUD y del equipamiento (`?hud=2`)
 
-Todo lo de este documento va tras la bandera `?hud=2`. Sin ella el juego es exactamente el de siempre.
+**Desde el 28-10-2026 el HUD 2 es el de por defecto** (aprobado por el propietario en iPhone y PC). El HUD anterior sigue
+disponible con `?hud=1`. (Antes todo esto iba tras la bandera `?hud=2`, que sigue funcionando.)
 Estado: ver la última sección.
 
 ## 1. Auditoría (24-10-2026, antes de tocar nada)
@@ -90,7 +91,7 @@ Opciones (necesitan tu aprobación porque cambian reglas del servidor):
   toca el DOM cuando cambia lo que se ve (~3 µs por fotograma medidos en el PC de pruebas).
 
 ## 6. Cómo volver atrás
-Basta con no usar `?hud=2`. Para quitarlo del código: revertir los commits «HUD 2: …». Los ajustes guardados del HUD 2
+Basta con abrir el juego con `?hud=1` (o volver a poner en `src/page.html` la condición `?hud=2`). Para quitarlo del código: revertir los commits «HUD 2: …». Los ajustes guardados del HUD 2
 (`sniperduel_hudLayout2` y las teclas de asomarse) no afectan al juego sin la bandera.
 
 ## 7. Añadido el 25-10-2026 (petición del propietario)

@@ -1914,7 +1914,7 @@ if (isNode) module.exports = SDPlayer; else root.SDPlayer = SDPlayer;
      ready   { t, on }                       lobby: I am ready / not ready
      map     { t, id }                       lobby, creator only: choose the map ('pueblo', 'arena')
      kit     { t, id }                       my primary: 'rifle' (HALCÓN R7) or 'shotgun' (FURIA 12), used from my next spawn
-     skin    { t, id }                       my character (looks only): 'clasico', 'swat', 'fsb' or 'militar'
+     skin    { t, id }                       my character (looks only): 'soldado', 'clasico', 'swat', 'fsb' or 'militar'
      acct    { t, tok }                      my cloud account session (optional): title in the lobby, box points
      in      { t, m, s, c:[cmd...] }         commands of match m, first sequence number s
      rematch { t }                           after the end: play again
@@ -1928,7 +1928,7 @@ if (isNode) module.exports = SDPlayer; else root.SDPlayer = SDPlayer;
 'use strict';
 const VERSION = 1;
 // characters a player can show (looks only: the hit zones are the same for all)
-const SKINS = ['clasico', 'swat', 'fsb', 'militar'];
+const SKINS = ['clasico', 'swat', 'fsb', 'militar', 'soldado'];
 const LIMITS = {
   maxBytes: 4096,          // a bigger message is dropped
   maxMsgPerSec: 90,        // per connection; more is dropped, far more closes the socket
@@ -2782,7 +2782,7 @@ function create(opts) {
   N.kit = 'rifle';
   N.chooseKit = id => { if (id !== 'rifle' && id !== 'shotgun') return; N.kit = id; out({ t: 'kit', id }); };
   N.skin = null;
-  N.chooseSkin = id => { if (!['clasico', 'swat', 'fsb', 'militar'].includes(id)) return; N.skin = id; out({ t: 'skin', id }); };
+  N.chooseSkin = id => { if (!['clasico', 'swat', 'fsb', 'militar', 'soldado'].includes(id)) return; N.skin = id; out({ t: 'skin', id }); };
   N.account = tok => { if (typeof tok === 'string') out({ t: 'acct', tok }); };   // my cloud account (server/accounts.js)
   N.leave = () => out({ t: 'leave' });
   N.ping = () => { N.lastPing = N.now(); out({ t: 'ping', c: N.now(), r: N.rtts.length ? Math.round(N.rtt) : undefined }); };
@@ -5078,7 +5078,7 @@ if (typeof module !== 'undefined' && module.exports) module.exports = SDSoldier2
 (function (root) {
 'use strict';
 const KEY = 'sniperduel_profile', V = 1;
-const SKINS = ['swat', 'fsb', 'militar', 'clasico'];   // los cuatro son gratis (ver core/protocol.js SKINS)
+const SKINS = ['soldado', 'swat', 'fsb', 'militar', 'clasico'];   // los cinco son gratis (ver core/protocol.js SKINS)
 const STATS = ['matches', 'wins', 'kills', 'deaths', 'hs', 'shots', 'hits', 'online', 'onlineWins'];
 const ID_ABC = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';   // sin 0/O ni 1/I
 
@@ -5088,7 +5088,7 @@ const int = (v, max) => { v = Math.floor(+v); return Number.isFinite(v) && v > 0
 
 function fresh(rand, now) {
   const stats = {}; for (const k of STATS) stats[k] = 0; stats.longest = 0;
-  return { v: V, id: newId(rand), name: '', created: now || Date.now(), skin: 'swat', owned: SKINS.slice(), stats };
+  return { v: V, id: newId(rand), name: '', created: now || Date.now(), skin: 'soldado', owned: SKINS.slice(), stats };
 }
 // whatever was stored (old version, edited by hand, half written): always a valid profile
 function clean(p, rand) {
@@ -5096,9 +5096,9 @@ function clean(p, rand) {
   if (!p || typeof p !== 'object') return f;
   const o = { v: V, id: typeof p.id === 'string' && /^SD-[A-Z2-9]{4}-[A-Z2-9]{4}$/.test(p.id) ? p.id : f.id, name: cleanName(p.name),
     created: int(p.created, 9e15) || f.created, stats: {} };
-  // hoy los cuatro son gratis; los objetos de pago (paso D) los concederá y guardará el servidor, nunca este archivo
+  // hoy los cinco son gratis; los objetos de pago (paso D) los concederá y guardará el servidor, nunca este archivo
   o.owned = SKINS.slice();
-  o.skin = o.owned.includes(p.skin) ? p.skin : 'swat';
+  o.skin = o.owned.includes(p.skin) ? p.skin : 'soldado';
   const st = p.stats || {};
   for (const k of STATS) o.stats[k] = int(st[k], 1e9);
   o.stats.longest = Math.min(2000, Math.max(0, Math.round(+st.longest || 0)));
@@ -5302,7 +5302,7 @@ const SDCamo = { draw, texture, detail, patch, swatch, SCALE };
 if (typeof module !== 'undefined' && module.exports) module.exports = SDCamo; else root.SDCamo = SDCamo;
 })(typeof window !== 'undefined' ? window : globalThis);
 
-const BUILD_ID="5050d82";const BUILD_HASH="e15866f11c";
+const BUILD_ID="10ab5f7";const BUILD_HASH="a116c34e6b";
 </script>
 <script>
 (function(){
@@ -5343,10 +5343,11 @@ const NO_SHADOWS=/[?&]sombras=0\b/.test(location.search);
    instead of a plain fade; 3) kill / headshot marker: bigger pop and held longer; 4) impacts on walls and ground grow with
    distance like the ones on bodies (far shots stay readable; the bullet hole keeps its real size) */
 const FEEL2=/[?&]feel=2\b/.test(location.search);if(FEEL2)document.body.classList.add('feel2');
-/* ?hud=2 (24-10-2026, docs/HUD-2.md): the new HUD to try before it replaces the current one: icon buttons, a weapon bar at the
-   bottom, a tactical inventory, peek buttons on touch, configurable peek keys and a fuller HUD editor. Presentation and input
-   only: the commands sent to the simulation and the server are the same ones as always (select, the existing camera lean) */
-const HUD2=/[?&]hud=2\b/.test(location.search)&&typeof SDHud2!=='undefined';if(HUD2)document.body.classList.add('hud2');
+/* HUD 2 (24-10-2026, docs/HUD-2.md): icon buttons, a weapon bar at the bottom, a tactical inventory, peek buttons on touch,
+   configurable peek keys and a fuller HUD editor. Presentation and input only: the commands sent to the simulation and the
+   server are the same ones as always (select, the existing camera lean). Default since 28-10-2026 (approved by the owner on
+   iPhone and PC); the old HUD: ?hud=1 */
+const HUD2=!/[?&]hud=1\b/.test(location.search)&&typeof SDHud2!=='undefined';if(HUD2)document.body.classList.add('hud2');
 /* more diagnostics for the stripes on the owner's laptop (audit 18-10-2026, docs/claude-code/SNIPER_DUEL_AUDIT_2026-10-18.md
    G1–G7). None of them changes what is drawn unless it is in the URL; gfxDiagText() lists the ones that are on:
    &near=0.2      camera near plane (default 0.05): 4× more depth precision → tells z-fighting of the painted bands (3–6 mm)
@@ -7185,7 +7186,9 @@ const SOLDIERS=[];
 /* ---- personaje 3D, revisión 03 (?pj=2, client/soldier2.js; 19-10-2026): sustituye la figura de cajas en bots y rival.
    Mientras carga (o si falla) se ve el soldado de siempre. Las zonas de impacto no cambian. Apariencias: rival B (oliva),
    bots del duelo 'bots' (gris), bots del campo de tiro A (arena). Perfil BAJO: texturas de 1024. ---- */
-const PJ_VERSION=new URLSearchParams(location.search).get('pj');
+/* 28-10-2026, aprobado por el propietario en iPhone y PC: sin bandera es ?pj=pro (personajes realistas y elegir personaje).
+   El de cajas de antes: ?pj=0. */
+const PJ_VERSION=new URLSearchParams(location.search).get('pj')||'pro';
 /* ?pj=pro (26-10-2026, docs/PERSONAJES-PRO.md): personajes realistas con licencia CC-BY convertidos con tools/personaje-ext,
    uno por calidad: ALTO → rival online 'op2' y bots 'op3' (texturas 4K); MEDIO → 'op4' para todos (2K); BAJO → el soldado
    de cajas de siempre. Mismo esqueleto, animaciones y morphs que ?pj=2: las zonas de impacto no cambian. */
@@ -7196,11 +7199,13 @@ const PJ_PRO=PJ_VERSION==='pro';
 const PJ_MIX=PJ_VERSION==='mix';
 const MIX_ORDER=['op2','op3','op4',null];
 /* elegir personaje (27-10-2026): con ?pj=pro o ?pj=mix cada jugador elige el suyo antes de la partida. Solo aspecto: las
-   zonas de impacto son las mismas. El rival online lo ve (mensaje 'skin' del servidor); en BAJO con ?pj=pro, el de cajas. */
-const SKINS={swat:{pack:'op2',name:'S.W.A.T.',by:'Mateusz Woliński · CC BY'},fsb:{pack:'op3',name:'FSB',by:'Mateusz Woliński · CC BY'},
+   zonas de impacto son las mismas. El rival online lo ve (mensaje 'skin' del servidor); en BAJO con ?pj=pro, el de cajas.
+   SOLDADO (28-10-2026) = el personaje de ?pj=2 (assets/personaje/), el que se elige si aún no has elegido. */
+const SKINS={soldado:{pack:'v2',name:'SOLDADO',by:'Sniper Duel'},swat:{pack:'op2',name:'S.W.A.T.',by:'Mateusz Woliński · CC BY'},fsb:{pack:'op3',name:'FSB',by:'Mateusz Woliński · CC BY'},
   militar:{pack:'op4',name:'MILITAR',by:'DanlyVostok · CC BY'},clasico:{pack:null,name:'CLÁSICO',by:'Sniper Duel'}};
 const SKIN_ON=PJ_PRO||PJ_MIX;
-let SKIN=SKINS[store.get('skin')]?store.get('skin'):'swat';
+let SKIN=SKINS[store.get('skin')]?store.get('skin'):'soldado';
+const packRoot=pack=>pack==='v2'?'assets/personaje/':'assets/personaje/pro/'+pack+'/';
 const LS=(()=>{try{return window.localStorage;}catch(e){return {getItem(){return null;},setItem(){}};}})();   // modo privado / iframe sin almacenamiento
 let PROFILE=SDProfile.load(LS);   // perfil local (client/profile.js)
 if(store.get('skin')==null&&SKINS[PROFILE.skin])SKIN=PROFILE.skin;else if(PROFILE.skin!==SKIN){PROFILE.skin=SKIN;SDProfile.save(LS,PROFILE);}
@@ -7210,7 +7215,7 @@ const PJ2={on:(['2','3'].includes(PJ_VERSION)||(PJ_PRO&&GFX.profile!=='bajo')||P
   tpls:{},loadingRoots:{},failedRoots:{}};
 // carpeta del personaje de cada apariencia (B rival online, bots, A campo de tiro)
 function pj2Root(v,R){
-  if(R&&R.skinPack!==undefined)return R.skinPack?'assets/personaje/pro/'+R.skinPack+'/':null;   // elegido por el jugador
+  if(R&&R.skinPack!==undefined)return R.skinPack?packRoot(R.skinPack):null;   // elegido por el jugador
   if(PJ_MIX){const k=R&&R.mixPack!==undefined?R.mixPack:'op2';return k?'assets/personaje/pro/'+k+'/':null;}
   if(!PJ_PRO)return PJ2.assetRoot;
   if(GFX.profile==='alto')return 'assets/personaje/pro/'+(v==='B'?'op2':'op3')+'/';
@@ -7261,7 +7266,7 @@ function pj2SetPack(R,pack){if(!PJ2.on||R.skinPack===pack)return;pj2Detach(R);R.
 function rivalSkin(){
   const N=NET.N;if(!N||!SKIN_ON||!PJ2.on)return;
   const op=(N.players||[]).find(p=>p&&p.id!==N.you),S=op&&SKINS[op.skin];if(!S)return;
-  if(S.pack)pj2Load('assets/personaje/pro/'+S.pack+'/');
+  if(S.pack)pj2Load(packRoot(S.pack));
   if(REMOTE)pj2SetPack(REMOTE.rig,S.pack);
 }
 function animateSoldier2(R,st,dt){

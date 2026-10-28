@@ -33,8 +33,8 @@ const zones = p => p.evaluate(() => __SD.BOTS.map(b => b.hit.map(m => [m.userDat
 (async () => {
   const srv = await ss.start();
   const b = await chromium.launch({ args: ['--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist'] });
-  console.log('\nSIN BANDERA');
-  const off = await open(b, srv.url + '?vm=1', 'alto');
+  console.log('\nCON ?pj=0 (el soldado de cajas; sin bandera es ?pj=pro desde el 28-10)');
+  const off = await open(b, srv.url + '?vm=1&pj=0', 'alto');
   const z0 = await zones(off.p);
   const offState = await off.p.evaluate(() => ({ on: __SD.PJ2.on, v2: __SD.BOTS.some(b => !!b.rig.v2) }));
   check('no se descarga nada del personaje y los bots son los de siempre', off.files.length === 0 && !offState.on && !offState.v2, off.files.join(' '));

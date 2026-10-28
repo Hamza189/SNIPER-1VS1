@@ -3,6 +3,10 @@
 Petición del propietario (26-10-2026): personajes realistas según la calidad gráfica, con el nº 4 para MEDIO, los nº 2 y
 3 como personajes principales en ALTO con texturas 4K, y los muñecos actuales para BAJO de momento.
 
+**Desde el 28-10-2026 es lo de por defecto** (aprobado en iPhone y PC): sin bandera el juego funciona como `?pj=pro`.
+Hay un 5º personaje para elegir, **SOLDADO** (`soldado`, el de `?pj=2`, `assets/personaje/`), que es el que se elige si
+aún no has elegido ninguno. El soldado de cajas de antes, sin elegir personaje: `?pj=0`.
+
 | Calidad | Personaje | Modelo original (Sketchfab, CC BY 4.0) | Triángulos (LOD0 / 1 / 2) | Texturas |
 |---|---|---|---|---|
 | ALTO · rival online | `assets/personaje/pro/op2` | «S.W.A.T. Operator - 4k Followers Special Remaster», Mateusz Woliński (jeandiz) | 36 600 / 12 000 / 3 000 | 4096 |

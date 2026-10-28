@@ -1,8 +1,11 @@
 /* Stage B integration test: the whole game booted as a TOUCH device (844×390 landscape),
    driven by pointer events on the touch layer. Not a real phone: no Safari/Chrome, no real
-   fingers, no rendering. Run: node test/touch.smoke.test.js */
+   fingers, no rendering. Run: node test/touch.smoke.test.js
+   Since 28-10-2026 the default is HUD 2 (tested with real touches in hud2.browser.test.js); this suite checks the classic
+   touch HUD, still available with ?hud=1. */
 'use strict';
-const { boot } = require('./harness.js');
+const { boot: boot0 } = require('./harness.js');
+const boot = o => boot0(Object.assign({ search: '?hud=1' }, o));
 let pass = 0, fail = 0;
 function check(name, cond, info) { if (cond) { pass++; console.log('  ok   ' + name + (info !== undefined ? '  (' + info + ')' : '')); } else { fail++; console.log('  FAIL ' + name + (info !== undefined ? '  (' + info + ')' : '')); } }
 

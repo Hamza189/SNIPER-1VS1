@@ -5,7 +5,7 @@
 (function (root) {
 'use strict';
 const KEY = 'sniperduel_profile', V = 1;
-const SKINS = ['swat', 'fsb', 'militar', 'clasico'];   // los cuatro son gratis (ver core/protocol.js SKINS)
+const SKINS = ['soldado', 'swat', 'fsb', 'militar', 'clasico'];   // los cinco son gratis (ver core/protocol.js SKINS)
 const STATS = ['matches', 'wins', 'kills', 'deaths', 'hs', 'shots', 'hits', 'online', 'onlineWins'];
 const ID_ABC = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';   // sin 0/O ni 1/I
 
@@ -15,7 +15,7 @@ const int = (v, max) => { v = Math.floor(+v); return Number.isFinite(v) && v > 0
 
 function fresh(rand, now) {
   const stats = {}; for (const k of STATS) stats[k] = 0; stats.longest = 0;
-  return { v: V, id: newId(rand), name: '', created: now || Date.now(), skin: 'swat', owned: SKINS.slice(), stats };
+  return { v: V, id: newId(rand), name: '', created: now || Date.now(), skin: 'soldado', owned: SKINS.slice(), stats };
 }
 // whatever was stored (old version, edited by hand, half written): always a valid profile
 function clean(p, rand) {
@@ -23,9 +23,9 @@ function clean(p, rand) {
   if (!p || typeof p !== 'object') return f;
   const o = { v: V, id: typeof p.id === 'string' && /^SD-[A-Z2-9]{4}-[A-Z2-9]{4}$/.test(p.id) ? p.id : f.id, name: cleanName(p.name),
     created: int(p.created, 9e15) || f.created, stats: {} };
-  // hoy los cuatro son gratis; los objetos de pago (paso D) los concederá y guardará el servidor, nunca este archivo
+  // hoy los cinco son gratis; los objetos de pago (paso D) los concederá y guardará el servidor, nunca este archivo
   o.owned = SKINS.slice();
-  o.skin = o.owned.includes(p.skin) ? p.skin : 'swat';
+  o.skin = o.owned.includes(p.skin) ? p.skin : 'soldado';
   const st = p.stats || {};
   for (const k of STATS) o.stats[k] = int(st[k], 1e9);
   o.stats.longest = Math.min(2000, Math.max(0, Math.round(+st.longest || 0)));

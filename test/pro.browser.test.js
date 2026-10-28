@@ -30,8 +30,8 @@ const zones = p => p.evaluate(() => __SD.BOTS.map(b => b.hit.map(m => [m.userDat
   const srv = await ss.start();
   const b = await chromium.launch({ args: ['--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist'] });
   try {
-    console.log('\nSIN BANDERA');
-    const off = await open(b, srv.url + '?vm=1', 'alto');
+    console.log('\nCON ?pj=0 (sin bandera es ?pj=pro desde el 28-10)');
+    const off = await open(b, srv.url + '?vm=1&pj=0', 'alto');
     const z0 = await zones(off.p);
     check('no descarga ningún personaje de pro/', off.files.length === 0);
     await off.ctx.close();
@@ -105,14 +105,16 @@ const zones = p => p.evaluate(() => __SD.BOTS.map(b => b.hit.map(m => [m.userDat
     };
     const OA = await on('fsb'), OB = await on('militar');
     const ui = await OA.p.evaluate(() => ({ shown: !document.getElementById('skinBlock').hidden, name: document.querySelector('#skinBlock .skinPick b').textContent, cards: document.querySelectorAll('#skinGrid .skinCard').length }));
-    check('el menú muestra «Tu personaje» con el elegido y la ventana tiene los 4', ui.shown && ui.name === 'FSB' && ui.cards === 4, JSON.stringify(ui));
+    check('el menú muestra «Tu personaje» con el elegido y la ventana tiene los 5 (con el SOLDADO de ?pj=2)', ui.shown && ui.name === 'FSB' && ui.cards === 5, JSON.stringify(ui));
     await OA.p.click('#mpBtn'); await OA.p.fill('#mpName', 'Hamza'); await OA.p.click('#mpCreate');
     await OA.p.waitForFunction(() => /^[A-Z0-9]{6}$/.test(document.getElementById('mpCodeBig').textContent), null, { timeout: 15000 });
     const code = await OA.p.textContent('#mpCodeBig');
     await OB.p.click('#mpBtn'); await OB.p.fill('#mpName', 'Novia'); await OB.p.fill('#mpCode', code); await OB.p.click('#mpJoin');
     const inLobby = await OA.p.waitForFunction(() => /MILITAR/.test(document.getElementById('mpPlayers').textContent) && /FSB/.test(document.getElementById('mpPlayers').textContent), null, { timeout: 15000 }).then(() => true, () => false);
     check('en la sala cada uno ve el personaje del otro', inLobby, await OA.p.textContent('#mpPlayers'));
-    // B cambia de personaje en la sala: A lo ve al momento
+    // B cambia de personaje en la sala: A lo ve al momento (el SOLDADO, nuevo el 28-10, lo acepta el servidor)
+    await OB.p.evaluate(() => __SD.setSkin('soldado'));
+    check('B cambia al SOLDADO en la sala y A lo ve', await OA.p.waitForFunction(() => /SOLDADO/.test(document.getElementById('mpPlayers').textContent), null, { timeout: 8000 }).then(() => true, () => false));
     await OB.p.evaluate(() => __SD.setSkin('swat'));
     check('B cambia a S.W.A.T. en la sala y A lo ve', await OA.p.waitForFunction(() => /S\.W\.A\.T\./.test(document.getElementById('mpPlayers').textContent), null, { timeout: 8000 }).then(() => true, () => false));
     await OA.p.click('#mpReady'); await OB.p.click('#mpReady');
@@ -124,6 +126,9 @@ const zones = p => p.evaluate(() => __SD.BOTS.map(b => b.hit.map(m => [m.userDat
     // cambiar el personaje dibujado vuelve a montar el modelo (CLÁSICO = el de cajas)
     const sw = await OA.p.evaluate(() => { const R = __SD.REMOTE.rig; __SD.pj2SetPack(R, null); const box = !R.v2 && R.root.children.some(c => c.visible); __SD.pj2SetPack(R, 'op2'); return { box, back: !!R.v2 }; });
     check('pasar al CLÁSICO vuelve a la figura de cajas y se puede volver', sw.box && sw.back, JSON.stringify(sw));
+    await OA.p.evaluate(() => __SD.pj2SetPack(__SD.REMOTE.rig, 'v2'));
+    const sol = await OA.p.waitForFunction(() => __SD.REMOTE.rig.v2 && __SD.PJ2.tpls['assets/personaje/'], null, { timeout: 180000 }).then(() => true, () => false);
+    check('el SOLDADO se dibuja con el personaje de ?pj=2 (assets/personaje/)', sol);
     check('sin errores en las dos páginas', OA.errs.length === 0 && OB.errs.length === 0, OA.errs.concat(OB.errs).slice(0, 3).join(' | '));
     await OA.ctx.close(); await OB.ctx.close(); await gs.close();
   } catch (e) { fail++; console.log('  FAIL ' + (e && e.stack || e)); }

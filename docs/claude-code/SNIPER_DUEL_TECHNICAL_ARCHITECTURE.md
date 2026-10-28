@@ -134,13 +134,14 @@ reconciliación, interpolación del rival 110 ms, ping) · `vmrig.js` (materiale
 | `?casa=1` / `?casa=0` | Muestra / oculta CASA ATLAS en los menús (se recuerda) |
 | `&techo=1` | Techo opcional en CASA ATLAS |
 | `?pj=2` | Personaje 3D (rev. 03, `client/soldier2.js`, `assets/personaje/`) en bots y rival online en vez de la figura de cajas; solo aspecto |
-| `?hud=2` | HUD 2: iconos, barra de armas, inventario, asomarse en móvil, teclas de asomarse y editor ampliado (`client/hud2.js`, `docs/HUD-2.md`); solo presentación y entrada |
+| (28-10) por defecto | Sin bandera = `?pj=pro` + `?hud=2`; personaje SOLDADO (el de `?pj=2`) elegible y el de por defecto. Volver a lo anterior: `?pj=0` (cajas) y `?hud=1` (HUD anterior) |
+| `?hud=2` | (por defecto desde el 28-10) HUD 2: iconos, barra de armas, inventario, asomarse en móvil, teclas de asomarse y editor ampliado (`client/hud2.js`, `docs/HUD-2.md`); solo presentación y entrada |
 | `?pj=mix` | Los 4 personajes a la vez contra bots (op2, op3, op4 y el de cajas; 4 bots; texturas 4K/2K/1K por calidad) para comparar y medir |
 | `?pj=pro` / `?pj=mix` (27-10) | Además: «Tu personaje» en el menú y la sala (mensaje `skin` del servidor) y botón PERFIL |
 | `?pj=pro` (28-10) | Además: PERFIL › Cuenta en la nube (passkeys, amigos, invitaciones; `server/accounts.js`, rutas `/cuenta/…` del Worker) y CAJAS (inventario en el servidor y cajas gratuitas: `core/items.js`, `client/camo.js`, mensaje `acct` de la sala; `docs/INVENTARIO-Y-CAJAS.md`) |
 | `?pulido=1` (28-10) | Agua de las fuentes con ondas en movimiento y reflejo suave (para comparar con la de siempre) |
 | `?perfil=1` | Botón PERFIL sin cambiar de personajes (perfil local: `client/profile.js`, `docs/CUENTAS-Y-MONETIZACION.md`) |
-| `?pj=pro` | Personajes realistas CC BY por calidad: ALTO op2 (rival) / op3 (bots) con 4K, MEDIO op4, BAJO soldado de cajas (`tools/personaje-ext`, `docs/PERSONAJES-PRO.md`) |
+| `?pj=pro` | (por defecto desde el 28-10) Personajes realistas CC BY por calidad: ALTO op2 (rival) / op3 (bots) con 4K, MEDIO op4, BAJO soldado de cajas (`tools/personaje-ext`, `docs/PERSONAJES-PRO.md`) |
 | `?pj=3` | Personaje LINCE (rev. 04, `assets/personaje/v4/`) en bots y rival online; solo aspecto |
 | `?medir=1` | Ejecuta MEDIR RENDIMIENTO al cargar (`client/perfprobe.js`, `docs/RENDIMIENTO-IPHONE.md`); `?medir=rapido` para pruebas |
 | `?town=0` | Pueblo original de cajas |
