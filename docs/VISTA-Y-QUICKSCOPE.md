@@ -18,7 +18,8 @@ el acto como siempre. En móvil, el toque rápido sigue subiendo la mira hasta e
 - Pruebas: `node test/core.test.js` (sección quickscope).
 
 ## 3ª persona (solo lo que se ve; el servidor no cambia)
-AJUSTES › CONTROLES › **Vista** (1ª / 3ª PERSONA) o la tecla **V** en el PC.
+AJUSTES › CONTROLES › **Vista** (1ª / 3ª PERSONA), la tecla **V** en el PC o, en el móvil, el botón **3ª / 1ª** de la pantalla
+(arriba a la derecha, encima de INSP; se puede mover con el editor de botones como los demás).
 - La cámara va detrás del hombro derecho (2,3 m atrás, 0,55 a la derecha) y se acerca si hay una pared detrás: nunca la
   atraviesa.
 - Se ve tu personaje con las mismas animaciones que el rival; con `?pj=pro` es el que elegiste.

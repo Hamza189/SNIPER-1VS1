@@ -563,6 +563,7 @@ body.hud2 #stickBase.sprint #stickKnob svg{display:block}
   <button class="tb" id="tbSwap" data-btn="swap" aria-label="Cambiar arma">ARMA</button>
   <button class="tb" id="tbInspect" data-btn="inspect" aria-label="Inspeccionar arma" hidden>INSP</button>
   <button class="tb" id="tbFire2" data-btn="fire2" aria-label="Disparar (izquierda)" hidden>FUEGO</button>
+  <button class="tb" id="tbView" data-btn="view" aria-label="Cambiar vista (1ª / 3ª persona)">3ª</button>
   <button class="tb" id="tbPause" data-btn="pause" aria-label="Pausa">II</button>
 </div>
 
@@ -2118,7 +2119,8 @@ const BUTTONS = {
   zoom:    { label: '8×',     anchor: 'br', dx: 63,  dy: 219, size: 46 },
   swap:    { label: 'ARMA',   anchor: 'br', dx: 202, dy: 190, size: 48 },
   inspect: { label: 'INSP',   anchor: 'br', dx: 63,  dy: 219, size: 46 },   // same spot as the zoom: INSP hides while aiming, the zoom only shows then
-  fire2:   { label: 'FUEGO',  anchor: 'bl', dx: 70,  dy: 232, size: 70 }
+  fire2:   { label: 'FUEGO',  anchor: 'bl', dx: 70,  dy: 232, size: 70 },
+  view:    { label: '3ª',     anchor: 'br', dx: 63,  dy: 268, size: 40 }    // 1ª / 3ª persona (28-10-2026), encima de INSP (se puede mover con el editor)
 };
 const SIZE = [36, 140], OPACITY = [0.3, 1];
 
@@ -4984,7 +4986,7 @@ const SDProfile = { KEY, SKINS, fresh, clean, load, save, addMatch, summary, exp
 if (typeof module !== 'undefined' && module.exports) module.exports = SDProfile; else root.SDProfile = SDProfile;
 })(typeof window !== 'undefined' ? window : globalThis);
 
-const BUILD_ID="b5f5ed5";const BUILD_HASH="300f415cd5";
+const BUILD_ID="f79a543";const BUILD_HASH="56ee4928e8";
 </script>
 <script>
 (function(){
@@ -8020,6 +8022,7 @@ function btnPress(name,down,cancel){ // cancel: the system took the finger (call
     case 'pause':pause();break;
     case 'swap':{input.fireAim=false;const cur=LOAD.pending||LOAD.active;input.select=cur==='rifle'||cur==='shotgun'?'pistol':cur==='pistol'?'knife':'rifle';break;}
     case 'inspect':input.inspect=true;break;
+    case 'view':SETTINGS.view=SETTINGS.view==='tp'?'fp':'tp';settingsChanged();SFX.ui();break;   // 1ª / 3ª persona
     case 'peekL':case 'peekR':h2PeekPress(name==='peekL'?'L':'R');break;
   }
 }
@@ -8157,7 +8160,8 @@ function settingsToUI(){for(const [id,k] of SET_UI){$('#'+id).value=SETTINGS[k];
   const g=(SETTINGS.sensH+SETTINGS.sensV)/2;$('#sens').value=g;$('#sensOut').textContent=g.toFixed(2);if(HUD2)h2SettingsToUI();}
 function applyControlSettings(){TOUCH.dragScope=SETTINGS.adsMode!=='hold';TOUCH.cfg.dead=SETTINGS.touchDead;MOTION=(reduceMotion||SETTINGS.calmVM)?0.35:1;if(SETTINGS.adsMode!=='toggle')input.scopeToggle=false;
   const B=document.body.classList;B.toggle('noHit',!SETTINGS.hitmarkers);B.toggle('noDmgDir',!SETTINGS.dmgDir);B.toggle('lowFlash',!!SETTINGS.lowFlash);}
-function settingsChanged(){SETTINGS=SDSettings.sanitize(SETTINGS,isTouch);SDSettings.save(store,SETTINGS,isTouch);gfxApply();applyControlSettings();audioLevels();settingsToUI();}
+function settingsChanged(){SETTINGS=SDSettings.sanitize(SETTINGS,isTouch);SDSettings.save(store,SETTINGS,isTouch);gfxApply();applyControlSettings();audioLevels();settingsToUI();
+  const vb=document.getElementById('tbView');if(vb)vb.textContent=SETTINGS.view==='tp'?'1ª':'3ª';}   // the touch button shows the view it switches to
 // graphics: profile, adaptive resolution and FPS cap applied live (antialiasing only on reload)
 function gfxApply(){
   if(PERF_LOW)return;
@@ -8198,7 +8202,7 @@ $('#setClose').addEventListener('click',()=>{closeSettings();SFX.ui();});
 $('#setReset').addEventListener('click',()=>{SFX.ui();if(!resetArm||performance.now()-resetArm>4000){resetConfirm(true);return;}resetConfirm(false);SETTINGS=SDSettings.defaults(isTouch);settingsChanged();});
 $('#setResetTab').addEventListener('click',()=>{SFX.ui();SETTINGS=SDSettings.resetCategory(SETTINGS,setTab,isTouch);settingsChanged();});
 $('#openEditor').addEventListener('click',()=>{SFX.ui();openEditor();});
-settingsToUI();applyControlSettings();showSetTab(setTab);
+settingsToUI();applyControlSettings();showSetTab(setTab);{const vb=document.getElementById('tbView');if(vb)vb.textContent=SETTINGS.view==='tp'?'1ª':'3ª';}
 
 /* ---- portrait warning (a web page cannot always force landscape) ---- */
 function checkOrientation(){

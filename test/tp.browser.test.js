@@ -49,6 +49,27 @@ function check(name, cond, info) { if (cond) { pass++; console.log('  ok   ' + n
     check('V otra vez: 1ª persona como siempre', fp && await p.evaluate(() => __SD.SETTINGS.view === 'fp' && document.getElementById('cross').style.transform === ''));
     check('sin errores', errs.length === 0, errs.slice(0, 2).join(' | '));
     await ctx.close();
+
+    console.log('\n3ª PERSONA EN EL MÓVIL (botón en pantalla)');
+    const mc = await b.newContext({ viewport: { width: 844, height: 390 }, hasTouch: true, isMobile: true });
+    await mc.route(/fonts\.(googleapis|gstatic)\.com/, r => r.abort());
+    await mc.addInitScript(() => { try { localStorage.setItem('sniperduel_settings', JSON.stringify({ quality: 'medio', v: 3 })); } catch (e) {} });
+    const m = await mc.newPage(), merrs = [];
+    m.on('pageerror', e => merrs.push(e.message));
+    await m.goto(srv.url + '?vm=1&pj=pro');
+    await m.waitForFunction(() => window.__SD && __SD.WORLDS, null, { timeout: 120000 });
+    await m.evaluate(() => { __SD.setDuelLethal(false); __SD.setMode('duel'); __SD.setOffMap('arena'); __SD.startMatch(); });
+    await m.waitForTimeout(800);
+    const vb = await m.evaluate(() => { const e = document.getElementById('tbView'), r = e.getBoundingClientRect(); return { shown: !e.hidden && r.width > 0 && r.top >= 0 && r.left >= 0, label: e.textContent }; });
+    await m.tap('#tbView');
+    const on = await m.waitForFunction(() => __SD.SETTINGS.view === 'tp' && __SD.TPV.on, null, { timeout: 60000 }).then(() => true, () => false);
+    const lbl = await m.textContent('#tbView');
+    check('el botón «3ª» se ve en la pantalla y al tocarlo pasa a 3ª persona (y pasa a decir «1ª»)', vb.shown && vb.label === '3ª' && on && lbl === '1ª', JSON.stringify(vb) + ' → ' + lbl);
+    if (process.env.SHOTS) { await m.waitForTimeout(1500); await m.screenshot({ path: process.env.SHOTS + '/tp-movil.png' }); }
+    await m.tap('#tbView');
+    check('otro toque: vuelve a 1ª persona', await m.waitForFunction(() => __SD.SETTINGS.view === 'fp', null, { timeout: 5000 }).then(() => true, () => false) && await m.textContent('#tbView') === '3ª');
+    check('móvil sin errores', merrs.length === 0, merrs.slice(0, 2).join(' | '));
+    await mc.close();
   } catch (e) { fail++; console.log('  FAIL ' + (e && e.stack || e)); }
   await b.close(); srv.close();
   console.log('\n' + pass + ' correctas, ' + fail + ' fallidas');

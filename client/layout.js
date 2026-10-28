@@ -16,7 +16,8 @@ const BUTTONS = {
   zoom:    { label: '8×',     anchor: 'br', dx: 63,  dy: 219, size: 46 },
   swap:    { label: 'ARMA',   anchor: 'br', dx: 202, dy: 190, size: 48 },
   inspect: { label: 'INSP',   anchor: 'br', dx: 63,  dy: 219, size: 46 },   // same spot as the zoom: INSP hides while aiming, the zoom only shows then
-  fire2:   { label: 'FUEGO',  anchor: 'bl', dx: 70,  dy: 232, size: 70 }
+  fire2:   { label: 'FUEGO',  anchor: 'bl', dx: 70,  dy: 232, size: 70 },
+  view:    { label: '3ª',     anchor: 'br', dx: 63,  dy: 268, size: 40 }    // 1ª / 3ª persona (28-10-2026), encima de INSP (se puede mover con el editor)
 };
 const SIZE = [36, 140], OPACITY = [0.3, 1];
 

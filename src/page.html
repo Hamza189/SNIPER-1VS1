@@ -550,6 +550,7 @@ body.hud2 #stickBase.sprint #stickKnob svg{display:block}
   <button class="tb" id="tbSwap" data-btn="swap" aria-label="Cambiar arma">ARMA</button>
   <button class="tb" id="tbInspect" data-btn="inspect" aria-label="Inspeccionar arma" hidden>INSP</button>
   <button class="tb" id="tbFire2" data-btn="fire2" aria-label="Disparar (izquierda)" hidden>FUEGO</button>
+  <button class="tb" id="tbView" data-btn="view" aria-label="Cambiar vista (1ª / 3ª persona)">3ª</button>
   <button class="tb" id="tbPause" data-btn="pause" aria-label="Pausa">II</button>
 </div>
 
@@ -3874,6 +3875,7 @@ function btnPress(name,down,cancel){ // cancel: the system took the finger (call
     case 'pause':pause();break;
     case 'swap':{input.fireAim=false;const cur=LOAD.pending||LOAD.active;input.select=cur==='rifle'||cur==='shotgun'?'pistol':cur==='pistol'?'knife':'rifle';break;}
     case 'inspect':input.inspect=true;break;
+    case 'view':SETTINGS.view=SETTINGS.view==='tp'?'fp':'tp';settingsChanged();SFX.ui();break;   // 1ª / 3ª persona
     case 'peekL':case 'peekR':h2PeekPress(name==='peekL'?'L':'R');break;
   }
 }
@@ -4011,7 +4013,8 @@ function settingsToUI(){for(const [id,k] of SET_UI){$('#'+id).value=SETTINGS[k];
   const g=(SETTINGS.sensH+SETTINGS.sensV)/2;$('#sens').value=g;$('#sensOut').textContent=g.toFixed(2);if(HUD2)h2SettingsToUI();}
 function applyControlSettings(){TOUCH.dragScope=SETTINGS.adsMode!=='hold';TOUCH.cfg.dead=SETTINGS.touchDead;MOTION=(reduceMotion||SETTINGS.calmVM)?0.35:1;if(SETTINGS.adsMode!=='toggle')input.scopeToggle=false;
   const B=document.body.classList;B.toggle('noHit',!SETTINGS.hitmarkers);B.toggle('noDmgDir',!SETTINGS.dmgDir);B.toggle('lowFlash',!!SETTINGS.lowFlash);}
-function settingsChanged(){SETTINGS=SDSettings.sanitize(SETTINGS,isTouch);SDSettings.save(store,SETTINGS,isTouch);gfxApply();applyControlSettings();audioLevels();settingsToUI();}
+function settingsChanged(){SETTINGS=SDSettings.sanitize(SETTINGS,isTouch);SDSettings.save(store,SETTINGS,isTouch);gfxApply();applyControlSettings();audioLevels();settingsToUI();
+  const vb=document.getElementById('tbView');if(vb)vb.textContent=SETTINGS.view==='tp'?'1ª':'3ª';}   // the touch button shows the view it switches to
 // graphics: profile, adaptive resolution and FPS cap applied live (antialiasing only on reload)
 function gfxApply(){
   if(PERF_LOW)return;
@@ -4052,7 +4055,7 @@ $('#setClose').addEventListener('click',()=>{closeSettings();SFX.ui();});
 $('#setReset').addEventListener('click',()=>{SFX.ui();if(!resetArm||performance.now()-resetArm>4000){resetConfirm(true);return;}resetConfirm(false);SETTINGS=SDSettings.defaults(isTouch);settingsChanged();});
 $('#setResetTab').addEventListener('click',()=>{SFX.ui();SETTINGS=SDSettings.resetCategory(SETTINGS,setTab,isTouch);settingsChanged();});
 $('#openEditor').addEventListener('click',()=>{SFX.ui();openEditor();});
-settingsToUI();applyControlSettings();showSetTab(setTab);
+settingsToUI();applyControlSettings();showSetTab(setTab);{const vb=document.getElementById('tbView');if(vb)vb.textContent=SETTINGS.view==='tp'?'1ª':'3ª';}
 
 /* ---- portrait warning (a web page cannot always force landscape) ---- */
 function checkOrientation(){
