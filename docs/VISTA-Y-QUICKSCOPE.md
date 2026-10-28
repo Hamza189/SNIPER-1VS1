@@ -24,6 +24,6 @@ AJUSTES › CONTROLES › **Vista** (1ª / 3ª PERSONA) o la tecla **V** en el P
 - Se ve tu personaje con las mismas animaciones que el rival; con `?pj=pro` es el que elegiste.
 - **Con la mira vuelve a 1ª persona exacta.** La bala sale siempre de los ojos; en 3ª persona la cruceta se mueve al
   punto real donde va la bala.
-- **Ojo, online:** como en todos los juegos con 3ª persona, la cámara puede ver tras una esquina antes de asomar el cuerpo.
-  Si no lo quieres en las partidas online, se puede limitar a 1ª persona en salas (decisión del propietario).
+- **Online:** como en todos los juegos con 3ª persona, la cámara puede ver tras una esquina antes de asomar el cuerpo.
+  **Decisión del propietario (28-10-2026): se permite también en las partidas online** (cada jugador elige su vista).
 - Prueba: `node test/tp.browser.test.js`.

@@ -13,7 +13,7 @@ Detalle de cada cambio (antes/después, medidas, cómo revertir): `docs/next-lev
 |---|---|---|
 | **Personaje 3D (rev. 03) en bots y rival** — probarlo en `https://hamza189.github.io/SNIPER-1VS1/?pj=2` (PC, iPhone, Samsung) y decir si pasa a ser el de por defecto | Propietario | PUBLICADO TRAS BANDERA · PENDIENTE DE VALIDACIÓN EN IPHONE |
 | **Cuentas y monetización** — decidir los 5 puntos de `docs/CUENTAS-Y-MONETIZACION.md` §5 (passkeys en Cloudflare, portal web, pagos, cajas gratuitas, consulta de la baja) | Propietario | NECESITA APROBACIÓN |
-| **Probar 3ª persona (tecla V / AJUSTES) y el quickscope**; decidir si la 3ª persona se permite online y si el agua de `?pulido=1` pasa a ser la de siempre | Propietario | PUBLICADO · PENDIENTE DE VALIDACIÓN EN IPHONE |
+| **Probar 3ª persona (tecla V / AJUSTES; permitida online) y el quickscope**; decidir si el agua de `?pulido=1` pasa a ser la de siempre | Propietario | PUBLICADO · PENDIENTE DE VALIDACIÓN EN IPHONE |
 | **Elegir personaje y paso nuevo** — probar en `https://hamza189.github.io/SNIPER-1VS1/?pj=pro` (menú › Tu personaje; online con otro dispositivo) cómo andan de frente, de lado y en diagonal | Propietario | PUBLICADO TRAS BANDERA · PENDIENTE DE VALIDACIÓN EN IPHONE |
 | **Los 4 personajes a la vez contra bots** — `https://hamza189.github.io/SNIPER-1VS1/?pj=mix` (y medir con `&medir=1`) en iPhone y PC | Propietario | PUBLICADO TRAS BANDERA · PENDIENTE DE MEDIR EN IPHONE |
 | **Personajes realistas `?pj=pro`** — probar `https://hamza189.github.io/SNIPER-1VS1/?pj=pro` en ALTO (PC) y MEDIO (iPhone) y decidir si pasan a ser los de por defecto | Propietario | PUBLICADO TRAS BANDERA · PENDIENTE DE VALIDACIÓN EN IPHONE |
@@ -85,7 +85,7 @@ retocar el mapa. Sobre cobrar a nombre de su hermano: decisión suya (que lo con
   igual para todos. No cambia daño, cadencia, munición ni balística. `docs/VISTA-Y-QUICKSCOPE.md`. IMPLEMENTADO ·
   PROBADO (núcleo, sala) · PENDIENTE DE VALIDACIÓN EN IPHONE.
 - **3ª persona**: AJUSTES › CONTROLES › Vista o tecla V; con la mira vuelve a 1ª. Solo visual. IMPLEMENTADO · PROBADO EN
-  NAVEGADOR. Online da ventaja al asomarse (como en cualquier juego): decide si se limita a 1ª persona en salas.
+  NAVEGADOR. **Decisión del propietario: también en las partidas online** (cada jugador elige su vista).
 - **Agua** de las fuentes tras `?pulido=1` (cambio sutil, para comparar). IMPLEMENTADO · PROBADO EN NAVEGADOR.
 
 ## 27-10-2026 (noche) — Elegir personaje, paso más natural y plan de cuentas y monetización
