@@ -10,8 +10,8 @@ const ss = require('../tools/static-server.js');
 let pass = 0, fail = 0;
 function check(name, cond, info) { if (cond) { pass++; console.log('  ok   ' + name + (info !== undefined ? '  (' + info + ')' : '')); } else { fail++; console.log('  FAIL ' + name + (info !== undefined ? '  (' + info + ')' : '')); } }
 
-async function open(b, url, q) {
-  const ctx = await b.newContext({ viewport: { width: 640, height: 360 } });
+async function open(b, url, q, phone) {
+  const ctx = await b.newContext(phone ? { viewport: { width: 844, height: 390 }, hasTouch: true, isMobile: true } : { viewport: { width: 640, height: 360 } });
   await ctx.route(/fonts\.(googleapis|gstatic)\.com/, r => r.abort());
   await ctx.addInitScript(q => { try { localStorage.setItem('sniperduel_settings', JSON.stringify({ quality: q, v: 3 })); } catch (e) {} }, q);
   const p = await ctx.newPage(), bad = [], files = [], errs = [];
@@ -55,6 +55,12 @@ const zones = p => p.evaluate(() => __SD.BOTS.map(b => b.hit.map(m => [m.userDat
       for (let i = 0; i < 20; i++) S.animateSoldier(R, st({ crouch: 1 }), 1 / 60); const crouch = head();
       return { stand, crouch, morph: I.meshes[0].morphTargetInfluences[I.meshes[0].morphTargetDictionary.agachado] }; });
     check('se anima con las animaciones del juego: agachado baja la cabeza con el morph', r2.morph > 0.99 && r2.crouch < r2.stand - 0.3, r2.stand.toFixed(2) + ' → ' + r2.crouch.toFixed(2) + ' m');
+    // phones (28-10-2026): Safari on the iPhone closed the page with the 4K characters (340 MB each): never more than 2K there
+    { const M = await open(b, srv.url + '?vm=1&pj=pro', 'alto', true);
+      const okM = await M.p.waitForFunction(() => __SD.BOTS.length && __SD.BOTS.every(b => b.rig.v2), null, { timeout: 180000 }).then(() => true, () => false);
+      const rm = await M.p.evaluate(() => ({ roots: Object.keys(__SD.PJ2.tpls).sort().join(' '), tex: __SD.BOTS[0].rig.v2.meshes[0].material.map.image.width }));
+      check('en un móvil con ALTO: los mismos personajes (FSB en los bots) pero con texturas de 2K, nunca 4K', okM && rm.tex === 2048 && /op3/.test(rm.roots) && !M.files.some(f => /personaje\.glb/.test(f) && /op[23]/.test(f)), rm.roots + ' · ' + rm.tex + ' · ' + M.files.join(' '));
+      await M.ctx.close(); }
     check('créditos CC BY 4.0 en AJUSTES › GRÁFICOS', await A.p.evaluate(() => /Mateusz Woliński/.test(document.getElementById('credits').textContent) && /DanlyVostok/.test(document.getElementById('credits').textContent) && /CC BY 4\.0/.test(document.getElementById('credits').textContent)));
     await A.ctx.close();
 

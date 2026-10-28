@@ -2839,6 +2839,13 @@ if(!PROFILE.name&&store.get('mpName','')){PROFILE.name=SDProfile.clean({name:sto
 const skinImg=id=>'assets/personaje/retratos/'+id+'.jpg?v='+BUILD_HASH;
 const PJ2={on:(['2','3'].includes(PJ_VERSION)||(PJ_PRO&&GFX.profile!=='bajo')||PJ_MIX)&&typeof SDSoldier2!=='undefined',assetRoot:PJ_VERSION==='3'?'assets/personaje/v4/':'assets/personaje/',tpl:null,mats:{},list:[],loading:false,failed:false,
   tpls:{},loadingRoots:{},failedRoots:{}};
+/* móviles y tabletas (28-10-2026): el iPhone cerraba la página («ha generado un problema repetidamente») en cuanto empezaba
+   una partida con personajes realistas en ALTO o con varios personajes distintos. Memoria gráfica medida de cada personaje:
+   4K 340 MB (S.W.A.T., FSB), 2K 85 MB, 1K 21 MB. En pantallas táctiles nunca se carga uno de 4K (no cabe, y en un móvil
+   no se distingue del 2K): todos a 2K, la calidad que el propietario aprobó en el iPhone; los mismos personajes que en PC.
+   Para tener el detalle de 4K en el móvil con la misma memoria haría falta comprimir las texturas en la GPU (KTX2). En PC
+   no cambia nada. */
+const PJ2_PHONE=isTouch;
 // carpeta del personaje de cada apariencia (B rival online, bots, A campo de tiro)
 function pj2Root(v,R){
   if(R&&R.skinPack!==undefined)return R.skinPack?packRoot(R.skinPack):null;   // elegido por el jugador
@@ -2852,7 +2859,7 @@ const _pj2v=new T.Vector3();
 // tamaño de las texturas de cada personaje: BAJO 1K; en MEDIO, los de 4K (op2/op3) a 2K
 function pj2Suffix(root){
   if(GFX.profile==='bajo')return '_1k';
-  if((PJ_MIX||PJ_PRO)&&GFX.profile!=='alto'&&/\/(op2|op3)\/$/.test(root))return '_2k';
+  if((PJ_MIX||PJ_PRO)&&(GFX.profile!=='alto'||PJ2_PHONE)&&/\/(op2|op3)\/$/.test(root))return '_2k';   // phones: never 4K
   return '';
 }
 function pj2Load(root){

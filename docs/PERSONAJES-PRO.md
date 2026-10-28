@@ -46,6 +46,32 @@ Sin la bandera nada cambia. `?pj=2` (rev. 03) y `?pj=3` (LINCE) siguen como esta
 - Descarga: op2 15 MB, op3 12 MB (solo en ALTO), op4 5,6 MB (MEDIO).
 - Pruebas: `node test/soldier2.test.js` (contrato y zonas de los tres), `node test/pro.browser.test.js` (ALTO, MEDIO, BAJO).
 
+## Móviles: nunca texturas de 4K (28-10-2026)
+- **Qué pasaba**: en el iPhone, Safari cerraba la página («ha generado un problema repetidamente») en cuanto empezaba
+  una partida.
+  - Pasaba contra bots offline, online y en salas.
+  - El propietario tenía calidad ALTO, S.W.A.T. elegido y 3ª persona.
+  - Con `?pj=0` funcionaba. En Chrome del mismo iPhone también: cada navegador guarda sus ajustes, y en Chrome estaba
+    la calidad por defecto.
+- **Memoria gráfica medida de cada personaje**:
+
+| Personaje | 4K | 2K | 1K |
+|---|---|---|---|
+| S.W.A.T. (op2) y FSB (op3) | 340 MB | 85 MB | 21 MB |
+| MILITAR (op4) | — | 85 MB | 21 MB |
+| SOLDADO | — | 64 MB | 16 MB |
+
+  En ALTO, el rival y los bots cargaban dos personajes de 4K: **538 MB** de texturas en la partida.
+- **Arreglo**: en pantallas táctiles nunca se carga un personaje de 4K. En un móvil no se distingue del 2K, y no cabe.
+  - Los mismos personajes que en PC (S.W.A.T. y FSB en ALTO, MILITAR en MEDIO), todos a 2K: la calidad que el
+    propietario aprobó en el iPhone.
+  - Nada baja a 1K.
+  - Medido con la misma configuración: **155 MB**. En MEDIO no cambia nada (155 MB antes y después).
+  - En PC no cambia nada.
+- **Mejora posible** sin perder calidad: comprimir las texturas en la GPU (KTX2/Basis, ASTC en el iPhone). Un personaje
+  de 4K ocuparía lo que hoy ocupa uno de 2K. Es una tecnología nueva, así que necesita la aprobación del propietario.
+- **Prueba**: `test/pro.browser.test.js`, «en un móvil con ALTO… texturas de 2K, nunca 4K».
+
 ## Modo mezcla para comparar y medir (`?pj=mix`, 27-10-2026)
 Petición del propietario: en una partida contra bots, los 4 tipos a la vez para compararlos y medir el rendimiento en el
 iPhone y el PC. Con `?pj=mix` el duelo pasa a 4 bots (salvo CASA ATLAS, que es 1 contra 1):

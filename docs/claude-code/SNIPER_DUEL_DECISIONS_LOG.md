@@ -92,6 +92,27 @@ main», sin olvidar que con `?pj=2` no se podía elegir personaje.
 - Estado: IMPLEMENTADO · PROBADO EN NAVEGADOR · PROBADO ONLINE (servidor local) · el propietario ya lo validó en iPhone y PC
   con las banderas.
 
+## 28-10-2026 (noche, 6) — iPhone: Safari cerraba la página con los personajes realistas en ALTO
+Informe del propietario:
+- «Al intentar crear sala multijugador con 5 bots en pueblo en el iPhone me ha dado error».
+- Después confirmó que también fallaba offline y con 1–2 bots; que con `?pj=0` funcionaba; y que en Chrome del iPhone
+  cargaba bien.
+- Tenía ALTO, S.W.A.T. y 3ª persona.
+
+Causa medida:
+- En ALTO, el rival y los bots cargaban personajes de 4K: 340 MB de memoria gráfica cada uno, 538 MB de texturas en la
+  partida.
+- Chrome guardaba otros ajustes (la calidad por defecto).
+
+Arreglo:
+- En móviles y tabletas, los personajes nunca pasan de 2K. Son los mismos que en PC y nada baja a 1K: el propietario
+  pidió «no quiero perder calidad, sino ir mejorando».
+- Con su configuración: 155 MB. En MEDIO, igual que antes.
+- Propuesta para recuperar el detalle de 4K en el móvil con la misma memoria: texturas comprimidas en la GPU (KTX2).
+  NECESITA APROBACIÓN.
+- Detalle: `docs/PERSONAJES-PRO.md`. Prueba en `pro.browser`.
+- IMPLEMENTADO · PROBADO EN NAVEGADOR (emulación de móvil) · PENDIENTE DE VALIDACIÓN EN EL IPHONE (Safari con ALTO).
+
 ## 28-10-2026 (noche, 5) — Salas personalizadas: todos contra todos y equipos mixtos con bots del servidor (fases 2 y 3)
 Decisión del propietario: «Tienes que hacer lo de Todos contra todos y Equipos mixtos».
 - Salas de hasta 6 plazas entre personas y bots del servidor (`core/bots.js`, mismas reglas que las personas; solo
