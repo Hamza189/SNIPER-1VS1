@@ -15,7 +15,7 @@ Detalle de cada cambio (antes/después, medidas, cómo revertir): `docs/next-lev
 | **Cajas y objetos** — probar en el iPhone (ya sin bandera): menú › CAJAS (abrir, caja diaria, equipar camuflaje, mira y título), y una partida online de más de 1 min con cuenta los dos | Propietario | PUBLICADO · PENDIENTE DE VALIDACIÓN EN IPHONE |
 | **Balas del servidor a 600 m/s** (arreglado el 28-10, antes volaban a la mitad) — probar online entre dos dispositivos que los disparos a un rival que corre cuentan como se ven | Propietario | PUBLICADO · PENDIENTE DE PROBAR ONLINE |
 | **Reloj, ajustes de sala y minimapa** — probar en el iPhone y el PC: el reloj (10 min por defecto; menú › Tiempo), MULTIJUGADOR › bajas y tiempo, y el minimapa (arriba a la izquierda en PC, a la derecha en el móvil; AJUSTES › JUGABILIDAD para quitarlo) | Propietario | PUBLICADO · PENDIENTE DE VALIDACIÓN EN IPHONE |
-| **Sala personalizada: todos contra todos y equipos mixtos con bots del servidor** (fases 2 y 3 de `docs/SALAS-PERSONALIZADAS.md`) | Claude | EN CURSO |
+| **Salas personalizadas** — probar con amigos: MULTIJUGADOR › Modo TODOS CONTRA TODOS (con bots) y EQUIPOS (2 contra 2 / 3 contra 3, los bots rellenan); medir en el iPhone con 5 rivales a la vista | Propietario | PUBLICADO · PENDIENTE DE VALIDACIÓN EN IPHONE |
 | **Monetización** — decidir los puntos 2, 3 y 5 de `docs/CUENTAS-Y-MONETIZACION.md` §5 (portal web, pagos, consulta de ingresos); el 4 (cajas gratuitas) ya está | Propietario | NECESITA APROBACIÓN |
 | **Probar 3ª persona (tecla V / AJUSTES; permitida online) y el quickscope**; decidir si el agua de `?pulido=1` pasa a ser la de siempre | Propietario | PUBLICADO · PENDIENTE DE VALIDACIÓN EN IPHONE |
 | **Elegir personaje** (5 con el SOLDADO de `?pj=2`) — ya sale sin bandera: menú › Tu personaje; probar online con otro dispositivo que el rival ve el elegido | Propietario | PUBLICADO · PENDIENTE DE VALIDACIÓN ONLINE |
@@ -91,6 +91,20 @@ main», sin olvidar que con `?pj=2` no se podía elegir personaje.
 - En BAJO, como antes con `?pj=pro`: tu elección la ve el rival, pero en tu pantalla se ven los soldados de cajas.
 - Estado: IMPLEMENTADO · PROBADO EN NAVEGADOR · PROBADO ONLINE (servidor local) · el propietario ya lo validó en iPhone y PC
   con las banderas.
+
+## 28-10-2026 (noche, 5) — Salas personalizadas: todos contra todos y equipos mixtos con bots del servidor (fases 2 y 3)
+Decisión del propietario: «Tienes que hacer lo de Todos contra todos y Equipos mixtos».
+- Salas de hasta 6 plazas entre personas y bots del servidor (`core/bots.js`, mismas reglas que las personas; solo
+  deciden adónde andar, a quién mirar y cuándo disparar).
+- Modos: 1 contra 1 (igual que antes), todos contra todos (0–5 bots) y equipos ROJO/AZUL 2v2 o 3v3 (los bots
+  rellenan, sin fuego amigo). La bala da al primer cuerpo que encuentra.
+- Página: lobby con modo, bots, dificultad, tamaño y equipo; rivales por plaza; marcador TÚ/LÍDER o ROJO/AZUL; marca
+  azul y minimapa para los compañeros.
+- Premios: los equipos y una cuenta sola contra bots del servidor (puntos de bots, con tope); las partidas que acaban
+  por tiempo ahora también dan puntos.
+- Pruebas: `room` 155 (+21; las 134 de antes intactas), `accounts` 49, `salas.browser` 12 (nueva). Detalle:
+  `docs/SALAS-PERSONALIZADAS.md`.
+- IMPLEMENTADO · PROBADO EN NAVEGADOR (servidor local) · PENDIENTE DE VALIDACIÓN EN IPHONE Y CON AMIGOS.
 
 ## 28-10-2026 (noche, 4) — Regeneración online, reloj de partida, ajustes de sala y minimapa (fase 1)
 Decisiones del propietario:

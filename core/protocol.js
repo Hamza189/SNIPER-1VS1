@@ -8,7 +8,10 @@
      kit     { t, id }                       my primary: 'rifle' (HALCÓN R7) or 'shotgun' (FURIA 12), used from my next spawn
      skin    { t, id }                       my character (looks only): 'soldado', 'clasico', 'swat', 'fsb' or 'militar'
      acct    { t, tok }                      my cloud account session (optional): title in the lobby, box points
-     cfg     { t, kills, time }              lobby, creator only: kills to win (5/10/20/30), minutes (0 = no limit)
+     cfg     { t, kills, time, mode?, bots?, diff?, size? }   lobby, creator only: kills to win (5/10/20/30), minutes
+                                             (0 = no limit), mode ('duelo' | 'todos' | 'equipos'), server bots (0–5),
+                                             their difficulty (0–2), team size (2 | 3)
+     team    { t, id }                       equipos: my team ('rojo' | 'azul')
      in      { t, m, s, c:[cmd...] }         commands of match m, first sequence number s
      rematch { t }                           after the end: play again
      ping    { t, c }                        c = client clock (ms)
@@ -96,7 +99,14 @@ function parse(text) {
     case 'kit': return m.id === 'rifle' || m.id === 'shotgun' ? { msg: { t: 'kit', id: m.id } } : { error: 'shape' };
     case 'skin': return SKINS.includes(m.id) ? { msg: { t: 'skin', id: m.id } } : { error: 'shape' };
     case 'acct': return typeof m.tok === 'string' && /^SD-[A-Z2-9]{4}-[A-Z2-9]{4}\.[A-Za-z0-9_-]{20,64}$/.test(m.tok) ? { msg: { t: 'acct', tok: m.tok } } : { error: 'shape' };
-    case 'cfg': return Number.isInteger(m.kills) && Number.isInteger(m.time) ? { msg: { t: 'cfg', kills: m.kills, time: m.time } } : { error: 'shape' };
+    case 'cfg': {
+      if (!Number.isInteger(m.kills) || !Number.isInteger(m.time)) return { error: 'shape' };
+      const o = { t: 'cfg', kills: m.kills, time: m.time };
+      if (m.mode !== undefined) { if (!['duelo', 'todos', 'equipos'].includes(m.mode)) return { error: 'shape' }; o.mode = m.mode; }
+      for (const k of ['bots', 'diff', 'size']) if (m[k] !== undefined) { if (!Number.isInteger(m[k])) return { error: 'shape' }; o[k] = m[k]; }
+      return { msg: o };
+    }
+    case 'team': return m.id === 'rojo' || m.id === 'azul' ? { msg: { t: 'team', id: m.id } } : { error: 'shape' };
     case 'map': return typeof m.id === 'string' && /^[a-z]{2,16}$/.test(m.id) ? { msg: { t: 'map', id: m.id } } : { error: 'shape' };
     case 'rematch': return { msg: { t: 'rematch' } };
     case 'ping': return num(m.c, 0, 1e15) && (m.r === undefined || num(m.r, 0, 1e5)) ? { msg: { t: 'ping', c: m.c, r: m.r === undefined ? undefined : Math.min(600, m.r) } } : { error: 'shape' };

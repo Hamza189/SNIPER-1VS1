@@ -159,6 +159,18 @@ async function login(acc, o) {
   const full = await stores.get(K.id).get('acc'); full.inv.boxes = P.maxBoxes; full.inv.pts = 0; await stores.get(K.id).put('acc', full); T += 86400000;
   await A.matchReward(info({ match: 40 }), deps.acc);
   check('con 99 cajas guardadas no se pasa de 99 (los puntos esperan)', (await invOf(K)).boxes === P.maxBoxes && (await invOf(K)).pts === 99);
+  // custom rooms: teams, the time running out, one account against server bots
+  T += 86400000;
+  const M = await newAccount('Primo'), Q = await newAccount('Cuarto');
+  const before2 = { l: await invOf(L), m: await invOf(M), q: await invOf(Q) };
+  const t1 = await A.matchReward({ code: 'EQP234', match: 1, winner: 'rojo', why: 'bajas', ms: 120000, mode: 'equipos', acc: { A: L.id, B: M.id, C: Q.id }, teams: { A: 'rojo', B: 'azul', C: 'rojo', D: 'azul' }, bots: 1 }, deps.acc);
+  check('equipos: los del equipo ganador +100, los otros +50', t1.A === 100 && t1.C === 100 && t1.B === 50 && ptsOf(await invOf(L)) - ptsOf(before2.l) === 100 && ptsOf(await invOf(M)) - ptsOf(before2.m) === 50, JSON.stringify(t1));
+  check('se acaba el tiempo: también da puntos', JSON.stringify(await A.matchReward({ code: 'EQP234', match: 2, winner: 'A', why: 'tiempo', ms: 600000, mode: 'todos', acc: { A: L.id, B: M.id } }, deps.acc)) === '{"A":100,"B":50}');
+  const sb = await A.matchReward({ code: 'BOT234', match: 1, winner: 'A', why: 'bajas', ms: 200000, mode: 'todos', acc: { A: Q.id }, bots: 3 }, deps.acc);
+  const sb2 = await A.matchReward({ code: 'BOT234', match: 2, winner: 'C', why: 'bajas', ms: 200000, mode: 'todos', acc: { A: Q.id }, bots: 3 }, deps.acc);
+  check('una cuenta sola contra bots del servidor: puntos de bots (+25 ganar, +10 perder)', sb.A === P.botWin && sb2.A === P.botLoss, JSON.stringify([sb, sb2]));
+  for (let m = 3; m < 12; m++) await A.matchReward({ code: 'BOT234', match: m, winner: 'A', why: 'bajas', ms: 200000, mode: 'todos', acc: { A: Q.id }, bots: 3 }, deps.acc);
+  check('y con el tope diario de los bots (100 puntos)', (await invOf(Q)).botsLeft === 0);
   console.log('\n' + pass + ' correctas, ' + fail + ' fallidas');
   process.exit(fail ? 1 : 0);
 })().catch(e => { console.log('  FAIL ' + (e && e.stack || e)); process.exit(1); });

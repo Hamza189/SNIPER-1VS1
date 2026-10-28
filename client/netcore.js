@@ -30,8 +30,11 @@ function create(opts) {
   N.rematch = () => out({ t: 'rematch' });
   N.chooseMap = id => out({ t: 'map', id });
   // the room's settings (creator): kills to win and minutes (0 = no limit); timeLeft = ms left, from the snapshots
-  N.cfg = { kills: 10, time: 10 }; N.timeLeft = null;
-  N.setCfg = (kills, time) => out({ t: 'cfg', kills, time });
+  N.cfg = { kills: 10, time: 10, mode: 'duelo', bots: 0, diff: 1, size: 2 }; N.timeLeft = null; N.host = null;
+  N.setCfg = (kills, time, more) => out(Object.assign({ t: 'cfg', kills, time }, more || {}));
+  // custom rooms (todos / equipos): my team; the others' poses by seat id (remotes), team scores (tsc)
+  N.chooseTeam = id => out({ t: 'team', id });
+  N.remotes = {}; N.ops = []; N.teams = null; N.tsc = null; N.mode = 'duelo';
   // my primary ('rifle' | 'shotgun'): the server uses it from my next spawn, and so does my prediction
   N.kit = 'rifle';
   N.chooseKit = id => { if (id !== 'rifle' && id !== 'shotgun') return; N.kit = id; out({ t: 'kit', id }); };
@@ -71,17 +74,18 @@ function create(opts) {
     return e;
   }
 
-  // rival snapshot buffer (server time in ms)
-  function pushRemote(op, t) {
+  // rival snapshot buffer (server time in ms); one per seat for the others in custom rooms
+  function pushTo(buf, op, t) {
     if (!op) return;
-    if (N.remote.length && t <= N.remote[N.remote.length - 1].t) return;   // out of order: dropped
-    N.remote.push({ t, op });
-    while (N.remote.length > 40) N.remote.shift();
+    if (buf.length && t <= buf[buf.length - 1].t) return;   // out of order: dropped
+    buf.push({ t, op });
+    while (buf.length > 40) buf.shift();
   }
+  const pushRemote = (op, t) => pushTo(N.remote, op, t);
   const lerpAng = (a, b, f) => { let d = b - a; while (d > Math.PI) d -= 2 * Math.PI; while (d < -Math.PI) d += 2 * Math.PI; return a + d * f; };
-  // rival pose to draw now
-  N.remotePose = () => {
-    const B = N.remote; if (!B.length) return null;
+  // rival pose to draw now (id: that seat's; none: the duel rival)
+  N.remotePose = id => {
+    const B = id === undefined ? N.remote : N.remotes[id]; if (!B || !B.length) return null;
     const t = N.serverNow() - N.interpMs;
     if (t <= B[0].t) return Object.assign({}, B[0].op);
     for (let i = B.length - 1; i > 0; i--) {
@@ -107,11 +111,12 @@ function create(opts) {
     switch (m.t) {
       // a welcome opens a new socket: the server only numbers events from here on, and a restarted
       // server object (every deploy) numbers them again from 1, so the old count must not filter them
-      case 'welcome': N.you = m.you; N.token = m.token; N.code = m.code; N.phase = m.phase; N.players = m.players; N.match = m.match; N.lastEvQ = 0; if (m.cfg) N.cfg = m.cfg; ev.push({ k: 'welcome', m }); break;
-      case 'lobby': N.phase = m.phase; N.players = m.players; if (m.map) N.map = m.map; if (m.maps) N.maps = m.maps; if (m.cfg) N.cfg = m.cfg; ev.push({ k: 'lobby', m }); break;
+      case 'welcome': N.you = m.you; N.token = m.token; N.code = m.code; N.phase = m.phase; N.players = m.players; N.match = m.match; N.lastEvQ = 0; if (m.cfg) N.cfg = m.cfg; if (m.host !== undefined) N.host = m.host; ev.push({ k: 'welcome', m }); break;
+      case 'lobby': N.phase = m.phase; N.players = m.players; if (m.map) N.map = m.map; if (m.maps) N.maps = m.maps; if (m.cfg) N.cfg = m.cfg; if (m.host !== undefined) N.host = m.host; if (m.tsc) N.tsc = m.tsc; ev.push({ k: 'lobby', m }); break;
       case 'start':
         N.match = m.m; if (m.map) N.map = m.map; N.names = m.names || {}; N.phase = 'countdown'; N.startIn = m.in; N.startedAt = N.now();
-        N.rules = m.rules || {}; N.timeLeft = N.rules.timeMs || null;
+        N.rules = m.rules || {}; N.timeLeft = N.rules.timeMs || null; N.mode = N.rules.mode || 'duelo'; N.teams = m.teams || null;
+        if (!m.resume) { N.remotes = {}; N.ops = []; N.tsc = N.mode === 'equipos' ? { rojo: 0, azul: 0 } : null; }
         if (!m.resume) { N.pending = []; N.outBuf = []; N.lastAck = -1; N.remote = []; N.score = { A: 0, B: 0 }; N.seenShots.clear(); N.corrMax = 0;
           SDP.respawn(N.local, m.spawn.x, 0, m.spawn.z, N.kit); }   // same spawn as the server: no correction on the first snapshot
         else { N.lastAck = m.lastSeq; N.pending = N.pending.filter(p => p.seq > m.lastSeq); }
@@ -127,6 +132,8 @@ function create(opts) {
         N.hp = m.hp; N.alive = !!m.alive; N.score = m.sc; N.timeLeft = typeof m.tl === 'number' ? m.tl : null;
         reconcile(m);
         pushRemote(m.op, m.now);
+        N.ops = m.ops || []; if (m.tsc) N.tsc = m.tsc;
+        for (const o of N.ops) pushTo(N.remotes[o.id] || (N.remotes[o.id] = []), o, m.now);
         if (wasAlive !== N.alive) ev.push({ k: N.alive ? 'alive' : 'dead' });
         ev.push({ k: 'snap', m }); break;
       }
@@ -139,7 +146,7 @@ function create(opts) {
           if (e.k === 'pause') N.phase = 'paused';
           if (e.k === 'resume') N.phase = 'playing';
           if (e.k === 'rejected') N.lastReject = e;
-          if (e.k === 'kill' || e.k === 'over') N.score = e.sc || N.score;
+          if (e.k === 'kill' || e.k === 'over') { N.score = e.sc || N.score; if (e.tsc) N.tsc = e.tsc; }
           if (e.k === 'over') N.phase = 'over';
           if (e.k === 'hit' && e.to === N.you) N.hp = e.hp;
           if (e.k === 'kill' && e.to === N.you) N.alive = false;

@@ -213,7 +213,9 @@ function account(store, opts) {
           const I = inv(a), D = today(I, now()), pts = Number.isInteger(body.pts) && body.pts > 0 && body.pts <= PTS.box ? body.pts : 0;
           if (typeof body.key !== 'string' || body.key.length > 40 || I.keys.includes(body.key)) return ok({ dup: true, pts: 0 });
           I.keys.push(body.key); if (I.keys.length > 40) I.keys.shift();
-          const give = Math.max(0, Math.min(pts, PTS.onlineDay - D.online)); D.online += give; addPts(I, give);
+          // contra bots del servidor (una sola cuenta en la sala): el tope de los bots; si no, el online
+          const bots = body.src === 'bots', give = Math.max(0, Math.min(pts, bots ? PTS.botsDay - D.bots : PTS.onlineDay - D.online));
+          if (bots) D.bots += give; else D.online += give; addPts(I, give);
           await store.put('acc', a); return ok({ pts: give });
         }
       }
@@ -351,17 +353,23 @@ async function roomAccount(tok, acc) {
   const r = await acc(tok.split('.')[0])('yo-interno', {}, tok);
   return r.status === 200 ? { id: r.body.me.id, title: r.body.me.title || '' } : null;
 }
-// fin de una partida online: puntos para cada cuenta. Hacen falta dos cuentas distintas y al menos un minuto jugado
-// (sin contar pausas); quien abandona no recibe nada. info: { code, match, winner, why, ms, acc: { A, B } }
+// fin de una partida online: puntos para cada cuenta, al menos un minuto jugado (sin contar pausas).
+// - dos cuentas distintas o más: los puntos del online (ganar, empatar, perder; quien abandona no recibe nada);
+// - una sola cuenta contra bots del servidor: los puntos de los bots, con su tope diario (lo cuenta el servidor);
+// - una sola cuenta contra invitados sin cuenta: nada (dos pestañas de la misma persona no suman).
+// info: { code, match, winner (plaza, equipo o null), why, ms, acc: { plaza: cuenta }, teams?: { plaza: equipo }, bots? }
 async function matchReward(info, acc) {
   const ids = (info && info.acc) || {}, out = {};
-  if (!isId(ids.A) || !isId(ids.B) || ids.A === ids.B || !(info.ms >= PTS.minOnlineMs)) return out;
-  for (const seat of ['A', 'B']) {
+  const seats = Object.keys(ids).filter(k => isId(ids[k])), distinct = new Set(seats.map(k => ids[k])).size;
+  if (!(info.ms >= PTS.minOnlineMs) || !seats.length || (distinct < 2 && !(info.bots > 0))) return out;
+  const online = distinct >= 2, won = seat => info.winner === seat || !!(info.teams && info.teams[seat] && info.winner === info.teams[seat]), seen = new Set();
+  for (const seat of seats) {
+    if (seen.has(ids[seat])) continue; seen.add(ids[seat]);
     let pts = 0;
-    if (info.why === 'bajas') pts = info.winner === null ? PTS.onlineDraw : info.winner === seat ? PTS.onlineWin : PTS.onlineLoss;
-    else if (info.why === 'abandono' && info.winner === seat) pts = PTS.abandonWin;
+    if (info.why === 'bajas' || info.why === 'tiempo') pts = info.winner == null ? (online ? PTS.onlineDraw : PTS.botLoss) : won(seat) ? (online ? PTS.onlineWin : PTS.botWin) : (online ? PTS.onlineLoss : PTS.botLoss);
+    else if (info.why === 'abandono' && won(seat) && online) pts = PTS.abandonWin;
     if (!pts) continue;
-    const r = await acc(ids[seat])('premio', { key: info.code + ':' + info.match + ':' + seat, pts });
+    const r = await acc(ids[seat])('premio', { key: info.code + ':' + info.match + ':' + seat, pts, src: online ? 'online' : 'bots' });
     out[seat] = r.status === 200 ? r.body.pts : 0;
   }
   return out;

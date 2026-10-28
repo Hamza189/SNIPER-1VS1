@@ -508,6 +508,93 @@ console.log('\nREINICIO DEL SERVIDOR DE LA SALA (despliegue en mitad de una sesi
   check('y los dos están jugando', A.N.phase === 'playing' && B.N.phase === 'playing');
 }
 
+console.log('\nSALA PERSONALIZADA: TODOS CONTRA TODOS CON BOTS DEL SERVIDOR');
+const join = (S, names) => { const cs = names.map(n => S.addClient(n)); for (const c of cs) { c.N.hello(c.name); S.run(150); } return cs; };
+const cfgOf = (N, patch) => { const C = Object.assign({}, N.cfg, patch); N.setCfg(C.kills, C.time, { mode: C.mode, bots: C.bots, diff: C.diff, size: C.size }); };
+{ const S = createSim({ latency: 30 });
+  const [A, B, C] = join(S, ['Hamza', 'Novia', 'Primo']);
+  check('en 1 contra 1 un tercero no entra', evs(C, 'error').some(e => e.code === 'full'));
+  cfgOf(B.N, { mode: 'todos', bots: 3 }); S.run(200);
+  check('solo quien crea la sala cambia el modo', S.room.cfg.mode === 'duelo');
+  cfgOf(A.N, { mode: 'todos', bots: 3, diff: 2 }); S.run(200);
+  check('A elige TODOS CONTRA TODOS con 3 bots ÉLITE: los dos lo ven', S.room.cfg.mode === 'todos' && S.room.cfg.bots === 3 && B.N.cfg.mode === 'todos' && B.N.cfg.diff === 2);
+  const [D] = join(S, ['Primo']);
+  check('en todos contra todos entra una tercera persona', D.N.you === 'C' && S.room.seats.C && !S.room.seats.C.bot);
+  cfgOf(A.N, { mode: 'duelo' }); S.run(200);
+  check('con 3 personas no se puede volver a 1 contra 1', S.room.cfg.mode === 'todos');
+  for (const c of [A, B, D]) c.N.ready(true);
+  S.until(() => S.room.phase === 'playing', 8000); S.run(300);
+  const bots = Object.values(S.room.seats).filter(s => s && s.bot);
+  const st = evs(A, 'start').pop();
+  check('empieza con 3 personas + 3 bots (6 plazas), cada uno con su sitio y nombre', bots.length === 3 && Object.keys(st.m.names).length === 6 && bots.every(b => b.alive) && st.m.rules.mode === 'todos', JSON.stringify(st.m.names));
+  check('cada persona recibe a los otros 5 en las snapshots (con id y marca de bot)', A.N.ops.length === 5 && A.N.ops.filter(o => o.bot).length === 3 && !!A.N.remotePose('D') && !!A.N.remotePose(bots[0].id));
+  const p0 = bots.map(b => ({ x: b.p.ms.x, z: b.p.ms.z }));
+  S.run(40000);
+  const moved = bots.filter((b, i) => Math.hypot(b.p.ms.x - p0[i].x, b.p.ms.z - p0[i].z) > 4 || b.deaths > 0).length;
+  const botShots = evs(A, 'shot').filter(e => bots.some(b => b.id === e.by)).length, botKills = evs(A, 'kill').filter(e => bots.some(b => b.id === e.by)).length;
+  check('los bots andan por el mapa, disparan y matan (40 s)', moved >= 2 && botShots >= 3 && botKills >= 1, moved + ' se movieron · ' + botShots + ' disparos · ' + botKills + ' bajas');
+  check('las bajas de los bots cuentan en el marcador', bots.reduce((n, b) => n + b.kills, 0) === botKills && A.N.score[bots[0].id] === bots[0].kills);
+  // drop out: the others keep playing; back again: on the field
+  S.drop(B); S.run(1500);
+  check('si alguien se desconecta la partida sigue para los demás (y él sale del campo)', S.room.phase === 'playing' && S.room.seats.B.away && !S.room.seats.B.alive && evs(A, 'away').some(e => e.who === 'B'));
+  S.reconnect(B); S.run(2000);
+  check('al volver reaparece y sigue en su plaza', S.room.seats.B.conn != null && !S.room.seats.B.away && S.room.seats.B.alive && B.N.you === 'B');
+  // time out: the leader wins
+  S.room.seats.D = S.room.seats.D; const lead = bots[0]; S.room.debug.set(lead.id, 'kills', 9);
+  S.room.playMs = 600000 - 300; S.run(800);
+  const ov = evs(A, 'over').pop();
+  check('se acaba el tiempo: gana quien más bajas tiene (aunque sea un bot)', ov && ov.why === 'tiempo' && ov.winner === lead.id, ov && JSON.stringify(ov.sc));
+  for (const c of [A, B, D]) c.N.rematch(); S.run(300);
+  check('revancha cuando aceptan todas las personas; los bots vuelven a la partida', S.room.phase === 'countdown' && Object.values(S.room.seats).filter(s => s && s.bot).length === 3 && S.room.match === 2);
+}
+{ // the nearest body takes the bullet: A shoots at B with a frozen bot right behind B
+  const S = createSim({ latency: 20 });
+  const [A, B] = join(S, ['Hamza', 'Novia']);
+  cfgOf(A.N, { mode: 'todos', bots: 1 }); S.run(200); A.N.ready(true); B.N.ready(true);
+  S.until(() => S.room.phase === 'playing', 8000);
+  const bot = Object.values(S.room.seats).find(s => s && s.bot); bot.bot.decideAt = 1e12; bot.bot.path = [];
+  let shoot = false; A.ai = (c, S) => { const s = S.room.seats.B.p.ms; return Object.assign(lookAt(c, [s.x, s.y + 1.2, s.z]), { fire: shoot, adsHeld: true }); };
+  S.room.debug.place('A', pair[0][0], pair[0][1], 0); S.room.debug.place('B', pair[1][0], pair[1][1], 0);
+  S.room.debug.place(bot.id, pair[1][0] + 3, pair[1][1], 0); S.run(800);
+  shoot = true; S.run(20); shoot = false; S.run(600);
+  const h = evs(A, 'hit').filter(e => e.by === 'A');
+  check('una bala da al primero que encuentra (B), no al bot que está detrás', h.length === 1 && h[0].to === 'B', JSON.stringify(h.map(e => e.to)));
+}
+
+console.log('\nSALA PERSONALIZADA: EQUIPOS');
+{ const S = createSim({ latency: 30 });
+  const [A, B, C] = join(S, ['Hamza', 'Novia', 'Primo']);
+  cfgOf(A.N, { mode: 'equipos', size: 2, diff: 0 }); S.run(200);
+  const [D] = join(S, ['Primo']);
+  check('en equipos cada persona entra en el equipo con menos gente', S.room.seats.A.team && S.room.seats.B.team && S.room.seats.C.team && S.room.seats.A.team !== S.room.seats.B.team, ['A', 'B', 'C'].map(id => S.room.seats[id].team).join(','));
+  D.N.chooseTeam(S.room.seats.A.team); B.N.chooseTeam(S.room.seats.A.team); S.run(200);
+  check('cambiar de equipo: sí si hay hueco, no si ya está lleno (2 contra 2)', S.room.seats.C.team === S.room.seats.A.team && S.room.seats.B.team !== S.room.seats.A.team);
+  const [E] = join(S, ['Quinto']); const [F] = join(S, ['Sexto']);
+  check('2 contra 2 con 4 personas ya no cabe nadie más', E.N.you === 'D' && evs(F, 'error').some(e => e.code === 'full'));
+}
+{ const S = createSim({ latency: 30 });
+  const [A, B] = join(S, ['Hamza', 'Novia']);
+  cfgOf(A.N, { mode: 'equipos', size: 2, kills: 5 }); S.run(200);
+  A.N.chooseTeam('rojo'); B.N.chooseTeam('rojo'); S.run(200);
+  A.N.ready(true); B.N.ready(true); S.until(() => S.room.phase === 'playing', 8000); S.run(300);
+  const seats = Object.values(S.room.seats).filter(Boolean), bots = seats.filter(s => s.bot);
+  check('2 contra 2: los dos en ROJO y dos bots en AZUL', seats.length === 4 && bots.length === 2 && bots.every(b => b.team === 'azul') && S.room.seats.A.team === 'rojo' && evs(A, 'start').pop().m.teams.A === 'rojo');
+  for (const b of bots) { b.bot.decideAt = 1e12; b.bot.path = []; }
+  // A shoots at its team-mate B: no damage (no friendly fire)
+  let tgt = 'B', shoot = false; A.ai = (c, S) => { const s = S.room.seats[tgt].p.ms; return Object.assign(lookAt(c, [s.x, s.y + 1.2, s.z]), { fire: shoot, adsHeld: true }); };
+  S.room.debug.place('A', pair[0][0], pair[0][1], 0); S.room.debug.place('B', pair[1][0], pair[1][1], 0); for (const b of bots) S.room.debug.place(b.id, pair[0][0] - 30, pair[0][1] + 30, 0); S.run(800);
+  shoot = true; S.run(20); shoot = false; S.run(1500);
+  check('sin fuego amigo: el disparo atraviesa al compañero sin hacerle nada', !evs(A, 'hit').some(e => e.to === 'B') && S.room.seats.B.hp === 100);
+  // A kills an enemy bot: the team score goes up
+  tgt = bots[0].id; S.room.debug.place(tgt, pair[1][0], pair[1][1] + 0.01, 0); S.room.debug.place('B', pair[1][0] - 60, pair[1][1] + 60, 0); S.room.debug.set(tgt, 'hp', 1); S.run(1300);
+  shoot = true; S.run(20); shoot = false; S.run(800);
+  check('una baja del equipo suma al marcador del equipo', S.room.teamSc.rojo === 1 && A.N.tsc && A.N.tsc.rojo === 1, JSON.stringify(S.room.teamSc));
+  S.room.teamSc.rojo = 4; S.run(3200); S.room.debug.place(tgt, pair[1][0], pair[1][1] + 0.01, 0); S.room.debug.set(tgt, 'hp', 1); S.run(1300);
+  shoot = true; S.run(20); shoot = false; S.run(800);
+  const ov = evs(B, 'over').pop();
+  check('el equipo que llega a 5 bajas gana (los dos del equipo ganan)', ov && ov.winner === 'rojo' && ov.why === 'bajas' && ov.tsc.rojo === 5, ov && JSON.stringify(ov.tsc));
+}
+
 console.log('\nTIEMPO, AJUSTES DE SALA Y REGENERACIÓN');
 { const S = createSim({ latency: 30 });
   const A = S.addClient('Hamza'), B = S.addClient('Novia');
