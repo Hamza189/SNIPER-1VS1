@@ -6,6 +6,50 @@ Estado: IMPLEMENTADO · PROBADO EN NAVEGADOR · PROBADO ONLINE · PENDIENTE DE V
 
 ---
 
+## N3-3 · Online: las balas del servidor volaban a la mitad de velocidad (28-10-2026)
+
+**Antes**
+- **Problema:** encontrado por Claude al medir el tiempo jugado para las cajas.
+  - Con el tráfico normal de una partida, el servidor de la sala hacía volar las balas a 280–380 m/s en vez de los
+    600 m/s del HALCÓN R7. En tu pantalla iban a 600.
+  - Contra un rival que se mueve, el servidor podía dar fallo donde el tirador había acertado.
+  - A distancia y con ping alto se nota más.
+- **Reproducción:** `test/simnet.js` (la sala real y dos clientes reales con red simulada); disparo al cielo y distancia
+  recorrida por la bala del servidor entre ticks.
+- **Evidencia:**
+
+| Medida | Antes | Después |
+|---|---|---|
+| Velocidad de la bala en el servidor (ping 40 ms) | 284 m/s | 599 m/s |
+| Velocidad de la bala en el servidor (ping 160 ms) | 379 m/s | 599 m/s |
+| Rival andando de lado a 33 m, apuntando donde se ve con la anticipación normal (ping 92 ms) | 9 de 12 | 12 de 12 |
+| Ídem, ping ~255 ms | 6–8 de 12 | 10 de 12 |
+
+- **Causa:** `tick(now)` avanzaba las balas según `now - R.now`, pero `R.now` también lo mueve cada mensaje recibido. Ese
+  tiempo era el que había pasado desde el último mensaje, no desde el último tick: casi siempre un solo paso de 1/120 s por
+  tick de 1/60 s.
+- **Solución:** las balas avanzan según el tiempo real entre ticks, en pasos de 1/120 s, guardando el sobrante para el
+  siguiente tick (como mucho 30 pasos).
+  - No cambia la bala: velocidad, caída, daño y zonas de impacto son los mismos.
+  - Tampoco cambia la compensación de latencia. Solo que la bala del servidor vuela tan rápido como debía.
+- **Riesgos:** ninguno en las reglas. Los blancos que se mueven ahora se aciertan como se ven.
+- **Visto y NO tocado (necesita aprobación):** la regeneración de vida online tiene el mismo fallo de reloj.
+  - Cura 6–11 de vida por segundo en vez de los 22 de la regla, que son los del modo contra bots.
+  - Corregirlo cambia el equilibrio online, así que se pregunta antes.
+
+**Después**
+- **Archivos:** `core/room.js` (`tick`: `R.lastTick`, `R.bulletMs`), `test/room.test.js`.
+- **Pruebas:**
+  - `room` 122/122, con la comprobación nueva «la bala del servidor vuela a la velocidad del rifle» con ping 40 y 160 ms,
+    que con el código anterior fallaba.
+  - La prueba del rival en movimiento a 36 m da 5/5 con los dos pings.
+  - `npm test` completo.
+- **Cómo revertir:** volver a `n = round(dtMs / DT)` en `tick()` de `core/room.js`.
+- Estado: IMPLEMENTADO · PROBADO EN NAVEGADOR (simulación y pruebas online locales) · PENDIENTE DE PROBAR ONLINE ENTRE DOS
+  DISPOSITIVOS.
+
+---
+
 ## N7-2 · Personaje 3D, segunda pasada: chaleco, camuflaje y postura de combate (`?pj=2`, 20-10-2026)
 
 **Antes**

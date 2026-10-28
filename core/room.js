@@ -52,7 +52,7 @@ function create(opts) {
     seats: { A: null, B: null }, conns: new Map(), evSeq: 0, bullets: [], bulletId: 0, shotId: 0, winner: undefined,
     pausedAt: 0, lastSnap: 0, lastActive: opts.now || 0, lastPlay: opts.now || 0, closed: false, rematch: { A: false, B: false }, log: [],
     send: opts.send || (() => {}), close: opts.close || (() => {}), randBytes: opts.randBytes, persist: opts.persist || null,
-    account: opts.account || null, onOver: opts.onOver || null, accOf: { A: null, B: null }, playMs: 0
+    account: opts.account || null, onOver: opts.onOver || null, accOf: { A: null, B: null }, playMs: 0, bulletMs: 0
   };
 
   /* ---------- helpers ---------- */
@@ -111,7 +111,7 @@ function create(opts) {
   }
   function startMatch() {
     ix = indexOf(mapId); MAP = MAPS[mapId];
-    R.match++; R.phase = 'countdown'; R.startAt = R.now + RULES.countdownMs; R.bullets.length = 0; R.winner = undefined; R.playMs = 0;
+    R.match++; R.phase = 'countdown'; R.startAt = R.now + RULES.countdownMs; R.bullets.length = 0; R.winner = undefined; R.playMs = 0; R.bulletMs = 0;
     R.rematch = { A: false, B: false };
     const a = R.seats.A, b = R.seats.B;
     a.kills = b.kills = a.deaths = b.deaths = 0; a.shots = b.shots = a.hits = b.hits = a.hs = b.hs = 0;
@@ -407,9 +407,13 @@ function create(opts) {
     if (R.phase === 'countdown' && now >= R.startAt) { R.phase = 'playing'; sendAll({ t: 'ev', m: R.match, e: [{ k: 'go' }] }); }
     if (R.phase === 'playing') {
       R.playMs += tickMs;   // time actually played (pauses do not count): box points need a real match
-      // bullets fly in steps of 1/120 s whatever the server tick
-      let n = Math.round(dtMs / (DT * 1000)); n = Math.max(1, Math.min(30, n));
-      for (let i = 0; i < n && R.phase === 'playing'; i++) { stepBullets(DT, now - (n - 1 - i) * DT * 1000); checkWin(); }
+      // bullets fly in steps of 1/120 s of real server time: the time since the last tick, with its remainder kept for
+      // the next one (28-10-2026: it used the time since the last message, and with the normal traffic of a match the
+      // server bullets flew at 280–380 m/s instead of 600, so a rival on the move was missed where the shooter hit)
+      R.bulletMs += tickMs; let n = Math.floor(R.bulletMs / (DT * 1000));
+      if (n > 30) { n = 30; R.bulletMs = 0; } else R.bulletMs -= n * DT * 1000;
+      const stepEnd = now - R.bulletMs;
+      for (let i = 0; i < n && R.phase === 'playing'; i++) { stepBullets(DT, stepEnd - (n - 1 - i) * DT * 1000); checkWin(); }
       for (const id of ['A', 'B']) { const s = R.seats[id]; if (s && s.alive) record(s); }
       for (const id of ['A', 'B']) {
         const s = R.seats[id]; if (!s) continue;

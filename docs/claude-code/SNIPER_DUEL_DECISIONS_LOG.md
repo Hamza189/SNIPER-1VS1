@@ -14,7 +14,7 @@ Detalle de cada cambio (antes/después, medidas, cómo revertir): `docs/next-lev
 | **Personaje 3D (rev. 03) en bots y rival** — probarlo en `https://hamza189.github.io/SNIPER-1VS1/?pj=2` (PC, iPhone, Samsung) y decir si pasa a ser el de por defecto | Propietario | PUBLICADO TRAS BANDERA · PENDIENTE DE VALIDACIÓN EN IPHONE |
 | **Cuentas** — probar en el iPhone: PERFIL › CREAR CUENTA (Face ID), ENTRAR en otro dispositivo, amigos e invitación (`?pj=pro`) | Propietario | PUBLICADO TRAS BANDERA · PENDIENTE DE VALIDACIÓN EN IPHONE |
 | **Cajas y objetos** — probar en el iPhone con `?pj=pro`: menú › CAJAS (abrir, caja diaria, equipar camuflaje, mira y título), y una partida online de más de 1 min con cuenta los dos | Propietario | PUBLICADO TRAS BANDERA · PENDIENTE DE VALIDACIÓN EN IPHONE |
-| **Balas del servidor a la mitad de velocidad** — la sala avanza las balas según el tiempo desde el último mensaje, no desde el último tick: medido ~284 m/s en vez de 600 (afecta a blancos que se mueven, a distancia). Arreglo listo para proponer; toca la balística autoritativa | Propietario | NECESITA APROBACIÓN |
+| **Regeneración de vida online** — mismo fallo de reloj que tenían las balas: online cura 6–11 de vida/s en vez de los 22 de la regla (y del modo contra bots). Corregirlo cambia el equilibrio online | Propietario | NECESITA APROBACIÓN |
 | **Monetización** — decidir los puntos 2, 3 y 5 de `docs/CUENTAS-Y-MONETIZACION.md` §5 (portal web, pagos, consulta de ingresos); el 4 (cajas gratuitas) ya está | Propietario | NECESITA APROBACIÓN |
 | **Probar 3ª persona (tecla V / AJUSTES; permitida online) y el quickscope**; decidir si el agua de `?pulido=1` pasa a ser la de siempre | Propietario | PUBLICADO · PENDIENTE DE VALIDACIÓN EN IPHONE |
 | **Elegir personaje y paso nuevo** — probar en `https://hamza189.github.io/SNIPER-1VS1/?pj=pro` (menú › Tu personaje; online con otro dispositivo) cómo andan de frente, de lado y en diagonal | Propietario | PUBLICADO TRAS BANDERA · PENDIENTE DE VALIDACIÓN EN IPHONE |
@@ -78,6 +78,20 @@ Detalle de cada cambio (antes/después, medidas, cómo revertir): `docs/next-lev
 | CASA ATLAS XL v2 de ChatGPT por defecto (mismas colisiones, detalle real) | 19-10 · directo a `main` |
 | Encargos para ChatGPT: CASA XL, CASA XL v2 y personaje | 18-10 / 19-10 |
 | Personaje 3D rev. 03 hecho por Claude e integrado tras `?pj=2` (bots y rival online) | 20-10 · directo a `main` |
+
+## 28-10-2026 (noche, 3) — Las balas del servidor ya vuelan a 600 m/s
+Decisión del propietario: «Sí, arréglalo» (velocidad de las balas del servidor).
+- `core/room.js`: las balas avanzan según el tiempo real entre ticks, en pasos de 1/120 s con el sobrante guardado.
+  - Antes avanzaban según el tiempo desde el último mensaje: 284–379 m/s.
+  - Ahora 599 m/s.
+  - Rival andando de lado a 33 m: el servidor cuenta 12/12 disparos bien apuntados (antes 9/12); con ping alto, 10/12
+    (antes 6–8/12).
+  - Nada más cambia: daño, caída, zonas de impacto y compensación de latencia son los mismos.
+  - Detalle: `docs/next-level/NEXT_LEVEL_CHANGELOG.md` N3-3.
+- Visto y no tocado: la regeneración de vida online tiene el mismo fallo (6–11 de vida/s en vez de 22). Pendiente de su
+  aprobación porque cambia el equilibrio.
+- IMPLEMENTADO · PROBADO EN NAVEGADOR (simulación y pruebas online locales) · PENDIENTE DE PROBAR ONLINE ENTRE DOS
+  DISPOSITIVOS.
 
 ## 28-10-2026 (noche, 2) — Inventario en el servidor y cajas gratuitas (paso D)
 Decisión del propietario: «Inventario y cajas» (seguir con el paso D y las cajas gratuitas que se ganan jugando). Es la

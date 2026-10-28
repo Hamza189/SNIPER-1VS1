@@ -455,6 +455,19 @@ for (const lat of [40, 120]) {
   const hits = evs(A, 'hit').length;
   check(lat + ' ms: disparos al rival en movimiento donde A lo ve (con la anticipación normal por el vuelo de la bala) → el servidor los cuenta (' + hits + '/' + shots + ')', hits >= shots - 1, 'ping ' + Math.round(A.N.rtt) + ' ms');
 }
+for (const lat of [20, 80]) {
+  // the server bullet flies at the rifle's speed with the normal traffic of a match (commands every 3 ticks, pings):
+  // the room steps bullets by the time between ticks, not since the last message (28-10-2026: it flew at 280–380 m/s)
+  let shoot = false;
+  const S = createSim({ latency: lat, jitter: lat / 8, seed: 11 + lat });
+  S.setupMatch(() => ({ yaw: 0, pitch: 0.25, fire: shoot, adsHeld: true }), () => ({ yaw: 0 }));
+  S.run(1500); shoot = true; S.run(9); shoot = false;
+  let b = null; for (let i = 0; i < 200 && !b; i++) { S.run(1); b = S.room.bullets.find(x => x.by === 'A'); }
+  const n0 = S.room.tickN; while (S.room.tickN === n0) S.run(1);   // measure from tick to tick
+  const t0 = S.t, d0 = b.dist; S.run(600); const n1 = S.room.tickN; while (S.room.tickN === n1) S.run(1);
+  const v = (b.dist - d0) / ((S.t - t0) / 1000);
+  check('ping ' + lat * 2 + ' ms: la bala del servidor vuela a la velocidad del rifle (' + CFG.rifles.halcon.speed + ' m/s)', Math.abs(v / CFG.rifles.halcon.speed - 1) < 0.03, v.toFixed(0) + ' m/s');
+}
 { // the rewind never goes further back than 200 ms, whatever the client claims
   const S = createSim({ latency: 20 });
   const { A } = S.setupMatch(() => ({ yaw: 0 }), () => ({ yaw: 0 }));
