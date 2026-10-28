@@ -29,6 +29,9 @@ function create(opts) {
   N.ready = on => out({ t: 'ready', on: !!on });
   N.rematch = () => out({ t: 'rematch' });
   N.chooseMap = id => out({ t: 'map', id });
+  // the room's settings (creator): kills to win and minutes (0 = no limit); timeLeft = ms left, from the snapshots
+  N.cfg = { kills: 10, time: 10 }; N.timeLeft = null;
+  N.setCfg = (kills, time) => out({ t: 'cfg', kills, time });
   // my primary ('rifle' | 'shotgun'): the server uses it from my next spawn, and so does my prediction
   N.kit = 'rifle';
   N.chooseKit = id => { if (id !== 'rifle' && id !== 'shotgun') return; N.kit = id; out({ t: 'kit', id }); };
@@ -104,10 +107,11 @@ function create(opts) {
     switch (m.t) {
       // a welcome opens a new socket: the server only numbers events from here on, and a restarted
       // server object (every deploy) numbers them again from 1, so the old count must not filter them
-      case 'welcome': N.you = m.you; N.token = m.token; N.code = m.code; N.phase = m.phase; N.players = m.players; N.match = m.match; N.lastEvQ = 0; ev.push({ k: 'welcome', m }); break;
-      case 'lobby': N.phase = m.phase; N.players = m.players; if (m.map) N.map = m.map; if (m.maps) N.maps = m.maps; ev.push({ k: 'lobby', m }); break;
+      case 'welcome': N.you = m.you; N.token = m.token; N.code = m.code; N.phase = m.phase; N.players = m.players; N.match = m.match; N.lastEvQ = 0; if (m.cfg) N.cfg = m.cfg; ev.push({ k: 'welcome', m }); break;
+      case 'lobby': N.phase = m.phase; N.players = m.players; if (m.map) N.map = m.map; if (m.maps) N.maps = m.maps; if (m.cfg) N.cfg = m.cfg; ev.push({ k: 'lobby', m }); break;
       case 'start':
         N.match = m.m; if (m.map) N.map = m.map; N.names = m.names || {}; N.phase = 'countdown'; N.startIn = m.in; N.startedAt = N.now();
+        N.rules = m.rules || {}; N.timeLeft = N.rules.timeMs || null;
         if (!m.resume) { N.pending = []; N.outBuf = []; N.lastAck = -1; N.remote = []; N.score = { A: 0, B: 0 }; N.seenShots.clear(); N.corrMax = 0;
           SDP.respawn(N.local, m.spawn.x, 0, m.spawn.z, N.kit); }   // same spawn as the server: no correction on the first snapshot
         else { N.lastAck = m.lastSeq; N.pending = N.pending.filter(p => p.seq > m.lastSeq); }
@@ -120,7 +124,7 @@ function create(opts) {
         if (m.ph === 'playing' && N.phase === 'countdown') N.phase = 'playing';
         if (m.ph === 'paused') N.phase = 'paused'; else if (m.ph === 'playing') N.phase = 'playing';
         const wasAlive = N.alive;
-        N.hp = m.hp; N.alive = !!m.alive; N.score = m.sc;
+        N.hp = m.hp; N.alive = !!m.alive; N.score = m.sc; N.timeLeft = typeof m.tl === 'number' ? m.tl : null;
         reconcile(m);
         pushRemote(m.op, m.now);
         if (wasAlive !== N.alive) ev.push({ k: N.alive ? 'alive' : 'dead' });

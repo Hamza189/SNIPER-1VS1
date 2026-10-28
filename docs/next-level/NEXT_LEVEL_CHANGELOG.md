@@ -33,9 +33,10 @@ Estado: IMPLEMENTADO · PROBADO EN NAVEGADOR · PROBADO ONLINE · PENDIENTE DE V
   - No cambia la bala: velocidad, caída, daño y zonas de impacto son los mismos.
   - Tampoco cambia la compensación de latencia. Solo que la bala del servidor vuela tan rápido como debía.
 - **Riesgos:** ninguno en las reglas. Los blancos que se mueven ahora se aciertan como se ven.
-- **Visto y NO tocado (necesita aprobación):** la regeneración de vida online tiene el mismo fallo de reloj.
-  - Cura 6–11 de vida por segundo en vez de los 22 de la regla, que son los del modo contra bots.
-  - Corregirlo cambia el equilibrio online, así que se pregunta antes.
+- **Visto y NO tocado entonces (necesitaba aprobación):** la regeneración de vida online tiene el mismo fallo de reloj.
+  - Curaba 6–11 de vida por segundo en vez de los 22 de la regla, que son los del modo contra bots.
+  - El propietario lo aprobó después («Sí, corrígelo»): ahora se regenera según el tiempo entre ticks y da 22,0/s con
+    ping 40 y 160 ms (comprobado en `test/room.test.js`).
 
 **Después**
 - **Archivos:** `core/room.js` (`tick`: `R.lastTick`, `R.bulletMs`), `test/room.test.js`.

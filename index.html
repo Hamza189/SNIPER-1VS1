@@ -61,6 +61,12 @@ button{font:inherit;color:inherit}
 #rangeHud b{font-family:var(--f-display);font-size:26px;line-height:.8;font-weight:500;color:var(--hud);margin-left:5px;font-variant-numeric:tabular-nums}
 #airVig{position:absolute;inset:0;background:radial-gradient(ellipse at center,transparent 30%,rgba(8,12,24,.92) 100%);opacity:0;pointer-events:none}
 
+/* match clock (10 min by default) and minimap (top left; on phones next to the pause button) */
+#clock{font:500 24px/1 var(--f-display);letter-spacing:.06em;font-variant-numeric:tabular-nums;color:var(--hud);text-shadow:0 1px 6px rgba(0,0,0,.6)}
+#clock.low{color:var(--blood)}
+#mini{position:absolute;left:calc(14px + env(safe-area-inset-left,0px));top:calc(12px + env(safe-area-inset-top,0px));width:150px;height:150px;border-radius:50%;pointer-events:none}
+body.touch #mini{left:auto;right:calc(10px + env(safe-area-inset-right,0px));top:calc(6px + env(safe-area-inset-top,0px));width:92px;height:92px}
+body.touch.miniOn #feed{right:calc(110px + env(safe-area-inset-right,0px))}   /* phones: the health is at the top left (HUD 2), so the minimap goes right */
 #feed{position:absolute;right:calc(14px + env(safe-area-inset-right,0px));top:calc(12px + env(safe-area-inset-top,0px));display:grid;gap:4px;justify-items:end;font-size:11px}
 #feed div{background:rgba(15,13,10,.55);padding:4px 8px;border-right:2px solid var(--dust);animation:feedIn .25s ease-out}
 #feed div.mine{border-right-color:var(--signal)}
@@ -551,8 +557,10 @@ body.hud2 #stickBase.sprint #stickKnob svg{display:block}
       <div class="goal">PRIMERO A 10</div>
       <div class="side bots"><b id="kBots">0</b><span id="kBotsLbl">BOTS</span></div>
     </div>
+    <div id="clock" hidden>10:00</div>
     <div id="rangeHud" hidden><span>DISPAROS<b id="rS">0</b></span><span>IMPACTOS<b id="rH">0</b></span><span>CABEZA<b id="rC">0</b></span><span>PRECISIÓN<b id="rA">0%</b></span><span>S ENTRE BAJAS<b id="rT">–</b></span><span>BAJAS<b id="rK">0</b></span><span>DAÑO<b id="rD">0</b></span><span>NAVAJA<b id="rN">0</b></span></div>
   </div>
+  <canvas id="mini" hidden aria-hidden="true"></canvas>
   <div id="feed"></div>
   <div id="cross"><i></i><i></i><i></i><i></i><b></b></div>
   <div id="vignette"></div>
@@ -694,6 +702,7 @@ body.hud2 #stickBase.sprint #stickKnob svg{display:block}
       <div class="setGrid">
         <label class="chk"><input type="checkbox" id="sHit"> Mostrar marcador de impacto (la X al acertar)</label>
         <label class="chk"><input type="checkbox" id="sDmg"> Mostrar de dónde viene el daño recibido</label>
+        <label class="chk"><input type="checkbox" id="sMini"> Minimapa arriba a la izquierda (los enemigos salen cuando disparan)</label>
       </div>
       <p class="setHelp">Solo cambian lo que ves: el daño, el retroceso y las reglas son siempre las del juego (y online, las del servidor).</p>
     </section>
@@ -811,6 +820,8 @@ body.hud2 #stickBase.sprint #stickKnob svg{display:block}
           </div>
           <div class="lbl" id="lblDuelLethal" style="margin:10px 0 6px">Bots pueden matarte</div>
           <div class="seg" id="duelLethalSeg" role="group" aria-label="Bots pueden matarte (duelo)"><button type="button" data-l="0">NO</button><button type="button" data-l="1">SÍ</button></div>
+          <div class="lbl" style="margin:10px 0 6px">Tiempo de la partida</div>
+          <div class="seg" id="offTimeSeg" role="group" aria-label="Tiempo de la partida"><button type="button" data-t="5">5 MIN</button><button type="button" data-t="10">10 MIN</button><button type="button" data-t="15">15 MIN</button><button type="button" data-t="0">SIN LÍMITE</button></div>
         </div>
         <div>
           <div class="lbl" style="margin-bottom:6px">Sensibilidad general</div>
@@ -910,7 +921,7 @@ body.hud2 #stickBase.sprint #stickKnob svg{display:block}
     <div id="mpLobby" hidden style="display:grid;gap:14px">
       <div style="display:grid;gap:4px"><span class="lbl">Código de sala</span><div id="mpCodeBig">------</div></div>
       <div class="row"><button class="btn ghost" id="mpCopy" type="button" style="font-size:20px">COPIAR CÓDIGO</button><button class="btn ghost" id="mpShare" type="button" style="font-size:20px">COMPARTIR INVITACIÓN</button></div>
-      <div style="display:grid;gap:6px"><p class="mpLink" id="mpLink" style="margin:0"></p><span class="lbl">Mapa (lo elige quien crea la sala)</span><div class="seg" id="mpMapSeg" role="group" aria-label="Mapa"><button type="button" data-map="arena">ARENA DE PRUEBAS</button><button type="button" data-map="pueblo">PUEBLO</button><button type="button" data-map="casa" hidden>CASA ATLAS · EXP.</button></div><span class="lbl">Tu arma principal</span><div class="seg kitSeg" role="group" aria-label="Arma principal"><button type="button" data-kit="rifle">HALCÓN R7</button><button type="button" data-kit="shotgun">FURIA 12</button></div><span class="lbl skinOnly" hidden>Tu personaje (tu rival lo verá)</span><button type="button" class="skinPick skinOnly" aria-label="Elegir personaje" hidden><img alt=""><b></b><span class="lbl">CAMBIAR</span></button></div>
+      <div style="display:grid;gap:6px"><p class="mpLink" id="mpLink" style="margin:0"></p><span class="lbl">Mapa (lo elige quien crea la sala)</span><div class="seg" id="mpMapSeg" role="group" aria-label="Mapa"><button type="button" data-map="arena">ARENA DE PRUEBAS</button><button type="button" data-map="pueblo">PUEBLO</button><button type="button" data-map="casa" hidden>CASA ATLAS · EXP.</button></div><span class="lbl">Bajas para ganar y tiempo (también los elige quien crea la sala)</span><div class="seg" id="mpKillSeg" role="group" aria-label="Bajas para ganar"><button type="button" data-k="5">5 BAJAS</button><button type="button" data-k="10">10</button><button type="button" data-k="20">20</button><button type="button" data-k="30">30</button></div><div class="seg" id="mpTimeSeg" role="group" aria-label="Tiempo de la partida"><button type="button" data-t="5">5 MIN</button><button type="button" data-t="10">10</button><button type="button" data-t="15">15</button><button type="button" data-t="20">20</button><button type="button" data-t="0">SIN LÍMITE</button></div><span class="lbl">Tu arma principal</span><div class="seg kitSeg" role="group" aria-label="Arma principal"><button type="button" data-kit="rifle">HALCÓN R7</button><button type="button" data-kit="shotgun">FURIA 12</button></div><span class="lbl skinOnly" hidden>Tu personaje (tu rival lo verá)</span><button type="button" class="skinPick skinOnly" aria-label="Elegir personaje" hidden><img alt=""><b></b><span class="lbl">CAMBIAR</span></button></div>
       <ul id="mpPlayers"></ul>
       <p class="mpMsg" id="mpStatus">ESPERANDO AL SEGUNDO JUGADOR…</p>
       <div class="row"><button class="btn" id="mpReady" type="button">LISTO</button><button class="btn ghost" id="mpLeave" type="button" style="font-size:20px">SALIR</button></div>
@@ -1916,6 +1927,7 @@ if (isNode) module.exports = SDPlayer; else root.SDPlayer = SDPlayer;
      kit     { t, id }                       my primary: 'rifle' (HALCÓN R7) or 'shotgun' (FURIA 12), used from my next spawn
      skin    { t, id }                       my character (looks only): 'soldado', 'clasico', 'swat', 'fsb' or 'militar'
      acct    { t, tok }                      my cloud account session (optional): title in the lobby, box points
+     cfg     { t, kills, time }              lobby, creator only: kills to win (5/10/20/30), minutes (0 = no limit)
      in      { t, m, s, c:[cmd...] }         commands of match m, first sequence number s
      rematch { t }                           after the end: play again
      ping    { t, c }                        c = client clock (ms)
@@ -2003,6 +2015,7 @@ function parse(text) {
     case 'kit': return m.id === 'rifle' || m.id === 'shotgun' ? { msg: { t: 'kit', id: m.id } } : { error: 'shape' };
     case 'skin': return SKINS.includes(m.id) ? { msg: { t: 'skin', id: m.id } } : { error: 'shape' };
     case 'acct': return typeof m.tok === 'string' && /^SD-[A-Z2-9]{4}-[A-Z2-9]{4}\.[A-Za-z0-9_-]{20,64}$/.test(m.tok) ? { msg: { t: 'acct', tok: m.tok } } : { error: 'shape' };
+    case 'cfg': return Number.isInteger(m.kills) && Number.isInteger(m.time) ? { msg: { t: 'cfg', kills: m.kills, time: m.time } } : { error: 'shape' };
     case 'map': return typeof m.id === 'string' && /^[a-z]{2,16}$/.test(m.id) ? { msg: { t: 'map', id: m.id } } : { error: 'shape' };
     case 'rematch': return { msg: { t: 'rematch' } };
     case 'ping': return num(m.c, 0, 1e15) && (m.r === undefined || num(m.r, 0, 1e5)) ? { msg: { t: 'ping', c: m.c, r: m.r === undefined ? undefined : Math.min(600, m.r) } } : { error: 'shape' };
@@ -2166,6 +2179,7 @@ const DEFAULTS = {
   volMaster: 1, volShots: 1, volFx: 1, volSteps: 1, volAmb: 1, mute: false,
   // gameplay info (only what the player sees; never the rules)
   hitmarkers: true, dmgDir: true,
+  minimap: true,    // minimap at the top left: the map from above and the enemies when they shoot
   // accessibility
   lowFlash: false,  // softer red damage flash and screen shake (visual only)
   // HUD 2 (?hud=2) only: peek keys and modes, mouse wheel to switch weapons
@@ -2180,7 +2194,7 @@ const CATEGORIES = {
   sensibilidad: ['sensH', 'sensV', 'adsSens', 'adsH', 'adsV', 'touchLook', 'touchDead', 'smooth', 'invertY'],
   graficos: ['quality', 'fpsCap', 'showFps'],
   audio: ['volMaster', 'volShots', 'volFx', 'volSteps', 'volAmb', 'mute'],
-  jugabilidad: ['hitmarkers', 'dmgDir'],
+  jugabilidad: ['hitmarkers', 'dmgDir', 'minimap'],
   accesibilidad: ['calmVM', 'lowFlash']
 };
 // Phones start from different values (agreed after testing on iPhone); PC defaults are unchanged.
@@ -2203,7 +2217,7 @@ function sanitize(o, touch) {
     const v = Number(o[k]);
     if (o[k] !== undefined && o[k] !== null && o[k] !== '' && isFinite(v)) s[k] = clamp(v, RANGES[k][0], RANGES[k][1]);
   }
-  for (const k of ['invertY', 'leftFire', 'releaseFire', 'showFps', 'calmVM', 'mute', 'hitmarkers', 'dmgDir', 'lowFlash', 'wheelSwap']) if (typeof o[k] === 'boolean') s[k] = o[k];
+  for (const k of ['invertY', 'leftFire', 'releaseFire', 'showFps', 'calmVM', 'mute', 'hitmarkers', 'dmgDir', 'minimap', 'lowFlash', 'wheelSwap']) if (typeof o[k] === 'boolean') s[k] = o[k];
   // peek keys: a key code (the HUD 2 settings only offer free keys); never the same key for both sides
   const KEY = /^[A-Za-z][A-Za-z0-9]{1,19}$/;
   if (KEY.test(o.leanKeyL) && KEY.test(o.leanKeyR) && o.leanKeyL !== o.leanKeyR) { s.leanKeyL = o.leanKeyL; s.leanKeyR = o.leanKeyR; }
@@ -2778,6 +2792,9 @@ function create(opts) {
   N.ready = on => out({ t: 'ready', on: !!on });
   N.rematch = () => out({ t: 'rematch' });
   N.chooseMap = id => out({ t: 'map', id });
+  // the room's settings (creator): kills to win and minutes (0 = no limit); timeLeft = ms left, from the snapshots
+  N.cfg = { kills: 10, time: 10 }; N.timeLeft = null;
+  N.setCfg = (kills, time) => out({ t: 'cfg', kills, time });
   // my primary ('rifle' | 'shotgun'): the server uses it from my next spawn, and so does my prediction
   N.kit = 'rifle';
   N.chooseKit = id => { if (id !== 'rifle' && id !== 'shotgun') return; N.kit = id; out({ t: 'kit', id }); };
@@ -2853,10 +2870,11 @@ function create(opts) {
     switch (m.t) {
       // a welcome opens a new socket: the server only numbers events from here on, and a restarted
       // server object (every deploy) numbers them again from 1, so the old count must not filter them
-      case 'welcome': N.you = m.you; N.token = m.token; N.code = m.code; N.phase = m.phase; N.players = m.players; N.match = m.match; N.lastEvQ = 0; ev.push({ k: 'welcome', m }); break;
-      case 'lobby': N.phase = m.phase; N.players = m.players; if (m.map) N.map = m.map; if (m.maps) N.maps = m.maps; ev.push({ k: 'lobby', m }); break;
+      case 'welcome': N.you = m.you; N.token = m.token; N.code = m.code; N.phase = m.phase; N.players = m.players; N.match = m.match; N.lastEvQ = 0; if (m.cfg) N.cfg = m.cfg; ev.push({ k: 'welcome', m }); break;
+      case 'lobby': N.phase = m.phase; N.players = m.players; if (m.map) N.map = m.map; if (m.maps) N.maps = m.maps; if (m.cfg) N.cfg = m.cfg; ev.push({ k: 'lobby', m }); break;
       case 'start':
         N.match = m.m; if (m.map) N.map = m.map; N.names = m.names || {}; N.phase = 'countdown'; N.startIn = m.in; N.startedAt = N.now();
+        N.rules = m.rules || {}; N.timeLeft = N.rules.timeMs || null;
         if (!m.resume) { N.pending = []; N.outBuf = []; N.lastAck = -1; N.remote = []; N.score = { A: 0, B: 0 }; N.seenShots.clear(); N.corrMax = 0;
           SDP.respawn(N.local, m.spawn.x, 0, m.spawn.z, N.kit); }   // same spawn as the server: no correction on the first snapshot
         else { N.lastAck = m.lastSeq; N.pending = N.pending.filter(p => p.seq > m.lastSeq); }
@@ -2869,7 +2887,7 @@ function create(opts) {
         if (m.ph === 'playing' && N.phase === 'countdown') N.phase = 'playing';
         if (m.ph === 'paused') N.phase = 'paused'; else if (m.ph === 'playing') N.phase = 'playing';
         const wasAlive = N.alive;
-        N.hp = m.hp; N.alive = !!m.alive; N.score = m.sc;
+        N.hp = m.hp; N.alive = !!m.alive; N.score = m.sc; N.timeLeft = typeof m.tl === 'number' ? m.tl : null;
         reconcile(m);
         pushRemote(m.op, m.now);
         if (wasAlive !== N.alive) ev.push({ k: N.alive ? 'alive' : 'dead' });
@@ -5302,7 +5320,7 @@ const SDCamo = { draw, texture, detail, patch, swatch, SCALE };
 if (typeof module !== 'undefined' && module.exports) module.exports = SDCamo; else root.SDCamo = SDCamo;
 })(typeof window !== 'undefined' ? window : globalThis);
 
-const BUILD_ID="10ab5f7";const BUILD_HASH="a116c34e6b";
+const BUILD_ID="41afe1f";const BUILD_HASH="1bb8ca77ef";
 </script>
 <script>
 (function(){
@@ -7603,6 +7621,7 @@ class Bot{
     worldFlash(mz,1.3);emit(mz,{n:4,color:0xb8a890,size:0.5,grow:1.6,life:1.4,spread:0.3,up:0.4,op:0.45});
     const pan=clamp(Math.sin(angDiff(bearingTo(this.g.position.x,this.g.position.z),heading()*Math.PI/180)),-1,1)*0.85;
     SFX.distant(this.dist,pan,Math.min(0.25,this.dist/343));
+    miniPing(this.g.position.x,this.g.position.z);
     compassMarks.push({b:bearingDeg(this.g.position.x,this.g.position.z),until:gameTime+3});
     this.cool=rand(1.6,2.1);this.aimT=this.reaction*0.45;
     const sp=Math.hypot(P.vel.x,P.vel.z);
@@ -8479,13 +8498,13 @@ let SETTINGS=SDSettings.load(store,isTouch);
 gfxApply();
 const SET_UI=[['sH','sensH'],['sV','sensV'],['sA','adsSens'],['sAH','adsH'],['sAV','adsV'],['sT','touchLook'],['sDZ','touchDead'],['sSM','smooth'],['vM','volMaster'],['vS','volShots'],['vF','volFx'],['vP','volSteps'],['vA','volAmb']];
 // on/off settings: checkbox id → setting
-const SET_CHK=[['sInv','invertY'],['sLeft','leftFire'],['sRel','releaseFire'],['sShowFps','showFps'],['sCalm','calmVM'],['sMute','mute'],['sHit','hitmarkers'],['sDmg','dmgDir'],['sFlash','lowFlash']];
+const SET_CHK=[['sInv','invertY'],['sLeft','leftFire'],['sRel','releaseFire'],['sShowFps','showFps'],['sCalm','calmVM'],['sMute','mute'],['sHit','hitmarkers'],['sDmg','dmgDir'],['sMini','minimap'],['sFlash','lowFlash']];
 const CROUCH_HELP={slide:'Un toque te agacha y otro te levanta. Si te deslizas corriendo, al acabar el deslizamiento te levantas solo.',toggle:'Un toque te agacha y otro te levanta; después de deslizarte sigues agachado.',hold:'Agachado mientras mantienes el botón o la tecla; al soltar te levantas.'};
 const ADS_HELP={holdDrag:'Mantén MIRA para apuntar y arrastra ese mismo dedo para mover la mira. Al soltar sales del visor.',hold:'Mantén MIRA para apuntar; la cámara se mueve con otro dedo. Al soltar sales del visor.',toggle:'Toca MIRA una vez para entrar en el visor y otra para salir. Mueve la cámara con cualquier dedo libre.'};
 function settingsToUI(){for(const [id,k] of SET_UI){$('#'+id).value=SETTINGS[k];$('#'+id+'o').textContent=/^vol/.test(k)?Math.round(SETTINGS[k]*100)+'%':(+SETTINGS[k]).toFixed(2);}for(const [id,k] of SET_CHK)$('#'+id).checked=!!SETTINGS[k];$('#sFps30').checked=SETTINGS.fpsCap===30;$('#sDiag').checked=TDIAG.on;$('#adsHelp').textContent=ADS_HELP[SETTINGS.adsMode]||'';document.querySelectorAll('#adsSeg button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.a===SETTINGS.adsMode)));document.querySelectorAll('#crouchSeg button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.c===SETTINGS.crouchMode)));document.querySelectorAll('#viewSeg button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.v===SETTINGS.view)));$('#crouchHelp').textContent=CROUCH_HELP[SETTINGS.crouchMode]||'';document.querySelectorAll('#qSeg button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.q===SETTINGS.quality)));gfxNote();
   const g=(SETTINGS.sensH+SETTINGS.sensV)/2;$('#sens').value=g;$('#sensOut').textContent=g.toFixed(2);if(HUD2)h2SettingsToUI();}
 function applyControlSettings(){TOUCH.dragScope=SETTINGS.adsMode!=='hold';TOUCH.cfg.dead=SETTINGS.touchDead;MOTION=(reduceMotion||SETTINGS.calmVM)?0.35:1;if(SETTINGS.adsMode!=='toggle')input.scopeToggle=false;
-  const B=document.body.classList;B.toggle('noHit',!SETTINGS.hitmarkers);B.toggle('noDmgDir',!SETTINGS.dmgDir);B.toggle('lowFlash',!!SETTINGS.lowFlash);}
+  const B=document.body.classList;B.toggle('miniOn',!!SETTINGS.minimap);B.toggle('noHit',!SETTINGS.hitmarkers);B.toggle('noDmgDir',!SETTINGS.dmgDir);B.toggle('lowFlash',!!SETTINGS.lowFlash);}
 function settingsChanged(){SETTINGS=SDSettings.sanitize(SETTINGS,isTouch);SDSettings.save(store,SETTINGS,isTouch);gfxApply();applyControlSettings();audioLevels();settingsToUI();
   const vb=document.getElementById('tbView');if(vb)vb.textContent=SETTINGS.view==='tp'?'1ª':'3ª';}   // the touch button shows the view it switches to
 // graphics: profile, adaptive resolution and FPS cap applied live (antialiasing only on reload)
@@ -8613,7 +8632,8 @@ function startMatch(){
   RANGE_BOTS=DUMMIES.concat(TRAINERS.slice(0,tcount));
   SDMelee.resetLoadout(LOAD);
   BULLETS.length=0;BTR.forEach(m=>m.visible=false);
-  Object.assign(STATS,{kills:0,deaths:0,hs:0,shots:0,hits:0,longest:0,botKills:0,rangeHs:0,firstShot:-1,lastKill:0,damage:0,meleeHits:0,meleeSwings:0});
+  Object.assign(STATS,{kills:0,deaths:0,hs:0,shots:0,hits:0,longest:0,botKills:0,rangeHs:0,firstShot:-1,lastKill:0,damage:0,meleeHits:0,meleeSwings:0,timeUp:false});
+  $('#score .goal').textContent='PRIMERO A '+GOAL;MINI.pings.length=0;$('#clock').hidden=true;
   const isRange=mode==='range';
   scene.fog.near=isRange?90:45;scene.fog.far=isRange?320:175;
   $('#score').hidden=isRange;$('#rangeHud').hidden=!isRange;updateRangeHud();
@@ -8638,19 +8658,19 @@ function resume(){if(state!=='paused')return;
   if(!isTouch&&performance.now()-lockExitAt<1150){const b=$('#resume');if(!b.dataset.wait){b.dataset.wait='1';b.disabled=true;const txt=b.textContent;b.textContent='UN MOMENTO…';
     setTimeout(()=>{b.disabled=false;b.textContent=txt;delete b.dataset.wait;},Math.max(50,1150-(performance.now()-lockExitAt)));}return;}clearPendingInput();state=pausedFrom;$('#pause').hidden=true;audioInit();if(!isTouch)requestLock();}
 function toMenu(){if(mode==='online'){netLeave(true);return;}if(HUD2)h2Clear();state='menu';setWorld(offWorld());$('#pause').hidden=true;$('#lockHint').hidden=true;$('#over').hidden=true;$('#hud').hidden=true;$('#scope').hidden=true;$('#death').hidden=true;$('#touch').hidden=true;$('#menu').hidden=false;BOTS.concat(DUMMIES,TRAINERS).forEach(b=>{b.alive=false;b.g.visible=false;b.trainerActive=false;});BULLETS.length=0;BTR.forEach(m=>m.visible=false);scene.fog.near=45;scene.fog.far=175;if(document.exitPointerLock&&pointerLocked)document.exitPointerLock();}
-function endMatch(win){
+function endMatch(win,why){   // win: true / false / null (draw, only when the time runs out)
   if(state==='over'||state==='menu')return;
   state='over';
-  $('#overTitle').textContent=win?'VICTORIA':'DERROTA';$('#overTitle').className=win?'win':'lose';
-  $('#overEyebrow').textContent='Fin de la partida · '+DIFFS[diff].name;
+  $('#overTitle').textContent=win?'VICTORIA':win===null?'EMPATE':'DERROTA';$('#overTitle').className=win?'win':win===null?'':'lose';
+  $('#overEyebrow').textContent=(why==='tiempo'?'Se acabó el tiempo · ':'Fin de la partida · ')+DIFFS[diff].name;
   $('#oK').textContent=STATS.kills;$('#oD').textContent=STATS.deaths;$('#oH').textContent=STATS.hs;
   $('#oA').textContent=(STATS.shots?Math.round(STATS.hits/STATS.shots*100):0)+'%';
   $('#oL').textContent=Math.round(STATS.longest)+' m';
   const secs=Math.round(gameTime-STATS.start);$('#oT').textContent=Math.floor(secs/60)+':'+String(secs%60).padStart(2,'0');
   $('#over').hidden=false;$('#scope').hidden=true;$('#death').hidden=true;$('#touch').hidden=true;
   if(document.exitPointerLock&&pointerLocked)document.exitPointerLock();
-  profileMatch({win,kills:STATS.kills,deaths:STATS.deaths,hs:STATS.hs,shots:STATS.shots,hits:STATS.hits,longest:STATS.longest});
-  invBots(win,secs);
+  profileMatch({win:!!win,kills:STATS.kills,deaths:STATS.deaths,hs:STATS.hs,shots:STATS.shots,hits:STATS.hits,longest:STATS.longest});
+  invBots(!!win,secs);
 }
 document.addEventListener('visibilitychange',()=>{if(document.hidden)pause();});
 // the browser loses focus (control centre, notification, app switcher): pause, which drops every held finger without shooting
@@ -8773,6 +8793,9 @@ function doKnifeHit(){
 }
 function simTick(dt){
   gameTime+=dt;
+  // offline duel: the time runs out (AJUSTES of the menu: 5/10/15 min or no limit) → more kills wins, equal is a draw
+  if(mode==='duel'&&OFF_TIME&&(state==='playing'||state==='dead')&&!STATS.timeUp&&gameTime-STATS.start>=OFF_TIME*60){
+    STATS.timeUp=true;endMatch(STATS.kills>STATS.botKills?true:STATS.kills<STATS.botKills?false:null,'tiempo');}
   runEvents();
   const online=mode==='online';
   // online: the match goes on while the pause menu is open (with no input), and only while
@@ -9386,6 +9409,9 @@ function renderLobby(){
   const two=(N.players||[]).filter(Boolean).length===2;const me=(N.players||[]).find(p=>p&&p.id===N.you);
   $('#mpReady').textContent=me&&me.ready?'NO ESTOY LISTO':'LISTO';
   document.querySelectorAll('#mpMapSeg button').forEach(b=>{b.setAttribute('aria-pressed',String(b.dataset.map===N.map));b.disabled=N.you!=='A';});
+  const C=N.cfg||{kills:10,time:10};
+  document.querySelectorAll('#mpKillSeg button').forEach(b=>{b.setAttribute('aria-pressed',String(+b.dataset.k===C.kills));b.disabled=N.you!=='A';});
+  document.querySelectorAll('#mpTimeSeg button').forEach(b=>{b.setAttribute('aria-pressed',String(+b.dataset.t===C.time));b.disabled=N.you!=='A';});
   if(N.map==='casa'){casaLoad();const cb=$('#mpMapSeg [data-map=casa]');if(cb)cb.hidden=false;}   // a guest without ?casa=1 still sees (and loads) the room's map
   $('#mpStatus').textContent=!two?'ESPERANDO AL SEGUNDO JUGADOR… Comparte el código o el enlace.':me&&me.ready?'Esperando a que el rival esté listo…':'Pulsa LISTO. Empieza cuando los dos lo estéis.';
 }
@@ -9418,6 +9444,7 @@ function netEvent(e){
       break;
     case 'shot':
       if(e.by===N.you){if(e.corrected)netErr('disparo corregido por el servidor');break;}
+      miniPing(e.o[0],e.o[2]);   // the rival fired: on the minimap for 3 s
       {const o=new T.Vector3(e.o[0],e.o[1],e.o[2]),d=new T.Vector3(e.d[0],e.d[1],e.d[2]);
        if(e.w==='shotgun'){const shot={id:'r'+e.id,snd:0},vs=o.clone().addScaledVector(d,0.9);for(const v of SDWeapon.pelletDirs(e.d,SCFG,e.ads||0,e.n||0))spawnBullet(o,new T.Vector3(v[0],v[1],v[2]),vs,SCFG,shot);}
        else spawnBullet(o,d,o.clone().addScaledVector(d,e.w==='pistol'?0.6:1.0),e.w==='pistol'?PCFG:GUNCFG);
@@ -9477,6 +9504,7 @@ function netEvent(e){
 function escapeHtml(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
 function netStart(m){
   const N=NET.N;
+  $('#score .goal').textContent='PRIMERO A '+((m.rules&&m.rules.kills)||10);if(!m.resume){$('#clock').hidden=true;MINI.pings.length=0;}
   setWorld(m.map||'pueblo');
   if(mode!=='online'){NET.prevMode=mode;mode='online';}
   if(!REMOTE)REMOTE=new RemotePlayer();
@@ -9507,7 +9535,7 @@ function netOver(e){
   const N=NET.N,me=N.you,other=me==='A'?'B':'A';
   const win=e.winner===me,draw=e.winner===null;
   const t=$('#overTitle');t.textContent=draw?'EMPATE':win?'VICTORIA':'DERROTA';t.className=win?'win':draw?'':'lose';
-  $('#overEyebrow').textContent=e.why==='abandono'?'El rival ha abandonado':'Fin de la partida · '+(e.sc[me]||0)+' – '+(e.sc[other]||0);
+  $('#overEyebrow').textContent=e.why==='abandono'?'El rival ha abandonado':(e.why==='tiempo'?'Se acabó el tiempo · ':'Fin de la partida · ')+(e.sc[me]||0)+' – '+(e.sc[other]||0);
   const st=(e.stats&&e.stats[me])||{};
   $('#oK').textContent=st.kills||0;$('#oD').textContent=st.deaths||0;$('#oH').textContent=st.hs||0;
   $('#oA').textContent=(st.shots?Math.round(st.hits/st.shots*100):0)+'%';$('#oL').textContent=Math.round(STATS.longest)+' m';
@@ -9561,6 +9589,8 @@ window.addEventListener('online',()=>{if(NET.want&&!NET.ws){NET.retryAt=0;}});
 $('#mpName').value=store.get('mpName','')||PROFILE.name||'';
 $('#mpBtn').addEventListener('click',()=>{audioInit();SFX.ui();mpShow(NET.N&&NET.code?'lobby':'home');mpMsg('');netServerUrl();});
 document.querySelectorAll('#mpMapSeg button').forEach(b=>b.addEventListener('click',()=>{const N=NET.N;if(!N||N.you!=='A')return;N.chooseMap(b.dataset.map);SFX.ui();}));
+document.querySelectorAll('#mpKillSeg button').forEach(b=>b.addEventListener('click',()=>{const N=NET.N;if(!N||N.you!=='A')return;N.setCfg(+b.dataset.k,(N.cfg||{}).time==null?10:N.cfg.time);SFX.ui();}));
+document.querySelectorAll('#mpTimeSeg button').forEach(b=>b.addEventListener('click',()=>{const N=NET.N;if(!N||N.you!=='A')return;N.setCfg((N.cfg||{}).kills||10,+b.dataset.t);SFX.ui();}));
 // primary weapon: the same choice in the menu, the lobby, the pause menu and the end screen.
 // It never swaps the gun in your hands: it is used from your next spawn (offline and online).
 function setPrimaryChoice(id){if(id!=='rifle'&&id!=='shotgun')return;PRIMARY=id;store.set('primary',id);
@@ -9907,6 +9937,59 @@ $('#mpShare').addEventListener('click',async()=>{const url=inviteLink(NET.code);
 {const inv=new URLSearchParams(location.search).get('sala');if(inv&&SDProto.isCode(inv.toUpperCase())){$('#mpCode').value=inv.toUpperCase();
   setTimeout(()=>{mpShow('home');const tok=store.get('tok_'+inv.toUpperCase(),null);mpMsg(tok?'Volviendo a tu sala '+inv.toUpperCase()+'…':'Te han invitado a la sala '+inv.toUpperCase()+'. Escribe tu nombre y pulsa UNIRSE.');if(tok)netJoin(inv);},50);}}
 
+/* =================== RELOJ Y MINIMAPA (28-10-2026) ===================
+   Reloj: cuenta atrás de la partida. Online lo manda el servidor (snapshots: 'tl'); contra bots, OFF_TIME minutos del
+   menú (5/10/15 o sin límite; por defecto 10). En el último minuto, en rojo.
+   Minimapa: arriba a la izquierda, girado con tu vista (arriba = adonde miras). El mapa desde arriba sale de las cajas de
+   colisión del mundo a la altura del cuerpo (en el móvil, arriba a la derecha: ahí a la izquierda está la vida) (claras las altas, más tenues las bajas); un enemigo sale como punto rojo
+   durante 3 s cuando dispara (nada más: si no dispara, no se ve). AJUSTES › JUGABILIDAD › Minimapa. */
+let OFF_TIME=[0,5,10,15].includes(store.get('offTime',10))?store.get('offTime',10):10;
+function setOffTime(t){OFF_TIME=t;store.set('offTime',t);document.querySelectorAll('#offTimeSeg button').forEach(b=>b.setAttribute('aria-pressed',String(+b.dataset.t===t)));}
+document.querySelectorAll('#offTimeSeg button').forEach(b=>b.addEventListener('click',()=>{setOffTime(+b.dataset.t);SFX.ui();}));
+setOffTime(OFF_TIME);
+function clockFrame(){
+  const el=$('#clock');let left=null;
+  if(mode==='online'){if(NET.N&&NET.N.timeLeft!=null)left=NET.N.timeLeft/1000;}
+  else if(mode==='duel'&&OFF_TIME)left=Math.max(0,OFF_TIME*60-(gameTime-STATS.start));
+  const show=left!=null;if(el.hidden===show)el.hidden=!show;if(!show)return;
+  const s=Math.ceil(left),txt=Math.floor(s/60)+':'+String(s%60).padStart(2,'0');if(el.textContent!==txt)el.textContent=txt;
+  const low=s<=60;if(el.classList.contains('low')!==low)el.classList.toggle('low',low);
+}
+const MINI={layers:{},pings:[],last:0};
+function miniPing(x,z){MINI.pings.push({x,z,t:gameTime});if(MINI.pings.length>24)MINI.pings.shift();}
+// the map from above, once per world: body-height obstacles of the collision boxes
+function miniLayer(){
+  if(MINI.layers[WORLD_ID])return MINI.layers[WORLD_ID];
+  const cs=W.colliders.filter(c=>c.minY<1.9&&c.maxY>0.4&&!(c.maxX-c.minX>50&&c.maxZ-c.minZ>50));
+  if(!cs.length)return null;
+  let x0=1e9,x1=-1e9,z0=1e9,z1=-1e9;for(const c of cs){x0=Math.min(x0,c.minX);x1=Math.max(x1,c.maxX);z0=Math.min(z0,c.minZ);z1=Math.max(z1,c.maxZ);}
+  x0-=6;z0-=6;x1+=6;z1+=6;const ext=Math.max(x1-x0,z1-z0),ppm=Math.min(8,1600/ext);
+  const cv=document.createElement('canvas');cv.width=Math.ceil((x1-x0)*ppm);cv.height=Math.ceil((z1-z0)*ppm);const g=cv.getContext('2d');
+  for(const low of [true,false]){g.fillStyle=low?'rgba(244,234,216,.32)':'rgba(244,234,216,.72)';
+    for(const c of cs)if((c.maxY<1.5)===low)g.fillRect((c.minX-x0)*ppm,(c.minZ-z0)*ppm,Math.max(1,(c.maxX-c.minX)*ppm),Math.max(1,(c.maxZ-c.minZ)*ppm));}
+  return MINI.layers[WORLD_ID]={cv,x0,z0,ppm,radius:clamp(ext*0.3,9,34)};
+}
+function miniFrame(){
+  const cv=$('#mini'),on=!!SETTINGS.minimap&&(state==='playing'||state==='dead'||state==='paused');
+  if(cv.hidden===on)cv.hidden=!on;if(!on)return;
+  const t=performance.now();if(t-MINI.last<45)return;MINI.last=t;   // ~20 times a second is plenty
+  const L=miniLayer(),dpr=Math.min(2,window.devicePixelRatio||1),px=Math.round((cv.clientWidth||150)*dpr),r=px/2;
+  if(cv.width!==px){cv.width=px;cv.height=px;}
+  const g=cv.getContext('2d');g.setTransform(1,0,0,1,0,0);g.clearRect(0,0,px,px);
+  g.save();g.beginPath();g.arc(r,r,r-dpr,0,7);g.clip();g.fillStyle='rgba(12,10,8,.6)';g.fillRect(0,0,px,px);
+  const R=L?L.radius:30,k=(r-2*dpr)/R,rot=-Math.PI/2-Math.atan2(-Math.cos(P.yaw),-Math.sin(P.yaw));
+  g.translate(r,r);g.rotate(rot);g.scale(k,k);g.translate(-PM.x,-PM.z);
+  if(L)g.drawImage(L.cv,L.x0,L.z0,L.cv.width/L.ppm,L.cv.height/L.ppm);
+  const now=gameTime;MINI.pings=MINI.pings.filter(p=>now-p.t<3&&now>=p.t);
+  for(const p of MINI.pings){const f=1-(now-p.t)/3;g.fillStyle='rgba(229,72,58,'+(0.3+0.7*f).toFixed(2)+')';g.beginPath();g.arc(p.x,p.z,(3.2+2.5*(1-f))*dpr/k,0,7);g.fill();}
+  g.restore();
+  // you: an arrow in the middle, pointing where you look; N on the rim
+  g.fillStyle='#f4ead8';g.beginPath();g.moveTo(r,r-7*dpr);g.lineTo(r+5*dpr,r+5*dpr);g.lineTo(r,r+2.5*dpr);g.lineTo(r-5*dpr,r+5*dpr);g.closePath();g.fill();
+  const na=rot-Math.PI/2;g.fillStyle='#ff8a2b';g.font='600 '+Math.round(11*dpr)+'px "IBM Plex Mono",monospace';g.textAlign='center';g.textBaseline='middle';
+  g.fillText('N',r+Math.cos(na)*(r-9*dpr),r+Math.sin(na)*(r-9*dpr));
+  g.strokeStyle='rgba(244,234,216,.35)';g.lineWidth=dpr;g.beginPath();g.arc(r,r,r-dpr,0,7);g.stroke();
+}
+
 /* =================== LOOP =================== */
 let last=performance.now();let menuAng=0;let rangeT=0;let simAcc=0;
 // test hook: MANUAL.on stops the clock-driven loop so a recorder can step exact 1/30 s frames (__SD.advance)
@@ -9931,7 +10014,7 @@ function frameBody(now){
     updateCamera(rdt,clamp(simAcc/TICK_DT,0,1));
     if(DIAG.want||DIAG.group)DIAG.frame(rdt);
     updateViewmodel(rdt);
-    updateCompass();
+    updateCompass();clockFrame();miniFrame();
     if(WCORE.ads>=GUNCFG.scopeAt){rangeT-=rdt;if(rangeT<=0){rangeT=0.1;_ae.set(AIM.pitch,AIM.yaw,0,'YXZ');_aq.setFromEuler(_ae);RAY.set(camera.position,new T.Vector3(0,0,-1).applyQuaternion(_aq));RAY.near=0;RAY.far=400;const h=RAY.intersectObjects(shotTargets(),false);$('#rng').textContent=h.length?String(Math.round(h[0].distance)).padStart(3,'0'):'---';}}
   }else if(state==='menu'){
     menuAng+=rdt*0.04;
@@ -10207,7 +10290,7 @@ if(FLORA.on){const gl=new T.GLTFLoader();let n=2;
       // the town's ground must exist first (rays land on it)
       if(P3W.kit)go();else{const w=setInterval(()=>{if(P3W.kit){clearInterval(w);go();}},300);}}}}
 
-window.__SD={ACC,accRefresh,INV,invSync,camoApply,openInv,invOpenBox,WSKIN,WS_ST,setWskin,get RIF(){return RIF;},TPV,SELF,get PROFILE(){return PROFILE;},openProfile,endMatch,PJ_MIX,MIX_ORDER,SKINS,get SKIN(){return SKIN;},setSkin,pj2SetPack,rivalSkin,PERF,perfRun,HUD2,get H2(){return HUD2?H2:null;},leanIn:HUD2?leanIn:null,h2Frame:HUD2?h2Frame:null,PJ2,pj2Load,CASA,casaLoad,XL,casaxlLoad,FLORA,RATS,RAT_WORLD,ratsFrame,SHADOW_FADE,setDuelLethal,get DUEL_LETHAL(){return DUEL_LETHAL;},gfxDiagText,get P3ON(){return P3ON;},COBCC,damagePlayer,TEX,sunFollow,setSunSnap(on){SUN_SNAP=!!on;},sun,P0,E10,e10Lod,DIAG,setTrainMove,LIGHT:{sun,hemi,skyMat,LOOK,P3},P3W,freeze(on){SIM_FREEZE=!!on;},SHOT,VMA,makeSoldier,animateSoldier,BOT_MAT,scene,camera,RemotePlayer,PMprev,PIS,PROOT,RIF,WROOT,SHO_:null,MANUAL,advance(ms){frameBody(last+ms);},get LAST_PELLETS(){return LAST_PELLETS;},SCORE,SCFG,SROOT,SHO,setPrimaryChoice,get PRIMARY(){return PRIMARY;},PCORE,PCFG,setWorld,WORLDS,get WORLD_ID(){return WORLD_ID;},renderer,GFX,gfxApply,get NET(){return NET;},get REMOTE(){return REMOTE;},W,get NAV(){return NAV;},setOffMap,get OFFMAP(){return OFFMAP;},TOUCH,EDIT,openEditor,get SETTINGS(){return SETTINGS;},get LAYOUT(){return LAYOUT;},checkOrientation,MAT,LOAD,TRAINERS,get RANGE_BOTS(){return RANGE_BOTS;},TRAIN,setTrain,setLethal,kitNote,GINS,TDIAG,AU,get TOUCH_EVENTS(){return TOUCH_EVENTS;},impactFX,bodyFX,get DECALS(){return DECALS;},surfaceOf,soundDelay,aimSelfTest,P,PM,WS,WCORE,RECOIL,AIM,BOTS,DUMMIES,BULLETS,EVENTS,PARTS,STATS,get state(){return state;},get mode(){return mode;},setMode,input,startMatch,simTick,frame,toMenu,pause,resume};
+window.__SD={MINI,miniLayer,miniPing,clockFrame,setOffTime,get OFF_TIME(){return OFF_TIME;},ACC,accRefresh,INV,invSync,camoApply,openInv,invOpenBox,WSKIN,WS_ST,setWskin,get RIF(){return RIF;},TPV,SELF,get PROFILE(){return PROFILE;},openProfile,endMatch,PJ_MIX,MIX_ORDER,SKINS,get SKIN(){return SKIN;},setSkin,pj2SetPack,rivalSkin,PERF,perfRun,HUD2,get H2(){return HUD2?H2:null;},leanIn:HUD2?leanIn:null,h2Frame:HUD2?h2Frame:null,PJ2,pj2Load,CASA,casaLoad,XL,casaxlLoad,FLORA,RATS,RAT_WORLD,ratsFrame,SHADOW_FADE,setDuelLethal,get DUEL_LETHAL(){return DUEL_LETHAL;},gfxDiagText,get P3ON(){return P3ON;},COBCC,damagePlayer,TEX,sunFollow,setSunSnap(on){SUN_SNAP=!!on;},sun,P0,E10,e10Lod,DIAG,setTrainMove,LIGHT:{sun,hemi,skyMat,LOOK,P3},P3W,freeze(on){SIM_FREEZE=!!on;},SHOT,VMA,makeSoldier,animateSoldier,BOT_MAT,scene,camera,RemotePlayer,PMprev,PIS,PROOT,RIF,WROOT,SHO_:null,MANUAL,advance(ms){frameBody(last+ms);},get LAST_PELLETS(){return LAST_PELLETS;},SCORE,SCFG,SROOT,SHO,setPrimaryChoice,get PRIMARY(){return PRIMARY;},PCORE,PCFG,setWorld,WORLDS,get WORLD_ID(){return WORLD_ID;},renderer,GFX,gfxApply,get NET(){return NET;},get REMOTE(){return REMOTE;},W,get NAV(){return NAV;},setOffMap,get OFFMAP(){return OFFMAP;},TOUCH,EDIT,openEditor,get SETTINGS(){return SETTINGS;},get LAYOUT(){return LAYOUT;},checkOrientation,MAT,LOAD,TRAINERS,get RANGE_BOTS(){return RANGE_BOTS;},TRAIN,setTrain,setLethal,kitNote,GINS,TDIAG,AU,get TOUCH_EVENTS(){return TOUCH_EVENTS;},impactFX,bodyFX,get DECALS(){return DECALS;},surfaceOf,soundDelay,aimSelfTest,P,PM,WS,WCORE,RECOIL,AIM,BOTS,DUMMIES,BULLETS,EVENTS,PARTS,STATS,get state(){return state;},get mode(){return mode;},setMode,input,startMatch,simTick,frame,toMenu,pause,resume};
 })();
 </script>
 

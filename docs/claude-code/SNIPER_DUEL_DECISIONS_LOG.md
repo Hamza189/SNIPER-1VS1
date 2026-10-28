@@ -14,7 +14,8 @@ Detalle de cada cambio (antes/después, medidas, cómo revertir): `docs/next-lev
 | **Cuentas** — probar en el iPhone: PERFIL › CREAR CUENTA (Face ID), ENTRAR en otro dispositivo, amigos e invitación (ya sin bandera) | Propietario | PUBLICADO · PENDIENTE DE VALIDACIÓN EN IPHONE |
 | **Cajas y objetos** — probar en el iPhone (ya sin bandera): menú › CAJAS (abrir, caja diaria, equipar camuflaje, mira y título), y una partida online de más de 1 min con cuenta los dos | Propietario | PUBLICADO · PENDIENTE DE VALIDACIÓN EN IPHONE |
 | **Balas del servidor a 600 m/s** (arreglado el 28-10, antes volaban a la mitad) — probar online entre dos dispositivos que los disparos a un rival que corre cuentan como se ven | Propietario | PUBLICADO · PENDIENTE DE PROBAR ONLINE |
-| **Regeneración de vida online** — mismo fallo de reloj que tenían las balas: online cura 6–11 de vida/s en vez de los 22 de la regla (y del modo contra bots). Corregirlo cambia el equilibrio online | Propietario | NECESITA APROBACIÓN |
+| **Reloj, ajustes de sala y minimapa** — probar en el iPhone y el PC: el reloj (10 min por defecto; menú › Tiempo), MULTIJUGADOR › bajas y tiempo, y el minimapa (arriba a la izquierda en PC, a la derecha en el móvil; AJUSTES › JUGABILIDAD para quitarlo) | Propietario | PUBLICADO · PENDIENTE DE VALIDACIÓN EN IPHONE |
+| **Sala personalizada: todos contra todos y equipos mixtos con bots del servidor** (fases 2 y 3 de `docs/SALAS-PERSONALIZADAS.md`) | Claude | EN CURSO |
 | **Monetización** — decidir los puntos 2, 3 y 5 de `docs/CUENTAS-Y-MONETIZACION.md` §5 (portal web, pagos, consulta de ingresos); el 4 (cajas gratuitas) ya está | Propietario | NECESITA APROBACIÓN |
 | **Probar 3ª persona (tecla V / AJUSTES; permitida online) y el quickscope**; decidir si el agua de `?pulido=1` pasa a ser la de siempre | Propietario | PUBLICADO · PENDIENTE DE VALIDACIÓN EN IPHONE |
 | **Elegir personaje** (5 con el SOLDADO de `?pj=2`) — ya sale sin bandera: menú › Tu personaje; probar online con otro dispositivo que el rival ve el elegido | Propietario | PUBLICADO · PENDIENTE DE VALIDACIÓN ONLINE |
@@ -90,6 +91,23 @@ main», sin olvidar que con `?pj=2` no se podía elegir personaje.
 - En BAJO, como antes con `?pj=pro`: tu elección la ve el rival, pero en tu pantalla se ven los soldados de cajas.
 - Estado: IMPLEMENTADO · PROBADO EN NAVEGADOR · PROBADO ONLINE (servidor local) · el propietario ya lo validó en iPhone y PC
   con las banderas.
+
+## 28-10-2026 (noche, 4) — Regeneración online, reloj de partida, ajustes de sala y minimapa (fase 1)
+Decisiones del propietario:
+- «Sí, corrígelo» (regeneración online).
+- «Añade tiempo, un contador que empiece desde 10 minutos», «ajuste de modo sala personalizada para poner bots y amigos»
+  y «un mapa en el lateral para ver el mapa, los obstáculos y los enemigos cuando disparan».
+- Para la sala: «todos contra todos y equipos mixtos».
+Lo hecho:
+- Regeneración online a 22 de vida/s (antes 6–11, mismo fallo de reloj que las balas).
+- Reloj de partida: 10 min por defecto. Contra bots se elige en el menú; online, quien crea la sala elige bajas
+  (5/10/20/30) y tiempo (5/10/15/20 o sin límite). Al acabarse el tiempo gana quien tiene más bajas; si van iguales,
+  empate.
+- Minimapa girado con la vista: obstáculos del mapa y enemigos solo cuando disparan (3 s). Arriba a la izquierda en PC
+  y a la derecha en el móvil; se quita en AJUSTES.
+- Pruebas: `room` (+12), `reloj.browser` (14, nueva). Detalle y plan de las fases 2 (todos contra todos con bots del
+  servidor) y 3 (equipos mixtos): `docs/SALAS-PERSONALIZADAS.md`.
+- IMPLEMENTADO · PROBADO EN NAVEGADOR · PENDIENTE DE VALIDACIÓN EN IPHONE.
 
 ## 28-10-2026 (noche, 3) — Las balas del servidor ya vuelan a 600 m/s
 Decisión del propietario: «Sí, arréglalo» (velocidad de las balas del servidor).

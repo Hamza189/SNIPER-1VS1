@@ -30,6 +30,7 @@ const DEFAULTS = {
   volMaster: 1, volShots: 1, volFx: 1, volSteps: 1, volAmb: 1, mute: false,
   // gameplay info (only what the player sees; never the rules)
   hitmarkers: true, dmgDir: true,
+  minimap: true,    // minimap at the top left: the map from above and the enemies when they shoot
   // accessibility
   lowFlash: false,  // softer red damage flash and screen shake (visual only)
   // HUD 2 (?hud=2) only: peek keys and modes, mouse wheel to switch weapons
@@ -44,7 +45,7 @@ const CATEGORIES = {
   sensibilidad: ['sensH', 'sensV', 'adsSens', 'adsH', 'adsV', 'touchLook', 'touchDead', 'smooth', 'invertY'],
   graficos: ['quality', 'fpsCap', 'showFps'],
   audio: ['volMaster', 'volShots', 'volFx', 'volSteps', 'volAmb', 'mute'],
-  jugabilidad: ['hitmarkers', 'dmgDir'],
+  jugabilidad: ['hitmarkers', 'dmgDir', 'minimap'],
   accesibilidad: ['calmVM', 'lowFlash']
 };
 // Phones start from different values (agreed after testing on iPhone); PC defaults are unchanged.
@@ -67,7 +68,7 @@ function sanitize(o, touch) {
     const v = Number(o[k]);
     if (o[k] !== undefined && o[k] !== null && o[k] !== '' && isFinite(v)) s[k] = clamp(v, RANGES[k][0], RANGES[k][1]);
   }
-  for (const k of ['invertY', 'leftFire', 'releaseFire', 'showFps', 'calmVM', 'mute', 'hitmarkers', 'dmgDir', 'lowFlash', 'wheelSwap']) if (typeof o[k] === 'boolean') s[k] = o[k];
+  for (const k of ['invertY', 'leftFire', 'releaseFire', 'showFps', 'calmVM', 'mute', 'hitmarkers', 'dmgDir', 'minimap', 'lowFlash', 'wheelSwap']) if (typeof o[k] === 'boolean') s[k] = o[k];
   // peek keys: a key code (the HUD 2 settings only offer free keys); never the same key for both sides
   const KEY = /^[A-Za-z][A-Za-z0-9]{1,19}$/;
   if (KEY.test(o.leanKeyL) && KEY.test(o.leanKeyR) && o.leanKeyL !== o.leanKeyR) { s.leanKeyL = o.leanKeyL; s.leanKeyR = o.leanKeyR; }

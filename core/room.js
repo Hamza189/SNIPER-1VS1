@@ -8,8 +8,10 @@
    gives it a send(connId, text) and close(connId) function.
 
    Rules of the first version
-   - 2 players, no bots, first to 10 kills. 100 HP, regeneration like offline
-     (after 5 s without damage, +22 HP/s). Respawn 3 s after dying, full HP, full magazine.
+   - 2 players, no bots, first to 10 kills or 10 minutes of play (the room's creator can change both in the lobby:
+     5/10/20/30 kills, 5/10/15/20 min or no limit). When the time runs out, more kills wins; equal is a draw.
+     100 HP, regeneration like offline (after 5 s without damage, +22 HP/s). Respawn 3 s after dying, full HP, full
+     magazine.
    - Bullets already flying when their shooter dies keep flying and can still hit.
    - Two kills in the same server tick: both count. If both reach 10 in the same tick, the
      match is a draw (winner null).
@@ -34,7 +36,9 @@ const RULES = { killsToWin: 10, hp: 100, respawnMs: 3000, countdownMs: 3000, reg
   reconnectMs: 60000, lobbySeatMs: 60000, silentMs: 6000, idleRoomMs: 15 * 60000, snapHz: 20, maxShotDev: 0.3, maxOriginDist: 0.9,
   // lag compensation: a bullet is tested against the rival where the shooter SAW them
   // (half the round trip + the client's interpolation delay), never more than maxRewindMs back
-  maxRewindMs: 250 };
+  maxRewindMs: 250, timeMin: 10 };
+// what the room's creator may choose (lobby 'cfg'): kills to win and minutes (0 = no time limit)
+const CFG_KILLS = [5, 10, 20, 30], CFG_TIME = [0, 5, 10, 15, 20];
 const DT = 1 / PR.LIMITS.tickHz;
 const GUN = CFG.rifles.halcon, PISTOL = CFG.pistols.vibora, SHOTGUN = CFG.shotguns.furia, KNIFE = CFG.knives.tactica;
 
@@ -52,7 +56,8 @@ function create(opts) {
     seats: { A: null, B: null }, conns: new Map(), evSeq: 0, bullets: [], bulletId: 0, shotId: 0, winner: undefined,
     pausedAt: 0, lastSnap: 0, lastActive: opts.now || 0, lastPlay: opts.now || 0, closed: false, rematch: { A: false, B: false }, log: [],
     send: opts.send || (() => {}), close: opts.close || (() => {}), randBytes: opts.randBytes, persist: opts.persist || null,
-    account: opts.account || null, onOver: opts.onOver || null, accOf: { A: null, B: null }, playMs: 0, bulletMs: 0
+    account: opts.account || null, onOver: opts.onOver || null, accOf: { A: null, B: null }, playMs: 0, bulletMs: 0,
+    cfg: { kills: RULES.killsToWin, time: RULES.timeMin }
   };
 
   /* ---------- helpers ---------- */
@@ -63,10 +68,12 @@ function create(opts) {
   const log = (msg) => { R.log.push(Math.round(R.now) + ' ' + msg); if (R.log.length > 200) R.log.shift(); };
   const pubPlayers = () => ['A', 'B'].map(id => { const s = R.seats[id]; return s ? { id, name: s.name, connected: s.conn != null, ready: s.ready, kills: s.kills, kit: s.kit, skin: s.skin, acc: s.acc ? 1 : 0, title: s.acc && s.acc.title || undefined } : null; });
   const cleanTitle = t => typeof t === 'string' ? t.replace(/[\u0000-\u001f\u007f<>&"'`]/g, '').trim().slice(0, 24) : '';
-  const lobbyMsg = () => ({ t: 'lobby', phase: R.phase, players: pubPlayers(), match: R.match, map: mapId, maps: Object.keys(MAPS), winner: R.winner === undefined ? undefined : R.winner, rematch: R.rematch });
+  const lobbyMsg = () => ({ t: 'lobby', phase: R.phase, players: pubPlayers(), match: R.match, map: mapId, maps: Object.keys(MAPS), winner: R.winner === undefined ? undefined : R.winner, rematch: R.rematch, cfg: R.cfg });
+  const timeMs = () => R.cfg.time * 60000;
+  const rulesMsg = () => ({ kills: R.cfg.kills, hp: RULES.hp, respawnMs: RULES.respawnMs, timeMs: timeMs() });
   function save() {
     if (!R.persist) return;
-    R.persist({ code: R.code, map: mapId, phase: R.phase === 'playing' || R.phase === 'countdown' || R.phase === 'paused' ? 'interrupted' : R.phase, match: R.match,
+    R.persist({ code: R.code, map: mapId, cfg: R.cfg, phase: R.phase === 'playing' || R.phase === 'countdown' || R.phase === 'paused' ? 'interrupted' : R.phase, match: R.match,
       seats: ['A', 'B'].map(id => { const s = R.seats[id]; return s ? { id, name: s.name, token: s.token, kills: s.kills, deaths: s.deaths, kit: s.kit, skin: s.skin } : null; }) });
   }
   function newSeat(id, name, token) {
@@ -121,7 +128,7 @@ function create(opts) {
     const sb = fixed('B') || spawnPoint('B', { x: sa.x, y: 0, z: sa.z }); placeSeat(b, sb);
     for (const s of [a, b]) { s.lastSeq = -1; s.budget = PR.LIMITS.cmdBurst; s.budgetAt = R.startAt; }
     for (const s of [a, b]) sendTo(s, { t: 'start', m: R.match, map: mapId, in: RULES.countdownMs, you: s.id,
-      spawn: { x: s.p.ms.x, z: s.p.ms.z, yaw: s.yaw }, rules: { kills: RULES.killsToWin, hp: RULES.hp, respawnMs: RULES.respawnMs },
+      spawn: { x: s.p.ms.x, z: s.p.ms.z, yaw: s.yaw }, rules: rulesMsg(),
       names: { A: a.name, B: b.name } });
     log('start match ' + R.match); save();
   }
@@ -176,12 +183,12 @@ function create(opts) {
   }
   function welcome(s) {
     const msg = { t: 'welcome', you: s.id, token: s.token, code: R.code, phase: R.phase, match: R.match, players: pubPlayers(),
-      rules: { kills: RULES.killsToWin, hp: RULES.hp } };
+      rules: { kills: R.cfg.kills, hp: RULES.hp, timeMs: timeMs() }, cfg: R.cfg };
     sendTo(s, msg);
     // back in the middle of a match: what it needs to continue
     if (R.phase === 'playing' || R.phase === 'paused' || R.phase === 'countdown') {
       sendTo(s, { t: 'start', m: R.match, map: mapId, in: Math.max(0, R.startAt - R.now), you: s.id, resume: true,
-        spawn: { x: s.p.ms.x, z: s.p.ms.z, yaw: s.yaw }, rules: { kills: RULES.killsToWin, hp: RULES.hp, respawnMs: RULES.respawnMs },
+        spawn: { x: s.p.ms.x, z: s.p.ms.z, yaw: s.yaw }, rules: rulesMsg(),
         names: { A: R.seats.A && R.seats.A.name, B: R.seats.B && R.seats.B.name }, lastSeq: s.lastSeq });
       sendSnap(s);
     }
@@ -210,6 +217,10 @@ function create(opts) {
     if (m.t === 'hello') { if (!c.seat) hello(conn, c, m); return; }
     const s = c.seat && R.seats[c.seat]; if (!s || s.conn !== conn) return;
     switch (m.t) {
+      case 'cfg':   // the room's creator: kills to win and time limit, between matches
+        if (s.id === 'A' && (R.phase === 'lobby' || R.phase === 'over') && CFG_KILLS.includes(m.kills) && CFG_TIME.includes(m.time)) {
+          R.cfg = { kills: m.kills, time: m.time }; sendAll(lobbyMsg()); save(); }
+        break;
       case 'map':   // only the room's creator chooses, and only between matches
         if (s.id === 'A' && MAPS[m.id] && (R.phase === 'lobby' || R.phase === 'over')) { mapId = m.id; sendAll(lobbyMsg()); save(); }
         break;
@@ -382,7 +393,7 @@ function create(opts) {
       if (att) att.kills++;
       e.push({ k: 'kill', by: att ? att.id : null, to: vic.id, part, dist: Math.round(dist), weapon: b ? (b.kind || 'rifle') : 'knife', sc: score() });
       R.pendingWin = R.pendingWin || [];
-      if (att && att.kills >= RULES.killsToWin) R.pendingWin.push(att.id);
+      if (att && att.kills >= R.cfg.kills) R.pendingWin.push(att.id);
     }
     sendAll({ t: 'ev', m: R.match, e });
   }
@@ -400,7 +411,7 @@ function create(opts) {
 
   /* ---------- time ---------- */
   function tick(now) {
-    const dtMs = Math.min(250, Math.max(0, now - R.now)); R.now = now;
+    R.now = now;
     const tickMs = R.lastTick ? Math.min(250, Math.max(0, now - R.lastTick)) : 0; R.lastTick = now;   // between ticks (messages move R.now too)
     if (R.closed) return;
     R.tickN++;
@@ -422,7 +433,12 @@ function create(opts) {
           placeSeat(s, spawnPoint(id, { x: om.x, y: om.y, z: om.z }));
           sendAll({ t: 'ev', m: R.match, e: [{ k: 'respawn', id, x: s.p.ms.x, z: s.p.ms.z, yaw: s.yaw }] });
         }
-        if (s.alive && s.hp < RULES.hp && now - s.lastHit > RULES.regenDelayMs) s.hp = Math.min(RULES.hp, s.hp + RULES.regenPerSec * dtMs / 1000);
+        // regeneration by the time between ticks (28-10-2026: by the time since the last message it healed 6–11 HP/s)
+        if (s.alive && s.hp < RULES.hp && now - s.lastHit > RULES.regenDelayMs) s.hp = Math.min(RULES.hp, s.hp + RULES.regenPerSec * tickMs / 1000);
+      }
+      // the time is up: more kills wins, equal is a draw
+      if (R.phase === 'playing' && R.cfg.time && R.playMs >= timeMs()) {
+        const a = R.seats.A.kills, b = R.seats.B.kills; endMatch(a > b ? 'A' : b > a ? 'B' : null, 'tiempo');
       }
     }
     if (R.phase === 'paused') {
@@ -463,7 +479,7 @@ function create(opts) {
     if (s.conn == null) return;
     const o = R.seats[other(s.id)];
     sendTo(s, { t: 'snap', m: R.match, k: R.tickN, ph: R.phase, ack: s.lastSeq, me: SDP.save(s.p), hp: Math.round(s.hp), alive: s.alive ? 1 : 0,
-      op: pubOpp(o), sc: score(), now: R.now });
+      op: pubOpp(o), sc: score(), now: R.now, tl: R.cfg.time ? Math.max(0, Math.round(timeMs() - R.playMs)) : undefined });
   }
   const r3 = v => Math.round(v * 1000) / 1000, r4 = v => Math.round(v * 1e4) / 1e4;
 
@@ -473,6 +489,7 @@ function create(opts) {
     for (const x of d.seats) if (x) { const s = newSeat(x.id, x.name, x.token); s.kills = x.kills || 0; s.deaths = x.deaths || 0; if (x.kit === 'shotgun') s.kit = 'shotgun'; if (PR.SKINS.includes(x.skin)) s.skin = x.skin; s.leftAt = R.now; R.seats[x.id] = s; }
     R.match = d.match || 0;
     if (d.map && MAPS[d.map]) mapId = d.map;
+    if (d.cfg && CFG_KILLS.includes(d.cfg.kills) && CFG_TIME.includes(d.cfg.time)) R.cfg = { kills: d.cfg.kills, time: d.cfg.time };
     R.phase = d.phase === 'over' ? 'over' : 'lobby'; // a match cut by a restart goes back to the lobby
   }
   function isIdle(now) { return R.conns.size === 0 && now - R.lastActive > 5 * 60000; }
@@ -485,6 +502,6 @@ function create(opts) {
   } : null;
   return Object.assign(R, { connect, disconnect, message, tick, restore, isIdle, RULES, debug });
 }
-const SDRoom = { create, RULES };
+const SDRoom = { create, RULES, CFG_KILLS, CFG_TIME };
 if (isNode) module.exports = SDRoom; else root.SDRoom = SDRoom;
 })(typeof window !== 'undefined' ? window : globalThis);

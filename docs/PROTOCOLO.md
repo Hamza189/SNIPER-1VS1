@@ -32,6 +32,7 @@ JSON sobre WebSocket. Lo validan `core/protocol.js` (en el cliente y en el servi
 | `map` | `id` (`arena`, `pueblo`) | en el lobby o al terminar | solo la plaza `A` |
 | `kit` | `id` (`rifle` = HALCÓN R7, `shotgun` = FURIA 12) | en cualquier momento | se usa desde la siguiente aparición del jugador; nunca cambia el arma que lleva en la mano |
 | `skin` | `id` (`clasico`, `swat`, `fsb`, `militar`) | en cualquier momento | solo aspecto; lista cerrada |
+| `cfg` | `kills` (5, 10, 20, 30), `time` (minutos: 0 = sin límite, 5, 10, 15, 20) | en el lobby o al terminar | solo la plaza `A`; valores de la lista. El lobby (`cfg`), la bienvenida y `start.rules` (`kills`, `timeMs`) lo reflejan; cada `snap` lleva `tl` = ms que quedan (sin pausas). Al acabarse el tiempo, `over` con `why: 'tiempo'` (más bajas gana; iguales, `winner: null`) |
 | `acct` | `tok` (sesión de la cuenta, `SD-XXXX-XXXX.<ficha>`) | tras `welcome`, si el jugador tiene cuenta (opcional) | el servidor la comprueba con la cuenta (`server/accounts.js` → `roomAccount`); entonces el lobby enseña su título (`players[i].title`, leído de la cuenta) y al terminar la partida se dan puntos de caja (`matchReward`). Una ficha falsa se ignora. No cambia nada de la partida (`docs/INVENTARIO-Y-CAJAS.md`) |
 | `in` | `m, s, c:[cmd…]` | cada 3 ticks (≈40/s) o al disparar | de 1 a 24 comandos; `s` es la secuencia del primero |
 | `rematch` | – | tras el final | – |

@@ -508,6 +508,51 @@ console.log('\nREINICIO DEL SERVIDOR DE LA SALA (despliegue en mitad de una sesi
   check('y los dos están jugando', A.N.phase === 'playing' && B.N.phase === 'playing');
 }
 
+console.log('\nTIEMPO, AJUSTES DE SALA Y REGENERACIÓN');
+{ const S = createSim({ latency: 30 });
+  const A = S.addClient('Hamza'), B = S.addClient('Novia');
+  A.N.hello('Hamza'); S.run(100); B.N.hello('Novia'); S.run(200);
+  check('sala nueva: 10 bajas y 10 minutos', B.N.cfg.kills === 10 && B.N.cfg.time === 10);
+  B.N.setCfg(5, 5); S.run(200);
+  check('solo quien crea la sala cambia los ajustes', S.room.cfg.kills === 10 && S.room.cfg.time === 10);
+  A.N.setCfg(7, 5); S.run(200);
+  check('valores fuera de la lista: no', S.room.cfg.kills === 10);
+  A.N.setCfg(5, 5); S.run(200);
+  check('A elige 5 bajas y 5 minutos: los dos lo ven en el lobby', S.room.cfg.kills === 5 && S.room.cfg.time === 5 && B.N.cfg.kills === 5 && B.N.cfg.time === 5);
+  A.N.ready(true); B.N.ready(true); S.until(() => A.N.phase === 'playing' && B.N.phase === 'playing', 6000);
+  const st = evs(A, 'start').pop().m.rules;
+  check('al empezar: las reglas dicen 5 bajas y 5 min', st.kills === 5 && st.timeMs === 300000);
+  S.run(3000);
+  check('el reloj baja con la partida (snapshots)', B.N.timeLeft > 290000 && B.N.timeLeft < 298000, B.N.timeLeft);
+  A.N.setCfg(20, 15); S.run(200);
+  check('a mitad de partida no se pueden cambiar', S.room.cfg.kills === 5);
+  S.room.debug.set('A', 'kills', 2); S.room.debug.set('B', 'kills', 1); S.room.playMs = 300000 - 400; S.run(1000);
+  const ov = evs(B, 'over').pop();
+  check('se acaba el tiempo: gana quien tiene más bajas', S.room.phase === 'over' && ov && ov.winner === 'A' && ov.why === 'tiempo', ov && JSON.stringify(ov.sc));
+}
+{ const S = createSim({ latency: 30 }), A = S.addClient('Hamza'), B = S.addClient('Novia');
+  A.N.hello('Hamza'); S.run(100); B.N.hello('Novia'); S.run(200); A.N.setCfg(10, 5); S.run(200);
+  A.N.ready(true); B.N.ready(true); S.until(() => A.N.phase === 'playing', 6000);
+  S.room.debug.set('A', 'kills', 3); S.room.debug.set('B', 'kills', 3); S.room.playMs = 300000 - 400; S.run(1000);
+  const ov = evs(A, 'over').pop();
+  check('se acaba el tiempo empatados: empate', ov && ov.winner === null && ov.why === 'tiempo');
+}
+{ const S = createSim({ latency: 30 }), A = S.addClient('Hamza'), B = S.addClient('Novia');
+  A.N.hello('Hamza'); S.run(100); B.N.hello('Novia'); S.run(200); A.N.setCfg(10, 0); S.run(200);
+  A.N.ready(true); B.N.ready(true); S.until(() => A.N.phase === 'playing', 6000);
+  S.room.playMs = 3600000; S.run(1000);
+  check('sin límite de tiempo: la partida sigue', S.room.phase === 'playing' && B.N.timeLeft === null);
+}
+for (const lat of [20, 80]) {
+  // regeneration: +22 HP/s after 5 s without damage, also with the normal traffic of a match (it healed 6–11 HP/s)
+  const S = createSim({ latency: lat, jitter: lat / 8 });
+  S.setupMatch(() => ({ yaw: 0 }), () => ({ yaw: 0 }));
+  S.run(500); S.room.debug.set('B', 'hp', 10); S.room.debug.set('B', 'lastHit', S.t - 6000);
+  const t0 = S.t; S.run(2000);
+  const rate = (S.room.seats.B.hp - 10) / ((S.t - t0) / 1000);
+  check('ping ' + lat * 2 + ' ms: la vida se regenera a 22 por segundo, como contra bots', Math.abs(rate - 22) < 1, rate.toFixed(1) + '/s');
+}
+
 (async () => {   // the account check is asynchronous (the server asks the account): the test lets it finish
 const settle = () => new Promise(r => setImmediate(r));
 console.log('\nCUENTAS EN LA SALA (título y puntos de caja: opts.account / opts.onOver)');
