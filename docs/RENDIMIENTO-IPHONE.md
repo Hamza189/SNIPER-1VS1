@@ -40,5 +40,30 @@ realistas de 4K (rival y bots, 340 MB cada uno). Es lo que hacía que Safari cer
 Desde `ead572a` el móvil nunca carga personajes de 4K: los mismos a 2K, unos 85 MB cada uno. Con esta misma prueba
 debería quedar en unos **290 MB**. PENDIENTE de repetir la medida en el iPhone para confirmarlo.
 
+### iPhone Pro Max, Safari, calidad ALTO — 29-10-2026, 10:58 (versión `1ce586367f`)
+Con la dirección normal, después de volver a los JPG de 2K en el móvil. El propietario: «ya funciona con el link
+original en Safari».
+
+| Mapa | Fotograma (media / p95 / máx.) | FPS | CPU por fotograma | Llamadas | Triángulos | Texturas |
+|---|---|---|---|---|---|---|
+| ARENA | 16,7 / 17 / 24 ms | 60 | 3,0 ms | 52 (máx. 73) | 127 mil (máx. 171) | 110 ≈ 684 MB |
+| PUEBLO | 16,7 / 17 / 19 ms | 60 | 3,5 ms | 197 (máx. 344) | 317 mil (máx. 486) | 110 ≈ 684 MB |
+| CASA ATLAS XL | 16,7 / 17 / 19 ms | 60 | 3,2 ms | 70 (máx. 96) | 145 mil (máx. 211) | 135 ≈ 733 MB |
+
+- 60 FPS clavados y 0 % de tirones.
+- **La memoria sigue alta, y casi todo es el aspecto de arma** del rifle de 1ª persona. Memoria gráfica medida de cada
+  aspecto, a 2K:
+
+| Aspecto | Texturas | Memoria |
+|---|---|---|
+| ÚLTIMA | 19 | ~404 MB |
+| SAHARA | 18 | ~383 MB |
+| TITÁN | 9 | ~192 MB |
+| VECTOR | 6 | ~128 MB |
+
+  La lista de descargas muestra un `arma.glb` de 4,2 MB, así que llevaba ÚLTIMA o SAHARA: unos 400 de los 684 MB.
+- **Propuesta**: pasar los aspectos de arma a KTX2, la misma técnica que los personajes. Mismas texturas y misma
+  calidad en una cuarta parte de memoria (~400 → ~100 MB).
+
 Código: `client/perfprobe.js` (cálculos e informe, puro) y el bloque «MEDIR RENDIMIENTO» de `src/page.html`.
 Prueba: `node test/perf.test.js`.
