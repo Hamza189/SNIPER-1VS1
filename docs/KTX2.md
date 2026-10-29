@@ -82,10 +82,9 @@ Es más grande: 2 a 5 veces lo de ahora, porque el JPG comprime mejor para guard
   - Sin la bandera no se descarga nada nuevo.
 
 ## Pendiente
-- **Probarlo en el iPhone de verdad**: `https://hamza189.github.io/SNIPER-1VS1/?ktx2=1`, con calidad ALTO en Safari.
-  - Que no se cierre.
-  - Mirar los personajes con la mira.
-  - Pasar MEDIR RENDIMIENTO para ver la memoria de texturas.
+- **Probado en el iPhone (29-10-2026)**: con `?ktx2=1` y calidad ALTO en Safari, «me deja jugar y carga todo». Es lo
+  que antes cerraba Safari, ahora con los personajes de 4K. Falta el informe de MEDIR RENDIMIENTO con la bandera para
+  ver la memoria de texturas.
 - **Si se aprueba, que sea lo de por defecto**:
   - en el móvil, para tener 4K;
   - y probablemente en PC, por la memoria.
