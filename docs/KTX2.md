@@ -1,4 +1,12 @@
-# Texturas comprimidas para la GPU (KTX2) — prueba con `?ktx2=1` (28/29-10-2026)
+# Texturas comprimidas para la GPU (KTX2) — por defecto desde el 29-10-2026 (`?ktx2=0` = lo de antes)
+
+**Estado**:
+- Probado con `?ktx2=1` y validado por el propietario en el iPhone: Safari, calidad ALTO, «me deja jugar y carga todo».
+- Lo de por defecto en móvil y PC (decisión del propietario: «sí, móvil y PC»).
+- `?ktx2=0` vuelve a los JPG.
+- En BAJO siguen los JPG de 1K, más ligeros de descargar.
+- Si el aparato no sabe usar ninguna textura comprimida, también se usan los JPG: descomprimirlas a 4 bytes por píxel
+  sería el problema de memoria de antes.
 
 Petición del propietario: «no quiero perder calidad, sino ir mejorando, aunque haya que ahorrar memoria» y «sí,
 prepáralo».
@@ -17,8 +25,9 @@ Contexto:
 - Al cargarlas, cada aparato recibe su formato nativo:
   - **ASTC 4×4** en el iPhone (y en este Chromium de pruebas);
   - **BC7** en una tarjeta de PC como la GTX 1050 Ti.
-- Con `?ktx2=1`, el móvil vuelve a cargar los personajes de 4K, porque comprimidos caben.
-- Sin la bandera no cambia nada y no se descarga nada nuevo.
+- Con KTX2, el móvil vuelve a cargar los personajes de 4K, porque comprimidos caben.
+- Solo tienen versión KTX2 los cuatro que se eligen: SOLDADO, S.W.A.T., FSB y MILITAR. Los demás (p. ej. el LINCE de
+  `?pj=3`) siguen en JPG.
 
 ## Medidas
 

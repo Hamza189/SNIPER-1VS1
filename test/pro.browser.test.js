@@ -18,7 +18,7 @@ async function open(b, url, q, phone) {
   p.on('pageerror', e => errs.push(e.message));
   p.on('console', m => { if (/pj2/.test(m.text())) errs.push(m.text()); });
   p.on('response', r => { const u = r.url(); if (/\/assets\//.test(u) && r.status() >= 400) bad.push(r.status() + ' ' + u.replace(/^.*\/assets\//, '')); if (/\/assets\/personaje\/pro\//.test(u)) files.push(u.replace(/^.*\/assets\/personaje\/pro\//, '').replace(/\?.*/, '')); });
-  await p.goto(url);
+  await p.goto(url + '&ktx2=0');   // these checks are about the JPG files (KTX2 by default since 29-10: test/ktx2.browser.test.js)
   await p.waitForFunction(() => window.__SD && __SD.WORLDS, null, { timeout: 120000 });
   await p.evaluate(() => { __SD.setDuelLethal(false); __SD.setMode('duel'); __SD.setOffMap('arena'); __SD.startMatch(); });
   await p.waitForTimeout(1500);
@@ -105,7 +105,7 @@ const zones = p => p.evaluate(() => __SD.BOTS.map(b => b.hit.map(m => [m.userDat
       const p = await ctx.newPage(), errs = [], files = [];
       p.on('pageerror', e => errs.push(e.message));
       p.on('response', r => { const u = r.url(); if (/\/assets\/personaje\//.test(u) && r.status() >= 400) errs.push(r.status() + ' ' + u); if (/\/assets\/personaje\/pro\/.*\.glb/.test(u)) files.push(u.replace(/^.*\/assets\/personaje\/pro\//, '').replace(/\?.*/, '')); });
-      await p.goto(srv.url + '?pj=pro&server=' + encodeURIComponent('http://127.0.0.1:' + gs.port));
+      await p.goto(srv.url + '?pj=pro&ktx2=0&server=' + encodeURIComponent('http://127.0.0.1:' + gs.port));
       await p.waitForFunction(() => window.__SD && __SD.WORLDS, null, { timeout: 120000 });
       return { ctx, p, errs, files };
     };

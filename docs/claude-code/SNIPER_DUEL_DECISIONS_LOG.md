@@ -20,7 +20,7 @@ Detalle de cada cambio (antes/después, medidas, cómo revertir): `docs/next-lev
 | **Probar 3ª persona (tecla V / AJUSTES; permitida online) y el quickscope**; decidir si el agua de `?pulido=1` pasa a ser la de siempre | Propietario | PUBLICADO · PENDIENTE DE VALIDACIÓN EN IPHONE |
 | **Elegir personaje** (5 con el SOLDADO de `?pj=2`) — ya sale sin bandera: menú › Tu personaje; probar online con otro dispositivo que el rival ve el elegido | Propietario | PUBLICADO · PENDIENTE DE VALIDACIÓN ONLINE |
 | **Los 4 personajes a la vez contra bots** — `https://hamza189.github.io/SNIPER-1VS1/?pj=mix` (y medir con `&medir=1`) en iPhone y PC | Propietario | PUBLICADO TRAS BANDERA · PENDIENTE DE MEDIR EN IPHONE |
-| **Personajes con texturas comprimidas (KTX2)** — VALIDADO EN EL IPHONE por el propietario (29-10: «con ?ktx2=1 sí que me deja jugar en Safari y carga todo», con ALTO). Falta decidir si pasa a ser lo de por defecto (en el móvil, en PC o en los dos) (`docs/KTX2.md`) | Propietario | VALIDADO EN IPHONE · NECESITA DECISIÓN |
+| **Personajes con texturas comprimidas (KTX2)** — POR DEFECTO en móvil y PC desde el 29-10 (decisión del propietario tras validarlo en el iPhone); `?ktx2=0` vuelve a los JPG. Falta un informe de MEDIR RENDIMIENTO en el iPhone con ALTO para confirmar la memoria (~85 MB por personaje de 4K) (`docs/KTX2.md`) | Propietario | POR DEFECTO · PENDIENTE DE MEDIR EN IPHONE |
 | **Rendimiento en el iPhone** — MEDIDO en ALTO el 28-10: 60 FPS clavados en ARENA, PUEBLO y CASA XL (CPU ~3 ms/fotograma), pero ~800 MB de texturas por los personajes de 4K, corregido en `ead572a`. Falta repetir la medida en Safari para confirmar ~290 MB y probar una sala con 5 bots (`docs/RENDIMIENTO-IPHONE.md`) | Propietario | MEDIDO · PENDIENTE DE CONFIRMAR LA MEMORIA |
 | **Personaje LINCE (rev. 04)** — compararlo con la rev. 03 en `?pj=3` frente a `?pj=2` | Propietario | PUBLICADO TRAS BANDERA · PENDIENTE DE VALIDACIÓN EN IPHONE |
 | **Asomarse y zonas de impacto**: ¿el servidor debe mover cabeza y pecho con la inclinación? (`docs/HUD-2.md` §4) | Propietario | NECESITA APROBACIÓN |
@@ -92,6 +92,16 @@ main», sin olvidar que con `?pj=2` no se podía elegir personaje.
 - En BAJO, como antes con `?pj=pro`: tu elección la ve el rival, pero en tu pantalla se ven los soldados de cajas.
 - Estado: IMPLEMENTADO · PROBADO EN NAVEGADOR · PROBADO ONLINE (servidor local) · el propietario ya lo validó en iPhone y PC
   con las banderas.
+
+## 29-10-2026 (2) — Los personajes en KTX2 pasan a ser lo de por defecto (móvil y PC)
+Decisión del propietario, tras probar `?ktx2=1` en Safari con ALTO («sí que me deja jugar y carga todo»): «Sí, móvil y
+PC».
+- KTX2 por defecto en MEDIO y ALTO, en móvil y PC. `?ktx2=0` = los JPG de antes. En BAJO siguen los JPG de 1K.
+- Si la GPU no admite ninguna textura comprimida, se usan los JPG (no se descomprimen a 4 bytes por píxel).
+- Solo se pide KTX2 para los cuatro personajes que lo tienen.
+- Pruebas: `ktx2.browser` (9) sobre el nuevo por defecto. `pj2.browser` y `pro.browser` comprueban los JPG con
+  `?ktx2=0`, como se hizo con `?pj=0` / `?hud=1`.
+- IMPLEMENTADO · PROBADO EN NAVEGADOR · VALIDADO EN IPHONE con la bandera.
 
 ## 29-10-2026 — Texturas comprimidas para la GPU (KTX2) como prueba con `?ktx2=1`
 Decisión del propietario: «Sí, prepáralo» (recuperar el detalle de 4K en el móvil sin perder calidad ni gastar más

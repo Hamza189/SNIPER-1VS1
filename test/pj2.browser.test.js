@@ -22,7 +22,7 @@ async function open(b, url, q) {
   p.on('pageerror', e => errs.push(e.message));
   p.on('console', m => { if (/pj2/.test(m.text())) errs.push(m.text()); });
   p.on('response', r => { const u = r.url(); if (/\/assets\//.test(u) && r.status() >= 400) bad.push(r.status() + ' ' + u.replace(/^.*\/assets\//, '')); if (/\/assets\/personaje\//.test(u)) files.push(u.replace(/^.*\/assets\//, '').replace(/\?.*/, '')); });
-  await p.goto(url);
+  await p.goto(url + '&ktx2=0');   // these checks are about the JPG files (KTX2 by default since 29-10: test/ktx2.browser.test.js)
   await p.waitForFunction(() => window.__SD && __SD.WORLDS, null, { timeout: 120000 });
   await p.evaluate(() => { __SD.setMode('duel'); __SD.setOffMap('arena'); __SD.startMatch(); });
   await p.waitForTimeout(1500);

@@ -5340,7 +5340,7 @@ const SDCamo = { draw, texture, detail, patch, swatch, SCALE };
 if (typeof module !== 'undefined' && module.exports) module.exports = SDCamo; else root.SDCamo = SDCamo;
 })(typeof window !== 'undefined' ? window : globalThis);
 
-const BUILD_ID="04057ed";const BUILD_HASH="740179a5e2";
+const BUILD_ID="77f53f9";const BUILD_HASH="6321264bc3";
 </script>
 <script>
 (function(){
@@ -7274,17 +7274,24 @@ function pj2Suffix(root){
   if((PJ_MIX||PJ_PRO)&&(GFX.profile!=='alto'||PJ2_PHONE)&&/\/(op2|op3)\/$/.test(root))return '_2k';   // phones: never 4K
   return '';
 }
-/* ?ktx2=1 (28-10-2026, docs/KTX2.md, aprobado como prueba por el propietario): los personajes con sus texturas a la
-   resolución completa (4K S.W.A.T./FSB, 2K MILITAR/SOLDADO) comprimidas para la GPU (UASTC → ASTC en el iPhone, BC7 en
-   PC): 1 byte por píxel en vez de 4, así que también el móvil puede llevar los de 4K. Archivos: personaje_ktx2.glb y
-   color_<v>_ktx2.ktx2 (tools/ktx2/make.py); lector: vendor/KTX2Loader.js + vendor/basis (solo se descargan con la
-   bandera). Si algo falla, el personaje se carga como siempre (JPG). */
-const KTX2_ON=/[?&]ktx2=1\b/.test(location.search);
+/* KTX2 (docs/KTX2.md): los personajes con sus texturas a la resolución completa (4K S.W.A.T./FSB, 2K MILITAR/SOLDADO)
+   comprimidas para la GPU (UASTC → ASTC en el iPhone, BC7 en PC): 1 byte por píxel en vez de 4, así que también el
+   móvil lleva los de 4K. Probado con ?ktx2=1 y validado por el propietario en el iPhone (Safari, ALTO); por defecto en
+   móvil y PC desde el 29-10-2026 (decisión del propietario: «sí, móvil y PC»). Lo de antes (JPG): ?ktx2=0.
+   Archivos: personaje_ktx2.glb y color_<v>_ktx2.ktx2 (tools/ktx2/make.py); lector: vendor/KTX2Loader.js + vendor/basis.
+   En BAJO siguen los JPG de 1K (más ligeros de descargar). Si algo falla, o el aparato no sabe usar ninguna textura
+   comprimida (las descomprimiría a 4 bytes por píxel: el problema de memoria de antes), el personaje se carga en JPG. */
+const KTX2_ON=!/[?&]ktx2=0\b/.test(location.search);
+const KTX2_ROOTS=['assets/personaje/','assets/personaje/pro/op2/','assets/personaje/pro/op3/','assets/personaje/pro/op4/'];   // los que tienen versión KTX2
+const ktx2For=root=>KTX2_ON&&GFX.profile!=='bajo'&&KTX2_ROOTS.includes(root);
 const KTX2={loader:null,ready:null};
 function ktx2Ready(){
   if(KTX2.ready)return KTX2.ready;
   return KTX2.ready=new Promise(res=>{const s=document.createElement('script');s.src='vendor/KTX2Loader.js?v='+BUILD_HASH;
-    s.onload=()=>{try{const L=new T.KTX2Loader();L.setTranscoderPath('vendor/basis/');L.detectSupport(renderer);KTX2.loader=L;}catch(e){console.warn('ktx2',e);}res(KTX2.loader);};
+    s.onload=()=>{try{const L=new T.KTX2Loader();L.setTranscoderPath('vendor/basis/');L.detectSupport(renderer);
+        const c=L.basisLoader&&L.basisLoader.workerConfig;KTX2.support=c;
+        if(!c||Object.values(c).some(Boolean))KTX2.loader=L;else console.warn('ktx2: sin texturas comprimidas en esta GPU, se usan los JPG');}catch(e){console.warn('ktx2',e);}
+      res(KTX2.loader);};
     s.onerror=()=>res(null);document.head.appendChild(s);});
 }
 function pj2Load(root){
@@ -7295,7 +7302,7 @@ function pj2Load(root){
       if(PJ_MIX)pj2Mat('bots',root);
       for(const R of PJ2.list)pj2Attach(R);try{precompileAll();}catch(e){}}catch(e){fail(e);}};
   const plain=()=>{try{new T.GLTFLoader().load(root+'personaje'+pj2Suffix(root)+'.glb?v='+BUILD_HASH,done,undefined,fail);}catch(e){fail(e);}};
-  if(!KTX2_ON)return plain();
+  if(!ktx2For(root))return plain();
   ktx2Ready().then(L=>{if(!L)return plain();const G=new T.GLTFLoader();G.setKTX2Loader(L);
     G.load(root+'personaje_ktx2.glb?v='+BUILD_HASH,g=>{PJ2.ktx2=PJ2.ktx2||{};PJ2.ktx2[root]=true;done(g);},undefined,e=>{console.warn('ktx2 pj2',root,e);plain();});});
 }
