@@ -66,7 +66,10 @@ medido con el contador de FPS (AJUSTES → GRÁFICOS → «Mostrar FPS») en ALT
   - Calidad medida: 41–48 dB, sin diferencia a la vista.
   - La descarga es 2–5 veces mayor.
   - Los personajes ya tienen su versión `personaje_ktx2.glb` y `color_*_ktx2.ktx2` (`tools/ktx2/make.py`).
-  - Si se aprueba, lo mismo valdría para los edificios nuevos.
+  - Los aspectos de arma (29-10), a la resolución máxima de su original: `arma_ktx2.glb` + `ktx2/` (cada textura en su
+    archivo, de 1 a 13 MB; `docs/ARMAS-EXT.md`).
+  - Si se aprueba, lo mismo valdría para los edificios nuevos. Ojo con el espacio: GitHub Pages publica hasta 1 GB y el
+    repositorio publicado ya ocupa ~870 MB.
 
 ## 4. Reglas de juego: lo que el modelo puede ocupar
 

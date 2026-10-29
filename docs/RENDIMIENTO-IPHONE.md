@@ -64,6 +64,11 @@ original en Safari».
   La lista de descargas muestra un `arma.glb` de 4,2 MB, así que llevaba ÚLTIMA o SAHARA: unos 400 de los 684 MB.
 - **Propuesta**: pasar los aspectos de arma a KTX2, la misma técnica que los personajes. Mismas texturas y misma
   calidad en una cuarta parte de memoria (~400 → ~100 MB).
+- **Hecho el 29-10 por la noche**, a petición del propietario («todo en 4K y en su máxima resolución»): cada aspecto
+  con sus texturas a la resolución del original.
+  - ÚLTIMA y VECTOR pasan a 4K con la misma memoria que hoy.
+  - SAHARA baja de ~384 a ~96 MB; TITÁN de ~192 a ~96 MB.
+  - Falta repetir MEDIR RENDIMIENTO en el iPhone con ÚLTIMA (`docs/ARMAS-EXT.md`).
 
 Código: `client/perfprobe.js` (cálculos e informe, puro) y el bloque «MEDIR RENDIMIENTO» de `src/page.html`.
 Prueba: `node test/perf.test.js`.

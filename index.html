@@ -5287,6 +5287,10 @@ function texture(T, it, renderer) {
 // brillo medio (luz lineal) de la textura y el color de un material: el camuflaje conserva el detalle a su alrededor
 function detail(m) {
   try {
+    // a texture compressed for the GPU (KTX2) cannot be drawn on a canvas: tools/ktx2/make.py stores its average
+    // brightness in the material (extras.lum → userData.lum)
+    const lum = m.userData && m.userData.lum;
+    if (lum != null && m.map) { const c = m.color ? 0.2126 * m.color.r + 0.7152 * m.color.g + 0.0722 * m.color.b : 1, a = lum * c; return a > 0.002 ? 1 / a : 0; }
     const im = m.map && m.map.image; if (!im) return 0;
     const c = document.createElement('canvas'); c.width = c.height = 16; const g = c.getContext('2d'); g.drawImage(im, 0, 0, 16, 16);
     const d = g.getImageData(0, 0, 16, 16).data, L = x => Math.pow(x / 255, 2.2); let s = 0;
@@ -5343,7 +5347,7 @@ const SDCamo = { draw, texture, detail, patch, swatch, SCALE };
 if (typeof module !== 'undefined' && module.exports) module.exports = SDCamo; else root.SDCamo = SDCamo;
 })(typeof window !== 'undefined' ? window : globalThis);
 
-const BUILD_ID="8cdc171";const BUILD_HASH="6e9a5bf462";
+const BUILD_ID="9ba5775";const BUILD_HASH="68ad73a0b8";
 </script>
 <script>
 (function(){
@@ -7315,6 +7319,14 @@ function ktx2Ready(){
         if(!c||Object.values(c).some(Boolean))KTX2.loader=L;else console.warn('ktx2: sin texturas comprimidas en esta GPU, se usan los JPG');}catch(e){console.warn('ktx2',e);}
       res(KTX2.loader);};
     s.onerror=()=>res(null);document.head.appendChild(s);});
+}
+// KTX2 textures that come as files of their own (weapon skins, docs/ARMAS-EXT.md): through a queue, one at a time on
+// phones (a 4K one is ~10 MB to download and ~45 MB while it is unpacked), 3 on PC. GLTFLoader only calls load().
+function ktx2Queue(L){
+  if(KTX2.q)return KTX2.q;const q=[],n=PJ2_PHONE?1:3;let busy=0;
+  const pump=()=>{while(busy<n&&q.length){busy++;const [u,ok,pr,err]=q.shift();
+    L.load(u,t=>{busy--;pump();if(ok)ok(t);},pr,e=>{busy--;pump();if(err)err(e);});}};
+  return KTX2.q=Object.assign(Object.create(L),{load(u,ok,pr,err){q.push([u,ok,pr,err]);pump();},queue:q});
 }
 function pj2Load(root){
   root=root||pj2Root('B');
@@ -9747,17 +9759,26 @@ const WSKINS={rifle:{halcon:{name:'HALCÓN R7',by:'Sniper Duel'},titan:{name:'TI
     sahara:{dir:'lince',name:'SAHARA',by:'awakov_dawid · CC BY'}},
   knife:{navaja:{name:'NAVAJA',by:'Sniper Duel'},tactica:{name:'TÁCTICA',by:'lunea · CC BY'}}};
 const WSKIN={rifle:WSKINS.rifle[store.get('wsRifle')]?store.get('wsRifle'):'halcon',knife:WSKINS.knife[store.get('wsKnife')]?store.get('wsKnife'):'navaja'};
-const WS_ST={rifle:{cur:null,objs:[],base:null},knife:{cur:null,objs:[],base:null},cache:{}};
+const WS_ST={rifle:{cur:null,objs:[],base:null},knife:{cur:null,objs:[],base:null},cache:{},ktx2:{}};
 const wsDir=(slot,id)=>'assets/armas/'+(WSKINS[slot][id].dir||id)+'/';
 const wsImg=(slot,id)=>(slot==='rifle'&&id==='halcon'||slot==='knife'&&id==='navaja'?'assets/armas/'+id+'/':wsDir(slot,id))+'retrato.jpg?v='+BUILD_HASH;
-// load once: the model and its pivots (info.json); the materials get the viewmodel's reflections
+// load once: the model and its pivots (info.json); the materials get the viewmodel's reflections.
+// 29-10-2026 («todo en 4K y en su máxima resolución»): arma_ktx2.glb, the same model with every texture at the size of
+// its original (4K in ÚLTIMA and VECTOR) compressed for the GPU, like the characters (docs/KTX2.md). Its textures are
+// files of their own (ktx2/), fetched through ktx2Queue: one at a time on phones. arma.glb (2K JPG) with ?ktx2=0, in
+// BAJO, or if the KTX2 one fails.
 function wsLoad(slot,id,done){
   const k=slot+id;if(WS_ST.cache[k])return done(WS_ST.cache[k]);
   const d=wsDir(slot,id);
   fetch(d+'info.json?v='+BUILD_HASH).then(r=>r.json()).catch(()=>({})).then(info=>{
-    new T.GLTFLoader().load(d+'arma.glb?v='+BUILD_HASH,g=>{
+    const ok=g=>{
       g.scene.traverse(o=>{if(o.isMesh){o.frustumCulled=false;o.castShadow=false;const m=o.material;if(m&&m.isMeshStandardMaterial){m.envMap=ENV;m.envMapIntensity=0.55;m.needsUpdate=true;}}});
-      done(WS_ST.cache[k]={scene:g.scene,info});},undefined,e=>console.warn('arma',id,e));});
+      done(WS_ST.cache[k]={scene:g.scene,info});};
+    const plain=()=>new T.GLTFLoader().load(d+'arma.glb?v='+BUILD_HASH,ok,undefined,e=>console.warn('arma',id,e));
+    if(!KTX2_ON||GFX.profile==='bajo')return plain();
+    ktx2Ready().then(L=>{if(!L)return plain();
+      const G=new T.GLTFLoader();G.setKTX2Loader(ktx2Queue(L));
+      G.load(d+'arma_ktx2.glb?v='+BUILD_HASH,g=>{WS_ST.ktx2[k]=true;ok(g);},undefined,e=>{console.warn('ktx2 arma',id,e);plain();});});});
 }
 function wskinRifle(id){
   const hal=VMA.R&&VMA.R.root,S=WS_ST.rifle;if(!hal)return;
@@ -9766,16 +9787,23 @@ function wskinRifle(id){
   for(const o of S.objs)if(o.parent)o.parent.remove(o);S.objs=[];S.cur=id;
   RIF.bolt.position.copy(S.base.bolt);RIF.boltZ=S.base.bolt.z;RIF.mag.position.copy(S.base.mag);RIF.magY=S.base.magY;RIF.flash.position.copy(S.base.flash);
   const def=id==='halcon'||!WSKINS.rifle[id];
-  for(const m of S.base.meshes)m.visible=def;
+  // the HALCÓN stays in your hands until the skin has arrived (the 4K KTX2 ones take a while on a phone)
+  for(const m of S.base.meshes)m.visible=true;
   if(def){camoApply();return;}
   wsLoad('rifle',id,A=>{
     if(S.cur!==id)return;
-    const sc=A.scene,body=sc.getObjectByName('cuerpo'),bolt=sc.getObjectByName('cerrojo'),mag=sc.getObjectByName('carg'),I=A.info||{};
+    const sc=A.scene,I=A.info||{};
+    // the parts move into the HALCÓN's nodes and leave the scene: keep them, and where they were, for the next time this
+    // skin is chosen (29-10-2026: choosing it again after another one left the hands empty)
+    const P=A.parts||(A.parts={body:sc.getObjectByName('cuerpo'),bolt:sc.getObjectByName('cerrojo'),mag:sc.getObjectByName('carg')});
+    if(!P.at)P.at={bolt:P.bolt&&P.bolt.position.clone(),mag:P.mag&&P.mag.position.clone()};
+    const {body,bolt,mag}=P;
+    for(const m of S.base.meshes)m.visible=false;
     if(body){hal.add(body);S.objs.push(body);}
-    const bp=bolt?bolt.position:I.boltPivot?new T.Vector3().fromArray(I.boltPivot):null;
+    const bp=bolt?P.at.bolt:I.boltPivot?new T.Vector3().fromArray(I.boltPivot):null;
     if(bp){RIF.bolt.position.set(bp.x,bp.y,bp.z);RIF.boltZ=bp.z;}
     if(bolt){bolt.position.set(0,0,0);RIF.bolt.add(bolt);S.objs.push(bolt);}
-    if(mag){const p=mag.position.clone();RIF.mag.position.copy(p);RIF.magY=p.y;mag.position.set(0,0,0);RIF.mag.add(mag);S.objs.push(mag);}
+    if(mag){const p=P.at.mag;RIF.mag.position.copy(p);RIF.magY=p.y;mag.position.set(0,0,0);RIF.mag.add(mag);S.objs.push(mag);}
     if(I.muzzle)RIF.flash.position.set(I.muzzle[0],I.muzzle[1],I.muzzle[2]-0.015);
     camoApply();
   });
@@ -9785,9 +9813,9 @@ function wskinKnife(id){
   if(!S.base){S.base={meshes:[]};nav.traverse(o=>{if(o.isMesh)S.base.meshes.push(o);});}
   for(const o of S.objs)if(o.parent)o.parent.remove(o);S.objs=[];S.cur=id;
   const def=id==='navaja'||!WSKINS.knife[id];
-  for(const m of S.base.meshes)m.visible=def;
+  for(const m of S.base.meshes)m.visible=true;   // the NAVAJA until the skin arrives
   if(def)return;
-  wsLoad('knife',id,A=>{if(S.cur!==id)return;const c=A.scene.clone(true);nav.add(c);S.objs.push(c);});
+  wsLoad('knife',id,A=>{if(S.cur!==id)return;for(const m of S.base.meshes)m.visible=false;const c=A.scene.clone(true);nav.add(c);S.objs.push(c);});
 }
 function setWskin(slot,id){
   if(!WSKINS[slot][id])return;WSKIN[slot]=id;store.set(slot==='rifle'?'wsRifle':'wsKnife',id);

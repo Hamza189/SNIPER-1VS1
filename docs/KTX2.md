@@ -1,5 +1,25 @@
 # Texturas comprimidas para la GPU (KTX2) — por defecto en PC y en el móvil (`?ktx2=0` = los JPG)
 
+**29-10, por la noche — también los aspectos de arma, a su resolución máxima**:
+- `arma_ktx2.glb` + `ktx2/`: cada textura sale del original del arma a su tamaño real y va en un archivo aparte. Son
+  4K en ÚLTIMA y VECTOR, 4K y 2K en TITÁN, y 2K en SAHARA y TÁCTICA.
+- Memoria gráfica:
+  - ÚLTIMA y VECTOR: lo mismo que antes, con 4 veces el detalle;
+  - TITÁN: la mitad;
+  - SAHARA: la cuarta parte (384 → 96 MB).
+  - Cifras y descargas en `docs/ARMAS-EXT.md`.
+- Cada material lleva en `extras.lum` el brillo medio de su color. El camuflaje lo calculaba leyendo la imagen, y una
+  textura comprimida no se puede leer.
+- `python3 tools/ktx2/make.py titan ratio vector lince tactica --jobs 6`:
+  - antes de usar un original comprueba que sea la misma imagen que la del juego (a 256 px, más de 30 dB);
+  - lo ya codificado queda en `.work/ktx2-cache`;
+  - una textura de 4K tarda unos 10 min; con 6 procesos a la vez, todas las armas, alrededor de 1 h.
+- Medido sobre VECTOR, comparado con el original:
+  - color a 4K con RDO 1: 50 dB, 6,6 MB;
+  - más RDO apenas ahorra: con RDO 6, las normales bajan de 12,4 a 10,7 MB;
+  - así que se queda en RDO 1, el mismo ajuste que los personajes.
+  - `node tools/ktx2/quality.js` descomprime un KTX2 para compararlo.
+
 **Cambio del 29-10, por la noche — KTX2 otra vez por defecto en el móvil**:
 - El propietario probó `?ktx2=1` en Safari con la carga ligera: «he probado el link con KTX2 con las texturas en 4K en
   Safari y ahora funciona». Y pide: «lo quiero todo en 4K y en su máxima resolución».

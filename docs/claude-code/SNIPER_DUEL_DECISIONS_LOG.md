@@ -22,7 +22,8 @@ Detalle de cada cambio (antes/después, medidas, cómo revertir): `docs/next-lev
 | **Los 4 personajes a la vez contra bots** — `https://hamza189.github.io/SNIPER-1VS1/?pj=mix` (y medir con `&medir=1`) en iPhone y PC | Propietario | PUBLICADO TRAS BANDERA · PENDIENTE DE MEDIR EN IPHONE |
 | **Personajes con texturas comprimidas (KTX2)** — por defecto en PC y, desde el 29-10 por la noche, también en el móvil (el propietario: «he probado el link con KTX2 con las texturas en 4K en Safari y ahora funciona»). Falta abrir varias veces el enlace normal en Safari y un informe de MEDIR RENDIMIENTO (`docs/KTX2.md`) | Propietario | POR DEFECTO · PENDIENTE DE VALIDACIÓN EN IPHONE |
 | **Safari: la barra tapa la pantalla y deforma la imagen** — la imagen ya sigue al tamaño real de la pantalla; para quitar la barra, instalar el juego: Compartir › «Añadir a pantalla de inicio» (sale un aviso en el menú del iPhone) | Propietario | PUBLICADO · PENDIENTE DE VALIDACIÓN EN IPHONE |
-| **Memoria de los aspectos de arma** — ÚLTIMA y SAHARA ocupan ~400 MB cada uno (18–19 texturas de 2K): la mayor parte de los 684 MB medidos en el iPhone. Propuesta: KTX2 también para ellos (~100 MB, misma calidad) (`docs/RENDIMIENTO-IPHONE.md`) | Propietario | PROPUESTA |
+| **Aspectos de arma en KTX2, a su resolución máxima** (29-10) — ÚLTIMA y VECTOR a 4K con la misma memoria que antes; SAHARA ~384 → ~96 MB; TITÁN ~192 → ~96 MB; TÁCTICA a 2K. Probar en Safari eligiendo ÚLTIMA (la descarga más grande, 139,0 MB, la primera vez) y repetir MEDIR RENDIMIENTO (`docs/ARMAS-EXT.md`) | Propietario | PUBLICADO · PENDIENTE DE VALIDACIÓN EN IPHONE |
+| **Espacio de la web** — GitHub Pages publica hasta 1 GB y el repositorio publicado ya ocupa ~870 MB con las armas a 4K. Para mapas en 4K hace falta otro sitio para los archivos grandes (p. ej. Cloudflare R2, gratis hasta 10 GB, en la cuenta de Cloudflare que ya tiene el juego) o quitar de la web los originales que no usa el juego (`assets/3d/imports`). Servicio externo: necesita su aprobación | Propietario | NECESITA APROBACIÓN |
 | **Rendimiento en el iPhone** — MEDIDO en ALTO el 28-10: 60 FPS clavados en ARENA, PUEBLO y CASA XL (CPU ~3 ms/fotograma), pero ~800 MB de texturas por los personajes de 4K, corregido en `ead572a`. Falta repetir la medida en Safari para confirmar ~290 MB y probar una sala con 5 bots (`docs/RENDIMIENTO-IPHONE.md`) | Propietario | MEDIDO · PENDIENTE DE CONFIRMAR LA MEMORIA |
 | **Personaje LINCE (rev. 04)** — compararlo con la rev. 03 en `?pj=3` frente a `?pj=2` | Propietario | PUBLICADO TRAS BANDERA · PENDIENTE DE VALIDACIÓN EN IPHONE |
 | **Asomarse y zonas de impacto**: ¿el servidor debe mover cabeza y pecho con la inclinación? (`docs/HUD-2.md` §4) | Propietario | NECESITA APROBACIÓN |
@@ -81,6 +82,31 @@ Detalle de cada cambio (antes/después, medidas, cómo revertir): `docs/next-lev
 | Encargos para ChatGPT: CASA XL, CASA XL v2 y personaje | 18-10 / 19-10 |
 | Personaje 3D rev. 03 hecho por Claude e integrado tras `?pj=2` (bots y rival online) | 20-10 · directo a `main` |
 | Personajes realistas + elegir personaje (con el SOLDADO de `?pj=2`) y HUD 2 por defecto (aprobado en iPhone y PC) | 28-10 · directo a `main` |
+
+## 29-10-2026 (5) — Aspectos de arma en KTX2 a su resolución máxima
+Petición del propietario: «lo quiero todo en 4K y en su máxima resolución».
+- `arma_ktx2.glb` + `ktx2/` por aspecto (`tools/ktx2/make.py`), sin volver a pasar por Blender:
+  - la misma geometría que `arma.glb`;
+  - cada textura vuelve a salir del original de `tools/arma-ext/.work/<id>/src`, a su tamaño real, en su propio
+    archivo;
+  - antes se comprueba que sea la misma imagen.
+- Resoluciones: ÚLTIMA y VECTOR 4K; TITÁN 4K/2K; SAHARA y TÁCTICA 2K.
+- Memoria gráfica: ÚLTIMA 363 MB y VECTOR 128 MB (las mismas, 4 veces el detalle); TITÁN 192 → 96 MB; SAHARA
+  384 → 96 MB.
+- Descarga: ÚLTIMA 5,1 → 139,0 MB la primera vez. Solo se descarga el aspecto elegido y queda en la caché.
+- **Archivos aparte**: ÚLTIMA en un solo GLB pasaría de los 100 MB que admite GitHub. Además, el móvil pide las
+  texturas de una en una (`ktx2Queue`; 3 a la vez en PC), así que al cargar no tiene el modelo entero en memoria.
+- **Espacio**: el repositorio publicado pasa de 574 a ~870 MB, y el límite de GitHub Pages es 1 GB. Para más 4K (mapas)
+  hace falta otro sitio: tarea abierta.
+- En el juego:
+  - si el KTX2 falla, sale `arma.glb`; con `?ktx2=0` y en BAJO, `arma.glb` (JPG 2K);
+  - mientras llega, el HALCÓN sigue en las manos (antes se quedaban vacías durante la carga).
+- **Arreglado de paso**: volver a elegir un aspecto ya usado (ÚLTIMA → TITÁN → ÚLTIMA) dejaba las manos vacías, porque
+  sus piezas ya no estaban en la escena guardada. Ahora se guardan con su posición.
+- Camuflaje: `client/camo.js` usa `extras.lum` (brillo medio del color) con las texturas comprimidas.
+- Comparativa con la misma cámara y el mismo fotograma: `docs/img/ktx2-armas.jpg` (PSNR del rifle: TITÁN 37,6 dB, ÚLTIMA 41,7, VECTOR 35,6, SAHARA 40,1 (no se ve pérdida; con 4K, algo más de nitidez)).
+- Pruebas: `armas.browser` 26/26 (también en el móvil: ÚLTIMA a 4K con sus 17 texturas de una en una); `npm test` completo en verde (`aim.browser` falló una vez con el ordenador ocupado comprimiendo y pasó al repetirla, 14/14).
+- IMPLEMENTADO · PROBADO EN NAVEGADOR · PENDIENTE DE VALIDACIÓN EN IPHONE.
 
 ## 29-10-2026 (4) — Safari: la imagen sigue a la pantalla, juego instalable y KTX2 otra vez por defecto en el móvil
 Petición del propietario: «lo quiero todo en 4K y en su máxima resolución, he probado el link con KTX2 con las texturas en

@@ -99,6 +99,10 @@ function texture(T, it, renderer) {
 // brillo medio (luz lineal) de la textura y el color de un material: el camuflaje conserva el detalle a su alrededor
 function detail(m) {
   try {
+    // a texture compressed for the GPU (KTX2) cannot be drawn on a canvas: tools/ktx2/make.py stores its average
+    // brightness in the material (extras.lum → userData.lum)
+    const lum = m.userData && m.userData.lum;
+    if (lum != null && m.map) { const c = m.color ? 0.2126 * m.color.r + 0.7152 * m.color.g + 0.0722 * m.color.b : 1, a = lum * c; return a > 0.002 ? 1 / a : 0; }
     const im = m.map && m.map.image; if (!im) return 0;
     const c = document.createElement('canvas'); c.width = c.height = 16; const g = c.getContext('2d'); g.drawImage(im, 0, 0, 16, 16);
     const d = g.getImageData(0, 0, 16, 16).data, L = x => Math.pow(x / 255, 2.2); let s = 0;
