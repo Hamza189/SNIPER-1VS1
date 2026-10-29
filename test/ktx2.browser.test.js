@@ -1,6 +1,8 @@
-/* Personajes con texturas comprimidas para la GPU (por defecto desde el 29-10-2026; ?ktx2=0 = los JPG; docs/KTX2.md):
+/* Personajes con texturas comprimidas para la GPU (docs/KTX2.md): por defecto en PC (?ktx2=0 = los JPG); en el móvil los
+   JPG de 2K por defecto y KTX2 con ?ktx2=1 (Safari cerraba la partida por el pico de memoria al cargar):
    - PC, MEDIO: MILITAR llega en KTX2 (modelo y color), la GPU recibe un formato comprimido (1 byte por píxel)
-   - móvil, ALTO: S.W.A.T. y FSB con su resolución completa de 4K (comprimidos caben; sin la bandera el móvil los baja a 2K)
+   - móvil, ALTO: por defecto JPG 2K; con ?ktx2=1, FSB a 4K comprimido, un solo transcodificador, y la medición de
+     rendimiento cuenta la memoria real de lo comprimido
    - si el KTX2 no llega, el personaje se carga como siempre (JPG) y no pasa nada
    - con ?ktx2=0 no se descarga nada de KTX2; en BAJO, los JPG de 1K
    Run: node test/ktx2.browser.test.js */
@@ -39,10 +41,18 @@ function check(name, cond, info) { if (cond) { pass++; console.log('  ok   ' + n
     check('sin errores', A.errs.length === 0, A.errs.slice(0, 2).join(' | '));
     await A.ctx.close();
 
-    console.log('\nKTX2 EN EL MÓVIL (ALTO)');
-    const M = await open('', 'alto', true);
+    console.log('\nEL MÓVIL (ALTO)');
+    // 29-10: Safari closed the match with KTX2 by default (memory peak while loading): phones keep the 2K JPG by default
+    const D = await open('', 'alto', true);
+    const dd = await tex(D.p);
+    check('por defecto en el móvil: los JPG de 2K (sin descargar nada de KTX2)', !D.files.some(f => /ktx2|basis|KTX2Loader/.test(f)) && !dd.map.c && dd.map.w === 2048, JSON.stringify(dd));
+    await D.ctx.close();
+    const M = await open('?ktx2=1', 'alto', true);
     const m = await tex(M.p);
-    check('en el móvil con ALTO: FSB en los bots con sus texturas de 4K, comprimidas', m.ktx2.includes('assets/personaje/pro/op3/') && m.map.c && m.map.w === 4096 && m.normal.w === 4096, JSON.stringify(m));
+    check('con ?ktx2=1 en el móvil: FSB en los bots con sus texturas de 4K, comprimidas', m.ktx2.includes('assets/personaje/pro/op3/') && m.map.c && m.map.w === 4096 && m.normal.w === 4096, JSON.stringify(m));
+    check('y carga más ligera: un solo transcodificador', await M.p.evaluate(() => __SD.KTX2.loader.basisLoader.workerLimit === 1));
+    const mem = await M.p.evaluate(() => __SD.perfTexMB());
+    check('MEDIR RENDIMIENTO cuenta las texturas comprimidas por lo que ocupan de verdad', mem.real < mem.asRGBA * 0.6, JSON.stringify(mem));
     check('sin errores (móvil)', M.errs.length === 0, M.errs.slice(0, 2).join(' | '));
     await M.ctx.close();
 

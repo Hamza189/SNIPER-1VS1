@@ -1,4 +1,19 @@
-# Texturas comprimidas para la GPU (KTX2) — por defecto desde el 29-10-2026 (`?ktx2=0` = lo de antes)
+# Texturas comprimidas para la GPU (KTX2) — por defecto en PC; en el móvil con `?ktx2=1` (29-10-2026)
+
+**Cambio del 29-10, por la tarde**:
+- Con KTX2 por defecto, Safari en el iPhone volvió a cerrar la partida, y a veces ni cargaba. En Chrome del mismo iPhone
+  iba bien: 60 FPS en los tres mapas.
+- Lo que ocupa en la GPU está bien. El problema es el **pico al cargar**:
+  - los modelos KTX2 pesan 17–27 MB y se cargaban a la vez;
+  - había hasta 4 transcodificadores, cada uno con su memoria.
+- Arreglo:
+  - **en el móvil vuelven por defecto los JPG de 2K**, que son estables;
+  - KTX2 queda con `?ktx2=1`, cargando más ligero: un solo transcodificador y los personajes de uno en uno;
+  - **en PC sigue KTX2 por defecto** (`?ktx2=0` = JPG).
+- MEDIR RENDIMIENTO contaba cada textura comprimida como si ocupara 4 bytes por píxel. Ahora suma sus bytes reales. Con
+  `?ktx2=1` en el móvil (ARENA): 92 MB de verdad, donde la cuenta antigua decía 220 MB.
+- PENDIENTE: que el propietario pruebe `?ktx2=1` varias veces en Safari. Si aguanta, KTX2 vuelve a ser lo de por
+  defecto en el móvil.
 
 **Estado**:
 - Probado con `?ktx2=1` y validado por el propietario en el iPhone: Safari, calidad ALTO, «me deja jugar y carga todo».

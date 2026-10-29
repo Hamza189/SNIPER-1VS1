@@ -18,7 +18,8 @@ function stats(list, target) {
 function avgMax(list) { const a = list.filter(isFinite); if (!a.length) return { avg: 0, max: 0 }; return { avg: Math.round(a.reduce((x, y) => x + y, 0) / a.length), max: Math.max(...a) }; }
 /* textures → estimated GPU memory (RGBA8 + mipmaps ×4/3; what WebGL keeps for an uncompressed texture) */
 function textureMB(list) {
-  let b = 0; for (const t of list) { const w = t.w | 0, h = t.h | 0; if (w > 0 && h > 0) b += w * h * 4 * (t.mip === false ? 1 : 4 / 3); }
+  // t.bytes: a texture compressed for the GPU (KTX2) gives its real size; the rest take 4 bytes per pixel
+  let b = 0; for (const t of list) { const w = t.w | 0, h = t.h | 0; if (t.bytes > 0) b += t.bytes; else if (w > 0 && h > 0) b += w * h * 4 * (t.mip === false ? 1 : 4 / 3); }
   return r1(b / 1048576);
 }
 // where the time goes: if the frame takes much longer than its JavaScript, the wait is the GPU (or the display)

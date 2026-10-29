@@ -20,7 +20,7 @@ Detalle de cada cambio (antes/después, medidas, cómo revertir): `docs/next-lev
 | **Probar 3ª persona (tecla V / AJUSTES; permitida online) y el quickscope**; decidir si el agua de `?pulido=1` pasa a ser la de siempre | Propietario | PUBLICADO · PENDIENTE DE VALIDACIÓN EN IPHONE |
 | **Elegir personaje** (5 con el SOLDADO de `?pj=2`) — ya sale sin bandera: menú › Tu personaje; probar online con otro dispositivo que el rival ve el elegido | Propietario | PUBLICADO · PENDIENTE DE VALIDACIÓN ONLINE |
 | **Los 4 personajes a la vez contra bots** — `https://hamza189.github.io/SNIPER-1VS1/?pj=mix` (y medir con `&medir=1`) en iPhone y PC | Propietario | PUBLICADO TRAS BANDERA · PENDIENTE DE MEDIR EN IPHONE |
-| **Personajes con texturas comprimidas (KTX2)** — POR DEFECTO en móvil y PC desde el 29-10 (decisión del propietario tras validarlo en el iPhone); `?ktx2=0` vuelve a los JPG. Falta un informe de MEDIR RENDIMIENTO en el iPhone con ALTO para confirmar la memoria (~85 MB por personaje de 4K) (`docs/KTX2.md`) | Propietario | POR DEFECTO · PENDIENTE DE MEDIR EN IPHONE |
+| **Personajes con texturas comprimidas (KTX2)** — por defecto en PC. En el móvil, por defecto los JPG de 2K: con KTX2 por defecto Safari volvía a cerrar la partida por el pico de memoria al cargar. Probar en Safari `https://hamza189.github.io/SNIPER-1VS1/?ktx2=1` varias veces, que ahora carga más ligero; si aguanta, vuelve a ser lo de por defecto en el móvil (`docs/KTX2.md`) | Propietario | PC POR DEFECTO · MÓVIL PENDIENTE DE VALIDAR EN SAFARI |
 | **Rendimiento en el iPhone** — MEDIDO en ALTO el 28-10: 60 FPS clavados en ARENA, PUEBLO y CASA XL (CPU ~3 ms/fotograma), pero ~800 MB de texturas por los personajes de 4K, corregido en `ead572a`. Falta repetir la medida en Safari para confirmar ~290 MB y probar una sala con 5 bots (`docs/RENDIMIENTO-IPHONE.md`) | Propietario | MEDIDO · PENDIENTE DE CONFIRMAR LA MEMORIA |
 | **Personaje LINCE (rev. 04)** — compararlo con la rev. 03 en `?pj=3` frente a `?pj=2` | Propietario | PUBLICADO TRAS BANDERA · PENDIENTE DE VALIDACIÓN EN IPHONE |
 | **Asomarse y zonas de impacto**: ¿el servidor debe mover cabeza y pecho con la inclinación? (`docs/HUD-2.md` §4) | Propietario | NECESITA APROBACIÓN |
@@ -92,6 +92,19 @@ main», sin olvidar que con `?pj=2` no se podía elegir personaje.
 - En BAJO, como antes con `?pj=pro`: tu elección la ve el rival, pero en tu pantalla se ven los soldados de cajas.
 - Estado: IMPLEMENTADO · PROBADO EN NAVEGADOR · PROBADO ONLINE (servidor local) · el propietario ya lo validó en iPhone y PC
   con las banderas.
+
+## 29-10-2026 (3) — Safari volvió a cerrar la partida con KTX2 por defecto: en el móvil, JPG 2K por defecto
+Informe del propietario: «en Safari vuelve a fallar la partida o a veces ni carga». En Chrome del iPhone, MEDIR
+RENDIMIENTO: 60 FPS en ARENA, PUEBLO y CASA XL; modelo KTX2 de 23 MB en 7,7 s.
+- **Causa probable**: el pico de memoria al cargar. Modelos KTX2 de 17–27 MB a la vez y hasta 4 transcodificadores. La
+  memoria fija sí es menor.
+- **Cambios**:
+  - en el móvil vuelven por defecto los JPG de 2K;
+  - KTX2 en el móvil con `?ktx2=1`, con un solo transcodificador y los personajes de uno en uno;
+  - en PC sigue KTX2;
+  - MEDIR RENDIMIENTO cuenta la memoria real de las texturas comprimidas (antes las contaba a 4 bytes por píxel).
+- **Pruebas**: `ktx2.browser` 12, `perf` 11, `pro`, `pj2`, `touch.smoke` y `online.browser` en verde.
+- IMPLEMENTADO · PROBADO EN NAVEGADOR · PENDIENTE DE VALIDACIÓN EN SAFARI (con y sin `?ktx2=1`).
 
 ## 29-10-2026 (2) — Los personajes en KTX2 pasan a ser lo de por defecto (móvil y PC)
 Decisión del propietario, tras probar `?ktx2=1` en Safari con ALTO («sí que me deja jugar y carga todo»): «Sí, móvil y

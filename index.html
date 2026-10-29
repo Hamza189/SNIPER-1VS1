@@ -2669,7 +2669,8 @@ function stats(list, target) {
 function avgMax(list) { const a = list.filter(isFinite); if (!a.length) return { avg: 0, max: 0 }; return { avg: Math.round(a.reduce((x, y) => x + y, 0) / a.length), max: Math.max(...a) }; }
 /* textures → estimated GPU memory (RGBA8 + mipmaps ×4/3; what WebGL keeps for an uncompressed texture) */
 function textureMB(list) {
-  let b = 0; for (const t of list) { const w = t.w | 0, h = t.h | 0; if (w > 0 && h > 0) b += w * h * 4 * (t.mip === false ? 1 : 4 / 3); }
+  // t.bytes: a texture compressed for the GPU (KTX2) gives its real size; the rest take 4 bytes per pixel
+  let b = 0; for (const t of list) { const w = t.w | 0, h = t.h | 0; if (t.bytes > 0) b += t.bytes; else if (w > 0 && h > 0) b += w * h * 4 * (t.mip === false ? 1 : 4 / 3); }
   return r1(b / 1048576);
 }
 // where the time goes: if the frame takes much longer than its JavaScript, the wait is the GPU (or the display)
@@ -5340,7 +5341,7 @@ const SDCamo = { draw, texture, detail, patch, swatch, SCALE };
 if (typeof module !== 'undefined' && module.exports) module.exports = SDCamo; else root.SDCamo = SDCamo;
 })(typeof window !== 'undefined' ? window : globalThis);
 
-const BUILD_ID="77f53f9";const BUILD_HASH="6321264bc3";
+const BUILD_ID="d2a279b";const BUILD_HASH="1ce586367f";
 </script>
 <script>
 (function(){
@@ -7280,15 +7281,19 @@ function pj2Suffix(root){
    móvil y PC desde el 29-10-2026 (decisión del propietario: «sí, móvil y PC»). Lo de antes (JPG): ?ktx2=0.
    Archivos: personaje_ktx2.glb y color_<v>_ktx2.ktx2 (tools/ktx2/make.py); lector: vendor/KTX2Loader.js + vendor/basis.
    En BAJO siguen los JPG de 1K (más ligeros de descargar). Si algo falla, o el aparato no sabe usar ninguna textura
-   comprimida (las descomprimiría a 4 bytes por píxel: el problema de memoria de antes), el personaje se carga en JPG. */
-const KTX2_ON=!/[?&]ktx2=0\b/.test(location.search);
+   comprimida (las descomprimiría a 4 bytes por píxel: el problema de memoria de antes), el personaje se carga en JPG.
+   29-10-2026, más tarde: Safari en el iPhone volvió a cerrar la partida (a veces ni cargaba) con KTX2 por defecto. Lo que
+   ocupa en la GPU está bien; el pico es al cargar (modelos de 17–27 MB a la vez y hasta 4 transcodificadores, cada uno con
+   su memoria). En el móvil vuelven por defecto los JPG de 2K (estables) y KTX2 queda con ?ktx2=1, cargando más ligero:
+   un solo transcodificador y los personajes de uno en uno. En PC sigue KTX2 por defecto. */
+const KTX2_ON=PJ2_PHONE?/[?&]ktx2=1\b/.test(location.search):!/[?&]ktx2=0\b/.test(location.search);
 const KTX2_ROOTS=['assets/personaje/','assets/personaje/pro/op2/','assets/personaje/pro/op3/','assets/personaje/pro/op4/'];   // los que tienen versión KTX2
 const ktx2For=root=>KTX2_ON&&GFX.profile!=='bajo'&&KTX2_ROOTS.includes(root);
 const KTX2={loader:null,ready:null};
 function ktx2Ready(){
   if(KTX2.ready)return KTX2.ready;
   return KTX2.ready=new Promise(res=>{const s=document.createElement('script');s.src='vendor/KTX2Loader.js?v='+BUILD_HASH;
-    s.onload=()=>{try{const L=new T.KTX2Loader();L.setTranscoderPath('vendor/basis/');L.detectSupport(renderer);
+    s.onload=()=>{try{const L=new T.KTX2Loader();L.setTranscoderPath('vendor/basis/');L.detectSupport(renderer);if(PJ2_PHONE)L.basisLoader.setWorkerLimit(1);   // phones: one transcoder, less memory at once
         const c=L.basisLoader&&L.basisLoader.workerConfig;KTX2.support=c;
         if(!c||Object.values(c).some(Boolean))KTX2.loader=L;else console.warn('ktx2: sin texturas comprimidas en esta GPU, se usan los JPG');}catch(e){console.warn('ktx2',e);}
       res(KTX2.loader);};
@@ -7303,8 +7308,10 @@ function pj2Load(root){
       for(const R of PJ2.list)pj2Attach(R);try{precompileAll();}catch(e){}}catch(e){fail(e);}};
   const plain=()=>{try{new T.GLTFLoader().load(root+'personaje'+pj2Suffix(root)+'.glb?v='+BUILD_HASH,done,undefined,fail);}catch(e){fail(e);}};
   if(!ktx2For(root))return plain();
-  ktx2Ready().then(L=>{if(!L)return plain();const G=new T.GLTFLoader();G.setKTX2Loader(L);
-    G.load(root+'personaje_ktx2.glb?v='+BUILD_HASH,g=>{PJ2.ktx2=PJ2.ktx2||{};PJ2.ktx2[root]=true;done(g);},undefined,e=>{console.warn('ktx2 pj2',root,e);plain();});});
+  // one KTX2 character at a time (each model is 17–27 MB and is unpacked in memory while it loads)
+  KTX2.chain=(KTX2.chain||Promise.resolve()).then(()=>ktx2Ready()).then(L=>new Promise(next=>{if(!L){plain();return next();}
+    const G=new T.GLTFLoader();G.setKTX2Loader(L);
+    G.load(root+'personaje_ktx2.glb?v='+BUILD_HASH,g=>{PJ2.ktx2=PJ2.ktx2||{};PJ2.ktx2[root]=true;done(g);next();},undefined,e=>{console.warn('ktx2 pj2',root,e);plain();next();});}));
 }
 function pj2Mat(v,root){
   root=root||pj2Root(v);const key=PJ_PRO||PJ_MIX?root+v:v;
@@ -10167,7 +10174,10 @@ const PERF={on:false,rec:null,spin:0,first:0,last:null};
 const perfSleep=ms=>new Promise(r=>setTimeout(r,ms));
 async function perfUntil(fn,ms){const t=performance.now();while(!fn()){if(performance.now()-t>ms)return false;await perfSleep(50);}return true;}
 function perfTextures(){const seen=new Set(),out=[];const up=o=>{const ms=o.material?(Array.isArray(o.material)?o.material:[o.material]):[];for(const m of ms)for(const k of ['map','normalMap','roughnessMap','metalnessMap','aoMap','emissiveMap','alphaMap','envMap'])
-  {const tx=m[k];if(!tx||seen.has(tx)||tx.isCubeTexture)continue;seen.add(tx);const im=tx.image||{};out.push({w:im.videoWidth||im.naturalWidth||im.width||0,h:im.videoHeight||im.naturalHeight||im.height||0,mip:tx.generateMipmaps!==false});}};
+  {const tx=m[k];if(!tx||seen.has(tx)||tx.isCubeTexture)continue;seen.add(tx);const im=tx.image||{};
+    // compressed for the GPU (KTX2): the real bytes of every mip level, not 4 per pixel
+    const bytes=tx.isCompressedTexture&&tx.mipmaps&&tx.mipmaps.length?tx.mipmaps.reduce((s,mm)=>s+(mm.data?mm.data.byteLength:0),0):0;
+    out.push({w:im.videoWidth||im.naturalWidth||im.width||0,h:im.videoHeight||im.naturalHeight||im.height||0,mip:tx.generateMipmaps!==false,bytes});}};
   scene.traverse(up);wScene.traverse(up);return out;}
 function perfStatus(t){const e=$('#perfStat');if(t==null){e.hidden=true;return;}e.hidden=false;e.textContent=t;}
 async function perfRun(quick){
@@ -10403,7 +10413,7 @@ if(FLORA.on){const gl=new T.GLTFLoader();let n=2;
       // the town's ground must exist first (rays land on it)
       if(P3W.kit)go();else{const w=setInterval(()=>{if(P3W.kit){clearInterval(w);go();}},300);}}}}
 
-window.__SD={REMOTES,netScoreHud,shotTargets,MINI,miniLayer,miniPing,clockFrame,setOffTime,get OFF_TIME(){return OFF_TIME;},ACC,accRefresh,INV,invSync,camoApply,openInv,invOpenBox,WSKIN,WS_ST,setWskin,get RIF(){return RIF;},TPV,SELF,get PROFILE(){return PROFILE;},openProfile,endMatch,PJ_MIX,MIX_ORDER,SKINS,get SKIN(){return SKIN;},setSkin,pj2SetPack,rivalSkin,PERF,perfRun,HUD2,get H2(){return HUD2?H2:null;},leanIn:HUD2?leanIn:null,h2Frame:HUD2?h2Frame:null,PJ2,pj2Load,CASA,casaLoad,XL,casaxlLoad,FLORA,RATS,RAT_WORLD,ratsFrame,SHADOW_FADE,setDuelLethal,get DUEL_LETHAL(){return DUEL_LETHAL;},gfxDiagText,get P3ON(){return P3ON;},COBCC,damagePlayer,TEX,sunFollow,setSunSnap(on){SUN_SNAP=!!on;},sun,P0,E10,e10Lod,DIAG,setTrainMove,LIGHT:{sun,hemi,skyMat,LOOK,P3},P3W,freeze(on){SIM_FREEZE=!!on;},SHOT,VMA,makeSoldier,animateSoldier,BOT_MAT,scene,camera,RemotePlayer,PMprev,PIS,PROOT,RIF,WROOT,SHO_:null,MANUAL,advance(ms){frameBody(last+ms);},get LAST_PELLETS(){return LAST_PELLETS;},SCORE,SCFG,SROOT,SHO,setPrimaryChoice,get PRIMARY(){return PRIMARY;},PCORE,PCFG,setWorld,WORLDS,get WORLD_ID(){return WORLD_ID;},renderer,GFX,gfxApply,get NET(){return NET;},get REMOTE(){return REMOTE;},W,get NAV(){return NAV;},setOffMap,get OFFMAP(){return OFFMAP;},TOUCH,EDIT,openEditor,get SETTINGS(){return SETTINGS;},get LAYOUT(){return LAYOUT;},checkOrientation,MAT,LOAD,TRAINERS,get RANGE_BOTS(){return RANGE_BOTS;},TRAIN,setTrain,setLethal,kitNote,GINS,TDIAG,AU,get TOUCH_EVENTS(){return TOUCH_EVENTS;},impactFX,bodyFX,get DECALS(){return DECALS;},surfaceOf,soundDelay,aimSelfTest,P,PM,WS,WCORE,RECOIL,AIM,BOTS,DUMMIES,BULLETS,EVENTS,PARTS,STATS,get state(){return state;},get mode(){return mode;},setMode,input,startMatch,simTick,frame,toMenu,pause,resume};
+window.__SD={KTX2,perfTexMB(){const t=perfTextures();return {real:SDPerf.textureMB(t),asRGBA:SDPerf.textureMB(t.map(x=>Object.assign({},x,{bytes:0})))};},REMOTES,netScoreHud,shotTargets,MINI,miniLayer,miniPing,clockFrame,setOffTime,get OFF_TIME(){return OFF_TIME;},ACC,accRefresh,INV,invSync,camoApply,openInv,invOpenBox,WSKIN,WS_ST,setWskin,get RIF(){return RIF;},TPV,SELF,get PROFILE(){return PROFILE;},openProfile,endMatch,PJ_MIX,MIX_ORDER,SKINS,get SKIN(){return SKIN;},setSkin,pj2SetPack,rivalSkin,PERF,perfRun,HUD2,get H2(){return HUD2?H2:null;},leanIn:HUD2?leanIn:null,h2Frame:HUD2?h2Frame:null,PJ2,pj2Load,CASA,casaLoad,XL,casaxlLoad,FLORA,RATS,RAT_WORLD,ratsFrame,SHADOW_FADE,setDuelLethal,get DUEL_LETHAL(){return DUEL_LETHAL;},gfxDiagText,get P3ON(){return P3ON;},COBCC,damagePlayer,TEX,sunFollow,setSunSnap(on){SUN_SNAP=!!on;},sun,P0,E10,e10Lod,DIAG,setTrainMove,LIGHT:{sun,hemi,skyMat,LOOK,P3},P3W,freeze(on){SIM_FREEZE=!!on;},SHOT,VMA,makeSoldier,animateSoldier,BOT_MAT,scene,camera,RemotePlayer,PMprev,PIS,PROOT,RIF,WROOT,SHO_:null,MANUAL,advance(ms){frameBody(last+ms);},get LAST_PELLETS(){return LAST_PELLETS;},SCORE,SCFG,SROOT,SHO,setPrimaryChoice,get PRIMARY(){return PRIMARY;},PCORE,PCFG,setWorld,WORLDS,get WORLD_ID(){return WORLD_ID;},renderer,GFX,gfxApply,get NET(){return NET;},get REMOTE(){return REMOTE;},W,get NAV(){return NAV;},setOffMap,get OFFMAP(){return OFFMAP;},TOUCH,EDIT,openEditor,get SETTINGS(){return SETTINGS;},get LAYOUT(){return LAYOUT;},checkOrientation,MAT,LOAD,TRAINERS,get RANGE_BOTS(){return RANGE_BOTS;},TRAIN,setTrain,setLethal,kitNote,GINS,TDIAG,AU,get TOUCH_EVENTS(){return TOUCH_EVENTS;},impactFX,bodyFX,get DECALS(){return DECALS;},surfaceOf,soundDelay,aimSelfTest,P,PM,WS,WCORE,RECOIL,AIM,BOTS,DUMMIES,BULLETS,EVENTS,PARTS,STATS,get state(){return state;},get mode(){return mode;},setMode,input,startMatch,simTick,frame,toMenu,pause,resume};
 })();
 </script>
 
