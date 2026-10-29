@@ -20,7 +20,8 @@ Detalle de cada cambio (antes/después, medidas, cómo revertir): `docs/next-lev
 | **Probar 3ª persona (tecla V / AJUSTES; permitida online) y el quickscope**; decidir si el agua de `?pulido=1` pasa a ser la de siempre | Propietario | PUBLICADO · PENDIENTE DE VALIDACIÓN EN IPHONE |
 | **Elegir personaje** (5 con el SOLDADO de `?pj=2`) — ya sale sin bandera: menú › Tu personaje; probar online con otro dispositivo que el rival ve el elegido | Propietario | PUBLICADO · PENDIENTE DE VALIDACIÓN ONLINE |
 | **Los 4 personajes a la vez contra bots** — `https://hamza189.github.io/SNIPER-1VS1/?pj=mix` (y medir con `&medir=1`) en iPhone y PC | Propietario | PUBLICADO TRAS BANDERA · PENDIENTE DE MEDIR EN IPHONE |
-| **Personajes con texturas comprimidas (KTX2)** — por defecto en PC. En el móvil, por defecto los JPG de 2K: VALIDADO en Safari el 29-10 («ya funciona con el link original»; 60 FPS en los tres mapas). Probar en Safari `?ktx2=1` varias veces, que ahora carga más ligero; si aguanta, vuelve a ser lo de por defecto en el móvil (`docs/KTX2.md`) | Propietario | PC POR DEFECTO · MÓVIL VALIDADO EN JPG; KTX2 PENDIENTE |
+| **Personajes con texturas comprimidas (KTX2)** — por defecto en PC y, desde el 29-10 por la noche, también en el móvil (el propietario: «he probado el link con KTX2 con las texturas en 4K en Safari y ahora funciona»). Falta abrir varias veces el enlace normal en Safari y un informe de MEDIR RENDIMIENTO (`docs/KTX2.md`) | Propietario | POR DEFECTO · PENDIENTE DE VALIDACIÓN EN IPHONE |
+| **Safari: la barra tapa la pantalla y deforma la imagen** — la imagen ya sigue al tamaño real de la pantalla; para quitar la barra, instalar el juego: Compartir › «Añadir a pantalla de inicio» (sale un aviso en el menú del iPhone) | Propietario | PUBLICADO · PENDIENTE DE VALIDACIÓN EN IPHONE |
 | **Memoria de los aspectos de arma** — ÚLTIMA y SAHARA ocupan ~400 MB cada uno (18–19 texturas de 2K): la mayor parte de los 684 MB medidos en el iPhone. Propuesta: KTX2 también para ellos (~100 MB, misma calidad) (`docs/RENDIMIENTO-IPHONE.md`) | Propietario | PROPUESTA |
 | **Rendimiento en el iPhone** — MEDIDO en ALTO el 28-10: 60 FPS clavados en ARENA, PUEBLO y CASA XL (CPU ~3 ms/fotograma), pero ~800 MB de texturas por los personajes de 4K, corregido en `ead572a`. Falta repetir la medida en Safari para confirmar ~290 MB y probar una sala con 5 bots (`docs/RENDIMIENTO-IPHONE.md`) | Propietario | MEDIDO · PENDIENTE DE CONFIRMAR LA MEMORIA |
 | **Personaje LINCE (rev. 04)** — compararlo con la rev. 03 en `?pj=3` frente a `?pj=2` | Propietario | PUBLICADO TRAS BANDERA · PENDIENTE DE VALIDACIÓN EN IPHONE |
@@ -80,6 +81,27 @@ Detalle de cada cambio (antes/después, medidas, cómo revertir): `docs/next-lev
 | Encargos para ChatGPT: CASA XL, CASA XL v2 y personaje | 18-10 / 19-10 |
 | Personaje 3D rev. 03 hecho por Claude e integrado tras `?pj=2` (bots y rival online) | 20-10 · directo a `main` |
 | Personajes realistas + elegir personaje (con el SOLDADO de `?pj=2`) y HUD 2 por defecto (aprobado en iPhone y PC) | 28-10 · directo a `main` |
+
+## 29-10-2026 (4) — Safari: la imagen sigue a la pantalla, juego instalable y KTX2 otra vez por defecto en el móvil
+Petición del propietario: «lo quiero todo en 4K y en su máxima resolución, he probado el link con KTX2 con las texturas en
+4K en Safari y ahora funciona […] lo único malo de Safari es que no me deja subir la barra de marcadores y de búsqueda y
+me tapa la pantalla y se distorsiona un poco el juego por las medidas».
+- **Imagen deformada**: en Safari la barra cambia la zona visible sin avisar siempre a la página (sin evento `resize`, o
+  tarde), y la cámara seguía con la forma de antes: imagen estirada. Ahora:
+  - el tamaño se toma del lienzo en pantalla (`getBoundingClientRect`);
+  - un `ResizeObserver` del lienzo y `visualViewport` avisan del cambio aunque Safari no lo haga.
+- **La barra**: una página no puede ocultar las barras de Safari. El juego instalado sí se abre sin ellas:
+  - `manifest.webmanifest` con iconos (`assets/app/`, retícula dibujada con Pillow), pantalla completa en horizontal;
+  - icono para el iPhone (`apple-touch-icon`);
+  - en el menú del iPhone (solo en Safari, no en la app instalada) sale cómo hacerlo: Compartir › «Añadir a pantalla de
+    inicio». La app instalada guarda sus datos aparte: la primera vez hay que volver a entrar en la cuenta.
+- **KTX2 otra vez por defecto en el móvil**, con la carga ligera (un transcodificador, personajes de uno en uno).
+  `?ktx2=0` = JPG de 2K.
+- **Pruebas**: nueva `test/pantalla.browser.test.js` (9). Simula la barra de Safari: la zona visible cambia sin
+  `resize`. Sin el arreglo falla: dibujaba 390 filas en 330 píxeles. También comprueba el aviso y el manifiesto.
+  `ktx2.browser` 12, `pro` 30, `pj2` 16, `hud2.browser` 60, `touch.smoke` 86, `mobile` 74, `smoke` 76 y `perf` 11, en
+  verde.
+- IMPLEMENTADO · PROBADO EN NAVEGADOR · PENDIENTE DE VALIDACIÓN EN IPHONE.
 
 ## 28-10-2026 (noche, 3) — Personajes realistas, elegir personaje y HUD 2 por defecto
 Decisión del propietario: «Lo de personaje realista y HUD NUEVO funcionan bien, tanto en iPhone como en PC, publícalo a

@@ -1,4 +1,12 @@
-# Texturas comprimidas para la GPU (KTX2) — por defecto en PC; en el móvil con `?ktx2=1` (29-10-2026)
+# Texturas comprimidas para la GPU (KTX2) — por defecto en PC y en el móvil (`?ktx2=0` = los JPG)
+
+**Cambio del 29-10, por la noche — KTX2 otra vez por defecto en el móvil**:
+- El propietario probó `?ktx2=1` en Safari con la carga ligera: «he probado el link con KTX2 con las texturas en 4K en
+  Safari y ahora funciona». Y pide: «lo quiero todo en 4K y en su máxima resolución».
+- Por eso KTX2 vuelve a ser lo de por defecto también en el móvil, **con la carga ligera**: un solo transcodificador y
+  los personajes de uno en uno. `?ktx2=0` vuelve a los JPG de 2K.
+- Prueba: `test/ktx2.browser.test.js` (móvil sin bandera = FSB a 4K comprimido con un transcodificador; `?ktx2=0` = JPG
+  de 2K).
 
 **Cambio del 29-10, por la tarde**:
 - Con KTX2 por defecto, Safari en el iPhone volvió a cerrar la partida, y a veces ni cargaba. En Chrome del mismo iPhone

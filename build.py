@@ -41,6 +41,7 @@ standalone = (
     "<meta name=\"apple-mobile-web-app-status-bar-style\" content=\"black-translucent\">\n"
     "<meta name=\"apple-mobile-web-app-title\" content=\"Sniper Duel\">\n"
     "<link rel=\"manifest\" href=\"manifest.webmanifest\">\n"
+    "<link rel=\"apple-touch-icon\" href=\"assets/app/icono-180.png\">\n"
     + head + "\n</head>\n<body>\n" + body + "\n</body>\n</html>\n"
 )
 # The standalone page serves its own copy of Three.js (vendor/three.min.js, official r128 build),

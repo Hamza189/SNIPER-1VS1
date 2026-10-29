@@ -8,6 +8,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Sniper Duel">
 <link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="assets/app/icono-180.png">
 <title>Sniper Duel</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 32 32%22%3E%3Crect width=%2232%22 height=%2232%22 rx=%226%22 fill=%22%23171310%22/%3E%3Ccircle cx=%2216%22 cy=%2216%22 r=%229%22 fill=%22none%22 stroke=%22%23ff8a2b%22 stroke-width=%222.5%22/%3E%3Cpath d=%22M16 4v8M16 20v8M4 16h8M20 16h8%22 stroke=%22%23f3e9d6%22 stroke-width=%222%22/%3E%3C/svg%3E">
 <meta name="theme-color" content="#0f0d0a">
@@ -837,6 +838,7 @@ body.hud2 #stickBase.sprint #stickKnob svg{display:block}
           <button class="btn ghost" id="openProfile" type="button" style="font-size:22px" hidden>PERFIL</button>
           <button class="btn ghost" id="openInv" type="button" style="font-size:22px" hidden>CAJAS</button>
           <span class="hint" id="orientHint"></span>
+          <span class="hint" id="appHint" hidden>En el iPhone, para jugar a pantalla completa (sin la barra de Safari): Compartir <b>⎙</b> › «Añadir a pantalla de inicio» y abre el juego desde ese icono (la primera vez, vuelve a entrar en tu cuenta: guarda sus datos aparte).</span>
         </div>
         <div class="road"><span class="now">1 · Gunplay</span><span>2 · Segundo rifle</span><span>3 · 1v1 online</span><span>4 · Salas</span></div>
       </div>
@@ -5341,7 +5343,7 @@ const SDCamo = { draw, texture, detail, patch, swatch, SCALE };
 if (typeof module !== 'undefined' && module.exports) module.exports = SDCamo; else root.SDCamo = SDCamo;
 })(typeof window !== 'undefined' ? window : globalThis);
 
-const BUILD_ID="d2a279b";const BUILD_HASH="1ce586367f";
+const BUILD_ID="8cdc171";const BUILD_HASH="6e9a5bf462";
 </script>
 <script>
 (function(){
@@ -5437,13 +5439,26 @@ const wScene=new T.Scene();
 const wCam=new T.PerspectiveCamera(50,1,0.01,10);
 
 function resize(){
-  const w=window.innerWidth,h=window.innerHeight;
+  // the canvas's real size on screen: in Safari on the iPhone the address bar comes and goes without always telling the
+  // page (innerWidth/innerHeight and the 'resize' event lag behind), and the picture was stretched (29-10-2026)
+  const r=canvas.getBoundingClientRect(),w=Math.round(r.width)||window.innerWidth,h=Math.round(r.height)||window.innerHeight;
   renderer.setSize(w,h,false);
   camera.aspect=w/h;camera.updateProjectionMatrix();
   wCam.aspect=w/h;wCam.updateProjectionMatrix();
   $('#orientHint').textContent=(isTouch&&h>w)?'Gira el móvil: se juega mejor en horizontal.':'';
 }
 window.addEventListener('resize',resize);
+// Safari (iPhone): the bars change the visible area without a 'resize'; when the canvas changes size, everything that
+// depends on the screen size (camera, touch buttons, compass, reticle) is told with a 'resize' of its own
+{let lw=0,lh=0;const check=()=>{const r=canvas.getBoundingClientRect(),w=Math.round(r.width),h=Math.round(r.height);if(w&&h&&(w!==lw||h!==lh)){const first=!lw;lw=w;lh=h;if(!first)window.dispatchEvent(new Event('resize'));}};
+  if(window.ResizeObserver)new ResizeObserver(check).observe(canvas);
+  if(window.visualViewport)visualViewport.addEventListener('resize',()=>setTimeout(check,60));
+  check();}
+// iPhone/iPad in Safari (not opened from the home screen): a page cannot hide Safari's bars; the game installed as a web
+// app (manifest.webmanifest: full screen, landscape) opens without them
+{const ios=/iPhone|iPad|iPod/.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
+  const app=navigator.standalone||(window.matchMedia&&(matchMedia('(display-mode: standalone)').matches||matchMedia('(display-mode: fullscreen)').matches));
+  if(ios&&!app)$('#appHint').hidden=false;}
 
 /* =================== TEXTURES =================== */
 function canvasTex(w,h,draw){
@@ -7285,8 +7300,10 @@ function pj2Suffix(root){
    29-10-2026, más tarde: Safari en el iPhone volvió a cerrar la partida (a veces ni cargaba) con KTX2 por defecto. Lo que
    ocupa en la GPU está bien; el pico es al cargar (modelos de 17–27 MB a la vez y hasta 4 transcodificadores, cada uno con
    su memoria). En el móvil vuelven por defecto los JPG de 2K (estables) y KTX2 queda con ?ktx2=1, cargando más ligero:
-   un solo transcodificador y los personajes de uno en uno. En PC sigue KTX2 por defecto. */
-const KTX2_ON=PJ2_PHONE?/[?&]ktx2=1\b/.test(location.search):!/[?&]ktx2=0\b/.test(location.search);
+   un solo transcodificador y los personajes de uno en uno. En PC sigue KTX2 por defecto.
+   29-10-2026, después: el propietario probó ?ktx2=1 con esa carga más ligera en Safari («ahora funciona») y quiere «todo en
+   4K y en su máxima resolución»: KTX2 vuelve a ser lo de por defecto también en el móvil, con la carga ligera. ?ktx2=0 = JPG. */
+const KTX2_ON=!/[?&]ktx2=0\b/.test(location.search);
 const KTX2_ROOTS=['assets/personaje/','assets/personaje/pro/op2/','assets/personaje/pro/op3/','assets/personaje/pro/op4/'];   // los que tienen versión KTX2
 const ktx2For=root=>KTX2_ON&&GFX.profile!=='bajo'&&KTX2_ROOTS.includes(root);
 const KTX2={loader:null,ready:null};
