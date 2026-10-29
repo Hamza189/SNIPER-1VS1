@@ -58,6 +58,15 @@ medido con el contador de FPS (AJUSTES → GRÁFICOS → «Mostrar FPS») en ALT
 - **Materiales por edificio:** pocos (cada uno es una llamada de dibujo); mejor atlas o texturas compartidas entre
   edificios.
 - Claude genera las versiones reducidas para MEDIO y BAJO a partir de los originales.
+- **Memoria gráfica en el móvil (medido el 28-10-2026)**: una textura de 4K sin comprimir ocupa unos 85 MB con sus
+  mipmaps. Un personaje con 4 texturas de 4K (340 MB) hacía que Safari cerrara la página. Desde entonces el móvil
+  carga los personajes a 2K como mucho.
+- **Texturas comprimidas para la GPU (KTX2/UASTC; prueba con `?ktx2=1`, `docs/KTX2.md`)**:
+  - Ocupan 1 byte por píxel en vez de 4, así que un 4K comprimido ocupa lo que un 2K sin comprimir.
+  - Calidad medida: 41–48 dB, sin diferencia a la vista.
+  - La descarga es 2–5 veces mayor.
+  - Los personajes ya tienen su versión `personaje_ktx2.glb` y `color_*_ktx2.ktx2` (`tools/ktx2/make.py`).
+  - Si se aprueba, lo mismo valdría para los edificios nuevos.
 
 ## 4. Reglas de juego: lo que el modelo puede ocupar
 

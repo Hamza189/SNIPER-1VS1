@@ -20,6 +20,7 @@ Detalle de cada cambio (antes/después, medidas, cómo revertir): `docs/next-lev
 | **Probar 3ª persona (tecla V / AJUSTES; permitida online) y el quickscope**; decidir si el agua de `?pulido=1` pasa a ser la de siempre | Propietario | PUBLICADO · PENDIENTE DE VALIDACIÓN EN IPHONE |
 | **Elegir personaje** (5 con el SOLDADO de `?pj=2`) — ya sale sin bandera: menú › Tu personaje; probar online con otro dispositivo que el rival ve el elegido | Propietario | PUBLICADO · PENDIENTE DE VALIDACIÓN ONLINE |
 | **Los 4 personajes a la vez contra bots** — `https://hamza189.github.io/SNIPER-1VS1/?pj=mix` (y medir con `&medir=1`) en iPhone y PC | Propietario | PUBLICADO TRAS BANDERA · PENDIENTE DE MEDIR EN IPHONE |
+| **Personajes con texturas comprimidas (KTX2)** — probar `https://hamza189.github.io/SNIPER-1VS1/?ktx2=1` en Safari con ALTO: que no se cierre, mirar los personajes con la mira y pasar MEDIR RENDIMIENTO; decidir si pasa a ser lo de por defecto (`docs/KTX2.md`) | Propietario | PUBLICADO TRAS BANDERA · PENDIENTE DE VALIDACIÓN EN IPHONE |
 | **Rendimiento en el iPhone** — MEDIDO en ALTO el 28-10: 60 FPS clavados en ARENA, PUEBLO y CASA XL (CPU ~3 ms/fotograma), pero ~800 MB de texturas por los personajes de 4K, corregido en `ead572a`. Falta repetir la medida en Safari para confirmar ~290 MB y probar una sala con 5 bots (`docs/RENDIMIENTO-IPHONE.md`) | Propietario | MEDIDO · PENDIENTE DE CONFIRMAR LA MEMORIA |
 | **Personaje LINCE (rev. 04)** — compararlo con la rev. 03 en `?pj=3` frente a `?pj=2` | Propietario | PUBLICADO TRAS BANDERA · PENDIENTE DE VALIDACIÓN EN IPHONE |
 | **Asomarse y zonas de impacto**: ¿el servidor debe mover cabeza y pecho con la inclinación? (`docs/HUD-2.md` §4) | Propietario | NECESITA APROBACIÓN |
@@ -91,6 +92,22 @@ main», sin olvidar que con `?pj=2` no se podía elegir personaje.
 - En BAJO, como antes con `?pj=pro`: tu elección la ve el rival, pero en tu pantalla se ven los soldados de cajas.
 - Estado: IMPLEMENTADO · PROBADO EN NAVEGADOR · PROBADO ONLINE (servidor local) · el propietario ya lo validó en iPhone y PC
   con las banderas.
+
+## 29-10-2026 — Texturas comprimidas para la GPU (KTX2) como prueba con `?ktx2=1`
+Decisión del propietario: «Sí, prepáralo» (recuperar el detalle de 4K en el móvil sin perder calidad ni gastar más
+memoria).
+- **Herramientas**: el codificador oficial de Basis Universal v1.50 (WebAssembly, Apache 2.0) en `tools/ktx2`, y el
+  `KTX2Loader` y el transcodificador de three.js r128 (MIT y Apache 2.0) en `vendor/`. Sin instalar nada y sin
+  servicios.
+- **Los 4 personajes convertidos** a UASTC con su resolución completa: `personaje_ktx2.glb` y `color_*_ktx2.ktx2`, junto
+  a los originales.
+- **Medido**:
+  - en un móvil con ALTO, FSB a 4K en ASTC ocupa 85 MB, lo mismo que hoy a 2K (antes, sin comprimir, 340 MB);
+  - calidad: 41–48 dB, sin diferencia a la vista (`docs/img/ktx2-comparacion.jpg`);
+  - descarga: 2–5 veces mayor.
+- **Pruebas**: `ktx2.browser` (8, nueva); `pro.browser` y `pj2.browser` sin cambios.
+- IMPLEMENTADO · PROBADO EN NAVEGADOR · PENDIENTE DE VALIDACIÓN EN EL IPHONE: `?ktx2=1` con ALTO en Safari. Si se
+  aprueba, pasaría a ser lo de por defecto.
 
 ## 28-10-2026 (noche, 6) — iPhone: Safari cerraba la página con los personajes realistas en ALTO
 Informe del propietario:

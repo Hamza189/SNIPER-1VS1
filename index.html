@@ -5340,7 +5340,7 @@ const SDCamo = { draw, texture, detail, patch, swatch, SCALE };
 if (typeof module !== 'undefined' && module.exports) module.exports = SDCamo; else root.SDCamo = SDCamo;
 })(typeof window !== 'undefined' ? window : globalThis);
 
-const BUILD_ID="a1d7787";const BUILD_HASH="2d79318d4d";
+const BUILD_ID="04057ed";const BUILD_HASH="740179a5e2";
 </script>
 <script>
 (function(){
@@ -7274,21 +7274,42 @@ function pj2Suffix(root){
   if((PJ_MIX||PJ_PRO)&&(GFX.profile!=='alto'||PJ2_PHONE)&&/\/(op2|op3)\/$/.test(root))return '_2k';   // phones: never 4K
   return '';
 }
+/* ?ktx2=1 (28-10-2026, docs/KTX2.md, aprobado como prueba por el propietario): los personajes con sus texturas a la
+   resolución completa (4K S.W.A.T./FSB, 2K MILITAR/SOLDADO) comprimidas para la GPU (UASTC → ASTC en el iPhone, BC7 en
+   PC): 1 byte por píxel en vez de 4, así que también el móvil puede llevar los de 4K. Archivos: personaje_ktx2.glb y
+   color_<v>_ktx2.ktx2 (tools/ktx2/make.py); lector: vendor/KTX2Loader.js + vendor/basis (solo se descargan con la
+   bandera). Si algo falla, el personaje se carga como siempre (JPG). */
+const KTX2_ON=/[?&]ktx2=1\b/.test(location.search);
+const KTX2={loader:null,ready:null};
+function ktx2Ready(){
+  if(KTX2.ready)return KTX2.ready;
+  return KTX2.ready=new Promise(res=>{const s=document.createElement('script');s.src='vendor/KTX2Loader.js?v='+BUILD_HASH;
+    s.onload=()=>{try{const L=new T.KTX2Loader();L.setTranscoderPath('vendor/basis/');L.detectSupport(renderer);KTX2.loader=L;}catch(e){console.warn('ktx2',e);}res(KTX2.loader);};
+    s.onerror=()=>res(null);document.head.appendChild(s);});
+}
 function pj2Load(root){
   root=root||pj2Root('B');
   if(!PJ2.on||PJ2.loadingRoots[root]||PJ2.tpls[root]||!T.GLTFLoader)return;PJ2.loadingRoots[root]=true;PJ2.loading=true;
-  const f=root+'personaje'+pj2Suffix(root)+'.glb?v='+BUILD_HASH;
   const fail=e=>{PJ2.failedRoots[root]=true;if(!Object.keys(PJ2.tpls).length)PJ2.failed=true;console.warn('pj2 load',root,e);};
-  try{new T.GLTFLoader().load(f,g=>{try{const tpl=SDSoldier2.template(g,T);PJ2.tpls[root]=tpl;if(!PJ2.tpl)PJ2.tpl=tpl;PJ2.mats[PJ_PRO||PJ_MIX?root+'B':'B']=tpl.material;
+  const done=g=>{try{const tpl=SDSoldier2.template(g,T);PJ2.tpls[root]=tpl;if(!PJ2.tpl)PJ2.tpl=tpl;PJ2.mats[PJ_PRO||PJ_MIX?root+'B':'B']=tpl.material;
       if(PJ_MIX)pj2Mat('bots',root);
-      for(const R of PJ2.list)pj2Attach(R);try{precompileAll();}catch(e){}}catch(e){fail(e);}},undefined,fail);}catch(e){fail(e);}
+      for(const R of PJ2.list)pj2Attach(R);try{precompileAll();}catch(e){}}catch(e){fail(e);}};
+  const plain=()=>{try{new T.GLTFLoader().load(root+'personaje'+pj2Suffix(root)+'.glb?v='+BUILD_HASH,done,undefined,fail);}catch(e){fail(e);}};
+  if(!KTX2_ON)return plain();
+  ktx2Ready().then(L=>{if(!L)return plain();const G=new T.GLTFLoader();G.setKTX2Loader(L);
+    G.load(root+'personaje_ktx2.glb?v='+BUILD_HASH,g=>{PJ2.ktx2=PJ2.ktx2||{};PJ2.ktx2[root]=true;done(g);},undefined,e=>{console.warn('ktx2 pj2',root,e);plain();});});
 }
 function pj2Mat(v,root){
   root=root||pj2Root(v);const key=PJ_PRO||PJ_MIX?root+v:v;
   if(PJ2.mats[key])return PJ2.mats[key];
   // mientras llega el color de la variante se ve el del propio GLB (no negro); al llegar se sube a la GPU (sin tirón al verlo)
-  const m=PJ2.tpls[root].material.clone(),t=new T.TextureLoader().load(root+'color_'+v+pj2Suffix(root)+'.jpg?v='+BUILD_HASH,tx=>{m.map=tx;try{renderer.initTexture(tx);}catch(e){}});
-  t.flipY=false;t.encoding=T.sRGBEncoding;t.anisotropy=GFX.profile==='alto'?(PJ_PRO||PJ_MIX?8:4):2;return PJ2.mats[key]=m;
+  const m=PJ2.tpls[root].material.clone(),aniso=GFX.profile==='alto'?(PJ_PRO||PJ_MIX?8:4):2;
+  if(KTX2.loader&&PJ2.ktx2&&PJ2.ktx2[root]){
+    KTX2.loader.load(root+'color_'+v+'_ktx2.ktx2?v='+BUILD_HASH,tx=>{tx.anisotropy=aniso;m.map=tx;try{renderer.initTexture(tx);}catch(e){}},undefined,e=>console.warn('ktx2 color',root,v,e));
+    return PJ2.mats[key]=m;
+  }
+  const t=new T.TextureLoader().load(root+'color_'+v+pj2Suffix(root)+'.jpg?v='+BUILD_HASH,tx=>{m.map=tx;try{renderer.initTexture(tx);}catch(e){}});
+  t.flipY=false;t.encoding=T.sRGBEncoding;t.anisotropy=aniso;return PJ2.mats[key]=m;
 }
 function pj2Aim(R,w){const o=SDSoldier2.AIM_OFFSET[w]||SDSoldier2.AIM_OFFSET.rifle;R.aim.position.set(o[0],o[1],o[2]);R.v2w=w;}
 function pj2Attach(R){
