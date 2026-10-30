@@ -70,7 +70,8 @@ const shown = page => page.evaluate(ids => ids.filter(id => { const e = document
           q('.setTabs button[data-tab="controles"]').click();
           return o;
         });
-        check('AJUSTES por pestañas: 6 secciones, se ve solo la elegida', r.tabsAll === 6 && r.tab === 'audio', JSON.stringify([r.tabsAll, r.tab]));
+        // 7 since 30-10-2026: MIRA Y EFECTOS (crosshair, scope, hit marker and hit effect)
+        check('AJUSTES por pestañas: 7 secciones, se ve solo la elegida', r.tabsAll === 7 && r.tab === 'audio', JSON.stringify([r.tabsAll, r.tab]));
         check('AUDIO: el volumen de disparos cambia de verdad su canal (y se guarda); los efectos no', r.shots === 0.2 && r.fx === 1 && r.saved === 0.2, JSON.stringify([r.shots, r.fx, r.saved]));
         check('AUDIO: silenciar todo pone el volumen general a 0', r.master === 0, String(r.master));
         check('RESTAURAR ESTA SECCIÓN solo toca su sección', r.afterTab[0] === 1 && r.afterTab[1] === false && r.afterTab[2] === 2.2, JSON.stringify(r.afterTab));

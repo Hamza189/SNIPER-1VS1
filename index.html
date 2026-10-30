@@ -95,16 +95,23 @@ body.touch.miniOn #feed{right:calc(110px + env(safe-area-inset-right,0px))}   /*
 #status{position:absolute;left:50%;top:62%;transform:translateX(-50%);font-size:11px;letter-spacing:.3em;color:var(--sand);text-shadow:0 1px 4px #000}
 
 #cross{position:absolute;left:50%;top:50%;width:0;height:0;--gap:14px;transition:opacity .12s}
-#cross i{position:absolute;background:var(--hud);box-shadow:0 0 2px rgba(0,0,0,.9)}
-#cross i:nth-child(1){width:2px;height:10px;left:-1px;bottom:var(--gap)}
-#cross i:nth-child(2){width:2px;height:10px;left:-1px;top:var(--gap)}
-#cross i:nth-child(3){height:2px;width:10px;top:-1px;right:var(--gap)}
-#cross i:nth-child(4){height:2px;width:10px;top:-1px;left:var(--gap)}
-#cross.dot i{display:none}
-#cross b{position:absolute;width:2px;height:2px;left:-1px;top:-1px;background:var(--hud)}
+/* crosshair (#cross and the preview in AJUSTES › MIRA): colour, line length, thickness and outline from the settings */
+.xh{--xc:var(--hud);--xl:10px;--xt:2px;--xo:0 0 2px rgba(0,0,0,.9)}
+.xh i{position:absolute;background:var(--xc);box-shadow:var(--xo)}
+.xh i:nth-child(1){width:var(--xt);height:var(--xl);left:calc(var(--xt) / -2);bottom:var(--gap)}
+.xh i:nth-child(2){width:var(--xt);height:var(--xl);left:calc(var(--xt) / -2);top:var(--gap)}
+.xh i:nth-child(3){height:var(--xt);width:var(--xl);top:calc(var(--xt) / -2);right:var(--gap)}
+.xh i:nth-child(4){height:var(--xt);width:var(--xl);top:calc(var(--xt) / -2);left:var(--gap)}
+.xh b{position:absolute;width:var(--xt);height:var(--xt);left:calc(var(--xt) / -2);top:calc(var(--xt) / -2);background:var(--xc);box-shadow:var(--xo)}
+.xh u{display:none;position:absolute;left:calc(var(--gap) * -1);top:calc(var(--gap) * -1);width:calc(var(--gap) * 2);height:calc(var(--gap) * 2);box-sizing:border-box;border:var(--xt) solid var(--xc);border-radius:50%;box-shadow:var(--xo)}
+.xh.x-dot i,.xh.x-circle i,.xh.dot i{display:none}
+.xh.x-cross b{display:none}
+.xh.x-circle u{display:block}
+.xh.x-tee i:nth-child(1){display:none}
+.xh.dot b{display:block}.xh.dot u{display:none}   /* knife: only the dot */
 
 #hitmark{position:absolute;left:50%;top:50%;width:0;height:0;opacity:0;z-index:8}
-#hitmark i{position:absolute;width:2px;height:11px;background:#fff;left:-1px;top:-5px;box-shadow:0 0 3px #000}
+#hitmark i{position:absolute;width:2px;height:11px;background:var(--hm,#fff);left:-1px;top:-5px;box-shadow:0 0 3px #000}
 #hitmark i:nth-child(1){transform:rotate(45deg) translateY(-14px)}
 #hitmark i:nth-child(2){transform:rotate(135deg) translateY(-14px)}
 #hitmark i:nth-child(3){transform:rotate(225deg) translateY(-14px)}
@@ -188,6 +195,11 @@ h1 span{display:block;color:var(--sand)}
 .seg button{flex:1;background:none;border:0;padding:10px 6px;font-size:11px;letter-spacing:.16em;cursor:pointer;color:var(--dust)}
 .seg button+button{border-left:1px solid var(--line)}
 .seg button[aria-pressed="true"]{background:var(--hud);color:var(--ink)}
+.swatches{display:flex;flex-wrap:wrap;gap:10px;margin:2px 0 4px}
+.swatches button{width:30px;height:30px;border-radius:50%;padding:0;cursor:pointer;background:var(--c);border:2px solid rgba(255,255,255,.28);box-shadow:0 0 0 1px rgba(0,0,0,.6)}
+.swatches button[aria-pressed="true"]{outline:3px solid var(--hud);outline-offset:3px}
+.xPrev{position:relative;height:96px;border-radius:12px;overflow:hidden;margin:4px 0 2px;background:linear-gradient(180deg,#9fb6c9 0 45%,#6d6a5c 45% 100%)}
+.xPrev .xh{position:absolute;left:50%;top:50%;width:0;height:0}
 .kitRow{display:grid;gap:6px;justify-items:center;margin:4px 0 2px}.kitNote{color:var(--signal);min-height:1em;text-align:center}.kitRow .seg button{font-size:15px}.kitSeg button{white-space:nowrap}
 @media (max-height:480px){.kitRow{margin:0;gap:3px}.kitRow .seg button{font-size:13px;padding-top:6px;padding-bottom:6px}}
 /* elegir personaje (?pj=pro / ?pj=mix): botón con retrato en el menú y la sala, ventana con las 4 fichas */
@@ -566,7 +578,7 @@ body.hud2 #stickBase.sprint #stickKnob svg{display:block}
   </div>
   <canvas id="mini" hidden aria-hidden="true"></canvas>
   <div id="feed"></div>
-  <div id="cross"><i></i><i></i><i></i><i></i><b></b></div>
+  <div id="cross" class="xh"><i></i><i></i><i></i><i></i><b></b><u></u></div>
   <div id="vignette"></div>
   <div id="flashRed"></div>
   <div id="dmgdir"><div></div></div>
@@ -643,7 +655,7 @@ body.hud2 #stickBase.sprint #stickKnob svg{display:block}
     <div class="eyebrow">Ajustes</div>
     <h2 style="font-size:clamp(34px,6vw,54px)" id="setTitle">CONTROLES</h2>
     <nav class="setTabs" role="tablist" aria-label="Secciones de ajustes">
-      <button type="button" role="tab" data-tab="controles" aria-selected="true">CONTROLES</button><button type="button" role="tab" data-tab="sensibilidad">SENSIBILIDAD</button><button type="button" role="tab" data-tab="graficos">GRÁFICOS</button><button type="button" role="tab" data-tab="audio">AUDIO</button><button type="button" role="tab" data-tab="jugabilidad">JUGABILIDAD</button><button type="button" role="tab" data-tab="accesibilidad">ACCESIBILIDAD</button>
+      <button type="button" role="tab" data-tab="controles" aria-selected="true">CONTROLES</button><button type="button" role="tab" data-tab="sensibilidad">SENSIBILIDAD</button><button type="button" role="tab" data-tab="mira">MIRA</button><button type="button" role="tab" data-tab="graficos">GRÁFICOS</button><button type="button" role="tab" data-tab="audio">AUDIO</button><button type="button" role="tab" data-tab="jugabilidad">JUGABILIDAD</button><button type="button" role="tab" data-tab="accesibilidad">ACCESIBILIDAD</button>
     </nav>
     <section class="setPane" data-pane="controles" role="tabpanel">
       <div class="lbl" style="margin:4px 0 6px">Vista (tecla V)</div>
@@ -653,11 +665,12 @@ body.hud2 #stickBase.sprint #stickKnob svg{display:block}
       <div class="seg" id="crouchSeg" role="group" aria-label="Agacharse"><button type="button" data-c="slide">PULSAR · TE LEVANTAS AL DESLIZAR</button><button type="button" data-c="toggle">PULSAR</button><button type="button" data-c="hold">MANTENER</button></div>
       <p class="setHelp" id="crouchHelp"></p>
       <div class="lbl" style="margin:4px 0 6px">Botón MIRA (móvil)</div>
-      <div class="seg" id="adsSeg" role="group" aria-label="Botón MIRA"><button type="button" data-a="holdDrag">MANTENER Y ARRASTRAR</button><button type="button" data-a="hold">MANTENER</button><button type="button" data-a="toggle">PULSAR</button></div>
+      <div class="seg" id="adsSeg" role="group" aria-label="Botón MIRA"><button type="button" data-a="holdDrag">MANTENER Y ARRASTRAR</button><button type="button" data-a="hold">MANTENER</button><button type="button" data-a="toggle">PULSAR</button><button type="button" data-a="mixed">MIXTO</button></div>
       <p class="setHelp" id="adsHelp"></p>
       <div class="setGrid">
         <label class="chk"><input type="checkbox" id="sRel"> Mantener FUEGO apunta con la mira y al soltar dispara (rifle, móvil)</label>
         <label class="chk"><input type="checkbox" id="sLeft"> Botón FUEGO también a la izquierda (móvil)</label>
+        <label class="chk"><input type="checkbox" id="sLeftAds"> … el de la izquierda solo mientras apuntas</label>
         <label class="chk"><input type="checkbox" id="sDiag"> Diagnóstico táctil (dedos y MIRA en pantalla)</label>
       </div>
       <div class="row"><button class="btn ghost" id="openEditor" type="button" style="font-size:18px">EDITAR BOTONES TÁCTILES</button></div>
@@ -673,9 +686,45 @@ body.hud2 #stickBase.sprint #stickKnob svg{display:block}
         <label class="sens"><span class="lbl">Visor francotirador</span><input id="sA" type="range" min="0.3" max="2" step="0.05"><output id="sAo"></output></label>
         <label class="sens"><span class="lbl">Zona muerta dedo (px)</span><input id="sDZ" type="range" min="0" max="12" step="1"><output id="sDZo"></output></label>
         <label class="sens"><span class="lbl">Suavizado</span><input id="sSM" type="range" min="0" max="0.8" step="0.05"><output id="sSMo"></output></label>
+        <label class="sens"><span class="lbl">Sin mira · 1ª persona</span><input id="sFP" type="range" min="0.3" max="3" step="0.05"><output id="sFPo"></output></label>
+        <label class="sens"><span class="lbl">Sin mira · 3ª persona</span><input id="sTP" type="range" min="0.3" max="3" step="0.05"><output id="sTPo"></output></label>
+        <label class="sens"><span class="lbl">Visor 4×</span><input id="sZ4" type="range" min="0.3" max="2" step="0.05"><output id="sZ4o"></output></label>
+        <label class="sens"><span class="lbl">Visor 8×</span><input id="sZ8" type="range" min="0.3" max="2" step="0.05"><output id="sZ8o"></output></label>
         <label class="chk"><input type="checkbox" id="sInv"> Invertir eje vertical</label>
       </div>
-      <p class="setHelp">Cómo se combinan: giro = movimiento × horizontal/vertical × dedo (móvil) × «al apuntar» (cualquier arma con la mira) × «visor francotirador» (solo con el visor del rifle). El zoom ya se compensa solo y no hay aceleración: la misma distancia de dedo gira siempre lo mismo.</p>
+      <p class="setHelp">Cómo se combinan: giro = movimiento × horizontal/vertical × dedo (móvil) × «sin mira» de tu vista (1ª o 3ª persona) o «al apuntar» (cualquier arma con la mira) × «visor francotirador» × el de su zoom (4× u 8×). El zoom ya se compensa solo y no hay aceleración: la misma distancia de dedo gira siempre lo mismo.</p>
+      <div id="gyroBox">
+        <div class="lbl" style="margin:12px 0 6px">Giroscopio (girar el móvil mueve la cámara)</div>
+        <div class="seg" id="gyroSeg" role="group" aria-label="Giroscopio"><button type="button" data-g="off">NO</button><button type="button" data-g="ads">AL APUNTAR</button><button type="button" data-g="on">SIEMPRE</button></div>
+        <div class="setGrid" style="margin-top:8px">
+          <label class="sens"><span class="lbl">Giroscopio · sin mira</span><input id="sGy" type="range" min="0.2" max="4" step="0.05"><output id="sGyo"></output></label>
+          <label class="sens"><span class="lbl">Giroscopio · apuntando</span><input id="sGyA" type="range" min="0.2" max="4" step="0.05"><output id="sGyAo"></output></label>
+          <label class="chk"><input type="checkbox" id="sGyInv"> Invertir giroscopio</label>
+        </div>
+        <p class="setHelp" id="gyroHelp">A 1,00 la cámara gira lo mismo que el móvil; con el visor, dividido por su zoom (como el dedo). El iPhone pide permiso la primera vez. Es solo otra forma de mover la cámara: no apunta por ti.</p>
+      </div>
+    </section>
+    <section class="setPane" data-pane="mira" role="tabpanel" hidden>
+      <div class="xPrev" aria-hidden="true"><div id="xPrev" class="xh"><i></i><i></i><i></i><i></i><b></b><u></u></div></div>
+      <div class="lbl" style="margin:10px 0 6px">Cruceta · color</div>
+      <div class="swatches" id="xColSw" data-key="xColor" role="group" aria-label="Color de la cruceta"></div>
+      <div class="lbl" style="margin:10px 0 6px">Cruceta · estilo</div>
+      <div class="seg" id="xStyleSeg" role="group" aria-label="Estilo de la cruceta"><button type="button" data-x="crossdot">CRUZ Y PUNTO</button><button type="button" data-x="cross">CRUZ</button><button type="button" data-x="dot">PUNTO</button><button type="button" data-x="circle">CÍRCULO</button><button type="button" data-x="tee">T</button></div>
+      <div class="setGrid">
+        <label class="sens"><span class="lbl">Largo de las líneas</span><input id="sXL" type="range" min="3" max="24" step="1"><output id="sXLo"></output></label>
+        <label class="sens"><span class="lbl">Grosor</span><input id="sXT" type="range" min="1" max="5" step="1"><output id="sXTo"></output></label>
+        <label class="sens"><span class="lbl">Separación extra</span><input id="sXG" type="range" min="0" max="30" step="1"><output id="sXGo"></output></label>
+        <label class="chk"><input type="checkbox" id="sXO"> Borde oscuro (se ve mejor sobre fondos claros)</label>
+      </div>
+      <p class="setHelp">La cruceta se sigue abriendo con la dispersión real del arma (al moverte o saltar): la separación extra solo se suma.</p>
+      <div class="lbl" style="margin:12px 0 6px">Visor del francotirador · color del punto</div>
+      <div class="swatches" id="retColSw" data-key="retColor" role="group" aria-label="Color del punto del visor"></div>
+      <div class="setGrid"><label class="chk"><input type="checkbox" id="sRetL"> Retícula iluminada (las líneas también de ese color)</label></div>
+      <div class="lbl" style="margin:12px 0 6px">Marcador de impacto · color</div>
+      <div class="swatches" id="hitColSw" data-key="hitColor" role="group" aria-label="Color del marcador de impacto"></div>
+      <div class="lbl" style="margin:12px 0 6px">Impacto en el cuerpo</div>
+      <div class="seg" id="bloodSeg" role="group" aria-label="Color del impacto"><button type="button" data-b="red">ROJO</button><button type="button" data-b="green">VERDE</button><button type="button" data-b="yellow">AMARILLO</button></div>
+      <p class="setHelp">Las bajas se siguen marcando en rojo y los disparos a la cabeza en dorado. Solo cambia lo que ves.</p>
     </section>
     <section class="setPane" data-pane="graficos" role="tabpanel" hidden>
       <div class="seg" id="qSeg" role="group" aria-label="Calidad gráfica"><button type="button" data-q="auto">AUTO</button><button type="button" data-q="bajo">BAJO</button><button type="button" data-q="medio">MEDIO</button><button type="button" data-q="alto">ALTO</button></div>
@@ -683,6 +732,13 @@ body.hud2 #stickBase.sprint #stickKnob svg{display:block}
       <span class="lbl">Pueblo</span>
       <div class="seg" id="p3Seg" role="group" aria-label="Versión del pueblo"><button type="button" data-p3="0">CLÁSICO</button><button type="button" data-p3="1">3.0 (NUEVO)</button></div>
       <p class="setHelp">Se guarda en este dispositivo y la página se recarga.</p>
+      <div class="setGrid"><label class="sens"><span class="lbl">Brillo</span><input id="sBr" type="range" min="0.7" max="1.4" step="0.05"><output id="sBro"></output></label></div>
+      <span class="lbl">Estilo de imagen</span>
+      <div class="seg" id="lookSeg" role="group" aria-label="Estilo de imagen"><button type="button" data-l="clasico">CLÁSICO</button><button type="button" data-l="vivo">VIVO</button><button type="button" data-l="realista">REALISTA</button><button type="button" data-l="suave">SUAVE</button><button type="button" data-l="cine">CINE</button></div>
+      <span class="lbl">Modo daltónico</span>
+      <div class="seg" id="cvdSeg" role="group" aria-label="Modo daltónico"><button type="button" data-cvd="off">NO</button><button type="button" data-cvd="prot">PROTANOPÍA</button><button type="button" data-cvd="deut">DEUTERANOPÍA</button><button type="button" data-cvd="trit">TRITANOPÍA</button></div>
+      <p class="setHelp" id="lookNote">El estilo y el modo daltónico van dentro del propio dibujo de cada objeto (no cuestan FPS) y se aplican al recargar la página.</p>
+      <div class="row" id="lookReloadRow" hidden><button class="btn ghost" id="lookReload" type="button" style="font-size:16px">RECARGAR PARA APLICAR</button></div>
       <p class="setHelp" id="gfxDiag" style="font-family:var(--f-mono);font-size:11px;opacity:.85"></p>
       <div class="setGrid">
         <label class="chk"><input type="checkbox" id="sFps30"> Limitar a 30 FPS (ahorra batería y calor)</label>
@@ -699,7 +755,9 @@ body.hud2 #stickBase.sprint #stickKnob svg{display:block}
         <label class="sens"><span class="lbl">Efectos (recargas, impactos, menús)</span><input id="vF" type="range" min="0" max="1" step="0.05"><output id="vFo"></output></label>
         <label class="sens"><span class="lbl">Pasos</span><input id="vP" type="range" min="0" max="1" step="0.05"><output id="vPo"></output></label>
         <label class="sens"><span class="lbl">Ambiente (viento)</span><input id="vA" type="range" min="0" max="1" step="0.05"><output id="vAo"></output></label>
+        <label class="sens"><span class="lbl">Interfaz (botones y menús)</span><input id="vU" type="range" min="0" max="1" step="0.05"><output id="vUo"></output></label>
         <label class="chk"><input type="checkbox" id="sMute"> Silenciar todo</label>
+        <label class="chk" id="vibRow"><input type="checkbox" id="sVib"> Vibración al disparar y al recibir daño (Android: el iPhone no deja vibrar a las páginas web)</label>
       </div>
     </section>
     <section class="setPane" data-pane="jugabilidad" role="tabpanel" hidden>
@@ -2201,14 +2259,32 @@ const DEFAULTS = {
   leanKeyL: 'KeyQ', leanKeyR: 'KeyE',
   leanMode: 'hold',   // PC keys: hold (lean while the key is down) | toggle (press in, press out)
   leanTouch: 'toggle', // touch buttons: toggle (tap in, tap out: the left thumb stays on the stick) | hold
-  wheelSwap: false    // mouse wheel switches weapons when not aiming (aiming: it still changes the zoom)
+  wheelSwap: false,   // mouse wheel switches weapons when not aiming (aiming: it still changes the zoom)
+  // 30-10-2026 (owner: the settings of the big mobile shooters, «añade todo lo que puedas»)
+  leftFireAds: false, // the left FIRE button only shows while aiming
+  // sensitivity per situation, on top of horizontal/vertical: no sight in 1st / 3rd person, and each zoom of the scope
+  sensFP: 1, sensTP: 1, scope4: 1, scope8: 1,
+  // gyroscope (phones): turning the phone turns the camera. off | ads (only while aiming) | on (always)
+  gyro: 'off', gyroSens: 1, gyroAds: 1, gyroInv: false,
+  // crosshair: colour, style, line length, thickness, extra gap (the gap still opens with the real spread), dark outline
+  xColor: '#f4ead8', xStyle: 'crossdot', xLen: 10, xThick: 2, xGap: 3, xOutline: true,
+  // scope: colour of the centre dot, and the lines in that colour too (illuminated reticle)
+  retColor: '#ff3b2f', retLit: false,
+  hitColor: '#ffffff', // hit marker (kills stay red, headshots gold)
+  blood: 'red',        // hit effect on bodies: red | green | yellow
+  bright: 1,           // brightness (exposure), 0.7..1.4
+  look: 'clasico',     // picture style (applies on reload): clasico | vivo | realista | suave | cine
+  cvd: 'off',          // colour-blind correction (applies on reload): off | prot | deut | trit
+  volUi: 1,            // menus and buttons, its own volume
+  vibrate: false       // vibration when firing and when hit (Android; iPhone browsers cannot vibrate)
 };
 // which settings each tab of AJUSTES owns (its RESTAURAR resets only these)
 const CATEGORIES = {
-  controles: ['view', 'crouchMode', 'adsMode', 'leftFire', 'releaseFire', 'leanKeyL', 'leanKeyR', 'leanMode', 'leanTouch', 'wheelSwap'],
-  sensibilidad: ['sensH', 'sensV', 'adsSens', 'adsH', 'adsV', 'touchLook', 'touchDead', 'smooth', 'invertY'],
-  graficos: ['quality', 'fpsCap', 'showFps'],
-  audio: ['volMaster', 'volShots', 'volFx', 'volSteps', 'volAmb', 'mute'],
+  controles: ['view', 'crouchMode', 'adsMode', 'leftFire', 'leftFireAds', 'releaseFire', 'leanKeyL', 'leanKeyR', 'leanMode', 'leanTouch', 'wheelSwap'],
+  sensibilidad: ['sensH', 'sensV', 'adsSens', 'adsH', 'adsV', 'touchLook', 'touchDead', 'smooth', 'invertY', 'sensFP', 'sensTP', 'scope4', 'scope8', 'gyro', 'gyroSens', 'gyroAds', 'gyroInv'],
+  mira: ['xColor', 'xStyle', 'xLen', 'xThick', 'xGap', 'xOutline', 'retColor', 'retLit', 'hitColor', 'blood'],
+  graficos: ['quality', 'fpsCap', 'showFps', 'bright', 'look', 'cvd'],
+  audio: ['volMaster', 'volShots', 'volFx', 'volSteps', 'volAmb', 'volUi', 'mute', 'vibrate'],
   jugabilidad: ['hitmarkers', 'dmgDir', 'minimap'],
   accesibilidad: ['calmVM', 'lowFlash']
 };
@@ -2218,8 +2294,18 @@ const CATEGORIES = {
 const TOUCH_DEFAULTS = { touchLook: 1.6, adsSens: 0.8, crouchMode: 'slide' };   // crouchMode 'slide': owner's request 25-10-2026
 function defaults(touch) { return Object.assign({}, DEFAULTS, touch ? TOUCH_DEFAULTS : {}, { v: VERSION }); }
 const RANGES = { sensH: [0.2, 3], sensV: [0.2, 3], adsSens: [0.3, 2], touchLook: [0.3, 4], adsH: [0.3, 2], adsV: [0.3, 2], touchDead: [0, 12], smooth: [0, 0.8],
-  volMaster: [0, 1], volShots: [0, 1], volFx: [0, 1], volSteps: [0, 1], volAmb: [0, 1] };
-const ADS_MODES = ['holdDrag', 'hold', 'toggle'];
+  volMaster: [0, 1], volShots: [0, 1], volFx: [0, 1], volSteps: [0, 1], volAmb: [0, 1], volUi: [0, 1],
+  sensFP: [0.3, 3], sensTP: [0.3, 3], scope4: [0.3, 2], scope8: [0.3, 2], gyroSens: [0.2, 4], gyroAds: [0.2, 4],
+  xLen: [3, 24], xThick: [1, 5], xGap: [0, 30], bright: [0.7, 1.4] };
+// mixed: a quick tap fixes the sight (tap again to leave), holding aims only while held
+const ADS_MODES = ['holdDrag', 'hold', 'toggle', 'mixed'];
+const GYRO_MODES = ['off', 'ads', 'on'];
+// the colours offered (crosshair, scope dot, hit marker): bone (the HUD's), white, red, yellow, green, cyan, blue, magenta, black
+const PALETTE = ['#f4ead8', '#ffffff', '#ff3b2f', '#ffe14d', '#4dff6a', '#3de0ff', '#3d7bff', '#ff4dd2', '#000000'];
+const X_STYLES = ['crossdot', 'cross', 'dot', 'circle', 'tee'];
+const BLOODS = ['red', 'green', 'yellow'];
+const LOOKS = ['clasico', 'vivo', 'realista', 'suave', 'cine'];
+const CVDS = ['off', 'prot', 'deut', 'trit'];
 const CROUCH_MODES = ['slide', 'toggle', 'hold'];
 
 // any stored object → a complete, valid settings object (unknown keys dropped, numbers clamped)
@@ -2232,7 +2318,14 @@ function sanitize(o, touch) {
     const v = Number(o[k]);
     if (o[k] !== undefined && o[k] !== null && o[k] !== '' && isFinite(v)) s[k] = clamp(v, RANGES[k][0], RANGES[k][1]);
   }
-  for (const k of ['invertY', 'leftFire', 'releaseFire', 'showFps', 'calmVM', 'mute', 'hitmarkers', 'dmgDir', 'minimap', 'lowFlash', 'wheelSwap']) if (typeof o[k] === 'boolean') s[k] = o[k];
+  for (const k of ['invertY', 'leftFire', 'releaseFire', 'showFps', 'calmVM', 'mute', 'hitmarkers', 'dmgDir', 'minimap', 'lowFlash', 'wheelSwap',
+    'leftFireAds', 'gyroInv', 'xOutline', 'retLit', 'vibrate']) if (typeof o[k] === 'boolean') s[k] = o[k];
+  for (const k of ['xColor', 'retColor', 'hitColor']) if (PALETTE.includes(o[k])) s[k] = o[k];
+  if (GYRO_MODES.includes(o.gyro)) s.gyro = o.gyro;
+  if (X_STYLES.includes(o.xStyle)) s.xStyle = o.xStyle;
+  if (BLOODS.includes(o.blood)) s.blood = o.blood;
+  if (LOOKS.includes(o.look)) s.look = o.look;
+  if (CVDS.includes(o.cvd)) s.cvd = o.cvd;
   // peek keys: a key code (the HUD 2 settings only offer free keys); never the same key for both sides
   const KEY = /^[A-Za-z][A-Za-z0-9]{1,19}$/;
   if (KEY.test(o.leanKeyL) && KEY.test(o.leanKeyR) && o.leanKeyL !== o.leanKeyR) { s.leanKeyL = o.leanKeyL; s.leanKeyR = o.leanKeyR; }
@@ -2264,14 +2357,31 @@ function resetCategory(s, cat, touch) {
 }
 
 /* Converts a pointer movement in pixels into a yaw/pitch change in radians.
-   ctx = { scoped (rifle scope up), ads (0..1, any weapon), fovRatio (tan(fov/2)/tan(baseFov/2)), touch }
+   ctx = { scoped (rifle scope up), ads (0..1, any weapon), fovRatio (tan(fov/2)/tan(baseFov/2)), touch,
+           tp (3rd person camera), zoom (4 or 8: the scope's zoom) }
    Linear (no acceleration): the same finger travel always turns the same amount. */
+function sitMul(s, ctx) {
+  const a = Math.max(0, Math.min(1, ctx.ads || 0)), m = v => v == null ? 1 : v;
+  // no sight: 1st or 3rd person (fades out while the sight comes up); the scope: its zoom's own multiplier
+  const view = 1 + (m(ctx.tp ? s.sensTP : s.sensFP) - 1) * (1 - a);
+  return { a, view, scope: ctx.scoped ? s.adsSens * m(ctx.zoom === 4 ? s.scope4 : s.scope8) : 1 };
+}
 function lookDelta(dx, dy, s, ctx) {
-  const base = ctx.touch ? 0.0042 : 0.0022;
-  const k = base * ctx.fovRatio * (ctx.scoped ? s.adsSens : 1) * (ctx.touch ? s.touchLook : 1);
-  const a = Math.max(0, Math.min(1, ctx.ads || 0));
+  const base = ctx.touch ? 0.0042 : 0.0022, M = sitMul(s, ctx);
+  const k = base * ctx.fovRatio * M.scope * M.view * (ctx.touch ? s.touchLook : 1);
+  const a = M.a;
   const h = 1 + ((s.adsH == null ? 1 : s.adsH) - 1) * a, v = 1 + ((s.adsV == null ? 1 : s.adsV) - 1) * a;
   return { yaw: -dx * k * s.sensH * h, pitch: -dy * k * s.sensV * v * (s.invertY ? -1 : 1) };
+}
+/* Gyroscope: the phone's own turn (degrees, already in screen axes: yaw left +, pitch up +) → the camera's (radians).
+   At 1 the camera turns as much as the phone (1:1) with no sight; the scope divides it by its zoom (fovRatio) like
+   the finger. Only on for 'on', or for 'ads' while aiming. Never adds anything the player did not do. */
+function gyroActive(s, ctx) { return s.gyro === 'on' || (s.gyro === 'ads' && (ctx.ads || 0) > 0.5); }
+function gyroDelta(yawDeg, pitchDeg, s, ctx) {
+  if (!gyroActive(s, ctx)) return { yaw: 0, pitch: 0 };
+  const M = sitMul(s, ctx), sens = (ctx.ads || 0) > 0.5 ? s.gyroAds : s.gyroSens, inv = s.gyroInv ? -1 : 1;
+  const k = Math.PI / 180 * sens * ctx.fovRatio * (ctx.scoped ? M.scope : 1) * inv;
+  return { yaw: yawDeg * k, pitch: pitchDeg * k * (s.invertY ? -1 : 1) };
 }
 /* Frame-rate independent smoothing of the look input (0 = off). Returns the part to apply now;
    the rest stays in st (a small reservoir that empties within ~0.1-0.3 s). */
@@ -2284,7 +2394,8 @@ function smoothLook(st, dx, dy, smooth, dt) {
   return o;
 }
 
-const SDSettings = { VERSION, CATEGORIES, resetCategory, DEFAULTS, TOUCH_DEFAULTS, ADS_MODES, CROUCH_MODES, defaults, RANGES, sanitize, load, save, lookDelta, smoothLook };
+const SDSettings = { VERSION, CATEGORIES, resetCategory, DEFAULTS, TOUCH_DEFAULTS, ADS_MODES, CROUCH_MODES, GYRO_MODES, PALETTE, X_STYLES, BLOODS, LOOKS, CVDS,
+  defaults, RANGES, sanitize, load, save, lookDelta, gyroActive, gyroDelta, smoothLook };
 if (typeof module !== 'undefined' && module.exports) module.exports = SDSettings; else root.SDSettings = SDSettings;
 })(typeof window !== 'undefined' ? window : globalThis);
 
@@ -5347,7 +5458,7 @@ const SDCamo = { draw, texture, detail, patch, swatch, SCALE };
 if (typeof module !== 'undefined' && module.exports) module.exports = SDCamo; else root.SDCamo = SDCamo;
 })(typeof window !== 'undefined' ? window : globalThis);
 
-const BUILD_ID="cb306cc";const BUILD_HASH="5c60dc3ee8";
+const BUILD_ID="b02b75c";const BUILD_HASH="c710b519d8";
 </script>
 <script>
 (function(){
@@ -5413,6 +5524,36 @@ renderer.autoClear=false;
    light and colour texture once, wherever it was created (scene, viewmodels, effects, models). */
 renderer.outputEncoding=T.sRGBEncoding;
 renderer.toneMapping=T.ACESFilmicToneMapping;
+/* ESTILO DE IMAGEN y MODO DALTÓNICO (AJUSTES › GRÁFICOS, 30-10-2026): the grading goes inside the ACES tone mapping that
+   every lit material already runs (a few operations per pixel, no full-screen pass: no FPS cost). Read once at load
+   (the shaders are built with it), so a change applies on reload. CLÁSICO and no correction = the chunk untouched.
+   sat: saturation · con: contrast in a perceptual curve that keeps black, mid grey and white where they are · lift:
+   raises the blacks · tint: colour balance. The correction is the usual «daltonize» (simulate the missing cone, move
+   the lost difference to the colours that are seen), folded into one 3×3 matrix. */
+const PIC_STYLES={vivo:{sat:1.38,con:0.16,lift:0,tint:[1,1,1]},realista:{sat:0.82,con:0.14,lift:0,tint:[0.96,1,1.05]},
+  suave:{sat:0.9,con:-0.3,lift:0.04,tint:[1.04,1.01,0.96]},cine:{sat:0.72,con:0.32,lift:0.02,tint:[1.08,1,0.88]}};
+function cvdMatrix(t){
+  const DEF={prot:[[0,2.02344,-2.52581],[0,1,0],[0,0,1]],deut:[[1,0,0],[0.494207,0,1.24827],[0,0,1]],trit:[[1,0,0],[0,1,0],[-0.395913,0.801109,0]]}[t];if(!DEF)return null;
+  const RL=[[17.8824,43.5161,4.11935],[3.45565,27.1554,3.86714],[0.0299566,0.184309,1.46709]];
+  const LR=[[0.0809444479,-0.130504409,0.116721066],[-0.0102485335,0.0540193266,-0.113614708],[-0.000365296938,-0.00412161469,0.693511405]];
+  const mul=(A,B)=>A.map((r,i)=>B[0].map((_,j)=>r.reduce((acc,_v,k)=>acc+A[i][k]*B[k][j],0)));
+  const SIM=mul(LR,mul(DEF,RL)),SH=[[0,0,0],[0.7,1,0],[0.7,0,1]],I=[[1,0,0],[0,1,0],[0,0,1]];
+  const C=mul(SH,I.map((r,i)=>r.map((v,j)=>v-SIM[i][j]))).map((r,i)=>r.map((v,j)=>v+I[i][j]));
+  return [0,1,2].flatMap(j=>[0,1,2].map(i=>C[i][j]));   // GLSL mat3: column by column
+}
+const PIC=(()=>{let o={};try{o=store.get('settings',null)||{};}catch(e){}
+  const u=new URLSearchParams(location.search),lk=u.get('look')||o.look,cv=u.get('cvd')||o.cvd;   // ?look=vivo&cvd=deut: for comparisons
+  const look=PIC_STYLES[lk]?lk:'clasico',cvd=cvdMatrix(cv)?cv:'off';
+  const L=PIC_STYLES[look],M=cvdMatrix(cvd),ch=T.ShaderChunk.tonemapping_pars_fragment,head='vec3 ACESFilmicToneMapping( vec3 color ) {';
+  if((!L&&!M)||!ch.includes(head))return {look:L||M?'clasico':look,cvd:L||M?'off':cvd,on:false,glsl:''};
+  // sdGrade() is also used by the sky (its own shader, no tone mapping)
+  const f=x=>(+x).toFixed(5);let b='vec3 sdGrade(vec3 c){c=clamp(c,0.0,1.0);';
+  if(L)b+='float l=dot(c,vec3(0.2126,0.7152,0.0722));c=max(mix(vec3(l),c,'+f(L.sat)+'),0.0);vec3 g=sqrt(c);g=mix(g,g*g*(3.0-2.0*g),'+f(L.con)+');'+
+    'g='+f(L.lift)+'+(1.0-'+f(L.lift)+')*g;c=g*g*vec3('+L.tint.map(f).join(',')+');';
+  if(M)b+='c=mat3('+M.map(f).join(',')+')*c;';
+  b+='return clamp(c,0.0,1.0);}';
+  T.ShaderChunk.tonemapping_pars_fragment=ch.replace(head,'vec3 sdACES0( vec3 color ) {')+'\n'+b+'\n'+head+'return sdGrade(sdACES0(color));}\n';
+  return {look,cvd,on:true,glsl:b};})();
 /* PUEBLO 3.0 (vertical slice, ?pueblo=3): new light and town; without the flag the game looks exactly as before */
 // …or chosen in AJUSTES › GRÁFICOS and remembered on the device (a shared link often loses its ?…, 17-10-2026); ?pueblo=0 forces the old one
 const P3=/[?&]pueblo=3\b/.test(location.search)||(!/[?&]pueblo=0\b/.test(location.search)&&store.get('p3',false)===true);
@@ -5551,10 +5692,10 @@ const SKY=LOOK.sky;
 const skyMat=new T.ShaderMaterial({side:T.BackSide,depthWrite:false,fog:false,
   uniforms:{top:{value:new T.Color(SKY.top)},mid:{value:new T.Color(SKY.mid)},hor:{value:new T.Color(SKY.hor)},glow:{value:new T.Color(SKY.glow)},sunDir:{value:new T.Vector3(...LOOK.sunPos).normalize()}},
   vertexShader:'varying vec3 vP;void main(){vP=normalize(position);gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0);}',
-  fragmentShader:'uniform vec3 top;uniform vec3 mid;uniform vec3 hor;uniform vec3 glow;uniform vec3 sunDir;varying vec3 vP;'+
+  fragmentShader:PIC.glsl+'uniform vec3 top;uniform vec3 mid;uniform vec3 hor;uniform vec3 glow;uniform vec3 sunDir;varying vec3 vP;'+
     'void main(){vec3 d=normalize(vP);float h=clamp(d.y,0.0,1.0);vec3 c=mix(hor,mid,smoothstep(0.0,0.2,h));c=mix(c,top,smoothstep(0.16,0.75,h));'+
     'float s=max(dot(d,sunDir),0.0);c+=glow*(pow(s,10.0)*0.12+pow(s,120.0)*0.5);'+
-    'c=mix(c,hor*1.05,(1.0-smoothstep(-0.02,0.08,d.y))*0.6);gl_FragColor=vec4(c,1.0);'+
+    'c=mix(c,hor*1.05,(1.0-smoothstep(-0.02,0.08,d.y))*0.6);'+(PIC.on?'c=sqrt(sdGrade(c*c));':'')+'gl_FragColor=vec4(c,1.0);'+
     '\n}',toneMapped:false});
 scene.add(new T.Mesh(new T.SphereGeometry(400,24,12),skyMat));
 const sunSprite=new T.Sprite(new T.SpriteMaterial({map:softTex,color:0xffe0b0,fog:false,depthWrite:false,transparent:true,blending:T.AdditiveBlending}));
@@ -6261,7 +6402,7 @@ function audioInit(){
   const comp=ctx.createDynamicsCompressor();comp.threshold.value=-12;comp.ratio.value=5;comp.attack.value=0.002;comp.release.value=0.2;comp.connect(ctx.destination);
   AU.master=ctx.createGain();AU.master.gain.value=0.85;AU.master.connect(comp);
   // channels (AJUSTES → AUDIO): every sound goes through one of these on its way to the master
-  AU.bus={};for(const k of ['shots','fx','steps','amb'])(AU.bus[k]=ctx.createGain()).connect(AU.master);
+  AU.bus={};for(const k of ['shots','fx','steps','amb','ui'])(AU.bus[k]=ctx.createGain()).connect(AU.master);
   audioLevels();
   const len=ctx.sampleRate*2;const buf=ctx.createBuffer(1,len,ctx.sampleRate);const d=buf.getChannelData(0);for(let i=0;i<len;i++)d[i]=Math.random()*2-1;AU.noise=buf;
   const rl=Math.floor(ctx.sampleRate*2.4);const ir=ctx.createBuffer(2,rl,ctx.sampleRate);
@@ -6280,7 +6421,7 @@ function audioLevels(){
   // is stopped and a ramp would never get there, so the level is set at once (this also made a test fail at random)
   const set=(g,val)=>{if(AU.ctx.state==='running')g.setTargetAtTime(val,t,0.02);else{g.cancelScheduledValues(0);g.value=val;}};
   set(AU.master.gain,S.mute?0:0.85*S.volMaster);
-  const v={shots:S.volShots,fx:S.volFx,steps:S.volSteps,amb:S.volAmb};for(const k in v)set(AU.bus[k].gain,v[k]);
+  const v={shots:S.volShots,fx:S.volFx,steps:S.volSteps,amb:S.volAmb,ui:S.volUi};for(const k in v)set(AU.bus[k].gain,v[k]);
 }
 function outNode(pan,verb){
   const ctx=AU.ctx;const g=ctx.createGain();
@@ -6369,7 +6510,7 @@ const SFX={
   raise(){nz(0,0.22,{type:'bandpass',f:1400,q:1,g:0.12});SFX.click(0.18,2200,0.25);},
   distant(dist,pan,at){const g=clamp(1.25-dist/110,0.18,0.85);nz(at,0.07,{type:'bandpass',f:1800,q:0.8,g:g*0.6,pan:pan});nz(at,0.9,{f:900,f2:150,g:g,pan:pan,verb:1.2});tone(at,0.35,{f:70,f2:30,g:g*0.7,pan:pan});},
   impact(){nz(0,0.06,{type:'bandpass',f:1800,q:1.2,g:0.2});},
-  ui(){tone(0,0.05,{f:880,type:'triangle',g:0.08});}
+  ui(){const c=AU.ch;AU.ch='ui';tone(0,0.05,{f:880,type:'triangle',g:0.08});AU.ch=c;}
 };
 // each sound's channel (the outermost call decides: a shot's own clicks stay in «disparos»)
 {const CH={shot:'shots',pistolShot:'shots',shotgunShot:'shots',distant:'shots',distantPistol:'shots',distantShotgun:'shots',whizz:'shots',step:'steps'};
@@ -7997,11 +8138,13 @@ function impactFX(hit,dist,size){
 }
 // a hit on a body (bots, and the rival online): a spark, a red mist sprayed along the bullet and a
 // few drops; bigger on the head
+const BLOOD_FX={red:[0x7a140e,0x4e0b07],green:[0x2f6e12,0x1d4a08],yellow:[0x8a7410,0x5c4a06]};
 function bodyFX(pt,dir,head,dist){
   const k=clamp((dist||10)/16,1,3);   // far away it would be a dot: a bit bigger with distance
   emit(pt,{n:2,color:0xffc080,size:0.08*k,life:0.12,spread:2.5,add:true,op:0.9,drag:2});
-  emit(pt,{n:head?4:2,color:0x7a140e,size:(head?0.34:0.24)*k,grow:1.0,life:head?0.7:0.5,spread:0.35,dir,speed:1.4,g:-0.6,op:0.6,drag:2.2});
-  emit(pt,{n:head?7:4,color:0x4e0b07,size:0.035*k,life:0.55,spread:1.4,dir,speed:2.4,g:-9.8,op:0.95,drag:0.6});
+  const bc=BLOOD_FX[SETTINGS.blood]||BLOOD_FX.red;   // AJUSTES › MIRA › impacto en el cuerpo
+  emit(pt,{n:head?4:2,color:bc[0],size:(head?0.34:0.24)*k,grow:1.0,life:head?0.7:0.5,spread:0.35,dir,speed:1.4,g:-0.6,op:0.6,drag:2.2});
+  emit(pt,{n:head?7:4,color:bc[1],size:0.035*k,life:0.55,spread:1.4,dir,speed:2.4,g:-9.8,op:0.95,drag:0.6});
 }
 /* ---- bullets: SDWeapon ballistics (exact parabola per fixed tick) + a swept ray per step ---- */
 const BULLETS=[];const BTR=[];
@@ -8075,7 +8218,8 @@ function bulletHit(h,b){
   updateRangeHud();
 }
 /* ---- shot: direction from the last rendered aim (reticle), never from recoil or shake ---- */
-function doFire(e,kind){
+function vib(ms){if(SETTINGS.vibrate&&navigator.vibrate)try{navigator.vibrate(ms);}catch(e){}}
+function doFire(e,kind){vib(14);
   const pistol=kind==='pistol',shotgun=kind==='shotgun',cfg=pistol?PCFG:shotgun?SCFG:GUNCFG,core=pistol?PCORE:shotgun?SCORE:WCORE;
   STATS.shots++;if(STATS.firstShot<0)STATS.firstShot=gameTime;RATS.shot={at:performance.now(),x:PM.x,z:PM.z};
   const scoped=!pistol&&!shotgun&&e.scoped;
@@ -8453,13 +8597,16 @@ function applyLayout(){
     if(HUD2){el.classList.toggle('off',LAYOUT.vis[name]===false);el.style.setProperty('--tbOp',(LAYOUT.opacity*(LAYOUT.op[name]==null?1:LAYOUT.op[name])).toFixed(3));}}
   if(HUD2)h2PlaceBar(W,H);
 }
+const SCOPE_TAP_MS=250;   // MIXTO: shorter than this is a tap
 function btnPress(name,down,cancel){ // cancel: the system took the finger (call, notification, edge swipe) — never a shot
   const el=btnEl(name);if(el)el.classList.toggle('press',down);
   if(!down){
     if(name==='breath')input.breath=false;
     if(name==='crouch'&&SETTINGS.crouchMode==='hold')input.crouchHeld=false;
     if((name==='peekL'||name==='peekR')&&SETTINGS.leanTouch==='hold'){if(name==='peekL')leanIn.touchL=false;else leanIn.touchR=false;}
-    if(name==='scope'&&SETTINGS.adsMode!=='toggle')input.scopeHeld=false;   // MIRA held: lifting the finger leaves the sight
+    // MIXTO: a quick tap fixes the sight; a long press only aims while held
+    if(name==='scope'&&SETTINGS.adsMode==='mixed'){input.scopeHeld=false;if(!cancel&&!input.scopeMixOff&&performance.now()-input.scopeT0<SCOPE_TAP_MS)input.scopeToggle=true;}
+    else if(name==='scope'&&SETTINGS.adsMode!=='toggle')input.scopeHeld=false;   // MIRA held: lifting the finger leaves the sight
     if(name==='fire'||name==='fire2'){
       input.fireHeld=false;
       // release-to-fire: the shot goes when the finger lifts, still with the rifle in hand
@@ -8473,7 +8620,9 @@ function btnPress(name,down,cancel){ // cancel: the system took the finger (call
     case 'fire':case 'fire2':
       if(SETTINGS.releaseFire&&LOAD.active==='rifle'&&!LOAD.pending&&!input.scopeToggle&&!input.scopeHeld){input.fireAim=true;break;} // hold: scope up, aim with the same finger (already aiming with MIRA: shoots at once)
       input.fireHeld=true;input.firePressed=true;break;
-    case 'scope':if(SETTINGS.adsMode==='toggle')input.scopeToggle=!input.scopeToggle;else input.scopeHeld=true;break;   // holdDrag: the same finger now turns the camera
+    case 'scope':if(SETTINGS.adsMode==='toggle')input.scopeToggle=!input.scopeToggle;
+      else if(SETTINGS.adsMode==='mixed'){input.scopeT0=performance.now();input.scopeMixOff=input.scopeToggle;if(input.scopeToggle)input.scopeToggle=false;else input.scopeHeld=true;}
+      else input.scopeHeld=true;break;   // holdDrag: the same finger now turns the camera
     case 'crouch':input.crouchHeld=SETTINGS.crouchMode==='hold'?true:!input.crouchHeld;input.crouchPressed=true;break;
     case 'jump':input.jumpPressed=true;break;
     case 'reload':input.reloadPressed=true;break;
@@ -8611,19 +8760,40 @@ $('#edReset').addEventListener('click',()=>{LAYOUT=LY.defaults(isTouch);$('#edOp
 /* ---- settings panel ---- */
 let SETTINGS=SDSettings.load(store,isTouch);
 gfxApply();
-const SET_UI=[['sH','sensH'],['sV','sensV'],['sA','adsSens'],['sAH','adsH'],['sAV','adsV'],['sT','touchLook'],['sDZ','touchDead'],['sSM','smooth'],['vM','volMaster'],['vS','volShots'],['vF','volFx'],['vP','volSteps'],['vA','volAmb']];
+const SET_UI=[['sH','sensH'],['sV','sensV'],['sA','adsSens'],['sAH','adsH'],['sAV','adsV'],['sT','touchLook'],['sDZ','touchDead'],['sSM','smooth'],['vM','volMaster'],['vS','volShots'],['vF','volFx'],['vP','volSteps'],['vA','volAmb'],
+  ['sFP','sensFP'],['sTP','sensTP'],['sZ4','scope4'],['sZ8','scope8'],['sGy','gyroSens'],['sGyA','gyroAds'],['sXL','xLen'],['sXT','xThick'],['sXG','xGap'],['sBr','bright'],['vU','volUi']];
+const setFmt=(k,v)=>/^vol|^bright/.test(k)?Math.round(v*100)+'%':/^x/.test(k)?Math.round(v)+' px':(+v).toFixed(2);
 // on/off settings: checkbox id → setting
-const SET_CHK=[['sInv','invertY'],['sLeft','leftFire'],['sRel','releaseFire'],['sShowFps','showFps'],['sCalm','calmVM'],['sMute','mute'],['sHit','hitmarkers'],['sDmg','dmgDir'],['sMini','minimap'],['sFlash','lowFlash']];
+const SET_CHK=[['sInv','invertY'],['sLeft','leftFire'],['sRel','releaseFire'],['sShowFps','showFps'],['sCalm','calmVM'],['sMute','mute'],['sHit','hitmarkers'],['sDmg','dmgDir'],['sMini','minimap'],['sFlash','lowFlash'],
+  ['sLeftAds','leftFireAds'],['sGyInv','gyroInv'],['sXO','xOutline'],['sRetL','retLit'],['sVib','vibrate']];
+// segmented choices: container → data attribute → setting (30-10-2026: MIRA Y EFECTOS, giroscopio, estilo de imagen…)
+const SET_SEG=[['#gyroSeg','g','gyro'],['#xStyleSeg','x','xStyle'],['#bloodSeg','b','blood'],['#lookSeg','l','look'],['#cvdSeg','cvd','cvd']];
+function setExtraToUI(){
+  for(const [sel,a,k] of SET_SEG)document.querySelectorAll(sel+' button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset[a]===SETTINGS[k])));
+  for(const box of document.querySelectorAll('.swatches'))for(const b of box.children)b.setAttribute('aria-pressed',String(b.dataset.c===SETTINGS[box.dataset.key]));
+  $('#lookReloadRow').hidden=SETTINGS.look===PIC.look&&SETTINGS.cvd===PIC.cvd;
+  $('#gyroBox').hidden=!isTouch;$('#vibRow').hidden=!('vibrate' in navigator);
+}
+/* crosshair, scope reticle and hit marker from AJUSTES › MIRA (the crosshair's gap still follows the real spread) */
+function crossApply(){const X=SETTINGS;
+  for(const el of [$('#cross'),$('#xPrev')]){for(const st of SDSettings.X_STYLES)el.classList.toggle('x-'+st,st===X.xStyle);
+    el.style.setProperty('--xc',X.xColor);el.style.setProperty('--xl',X.xLen+'px');el.style.setProperty('--xt',X.xThick+'px');
+    el.style.setProperty('--xo',X.xOutline?(X.xColor==='#000000'?'0 0 2px rgba(255,255,255,.9)':'0 0 2px rgba(0,0,0,.9)'):'none');}
+  $('#xPrev').style.setProperty('--gap',(10+X.xGap)+'px');
+  const lit=X.retLit?X.retColor:'#0b0b0b';$('#retDot').setAttribute('fill',X.retColor);$('#scope .ret svg g[stroke]').setAttribute('stroke',lit);$('#retLabels').setAttribute('fill',lit);
+  document.body.style.setProperty('--hm',X.hitColor);
+}
 const CROUCH_HELP={slide:'Un toque te agacha y otro te levanta. Si te deslizas corriendo, al acabar el deslizamiento te levantas solo.',toggle:'Un toque te agacha y otro te levanta; después de deslizarte sigues agachado.',hold:'Agachado mientras mantienes el botón o la tecla; al soltar te levantas.'};
-const ADS_HELP={holdDrag:'Mantén MIRA para apuntar y arrastra ese mismo dedo para mover la mira. Al soltar sales del visor.',hold:'Mantén MIRA para apuntar; la cámara se mueve con otro dedo. Al soltar sales del visor.',toggle:'Toca MIRA una vez para entrar en el visor y otra para salir. Mueve la cámara con cualquier dedo libre.'};
-function settingsToUI(){for(const [id,k] of SET_UI){$('#'+id).value=SETTINGS[k];$('#'+id+'o').textContent=/^vol/.test(k)?Math.round(SETTINGS[k]*100)+'%':(+SETTINGS[k]).toFixed(2);}for(const [id,k] of SET_CHK)$('#'+id).checked=!!SETTINGS[k];$('#sFps30').checked=SETTINGS.fpsCap===30;$('#sDiag').checked=TDIAG.on;$('#adsHelp').textContent=ADS_HELP[SETTINGS.adsMode]||'';document.querySelectorAll('#adsSeg button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.a===SETTINGS.adsMode)));document.querySelectorAll('#crouchSeg button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.c===SETTINGS.crouchMode)));document.querySelectorAll('#viewSeg button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.v===SETTINGS.view)));$('#crouchHelp').textContent=CROUCH_HELP[SETTINGS.crouchMode]||'';document.querySelectorAll('#qSeg button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.q===SETTINGS.quality)));gfxNote();
+const ADS_HELP={mixed:'Un toque rápido fija la mira (otro toque la quita); si mantienes MIRA, apuntas solo mientras lo mantienes. Con el mismo dedo mueves la mira.',holdDrag:'Mantén MIRA para apuntar y arrastra ese mismo dedo para mover la mira. Al soltar sales del visor.',hold:'Mantén MIRA para apuntar; la cámara se mueve con otro dedo. Al soltar sales del visor.',toggle:'Toca MIRA una vez para entrar en el visor y otra para salir. Mueve la cámara con cualquier dedo libre.'};
+function settingsToUI(){for(const [id,k] of SET_UI){$('#'+id).value=SETTINGS[k];$('#'+id+'o').textContent=setFmt(k,SETTINGS[k]);}setExtraToUI();for(const [id,k] of SET_CHK)$('#'+id).checked=!!SETTINGS[k];$('#sFps30').checked=SETTINGS.fpsCap===30;$('#sDiag').checked=TDIAG.on;$('#adsHelp').textContent=ADS_HELP[SETTINGS.adsMode]||'';document.querySelectorAll('#adsSeg button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.a===SETTINGS.adsMode)));document.querySelectorAll('#crouchSeg button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.c===SETTINGS.crouchMode)));document.querySelectorAll('#viewSeg button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.v===SETTINGS.view)));$('#crouchHelp').textContent=CROUCH_HELP[SETTINGS.crouchMode]||'';document.querySelectorAll('#qSeg button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.q===SETTINGS.quality)));gfxNote();
   const g=(SETTINGS.sensH+SETTINGS.sensV)/2;$('#sens').value=g;$('#sensOut').textContent=g.toFixed(2);if(HUD2)h2SettingsToUI();}
-function applyControlSettings(){TOUCH.dragScope=SETTINGS.adsMode!=='hold';TOUCH.cfg.dead=SETTINGS.touchDead;MOTION=(reduceMotion||SETTINGS.calmVM)?0.35:1;if(SETTINGS.adsMode!=='toggle')input.scopeToggle=false;
+function applyControlSettings(){TOUCH.dragScope=SETTINGS.adsMode!=='hold';TOUCH.cfg.dead=SETTINGS.touchDead;MOTION=(reduceMotion||SETTINGS.calmVM)?0.35:1;if(SETTINGS.adsMode!=='toggle'&&SETTINGS.adsMode!=='mixed')input.scopeToggle=false;crossApply();
   const B=document.body.classList;B.toggle('miniOn',!!SETTINGS.minimap);B.toggle('noHit',!SETTINGS.hitmarkers);B.toggle('noDmgDir',!SETTINGS.dmgDir);B.toggle('lowFlash',!!SETTINGS.lowFlash);}
 function settingsChanged(){SETTINGS=SDSettings.sanitize(SETTINGS,isTouch);SDSettings.save(store,SETTINGS,isTouch);gfxApply();applyControlSettings();audioLevels();settingsToUI();
   const vb=document.getElementById('tbView');if(vb)vb.textContent=SETTINGS.view==='tp'?'1ª':'3ª';}   // the touch button shows the view it switches to
 // graphics: profile, adaptive resolution and FPS cap applied live (antialiasing only on reload)
 function gfxApply(){
+  renderer.toneMappingExposure=TONE.exposure*(SETTINGS.bright||1);   // AJUSTES › GRÁFICOS › Brillo
   if(PERF_LOW)return;
   const prof=SDQuality.resolve(SETTINGS.quality,isTouch),P0=SDQuality.PROFILES[prof];
   const changed=prof!==GFX.profile;GFX.profile=prof;GFX.choice=SETTINGS.quality;
@@ -8643,10 +8813,14 @@ document.querySelectorAll('#qSeg button').forEach(b=>b.addEventListener('click',
 document.querySelectorAll('#adsSeg button').forEach(b=>b.addEventListener('click',()=>{SETTINGS.adsMode=b.dataset.a;settingsChanged();SFX.ui();}));
 document.querySelectorAll('#crouchSeg button').forEach(b=>b.addEventListener('click',()=>{SETTINGS.crouchMode=b.dataset.c;input.crouchHeld=false;settingsChanged();SFX.ui();}));
 document.querySelectorAll('#viewSeg button').forEach(b=>b.addEventListener('click',()=>{SETTINGS.view=b.dataset.v;settingsChanged();SFX.ui();}));
+for(const [sel,a,k] of SET_SEG)document.querySelectorAll(sel+' button').forEach(b=>b.addEventListener('click',()=>{SETTINGS[k]=b.dataset[a];settingsChanged();SFX.ui();if(k==='gyro')gyroStart();}));
+for(const box of document.querySelectorAll('.swatches'))for(const c of SDSettings.PALETTE){const b=document.createElement('button');b.type='button';b.dataset.c=c;b.style.setProperty('--c',c);b.setAttribute('aria-label',c);
+  b.addEventListener('click',()=>{SETTINGS[box.dataset.key]=c;settingsChanged();SFX.ui();});box.appendChild(b);}
+$('#lookReload').addEventListener('click',()=>location.reload());
 $('#sDiag').addEventListener('change',()=>{TDIAG.set($('#sDiag').checked);TDIAG.reset();});
 let settingsFrom='menu';
 // tabs: one section at a time; the last one opened is remembered on this device
-const SET_TABS={controles:'CONTROLES',sensibilidad:'SENSIBILIDAD',graficos:'GRÁFICOS',audio:'AUDIO',jugabilidad:'JUGABILIDAD',accesibilidad:'ACCESIBILIDAD'};
+const SET_TABS={controles:'CONTROLES',sensibilidad:'SENSIBILIDAD',mira:'MIRA Y EFECTOS',graficos:'GRÁFICOS',audio:'AUDIO',jugabilidad:'JUGABILIDAD',accesibilidad:'ACCESIBILIDAD'};
 let setTab=SET_TABS[store.get('setTab','')]?store.get('setTab',''):'controles';
 function showSetTab(t){if(!SET_TABS[t])return;setTab=t;store.set('setTab',t);$('#setTitle').textContent=SET_TABS[t];
   document.querySelectorAll('.setTabs button').forEach(b=>b.setAttribute('aria-selected',String(b.dataset.tab===t)));
@@ -8949,19 +9123,41 @@ function simTick(dt){
   for(const b of activeBots())b.update(dt);
   updateBullets(dt);
 }
-let hpDirty=false;
+let hpDirty=false;const VIBHP={hp:1e9};
 let SIM_FREEZE=false;   // test hook: hold the player's weapon in a pose to look at it
 const SHOT={noVM:false}; // capture hook (tools/capture-scenes.js): draw the world without the weapon
 
 /* =================== CAMERA (per rendered frame) =================== */
 const _rt=new T.Vector3();
 const LOOKSM={x:0,y:0};let lookDt=1/60;
+/* GIROSCOPIO (AJUSTES › SENSIBILIDAD, móvil; 30-10-2026): turning the phone turns the camera (SDSettings.gyroDelta). Off by
+   default. iPhone: Safari asks for permission the first time (DeviceMotionEvent.requestPermission, only from a touch);
+   without it nothing happens. rotationRate (degrees/s, the phone's own axes) → the screen's in landscape: the phone's x
+   axis (beta) stands upright, so it is the turn; its y axis (gamma) lies along the screen, so it is the tilt. */
+const GYRO={yaw:0,pitch:0,last:0,listening:false,perm:''};
+function gyroStart(){
+  if(GYRO.listening||SETTINGS.gyro==='off'||!isTouch||typeof DeviceMotionEvent==='undefined'||GYRO.perm==='denied')return;
+  const go=()=>{if(GYRO.listening)return;GYRO.listening=true;window.addEventListener('devicemotion',gyroEv);};
+  if(typeof DeviceMotionEvent.requestPermission==='function')DeviceMotionEvent.requestPermission().then(r=>{GYRO.perm=r;if(r==='granted')go();}).catch(()=>{GYRO.perm='error';});
+  else go();
+}
+function gyroEv(e){
+  const r=e.rotationRate,t=e.timeStamp||performance.now(),dt=GYRO.last?Math.min(0.1,Math.max(0,(t-GYRO.last)/1000)):0;GYRO.last=t;
+  if(!r||r.beta==null||state!=='playing'||!P.alive||SETTINGS.gyro==='off')return;
+  const ang=screen.orientation&&typeof screen.orientation.angle==='number'?screen.orientation.angle:(+window.orientation||0);
+  const sg=ang===90?1:(ang===270||ang===-90)?-1:0;if(!sg)return;   // portrait: the game asks to turn the phone anyway
+  GYRO.yaw+=r.beta*sg*dt;GYRO.pitch-=r.gamma*sg*dt;
+}
+document.addEventListener('touchend',()=>{if(SETTINGS.gyro!=='off'&&!GYRO.listening)gyroStart();},{passive:true});
 function applyLook(){
   const fovRatio=Math.tan(camera.fov*Math.PI/360)/Math.tan(BASE_FOV*Math.PI/360);
   if(isTouch)touchFeed();
   const sm=SDSettings.smoothLook(LOOKSM,input.lookDX,input.lookDY,SETTINGS.smooth,lookDt);
-  const ld=SDSettings.lookDelta(sm.dx,sm.dy,SETTINGS,{scoped:LOAD.active==='rifle'&&WCORE.ads>=GUNCFG.scopeAt,ads:ss(AG().ads),fovRatio,touch:isTouch});
+  const lc={scoped:LOAD.active==='rifle'&&WCORE.ads>=GUNCFG.scopeAt,ads:ss(AG().ads),fovRatio,touch:isTouch,tp:!!(TPV&&TPV.on),zoom:WS.zoom};
+  const ld=SDSettings.lookDelta(sm.dx,sm.dy,SETTINGS,lc);
   if(P.alive){P.yaw+=ld.yaw;P.pitch=clamp(P.pitch+ld.pitch,-1.45,1.45);}
+  if(GYRO.yaw||GYRO.pitch){const g=SDSettings.gyroDelta(GYRO.yaw,GYRO.pitch,SETTINGS,lc);GYRO.yaw=GYRO.pitch=0;
+    if(P.alive){P.yaw+=g.yaw;P.pitch=clamp(P.pitch+g.pitch,-1.45,1.45);}}
   WS.swayX=clamp(-input.lookDX*0.0009,-0.05,0.05)*0.25*MOTION+WS.swayX*0.75;
   WS.swayY=clamp(input.lookDY*0.0009,-0.05,0.05)*0.25*MOTION+WS.swayY*0.75;
   input.lookDX=0;input.lookDY=0;
@@ -9086,7 +9282,7 @@ function updateCamera(dt,alpha){
     $('#airVig').style.opacity=P.exhausted>0?(0.55+Math.sin(P.swayT*7)*0.2).toFixed(2):P.holding?(0.15*clamp(1-P.breath,0,1)+0.08).toFixed(2):0;
   }
   {const lh=document.getElementById('lockHint'),want=!isTouch&&!pointerLocked&&state==='playing';if(lh.hidden===want)lh.hidden=!want;}
-  if(isTouch&&!EDIT.on){const bz=$('#tbZoom'),bb=$('#tbBreath'),kn=LOAD.active==='knife';setHidden($('#tbScope'),kn);{const ih=!kn&&(ads>0.05||PM.sprinting);if($('#tbInspect').hidden!==ih)$('#tbInspect').hidden=ih;}setHidden($('#tbFire2'),!SETTINGS.leftFire);if(!HUD2){const ft=kn?'ATACAR':'FUEGO';setText($('#tbFire'),ft);setText($('#tbFire2'),ft);}if(bz.hidden===showScope){bz.hidden=!showScope;bb.hidden=!showScope;}setText(bz,WS.zoom+'×');bb.classList.toggle('on',P.holding);$('#tbScope').classList.toggle('on',input.scopeToggle||input.scopeHeld);$('#tbCrouch').classList.toggle('on',input.crouchHeld);}
+  if(isTouch&&!EDIT.on){const bz=$('#tbZoom'),bb=$('#tbBreath'),kn=LOAD.active==='knife';setHidden($('#tbScope'),kn);{const ih=!kn&&(ads>0.05||PM.sprinting);if($('#tbInspect').hidden!==ih)$('#tbInspect').hidden=ih;}setHidden($('#tbFire2'),!SETTINGS.leftFire||(SETTINGS.leftFireAds&&ads<0.05&&!input.fireHeld&&!input.fireAim&&!input.scopeHeld&&!input.scopeToggle));if(!HUD2){const ft=kn?'ATACAR':'FUEGO';setText($('#tbFire'),ft);setText($('#tbFire2'),ft);}if(bz.hidden===showScope){bz.hidden=!showScope;bb.hidden=!showScope;}setText(bz,WS.zoom+'×');bb.classList.toggle('on',P.holding);$('#tbScope').classList.toggle('on',input.scopeToggle||input.scopeHeld);$('#tbCrouch').classList.toggle('on',input.crouchHeld);}
   if(HUD2)h2Frame(showScope);
   // hip crosshair shows the real spread cone
   const cr=$('#cross');
@@ -9095,9 +9291,10 @@ function updateCamera(dt,alpha){
   cr.classList.toggle('dot',knife);
   const showCross=knife?(P.alive&&!PM.sprinting):(ads<0.3&&!PM.sprinting&&P.alive&&AG().state!=='reload'&&LOAD.phase==='ready');
   cr.style.opacity=showCross?1:0;
-  if(showCross&&!knife){const sp=SDWeapon.spread(AG(),moveCtx());const gap=Math.tan(sp)/Math.tan(camera.fov*Math.PI/360)*window.innerHeight/2;cr.style.setProperty('--gap',(clamp(gap,4,120)+3).toFixed(0)+'px');}
+  if(showCross&&!knife){const sp=SDWeapon.spread(AG(),moveCtx());const gap=Math.tan(sp)/Math.tan(camera.fov*Math.PI/360)*window.innerHeight/2;cr.style.setProperty('--gap',(clamp(gap,4,120)+SETTINGS.xGap).toFixed(0)+'px');}
   const st=AG().state==='reload'&&LOAD.active!=='knife'?'RECARGANDO':'';const stEl=$('#status');if(stEl.textContent!==st)stEl.textContent=st;
   if(hpDirty){hpDirty=false;updateHpUI();}
+  if(P.hp<VIBHP.hp&&P.alive)vib(40);VIBHP.hp=P.hp;   // hit: a short buzz (AJUSTES › AUDIO, Android)
   if(!P.alive){const left=Math.max(0,3-P.deadT);$('#deathCount').textContent=STATS.botKills>=GOAL?'':'Reapareces en '+Math.ceil(left);}
 }
 
@@ -10496,7 +10693,7 @@ if(FLORA.on){const gl=new T.GLTFLoader();let n=2;
       // the town's ground must exist first (rays land on it)
       if(P3W.kit)go();else{const w=setInterval(()=>{if(P3W.kit){clearInterval(w);go();}},300);}}}}
 
-window.__SD={KTX2,R2_ON,R2_URL,perfTexMB(){const t=perfTextures();return {real:SDPerf.textureMB(t),asRGBA:SDPerf.textureMB(t.map(x=>Object.assign({},x,{bytes:0})))};},REMOTES,netScoreHud,shotTargets,MINI,miniLayer,miniPing,clockFrame,setOffTime,get OFF_TIME(){return OFF_TIME;},ACC,accRefresh,INV,invSync,camoApply,openInv,invOpenBox,WSKIN,WS_ST,setWskin,get RIF(){return RIF;},TPV,SELF,get PROFILE(){return PROFILE;},openProfile,endMatch,PJ_MIX,MIX_ORDER,SKINS,get SKIN(){return SKIN;},setSkin,pj2SetPack,rivalSkin,PERF,perfRun,HUD2,get H2(){return HUD2?H2:null;},leanIn:HUD2?leanIn:null,h2Frame:HUD2?h2Frame:null,PJ2,pj2Load,CASA,casaLoad,XL,casaxlLoad,FLORA,RATS,RAT_WORLD,ratsFrame,SHADOW_FADE,setDuelLethal,get DUEL_LETHAL(){return DUEL_LETHAL;},gfxDiagText,get P3ON(){return P3ON;},COBCC,damagePlayer,TEX,sunFollow,setSunSnap(on){SUN_SNAP=!!on;},sun,P0,E10,e10Lod,DIAG,setTrainMove,LIGHT:{sun,hemi,skyMat,LOOK,P3},P3W,freeze(on){SIM_FREEZE=!!on;},SHOT,VMA,makeSoldier,animateSoldier,BOT_MAT,scene,camera,RemotePlayer,PMprev,PIS,PROOT,RIF,WROOT,SHO_:null,MANUAL,advance(ms){frameBody(last+ms);},get LAST_PELLETS(){return LAST_PELLETS;},SCORE,SCFG,SROOT,SHO,setPrimaryChoice,get PRIMARY(){return PRIMARY;},PCORE,PCFG,setWorld,WORLDS,get WORLD_ID(){return WORLD_ID;},renderer,GFX,gfxApply,get NET(){return NET;},get REMOTE(){return REMOTE;},W,get NAV(){return NAV;},setOffMap,get OFFMAP(){return OFFMAP;},TOUCH,EDIT,openEditor,get SETTINGS(){return SETTINGS;},get LAYOUT(){return LAYOUT;},checkOrientation,MAT,LOAD,TRAINERS,get RANGE_BOTS(){return RANGE_BOTS;},TRAIN,setTrain,setLethal,kitNote,GINS,TDIAG,AU,get TOUCH_EVENTS(){return TOUCH_EVENTS;},impactFX,bodyFX,get DECALS(){return DECALS;},surfaceOf,soundDelay,aimSelfTest,P,PM,WS,WCORE,RECOIL,AIM,BOTS,DUMMIES,BULLETS,EVENTS,PARTS,STATS,get state(){return state;},get mode(){return mode;},setMode,input,startMatch,simTick,frame,toMenu,pause,resume};
+window.__SD={KTX2,R2_ON,R2_URL,PIC,GYRO,gyroEv,crossApply,btnPress,settingsChanged,perfTexMB(){const t=perfTextures();return {real:SDPerf.textureMB(t),asRGBA:SDPerf.textureMB(t.map(x=>Object.assign({},x,{bytes:0})))};},REMOTES,netScoreHud,shotTargets,MINI,miniLayer,miniPing,clockFrame,setOffTime,get OFF_TIME(){return OFF_TIME;},ACC,accRefresh,INV,invSync,camoApply,openInv,invOpenBox,WSKIN,WS_ST,setWskin,get RIF(){return RIF;},TPV,SELF,get PROFILE(){return PROFILE;},openProfile,endMatch,PJ_MIX,MIX_ORDER,SKINS,get SKIN(){return SKIN;},setSkin,pj2SetPack,rivalSkin,PERF,perfRun,HUD2,get H2(){return HUD2?H2:null;},leanIn:HUD2?leanIn:null,h2Frame:HUD2?h2Frame:null,PJ2,pj2Load,CASA,casaLoad,XL,casaxlLoad,FLORA,RATS,RAT_WORLD,ratsFrame,SHADOW_FADE,setDuelLethal,get DUEL_LETHAL(){return DUEL_LETHAL;},gfxDiagText,get P3ON(){return P3ON;},COBCC,damagePlayer,TEX,sunFollow,setSunSnap(on){SUN_SNAP=!!on;},sun,P0,E10,e10Lod,DIAG,setTrainMove,LIGHT:{sun,hemi,skyMat,LOOK,P3},P3W,freeze(on){SIM_FREEZE=!!on;},SHOT,VMA,makeSoldier,animateSoldier,BOT_MAT,scene,camera,RemotePlayer,PMprev,PIS,PROOT,RIF,WROOT,SHO_:null,MANUAL,advance(ms){frameBody(last+ms);},get LAST_PELLETS(){return LAST_PELLETS;},SCORE,SCFG,SROOT,SHO,setPrimaryChoice,get PRIMARY(){return PRIMARY;},PCORE,PCFG,setWorld,WORLDS,get WORLD_ID(){return WORLD_ID;},renderer,GFX,gfxApply,get NET(){return NET;},get REMOTE(){return REMOTE;},W,get NAV(){return NAV;},setOffMap,get OFFMAP(){return OFFMAP;},TOUCH,EDIT,openEditor,get SETTINGS(){return SETTINGS;},get LAYOUT(){return LAYOUT;},checkOrientation,MAT,LOAD,TRAINERS,get RANGE_BOTS(){return RANGE_BOTS;},TRAIN,setTrain,setLethal,kitNote,GINS,TDIAG,AU,get TOUCH_EVENTS(){return TOUCH_EVENTS;},impactFX,bodyFX,get DECALS(){return DECALS;},surfaceOf,soundDelay,aimSelfTest,P,PM,WS,WCORE,RECOIL,AIM,BOTS,DUMMIES,BULLETS,EVENTS,PARTS,STATS,get state(){return state;},get mode(){return mode;},setMode,input,startMatch,simTick,frame,toMenu,pause,resume};
 })();
 </script>
 

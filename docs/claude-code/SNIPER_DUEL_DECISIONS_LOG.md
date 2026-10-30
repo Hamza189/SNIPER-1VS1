@@ -83,6 +83,30 @@ Detalle de cada cambio (antes/después, medidas, cómo revertir): `docs/next-lev
 | Personaje 3D rev. 03 hecho por Claude e integrado tras `?pj=2` (bots y rival online) | 20-10 · directo a `main` |
 | Personajes realistas + elegir personaje (con el SOLDADO de `?pj=2`) y HUD 2 por defecto (aprobado en iPhone y PC) | 28-10 · directo a `main` |
 
+## 30-10-2026 (3) — Ajustes como en los grandes shooters de móvil (primera fase)
+Del propietario: probó R2 en el iPhone («funciona… se siente más liviano, como que carga más rápido»). Pidió mejorar la
+jugabilidad y la fluidez. Mandó un vídeo recorriendo los ajustes de PUBG Mobile («añade todo lo que puedas») y otro
+jugando en 3ª y 1ª persona («que se sienta fluido como si fuera hecho por una empresa experta en shooters»).
+- **Hecho (solo cliente: ni servidor, ni equilibrio, ni balas)**. Detalle en `docs/AJUSTES.md`:
+  - SENSIBILIDAD: sensibilidad sin mira en 1ª y 3ª persona y para cada zoom del visor (4× y 8×); giroscopio opcional.
+  - CONTROLES: MIRA en modo MIXTO y FUEGO izquierdo solo al apuntar.
+  - MIRA (pestaña nueva): cruceta (9 colores, 5 estilos, largo, grosor, separación, borde, vista previa), color del
+    visor, retícula iluminada, color del marcador de impacto y del impacto en el cuerpo.
+  - GRÁFICOS: brillo, 5 estilos de imagen y modo daltónico, dentro del tone mapping (sin coste: mismas llamadas y
+    triángulos).
+  - AUDIO: volumen de la interfaz y vibración (Android).
+- Con los valores por defecto todo queda igual que antes; lo comprueba la prueba.
+- **Pruebas**: `ajustes` 17 y `ajustes.browser` 17, nuevas; además las de siempre en verde.
+- **No copiado**: recogida de objetos, visores que el juego no tiene y la calidad del sonido (motivos en `docs/AJUSTES.md`).
+- IMPLEMENTADO · PROBADO EN NAVEGADOR · PENDIENTE DE VALIDACIÓN EN IPHONE (giroscopio, MIXTO y estilos).
+- **Siguiente fase propuesta (fluidez)**, pendiente de que el propietario elija:
+  - vista libre en 3ª persona;
+  - cambio de hombro;
+  - bloqueo de carrera empujando el joystick;
+  - disposiciones de botones guardadas (1/2/3);
+  - números de daño y anuncios de racha.
+  - Necesitan su aprobación, porque tocan el servidor: saltar o trepar obstáculos, inercia del movimiento y tumbarse.
+
 ## 30-10-2026 (2) — Los archivos grandes pasan a Cloudflare R2
 El propietario activó R2 en el panel de Cloudflare. No podía hacer `wrangler login` (estaba fuera de casa) y pidió a
 Claude que lo hiciera él. No hizo falta: el token de Cloudflare que ya tenía GitHub publica también el Worker de

@@ -37,14 +37,32 @@ const DEFAULTS = {
   leanKeyL: 'KeyQ', leanKeyR: 'KeyE',
   leanMode: 'hold',   // PC keys: hold (lean while the key is down) | toggle (press in, press out)
   leanTouch: 'toggle', // touch buttons: toggle (tap in, tap out: the left thumb stays on the stick) | hold
-  wheelSwap: false    // mouse wheel switches weapons when not aiming (aiming: it still changes the zoom)
+  wheelSwap: false,   // mouse wheel switches weapons when not aiming (aiming: it still changes the zoom)
+  // 30-10-2026 (owner: the settings of the big mobile shooters, «añade todo lo que puedas»)
+  leftFireAds: false, // the left FIRE button only shows while aiming
+  // sensitivity per situation, on top of horizontal/vertical: no sight in 1st / 3rd person, and each zoom of the scope
+  sensFP: 1, sensTP: 1, scope4: 1, scope8: 1,
+  // gyroscope (phones): turning the phone turns the camera. off | ads (only while aiming) | on (always)
+  gyro: 'off', gyroSens: 1, gyroAds: 1, gyroInv: false,
+  // crosshair: colour, style, line length, thickness, extra gap (the gap still opens with the real spread), dark outline
+  xColor: '#f4ead8', xStyle: 'crossdot', xLen: 10, xThick: 2, xGap: 3, xOutline: true,
+  // scope: colour of the centre dot, and the lines in that colour too (illuminated reticle)
+  retColor: '#ff3b2f', retLit: false,
+  hitColor: '#ffffff', // hit marker (kills stay red, headshots gold)
+  blood: 'red',        // hit effect on bodies: red | green | yellow
+  bright: 1,           // brightness (exposure), 0.7..1.4
+  look: 'clasico',     // picture style (applies on reload): clasico | vivo | realista | suave | cine
+  cvd: 'off',          // colour-blind correction (applies on reload): off | prot | deut | trit
+  volUi: 1,            // menus and buttons, its own volume
+  vibrate: false       // vibration when firing and when hit (Android; iPhone browsers cannot vibrate)
 };
 // which settings each tab of AJUSTES owns (its RESTAURAR resets only these)
 const CATEGORIES = {
-  controles: ['view', 'crouchMode', 'adsMode', 'leftFire', 'releaseFire', 'leanKeyL', 'leanKeyR', 'leanMode', 'leanTouch', 'wheelSwap'],
-  sensibilidad: ['sensH', 'sensV', 'adsSens', 'adsH', 'adsV', 'touchLook', 'touchDead', 'smooth', 'invertY'],
-  graficos: ['quality', 'fpsCap', 'showFps'],
-  audio: ['volMaster', 'volShots', 'volFx', 'volSteps', 'volAmb', 'mute'],
+  controles: ['view', 'crouchMode', 'adsMode', 'leftFire', 'leftFireAds', 'releaseFire', 'leanKeyL', 'leanKeyR', 'leanMode', 'leanTouch', 'wheelSwap'],
+  sensibilidad: ['sensH', 'sensV', 'adsSens', 'adsH', 'adsV', 'touchLook', 'touchDead', 'smooth', 'invertY', 'sensFP', 'sensTP', 'scope4', 'scope8', 'gyro', 'gyroSens', 'gyroAds', 'gyroInv'],
+  mira: ['xColor', 'xStyle', 'xLen', 'xThick', 'xGap', 'xOutline', 'retColor', 'retLit', 'hitColor', 'blood'],
+  graficos: ['quality', 'fpsCap', 'showFps', 'bright', 'look', 'cvd'],
+  audio: ['volMaster', 'volShots', 'volFx', 'volSteps', 'volAmb', 'volUi', 'mute', 'vibrate'],
   jugabilidad: ['hitmarkers', 'dmgDir', 'minimap'],
   accesibilidad: ['calmVM', 'lowFlash']
 };
@@ -54,8 +72,18 @@ const CATEGORIES = {
 const TOUCH_DEFAULTS = { touchLook: 1.6, adsSens: 0.8, crouchMode: 'slide' };   // crouchMode 'slide': owner's request 25-10-2026
 function defaults(touch) { return Object.assign({}, DEFAULTS, touch ? TOUCH_DEFAULTS : {}, { v: VERSION }); }
 const RANGES = { sensH: [0.2, 3], sensV: [0.2, 3], adsSens: [0.3, 2], touchLook: [0.3, 4], adsH: [0.3, 2], adsV: [0.3, 2], touchDead: [0, 12], smooth: [0, 0.8],
-  volMaster: [0, 1], volShots: [0, 1], volFx: [0, 1], volSteps: [0, 1], volAmb: [0, 1] };
-const ADS_MODES = ['holdDrag', 'hold', 'toggle'];
+  volMaster: [0, 1], volShots: [0, 1], volFx: [0, 1], volSteps: [0, 1], volAmb: [0, 1], volUi: [0, 1],
+  sensFP: [0.3, 3], sensTP: [0.3, 3], scope4: [0.3, 2], scope8: [0.3, 2], gyroSens: [0.2, 4], gyroAds: [0.2, 4],
+  xLen: [3, 24], xThick: [1, 5], xGap: [0, 30], bright: [0.7, 1.4] };
+// mixed: a quick tap fixes the sight (tap again to leave), holding aims only while held
+const ADS_MODES = ['holdDrag', 'hold', 'toggle', 'mixed'];
+const GYRO_MODES = ['off', 'ads', 'on'];
+// the colours offered (crosshair, scope dot, hit marker): bone (the HUD's), white, red, yellow, green, cyan, blue, magenta, black
+const PALETTE = ['#f4ead8', '#ffffff', '#ff3b2f', '#ffe14d', '#4dff6a', '#3de0ff', '#3d7bff', '#ff4dd2', '#000000'];
+const X_STYLES = ['crossdot', 'cross', 'dot', 'circle', 'tee'];
+const BLOODS = ['red', 'green', 'yellow'];
+const LOOKS = ['clasico', 'vivo', 'realista', 'suave', 'cine'];
+const CVDS = ['off', 'prot', 'deut', 'trit'];
 const CROUCH_MODES = ['slide', 'toggle', 'hold'];
 
 // any stored object → a complete, valid settings object (unknown keys dropped, numbers clamped)
@@ -68,7 +96,14 @@ function sanitize(o, touch) {
     const v = Number(o[k]);
     if (o[k] !== undefined && o[k] !== null && o[k] !== '' && isFinite(v)) s[k] = clamp(v, RANGES[k][0], RANGES[k][1]);
   }
-  for (const k of ['invertY', 'leftFire', 'releaseFire', 'showFps', 'calmVM', 'mute', 'hitmarkers', 'dmgDir', 'minimap', 'lowFlash', 'wheelSwap']) if (typeof o[k] === 'boolean') s[k] = o[k];
+  for (const k of ['invertY', 'leftFire', 'releaseFire', 'showFps', 'calmVM', 'mute', 'hitmarkers', 'dmgDir', 'minimap', 'lowFlash', 'wheelSwap',
+    'leftFireAds', 'gyroInv', 'xOutline', 'retLit', 'vibrate']) if (typeof o[k] === 'boolean') s[k] = o[k];
+  for (const k of ['xColor', 'retColor', 'hitColor']) if (PALETTE.includes(o[k])) s[k] = o[k];
+  if (GYRO_MODES.includes(o.gyro)) s.gyro = o.gyro;
+  if (X_STYLES.includes(o.xStyle)) s.xStyle = o.xStyle;
+  if (BLOODS.includes(o.blood)) s.blood = o.blood;
+  if (LOOKS.includes(o.look)) s.look = o.look;
+  if (CVDS.includes(o.cvd)) s.cvd = o.cvd;
   // peek keys: a key code (the HUD 2 settings only offer free keys); never the same key for both sides
   const KEY = /^[A-Za-z][A-Za-z0-9]{1,19}$/;
   if (KEY.test(o.leanKeyL) && KEY.test(o.leanKeyR) && o.leanKeyL !== o.leanKeyR) { s.leanKeyL = o.leanKeyL; s.leanKeyR = o.leanKeyR; }
@@ -100,14 +135,31 @@ function resetCategory(s, cat, touch) {
 }
 
 /* Converts a pointer movement in pixels into a yaw/pitch change in radians.
-   ctx = { scoped (rifle scope up), ads (0..1, any weapon), fovRatio (tan(fov/2)/tan(baseFov/2)), touch }
+   ctx = { scoped (rifle scope up), ads (0..1, any weapon), fovRatio (tan(fov/2)/tan(baseFov/2)), touch,
+           tp (3rd person camera), zoom (4 or 8: the scope's zoom) }
    Linear (no acceleration): the same finger travel always turns the same amount. */
+function sitMul(s, ctx) {
+  const a = Math.max(0, Math.min(1, ctx.ads || 0)), m = v => v == null ? 1 : v;
+  // no sight: 1st or 3rd person (fades out while the sight comes up); the scope: its zoom's own multiplier
+  const view = 1 + (m(ctx.tp ? s.sensTP : s.sensFP) - 1) * (1 - a);
+  return { a, view, scope: ctx.scoped ? s.adsSens * m(ctx.zoom === 4 ? s.scope4 : s.scope8) : 1 };
+}
 function lookDelta(dx, dy, s, ctx) {
-  const base = ctx.touch ? 0.0042 : 0.0022;
-  const k = base * ctx.fovRatio * (ctx.scoped ? s.adsSens : 1) * (ctx.touch ? s.touchLook : 1);
-  const a = Math.max(0, Math.min(1, ctx.ads || 0));
+  const base = ctx.touch ? 0.0042 : 0.0022, M = sitMul(s, ctx);
+  const k = base * ctx.fovRatio * M.scope * M.view * (ctx.touch ? s.touchLook : 1);
+  const a = M.a;
   const h = 1 + ((s.adsH == null ? 1 : s.adsH) - 1) * a, v = 1 + ((s.adsV == null ? 1 : s.adsV) - 1) * a;
   return { yaw: -dx * k * s.sensH * h, pitch: -dy * k * s.sensV * v * (s.invertY ? -1 : 1) };
+}
+/* Gyroscope: the phone's own turn (degrees, already in screen axes: yaw left +, pitch up +) → the camera's (radians).
+   At 1 the camera turns as much as the phone (1:1) with no sight; the scope divides it by its zoom (fovRatio) like
+   the finger. Only on for 'on', or for 'ads' while aiming. Never adds anything the player did not do. */
+function gyroActive(s, ctx) { return s.gyro === 'on' || (s.gyro === 'ads' && (ctx.ads || 0) > 0.5); }
+function gyroDelta(yawDeg, pitchDeg, s, ctx) {
+  if (!gyroActive(s, ctx)) return { yaw: 0, pitch: 0 };
+  const M = sitMul(s, ctx), sens = (ctx.ads || 0) > 0.5 ? s.gyroAds : s.gyroSens, inv = s.gyroInv ? -1 : 1;
+  const k = Math.PI / 180 * sens * ctx.fovRatio * (ctx.scoped ? M.scope : 1) * inv;
+  return { yaw: yawDeg * k, pitch: pitchDeg * k * (s.invertY ? -1 : 1) };
 }
 /* Frame-rate independent smoothing of the look input (0 = off). Returns the part to apply now;
    the rest stays in st (a small reservoir that empties within ~0.1-0.3 s). */
@@ -120,6 +172,7 @@ function smoothLook(st, dx, dy, smooth, dt) {
   return o;
 }
 
-const SDSettings = { VERSION, CATEGORIES, resetCategory, DEFAULTS, TOUCH_DEFAULTS, ADS_MODES, CROUCH_MODES, defaults, RANGES, sanitize, load, save, lookDelta, smoothLook };
+const SDSettings = { VERSION, CATEGORIES, resetCategory, DEFAULTS, TOUCH_DEFAULTS, ADS_MODES, CROUCH_MODES, GYRO_MODES, PALETTE, X_STYLES, BLOODS, LOOKS, CVDS,
+  defaults, RANGES, sanitize, load, save, lookDelta, gyroActive, gyroDelta, smoothLook };
 if (typeof module !== 'undefined' && module.exports) module.exports = SDSettings; else root.SDSettings = SDSettings;
 })(typeof window !== 'undefined' ? window : globalThis);
