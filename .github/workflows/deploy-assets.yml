@@ -1,0 +1,35 @@
+# Publishes the file server for the big game files (assets-worker/, Cloudflare R2) when its code changes on main.
+# Apart from the multiplayer server: it never redeploys it. Needs the repository secrets CLOUDFLARE_API_TOKEN,
+# CLOUDFLARE_ACCOUNT_ID and R2_UPLOAD_KEY (the upload key of tools/r2-subir.js). docs/R2.md
+name: Desplegar archivos R2
+on:
+  push:
+    branches: [main]
+    paths: ['assets-worker/**', '.github/workflows/deploy-assets.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency: deploy-assets
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Publicar en Cloudflare
+        id: deploy
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          wranglerVersion: '4.42.0'
+          workingDirectory: assets-worker
+          secrets: UPLOAD_KEY
+        env:
+          UPLOAD_KEY: ${{ secrets.R2_UPLOAD_KEY }}
+      - name: Comprobar que responde
+        run: |
+          URL="${{ steps.deploy.outputs.deployment-url }}"
+          echo "::notice title=Archivos publicados::$URL"
+          sleep 5
+          code=$(curl -s -o /dev/null -w '%{http_code}' "$URL/assets/no-existe.ktx2")
+          test "$code" = 404 || { echo "::error::esperaba 404 y respondió $code"; exit 1; }

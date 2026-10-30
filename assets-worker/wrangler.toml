@@ -1,0 +1,10 @@
+# Archivos grandes del juego (texturas KTX2) desde Cloudflare R2, aparte del servidor multijugador (docs/R2.md).
+# Plan gratuito: R2 hasta 10 GB. Publicado por .github/workflows/deploy-assets.yml.
+name = "sniper-duel-assets"
+main = "worker.js"
+compatibility_date = "2025-09-01"
+workers_dev = true
+
+[[r2_buckets]]
+binding = "B"
+bucket_name = "sniper-duel-assets"
