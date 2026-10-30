@@ -47,6 +47,10 @@ function check(name, cond, info) { if (cond) { pass++; console.log('  ok   ' + n
     const m = await tex(M.p);
     check('por defecto en el móvil: FSB en los bots con sus texturas de 4K, comprimidas', m.ktx2.includes('assets/personaje/pro/op3/') && m.map.c && m.map.w === 4096 && m.normal.w === 4096, JSON.stringify(m));
     check('y carga más ligera: un solo transcodificador', await M.p.evaluate(() => __SD.KTX2.loader.basisLoader.workerLimit === 1));
+    // 29-10, night: three.js kept a JavaScript copy of each compressed texture after sending it to the GPU (~500 MB in a
+    // room with 5 bots): it is dropped as soon as it is on the GPU
+    check('las texturas del personaje ya no guardan su copia en JavaScript', await M.p.evaluate(() => { const m = __SD.BOTS[0].rig.v2.meshes[0].material;
+      return ['map', 'normalMap', 'roughnessMap'].every(k => m[k] && m[k].mipmaps.every(x => x.data === null) && m[k].userData.gpuBytes > 0); }));
     const mem = await M.p.evaluate(() => __SD.perfTexMB());
     check('MEDIR RENDIMIENTO cuenta las texturas comprimidas por lo que ocupan de verdad', mem.real < mem.asRGBA * 0.6, JSON.stringify(mem));
     check('sin errores (móvil)', M.errs.length === 0, M.errs.slice(0, 2).join(' | '));

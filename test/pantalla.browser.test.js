@@ -37,11 +37,12 @@ const IPHONE = 'Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebK
     check('al empezar, la cámara tiene la forma de la pantalla', v0.aspect === v0.want && v0.draw[0] === v0.css[0] && v0.draw[1] === v0.css[1], JSON.stringify(v0));
     await A.p.evaluate(() => { window.__noResize = true; });
     await A.p.setViewportSize({ width: 844, height: 330 });   // the bar appears: 60 px less
-    await A.p.waitForTimeout(600);
+    // (waits for the change, not a fixed time: software WebGL under load draws slowly and the observer fires between frames)
+    await A.p.waitForFunction(() => __SD.renderer.getSize(new THREE.Vector2()).y === 330, null, { timeout: 15000 }).catch(() => {});
     const v1 = await view(A.p);
     check('aparece la barra sin evento resize: la cámara y el dibujo se ajustan solos', v1.css[1] === 330 && v1.aspect === v1.want && v1.draw[1] === 330, JSON.stringify(v1));
     await A.p.setViewportSize({ width: 844, height: 390 });   // and goes away again
-    await A.p.waitForTimeout(600);
+    await A.p.waitForFunction(() => __SD.renderer.getSize(new THREE.Vector2()).y === 390, null, { timeout: 15000 }).catch(() => {});
     const v2 = await view(A.p);
     check('y al quitarse, vuelve a la forma de antes (sin estirar)', v2.css[1] === 390 && v2.aspect === v2.want && v2.draw[1] === 390, JSON.stringify(v2));
     check('el aviso de pantalla completa sale en el iPhone (Safari)', await A.p.evaluate(() => { const h = document.getElementById('appHint'); return !!h && !h.hidden && /pantalla de inicio/.test(h.textContent); }));

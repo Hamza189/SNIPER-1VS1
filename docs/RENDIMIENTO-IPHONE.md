@@ -70,5 +70,27 @@ original en Safari».
   - SAHARA baja de ~384 a ~96 MB; TITÁN de ~192 a ~96 MB.
   - Falta repetir MEDIR RENDIMIENTO en el iPhone con ÚLTIMA (`docs/ARMAS-EXT.md`).
 
+### 29-10-2026, noche — Safari cerró la partida tras un minuto (sala, 5 bots, PUEBLO 3.0)
+Informe del propietario: «ha cargado y funcionado durante un minuto hasta que se ha quedado pillado el juego en el
+Safari del iPhone; sale el mismo error; estaba en sala multijugador, con 5 bots, en PUEBLO 3.0».
+
+Reproducido en el ordenador con `node tools/mem-sala.js` (servidor local, sala TODOS CONTRA TODOS, 5 bots, PUEBLO,
+«móvil» en ALTO, ÚLTIMA). WebGL por software: mide memoria, no FPS.
+
+| | Antes | Después |
+|---|---|---|
+| Texturas en la GPU (mapa y personajes + ÚLTIMA) | 268–284 + 363 MB | 268 + 363 MB (igual) |
+| Copia en JavaScript de las texturas comprimidas | **507 MB** | **0** |
+| Memoria de JavaScript | 625 MB | ~92 MB (pico de 387 MB mientras cargan los personajes) |
+
+- **Causa**: three.js guarda en JavaScript una copia de cada textura después de mandarla a la GPU. Con las texturas
+  comprimidas (KTX2) esa copia no vuelve a usarse, pero ocupaba tanto como la propia GPU: ~500 MB de más.
+- **Arreglo** (`ktx2Lean`/`ktx2Upload` en `src/page.html`):
+  - la copia se suelta en cuanto la textura está en la GPU;
+  - las texturas se mandan a la GPU al terminar de cargar el modelo, no la primera vez que se ven;
+  - el aspecto de arma que se deja sale también de la GPU (antes se quedaban todos los que se habían probado);
+  - si la GPU lo pierde todo (raro), la página se vuelve a abrir, porque esas texturas ya no se pueden mandar otra vez.
+- IMPLEMENTADO · PROBADO EN NAVEGADOR · PENDIENTE DE VALIDACIÓN EN IPHONE.
+
 Código: `client/perfprobe.js` (cálculos e informe, puro) y el bloque «MEDIR RENDIMIENTO» de `src/page.html`.
 Prueba: `node test/perf.test.js`.

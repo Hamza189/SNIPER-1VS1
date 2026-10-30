@@ -1,5 +1,10 @@
 # Texturas comprimidas para la GPU (KTX2) — por defecto en PC y en el móvil (`?ktx2=0` = los JPG)
 
+**29-10, por la noche — sin copia en JavaScript**: Safari cerró una sala con 5 bots al minuto. three.js guardaba en
+JavaScript una copia de cada textura comprimida después de subirla a la GPU: ~500 MB que no se volvían a usar. Ahora se
+suelta en cuanto la textura está en la GPU (`ktx2Lean`), y su tamaño se guarda en `userData.gpuBytes` para MEDIR
+RENDIMIENTO. Medidas en `docs/RENDIMIENTO-IPHONE.md`.
+
 **29-10, por la noche — también los aspectos de arma, a su resolución máxima**:
 - `arma_ktx2.glb` + `ktx2/`: cada textura sale del original del arma a su tamaño real y va en un archivo aparte. Son
   4K en ÚLTIMA y VECTOR, 4K y 2K en TITÁN, y 2K en SAHARA y TÁCTICA.

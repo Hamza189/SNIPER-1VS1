@@ -6,6 +6,8 @@
      comprimidas; si el KTX2 no llega, el arma.glb de siempre (JPG 2K). Mientras carga, el HALCÓN sigue en las manos.
      Volver a elegir un aspecto ya usado lo pone otra vez (antes dejaba las manos vacías). El camuflaje mide el brillo
      de un color comprimido con extras.lum. Las texturas van en archivos aparte (ktx2/): en el móvil, de una en una
+   - (29-10, noche) memoria: la copia en JavaScript de cada textura comprimida se suelta en cuanto está en la GPU, y el
+     aspecto que se deja deja también la GPU (Safari cerraba la partida con 5 bots y ÚLTIMA)
    Run: node test/armas.browser.test.js   (SHOTS=carpeta para capturas) */
 'use strict';
 const { chromium } = require('playwright');
@@ -56,9 +58,13 @@ function check(name, cond, info) { if (cond) { pass++; console.log('  ok   ' + n
     }
     const dl = await p.evaluate(() => { const m = []; __SD.WS_ST.rifle.objs[0].traverse(x => { if (x.isMesh && x.material.map) m.push(x.material); }); return m.map(x => SDCamo.detail(x)); });
     check('el camuflaje sabe el brillo de un color comprimido (KTX2)', dl.length > 0 && dl.every(v => v > 0), dl.map(v => v.toFixed(2)).join(' '));
-    // choosing a skin used before (it was cached): it has to come back
+    check('las texturas comprimidas ya no guardan su copia en JavaScript (están en la GPU) y se siguen contando', await p.evaluate(() => { const ts = []; __SD.WS_ST.rifle.objs[0].traverse(x => { if (x.isMesh && x.material.map && x.material.map.isCompressedTexture) ts.push(x.material.map); });
+      return ts.length > 0 && ts.every(t => t.mipmaps.every(m => m.data === null) && t.userData.gpuBytes > 0); }));
+    check('el aspecto que se deja sale de la memoria (solo queda el que llevas)', await p.evaluate(() => Object.keys(__SD.WS_ST.cache).filter(k => /^rifle/.test(k)).join(',') === 'riflesahara'), await p.evaluate(() => Object.keys(__SD.WS_ST.cache).join(',')));
+    // choosing a skin used before: it comes back (from the browser's cache)
     await p.evaluate(() => __SD.setWskin('rifle', 'ultima'));
-    await p.waitForTimeout(500);
+    await p.waitForFunction(() => __SD.WS_ST.rifle.objs.length === 3, null, { timeout: 120000 }).catch(() => {});
+    await p.waitForTimeout(300);
     const back = await p.evaluate(() => { const S = __SD.WS_ST.rifle; return { n: S.objs.length, hid: S.base.meshes.every(m => !m.visible), boltZ: +__SD.RIF.boltZ.toFixed(3), inHands: S.objs.every(o => !!o.parent) }; });
     check('volver a elegir ÚLTIMA después de otra: vuelve a las manos con su cerrojo', back.n === 3 && back.hid && back.inHands && back.boltZ === 0.059, JSON.stringify(back));
     await p.evaluate(() => __SD.setWskin('rifle', 'halcon'));

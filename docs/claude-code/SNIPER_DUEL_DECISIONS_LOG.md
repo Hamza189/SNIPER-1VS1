@@ -23,7 +23,7 @@ Detalle de cada cambio (antes/después, medidas, cómo revertir): `docs/next-lev
 | **Personajes con texturas comprimidas (KTX2)** — por defecto en PC y, desde el 29-10 por la noche, también en el móvil (el propietario: «he probado el link con KTX2 con las texturas en 4K en Safari y ahora funciona»). Falta abrir varias veces el enlace normal en Safari y un informe de MEDIR RENDIMIENTO (`docs/KTX2.md`) | Propietario | POR DEFECTO · PENDIENTE DE VALIDACIÓN EN IPHONE |
 | **Safari: la barra tapa la pantalla y deforma la imagen** — la imagen ya sigue al tamaño real de la pantalla; para quitar la barra, instalar el juego: Compartir › «Añadir a pantalla de inicio» (sale un aviso en el menú del iPhone) | Propietario | PUBLICADO · PENDIENTE DE VALIDACIÓN EN IPHONE |
 | **Aspectos de arma en KTX2, a su resolución máxima** (29-10) — ÚLTIMA y VECTOR a 4K con la misma memoria que antes; SAHARA ~384 → ~96 MB; TITÁN ~192 → ~96 MB; TÁCTICA a 2K. Probar en Safari eligiendo ÚLTIMA (la descarga más grande, 139,0 MB, la primera vez) y repetir MEDIR RENDIMIENTO (`docs/ARMAS-EXT.md`) | Propietario | PUBLICADO · PENDIENTE DE VALIDACIÓN EN IPHONE |
-| **Espacio de la web** — GitHub Pages publica hasta 1 GB y el repositorio publicado ya ocupa ~870 MB con las armas a 4K. Para mapas en 4K hace falta otro sitio para los archivos grandes (p. ej. Cloudflare R2, gratis hasta 10 GB, en la cuenta de Cloudflare que ya tiene el juego) o quitar de la web los originales que no usa el juego (`assets/3d/imports`). Servicio externo: necesita su aprobación | Propietario | NECESITA APROBACIÓN |
+| **Archivos grandes a Cloudflare R2** — APROBADO por el propietario el 30-10 («de momento puedes pasar las cosas a Cloudflare R2, ya que hasta 10 GB tenemos suficiente espacio»). GitHub Pages publica hasta 1 GB y el repositorio publicado ocupa ~870 MB. Falta que el propietario active R2 en el panel de Cloudflare y haga `npx wrangler login` en su PC; después Claude crea el almacén, un Worker propio para servirlo (r2.dev no es para producción) y mueve las texturas KTX2 | Propietario | APROBADO · ESPERANDO A QUE ACTIVE R2 |
 | **Rendimiento en el iPhone** — MEDIDO en ALTO el 28-10: 60 FPS clavados en ARENA, PUEBLO y CASA XL (CPU ~3 ms/fotograma), pero ~800 MB de texturas por los personajes de 4K, corregido en `ead572a`. Falta repetir la medida en Safari para confirmar ~290 MB y probar una sala con 5 bots (`docs/RENDIMIENTO-IPHONE.md`) | Propietario | MEDIDO · PENDIENTE DE CONFIRMAR LA MEMORIA |
 | **Personaje LINCE (rev. 04)** — compararlo con la rev. 03 en `?pj=3` frente a `?pj=2` | Propietario | PUBLICADO TRAS BANDERA · PENDIENTE DE VALIDACIÓN EN IPHONE |
 | **Asomarse y zonas de impacto**: ¿el servidor debe mover cabeza y pecho con la inclinación? (`docs/HUD-2.md` §4) | Propietario | NECESITA APROBACIÓN |
@@ -82,6 +82,26 @@ Detalle de cada cambio (antes/después, medidas, cómo revertir): `docs/next-lev
 | Encargos para ChatGPT: CASA XL, CASA XL v2 y personaje | 18-10 / 19-10 |
 | Personaje 3D rev. 03 hecho por Claude e integrado tras `?pj=2` (bots y rival online) | 20-10 · directo a `main` |
 | Personajes realistas + elegir personaje (con el SOLDADO de `?pj=2`) y HUD 2 por defecto (aprobado en iPhone y PC) | 28-10 · directo a `main` |
+
+## 30-10-2026 — Safari cerraba la sala con 5 bots: la copia en JavaScript de las texturas comprimidas
+Informe del propietario: la partida cargó y funcionó un minuto y luego Safari la cerró con el mismo error (sala
+multijugador, 5 bots, PUEBLO 3.0). Decisión del propietario en el mismo mensaje: pasar los archivos grandes a
+Cloudflare R2 («hasta 10 GB tenemos suficiente espacio»).
+- **Medido** (`tools/mem-sala.js`): la GPU estaba como antes (268 + 363 MB con ÚLTIMA). Pero three.js guardaba además
+  una copia en JavaScript de cada textura comprimida: 507 MB. La memoria de JavaScript estaba en 625 MB.
+- **Arreglo**:
+  - la copia se suelta al subir cada textura a la GPU; JavaScript baja a ~92 MB;
+  - las texturas se suben al acabar de cargar el modelo;
+  - el aspecto de arma que se deja sale de la GPU;
+  - una sola descarga por aspecto aunque se elija dos veces.
+- **Pruebas**: `armas.browser` 28 (comprueba que no quedan copias y que el aspecto dejado sale de la memoria),
+  `ktx2.browser` 13, y en verde `pro`, `pj2`, `perf`, `cajas`, `salas`, `hud2`, `touch.smoke`, `browser` y
+  `online.browser`. `pantalla.browser` ahora espera al cambio de tamaño en vez de a un tiempo fijo (falló una vez con el
+  ordenador cargado).
+- **R2**: la cuenta de Cloudflare aún no tiene R2 activado («Please enable R2 through the Cloudflare Dashboard»).
+  Activarlo y aceptar sus condiciones lo tiene que hacer el propietario; para subir archivos hace falta `wrangler login`
+  en su PC.
+- IMPLEMENTADO · PROBADO EN NAVEGADOR · PENDIENTE DE VALIDACIÓN EN IPHONE.
 
 ## 29-10-2026 (5) — Aspectos de arma en KTX2 a su resolución máxima
 Petición del propietario: «lo quiero todo en 4K y en su máxima resolución».

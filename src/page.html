@@ -2898,10 +2898,28 @@ function ktx2Ready(){
   return KTX2.ready=new Promise(res=>{const s=document.createElement('script');s.src='vendor/KTX2Loader.js?v='+BUILD_HASH;
     s.onload=()=>{try{const L=new T.KTX2Loader();L.setTranscoderPath('vendor/basis/');L.detectSupport(renderer);if(PJ2_PHONE)L.basisLoader.setWorkerLimit(1);   // phones: one transcoder, less memory at once
         const c=L.basisLoader&&L.basisLoader.workerConfig;KTX2.support=c;
-        if(!c||Object.values(c).some(Boolean))KTX2.loader=L;else console.warn('ktx2: sin texturas comprimidas en esta GPU, se usan los JPG');}catch(e){console.warn('ktx2',e);}
+        if(!c||Object.values(c).some(Boolean)){KTX2.loader=L;const load0=L.load.bind(L);L.load=(u,ok,pr,err)=>load0(u,t=>{ktx2Lean(t);if(ok)ok(t);},pr,err);}
+        else console.warn('ktx2: sin texturas comprimidas en esta GPU, se usan los JPG');}catch(e){console.warn('ktx2',e);}
       res(KTX2.loader);};
     s.onerror=()=>res(null);document.head.appendChild(s);});
 }
+// three.js keeps in JavaScript a copy of every texture it has sent to the GPU. A compressed one (KTX2) is never sent
+// again, so its copy is dropped as soon as it is on the GPU (29-10-2026: in a room with 5 bots and ÚLTIMA the copies were
+// ~500 MB on top of the GPU's, and Safari closed the page). Its size stays in userData.gpuBytes (MEDIR RENDIMIENTO).
+function ktx2Lean(t){
+  if(!t||!t.isCompressedTexture)return t;
+  const u=t.userData||(t.userData={});   // (three r128 textures have no userData of their own)
+  if(u.gpuBytes)return t;
+  u.gpuBytes=t.mipmaps.reduce((s,m)=>s+(m.data?m.data.byteLength:0),0);
+  const prev=t.onUpdate;
+  t.onUpdate=x=>{if(prev)prev(x);for(const m of t.mipmaps)m.data=null;KTX2.freed=(KTX2.freed||0)+1;t.onUpdate=prev||null;};
+  return t;
+}
+// send a loaded model's compressed textures to the GPU now (their copies go at once), not when they first come into view
+function ktx2Upload(root){root.traverse(o=>{if(!o.isMesh)return;for(const m of [].concat(o.material))if(m)for(const k in m){const t=m[k];
+  if(t&&t.isCompressedTexture&&t.mipmaps.length&&t.mipmaps[0].data){try{renderer.initTexture(t);}catch(e){}}}});}
+// if the GPU loses everything (rare), those textures cannot be sent again: start the page again
+canvas.addEventListener('webglcontextrestored',()=>{if(KTX2.freed)location.reload();});
 // KTX2 textures that come as files of their own (weapon skins, docs/ARMAS-EXT.md): through a queue, one at a time on
 // phones (a 4K one is ~10 MB to download and ~45 MB while it is unpacked), 3 on PC. GLTFLoader only calls load().
 function ktx2Queue(L){
@@ -2914,7 +2932,7 @@ function pj2Load(root){
   root=root||pj2Root('B');
   if(!PJ2.on||PJ2.loadingRoots[root]||PJ2.tpls[root]||!T.GLTFLoader)return;PJ2.loadingRoots[root]=true;PJ2.loading=true;
   const fail=e=>{PJ2.failedRoots[root]=true;if(!Object.keys(PJ2.tpls).length)PJ2.failed=true;console.warn('pj2 load',root,e);};
-  const done=g=>{try{const tpl=SDSoldier2.template(g,T);PJ2.tpls[root]=tpl;if(!PJ2.tpl)PJ2.tpl=tpl;PJ2.mats[PJ_PRO||PJ_MIX?root+'B':'B']=tpl.material;
+  const done=g=>{try{ktx2Upload(g.scene);const tpl=SDSoldier2.template(g,T);PJ2.tpls[root]=tpl;if(!PJ2.tpl)PJ2.tpl=tpl;PJ2.mats[PJ_PRO||PJ_MIX?root+'B':'B']=tpl.material;
       if(PJ_MIX)pj2Mat('bots',root);
       for(const R of PJ2.list)pj2Attach(R);try{precompileAll();}catch(e){}}catch(e){fail(e);}};
   const plain=()=>{try{new T.GLTFLoader().load(root+'personaje'+pj2Suffix(root)+'.glb?v='+BUILD_HASH,done,undefined,fail);}catch(e){fail(e);}};
@@ -5341,7 +5359,7 @@ const WSKINS={rifle:{halcon:{name:'HALCÓN R7',by:'Sniper Duel'},titan:{name:'TI
     sahara:{dir:'lince',name:'SAHARA',by:'awakov_dawid · CC BY'}},
   knife:{navaja:{name:'NAVAJA',by:'Sniper Duel'},tactica:{name:'TÁCTICA',by:'lunea · CC BY'}}};
 const WSKIN={rifle:WSKINS.rifle[store.get('wsRifle')]?store.get('wsRifle'):'halcon',knife:WSKINS.knife[store.get('wsKnife')]?store.get('wsKnife'):'navaja'};
-const WS_ST={rifle:{cur:null,objs:[],base:null},knife:{cur:null,objs:[],base:null},cache:{},ktx2:{}};
+const WS_ST={rifle:{cur:null,objs:[],base:null},knife:{cur:null,objs:[],base:null},cache:{},ktx2:{},pend:{}};
 const wsDir=(slot,id)=>'assets/armas/'+(WSKINS[slot][id].dir||id)+'/';
 const wsImg=(slot,id)=>(slot==='rifle'&&id==='halcon'||slot==='knife'&&id==='navaja'?'assets/armas/'+id+'/':wsDir(slot,id))+'retrato.jpg?v='+BUILD_HASH;
 // load once: the model and its pivots (info.json); the materials get the viewmodel's reflections.
@@ -5351,29 +5369,43 @@ const wsImg=(slot,id)=>(slot==='rifle'&&id==='halcon'||slot==='knife'&&id==='nav
 // BAJO, or if the KTX2 one fails.
 function wsLoad(slot,id,done){
   const k=slot+id;if(WS_ST.cache[k])return done(WS_ST.cache[k]);
+  if(WS_ST.pend[k])return void WS_ST.pend[k].push(done);   // already on its way: one download, not two
+  WS_ST.pend[k]=[done];
   const d=wsDir(slot,id);
   fetch(d+'info.json?v='+BUILD_HASH).then(r=>r.json()).catch(()=>({})).then(info=>{
     const ok=g=>{
       g.scene.traverse(o=>{if(o.isMesh){o.frustumCulled=false;o.castShadow=false;const m=o.material;if(m&&m.isMeshStandardMaterial){m.envMap=ENV;m.envMapIntensity=0.55;m.needsUpdate=true;}}});
-      done(WS_ST.cache[k]={scene:g.scene,info});};
+      ktx2Upload(g.scene);
+      const A=WS_ST.cache[k]={scene:g.scene,info},cbs=WS_ST.pend[k]||[];delete WS_ST.pend[k];for(const f of cbs)f(A);};
     const plain=()=>new T.GLTFLoader().load(d+'arma.glb?v='+BUILD_HASH,ok,undefined,e=>console.warn('arma',id,e));
     if(!KTX2_ON||GFX.profile==='bajo')return plain();
     ktx2Ready().then(L=>{if(!L)return plain();
       const G=new T.GLTFLoader();G.setKTX2Loader(ktx2Queue(L));
       G.load(d+'arma_ktx2.glb?v='+BUILD_HASH,g=>{WS_ST.ktx2[k]=true;ok(g);},undefined,e=>{console.warn('ktx2 arma',id,e);plain();});});});
 }
+// a rifle skin left behind leaves the GPU (a 4K one is 100–360 MB): chosen again, it comes back from the browser's cache
+function wsDrop(k){
+  const A=WS_ST.cache[k];if(!A)return;delete WS_ST.cache[k];delete WS_ST.ktx2[k];
+  const seen=new Set(),go=o=>o.traverse(x=>{if(!x.isMesh)return;
+    if(x.geometry&&!seen.has(x.geometry)){seen.add(x.geometry);x.geometry.dispose();}
+    for(const m of [].concat(x.material)){if(!m||seen.has(m))continue;seen.add(m);
+      for(const kk in m){const t=m[kk];if(t&&t.isTexture&&t!==ENV&&!seen.has(t)){seen.add(t);t.dispose();}}m.dispose();}});
+  go(A.scene);if(A.parts)for(const p of Object.values(A.parts))if(p&&p.isObject3D)go(p);
+}
 function wskinRifle(id){
   const hal=VMA.R&&VMA.R.root,S=WS_ST.rifle;if(!hal)return;
   if(!S.base){S.base={bolt:RIF.bolt.position.clone(),mag:RIF.mag.position.clone(),magY:RIF.magY,flash:RIF.flash.position.clone(),meshes:[]};
     hal.traverse(o=>{if(o.isMesh)S.base.meshes.push(o);});}
-  for(const o of S.objs)if(o.parent)o.parent.remove(o);S.objs=[];S.cur=id;
+  for(const o of S.objs)if(o.parent)o.parent.remove(o);S.objs=[];
+  if(S.cur&&S.cur!==id)wsDrop('rifle'+S.cur);S.cur=id;
   RIF.bolt.position.copy(S.base.bolt);RIF.boltZ=S.base.bolt.z;RIF.mag.position.copy(S.base.mag);RIF.magY=S.base.magY;RIF.flash.position.copy(S.base.flash);
   const def=id==='halcon'||!WSKINS.rifle[id];
   // the HALCÓN stays in your hands until the skin has arrived (the 4K KTX2 ones take a while on a phone)
   for(const m of S.base.meshes)m.visible=true;
   if(def){camoApply();return;}
   wsLoad('rifle',id,A=>{
-    if(S.cur!==id)return;
+    if(S.cur!==id){wsDrop('rifle'+id);return;}   // another one was chosen while this one loaded
+    if(S.objs.length)return;
     const sc=A.scene,I=A.info||{};
     // the parts move into the HALCÓN's nodes and leave the scene: keep them, and where they were, for the next time this
     // skin is chosen (29-10-2026: choosing it again after another one left the hands empty)
@@ -5803,7 +5835,7 @@ async function perfUntil(fn,ms){const t=performance.now();while(!fn()){if(perfor
 function perfTextures(){const seen=new Set(),out=[];const up=o=>{const ms=o.material?(Array.isArray(o.material)?o.material:[o.material]):[];for(const m of ms)for(const k of ['map','normalMap','roughnessMap','metalnessMap','aoMap','emissiveMap','alphaMap','envMap'])
   {const tx=m[k];if(!tx||seen.has(tx)||tx.isCubeTexture)continue;seen.add(tx);const im=tx.image||{};
     // compressed for the GPU (KTX2): the real bytes of every mip level, not 4 per pixel
-    const bytes=tx.isCompressedTexture&&tx.mipmaps&&tx.mipmaps.length?tx.mipmaps.reduce((s,mm)=>s+(mm.data?mm.data.byteLength:0),0):0;
+    const bytes=tx.isCompressedTexture&&tx.mipmaps&&tx.mipmaps.length?(tx.userData&&tx.userData.gpuBytes||tx.mipmaps.reduce((s,mm)=>s+(mm.data?mm.data.byteLength:0),0)):0;
     out.push({w:im.videoWidth||im.naturalWidth||im.width||0,h:im.videoHeight||im.naturalHeight||im.height||0,mip:tx.generateMipmaps!==false,bytes});}};
   scene.traverse(up);wScene.traverse(up);return out;}
 function perfStatus(t){const e=$('#perfStat');if(t==null){e.hidden=true;return;}e.hidden=false;e.textContent=t;}
