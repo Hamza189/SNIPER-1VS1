@@ -48,9 +48,18 @@ function format(R) {
     L.push('  fotograma: media ' + f.avg + ' ms · p50 ' + f.p50 + ' · p95 ' + f.p95 + ' · p99 ' + f.p99 + ' · máx ' + f.max + ' → ' + f.fps + ' FPS · tirones ' + f.jank + ' % · bajo 30 FPS ' + f.over33 + ' %');
     L.push('  CPU por fotograma (JavaScript + envío de dibujo): media ' + c.avg + ' ms · p95 ' + c.p95 + ' · ' + m.bound);
     if (sc && sc.n) L.push('  con la mira 8×: p50 ' + sc.p50 + ' ms · p95 ' + sc.p95 + ' → ' + sc.fps + ' FPS');
+    if (m.parts) L.push('  ' + partsLine(m.parts));
     L.push('  dibujo: ' + m.calls.avg + ' llamadas (máx ' + m.calls.max + ') · ' + Math.round(m.tris.avg / 1000) + ' mil triángulos (máx ' + Math.round(m.tris.max / 1000) + ' mil) · ' + m.textures + ' texturas ≈ ' + m.texMB + ' MB · ' + m.geometries + ' geometrías');
   }
   return L.join('\n');
+}
+// GF-0 (30-10-2026): the frame's CPU time by part, biggest first (ms per drawn frame). bots and anim are inside sim/camara/red.
+const PART_NAMES = { dibujo: 'envío de dibujo', sim: 'simulación', bots: 'bots (IA)', botsAnim: 'animación de bots', anim: 'animación de personajes', camara: 'cámara y tu personaje',
+  arma1p: 'arma en 1ª persona', hud: 'HUD', efectos: 'efectos', red: 'red y rivales', mundo: 'mundo (LOD, flora, ratas)', dibujoArma: 'dibujo del arma', mirar: 'mirar', otros: 'otros' };
+function partsLine(p) {
+  const ks = Object.keys(PART_NAMES).filter(k => p[k] > 0).sort((a, b) => p[b] - p[a]);
+  const extra = (p.animN ? ' · personajes animados por fotograma ' + p.animN : '') + (p.ticksN ? ' · pasos de simulación por fotograma ' + p.ticksN : '');
+  return 'CPU por partes (ms por fotograma): ' + ks.map(k => PART_NAMES[k] + ' ' + p[k].toFixed(2)).join(' · ') + extra;
 }
 // the device's own name where the browser gives it (iPhone does not say which model: the screen size tells most)
 function deviceName(ua, w, h, dpr) {

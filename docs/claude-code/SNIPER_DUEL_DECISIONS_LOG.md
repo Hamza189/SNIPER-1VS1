@@ -83,6 +83,36 @@ Detalle de cada cambio (antes/después, medidas, cómo revertir): `docs/next-lev
 | Personaje 3D rev. 03 hecho por Claude e integrado tras `?pj=2` (bots y rival online) | 20-10 · directo a `main` |
 | Personajes realistas + elegir personaje (con el SOLDADO de `?pj=2`) y HUD 2 por defecto (aprobado en iPhone y PC) | 28-10 · directo a `main` |
 
+## 30-10-2026 (4) — GAME FEEL 3.0, primera entrega (GF-0, GF-1, GF-4, GF-5)
+Encargo del propietario, «SNIPER DUEL — ULTIMATE GAME FEEL 3.0»:
+- movimiento, animaciones, FPS, visibilidad de enemigos lejanos, bots, controles y online;
+- por etapas GF-0 a GF-9, midiendo antes y después;
+- nada competitivo publicado sin su aprobación, el juego estable intacto y el servidor autoritativo intacto.
+
+Hecho (detalle en `docs/GAMEFEEL.md`):
+- **GF-0**:
+  - auditoría de movimiento, red, bots, animación y cámara (dos subagentes de solo lectura);
+  - medida por partes del fotograma (`PROF`, `?prof=1` y una línea nueva en MEDIR RENDIMIENTO);
+  - `tools/gf-medir.js` para la línea base con la GPU real del PC: 60 FPS en ARENA, PUEBLO y sala de 5 bots.
+- **GF-1**: perfil de movimiento **TÁCTICO** (AJUSTES › CONTROLES, experimental, por defecto ACTUAL).
+  - Sin conexión: andar 4,05 m/s (−12 %), agachado 1,95 y arranque al 95 % en 0,133 s (antes 0,075).
+  - En todas partes: cámara más suave.
+  - El reglamento del servidor no cambia.
+- **GF-4**: **visibilidad de enemigos** (AJUSTES › JUGABILIDAD, experimental, por defecto NORMAL, apagada online):
+  silueta mejorada o contorno exterior fino, con prueba de profundidad y stencil.
+  - Enemigo tras una pared: 0 píxeles de diferencia.
+  - Se ajusta al zoom y tiene el mismo grosor en BAJO y en ALTO.
+  - La primera versión del contorno se veía blanca de lejos y se rehízo con stencil.
+- **GF-5**: bots animados una vez por fotograma; en ARENA, 4 → 2 personajes animados por fotograma.
+- **Pruebas**: `gamefeel.browser` (11), nueva.
+- Ni `core/` ni `server/` cambian.
+
+Estado: IMPLEMENTADO · PROBADO EN NAVEGADOR · PENDIENTE DE VALIDACIÓN EN IPHONE.
+
+Necesitan aprobación del propietario: TÁCTICO online (servidor), la visibilidad online (regla de sala), el peek con el
+cuerpo, tumbarse y trepar. Siguientes sin aprobación: GF-2 (transiciones de animación), GF-6 (bots más humanos) y
+GF-1b (suavizar correcciones online).
+
 ## 30-10-2026 (3) — Ajustes como en los grandes shooters de móvil (primera fase)
 Del propietario: probó R2 en el iPhone («funciona… se siente más liviano, como que carga más rápido»). Pidió mejorar la
 jugabilidad y la fluidez. Mandó un vídeo recorriendo los ajustes de PUBG Mobile («añade todo lo que puedas») y otro

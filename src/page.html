@@ -644,6 +644,9 @@ body.hud2 #stickBase.sprint #stickKnob svg{display:block}
       <button type="button" role="tab" data-tab="controles" aria-selected="true">CONTROLES</button><button type="button" role="tab" data-tab="sensibilidad">SENSIBILIDAD</button><button type="button" role="tab" data-tab="mira">MIRA</button><button type="button" role="tab" data-tab="graficos">GRÁFICOS</button><button type="button" role="tab" data-tab="audio">AUDIO</button><button type="button" role="tab" data-tab="jugabilidad">JUGABILIDAD</button><button type="button" role="tab" data-tab="accesibilidad">ACCESIBILIDAD</button>
     </nav>
     <section class="setPane" data-pane="controles" role="tabpanel">
+      <div class="lbl" style="margin:4px 0 6px">Movimiento (experimental)</div>
+      <div class="seg" id="movProfSeg" role="group" aria-label="Movimiento"><button type="button" data-mv="actual">ACTUAL</button><button type="button" data-mv="tactico">TÁCTICO</button></div>
+      <p class="setHelp">TÁCTICO: andas un 12 % más despacio (agachado y hacia atrás también), arrancas y frenas con algo de peso sin perder respuesta, y la cámara se mueve más suave (balanceo sin golpes, leve inclinación al ir de lado, pequeño hundimiento al aterrizar). El sprint no cambia. Sin conexión cambia todo; online solo la cámara: las velocidades las decide el servidor.</p>
       <div class="lbl" style="margin:4px 0 6px">Vista (tecla V)</div>
       <div class="seg" id="viewSeg" role="group" aria-label="Vista"><button type="button" data-v="fp">1ª PERSONA</button><button type="button" data-v="tp">3ª PERSONA</button></div>
       <p class="setHelp">En 3ª persona la cámara va detrás de tu hombro y ves a tu personaje; al apuntar con la mira vuelves a 1ª persona. La bala sale siempre de tus ojos: la cruceta marca dónde va.</p>
@@ -752,6 +755,9 @@ body.hud2 #stickBase.sprint #stickKnob svg{display:block}
         <label class="chk"><input type="checkbox" id="sDmg"> Mostrar de dónde viene el daño recibido</label>
         <label class="chk"><input type="checkbox" id="sMini"> Minimapa arriba a la izquierda (los enemigos salen cuando disparan)</label>
       </div>
+      <div class="lbl" style="margin:12px 0 6px">Visibilidad de enemigos (experimental · sin conexión)</div>
+      <div class="seg" id="visSeg" role="group" aria-label="Visibilidad de enemigos"><button type="button" data-vis="normal">NORMAL</button><button type="button" data-vis="silueta">SILUETA MEJORADA</button><button type="button" data-vis="contorno">CONTORNO SUTIL</button></div>
+      <p class="setHelp">Solo en las partes del enemigo que de verdad ves: nunca a través de paredes, suelos ni vegetación. Cerca no cambia nada; de lejos, una luz de borde suave o un contorno fino del mismo grosor en BAJO y en ALTO, que con el visor se ajusta al zoom. En partidas online está apagada hasta que se apruebe una regla igual para los dos jugadores.</p>
       <p class="setHelp">Solo cambian lo que ves: el daño, el retroceso y las reglas son siempre las del juego (y online, las del servidor).</p>
     </section>
     <section class="setPane" data-pane="accesibilidad" role="tabpanel" hidden>
@@ -2814,6 +2820,13 @@ let diff=clamp(store.get('diff',1)|0,0,2);
 const GOAL=10;
 /* Gunplay and movement numbers live in core/config.js (SD_CONFIG). */
 const MOVE=SD_CONFIG.move,FEEL=SD_CONFIG.feel,TICK_DT=1/SD_CONFIG.TICK;
+/* GF-1 MOVIMIENTO TÁCTICO (30-10-2026, AJUSTES › CONTROLES, experimental). Offline only: the same core step with other
+   numbers (online the server's SD_CONFIG.move rules, untouched). Measured before (core/config.js): walk 4.6 m/s, crouch
+   2.4, backwards ×0.85, 0→95 % of walk in 0.075 s and a stop in 0.077 s. TÁCTICO: walk 4.05 (−12 %), crouch 1.95, backwards
+   ×0.78, sprint 7.0 as now; accel 30 / brake 34 m/s² (0→95 % in 0.13 s, stop from walking 0.12 s, from a sprint 0.21 s) and
+   a slower bleed after a sprint. Candidates for the owner to try, not final values. */
+const MOVE_TAC=Object.assign({},MOVE,{walk:4.05,crouch:1.95,backMul:0.78,groundAccel:30,groundDecel:34,overspeedDecel:9});
+const TAC=()=>SETTINGS.moveProfile==='tactico';
 let GUNCFG=SD_CONFIG.rifles.halcon;
 let mode=store.get('mode','duel')==='range'?'range':'duel';
 // simulation state (pure core, fixed tick) ...
@@ -3026,7 +3039,7 @@ function pj2Load(root){
   root=root||pj2Root('B');
   if(!PJ2.on||PJ2.loadingRoots[root]||PJ2.tpls[root]||!T.GLTFLoader)return;PJ2.loadingRoots[root]=true;PJ2.loading=true;
   const fail=e=>{PJ2.failedRoots[root]=true;if(!Object.keys(PJ2.tpls).length)PJ2.failed=true;console.warn('pj2 load',root,e);};
-  const done=g=>{try{ktx2Upload(g.scene);const tpl=SDSoldier2.template(g,T);PJ2.tpls[root]=tpl;if(!PJ2.tpl)PJ2.tpl=tpl;PJ2.mats[PJ_PRO||PJ_MIX?root+'B':'B']=tpl.material;
+  const done=g=>{try{ktx2Upload(g.scene);const tpl=SDSoldier2.template(g,T);visHook(tpl.material);PJ2.tpls[root]=tpl;if(!PJ2.tpl)PJ2.tpl=tpl;PJ2.mats[PJ_PRO||PJ_MIX?root+'B':'B']=tpl.material;
       if(PJ_MIX)pj2Mat('bots',root);
       for(const R of PJ2.list)pj2Attach(R);try{precompileAll();}catch(e){}}catch(e){fail(e);}};
   const plain=()=>{try{new T.GLTFLoader().load(root+'personaje'+pj2Suffix(root)+'.glb?v='+BUILD_HASH,done,undefined,fail);}catch(e){fail(e);}};
@@ -3040,7 +3053,7 @@ function pj2Mat(v,root){
   root=root||pj2Root(v);const key=PJ_PRO||PJ_MIX?root+v:v;
   if(PJ2.mats[key])return PJ2.mats[key];
   // mientras llega el color de la variante se ve el del propio GLB (no negro); al llegar se sube a la GPU (sin tirón al verlo)
-  const m=PJ2.tpls[root].material.clone(),aniso=GFX.profile==='alto'?(PJ_PRO||PJ_MIX?8:4):2;
+  const m=visHook(PJ2.tpls[root].material.clone()),aniso=GFX.profile==='alto'?(PJ_PRO||PJ_MIX?8:4):2;
   if(KTX2.loader&&PJ2.ktx2&&PJ2.ktx2[root]){
     KTX2.loader.load(r2(root)+'color_'+v+'_ktx2.ktx2?v='+BUILD_HASH,tx=>{tx.anisotropy=aniso;m.map=tx;try{renderer.initTexture(tx);}catch(e){}},undefined,e=>console.warn('ktx2 color',root,v,e));
     return PJ2.mats[key]=m;
@@ -3141,6 +3154,10 @@ const _sv=new T.Vector3(),_sAM=new T.Matrix4(),_sTg=new T.Vector3(),_sHip=new T.
 /* st: {vx,vz (local, m/s), crouch 0..1, slide, air, pitch (rad, + = up), wpn, reload 0..1, bolt 0..1,
         stab 0..1, dead 0..1, sprint}. dt in s. */
 function animateSoldier(R,st,dt){
+  if(!(PROF.on||PERF.rec))return animateSoldier0(R,st,dt);
+  const t=performance.now();animateSoldier0(R,st,dt);PROF.t.anim=(PROF.t.anim||0)+performance.now()-t;PROF.c.anim=(PROF.c.anim||0)+1;
+}
+function animateSoldier0(R,st,dt){
   if(R.v2){animateSoldier2(R,st,dt);return;}
   const sp=Math.hypot(st.vx||0,st.vz||0),moving=sp>0.4&&!st.air&&!st.slide;
   R.phase+=dt*(moving?(2.4+sp*0.95):0);
@@ -3268,11 +3285,13 @@ class Bot{
     const p=findPath(here,best);if(!p||!p.length)return false;
     this.path=p;this.state='move';return true;
   }
+  // the body is animated once per drawn frame (animFrame) with everything the ticks of that frame moved: before, it was
+  // animated on every 120 Hz tick (2× per frame at 60 FPS, 4× at 30) and only the last pose was ever seen (GF-5, 30-10-2026)
   update(dt){
-    const x0=this.g.position.x,z0=this.g.position.z;
-    this.update0(dt);
-    if(this.g.visible)this.animate(dt,x0,z0);
+    if(this.fdt==null||this.fdt===0){this.fx0=this.g.position.x;this.fz0=this.g.position.z;this.fdt=0;}
+    this.update0(dt);this.fdt+=dt;
   }
+  animFrame(){if(this.fdt>0&&this.g.visible)this.animate(this.fdt,this.fx0,this.fz0);this.fdt=0;}
   // body animation from what the bot did this frame (speed and direction, aim, crouch, hit, death)
   animate(dt,x0,z0){
     const g=this.g,vx=(g.position.x-x0)/Math.max(dt,1e-4),vz=(g.position.z-z0)/Math.max(dt,1e-4);
@@ -3667,6 +3686,65 @@ function impactFX(hit,dist,size){
 }
 // a hit on a body (bots, and the rival online): a spark, a red mist sprayed along the bullet and a
 // few drops; bigger on the head
+/* =================== VISIBILIDAD DE ENEMIGOS (GF-4, 30-10-2026) ===================
+   AJUSTES › JUGABILIDAD, experimental: NORMAL (default) · SILUETA MEJORADA · CONTORNO SUTIL. Offline only: online it stays
+   off until the owner approves a rule that is the same for both players.
+   - Fair by construction: both effects are drawn WITH the depth test, as part of the enemy's own drawing. They can only
+     appear on the pixels of the enemy that are really seen: never through walls, floors, cover or foliage, and no extra
+     data about hidden rivals is needed.
+   - By apparent distance (distance × the zoom's FOV ratio): nothing up close, the rim from ~12 m, the outline from ~24 m.
+     With the 8× scope a 40 m enemy looks like 5 m away: no effect, and the outline never grows with the zoom.
+   - The outline is ~1.3 CSS pixels wide on every profile (BAJO draws fewer pixels: same look as ALTO, no advantage).
+   SILUETA: the enemy's material lifts its light up to +35 % and adds a soft warm rim at grazing angles (visHook).
+   CONTORNO: a thin inverted hull, pushed out along the normals in view space, in a soft warm white (VIS_HULL), ONLY
+   outside the figure: every character body writes 1 in the stencil and the hull draws where it is not 1. Without that,
+   a far enemy (~12 px wide) was covered by the outlines of its own arms, legs and rifle and looked white (first test). */
+const VIS={rim:{value:0},k:{value:1},w:{value:1.1},px:{value:0.002},out:{value:0},built:false};
+const VIS_HOOKED=new WeakSet();   // (not userData: clone() copies userData but not onBeforeCompile)
+const VIS_RIM='{float sdDist=length(vViewPosition)*uVisK;float sdW=uVisRim*smoothstep(12.0,30.0,sdDist);'+
+  'if(sdW>0.0){float sdF=1.0-clamp(dot(normalize(normal),normalize(vViewPosition)),0.0,1.0);sdF=sdF*sdF*sdF;'+
+  'outgoingLight=outgoingLight*(1.0+0.35*sdW)+vec3(0.55,0.53,0.48)*sdF*sdW*0.6;}}';
+function visHook(m){
+  if(!m||!m.isMeshStandardMaterial||VIS_HOOKED.has(m))return m;VIS_HOOKED.add(m);
+  m.stencilWrite=true;m.stencilRef=1;m.stencilFunc=T.AlwaysStencilFunc;m.stencilZPass=T.ReplaceStencilOp;   // the body marks its pixels
+  const prev=m.onBeforeCompile&&m.onBeforeCompile!==T.Material.prototype.onBeforeCompile?m.onBeforeCompile:null;
+  if(prev){const k=prev.toString();m.customProgramCacheKey=()=>'sdvis|'+k;}
+  m.onBeforeCompile=(sh,r)=>{if(prev)prev.call(m,sh,r);sh.uniforms.uVisRim=VIS.rim;sh.uniforms.uVisK=VIS.k;
+    sh.fragmentShader=sh.fragmentShader.replace('#include <common>','#include <common>\nuniform float uVisRim;uniform float uVisK;')
+      .replace('gl_FragColor = vec4( outgoingLight, diffuseColor.a );',VIS_RIM+'\n\tgl_FragColor = vec4( outgoingLight, diffuseColor.a );');};
+  return m;
+}
+const VIS_HULL=[false,true].map(sk=>{const m=new T.MeshBasicMaterial({color:0xe9e1cc,side:T.BackSide,transparent:true,depthWrite:false,skinning:sk,
+    stencilWrite:true,stencilRef:1,stencilFunc:T.NotEqualStencilFunc,stencilWriteMask:0,stencilZPass:T.KeepStencilOp});   // only where no body is
+  m.onBeforeCompile=sh=>{sh.uniforms.uVisW=VIS.w;sh.uniforms.uVisPx=VIS.px;sh.uniforms.uVisOut=VIS.out;sh.uniforms.uVisK=VIS.k;
+    sh.vertexShader=sh.vertexShader.replace('#include <common>','#include <common>\nuniform float uVisW;uniform float uVisPx;varying float vSdD;')
+      .replace('#include <begin_vertex>','vec3 objectNormal = vec3( normal );\n#include <skinnormal_vertex>\n#include <begin_vertex>')
+      .replace('#include <project_vertex>','#include <project_vertex>\n{float sdD=max(-mvPosition.z,0.1);vSdD=sdD;vec3 sdN=normalize(normalMatrix*objectNormal);'+
+        'mvPosition.xyz+=sdN*(uVisW*sdD*uVisPx);gl_Position=projectionMatrix*mvPosition;}');
+    sh.fragmentShader=sh.fragmentShader.replace('#include <common>','#include <common>\nuniform float uVisOut;uniform float uVisK;varying float vSdD;')
+      .replace('gl_FragColor = vec4( outgoingLight, diffuseColor.a );','gl_FragColor = vec4( outgoingLight, diffuseColor.a*uVisOut*smoothstep(24.0,34.0,vSdD*uVisK) );');};
+  return m;});
+// the rule in one place (tests call it): offline, chosen in AJUSTES, during play
+function visOn(md,choice,st){return md!=='online'&&choice!=='normal'&&(st==='playing'||st==='dead');}
+// one hull per mesh of the enemy, a child of it (same skeleton, same LOD switch, same visibility)
+function visBuild(R){
+  for(const h of R.visH||[])if(h.parent)h.parent.remove(h);
+  const src=[];if(R.v2)src.push(...R.v2.meshes);else R.root.traverse(o=>{if(o.isMesh&&!o.userData.visHull)src.push(o);});
+  R.visH=src.map(m=>{const h=m.isSkinnedMesh?new T.SkinnedMesh(m.geometry,VIS_HULL[1]):new T.Mesh(m.geometry,VIS_HULL[0]);
+    if(m.isSkinnedMesh)h.bind(m.skeleton,m.bindMatrix);h.userData.visHull=1;h.frustumCulled=m.frustumCulled;h.castShadow=false;h.receiveShadow=false;m.add(h);return h;});
+  R.visHv=R.v2;VIS.built=true;
+}
+const _visV=new T.Vector2();
+function visFrame(){
+  const on=visOn(mode,SETTINGS.enemyVis,state),out=on&&SETTINGS.enemyVis==='contorno';
+  VIS.rim.value=on?(out?0.4:1):0;VIS.out.value=out?0.45:0;
+  const tf=Math.tan(camera.fov*Math.PI/360);VIS.k.value=tf/Math.tan(BASE_FOV*Math.PI/360);
+  VIS.px.value=2*tf/Math.max(1,renderer.getSize(_visV).y);
+  if(!out&&!VIS.built)return;
+  for(const b of BOTS){const R=b.rig;if(!R)continue;
+    if(out&&(!R.visH||R.visHv!==R.v2))visBuild(R);
+    if(R.visH)for(const h of R.visH)h.visible=out&&b.alive;}
+}
 const BLOOD_FX={red:[0x7a140e,0x4e0b07],green:[0x2f6e12,0x1d4a08],yellow:[0x8a7410,0x5c4a06]};
 function bodyFX(pt,dir,head,dist){
   const k=clamp((dist||10)/16,1,3);   // far away it would be a dot: a bit bigger with distance
@@ -4296,7 +4374,7 @@ const setFmt=(k,v)=>/^vol|^bright/.test(k)?Math.round(v*100)+'%':/^x/.test(k)?Ma
 const SET_CHK=[['sInv','invertY'],['sLeft','leftFire'],['sRel','releaseFire'],['sShowFps','showFps'],['sCalm','calmVM'],['sMute','mute'],['sHit','hitmarkers'],['sDmg','dmgDir'],['sMini','minimap'],['sFlash','lowFlash'],
   ['sLeftAds','leftFireAds'],['sGyInv','gyroInv'],['sXO','xOutline'],['sRetL','retLit'],['sVib','vibrate']];
 // segmented choices: container → data attribute → setting (30-10-2026: MIRA Y EFECTOS, giroscopio, estilo de imagen…)
-const SET_SEG=[['#gyroSeg','g','gyro'],['#xStyleSeg','x','xStyle'],['#bloodSeg','b','blood'],['#lookSeg','l','look'],['#cvdSeg','cvd','cvd']];
+const SET_SEG=[['#movProfSeg','mv','moveProfile'],['#visSeg','vis','enemyVis'],['#gyroSeg','g','gyro'],['#xStyleSeg','x','xStyle'],['#bloodSeg','b','blood'],['#lookSeg','l','look'],['#cvdSeg','cvd','cvd']];
 function setExtraToUI(){
   for(const [sel,a,k] of SET_SEG)document.querySelectorAll(sel+' button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset[a]===SETTINGS[k])));
   for(const box of document.querySelectorAll('.swatches'))for(const b of box.children)b.setAttribute('aria-pressed',String(b.dataset.c===SETTINGS[box.dataset.key]));
@@ -4525,7 +4603,8 @@ function buildCmd(){
 function onMoveEvent(e){
   switch(e.type){
     case 'jump':SFX.jump();break;
-    case 'land':if(e.impact>3.5){VM.landV-=e.impact*FEEL.landKick*12*MOTION;SFX.land();}break;
+    // TÁCTICO: small landings dip the camera too (softer); big ones as always
+    case 'land':if(e.impact>3.5){VM.landV-=e.impact*FEEL.landKick*12*MOTION;SFX.land();}else if(TAC()&&e.impact>1.5)VM.landV-=e.impact*FEEL.landKick*7*MOTION;break;
     case 'slideEnd':if(SETTINGS.crouchMode==='slide')input.crouchHeld=false;break;   // PULSAR · TE LEVANTAS AL DESLIZAR: the slide ends standing
     case 'slideStart':nz(0,0.6,{type:'bandpass',f:500,q:0.6,g:0.25});P.shake=Math.max(P.shake,0.15);break;
   }
@@ -4625,7 +4704,7 @@ function simTick(dt){
     PMprev.x=PM.x;PMprev.y=PM.y;PMprev.z=PM.z;
     cmd.select=input.select;cmd.inspect=input.inspect;input.select=null;input.inspect=false;
     gunInspectInput(cmd);
-    const {mev,lev,wev,pev,sev,hol,holP,holS}=SDPlayer.step(LOCAL,cmd,dt,W,MOVE);
+    const {mev,lev,wev,pev,sev,hol,holP,holS}=SDPlayer.step(LOCAL,cmd,dt,W,mode!=='online'&&TAC()?MOVE_TAC:MOVE);
     syncFromSim();
     for(const e of mev)onMoveEvent(e);
     for(const e of lev)onLoadoutEvent(e);
@@ -4649,7 +4728,9 @@ function simTick(dt){
     if(P.deadT>=3&&state==='dead'){state='playing';respawnPlayer();}
   }
   SDWeapon.stepRecoil(RECOIL,dt,ACFG().recoil);
+  {const pb=PROF.on||PERF.rec?performance.now():0;
   for(const b of activeBots())b.update(dt);
+  if(pb)PROF.t.bots=(PROF.t.bots||0)+performance.now()-pb;}
   updateBullets(dt);
 }
 let hpDirty=false;const VIBHP={hp:1e9};
@@ -4687,8 +4768,12 @@ function applyLook(){
   if(P.alive){P.yaw+=ld.yaw;P.pitch=clamp(P.pitch+ld.pitch,-1.45,1.45);}
   if(GYRO.yaw||GYRO.pitch){const g=SDSettings.gyroDelta(GYRO.yaw,GYRO.pitch,SETTINGS,lc);GYRO.yaw=GYRO.pitch=0;
     if(P.alive){P.yaw+=g.yaw;P.pitch=clamp(P.pitch+g.pitch,-1.45,1.45);}}
+  if(TAC()){   // the turn per second (not per frame) and a time-based blend: the same sway at 30, 60 or 120 FPS
+    const f=1/Math.max(0.25,lookDt*60),a=1-Math.pow(0.75,lookDt*60);
+    WS.swayX+=(clamp(-input.lookDX*0.0009*f,-0.05,0.05)*MOTION-WS.swayX)*a;WS.swayY+=(clamp(input.lookDY*0.0009*f,-0.05,0.05)*MOTION-WS.swayY)*a;
+  }else{
   WS.swayX=clamp(-input.lookDX*0.0009,-0.05,0.05)*0.25*MOTION+WS.swayX*0.75;
-  WS.swayY=clamp(input.lookDY*0.0009,-0.05,0.05)*0.25*MOTION+WS.swayY*0.75;
+  WS.swayY=clamp(input.lookDY*0.0009,-0.05,0.05)*0.25*MOTION+WS.swayY*0.75;}
   input.lookDX=0;input.lookDY=0;
 }
 /* 3ª PERSONA (28-10-2026, AJUSTES › CONTROLES › Vista o tecla V): la cámara se aparta detrás del hombro derecho sin
@@ -4778,18 +4863,21 @@ function updateCamera(dt,alpha){
   // bob only at the hip: when scoped the eye does not bounce, so reticle = bullet origin
   P.bob=damp(P.bob,PM.onGround&&!PM.sliding?clamp(hs/MOVE.sprint,0,1):0,8,dt);
   const bob=P.bob*FEEL.bob*MOTION*free;
-  const bobY=Math.abs(Math.sin(P.stepPhase))*bob*(PM.sprinting?1.4:1),bobX=Math.cos(P.stepPhase)*bob*0.5;
+  // TÁCTICO: the same height and rhythm, but a smooth curve (sin²) instead of |sin|, which hit bottom with a jolt every step
+  const bobY=(TAC()?Math.sin(P.stepPhase)**2:Math.abs(Math.sin(P.stepPhase)))*bob*(PM.sprinting?1.4:1),bobX=Math.cos(P.stepPhase)*bob*0.5;
   camera.position.set(px+_rt.x*(P.leanOff+bobX),py+VM.eye+VM.land+bobY,pz+_rt.z*(P.leanOff+bobX));
   // what the player aims with (no recoil, no shake)
   AIM.ox=camera.position.x;AIM.oy=camera.position.y;AIM.oz=camera.position.z;AIM.yaw=P.yaw+swY;AIM.pitch=P.pitch+swP;
   tpCamera(dt,ads,px,py,pz);
   // visual-only layers on top
   const shk=P.shake*FEEL.shake*MOTION*free*(SETTINGS.lowFlash?0.35:1);
-  P.roll=P.alive?damp(P.roll,-P.lean*0.13+VM.slideW*0.07*free,10,dt):damp(P.roll,0.5,3,dt);
+  // TÁCTICO: a slight roll into sideways movement (0.9° at walking speed) and every roll follows «reducir movimiento»
+  const tacM=TAC()?0.4+0.6*MOTION:1,latV=TAC()?PM.vx*_rt.x+PM.vz*_rt.z:0;
+  P.roll=P.alive?damp(P.roll,(-P.lean*0.13+VM.slideW*0.07*free)*tacM-latV*0.004*MOTION*free,10,dt):damp(P.roll,0.5,3,dt);
   camera.rotation.set(AIM.pitch+RECOIL.p+rand(-shk,shk),AIM.yaw+RECOIL.y+rand(-shk,shk),P.roll);
   // fov: fully zoomed by the time the scope picture appears, so the reticle never "breathes"
   WS.zoomCur=damp(WS.zoomCur,WS.zoom,10,dt);
-  let fov=BASE_FOV+VM.sprintW*FEEL.sprintFov+VM.slideW*FEEL.slideFov;
+  let fov=BASE_FOV+(VM.sprintW*FEEL.sprintFov+VM.slideW*FEEL.slideFov)*tacM;
   if(iron)fov=lerp(fov,BASE_FOV/C0.ironZoom,adsE);   // iron sights: a light zoom
   else fov=lerp(fov,BASE_FOV/WS.zoomCur,seg(ads,0.3,GUNCFG.scopeAt));
   fov*=1-P.fovPunch;
@@ -5929,6 +6017,8 @@ function frame(now){
 }
 function frameBody(now){
   const perfT0=PERF.rec?performance.now():0;if(!PERF.first)PERF.first=now;
+  const pf=PROF.on||!!PERF.rec;let pt=pf?performance.now():0;
+  const pmark=k=>{if(!pf)return;const t=performance.now();PROF.t[k]=(PROF.t[k]||0)+t-pt;pt=t;};
   const rdt=Math.min(PERF_LOW?0.34:0.1,(now-last)/1000);last=now; // test mode: very low FPS still simulates in real time
   if(slowmo>0)slowmo-=rdt;
   const fxdt=rdt*(slowmo>0?0.35:1); // slow motion touches only particles and tracers
@@ -5936,13 +6026,20 @@ function frameBody(now){
   if(state==='playing'||state==='dead'||(mode==='online'&&state==='paused')){
     if(PERF.spin&&state==='playing'){P.yaw+=rdt*PERF.spin;P.pitch=-0.04;}   // MEDIR RENDIMIENTO: the same slow turn on every device
     if(state!=='paused'){lookDt=rdt;applyLook();}
+    pmark('mirar');
     simAcc+=rdt;let n=0;
     const maxN=PERF_LOW?41:12;
     while(simAcc>=TICK_DT&&n<maxN){simTick(TICK_DT);simAcc-=TICK_DT;n++;DBG.ticks++;}
     if(n>=maxN)simAcc=0;
+    if(pf)PROF.c.ticks=(PROF.c.ticks||0)+n;
+    pmark('sim');
+    for(const b of activeBots())if(b.animFrame)b.animFrame();
+    pmark('botsAnim');
     updateCamera(rdt,clamp(simAcc/TICK_DT,0,1));
+    pmark('camara');
     if(DIAG.want||DIAG.group)DIAG.frame(rdt);
     updateViewmodel(rdt);
+    pmark('arma1p');
     updateCompass();clockFrame();miniFrame();
     if(WCORE.ads>=GUNCFG.scopeAt){rangeT-=rdt;if(rangeT<=0){rangeT=0.1;_ae.set(AIM.pitch,AIM.yaw,0,'YXZ');_aq.setFromEuler(_ae);RAY.set(camera.position,new T.Vector3(0,0,-1).applyQuaternion(_aq));RAY.near=0;RAY.far=400;const h=RAY.intersectObjects(shotTargets(),false);$('#rng').textContent=h.length?String(Math.round(h[0].distance)).padStart(3,'0'):'---';}}
   }else if(state==='menu'){
@@ -5952,10 +6049,13 @@ function frameBody(now){
     if(Math.abs(camera.fov-BASE_FOV)>0.01){camera.fov=BASE_FOV;camera.updateProjectionMatrix();}
     WROOT.visible=false;KROOT.visible=false;PROOT.visible=false;SROOT.visible=false;
   }
+  pmark('hud');
   if(WATER_N){WATER_N.offset.x+=fxdt*0.025;WATER_N.offset.y+=fxdt*0.011;}   // ?pulido=1: the water ripples move
   INV.time.value=now/1000%1000;   // legendary camouflages pulse
   if(state!=='paused'){updateParts(fxdt);updateTracers(fxdt);for(const f of FLASHES){if(f.s.visible){f.t-=fxdt;if(f.t<=0)f.s.visible=false;}}}
+  pmark('efectos');
   if(mode==='online')netFrame(rdt);
+  pmark('red');
   updateDebug(rdt);
   sunFollow(camera.position);
   // FPS cap: skip drawing (not simulating) some display frames; adaptive resolution follows the drawn FPS
@@ -5967,11 +6067,16 @@ function frameBody(now){
   if(GFX.frame%10===1){csFix(scene);csFix(wScene);}
   if(PERF.rec)renderer.info.reset();
   renderer.clear();
+  visFrame();
+  pmark('otros');
   if(E10.ready)e10Lod(false);
   if(RATS.ready)ratsFrame(drawDt);
   if(FLORA.ready)FLORA.time.value=now/1000%1000;
+  pmark('mundo');
   renderer.render(scene,camera);
+  pmark('dibujo');
   if(!SHOT.noVM&&!TPV.on&&(WROOT.visible||KROOT.visible||PROOT.visible||SROOT.visible)&&(state==='playing'||state==='dead')){renderer.clearDepth();renderer.render(wScene,wCam);}
+  pmark('dibujoArma');if(pf)PROF.n++;
   if(PERF.rec){const R=PERF.rec;if(R.last)R.dt.push(now-R.last);R.last=now;R.cpu.push(performance.now()-perfT0);R.calls.push(renderer.info.render.calls);R.tris.push(renderer.info.render.triangles);}
 }
 /* =================== MEDIR RENDIMIENTO (AJUSTES › GRÁFICOS, or ?medir=1; client/perfprobe.js) ===================
@@ -5980,6 +6085,12 @@ function frameBody(now){
    interval, CPU time of the frame, draw calls, triangles; plus page and match loading times and texture memory.
    Only measures: the settings and the match state are restored afterwards. */
 const PERF={on:false,rec:null,spin:0,first:0,last:null};
+/* GF-0 (30-10-2026): where each frame's CPU time goes, part by part (only while MEDIR RENDIMIENTO records, or always with
+   ?prof=1: __SD.PROF). Sequential marks inside frameBody; 'anim' (character animation) and 'bots' are measured inside
+   the parts that call them, and anim also counts how many times a character is animated per drawn frame.
+   The GPU's own time cannot be read in Safari: «dibujo» is the CPU cost of sending the draw calls. */
+const PROF={on:/[?&]prof=1\b/.test(location.search),t:{},c:{},n:0,reset(){this.t={};this.c={};this.n=0;},
+  avg(){const o={};for(const k in this.t)o[k]=+(this.t[k]/Math.max(1,this.n)).toFixed(3);for(const k in this.c)o[k+'N']=+(this.c[k]/Math.max(1,this.n)).toFixed(2);return o;}};
 const perfSleep=ms=>new Promise(r=>setTimeout(r,ms));
 async function perfUntil(fn,ms){const t=performance.now();while(!fn()){if(performance.now()-t>ms)return false;await perfSleep(50);}return true;}
 function perfTextures(){const seen=new Set(),out=[];const up=o=>{const ms=o.material?(Array.isArray(o.material)?o.material:[o.material]):[];for(const m of ms)for(const k of ['map','normalMap','roughnessMap','metalnessMap','aoMap','emissiveMap','alphaMap','envMap'])
@@ -6004,13 +6115,13 @@ async function perfRun(quick){
     const ok=await perfUntil(()=>state==='playing'&&LOAD.phase==='ready',90000);const loadMs=performance.now()-t0;
     if(!ok){maps.push({id,name,loadMs,failed:true});continue;}
     PERF.spin=2*Math.PI/spinS;await perfSleep(warm);
-    PERF.rec={dt:[],cpu:[],calls:[],tris:[],last:0};await perfSleep(spinS*1000);const main=PERF.rec;
+    PROF.reset();PERF.rec={dt:[],cpu:[],calls:[],tris:[],last:0};await perfSleep(spinS*1000);const main=PERF.rec;const parts=PROF.avg();
     PERF.rec=null;PERF.spin=2*Math.PI/40;input.scope=true;await perfUntil(()=>WCORE.ads>=1,3000);
     PERF.rec={dt:[],cpu:[],calls:[],tris:[],last:0};await perfSleep(scopeS*1000);const sc=PERF.rec;
     PERF.rec=null;PERF.spin=0;input.scope=false;
     const tx=perfTextures(),frame=SDPerf.stats(main.dt,target),cpu=SDPerf.stats(main.cpu,target);
     maps.push({id,name,loadMs,frame,cpu,bound:SDPerf.bound(frame,cpu,target),scoped:SDPerf.stats(sc.dt,target),calls:SDPerf.avgMax(main.calls),tris:SDPerf.avgMax(main.tris),
-      textures:tx.length,texMB:SDPerf.textureMB(tx),geometries:renderer.info.memory.geometries});
+      textures:tx.length,texMB:SDPerf.textureMB(tx),geometries:renderer.info.memory.geometries,parts});
     toMenu();await perfSleep(300);
   }
   perfStatus(null);renderer.info.autoReset=true;
@@ -6222,6 +6333,6 @@ if(FLORA.on){const gl=new T.GLTFLoader();let n=2;
       // the town's ground must exist first (rays land on it)
       if(P3W.kit)go();else{const w=setInterval(()=>{if(P3W.kit){clearInterval(w);go();}},300);}}}}
 
-window.__SD={KTX2,R2_ON,R2_URL,PIC,GYRO,gyroEv,crossApply,btnPress,settingsChanged,perfTexMB(){const t=perfTextures();return {real:SDPerf.textureMB(t),asRGBA:SDPerf.textureMB(t.map(x=>Object.assign({},x,{bytes:0})))};},REMOTES,netScoreHud,shotTargets,MINI,miniLayer,miniPing,clockFrame,setOffTime,get OFF_TIME(){return OFF_TIME;},ACC,accRefresh,INV,invSync,camoApply,openInv,invOpenBox,WSKIN,WS_ST,setWskin,get RIF(){return RIF;},TPV,SELF,get PROFILE(){return PROFILE;},openProfile,endMatch,PJ_MIX,MIX_ORDER,SKINS,get SKIN(){return SKIN;},setSkin,pj2SetPack,rivalSkin,PERF,perfRun,HUD2,get H2(){return HUD2?H2:null;},leanIn:HUD2?leanIn:null,h2Frame:HUD2?h2Frame:null,PJ2,pj2Load,CASA,casaLoad,XL,casaxlLoad,FLORA,RATS,RAT_WORLD,ratsFrame,SHADOW_FADE,setDuelLethal,get DUEL_LETHAL(){return DUEL_LETHAL;},gfxDiagText,get P3ON(){return P3ON;},COBCC,damagePlayer,TEX,sunFollow,setSunSnap(on){SUN_SNAP=!!on;},sun,P0,E10,e10Lod,DIAG,setTrainMove,LIGHT:{sun,hemi,skyMat,LOOK,P3},P3W,freeze(on){SIM_FREEZE=!!on;},SHOT,VMA,makeSoldier,animateSoldier,BOT_MAT,scene,camera,RemotePlayer,PMprev,PIS,PROOT,RIF,WROOT,SHO_:null,MANUAL,advance(ms){frameBody(last+ms);},get LAST_PELLETS(){return LAST_PELLETS;},SCORE,SCFG,SROOT,SHO,setPrimaryChoice,get PRIMARY(){return PRIMARY;},PCORE,PCFG,setWorld,WORLDS,get WORLD_ID(){return WORLD_ID;},renderer,GFX,gfxApply,get NET(){return NET;},get REMOTE(){return REMOTE;},W,get NAV(){return NAV;},setOffMap,get OFFMAP(){return OFFMAP;},TOUCH,EDIT,openEditor,get SETTINGS(){return SETTINGS;},get LAYOUT(){return LAYOUT;},checkOrientation,MAT,LOAD,TRAINERS,get RANGE_BOTS(){return RANGE_BOTS;},TRAIN,setTrain,setLethal,kitNote,GINS,TDIAG,AU,get TOUCH_EVENTS(){return TOUCH_EVENTS;},impactFX,bodyFX,get DECALS(){return DECALS;},surfaceOf,soundDelay,aimSelfTest,P,PM,WS,WCORE,RECOIL,AIM,BOTS,DUMMIES,BULLETS,EVENTS,PARTS,STATS,get state(){return state;},get mode(){return mode;},setMode,input,startMatch,simTick,frame,toMenu,pause,resume};
+window.__SD={MOVE_TAC,VIS,visOn,visFrame,PROF,KTX2,R2_ON,R2_URL,PIC,GYRO,gyroEv,crossApply,btnPress,settingsChanged,perfTexMB(){const t=perfTextures();return {real:SDPerf.textureMB(t),asRGBA:SDPerf.textureMB(t.map(x=>Object.assign({},x,{bytes:0})))};},REMOTES,netScoreHud,shotTargets,MINI,miniLayer,miniPing,clockFrame,setOffTime,get OFF_TIME(){return OFF_TIME;},ACC,accRefresh,INV,invSync,camoApply,openInv,invOpenBox,WSKIN,WS_ST,setWskin,get RIF(){return RIF;},TPV,SELF,get PROFILE(){return PROFILE;},openProfile,endMatch,PJ_MIX,MIX_ORDER,SKINS,get SKIN(){return SKIN;},setSkin,pj2SetPack,rivalSkin,PERF,perfRun,HUD2,get H2(){return HUD2?H2:null;},leanIn:HUD2?leanIn:null,h2Frame:HUD2?h2Frame:null,PJ2,pj2Load,CASA,casaLoad,XL,casaxlLoad,FLORA,RATS,RAT_WORLD,ratsFrame,SHADOW_FADE,setDuelLethal,get DUEL_LETHAL(){return DUEL_LETHAL;},gfxDiagText,get P3ON(){return P3ON;},COBCC,damagePlayer,TEX,sunFollow,setSunSnap(on){SUN_SNAP=!!on;},sun,P0,E10,e10Lod,DIAG,setTrainMove,LIGHT:{sun,hemi,skyMat,LOOK,P3},P3W,freeze(on){SIM_FREEZE=!!on;},SHOT,VMA,makeSoldier,animateSoldier,BOT_MAT,scene,camera,RemotePlayer,PMprev,PIS,PROOT,RIF,WROOT,SHO_:null,MANUAL,advance(ms){frameBody(last+ms);},get LAST_PELLETS(){return LAST_PELLETS;},SCORE,SCFG,SROOT,SHO,setPrimaryChoice,get PRIMARY(){return PRIMARY;},PCORE,PCFG,setWorld,WORLDS,get WORLD_ID(){return WORLD_ID;},renderer,GFX,gfxApply,get NET(){return NET;},get REMOTE(){return REMOTE;},W,get NAV(){return NAV;},setOffMap,get OFFMAP(){return OFFMAP;},TOUCH,EDIT,openEditor,get SETTINGS(){return SETTINGS;},get LAYOUT(){return LAYOUT;},checkOrientation,MAT,LOAD,TRAINERS,get RANGE_BOTS(){return RANGE_BOTS;},TRAIN,setTrain,setLethal,kitNote,GINS,TDIAG,AU,get TOUCH_EVENTS(){return TOUCH_EVENTS;},impactFX,bodyFX,get DECALS(){return DECALS;},surfaceOf,soundDelay,aimSelfTest,P,PM,WS,WCORE,RECOIL,AIM,BOTS,DUMMIES,BULLETS,EVENTS,PARTS,STATS,get state(){return state;},get mode(){return mode;},setMode,input,startMatch,simTick,frame,toMenu,pause,resume};
 })();
 </script>
