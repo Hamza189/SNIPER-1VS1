@@ -5347,7 +5347,7 @@ const SDCamo = { draw, texture, detail, patch, swatch, SCALE };
 if (typeof module !== 'undefined' && module.exports) module.exports = SDCamo; else root.SDCamo = SDCamo;
 })(typeof window !== 'undefined' ? window : globalThis);
 
-const BUILD_ID="91c8bb9";const BUILD_HASH="66fc498d97";
+const BUILD_ID="cb306cc";const BUILD_HASH="5c60dc3ee8";
 </script>
 <script>
 (function(){
@@ -7308,6 +7308,12 @@ function pj2Suffix(root){
    29-10-2026, después: el propietario probó ?ktx2=1 con esa carga más ligera en Safari («ahora funciona») y quiere «todo en
    4K y en su máxima resolución»: KTX2 vuelve a ser lo de por defecto también en el móvil, con la carga ligera. ?ktx2=0 = JPG. */
 const KTX2_ON=!/[?&]ktx2=0\b/.test(location.search);
+// 30-10-2026: the KTX2 files live in Cloudflare R2 (docs/R2.md), not in the repository: GitHub Pages publishes 1 GB at
+// most and the owner wants room for more 4K textures. On localhost the local copies (tools/ktx2/make.py) are used;
+// ?r2=1 forces R2, ?r2=0 the page's own folder. If R2 does not answer, the JPG ones (in the repository) as always.
+const R2_URL='https://sniper-duel-assets.hamzaimtiaz2015.workers.dev/';
+const R2_ON=/[?&]r2=1\b/.test(location.search)||(!/[?&]r2=0\b/.test(location.search)&&!/^(localhost|127\.0\.0\.1|\[::1\])$/.test(location.hostname));
+const r2=p=>R2_ON?R2_URL+p:p;
 const KTX2_ROOTS=['assets/personaje/','assets/personaje/pro/op2/','assets/personaje/pro/op3/','assets/personaje/pro/op4/'];   // los que tienen versión KTX2
 const ktx2For=root=>KTX2_ON&&GFX.profile!=='bajo'&&KTX2_ROOTS.includes(root);
 const KTX2={loader:null,ready:null};
@@ -7358,7 +7364,7 @@ function pj2Load(root){
   // one KTX2 character at a time (each model is 17–27 MB and is unpacked in memory while it loads)
   KTX2.chain=(KTX2.chain||Promise.resolve()).then(()=>ktx2Ready()).then(L=>new Promise(next=>{if(!L){plain();return next();}
     const G=new T.GLTFLoader();G.setKTX2Loader(L);
-    G.load(root+'personaje_ktx2.glb?v='+BUILD_HASH,g=>{PJ2.ktx2=PJ2.ktx2||{};PJ2.ktx2[root]=true;done(g);next();},undefined,e=>{console.warn('ktx2 pj2',root,e);plain();next();});}));
+    G.load(r2(root)+'personaje_ktx2.glb?v='+BUILD_HASH,g=>{PJ2.ktx2=PJ2.ktx2||{};PJ2.ktx2[root]=true;done(g);next();},undefined,e=>{console.warn('ktx2 pj2',root,e);plain();next();});}));
 }
 function pj2Mat(v,root){
   root=root||pj2Root(v);const key=PJ_PRO||PJ_MIX?root+v:v;
@@ -7366,7 +7372,7 @@ function pj2Mat(v,root){
   // mientras llega el color de la variante se ve el del propio GLB (no negro); al llegar se sube a la GPU (sin tirón al verlo)
   const m=PJ2.tpls[root].material.clone(),aniso=GFX.profile==='alto'?(PJ_PRO||PJ_MIX?8:4):2;
   if(KTX2.loader&&PJ2.ktx2&&PJ2.ktx2[root]){
-    KTX2.loader.load(root+'color_'+v+'_ktx2.ktx2?v='+BUILD_HASH,tx=>{tx.anisotropy=aniso;m.map=tx;try{renderer.initTexture(tx);}catch(e){}},undefined,e=>console.warn('ktx2 color',root,v,e));
+    KTX2.loader.load(r2(root)+'color_'+v+'_ktx2.ktx2?v='+BUILD_HASH,tx=>{tx.anisotropy=aniso;m.map=tx;try{renderer.initTexture(tx);}catch(e){}},undefined,e=>console.warn('ktx2 color',root,v,e));
     return PJ2.mats[key]=m;
   }
   const t=new T.TextureLoader().load(root+'color_'+v+pj2Suffix(root)+'.jpg?v='+BUILD_HASH,tx=>{m.map=tx;try{renderer.initTexture(tx);}catch(e){}});
@@ -9799,7 +9805,7 @@ function wsLoad(slot,id,done){
     if(!KTX2_ON||GFX.profile==='bajo')return plain();
     ktx2Ready().then(L=>{if(!L)return plain();
       const G=new T.GLTFLoader();G.setKTX2Loader(ktx2Queue(L));
-      G.load(d+'arma_ktx2.glb?v='+BUILD_HASH,g=>{WS_ST.ktx2[k]=true;ok(g);},undefined,e=>{console.warn('ktx2 arma',id,e);plain();});});});
+      G.load(r2(d)+'arma_ktx2.glb?v='+BUILD_HASH,g=>{WS_ST.ktx2[k]=true;ok(g);},undefined,e=>{console.warn('ktx2 arma',id,e);plain();});});});
 }
 // a rifle skin left behind leaves the GPU (a 4K one is 100–360 MB): chosen again, it comes back from the browser's cache
 function wsDrop(k){
@@ -10490,7 +10496,7 @@ if(FLORA.on){const gl=new T.GLTFLoader();let n=2;
       // the town's ground must exist first (rays land on it)
       if(P3W.kit)go();else{const w=setInterval(()=>{if(P3W.kit){clearInterval(w);go();}},300);}}}}
 
-window.__SD={KTX2,perfTexMB(){const t=perfTextures();return {real:SDPerf.textureMB(t),asRGBA:SDPerf.textureMB(t.map(x=>Object.assign({},x,{bytes:0})))};},REMOTES,netScoreHud,shotTargets,MINI,miniLayer,miniPing,clockFrame,setOffTime,get OFF_TIME(){return OFF_TIME;},ACC,accRefresh,INV,invSync,camoApply,openInv,invOpenBox,WSKIN,WS_ST,setWskin,get RIF(){return RIF;},TPV,SELF,get PROFILE(){return PROFILE;},openProfile,endMatch,PJ_MIX,MIX_ORDER,SKINS,get SKIN(){return SKIN;},setSkin,pj2SetPack,rivalSkin,PERF,perfRun,HUD2,get H2(){return HUD2?H2:null;},leanIn:HUD2?leanIn:null,h2Frame:HUD2?h2Frame:null,PJ2,pj2Load,CASA,casaLoad,XL,casaxlLoad,FLORA,RATS,RAT_WORLD,ratsFrame,SHADOW_FADE,setDuelLethal,get DUEL_LETHAL(){return DUEL_LETHAL;},gfxDiagText,get P3ON(){return P3ON;},COBCC,damagePlayer,TEX,sunFollow,setSunSnap(on){SUN_SNAP=!!on;},sun,P0,E10,e10Lod,DIAG,setTrainMove,LIGHT:{sun,hemi,skyMat,LOOK,P3},P3W,freeze(on){SIM_FREEZE=!!on;},SHOT,VMA,makeSoldier,animateSoldier,BOT_MAT,scene,camera,RemotePlayer,PMprev,PIS,PROOT,RIF,WROOT,SHO_:null,MANUAL,advance(ms){frameBody(last+ms);},get LAST_PELLETS(){return LAST_PELLETS;},SCORE,SCFG,SROOT,SHO,setPrimaryChoice,get PRIMARY(){return PRIMARY;},PCORE,PCFG,setWorld,WORLDS,get WORLD_ID(){return WORLD_ID;},renderer,GFX,gfxApply,get NET(){return NET;},get REMOTE(){return REMOTE;},W,get NAV(){return NAV;},setOffMap,get OFFMAP(){return OFFMAP;},TOUCH,EDIT,openEditor,get SETTINGS(){return SETTINGS;},get LAYOUT(){return LAYOUT;},checkOrientation,MAT,LOAD,TRAINERS,get RANGE_BOTS(){return RANGE_BOTS;},TRAIN,setTrain,setLethal,kitNote,GINS,TDIAG,AU,get TOUCH_EVENTS(){return TOUCH_EVENTS;},impactFX,bodyFX,get DECALS(){return DECALS;},surfaceOf,soundDelay,aimSelfTest,P,PM,WS,WCORE,RECOIL,AIM,BOTS,DUMMIES,BULLETS,EVENTS,PARTS,STATS,get state(){return state;},get mode(){return mode;},setMode,input,startMatch,simTick,frame,toMenu,pause,resume};
+window.__SD={KTX2,R2_ON,R2_URL,perfTexMB(){const t=perfTextures();return {real:SDPerf.textureMB(t),asRGBA:SDPerf.textureMB(t.map(x=>Object.assign({},x,{bytes:0})))};},REMOTES,netScoreHud,shotTargets,MINI,miniLayer,miniPing,clockFrame,setOffTime,get OFF_TIME(){return OFF_TIME;},ACC,accRefresh,INV,invSync,camoApply,openInv,invOpenBox,WSKIN,WS_ST,setWskin,get RIF(){return RIF;},TPV,SELF,get PROFILE(){return PROFILE;},openProfile,endMatch,PJ_MIX,MIX_ORDER,SKINS,get SKIN(){return SKIN;},setSkin,pj2SetPack,rivalSkin,PERF,perfRun,HUD2,get H2(){return HUD2?H2:null;},leanIn:HUD2?leanIn:null,h2Frame:HUD2?h2Frame:null,PJ2,pj2Load,CASA,casaLoad,XL,casaxlLoad,FLORA,RATS,RAT_WORLD,ratsFrame,SHADOW_FADE,setDuelLethal,get DUEL_LETHAL(){return DUEL_LETHAL;},gfxDiagText,get P3ON(){return P3ON;},COBCC,damagePlayer,TEX,sunFollow,setSunSnap(on){SUN_SNAP=!!on;},sun,P0,E10,e10Lod,DIAG,setTrainMove,LIGHT:{sun,hemi,skyMat,LOOK,P3},P3W,freeze(on){SIM_FREEZE=!!on;},SHOT,VMA,makeSoldier,animateSoldier,BOT_MAT,scene,camera,RemotePlayer,PMprev,PIS,PROOT,RIF,WROOT,SHO_:null,MANUAL,advance(ms){frameBody(last+ms);},get LAST_PELLETS(){return LAST_PELLETS;},SCORE,SCFG,SROOT,SHO,setPrimaryChoice,get PRIMARY(){return PRIMARY;},PCORE,PCFG,setWorld,WORLDS,get WORLD_ID(){return WORLD_ID;},renderer,GFX,gfxApply,get NET(){return NET;},get REMOTE(){return REMOTE;},W,get NAV(){return NAV;},setOffMap,get OFFMAP(){return OFFMAP;},TOUCH,EDIT,openEditor,get SETTINGS(){return SETTINGS;},get LAYOUT(){return LAYOUT;},checkOrientation,MAT,LOAD,TRAINERS,get RANGE_BOTS(){return RANGE_BOTS;},TRAIN,setTrain,setLethal,kitNote,GINS,TDIAG,AU,get TOUCH_EVENTS(){return TOUCH_EVENTS;},impactFX,bodyFX,get DECALS(){return DECALS;},surfaceOf,soundDelay,aimSelfTest,P,PM,WS,WCORE,RECOIL,AIM,BOTS,DUMMIES,BULLETS,EVENTS,PARTS,STATS,get state(){return state;},get mode(){return mode;},setMode,input,startMatch,simTick,frame,toMenu,pause,resume};
 })();
 </script>
 

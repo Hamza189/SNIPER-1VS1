@@ -5,3 +5,8 @@ build/
 __pycache__/
 .work/
 .wrangler/
+# 30-10-2026: en Cloudflare R2, no en el repositorio (docs/R2.md; se suben con node tools/r2-subir.js)
+assets/personaje/**/*_ktx2.glb
+assets/personaje/**/*_ktx2.ktx2
+assets/armas/*/arma_ktx2.glb
+assets/armas/*/ktx2/

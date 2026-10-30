@@ -1,5 +1,8 @@
 # Texturas comprimidas para la GPU (KTX2) — por defecto en PC y en el móvil (`?ktx2=0` = los JPG)
 
+**30-10 — en Cloudflare R2**: los archivos KTX2 ya no están en el repositorio. En la web publicada se piden a R2
+(`docs/R2.md`); en localhost, a las copias locales que crea `make.py`. Después de regenerarlos: `node tools/r2-subir.js`.
+
 **29-10, por la noche — sin copia en JavaScript**: Safari cerró una sala con 5 bots al minuto. three.js guardaba en
 JavaScript una copia de cada textura comprimida después de subirla a la GPU: ~500 MB que no se volvían a usar. Ahora se
 suelta en cuanto la textura está en la GPU (`ktx2Lean`), y su tamaño se guarda en `userData.gpuBytes` para MEDIR

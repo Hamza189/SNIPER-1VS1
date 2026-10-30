@@ -23,7 +23,7 @@ Detalle de cada cambio (antes/después, medidas, cómo revertir): `docs/next-lev
 | **Personajes con texturas comprimidas (KTX2)** — por defecto en PC y, desde el 29-10 por la noche, también en el móvil (el propietario: «he probado el link con KTX2 con las texturas en 4K en Safari y ahora funciona»). Falta abrir varias veces el enlace normal en Safari y un informe de MEDIR RENDIMIENTO (`docs/KTX2.md`) | Propietario | POR DEFECTO · PENDIENTE DE VALIDACIÓN EN IPHONE |
 | **Safari: la barra tapa la pantalla y deforma la imagen** — la imagen ya sigue al tamaño real de la pantalla; para quitar la barra, instalar el juego: Compartir › «Añadir a pantalla de inicio» (sale un aviso en el menú del iPhone) | Propietario | PUBLICADO · PENDIENTE DE VALIDACIÓN EN IPHONE |
 | **Aspectos de arma en KTX2, a su resolución máxima** (29-10) — ÚLTIMA y VECTOR a 4K con la misma memoria que antes; SAHARA ~384 → ~96 MB; TITÁN ~192 → ~96 MB; TÁCTICA a 2K. Probar en Safari eligiendo ÚLTIMA (la descarga más grande, 139,0 MB, la primera vez) y repetir MEDIR RENDIMIENTO (`docs/ARMAS-EXT.md`) | Propietario | PUBLICADO · PENDIENTE DE VALIDACIÓN EN IPHONE |
-| **Archivos grandes a Cloudflare R2** — APROBADO por el propietario el 30-10 («de momento puedes pasar las cosas a Cloudflare R2, ya que hasta 10 GB tenemos suficiente espacio»). GitHub Pages publica hasta 1 GB y el repositorio publicado ocupa ~870 MB. Falta que el propietario active R2 en el panel de Cloudflare y haga `npx wrangler login` en su PC; después Claude crea el almacén, un Worker propio para servirlo (r2.dev no es para producción) y mueve las texturas KTX2 | Propietario | APROBADO · ESPERANDO A QUE ACTIVE R2 |
+| **Archivos grandes a Cloudflare R2** — HECHO el 30-10: las texturas KTX2 (76 archivos, ~400 MB) salen de R2 por el Worker `sniper-duel-assets` y ya no están en el repositorio. Texturas nuevas: `node tools/r2-subir.js` (`docs/R2.md`). Falta comprobarlo en el iPhone | Propietario | HECHO · PENDIENTE DE VALIDACIÓN EN IPHONE |
 | **Rendimiento en el iPhone** — MEDIDO en ALTO el 28-10: 60 FPS clavados en ARENA, PUEBLO y CASA XL (CPU ~3 ms/fotograma), pero ~800 MB de texturas por los personajes de 4K, corregido en `ead572a`. Falta repetir la medida en Safari para confirmar ~290 MB y probar una sala con 5 bots (`docs/RENDIMIENTO-IPHONE.md`) | Propietario | MEDIDO · PENDIENTE DE CONFIRMAR LA MEMORIA |
 | **Personaje LINCE (rev. 04)** — compararlo con la rev. 03 en `?pj=3` frente a `?pj=2` | Propietario | PUBLICADO TRAS BANDERA · PENDIENTE DE VALIDACIÓN EN IPHONE |
 | **Asomarse y zonas de impacto**: ¿el servidor debe mover cabeza y pecho con la inclinación? (`docs/HUD-2.md` §4) | Propietario | NECESITA APROBACIÓN |
@@ -82,6 +82,25 @@ Detalle de cada cambio (antes/después, medidas, cómo revertir): `docs/next-lev
 | Encargos para ChatGPT: CASA XL, CASA XL v2 y personaje | 18-10 / 19-10 |
 | Personaje 3D rev. 03 hecho por Claude e integrado tras `?pj=2` (bots y rival online) | 20-10 · directo a `main` |
 | Personajes realistas + elegir personaje (con el SOLDADO de `?pj=2`) y HUD 2 por defecto (aprobado en iPhone y PC) | 28-10 · directo a `main` |
+
+## 30-10-2026 (2) — Los archivos grandes pasan a Cloudflare R2
+El propietario activó R2 en el panel de Cloudflare. No podía hacer `wrangler login` (estaba fuera de casa) y pidió a
+Claude que lo hiciera él. No hizo falta: el token de Cloudflare que ya tenía GitHub publica también el Worker de
+archivos.
+- **R2**: almacén `sniper-duel-assets` (creado con el conector de Cloudflare) y Worker `sniper-duel-assets`
+  (`assets-worker/`, `.github/workflows/deploy-assets.yml`), aparte del servidor multijugador:
+  - `GET` con CORS para todos;
+  - `PUT`/`DELETE` solo con la clave de subida. La clave está en el secreto `R2_UPLOAD_KEY` de GitHub y en
+    `.work/r2-clave.txt` (fuera de git), nunca en la página.
+- **Subido** con `tools/r2-subir.js`: 76 archivos KTX2 (personajes y armas, ~400 MB). Cada uno se comprueba con su MD5.
+  Hubo un corte de red a mitad de subida; ahora se reintenta.
+- **El juego**: `r2()` en `src/page.html` pide los KTX2 a R2 en la web publicada; en localhost usa las copias locales.
+  Si R2 falla, se cargan los JPG que siguen en el repositorio.
+- **Repositorio**: los 76 archivos salen del árbol (`.gitignore`; siguen en el historial y en el PC). La web publicada
+  baja ~400 MB y queda sitio para más texturas a 4K.
+- **Pruebas**: `ktx2.browser` 16 (nuevas: carga desde R2 sin red y nada de R2 en localhost), `armas.browser`,
+  `browser`, `pj2.browser`, `perf.browser`.
+- IMPLEMENTADO · PROBADO EN NAVEGADOR · PROBADO ONLINE · PENDIENTE DE VALIDACIÓN EN IPHONE.
 
 ## 30-10-2026 — Safari cerraba la sala con 5 bots: la copia en JavaScript de las texturas comprimidas
 Informe del propietario: la partida cargó y funcionó un minuto y luego Safari la cerró con el mismo error (sala
