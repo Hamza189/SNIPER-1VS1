@@ -92,5 +92,20 @@ Reproducido en el ordenador con `node tools/mem-sala.js` (servidor local, sala T
   - si la GPU lo pierde todo (raro), la página se vuelve a abrir, porque esas texturas ya no se pueden mandar otra vez.
 - IMPLEMENTADO · PROBADO EN NAVEGADOR · PENDIENTE DE VALIDACIÓN EN IPHONE.
 
+### 30-10-2026, 21:08 — MEDIR RENDIMIENTO en el iPhone con las texturas desde Cloudflare R2 (versión 5c60dc3ee8)
+iPhone Pro Max, Safari, ALTO, píxeles ×2, 60 Hz. Primera medición con el arreglo de memoria y los KTX2 servidos desde R2.
+
+| Escena | Fotograma p50 / p95 / máx | CPU media | Llamadas | Triángulos | Texturas |
+|---|---|---|---|---|---|
+| ARENA | 17 / 17 / 27 ms → 60 FPS (tirones 0,2 %) | 3,2 ms | 51 | 125 mil | 111 ≈ 684 MB |
+| PUEBLO | 17 / 17 / 19 ms → 60 FPS | 3,3 ms | 202 | 355 mil | 111 ≈ 684 MB |
+| CASA ATLAS XL | 17 / 17 / 18 ms → 60 FPS | 3,3 ms | 70 | 125 mil | 136 ≈ 733 MB |
+
+- 60 FPS fijos en las tres escenas, también con la mira 8×. Sin cierres de Safari durante la medición.
+- Carga de la página: 2,3 s, 16,6 MB descargados; las texturas grandes ya estaban en la caché del navegador.
+- La memoria de texturas en la GPU sigue en ~684 MB (como el 29-10). Lo que se quitó fue la copia en JavaScript, que
+  esta medición no muestra.
+- Falta la prueba larga: sala con 5 bots en PUEBLO 3.0 durante varios minutos.
+
 Código: `client/perfprobe.js` (cálculos e informe, puro) y el bloque «MEDIR RENDIMIENTO» de `src/page.html`.
 Prueba: `node test/perf.test.js`.
