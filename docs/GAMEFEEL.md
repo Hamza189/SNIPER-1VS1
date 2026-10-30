@@ -9,11 +9,12 @@ juego estable intacto (todo lo nuevo como opción) y el servidor autoritativo in
 | Fase | Qué | Estado |
 |---|---|---|
 | GF-0 | Auditoría (movimiento, red, bots, animaciones, cámara) y medición por partes del fotograma | HECHO |
-| GF-1 | Perfil de movimiento **TÁCTICO** (AJUSTES › CONTROLES, experimental, por defecto ACTUAL) | IMPLEMENTADO · PROBADO EN NAVEGADOR · PENDIENTE DE VALIDACIÓN EN IPHONE |
-| GF-4 | **Visibilidad de enemigos** (AJUSTES › JUGABILIDAD, experimental, por defecto NORMAL, solo sin conexión) | IMPLEMENTADO · PROBADO EN NAVEGADOR · PENDIENTE DE VALIDACIÓN EN IPHONE |
+| GF-1 | Movimiento **TÁCTICO**: reglamento del servidor y cámara nueva para todos (aprobado por el propietario) | IMPLEMENTADO · PROBADO EN NAVEGADOR · PROBADO ONLINE · PENDIENTE DE VALIDACIÓN EN IPHONE |
+| GF-4 | **Visibilidad de enemigos** (AJUSTES › JUGABILIDAD, por defecto NORMAL, online también) | IMPLEMENTADO · PROBADO EN NAVEGADOR · PENDIENTE DE VALIDACIÓN EN IPHONE |
 | GF-5 | Los bots se animan **una vez por fotograma** (antes, 2 veces a 60 FPS y 4 a 30) | IMPLEMENTADO · PROBADO EN NAVEGADOR |
 
-Ni `core/` ni `server/` cambian: el servidor no se vuelve a publicar y online todo sigue igual.
+La primera publicación no tocó `core/` ni `server/`. La segunda, aprobada por el propietario, cambia el reglamento de
+movimiento de `core/config.js` y vuelve a publicar el servidor.
 
 ## GF-0 — Auditoría (lo medido, no supuesto)
 
@@ -79,33 +80,54 @@ escena. Tiempos de CPU en ms por fotograma:
   personajes, cámara, arma, HUD, efectos, red, mundo, envío de dibujo) y cuántos personajes se animan por fotograma.
   Así el iPhone dice dónde se va el tiempo. También funciona con `?prof=1` (`__SD.PROF`).
 
-## GF-1 — Movimiento TÁCTICO (experimental)
-AJUSTES › CONTROLES › Movimiento: **ACTUAL** (por defecto) o **TÁCTICO**.
+## GF-1 — Movimiento TÁCTICO: el del juego, online incluido (30-10-2026)
+Primero entró como opción solo sin conexión. El propietario contestó que **lo mejorado va al juego de verdad** («no
+para tenerlo para mí en offline, que ni voy a jugar solo»). Desde entonces es el **reglamento del servidor**
+(`core/config.js`), igual para todos, y la opción desaparece de AJUSTES.
 
-| | ACTUAL (servidor) | TÁCTICO (sin conexión) |
+| | Antes | Ahora (servidor) |
 |---|---|---|
 | Caminar | 4,6 m/s | **4,05 m/s (−12 %)** |
 | Agachado | 2,4 | **1,95** |
 | Hacia atrás | ×0,85 | **×0,78** |
 | Sprint | 7,0 | 7,0 (sin cambios) |
-| Apuntando | ×0,5 | ×0,5 (2,0 m/s) |
-| 0 → 95 % de caminar | 0,075 s | **0,133 s** (medido) |
-| Frenar al andar / tras sprint | 0,08 / 0,12 s | 0,12 / 0,21 s |
+| Apuntando | ×0,5 (2,3 m/s) | ×0,5 (2,0 m/s) |
+| Aceleración / frenada | 58 / 60 m/s² | **32 / 36 m/s²** |
+| 0 → 95 % de caminar | 0,075 s | **0,125 s** |
+| Pararse al andar | 0,077 s | **0,117 s** |
+| Cambio de lado completo | ~0,15 s | **0,242 s** |
+| Tras soltar el sprint | 11 m/s² | 9 m/s² (la inercia se va más suave) |
 
-- **Sin conexión**: se usa el mismo motor (`SDPlayer.step`) con una copia de los números (`MOVE_TAC`). El reglamento
-  del servidor (`SD_CONFIG.move`) no cambia, y lo comprueba la prueba.
-- **Online**: las velocidades no cambian. Si se aprueban, hay que llevarlas a `core/config.js`, publicar el servidor y
-  actualizar `test/core.test.js`. Con TÁCTICO, online solo cambia la cámara, que es solo cómo se ve.
-- **Cámara TÁCTICA**:
-  - el balanceo es sen² en vez de |sen|: la misma altura y el mismo ritmo, pero sin el golpe seco de cada paso;
+- **Dentro de los límites de respuesta** de `test/core.test.js`, que no se han tocado: llegar a la velocidad en menos de
+  0,15 s, pararse en menos de 0,12 s y cambiar de lado en menos de 0,25 s. Los candidatos del primer día (30/34 m/s²) se
+  pasaban en la parada y el cambio de lado, y se ajustaron a 32/36.
+- **Cámara TÁCTICA**, por defecto para todos:
+  - el balanceo es sen² en vez de |sen|: la misma altura, sin el golpe seco de cada paso;
   - una inclinación leve al ir de lado (0,9° a paso normal);
-  - un pequeño hundimiento también en saltos cortos;
-  - el balanceo del arma al girar ya no depende de los FPS (antes, a 30 FPS se movía distinto que a 60);
-  - «Reducir movimiento» ahora también suaviza las inclinaciones y el FOV del sprint.
-- Los porcentajes son candidatos para que los pruebes, no valores definitivos.
+  - un hundimiento suave en saltos cortos;
+  - el balanceo del arma ya no depende de los FPS;
+  - «Reducir movimiento» también suaviza las inclinaciones y el FOV del sprint.
+- **Marcas de adelanto del visor**: ahora salen de las velocidades reales (1,95 / 4,05 / 7 m/s). Antes estaban escritas a
+  mano (2,4 / 4,6 / 7) y habrían quedado mal.
+- **Bots del campo de tiro**: siguen el reglamento (ANDAN a 2,03 m/s, LATERAL a 4,05, CORREN a 7). Los bots del servidor
+  también.
+- **Para comparar**: `?mov=clasico`, sin conexión, usa el movimiento y la cámara de antes. Online siempre manda el
+  servidor.
+- **Pruebas que tenían escritas las velocidades antiguas**: ahora las leen del reglamento sin rebajar lo que exigen.
+  - `phase2`: los patrones del campo de tiro.
+  - `aim.browser`: las marcas del visor.
+  - `core`: la rampa tiene 3 s en vez de 2,5 para llegar abajo a 4,05 m/s, y sigue exigiendo no despegar del suelo.
+- **Versión del protocolo**: no se ha subido.
+  - Un jugador con la página antigua en caché sigue pudiendo jugar: el servidor manda en la posición, así que solo verá
+    alguna corrección hasta recargar.
+  - El aviso de versión nueva del menú le pide recargar.
+  - Subir el número habría dejado esas páginas antiguas sin poder conectar y sin explicación.
 
-## GF-4 — Visibilidad de enemigos (experimental)
+## GF-4 — Visibilidad de enemigos
 AJUSTES › JUGABILIDAD › Visibilidad de enemigos: **NORMAL** (por defecto) · **SILUETA MEJORADA** · **CONTORNO SUTIL**.
+Desde el 30-10 también online. Son las mismas opciones y el mismo dibujo para todos los jugadores, y solo marca a los
+rivales, nunca a los compañeros de equipo. La SILUETA va en el material compartido, así que en EQUIPOS también aclara a
+los compañeros lejanos.
 
 - **SILUETA MEJORADA**: el material del enemigo da hasta +35 % de luz y añade un borde cálido suave (solo en los bordes,
   según el ángulo).
@@ -122,8 +144,6 @@ AJUSTES › JUGABILIDAD › Visibilidad de enemigos: **NORMAL** (por defecto) ·
     píxeles del enemigo que de verdad se ven: nunca a través de paredes, suelos, coberturas ni vegetación.
   - No hace falta ningún dato extra de rivales ocultos.
   - El grosor es el mismo en BAJO que en ALTO.
-- **Online: apagada.** Hace falta tu aprobación y una regla igual para los dos jugadores (por ejemplo, la elige la
-  sala).
 - **Medido** (`test/gamefeel.browser.test.js`, píxeles leídos de la GPU con el cuerpo en la misma pose):
   - enemigo **detrás de una fachada**: diferencia **0** entre NORMAL y CONTORNO;
   - a la vista a 30 m: 2,2 de diferencia media en la zona del enemigo;
@@ -154,8 +174,6 @@ AJUSTES › JUGABILIDAD › Visibilidad de enemigos: **NORMAL** (por defecto) ·
 | GF-2 | Transiciones suaves de animación (sprint, salto, muerte, apuntar de los bots en 0,1–0,2 s); usar los clips que ya hay (aterrizaje, disparo, muerte de frente); recarga de la escopeta del rival; reacción al impacto online | No (solo cómo se ve) |
 | GF-6 | Bots más humanos: giros suavizados, rebote según lo que andan, frenada sin deslizar, pausas | No (no cambia su puntería ni su dificultad) |
 | GF-1b | Suavizar las correcciones online del servidor (sin publicarlo) y el paso de los rivales | No |
-| GF-1c | Llevar TÁCTICO a online (`core/config.js` + servidor + pruebas) | **Sí** |
-| GF-4b | Visibilidad online con una regla de sala igual para los dos | **Sí** |
 | GF-3 | Armas en 1ª persona: retroceso con muelle por defecto (hoy con `?feel=2`), coherencia del cerrojo y la corredera | Ver con el propietario |
 | GF-7 | Joystick: zona de andar despacio más amplia y bloqueo de sprint | No (el servidor ya acepta la intensidad) |
 | — | Peek con el cuerpo, tumbarse, saltar o trepar obstáculos | **Sí** (cambian hitboxes o reglas) |
@@ -164,10 +182,10 @@ AJUSTES › JUGABILIDAD › Visibilidad de enemigos: **NORMAL** (por defecto) ·
 ## Cómo probarlo en el iPhone
 1. Abre el juego (si estaba abierto, ciérralo del todo y vuelve a abrirlo).
 2. AJUSTES › GRÁFICOS › **MEDIR RENDIMIENTO** y mándame el informe: ahora trae la línea «CPU por partes».
-3. AJUSTES › CONTROLES › Movimiento: **TÁCTICO**. Juega un duelo contra bots (sin conexión): anda, corre, frena,
-   cambia de dirección, agáchate, salta y apunta andando. Cambia a ACTUAL y repite para notar la diferencia.
+3. Juega una partida online, o en una sala con bots: anda, corre, frena, cambia de dirección, agáchate, salta y apunta
+   andando. El movimiento nuevo ya es el del juego. Para notar la diferencia con el de antes, abre la página con
+   `?mov=clasico` y juega un duelo sin conexión.
 4. AJUSTES › JUGABILIDAD › Visibilidad de enemigos: prueba **SILUETA MEJORADA** y **CONTORNO SUTIL** en PUEBLO 3.0,
    con bots lejos (30–40 m) delante de fachadas y sombras, y con el visor 4× y 8×. Comprueba que un bot escondido tras
    una pared no se ve.
-5. Dime qué valores cambiarías (más o menos lento, más o menos inercia, contorno más o menos visible) y si apruebas
-   llevar algo a online.
+5. Dime qué valores cambiarías: más o menos lento, más o menos inercia, contorno más o menos visible.

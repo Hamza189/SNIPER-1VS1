@@ -215,7 +215,9 @@ for (const level of ['easy', 'normal', 'hard']) {
   for (const kind of ['walk', 'run', 'strafe']) {
     const s = M.createState(0, 0, area.minZ + 45), b = {}, rnd = lcg(3); let vmax = 0, out = 0;
     for (let i = 0; i < 60 / DT; i++) { const c = TR.pattern(b, s, player, area, kind, DT, rnd); M.step(s, c, DT, { colliders: [], ramps: [] }, mc); vmax = Math.max(vmax, Math.hypot(s.vx, s.vz)); if (s.x < area.minX - 1 || s.x > area.maxX + 1) out++; }
-    const want = { walk: [2.2, 2.4], run: [6.8, 7.1], strafe: [4.5, 4.7] }[kind];
+    // ANDAN = half the walking speed, CORREN = the sprint, LATERAL = the walking speed: whatever SD_CONFIG.move says
+    // (30-10-2026: walk 4.6 → 4.05, so 2.3 → 2.03 and 4.6 → 4.05)
+    const want = { walk: [mc.walk * 0.5 - 0.1, mc.walk * 0.5 + 0.1], run: [mc.sprint - 0.2, mc.sprint + 0.1], strafe: [mc.walk - 0.1, mc.walk + 0.1] }[kind].map(v => +v.toFixed(2));
     check('patrón ' + kind + ': velocidad ' + want.join('–') + ' m/s y sin salirse', vmax >= want[0] && vmax <= want[1] && out === 0, vmax.toFixed(2) + ' m/s');
   }
 }

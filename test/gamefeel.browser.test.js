@@ -1,8 +1,8 @@
 /* GAME FEEL 3.0, primera entrega (30-10-2026, docs/GAMEFEEL.md):
-   - GF-1 movimiento TÁCTICO (experimental, sin conexión): andar a 4,05 m/s en vez de 4,6 y arrancar con algo de inercia
-     (95 % de la velocidad en ~0,13 s en vez de ~0,075 s); ACTUAL sigue exactamente igual; el sprint no cambia
+   - GF-1 movimiento TÁCTICO, el del juego (y del servidor) desde el 30-10-2026: andar a 4,05 m/s en vez de 4,6 y arrancar
+     con algo de inercia (95 % en ~0,12 s en vez de ~0,075 s); el de antes sigue con ?mov=clasico (sin conexión)
    - GF-5 los bots se animan una vez por fotograma dibujado (antes, en cada paso de 120 Hz: 2 veces por fotograma)
-   - GF-4 visibilidad de enemigos: apagada por defecto y online; con CONTORNO, el enemigo DETRÁS de una pared deja la
+   - GF-4 visibilidad de enemigos: apagada por defecto; igual online; con CONTORNO, el enemigo DETRÁS de una pared deja la
      imagen igual que sin él (píxeles leídos de la GPU), y uno a la vista sí cambia
    Run: node test/gamefeel.browser.test.js */
 'use strict';
@@ -42,14 +42,16 @@ function check(name, cond, info) { if (cond) { pass++; console.log('  ok   ' + n
     for (let i = 0; i < 20; i++) S.advance(1000 / 60); return { top: +top.toFixed(3), t95: +t95.toFixed(3) }; });
   try {
     console.log('\nGF-1 · MOVIMIENTO');
+    const C = await open('?pj=0&mov=clasico');
+    await play(C.p, 'arena');
+    const act = await walk(C.p);
+    check('?mov=clasico (comparar, sin conexión): el movimiento de antes (4,6 m/s, arranque en ~0,08 s)', Math.abs(act.top - 4.6) < 0.02 && act.t95 <= 0.1, JSON.stringify(act));
+    await C.ctx.close();
     const A = await open('?pj=0');
     await play(A.p, 'arena');
-    const act = await walk(A.p);
-    check('ACTUAL: igual que siempre (4,6 m/s, arranque en ~0,08 s)', Math.abs(act.top - 4.6) < 0.02 && act.t95 <= 0.1, JSON.stringify(act));
-    await A.p.evaluate(() => { __SD.SETTINGS.moveProfile = 'tactico'; });
     const tac = await walk(A.p);
-    check('TÁCTICO sin conexión: 4,05 m/s (−12 %) y arranque con algo de peso (0,11–0,16 s)', Math.abs(tac.top - 4.05) < 0.02 && tac.t95 >= 0.11 && tac.t95 <= 0.16, JSON.stringify(tac));
-    check('el reglamento del servidor (SD_CONFIG.move) no cambia: el perfil es una copia', await A.p.evaluate(() => __SD.MOVE_TAC.walk === 4.05 && SD_CONFIG.move.walk === 4.6 && SD_CONFIG.move.groundAccel === 58));
+    check('TÁCTICO, el del juego: 4,05 m/s (−12 %) y arranque con algo de peso (0,11–0,15 s)', Math.abs(tac.top - 4.05) < 0.02 && tac.t95 >= 0.11 && tac.t95 <= 0.15, JSON.stringify(tac));
+    check('es el reglamento del servidor (SD_CONFIG.move), el mismo para todos', await A.p.evaluate(() => SD_CONFIG.move.walk === 4.05 && SD_CONFIG.move.groundAccel === 32 && !__SD.MOV_CLASSIC && __SD.MOVE_CLASSIC.walk === 4.6));
 
     console.log('\nGF-5 · BOTS ANIMADOS UNA VEZ POR FOTOGRAMA');
     // simulated 60 FPS frames: 2 simulation steps each (120 Hz)
@@ -63,7 +65,7 @@ function check(name, cond, info) { if (cond) { pass++; console.log('  ok   ' + n
     const V = await open('?pueblo=3&pj=0');
     await play(V.p, 'pueblo');
     check('por defecto NORMAL: sin efecto', await V.p.evaluate(() => __SD.SETTINGS.enemyVis === 'normal' && __SD.VIS.rim.value === 0 && __SD.VIS.out.value === 0));
-    check('online siempre apagada (hasta que se apruebe una regla igual para los dos)', await V.p.evaluate(() => !__SD.visOn('online', 'contorno', 'playing') && __SD.visOn('duel', 'contorno', 'playing') && !__SD.visOn('duel', 'normal', 'playing')));
+    check('la misma regla online y sin conexión (solo si el jugador la elige)', await V.p.evaluate(() => __SD.visOn('online', 'contorno', 'playing') && __SD.visOn('duel', 'contorno', 'playing') && !__SD.visOn('online', 'normal', 'playing') && !__SD.visOn('duel', 'contorno', 'menu')));
     // the enemy 26 m away BEHIND a façade, then in plain view 30 m down a street; GPU pixels around where it stands
     const px = await V.p.evaluate(() => {
       const S = __SD, B = S.BOTS[0], g = S.renderer.getContext(); S.MANUAL.on = true; S.SHOT.noVM = true; B.update0 = () => {}; S.FLORA.ready = false;

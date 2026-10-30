@@ -55,16 +55,13 @@ const DEFAULTS = {
   cvd: 'off',          // colour-blind correction (applies on reload): off | prot | deut | trit
   volUi: 1,            // menus and buttons, its own volume
   vibrate: false,      // vibration when firing and when hit (Android; iPhone browsers cannot vibrate)
-  // GF-4 (30-10-2026, experimental, offline only until the owner approves a rule for online): how enemies stand out far
-  // away. normal | silueta (soft rim light and a little more light on the body) | contorno (a thin outline)
-  enemyVis: 'normal',
-  // GF-1 (30-10-2026, experimental): actual | tactico. TÁCTICO, offline: walks 12 % slower, starts and stops with some
-  // inertia; everywhere: a smoother camera. Online the speeds stay the server's (changing them needs the owner's OK).
-  moveProfile: 'actual'
+  // GF-4 (30-10-2026): how enemies stand out far away, the same options and the same drawing for every player, online too.
+  // normal | silueta (soft rim light and a little more light on the body) | contorno (a thin outline)
+  enemyVis: 'normal'
 };
 // which settings each tab of AJUSTES owns (its RESTAURAR resets only these)
 const CATEGORIES = {
-  controles: ['moveProfile', 'view', 'crouchMode', 'adsMode', 'leftFire', 'leftFireAds', 'releaseFire', 'leanKeyL', 'leanKeyR', 'leanMode', 'leanTouch', 'wheelSwap'],
+  controles: ['view', 'crouchMode', 'adsMode', 'leftFire', 'leftFireAds', 'releaseFire', 'leanKeyL', 'leanKeyR', 'leanMode', 'leanTouch', 'wheelSwap'],
   sensibilidad: ['sensH', 'sensV', 'adsSens', 'adsH', 'adsV', 'touchLook', 'touchDead', 'smooth', 'invertY', 'sensFP', 'sensTP', 'scope4', 'scope8', 'gyro', 'gyroSens', 'gyroAds', 'gyroInv'],
   mira: ['xColor', 'xStyle', 'xLen', 'xThick', 'xGap', 'xOutline', 'retColor', 'retLit', 'hitColor', 'blood'],
   graficos: ['quality', 'fpsCap', 'showFps', 'bright', 'look', 'cvd'],
@@ -91,7 +88,6 @@ const BLOODS = ['red', 'green', 'yellow'];
 const LOOKS = ['clasico', 'vivo', 'realista', 'suave', 'cine'];
 const CVDS = ['off', 'prot', 'deut', 'trit'];
 const VIS_MODES = ['normal', 'silueta', 'contorno'];
-const MOVE_PROFILES = ['actual', 'tactico'];
 const CROUCH_MODES = ['slide', 'toggle', 'hold'];
 
 // any stored object → a complete, valid settings object (unknown keys dropped, numbers clamped)
@@ -113,7 +109,6 @@ function sanitize(o, touch) {
   if (LOOKS.includes(o.look)) s.look = o.look;
   if (CVDS.includes(o.cvd)) s.cvd = o.cvd;
   if (VIS_MODES.includes(o.enemyVis)) s.enemyVis = o.enemyVis;
-  if (MOVE_PROFILES.includes(o.moveProfile)) s.moveProfile = o.moveProfile;
   // peek keys: a key code (the HUD 2 settings only offer free keys); never the same key for both sides
   const KEY = /^[A-Za-z][A-Za-z0-9]{1,19}$/;
   if (KEY.test(o.leanKeyL) && KEY.test(o.leanKeyR) && o.leanKeyL !== o.leanKeyR) { s.leanKeyL = o.leanKeyL; s.leanKeyR = o.leanKeyR; }
@@ -182,7 +177,7 @@ function smoothLook(st, dx, dy, smooth, dt) {
   return o;
 }
 
-const SDSettings = { VERSION, CATEGORIES, resetCategory, DEFAULTS, TOUCH_DEFAULTS, ADS_MODES, CROUCH_MODES, GYRO_MODES, PALETTE, X_STYLES, BLOODS, LOOKS, CVDS, VIS_MODES, MOVE_PROFILES,
+const SDSettings = { VERSION, CATEGORIES, resetCategory, DEFAULTS, TOUCH_DEFAULTS, ADS_MODES, CROUCH_MODES, GYRO_MODES, PALETTE, X_STYLES, BLOODS, LOOKS, CVDS, VIS_MODES,
   defaults, RANGES, sanitize, load, save, lookDelta, gyroActive, gyroDelta, smoothLook };
 if (typeof module !== 'undefined' && module.exports) module.exports = SDSettings; else root.SDSettings = SDSettings;
 })(typeof window !== 'undefined' ? window : globalThis);

@@ -3,7 +3,7 @@
    the test checks that what you see is what the bullet does.
    - the centre of the scope = the shot; the scope overlay is centred on the picture
    - reticle exactly on head / torso / legs of static targets (26 and 56 m, sway off) → that part
-   - the scope marks are the real drop (100 / 150 / 200 m) and the real lead (2.4 / 4.6 / 7 m/s)
+   - the scope marks are the real drop (100 / 150 / 200 m) and the real lead (crouching / walking / running speeds of SD_CONFIG.move)
    - with the scope up the shot has no random cone; before it, it has (documented, not a bug)
    - the hit zones follow the visible soldier (training bots and the online rival) in every pose
    - the shot diagnostic explains a hit, a moving target, an off aim and a hip shot correctly,
@@ -42,7 +42,7 @@ function check(name, cond, info) { if (cond) { pass++; console.log('  ok   ' + n
     // marks
     { const fov = S.camera.fov, H = innerHeight, pxPerMrad = (H / 2) / Math.tan(fov * Math.PI / 360) / 1000, rr = document.querySelector('#scope .ret').getBoundingClientRect(), u = rr.width / 200;
       const v = [], h = []; for (const m of (document.querySelector('#retMarks').getAttribute('d') || '').matchAll(/M(-?[\d.]+) (-?[\d.]+)([HV])/g)) { if (m[3] === 'H') v.push(+m[2] * u / pxPerMrad); else if (+m[1] > 0) h.push(+m[1] * u / pxPerMrad); }
-      out.marks = { v, h, drop: [100, 150, 200].map(d => G.gravity * (d - G.zero) / (2 * G.speed * G.speed) * 1000), lead: [2.4, 4.6, 7].map(s => s / G.speed * 1000) }; }
+      out.marks = { v, h, drop: [100, 150, 200].map(d => G.gravity * (d - G.zero) / (2 * G.speed * G.speed) * 1000), lead: [SD_CONFIG.move.crouch, SD_CONFIG.move.walk, SD_CONFIG.move.sprint].map(s => s / G.speed * 1000) }; }
     S.input.scopeHeld = false; step(20);
     // parts
     out.parts = [];
@@ -106,7 +106,7 @@ function check(name, cond, info) { if (cond) { pass++; console.log('  ok   ' + n
   check('con la retícula en cada parte de una diana quieta (26 y 56 m), la bala da en esa parte', R.parts.every(([, part, got]) => got === part), R.parts.map(([d, p, g]) => d + 'm ' + p + '→' + g).join(', '));
   const near = (a, b) => a.length === b.length && a.every((x, i) => Math.abs(x - b[i]) / b[i] < 0.03);
   check('marcas bajo el centro = caída real a 100 / 150 / 200 m', near(R.marks.v, R.marks.drop), R.marks.v.map(x => x.toFixed(2)).join(' / ') + ' mrad');
-  check('marcas laterales = adelanto real a 2,4 / 4,6 / 7 m/s', near(R.marks.h, R.marks.lead), R.marks.h.map(x => x.toFixed(2)).join(' / ') + ' mrad');
+  check('marcas laterales = adelanto real a las velocidades de agachado / andar / correr', near(R.marks.h, R.marks.lead), R.marks.h.map(x => x.toFixed(2)).join(' / ') + ' mrad');
   check('con el visor puesto no hay dispersión aleatoria', R.scopedSpread === 0);
   check('sin visor sí la hay (disparo desde la cadera: intencionado)', R.hipSpread > 0.01, (R.hipSpread * 1000).toFixed(0) + ' mrad');
   check('diagnóstico: impacto, objetivo en movimiento, mal apuntado y disparo sin visor', JSON.stringify(R.diag) === JSON.stringify(['IMPACTO', 'MOVIMIENTO DEL OBJETIVO', 'APUNTADO', 'DISPERSIÓN']), R.diag.join(' · '));

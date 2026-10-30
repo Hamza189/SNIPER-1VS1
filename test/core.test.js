@@ -132,7 +132,8 @@ console.log('\nMOVIMIENTO');
   check('rampa: se sube hasta arriba', maxY > 4.2, 'altura máx ' + maxY.toFixed(2));
   check('rampa: sin despegar del suelo al subir', air === 0, air + ' ticks en el aire');
   const d = M.createState(-4.9, 4.3, -31.5); d.onGround = true; air = 0;
-  for (let i = 0; i < 300; i++) { M.step(d, cmd({ mz: -1, yaw: -Math.PI / 2 }), DT, world, mc); if (!d.onGround) air++; }
+  // 3 s: time to reach the bottom of the 10 m ramp at any walking speed above ~3.4 m/s (2.5 s was just enough at 4.6)
+  for (let i = 0; i < 360; i++) { M.step(d, cmd({ mz: -1, yaw: -Math.PI / 2 }), DT, world, mc); if (!d.onGround) air++; }
   check('rampa: se baja pegado al suelo', d.y === 0 && air < 3, air + ' ticks en el aire');
 }
 { // FPS independence: same input at 120 Hz tick, different frame splits → same result

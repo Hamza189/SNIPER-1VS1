@@ -7,16 +7,20 @@ const SD_CONFIG = {
   // so the result does not depend on the player's FPS. The server will use the same rate.
   TICK: 120,
 
+  // 30-10-2026, TACTICAL movement (owner: «llevar movimiento táctico a partidas online», docs/GAMEFEEL.md). Before: walk
+  // 4.6, backMul 0.85, crouch 2.4, groundAccel 58, groundDecel 60, overspeedDecel 11 (0→95 % of walk in 0.075 s, a robotic
+  // start). Now walking is 12 % slower and starts/stops with some weight, still inside the responsiveness limits of
+  // test/core.test.js (95 % < 0.15 s, stop < 0.12 s, strafe reversal < 0.25 s). The old numbers: ?mov=clasico (offline).
   move: {
-    walk: 4.6,            // m/s, normal run speed
-    backMul: 0.85,        // backpedal multiplier
+    walk: 4.05,           // m/s, normal run speed
+    backMul: 0.78,        // backpedal multiplier
     sprint: 7.0,          // m/s
-    crouch: 2.4,          // m/s
+    crouch: 1.95,         // m/s
     adsMul: 0.5,          // speed multiplier while scoped
     reloadMul: 0.9,
-    groundAccel: 58,      // m/s² when speeding up / changing direction
-    groundDecel: 60,      // m/s² when releasing all input (how fast you stop)
-    overspeedDecel: 11,   // m/s² when going faster than the target speed (after sprint or slide): momentum bleeds off smoothly
+    groundAccel: 32,      // m/s² when speeding up / changing direction (0→95 % of walk in ~0.12 s)
+    groundDecel: 36,      // m/s² when releasing all input (stops from walking in ~0.12 s, from a sprint in ~0.2 s)
+    overspeedDecel: 9,    // m/s² when going faster than the target speed (after sprint or slide): momentum bleeds off smoothly
     airAccel: 11,         // m/s² of steering in the air
     airDrag: 0.12,        // 1/s, tiny air drag
     gravity: 20,          // m/s²

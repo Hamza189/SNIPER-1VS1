@@ -83,6 +83,28 @@ Detalle de cada cambio (antes/después, medidas, cómo revertir): `docs/next-lev
 | Personaje 3D rev. 03 hecho por Claude e integrado tras `?pj=2` (bots y rival online) | 20-10 · directo a `main` |
 | Personajes realistas + elegir personaje (con el SOLDADO de `?pj=2`) y HUD 2 por defecto (aprobado en iPhone y PC) | 28-10 · directo a `main` |
 
+## 30-10-2026 (5) — El movimiento TÁCTICO pasa al servidor; lo mejorado va al juego de verdad
+Del propietario: «¿Cómo que si apruebo llevar el movimiento táctico a partidas online? Si ese es el plan, no hay límites
+para crear este juego, y cualquier cosa que hago es para ir mejorando y puliendo el juego, no para tenerlo para mí en
+offline, que ni voy a jugar solo».
+- **Criterio desde ahora**: las mejoras de jugabilidad van al juego real, online incluido. No se dejan como opciones
+  solo sin conexión. Se siguen probando a fondo y se le informa. Daño, cadencia y munición siguen necesitando su OK.
+- **Reglamento de movimiento** (`core/config.js`, servidor publicado):
+  - caminar 4,6 → 4,05 m/s; agachado 2,4 → 1,95; hacia atrás ×0,85 → ×0,78;
+  - aceleración 58 → 32 y frenada 60 → 36 m/s²; tras el sprint, 11 → 9;
+  - el sprint no cambia;
+  - el núcleo cumple sus límites de respuesta: 0,125 s para alcanzar la velocidad, 0,117 s para pararse y 0,242 s para
+    cambiar de lado.
+- La cámara TÁCTICA pasa a ser la de todos. `?mov=clasico` (sin conexión) guarda el movimiento de antes para comparar.
+- La visibilidad de enemigos funciona también online: igual para todos y solo sobre rivales.
+- Las marcas de adelanto del visor salen ahora de las velocidades reales.
+- La versión del protocolo no se sube: así las páginas antiguas pueden seguir conectando.
+- Pruebas que tenían escritas las velocidades antiguas (`phase2`, `aim.browser`, la rampa de `core`): ahora leen el
+  reglamento sin rebajar lo que exigen.
+
+Estado: IMPLEMENTADO · PROBADO EN NAVEGADOR · PROBADO ONLINE (prueba pública del servidor) · PENDIENTE DE VALIDACIÓN EN
+IPHONE.
+
 ## 30-10-2026 (4) — GAME FEEL 3.0, primera entrega (GF-0, GF-1, GF-4, GF-5)
 Encargo del propietario, «SNIPER DUEL — ULTIMATE GAME FEEL 3.0»:
 - movimiento, animaciones, FPS, visibilidad de enemigos lejanos, bots, controles y online;
