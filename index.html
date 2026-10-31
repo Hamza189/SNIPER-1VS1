@@ -35,6 +35,9 @@
   color-scheme:dark;
 }
 html,body{height:100%;margin:0;overflow:hidden;overscroll-behavior:none;background:var(--ink);color:var(--hud);font-family:var(--f-mono);-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;-webkit-tap-highlight-color:transparent}
+/* Safari on the iPhone enlarges long texts by itself when the phone is in landscape (up to ~1.8×: the settings paragraphs
+   came out at 19-22 px instead of 12, owner 31-10-2026). The sizes below are the real ones. */
+html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
 canvas#c,#touch,#hud{touch-action:none}
 canvas#c{position:fixed;inset:0;width:100%;height:100%;display:block;background:var(--ink)}
 button{font:inherit;color:inherit}
@@ -172,6 +175,26 @@ body.feel2 #hitmark.kill i,body.feel2 #hitmark.hs i{width:3px;left:-1.5px}
 .setPanel .sens .lbl{line-height:1.3}
 .setPane{display:grid;gap:10px}.setPane[hidden]{display:none}
 @media (max-height:520px){#setTitle{display:none}#settings .setPanel{margin-block:10px;padding:16px 18px}}
+/* phone in landscape (31-10-2026): denser, the 7 tabs in one row and the sliders and boxes in two columns */
+@media (max-height:500px) and (min-width:560px){
+  #settings .setPanel{width:min(880px,calc(100% - 20px));padding:8px 16px 12px;gap:6px;margin-block:6px}
+  #settings .eyebrow{display:none}
+  #settings .setTabs{display:flex;overflow-x:auto;margin:0 0 2px}
+  #settings .setTabs button{flex:1 0 auto;padding:7px 8px;min-height:34px;font-size:10px;letter-spacing:.1em}
+  #settings .setPane{gap:5px}
+  #settings .lbl{margin:4px 0 3px!important;font-size:9px}
+  #settings .seg button{padding:7px 4px;font-size:10px;letter-spacing:.08em}
+  #settings .setHelp{margin:2px 0 0;font-size:10.5px;line-height:1.35}
+  #settings .setGrid:not(#h2Set){grid-template-columns:repeat(2,minmax(0,1fr));gap:4px 20px}
+  #h2Set{gap:5px}#h2Set .keyCap{font-size:15px!important;padding:6px 10px 4px}
+  #settings .setGrid .sens .lbl{min-width:0}
+  .setPanel .sens{grid-template-columns:minmax(80px,42%) 1fr 36px;gap:8px}
+  #settings .chk{margin-top:2px;font-size:11px}
+  #settings .swatches{gap:8px}#settings .swatches button{width:24px;height:24px}
+  #settings .xPrev{height:60px}
+  #settings .btn{font-size:16px!important;padding:8px 14px 5px}
+  .setFoot{margin-top:6px}
+}
 .setTabs{display:grid;grid-template-columns:repeat(auto-fit,minmax(118px,1fr));border-bottom:1px solid var(--line);margin:2px 0 6px;position:sticky;top:0;z-index:2;background:rgba(20,18,15,.98)}
 .setTabs::-webkit-scrollbar{display:none}
 .setTabs button{background:none;border:0;border-bottom:2px solid transparent;padding:11px 12px;font:600 12px/1 var(--f-mono);letter-spacing:.14em;color:var(--dust);cursor:pointer;min-height:44px}
@@ -741,6 +764,7 @@ body.hud2 #stickBase.sprint #stickKnob svg{display:block}
       <div class="row" id="lookReloadRow" hidden><button class="btn ghost" id="lookReload" type="button" style="font-size:16px">RECARGAR PARA APLICAR</button></div>
       <p class="setHelp" id="gfxDiag" style="font-family:var(--f-mono);font-size:11px;opacity:.85"></p>
       <div class="setGrid">
+        <label class="chk"><input type="checkbox" id="sAA"> Suavizado de bordes (MEDIO y ALTO): las fachadas lejanas no parpadean. Se aplica al recargar</label>
         <label class="chk"><input type="checkbox" id="sFps30"> Limitar a 30 FPS (ahorra batería y calor)</label>
         <label class="chk"><input type="checkbox" id="sShowFps"> Mostrar FPS en pantalla</label>
       </div>
@@ -2242,6 +2266,7 @@ const DEFAULTS = {
   leftFire: false, // second FIRE button on the left side (3-4 finger play)
   releaseFire: true, // touch, rifle: holding FIRE raises the scope, lifting the finger fires
   quality: 'auto',  // graphics: auto | bajo | medio | alto
+  aa: true,         // antialiasing (MSAA 4×) in MEDIO and ALTO: distant façades stop flickering; applies on reload
   fpsCap: 60,       // 60 or 30 (30 saves battery and heat on phones)
   showFps: false,   // small FPS counter on screen
   // aiming (ADS)
@@ -2293,7 +2318,7 @@ const CATEGORIES = {
   controles: ['view', 'crouchMode', 'adsMode', 'leftFire', 'leftFireAds', 'releaseFire', 'leanKeyL', 'leanKeyR', 'leanMode', 'leanTouch', 'wheelSwap'],
   sensibilidad: ['sensH', 'sensV', 'adsSens', 'adsH', 'adsV', 'touchLook', 'touchDead', 'smooth', 'invertY', 'sensFP', 'sensTP', 'scope4', 'scope8', 'gyro', 'gyroSens', 'gyroAds', 'gyroInv'],
   mira: ['xColor', 'xStyle', 'xLen', 'xThick', 'xGap', 'xOutline', 'retColor', 'retLit', 'hitColor', 'blood'],
-  graficos: ['quality', 'fpsCap', 'showFps', 'bright', 'look', 'cvd'],
+  graficos: ['quality', 'aa', 'fpsCap', 'showFps', 'bright', 'look', 'cvd'],
   audio: ['volMaster', 'volShots', 'volFx', 'volSteps', 'volAmb', 'volUi', 'mute', 'vibrate'],
   jugabilidad: ['hitmarkers', 'dmgDir', 'minimap', 'enemyVis'],
   accesibilidad: ['calmVM', 'lowFlash']
@@ -2330,7 +2355,7 @@ function sanitize(o, touch) {
     if (o[k] !== undefined && o[k] !== null && o[k] !== '' && isFinite(v)) s[k] = clamp(v, RANGES[k][0], RANGES[k][1]);
   }
   for (const k of ['invertY', 'leftFire', 'releaseFire', 'showFps', 'calmVM', 'mute', 'hitmarkers', 'dmgDir', 'minimap', 'lowFlash', 'wheelSwap',
-    'leftFireAds', 'gyroInv', 'xOutline', 'retLit', 'vibrate']) if (typeof o[k] === 'boolean') s[k] = o[k];
+    'leftFireAds', 'gyroInv', 'xOutline', 'retLit', 'vibrate', 'aa']) if (typeof o[k] === 'boolean') s[k] = o[k];
   for (const k of ['xColor', 'retColor', 'hitColor']) if (PALETTE.includes(o[k])) s[k] = o[k];
   if (GYRO_MODES.includes(o.gyro)) s.gyro = o.gyro;
   if (X_STYLES.includes(o.xStyle)) s.xStyle = o.xStyle;
@@ -5600,7 +5625,7 @@ const SDCamo = { draw, texture, detail, patch, swatch, SCALE };
 if (typeof module !== 'undefined' && module.exports) module.exports = SDCamo; else root.SDCamo = SDCamo;
 })(typeof window !== 'undefined' ? window : globalThis);
 
-const BUILD_ID="5a17ef5";const BUILD_HASH="b053bc4a87";
+const BUILD_ID="cfcebf2";const BUILD_HASH="23e40774c1";
 </script>
 <script>
 (function(){
@@ -5629,9 +5654,17 @@ const canvas=$('#c');
 // ?perf=low (automatic tests on machines without a GPU): no shadows, quarter resolution
 const PERF_LOW=/[?&]perf=low\b/.test(location.search);
 // graphics profile (Ajustes → Gráficos): read before the renderer exists, antialiasing can only be chosen now
-const GFX={choice:SDSettings.load(store,isTouch).quality,profile:'medio',adapt:null,frame:0,lastRaf:0,lastDraw:0,hz:0};
+const GFX_SET=SDSettings.load(store,isTouch);
+const GFX={choice:GFX_SET.quality,profile:'medio',adapt:null,frame:0,lastRaf:0,lastDraw:0,hz:0,aa:false};
 GFX.profile=PERF_LOW?'bajo':SDQuality.resolve(GFX.choice,isTouch);
-const renderer=new T.WebGLRenderer({canvas,antialias:!PERF_LOW&&GFX.profile==='alto'&&(!isTouch||devicePixelRatio<2),powerPreference:'high-performance'});
+/* Antialiasing (MSAA 4×). Until 31-10-2026 only ALTO on screens under 2× had it, so the iPhone (3×, drawn at 2×) never did:
+   window bars, railings and shutters of the far façades flickered at every tiny turn (owner's video). Measured with
+   tools/flicker.js (docs/PARPADEO.md): about a third to a half less flicker. Now MEDIO and ALTO on every device; BAJO
+   without; AJUSTES › GRÁFICOS › Suavizado de bordes turns it off (on reload). &aa=0 / &aa=1 force it off / on. */
+const AA_Q=(location.search.match(/[?&]aa=([01])\b/)||[])[1];
+const aaWanted=(prof,s)=>prof!=='bajo'&&s.aa!==false;
+GFX.aa=AA_Q?AA_Q==='1':!PERF_LOW&&aaWanted(GFX.profile,GFX_SET);
+const renderer=new T.WebGLRenderer({canvas,antialias:GFX.aa,powerPreference:'high-performance'});
 renderer.setPixelRatio(PERF_LOW?0.5:SDQuality.pixelRatio(GFX.profile,window.devicePixelRatio,1));
 // &sombras=0 (diagnostic, 18-10-2026): no sun shadows at all, to tell whether stripes someone sees are shadows or something else
 const NO_SHADOWS=/[?&]sombras=0\b/.test(location.search);
@@ -9011,13 +9044,13 @@ const SET_UI=[['sH','sensH'],['sV','sensV'],['sA','adsSens'],['sAH','adsH'],['sA
 const setFmt=(k,v)=>/^vol|^bright/.test(k)?Math.round(v*100)+'%':/^x/.test(k)?Math.round(v)+' px':(+v).toFixed(2);
 // on/off settings: checkbox id → setting
 const SET_CHK=[['sInv','invertY'],['sLeft','leftFire'],['sRel','releaseFire'],['sShowFps','showFps'],['sCalm','calmVM'],['sMute','mute'],['sHit','hitmarkers'],['sDmg','dmgDir'],['sMini','minimap'],['sFlash','lowFlash'],
-  ['sLeftAds','leftFireAds'],['sGyInv','gyroInv'],['sXO','xOutline'],['sRetL','retLit'],['sVib','vibrate']];
+  ['sLeftAds','leftFireAds'],['sGyInv','gyroInv'],['sXO','xOutline'],['sRetL','retLit'],['sVib','vibrate'],['sAA','aa']];
 // segmented choices: container → data attribute → setting (30-10-2026: MIRA Y EFECTOS, giroscopio, estilo de imagen…)
 const SET_SEG=[['#visSeg','vis','enemyVis'],['#gyroSeg','g','gyro'],['#xStyleSeg','x','xStyle'],['#bloodSeg','b','blood'],['#lookSeg','l','look'],['#cvdSeg','cvd','cvd']];
 function setExtraToUI(){
   for(const [sel,a,k] of SET_SEG)document.querySelectorAll(sel+' button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset[a]===SETTINGS[k])));
   for(const box of document.querySelectorAll('.swatches'))for(const b of box.children)b.setAttribute('aria-pressed',String(b.dataset.c===SETTINGS[box.dataset.key]));
-  $('#lookReloadRow').hidden=SETTINGS.look===PIC.look&&SETTINGS.cvd===PIC.cvd;
+  $('#lookReloadRow').hidden=SETTINGS.look===PIC.look&&SETTINGS.cvd===PIC.cvd&&(PERF_LOW||!!AA_Q||aaWanted(SDQuality.resolve(SETTINGS.quality,isTouch),SETTINGS)===GFX.aa);
   $('#gyroBox').hidden=!isTouch;$('#vibRow').hidden=!('vibrate' in navigator);
 }
 /* crosshair, scope reticle and hit marker from AJUSTES › MIRA (the crosshair's gap still follows the real spread) */
@@ -9051,7 +9084,7 @@ function gfxApply(){
   $('#fpsBox').hidden=!SETTINGS.showFps;
 }
 function gfxNote(){const n=$('#qNote');if(!n)return;const prof=SDQuality.resolve(SETTINGS.quality,isTouch);
-  n.textContent=(SETTINGS.quality==='auto'?'AUTO → '+SDQuality.PROFILES[prof].label+', la resolución se ajusta sola a los FPS reales. ':'')+'Resolución interna '+Math.round(renderer.getPixelRatio()*100)/100+'×'+(GFX.adapt&&GFX.adapt.fps?' · '+Math.round(GFX.adapt.fps)+' FPS':'')+'. El suavizado de bordes cambia al recargar la página.';}
+  n.textContent=(SETTINGS.quality==='auto'?'AUTO → '+SDQuality.PROFILES[prof].label+', la resolución se ajusta sola a los FPS reales. ':'')+'Resolución interna '+Math.round(renderer.getPixelRatio()*100)/100+'×'+(GFX.adapt&&GFX.adapt.fps?' · '+Math.round(GFX.adapt.fps)+' FPS':'')+' · suavizado de bordes '+(GFX.aa?'4×':'no')+' (cambia al recargar la página).';}
 for(const [id,k] of SET_UI)$('#'+id).addEventListener('input',()=>{SETTINGS[k]=+$('#'+id).value;settingsChanged();});
 for(const [id,k] of SET_CHK)$('#'+id).addEventListener('change',()=>{SETTINGS[k]=$('#'+id).checked;settingsChanged();});
 $('#sFps30').addEventListener('change',()=>{SETTINGS.fpsCap=$('#sFps30').checked?30:60;settingsChanged();});
@@ -10945,6 +10978,9 @@ function floraSetup(){
   // (dFdx/dFdy of the texel position), the usual fix for alpha-tested foliage
   const mat=(n,flip)=>{const m=new T.MeshStandardMaterial({map:tex(n,flip),alphaTest:0.45,side:T.DoubleSide,roughness:0.88,metalness:0});m.userData.cs=1;m.name='flora_'+n;
     m.extensions={derivatives:true};
+    // with the antialiasing on, the blades' edges cover part of each pixel (alpha to coverage) instead of all or nothing:
+    // they stop sparkling when the camera moves (31-10-2026, docs/PARPADEO.md)
+    if(GFX.aa){m.alphaToCoverage=true;m.alphaTest=0.3;}
     m.onBeforeCompile=sh=>{sh.uniforms.uFloraT=FLORA.time;
       // grass cards: both faces keep the UP normal (Three flips it on back faces of double-sided materials → half the clumps dark)
       if(flip)sh.fragmentShader=sh.fragmentShader.replace('#include <normal_fragment_begin>','#include <normal_fragment_begin>\n normal = normalize( vNormal );');

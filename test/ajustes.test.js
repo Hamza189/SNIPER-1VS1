@@ -53,6 +53,9 @@ check('estilos de cruceta, sangre, imagen y daltonismo solo de la lista', S.sani
 check('tamaños de cruceta y brillo con sus límites', (() => { const o = S.sanitize({ xLen: 99, xThick: 0, xGap: -5, bright: 3 }, false); return o.xLen === 24 && o.xThick === 1 && o.xGap === 0 && o.bright === 1.4; })());
 check('MIRA Y EFECTOS tiene su RESTAURAR (y no toca la sensibilidad)', (() => { const o = S.resetCategory(S.sanitize({ xStyle: 'dot', sensFP: 2 }, false), 'mira', false); return o.xStyle === 'crossdot' && o.sensFP === 2; })());
 check('modo MIXTO del botón MIRA aceptado', S.sanitize({ adsMode: 'mixed' }, true).adsMode === 'mixed');
+check('suavizado de bordes: encendido por defecto (PC y móvil), se puede apagar y GRÁFICOS lo restaura',
+  S.defaults(false).aa === true && S.defaults(true).aa === true && S.sanitize({ aa: false }, true).aa === false && S.sanitize({ aa: 'no' }, true).aa === true &&
+  S.resetCategory(S.sanitize({ aa: false }, true), 'graficos', true).aa === true);
 
 console.log('\n' + pass + ' correctas, ' + fail + ' fallidas');
 process.exit(fail ? 1 : 0);

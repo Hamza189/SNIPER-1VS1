@@ -4,7 +4,8 @@
    animados por fotograma, y el tiempo de CPU por partes (__SD.PROF, ?prof=1).
      node tools/gf-medir.js <etiqueta> [segundos=8]        → .work/gf/<etiqueta>.json
    env GPU=1: Chromium con la GPU del PC (si no, WebGL por software: vale para la CPU por partes, NO para FPS del móvil).
-   env ONLY=arena,pueblo,sala5 · env URLX="&gf=1" (banderas extra) · env PAGE=_antes.html (otra versión de la página). */
+   env ONLY=arena,pueblo,sala5 · env URLX="&gf=1" (banderas extra) · env PAGE=_antes.html (otra versión de la página) ·
+   env W=932 H=430 DPR=2 (tamaño de la ventana: por defecto 960×540 a 1×; 932×430 a 2× = iPhone 15 Pro Max en horizontal). */
 'use strict';
 const { chromium } = require('playwright');
 const fs = require('fs'), path = require('path');
@@ -24,7 +25,7 @@ const stats = a => { const s = a.slice().sort((x, y) => x - y), q = f => s[Math.
     : { args: ['--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist'] });
   const out = { label, date: new Date().toISOString(), gpu, scenes: {} };
   const open = async () => {
-    const ctx = await b.newContext({ viewport: { width: 960, height: 540 } });
+    const ctx = await b.newContext({ viewport: { width: +(process.env.W || 960), height: +(process.env.H || 540) }, deviceScaleFactor: +(process.env.DPR || 1) });
     await ctx.route(/fonts\.(googleapis|gstatic)\.com/, r => r.abort());
     await ctx.addInitScript(() => { try { localStorage.setItem('sniperduel_settings', JSON.stringify({ quality: 'alto', v: 3 })); localStorage.setItem('sniperduel_p3', 'true'); } catch (e) {} });
     const p = await ctx.newPage(), errs = [];

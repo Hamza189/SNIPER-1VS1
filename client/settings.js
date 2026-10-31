@@ -13,6 +13,7 @@ const DEFAULTS = {
   leftFire: false, // second FIRE button on the left side (3-4 finger play)
   releaseFire: true, // touch, rifle: holding FIRE raises the scope, lifting the finger fires
   quality: 'auto',  // graphics: auto | bajo | medio | alto
+  aa: true,         // antialiasing (MSAA 4×) in MEDIO and ALTO: distant façades stop flickering; applies on reload
   fpsCap: 60,       // 60 or 30 (30 saves battery and heat on phones)
   showFps: false,   // small FPS counter on screen
   // aiming (ADS)
@@ -64,7 +65,7 @@ const CATEGORIES = {
   controles: ['view', 'crouchMode', 'adsMode', 'leftFire', 'leftFireAds', 'releaseFire', 'leanKeyL', 'leanKeyR', 'leanMode', 'leanTouch', 'wheelSwap'],
   sensibilidad: ['sensH', 'sensV', 'adsSens', 'adsH', 'adsV', 'touchLook', 'touchDead', 'smooth', 'invertY', 'sensFP', 'sensTP', 'scope4', 'scope8', 'gyro', 'gyroSens', 'gyroAds', 'gyroInv'],
   mira: ['xColor', 'xStyle', 'xLen', 'xThick', 'xGap', 'xOutline', 'retColor', 'retLit', 'hitColor', 'blood'],
-  graficos: ['quality', 'fpsCap', 'showFps', 'bright', 'look', 'cvd'],
+  graficos: ['quality', 'aa', 'fpsCap', 'showFps', 'bright', 'look', 'cvd'],
   audio: ['volMaster', 'volShots', 'volFx', 'volSteps', 'volAmb', 'volUi', 'mute', 'vibrate'],
   jugabilidad: ['hitmarkers', 'dmgDir', 'minimap', 'enemyVis'],
   accesibilidad: ['calmVM', 'lowFlash']
@@ -101,7 +102,7 @@ function sanitize(o, touch) {
     if (o[k] !== undefined && o[k] !== null && o[k] !== '' && isFinite(v)) s[k] = clamp(v, RANGES[k][0], RANGES[k][1]);
   }
   for (const k of ['invertY', 'leftFire', 'releaseFire', 'showFps', 'calmVM', 'mute', 'hitmarkers', 'dmgDir', 'minimap', 'lowFlash', 'wheelSwap',
-    'leftFireAds', 'gyroInv', 'xOutline', 'retLit', 'vibrate']) if (typeof o[k] === 'boolean') s[k] = o[k];
+    'leftFireAds', 'gyroInv', 'xOutline', 'retLit', 'vibrate', 'aa']) if (typeof o[k] === 'boolean') s[k] = o[k];
   for (const k of ['xColor', 'retColor', 'hitColor']) if (PALETTE.includes(o[k])) s[k] = o[k];
   if (GYRO_MODES.includes(o.gyro)) s.gyro = o.gyro;
   if (X_STYLES.includes(o.xStyle)) s.xStyle = o.xStyle;

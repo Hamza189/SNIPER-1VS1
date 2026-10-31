@@ -89,7 +89,10 @@ function check(name, cond, info) { if (cond) { pass++; console.log('  ok   ' + n
     const lf1 = await M.p.evaluate(() => document.getElementById('tbFire2').hidden);
     await M.p.evaluate(() => { __SD.input.scopeToggle = false; });
     check('FUEGO izquierdo solo al apuntar: oculto sin mira, visible con ella', lf0 === true && lf1 === false, lf0 + ' / ' + lf1);
-    await M.p.waitForTimeout(600);
+    // the sight fully down and the zoom back before the gyroscope check (with the software WebGL a frame can take
+    // longer than 0.1 s, and then the simulation runs slower than the clock: a fixed wait was not always enough)
+    await M.p.waitForFunction(() => __SD.WCORE.ads === 0 && Math.abs(__SD.camera.fov - 70) < 0.2, null, { timeout: 20000 });
+    await M.p.waitForTimeout(200);
     const gy = await M.p.evaluate(async () => { Object.defineProperty(screen.orientation, 'angle', { configurable: true, get: () => 90 });
       const P = __SD.P, y0 = P.yaw, p0 = P.pitch, ev = (b, g, t) => __SD.gyroEv({ rotationRate: { alpha: 0, beta: b, gamma: g }, timeStamp: t });
       const t0 = performance.now(); ev(0, 0, t0); ev(30, -20, t0 + 100);   // 0.1 s turning left 30°/s and tilting up 20°/s
@@ -98,8 +101,26 @@ function check(name, cond, info) { if (cond) { pass++; console.log('  ok   ' + n
       return { on, off: P.yaw - y1, want: 3 * Math.PI / 180 }; });
     check('giroscopio: girar el móvil 3° a la izquierda gira la cámara 3° (y hacia arriba al inclinarlo)', Math.abs(gy.on.dy - gy.want) < 0.004 && gy.on.dp > 0.02, JSON.stringify(gy));
     check('giroscopio apagado: no gira nada', Math.abs(gy.off) < 1e-6, gy.off);
+    check('suavizado de bordes en el móvil (AUTO → MEDIO): MSAA 4×', await M.p.evaluate(() => { const g = __SD.renderer.getContext(); return g.getParameter(g.SAMPLES) === 4 && __SD.GFX.aa === true; }));
     check('sin errores (móvil)', M.errs.length === 0, M.errs.slice(0, 2).join(' | '));
     await M.ctx.close();
+
+    console.log('\nMÓVIL EN HORIZONTAL · MENÚ DE AJUSTES (31-10-2026: «es muy grande en Safari»)');
+    const A2 = await open(true, { quality: 'alto', aa: false });
+    const lay = await A2.p.evaluate(() => {
+      // Safari enlarges long texts in landscape unless the page says text-size-adjust: 100 %
+      let tsa = false; for (const sh of document.styleSheets) { try { for (const r of sh.cssRules) if (r.selectorText === 'html' && /100%/.test(r.style.getPropertyValue('-webkit-text-size-adjust') + r.style.getPropertyValue('text-size-adjust') + r.cssText)) tsa = true; } catch (e) {} }
+      document.getElementById('openSettings').click();
+      const tabs = [...document.querySelectorAll('.setTabs button')], help = document.querySelector('[data-pane="controles"] .setHelp');
+      const ov = document.getElementById('settings'), g = __SD.renderer.getContext();
+      return { tsa, rows: new Set(tabs.map(t => Math.round(t.getBoundingClientRect().top))).size, help: getComputedStyle(help).fontSize, tab: getComputedStyle(tabs[0]).fontSize,
+        cols: getComputedStyle(document.querySelector('[data-pane="controles"] .setGrid')).gridTemplateColumns.split(' ').length, h: ov.scrollHeight, vh: innerHeight, samples: g.getParameter(g.SAMPLES), aa: __SD.GFX.aa };
+    });
+    check('la página no deja que Safari agrande los textos (text-size-adjust 100 %)', lay.tsa);
+    check('las 7 pestañas en una fila, textos de ayuda a 10,5 px y casillas en dos columnas', lay.rows === 1 && lay.help === '10.5px' && lay.tab === '10px' && lay.cols === 2, JSON.stringify(lay));
+    check('CONTROLES cabe en menos de 2,6 pantallas', lay.h < lay.vh * 2.6, lay.h + ' px / ' + lay.vh);
+    check('«Suavizado de bordes» apagado en AJUSTES: sin MSAA', lay.samples === 0 && lay.aa === false, JSON.stringify({ s: lay.samples, aa: lay.aa }));
+    await A2.ctx.close();
   } catch (e) { fail++; console.log('  FAIL ' + (e && e.stack || e)); }
   await b.close(); srv.close();
   console.log('\n' + pass + ' correctas, ' + fail + ' fallidas');

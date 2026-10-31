@@ -4,6 +4,25 @@ Lógica pura en `client/settings.js` (valores, límites, `sanitize`, `lookDelta`
 (sección «settings panel»). Todo se guarda en el dispositivo (`localStorage`, clave `sniperduel_settings`). Ningún ajuste
 cambia el daño, el retroceso, las balas ni las reglas: solo lo que ves y cómo controlas (online manda el servidor).
 
+## 31-10-2026 — Menú más pequeño en Safari y «Suavizado de bordes»
+- **Tamaño.** Safari en el iPhone agranda por su cuenta los textos largos cuando el móvil está en horizontal, hasta
+  ~1,8×: los textos de ayuda salían a 19–22 px en vez de 12 (captura del propietario). La página ahora lo impide
+  (`-webkit-text-size-adjust: 100%`), así que el menú sale con sus tamaños reales.
+- **Móvil en horizontal** (altura de hasta 500 px):
+  - el panel usa casi todo el ancho;
+  - las 7 pestañas van en una fila;
+  - ayudas a 10,5 px, etiquetas a 9 px y botones más bajos;
+  - casillas y barras en dos columnas (menos el bloque de HUD 2, que tiene su propio orden).
+- **El resultado.** CONTROLES pasa de 792 a 673 px de alto en un móvil de 390 px, sin contar el agrandado de Safari, que
+  era lo que más ocupaba. Imagen: `docs/img/ajustes-safari-antes-ahora.jpg`.
+- **GRÁFICOS › Suavizado de bordes** (encendido por defecto, en MEDIO y ALTO; se aplica al recargar): quita el parpadeo de
+  las fachadas lejanas. Ver `docs/PARPADEO.md`.
+- **Pruebas.** `test/ajustes.browser.test.js` comprueba en un móvil en horizontal:
+  - el `text-size-adjust`;
+  - las pestañas en una fila;
+  - los tamaños y las dos columnas;
+  - el MSAA, encendido y apagado.
+
 ## 30-10-2026 — Ampliación con los ajustes de los grandes shooters de móvil
 Petición del propietario: a partir de las capturas de los ajustes de PUBG Mobile, «añade todo lo que puedas» y que el
 juego «se sienta fluido como si fuera hecho por una empresa experta». Primera fase: los ajustes que no tocan el servidor

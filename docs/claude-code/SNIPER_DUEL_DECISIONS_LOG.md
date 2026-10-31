@@ -11,6 +11,7 @@ Detalle de cada cambio (antes/después, medidas, cómo revertir): `docs/next-lev
 ### Siguiente prioridad
 | Tarea | Quién la desbloquea | Estado |
 |---|---|---|
+| **Parpadeo y menú** (31-10) — mirar en el iPhone que las fachadas lejanas ya no parpadean y que AJUSTES sale más pequeño; mandar MEDIR RENDIMIENTO para ver lo que cuesta el suavizado de bordes (se puede apagar en GRÁFICOS) (`docs/PARPADEO.md`) | Propietario | PUBLICADO · PENDIENTE DE VALIDACIÓN EN IPHONE |
 | **Game feel 3.0** — probar en el iPhone el movimiento TÁCTICO (ya es el del servidor), las animaciones nuevas (GF-2: esprint, salto, disparo, impacto y muerte sin saltos) y el CONTORNO rojo/azul; mandar MEDIR RENDIMIENTO con la línea «CPU por partes» (`docs/GAMEFEEL.md`) | Propietario | PUBLICADO · PENDIENTE DE VALIDACIÓN EN IPHONE |
 | **Cuentas** — probar en el iPhone: PERFIL › CREAR CUENTA (Face ID), ENTRAR en otro dispositivo, amigos e invitación (ya sin bandera) | Propietario | PUBLICADO · PENDIENTE DE VALIDACIÓN EN IPHONE |
 | **Cajas y objetos** — probar en el iPhone (ya sin bandera): menú › CAJAS (abrir, caja diaria, equipar camuflaje, mira y título), y una partida online de más de 1 min con cuenta los dos | Propietario | PUBLICADO · PENDIENTE DE VALIDACIÓN EN IPHONE |
@@ -83,6 +84,27 @@ Detalle de cada cambio (antes/después, medidas, cómo revertir): `docs/next-lev
 | Encargos para ChatGPT: CASA XL, CASA XL v2 y personaje | 18-10 / 19-10 |
 | Personaje 3D rev. 03 hecho por Claude e integrado tras `?pj=2` (bots y rival online) | 20-10 · directo a `main` |
 | Personajes realistas + elegir personaje (con el SOLDADO de `?pj=2`) y HUD 2 por defecto (aprobado en iPhone y PC) | 28-10 · directo a `main` |
+
+## 31-10-2026 (7) — Parpadeo de los edificios lejanos y menú de AJUSTES más pequeño en Safari
+Del propietario, con un vídeo de su iPhone: «las texturas de los edificios desde lejos no se ven lisas, se ven como que
+parpadean»; y «haz el menú de ajustes más pequeño, es muy grande en Safari».
+
+**Parpadeo** (detalle en `docs/PARPADEO.md`)
+- Causa: el iPhone dibujaba sin suavizado de bordes (regla de la fase 1: solo en pantallas de menos de 2×). Los barrotes,
+  barandillas y marcos lejanos, más finos que un píxel, aparecían y desaparecían.
+  - Confirmado con los fotogramas de su vídeo y medido con `tools/flicker.js` (nuevo).
+  - Descartado el fallo de profundidad (`&near` no cambia nada).
+- Cambio: MSAA 4× en MEDIO y ALTO en todos los dispositivos (BAJO sin él), con la casilla AJUSTES › GRÁFICOS ›
+  «Suavizado de bordes» y `&aa=0/1`. La hierba usa *alpha to coverage* con el suavizado puesto.
+- Medida: parpadeo −34 % en la plaza, −29 % en la calle norte y −36 % con el visor 8×; los peores píxeles, a la mitad.
+- Coste: en el PC, 60 FPS y el mismo tiempo de dibujo con y sin él. Sin medir en el iPhone: falta MEDIR RENDIMIENTO.
+
+**Menú** (detalle en `docs/AJUSTES.md`)
+- Causa: Safari agranda por su cuenta los textos largos en horizontal (hasta ~1,8×). Se impide con `text-size-adjust`.
+- Además, en un móvil en horizontal: pestañas en una fila, textos más pequeños, casillas y barras en dos columnas.
+
+**Estado**: no se tocan `core/` ni `server/`. Pruebas: `ajustes` (+1) y `ajustes.browser` (+5). PUBLICADO · PENDIENTE DE
+VALIDACIÓN EN IPHONE.
 
 ## 31-10-2026 (6) — GF-2: transiciones de animación; el CONTORNO, rojo para enemigos y azul para compañeros
 Del propietario: «Sigue mejorando animaciones, lo del delineado podría ser un rojo un poco así opaco para ver desde lejos,
