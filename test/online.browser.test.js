@@ -103,12 +103,20 @@ async function until(page, fn, arg, ms) { try { await page.waitForFunction(fn, a
     await aimAndFire(A, 1.17);
     check('A dispara: B recibe daño (lo confirma el servidor)', await until(B, () => __SD.P.hp < 100, null, 3000), await B.evaluate(() => __SD.P.hp));
     check('A ve el impacto confirmado', await A.evaluate(() => __SD.STATS.hits) === 1);
+    // GF-2 (31-10-2026): the body that was hit flinches and the one that fired shows its kick, seen from the other side
+    check('A ve a B encogerse por el impacto y B ve el retroceso del disparo de A', await A.evaluate(() => __SD.REMOTE.hitT < 3) && await B.evaluate(() => __SD.REMOTE.fireT < 3),
+      await A.evaluate(() => __SD.REMOTE.hitT.toFixed(2)) + ' / ' + await B.evaluate(() => __SD.REMOTE.fireT.toFixed(2)));
+    // CONTORNO in the 1v1 duel too (31-10-2026: until then only the rooms of several players had it)
+    await A.evaluate(() => { __SD.SETTINGS.enemyVis = 'contorno'; });
+    check('con CONTORNO, el rival del duelo 1 contra 1 lleva su contorno rojo', await until(A, () => { const R = __SD.REMOTE.rig; return !!(R.visH && R.visH.length && R.visH[0].visible && R.visK === 'foe'); }, null, 4000));
+    await A.evaluate(() => { __SD.SETTINGS.enemyVis = 'normal'; });
     room.debug.set('B', 'hp', 10); room.debug.set('B', 'lastHit', 1e15);  // no regeneration while the slow test aims
     await sleep(1200);
     await aimAndFire(A, 1.17);
     check('segundo disparo: B muere y ve la pantalla de eliminado', await until(B, () => !document.getElementById('death').hidden && __SD.state === 'dead', null, 3000));
     // each page applies the kill when its own message arrives (frames are slow without a GPU): wait up to 2 s each
     check('el marcador cambia en los dos: 1–0', await until(A, () => document.getElementById('kYou').textContent === '1', null, 2000) && await until(B, () => document.getElementById('kBots').textContent === '1', null, 2000));
+    check('A sabe quién mató a B (para que caiga hacia el lado contrario al tiro)', await A.evaluate(() => !!__SD.REMOTE.killFrom));
     check('B reaparece a los 3 s', await until(B, () => __SD.state === 'playing' && __SD.P.alive && document.getElementById('death').hidden, null, 6000));
     // B shoots A too
     room.debug.place('A', -18, -3, -Math.PI / 2); room.debug.place('B', 18, -3, Math.PI / 2); await sleep(1500);

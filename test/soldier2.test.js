@@ -1,5 +1,7 @@
 /* Personaje 3D (?pj=2): reglas de mezcla de client/soldier2.js (sin WebGL) y el modelo publicado:
    - pesos de cada capa que suman 1, esprint/deslizamiento/muerte de cuerpo entero, agachado, inclinación aditiva
+   - GF-2 (31-10-2026): lo que llega de golpe (esprint, salto, muerte, apuntar, arma) entra y sale con mezcla; retroceso,
+     impacto, aterrizaje y caída hacia delante
    - assets/personaje/*.glb pasan tools/validate-glb.js y caben en las zonas de impacto de core/hitbox.js (±4 cm) en
      sus tres LOD (tools/check-character-hitbox.js)
    Run: node test/soldier2.test.js */
@@ -42,6 +44,45 @@ for (const st of [{}, { vz: 2 }, { vx: -4, crouch: 0.3 }, { air: true }, { slide
   if (!near(sum(p.lower) + f, 1) || !near(sum(p.upper) + f, 1)) ok = false;
 }
 check('en todos los estados: inferior + cuerpo entero = 1 y superior + cuerpo entero = 1', ok);
+
+console.log('\nTRANSICIONES Y GESTOS (GF-2, 31-10-2026, tools/anim-sheet.js)');
+{
+  const run = (B, st, secs) => { for (let t = 0; t < secs - 1e-9; t += 1 / 60) S.blend(B, st, 1 / 60); return B; };
+  const walkSt = { vz: 4.05, wpn: 'rifle', aim: 0 }, sprSt = { vz: 7, sprint: true, wpn: 'rifle', aim: 0 };
+  const B = run({}, walkSt, 0.5);
+  check('el primer fotograma se coloca sin mezcla (aparecer no es una transición)', B.spr === 0 && S.blend({}, sprSt, 1 / 60).spr === 1);
+  run(B, sprSt, 0.11); const half = B.spr; run(B, sprSt, 0.13);
+  check('esprint: entra en ~0,22 s (a mitad a los 0,11 s), no de golpe', half > 0.4 && half < 0.6 && B.spr === 1, half.toFixed(2));
+  run(B, walkSt, 0.11); const out = B.spr; run(B, walkSt, 0.13);
+  check('y sale en ~0,22 s', out > 0.4 && out < 0.6 && B.spr === 0, out.toFixed(2));
+  const J = run({}, walkSt, 0.2); run(J, Object.assign({ air: true }, walkSt), 0.5); run(J, walkSt, 1 / 60);
+  const blip = run({}, walkSt, 0.2); run(blip, Object.assign({ air: true }, walkSt), 0.05); run(blip, walkSt, 1 / 60);
+  check('aterrizaje tras 0,5 s en el aire: jump_land a toda fuerza; un salto de 0,05 s (escalón, red) no cuenta', J.landK > 0.99 && J.landT < 0.02 && blip.landK === 0, J.landK.toFixed(2) + ' / ' + blip.landK);
+  const D = run({}, walkSt, 0.3); run(D, { dead: 0.1, wpn: 'rifle' }, 0.125);
+  const q = S.blended(D, { dead: 0.1, wpn: 'rifle' });
+  check('muerte: entra en 0,25 s y, mientras, las piernas siguen con su paso (no se cortan de golpe)', D.dead > 0.4 && D.dead < 0.6 && q.vz === 4.05, D.dead.toFixed(2));
+  run(D, walkSt, 1 / 60);
+  check('al reaparecer, de pie al instante (sin mezclar desde la caída)', D.dead === 0);
+  const A = run({}, { wpn: 'rifle', aim: 0 }, 0.2); run(A, { wpn: 'rifle', aim: 1 }, 0.075);
+  check('apuntar de los bots (0 → 1 de golpe): rampa de 0,15 s', A.aim > 0.4 && A.aim < 0.6, A.aim.toFixed(2));
+  const sw = S.plan({ wpn: 'pistol', aim: 1, wpnFrom: 'rifle', wpnK: 0.5 });
+  check('cambio de arma: la postura de la anterior se va mezclando (rifle 50 %, pistola 50 %)', near(sw.upper.aim_rifle, 0.5) && near(sw.upper.aim_pistol, 0.5));
+  const sh = S.plan({ vz: 6, sprintW: 0.5, wpn: 'rifle', aim: 1 }), dd = S.plan({ deadW: 0.5, deathFront: true, wpn: 'rifle' });
+  check('pesos ya mezclados: esprint a medias y caída hacia delante a medias, y todo suma 1', near(sh.full.sprint, 0.5) && near(sum(sh.lower) + 0.5, 1) && near(dd.full.death_front, 0.5) && near(sum(dd.upper) + 0.5, 1));
+  const f0 = S.plan({ wpn: 'rifle', aim: 1, fire: 0.02 }), f1 = S.plan({ wpn: 'rifle', aim: 1, fire: 0.5 }), fp = S.plan({ wpn: 'pistol', aim: 1, fire: 0.05 }), fs = S.plan({ wpn: 'shotgun', aim: 1, fire: 0.05 }), fk = S.plan({ wpn: 'knife', fire: 0.05 });
+  check('disparo: retroceso aditivo del clip de cada arma (rifle, pistola, escopeta) y nada con la navaja', near(f0.add.fire_rifle, 1) && !f1.add.fire_rifle && near(fp.add.fire_pistol, 1) && near(fs.add.fire_shotgun, 1) && Object.keys(fk.add).length === 2);
+  const h0 = S.plan({ wpn: 'rifle', aim: 1, hit: 0, flinch: 0.7 }), h1 = S.plan({ wpn: 'rifle', aim: 1, hit: 0.06 }), h2 = S.plan({ wpn: 'rifle', aim: 1, hit: 0.5, flinch: 0.3 });
+  check('impacto: hit_react entra en 0,05 s (antes, a peso 1 de golpe) y se va; con «hit», el «flinch» antiguo no cuenta', !h0.one && h1.one === 'hit_react' && h1.upper.hit_react > 0.8 && !h2.one, (h1.upper.hit_react || 0).toFixed(2));
+  check('recarga de la escopeta: la mano va a la ventana y vuelve en cada cartucho (sin salto entre cartuchos)', S.shellT(0) === 0 && S.shellT(0.999) < 0.01 && near(S.shellT(0.55), 0.6), [0, 0.3, 0.55, 0.8, 0.999].map(u => S.shellT(u).toFixed(2)).join(' '));
+  const kr = S.recoil({ wpn: 'rifle', fire: 0.03 }), kl = S.recoil({ wpn: 'rifle', hit: 0.04, hitX: 1, hitZ: 0 }), kd = S.recoil({ wpn: 'rifle', fire: 0.03, dead: 1 }), kh = S.recoil({ wpn: 'rifle', hit: 0.04, hitPart: 'head' });
+  check('empujón del pecho: atrás al disparar, gira hacia donde empuja un tiro de lado, la cabeza atrás en un tiro a la cabeza; muerto, nada', kr.pitch > 0.06 && S.recoil({ wpn: 'rifle', fire: 0.6 }).pitch < 0.003 && kl.yaw > 0.1 && kh.head > 0.2 && kd.pitch === 0, JSON.stringify({ kr: +kr.pitch.toFixed(3), kl: +kl.yaw.toFixed(3) }));
+  let ok2 = true;
+  for (const st of [{ airW: 0.5, startW: 0.4, vz: 3 }, { landW: 0.7, vz: 2 }, { deadW: 0.3, sprintW: 0.6, vz: 6 }, { wpnFrom: 'pistol', wpnK: 0.3, aim: 0.6 }, { hit: 0.08, reload: 0.5, relPh: 0.3, wpn: 'shotgun' }, { fire: 0.03, bolt: 0.04, aim: 1 }]) {
+    const p = S.plan(Object.assign({ wpn: 'rifle' }, st)), f = sum(p.full);
+    if (!near(sum(p.lower) + f, 1) || !near(sum(p.upper) + f, 1)) { ok2 = false; console.log('     ', JSON.stringify(st), sum(p.lower) + f, sum(p.upper) + f); }
+  }
+  check('con los pesos mezclados también: inferior + cuerpo entero = 1 y superior + cuerpo entero = 1', ok2);
+}
 
 console.log('\nPASO SEGÚN LA VELOCIDAD Y PIERNAS HACIA LA MARCHA (27-10-2026, tools/gait-sheet.js)');
 const g23 = S.gait(2.3, 4.49), g46 = S.gait(4.6, 4.04), g7 = S.gait(7, 4.04);

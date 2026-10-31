@@ -6,11 +6,12 @@ Cada entrada dice qué se decidió o cambió, quién lo decidió, y el estado re
 Las decisiones anteriores al 18-10-2026 están resumidas en `SNIPER_DUEL_MASTER_CONTEXT.md` §4.
 Detalle de cada cambio (antes/después, medidas, cómo revertir): `docs/next-level/NEXT_LEVEL_CHANGELOG.md`.
 
-## Tareas (resumen vivo, actualizado el 28-10-2026)
+## Tareas (resumen vivo, actualizado el 31-10-2026)
 
 ### Siguiente prioridad
 | Tarea | Quién la desbloquea | Estado |
 |---|---|---|
+| **Game feel 3.0** — probar en el iPhone el movimiento TÁCTICO (ya es el del servidor), las animaciones nuevas (GF-2: esprint, salto, disparo, impacto y muerte sin saltos) y el CONTORNO rojo/azul; mandar MEDIR RENDIMIENTO con la línea «CPU por partes» (`docs/GAMEFEEL.md`) | Propietario | PUBLICADO · PENDIENTE DE VALIDACIÓN EN IPHONE |
 | **Cuentas** — probar en el iPhone: PERFIL › CREAR CUENTA (Face ID), ENTRAR en otro dispositivo, amigos e invitación (ya sin bandera) | Propietario | PUBLICADO · PENDIENTE DE VALIDACIÓN EN IPHONE |
 | **Cajas y objetos** — probar en el iPhone (ya sin bandera): menú › CAJAS (abrir, caja diaria, equipar camuflaje, mira y título), y una partida online de más de 1 min con cuenta los dos | Propietario | PUBLICADO · PENDIENTE DE VALIDACIÓN EN IPHONE |
 | **Balas del servidor a 600 m/s** (arreglado el 28-10, antes volaban a la mitad) — probar online entre dos dispositivos que los disparos a un rival que corre cuentan como se ven | Propietario | PUBLICADO · PENDIENTE DE PROBAR ONLINE |
@@ -82,6 +83,30 @@ Detalle de cada cambio (antes/después, medidas, cómo revertir): `docs/next-lev
 | Encargos para ChatGPT: CASA XL, CASA XL v2 y personaje | 18-10 / 19-10 |
 | Personaje 3D rev. 03 hecho por Claude e integrado tras `?pj=2` (bots y rival online) | 20-10 · directo a `main` |
 | Personajes realistas + elegir personaje (con el SOLDADO de `?pj=2`) y HUD 2 por defecto (aprobado en iPhone y PC) | 28-10 · directo a `main` |
+
+## 31-10-2026 (6) — GF-2: transiciones de animación; el CONTORNO, rojo para enemigos y azul para compañeros
+Del propietario: «Sigue mejorando animaciones, lo del delineado podría ser un rojo un poco así opaco para ver desde lejos,
+rojo enemigo, azul amigo».
+- **Animaciones** (`client/soldier2.js`, detalle en `docs/GAMEFEEL.md` › GF-2): lo que el juego manda de golpe (esprint,
+  salto, muerte, apuntar de los bots, cambio de arma) se mezcla en 0,08–0,25 s. Se usan los clips que había sin usar:
+  despegue, aterrizaje, retroceso de las tres armas (capa aditiva), impacto en su tiempo y muerte hacia delante.
+  - Medido con `tools/anim-sheet.js` (nuevo): el mayor giro de un hueso en un fotograma baja de 99° a 18° al soltar el
+    esprint, de 71° a 13° al aterrizar, de 130° a 21° al morir y de 82° a 18° en la recarga de la escopeta.
+  - Online: el rival se encoge con cada impacto (mensaje `hit`) y cae hacia el lado contrario a quien lo mató (`kill`).
+  - Bots: cerrojo después de disparar (sin cambiar su ritmo), sin giro de golpe al morir y sin el rebote de 4 cm que
+    movía sus zonas de impacto.
+  - Coste: 60 FPS en el PC; unos 0,01–0,02 ms de CPU por personaje y fotograma.
+- **Contorno**: rojo mate casi opaco en los enemigos (desde 14 m aparentes), azul en los compañeros (a cualquier
+  distancia), 1,35 px, sin niebla ni estilo de imagen. La opción pasa a llamarse CONTORNO.
+  - **Fallo corregido**: en el duelo online 1 contra 1 el contorno no se dibujaba (solo en las salas de varios).
+  - **Perfil BAJO**: con el soldado de cajas, la SILUETA no hacía nada y el contorno salía también por dentro de la
+    figura; ahora es igual que en MEDIO y ALTO. En el CAMPO DE TIRO también se dibuja.
+- No cambian las zonas de impacto, la balística, los tiempos de las armas ni la puntería de los bots. `core/` y `server/`
+  no se tocan: no hace falta volver a publicar el servidor.
+- Pruebas nuevas: `soldier2` (+14), `gamefeel.browser` (+5) y `online.browser` (+3).
+
+Estado: IMPLEMENTADO · PROBADO EN NAVEGADOR · PROBADO ONLINE (dos navegadores contra el servidor local) · PENDIENTE DE
+VALIDACIÓN EN IPHONE.
 
 ## 30-10-2026 (5) — El movimiento TÁCTICO pasa al servidor; lo mejorado va al juego de verdad
 Del propietario: «¿Cómo que si apruebo llevar el movimiento táctico a partidas online? Si ese es el plan, no hay límites

@@ -767,8 +767,8 @@ body.hud2 #stickBase.sprint #stickKnob svg{display:block}
         <label class="chk"><input type="checkbox" id="sMini"> Minimapa arriba a la izquierda (los enemigos salen cuando disparan)</label>
       </div>
       <div class="lbl" style="margin:12px 0 6px">Visibilidad de enemigos</div>
-      <div class="seg" id="visSeg" role="group" aria-label="Visibilidad de enemigos"><button type="button" data-vis="normal">NORMAL</button><button type="button" data-vis="silueta">SILUETA MEJORADA</button><button type="button" data-vis="contorno">CONTORNO SUTIL</button></div>
-      <p class="setHelp">Solo en las partes del enemigo que de verdad ves: nunca a través de paredes, suelos ni vegetación. Cerca no cambia nada; de lejos, una luz de borde suave o un contorno fino del mismo grosor en BAJO y en ALTO, que con el visor se ajusta al zoom. Es igual para todos los jugadores (online también) y solo marca rivales, nunca compañeros de equipo.</p>
+      <div class="seg" id="visSeg" role="group" aria-label="Visibilidad de enemigos"><button type="button" data-vis="normal">NORMAL</button><button type="button" data-vis="silueta">SILUETA MEJORADA</button><button type="button" data-vis="contorno">CONTORNO</button></div>
+      <p class="setHelp">Solo en las partes que de verdad ves: nunca a través de paredes, suelos ni vegetación. SILUETA: de lejos, una luz de borde suave. CONTORNO: una línea roja casi opaca alrededor de los enemigos desde unos 14 m, y azul alrededor de tus compañeros de equipo. Tiene el mismo grosor en BAJO y en ALTO y, con el visor, se ajusta al zoom. Es igual para todos los jugadores (online también).</p>
       <p class="setHelp">Solo cambian lo que ves: el daño, el retroceso y las reglas son siempre las del juego (y online, las del servidor).</p>
     </section>
     <section class="setPane" data-pane="accesibilidad" role="tabpanel" hidden>
@@ -5022,43 +5022,87 @@ if (typeof module !== 'undefined' && module.exports) module.exports = SDCasaXL; 
 
    Mezcla por capas con un AnimationMixer por soldado:
      · inferior (cadera, columna baja, piernas, traslaciones y morph): quieto / andar en 4 direcciones / agachado /
-       agachado andando / salto; el paso va sincronizado con la velocidad real (sin patinar);
+       agachado andando / despegue / salto / aterrizaje; el paso va sincronizado con la velocidad real (sin patinar);
      · superior (torso, brazos, cabeza y 'arma'): rifle bajo o al hombro, pistola, navaja; recarga, cerrojo,
-       bombeo y cuchillada siguen el estado que manda el juego;
-     · aditiva: aim_up / aim_down según la inclinación de la mirada;
-     · cuerpo entero: esprint, deslizamiento y muerte.                                                       */
+       cuchillada e impacto siguen el estado que manda el juego;
+     · aditiva: aim_up / aim_down según la inclinación de la mirada y el retroceso de los clips de disparo;
+     · cuerpo entero: esprint, deslizamiento y muerte (hacia atrás o hacia delante).
+
+   GF-2 (31-10-2026, medido con tools/anim-sheet.js): lo que el juego manda de golpe ya no salta de una postura a otra.
+   Antes, al soltar el esprint, al aterrizar o al morir, un hueso giraba hasta 99°, 71° y 130° en un solo fotograma:
+     · esprint, salto, muerte, apuntar (los bots pasan de 0 a 1 de golpe) y cambio de arma entran y salen con una mezcla
+       corta (BLEND);
+     · despegue con el final de jump_start y aterrizaje con jump_land, más fuerte cuanto más tiempo en el aire;
+     · disparo: el retroceso de fire_rifle (su primera parte), fire_pistol y fire_shotgun como capa aditiva (se suma a la
+       postura que haya sin cambiarla) y un empujón del pecho hacia atrás (KICK);
+     · impacto: hit_react en su tiempo, con entrada y salida (antes, una postura fija a peso 1 de golpe), y un tirón del
+       pecho hacia donde empuja el tiro (y de la cabeza si fue en la cabeza);
+     · recarga de la escopeta: la mano va a la ventana y vuelve en cada cartucho (antes saltaba al empezar cada uno).
+   Nada de esto mueve las zonas de impacto: son cajas del servidor, aparte del dibujo.                                */
 const SDSoldier2 = (() => {
   const LOWER_BONES = ['Root', 'Hips', 'Spine', 'LeftUpLeg', 'LeftLeg', 'LeftFoot', 'LeftToeBase', 'RightUpLeg', 'RightLeg', 'RightFoot', 'RightToeBase'];
   // la empuñadura de cada arma del juego en el marco 'arma' (origen en la empuñadura, +z cañón): posición del grupo
   // de armas antiguo (R.aim, coordenadas de makeSoldier) para que su empuñadura caiga en el origen
   const AIM_OFFSET = { rifle: [-0.1, 0.1, -0.08], shotgun: [-0.1, 0.1, -0.14], pistol: [-0.03, 0.0715, -0.40], knife: [-0.2, 0.03, -0.29] };
+  // GF-2: segundos de cada mezcla (entrar / salir); la mirada, en rad/s como mucho
+  const BLEND = { sprIn: 0.22, sprOut: 0.22, airIn: 0.08, airOut: 0.1, dead: 0.25, aimIn: 0.15, aimOut: 0.18, wpn: 0.22, pitch: 4 };
+  // retroceso de cada arma: empujón del pecho (rad), velocidad del clip de disparo, de qué clip sale la capa aditiva
+  const KICK = { rifle: [0.07, 1.6, 'fire_rifle'], shotgun: [0.1, 1, 'fire_shotgun'], pistol: [0.05, 1, 'fire_pistol'] };
+  // duración (s) de cada capa de retroceso: el inicio de fire_rifle (antes de ir al cerrojo) y los otros dos enteros
+  const KICK_DUR = { fire_rifle: 0.3, fire_pistol: 0.22, fire_shotgun: 0.25 };
   const clamp = (v, a, b) => v < a ? a : v > b ? b : v;
   const sstep = t => { t = clamp(t, 0, 1); return t * t * (3 - 2 * t); };
   const damp = (a, b, k, dt) => a + (b - a) * (1 - Math.exp(-k * dt));
+  // golpe que sube en `rise` s y se apaga con constante `decay` s (retroceso, impacto)
+  const env = (t, rise, decay) => t < 0 ? 0 : t < rise ? sstep(t / rise) : Math.exp(-(t - rise) / decay);
+  const live = t => t != null && t >= 0;
+
+  // ¿puede esprintar con este estado? (con el arma cruzada: de frente, deprisa, de pie y sin navaja)
+  function sprintOk(st) {
+    const vx = st.vx || 0, vz = st.vz || 0, sp = Math.hypot(vx, vz);
+    const slide = st.slide === true ? 1 : +st.slide || 0, crouch = slide > 0.05 ? 0 : clamp(st.crouch || 0, 0, 1);
+    const fwd = sp > 1e-3 ? Math.max(0, vz) / (Math.abs(vx) + Math.abs(vz)) : 1;
+    return !!st.sprint && !st.air && crouch < 0.5 && slide < 0.05 && sp > 3.5 && fwd > 0.6 && (st.wpn || 'rifle') !== 'knife';
+  }
+  // recarga de la escopeta, fase de un cartucho 0..1 → tiempo de reload_shell: la mano va a la ventana y vuelve
+  const shellT = u => { u = ((u % 1) + 1) % 1; return 0.6 * (u < 0.55 ? sstep(u / 0.55) : 1 - sstep((u - 0.55) / 0.45)); };
 
   /* ---------- puro: qué clips y con qué peso (probado sin WebGL en test/soldier2.test.js) ----------
      st: { vx, vz (m/s, locales: +z delante, +x izquierda), crouch 0..1, slide 0..1, air, sprint, aim 0..1,
-           pitch (rad, + arriba), wpn, reload 0..1, relPh 0..1, bolt 0..1, stab 0..1, dead 0..1, flinch 0..1 } */
+           pitch (rad, + arriba), wpn, reload 0..1, relPh 0..1, bolt 0..1, stab 0..1, dead 0..1, flinch 0..1,
+           fire (s desde el disparo), hit (s desde el impacto), deathFront }
+     y, ya suavizados por blend(): sprintW, airW, deadW, wpnFrom + wpnK, startW + startT, landW + landT (0..1) */
   function plan(st) {
-    const sp = Math.hypot(st.vx || 0, st.vz || 0), air = !!st.air, dead = st.dead || 0;
+    const sp = Math.hypot(st.vx || 0, st.vz || 0);
+    const airW = st.airW != null ? clamp(st.airW, 0, 1) : st.air ? 1 : 0;
+    const deadW = st.deadW != null ? clamp(st.deadW, 0, 1) : (st.dead || 0) > 0 ? 1 : 0;
     const slide = st.slide === true ? 1 : +st.slide || 0, crouch = slide > 0.05 ? 0 : clamp(st.crouch || 0, 0, 1);
-    const move = air ? 0 : sstep((sp - 0.3) / 1.1);
+    const move = sstep((sp - 0.3) / 1.1);
     const dir = { fwd: 0, back: 0, left: 0, right: 0 };
     if (sp > 1e-3) { const fx = (st.vx || 0) / sp, fz = (st.vz || 0) / sp;
       dir.fwd = Math.max(0, fz); dir.back = Math.max(0, -fz); dir.left = Math.max(0, fx); dir.right = Math.max(0, -fx);
       const s = dir.fwd + dir.back + dir.left + dir.right; for (const k in dir) dir[k] /= s; } else dir.fwd = 1;
     const wpn = st.wpn || 'rifle';
-    const sprint = st.sprint && !air && crouch < 0.5 && slide < 0.05 && sp > 3.5 && dir.fwd > 0.6 && wpn !== 'knife' ? 1 : 0;
-    const lower = {}, add = (k, w) => { if (w > 1e-3) lower[k] = (lower[k] || 0) + w; };
+    const sprint = st.sprintW != null ? clamp(st.sprintW, 0, 1) : sprintOk(st) ? 1 : 0;
+    const lower = {}, lowerT = {}, add = (k, w) => { if (w > 1e-3) lower[k] = (lower[k] || 0) + w; };
     // cuerpo entero (sustituye a todo lo demás en proporción)
     const full = {};
-    if (dead > 0) full.death_back = 1;
-    else { if (slide > 0) full.slide = slide; if (sprint) full.sprint = (1 - slide) * sprint; }
+    if (deadW > 0) full[st.deathFront ? 'death_front' : 'death_back'] = deadW;
+    const alive = 1 - deadW;
+    if (slide > 0 && alive > 0) full.slide = slide * alive;
+    if (sprint > 0 && alive > 0) full.sprint = (1 - slide) * sprint * alive;
     const fullW = Object.values(full).reduce((a, b) => a + b, 0), rest = Math.max(0, 1 - fullW);
     if (rest > 0) {
-      if (air) add('jump_air', rest);
-      else {
-        const stand = rest * (1 - crouch), low = rest * crouch;
+      const air = rest * airW, ground = rest - air;
+      if (air > 1e-3) {   // despegue (final de jump_start) y luego en el aire
+        const sw = clamp(st.startW || 0, 0, 1);
+        add('jump_start', air * sw); add('jump_air', air * (1 - sw)); lowerT.jump_start = clamp(st.startT || 0, 0, 1);
+      }
+      if (ground > 1e-3) {
+        // aterrizaje: andando se nota menos (las piernas siguen el paso)
+        const lw = clamp(st.landW || 0, 0, 1) * (1 - 0.6 * move);
+        add('jump_land', ground * lw); lowerT.jump_land = clamp(st.landT || 0, 0, 1);
+        const g = ground * (1 - lw), stand = g * (1 - crouch), low = g * crouch;
         add('idle_rifle', stand * (1 - move)); for (const k in dir) add('walk_' + k, stand * move * dir[k]);
         add('crouch_idle', low * (1 - move)); add('crouch_walk', low * move);
       }
@@ -5067,21 +5111,65 @@ const SDSoldier2 = (() => {
     const upper = {};
     if (rest > 0) {
       const aim = clamp(st.aim == null ? 1 : st.aim, 0, 1);
-      const base = wpn === 'pistol' ? ['idle_pistol', 'aim_pistol'] : wpn === 'knife' ? ['idle_knife', 'idle_knife'] : ['idle_rifle', 'aim_rifle'];
+      const bases = w => w === 'pistol' ? ['idle_pistol', 'aim_pistol'] : w === 'knife' ? ['idle_knife', 'idle_knife'] : ['idle_rifle', 'aim_rifle'];
       let one = null, oneW = 0, oneT = 0;
-      if ((st.reload || 0) > 0.02) { one = wpn === 'pistol' ? 'reload_pistol' : wpn === 'shotgun' ? 'reload_shell' : wpn === 'knife' ? null : 'reload_rifle'; oneW = st.reload; oneT = clamp(st.relPh || 0, 0, 1); }
+      if ((st.reload || 0) > 0.02) { one = wpn === 'pistol' ? 'reload_pistol' : wpn === 'shotgun' ? 'reload_shell' : wpn === 'knife' ? null : 'reload_rifle'; oneW = st.reload; oneT = wpn === 'shotgun' ? shellT(st.relPh || 0) : clamp(st.relPh || 0, 0, 1); }
       else if ((st.bolt || 0) > 0 && wpn === 'rifle') { one = 'fire_rifle'; oneW = sstep(st.bolt / 0.08) * (1 - sstep((st.bolt - 0.9) / 0.1)); oneT = 0.27 + 0.68 * st.bolt; }
-      else if ((st.bolt || 0) > 0 && wpn === 'shotgun') { one = 'pump_shotgun'; oneW = 1; oneT = st.bolt; }
       else if ((st.stab || 0) > 0 && wpn === 'knife') { one = 'knife_slash'; oneW = 1; oneT = st.stab; }
+      else if (st.hit != null) { if (live(st.hit) && st.hit < 0.4) { one = 'hit_react'; oneW = 0.85 * sstep(st.hit / 0.05) * (1 - sstep((st.hit - 0.1) / 0.25)); oneT = clamp(st.hit / 0.26, 0, 1); } }
       else if ((st.flinch || 0) > 0.05) { one = 'hit_react'; oneW = clamp(st.flinch * 1.5, 0, 1); oneT = 0.4; }
+      if (one && oneW <= 1e-3) one = null;
       const b = rest * (1 - (one ? oneW : 0));
-      if (base[0] === base[1]) upper[base[0]] = b; else { upper[base[0]] = b * (1 - aim); upper[base[1]] = (upper[base[1]] || 0) + b * aim; }
+      const put = (w, k) => { const s = bases(w); if (s[0] === s[1]) upper[s[0]] = (upper[s[0]] || 0) + b * k;
+        else { upper[s[0]] = (upper[s[0]] || 0) + b * k * (1 - aim); upper[s[1]] = (upper[s[1]] || 0) + b * k * aim; } };
+      // cambio de arma: la postura de la de antes se va en BLEND.wpn s (el arma ya es la nueva y va con la mano)
+      const wk = st.wpnFrom && st.wpnFrom !== wpn ? clamp(st.wpnK == null ? 1 : st.wpnK, 0, 1) : 1;
+      put(wpn, wk); if (wk < 1) put(st.wpnFrom, 1 - wk);
       if (one) upper[one] = (upper[one] || 0) + rest * oneW;
       const p = clamp(st.pitch || 0, -Math.PI / 3, Math.PI / 3) / (Math.PI / 3);
       const pw = rest * (wpn === 'knife' ? 0.3 : 0.35 + 0.65 * aim);
-      return { lower, upper, full, oneT, one, sp, dir, crouch, slide, add: { aim_up: Math.max(0, p) * pw, aim_down: Math.max(0, -p) * pw } };
+      const addW = { aim_up: Math.max(0, p) * pw, aim_down: Math.max(0, -p) * pw }, addT = {};
+      // retroceso del disparo: la capa aditiva del clip de disparo, en su tiempo (a KICK[1] veces su velocidad)
+      const K = KICK[wpn];
+      if (K && live(st.fire)) { const t = st.fire * K[1], d = KICK_DUR[K[2]];
+        if (t < d) { addW[K[2]] = rest * (1 - sstep((t - 0.75 * d) / (0.25 * d))); addT[K[2]] = t; } }
+      return { lower, lowerT, upper, full, oneT, one, sp, dir, crouch, slide, add: addW, addT };
     }
-    return { lower, upper, full, oneT: 0, one: null, sp, dir, crouch, slide, add: { aim_up: 0, aim_down: 0 } };
+    return { lower, lowerT, upper, full, oneT: 0, one: null, sp, dir, crouch, slide, add: { aim_up: 0, aim_down: 0 }, addT: {} };
+  }
+
+  /* ---------- puro: lo que el juego manda de golpe, mezclado (B guarda el estado entre fotogramas) ----------
+     esprint, salto, muerte, apuntar y cambio de arma avanzan hacia su valor a ritmo fijo (BLEND): si lo que llega ya
+     cambia despacio (el apuntado del rival online sigue a su ADS), no añade retraso; si salta, lo convierte en rampa.
+     Al reaparecer (o el primer fotograma) se coloca sin mezcla. */
+  function blend(B, st, dt) {
+    const sprT = sprintOk(st) ? 1 : 0, airT = st.air ? 1 : 0, aimT = clamp(st.aim == null ? 1 : st.aim, 0, 1);
+    const dead = (st.dead || 0) > 0, wpn = st.wpn || 'rifle';
+    const go = (v, t, up, down) => v < t ? Math.min(t, v + dt / up) : Math.max(t, v - dt / down);
+    if (B.spr == null || (B.dead > 0 && !dead)) Object.assign(B, { spr: sprT, air: airT, aim: aimT, dead: 0, pitch: st.pitch || 0, wpn, wpnFrom: null, wpnK: 1, wasAir: !!airT, airTime: 0, landT: 9, landK: 0 });
+    // al morir, lo que se va mezclando hacia la caída sigue con su paso de antes (si no, las piernas se cortaban de golpe)
+    if (!dead) { B.vx = st.vx || 0; B.vz = st.vz || 0; }
+    B.spr = go(B.spr, sprT, BLEND.sprIn, BLEND.sprOut);
+    B.aim = go(B.aim, aimT, BLEND.aimIn, BLEND.aimOut);
+    B.dead = dead ? go(B.dead, 1, BLEND.dead, BLEND.dead) : 0;
+    const pt = st.pitch || 0, mx = BLEND.pitch * dt; B.pitch += clamp(pt - B.pitch, -mx, mx);
+    if (wpn !== B.wpn) { B.wpnFrom = B.wpn; B.wpn = wpn; B.wpnK = 0; }
+    B.wpnK = Math.min(1, B.wpnK + dt / BLEND.wpn);
+    // despegue y aterrizaje (un salto de menos de 0,08 s, como un escalón o un paquete de red, no cuenta)
+    if (airT && !B.wasAir) B.airTime = 0;
+    if (!airT && B.wasAir) { B.landT = 0; B.landK = B.airTime < 0.08 ? 0 : clamp(B.airTime / 0.5, 0.3, 1); }
+    B.wasAir = !!airT;
+    if (airT) B.airTime += dt; else B.landT += dt;
+    B.air = go(B.air, airT, BLEND.airIn, BLEND.airOut);
+    return B;
+  }
+  // lo que plan() recibe además del estado: los pesos ya mezclados
+  function blended(B, st) {
+    const lt = B.landT, dead = (st.dead || 0) > 0;
+    return Object.assign({}, st, dead ? { vx: B.vx, vz: B.vz } : null, { sprintW: sstep(B.spr), airW: sstep(B.air), deadW: sstep(B.dead), aim: B.aim, pitch: B.pitch,
+      wpnFrom: B.wpnK < 1 ? B.wpnFrom : null, wpnK: sstep(B.wpnK),
+      startW: 1 - sstep(B.airTime / 0.16), startT: 0.62 + 0.38 * Math.min(1, B.airTime / 0.16),
+      landW: B.landK * sstep(lt / 0.04) * (1 - sstep((lt - 0.1) / 0.22)), landT: Math.min(1, lt / 0.32) });
   }
 
   /* ---------- plantilla (una vez): clips partidos en capas ---------- */
@@ -5101,6 +5189,14 @@ const SDSoldier2 = (() => {
       a.name = k + '@add'; a.duration = ref.duration;
       // una sola clave: se extiende a la duración de la referencia para que makeClipAdditive la lea
       T.AnimationUtils.makeClipAdditive(a, 0, ref, 30);
+      clips[k].add = a;
+    }
+    // GF-2: retroceso de cada arma como diferencia respecto a su propio primer fotograma (se suma a cualquier postura:
+    // los clips de la escopeta parten de otra colocación de brazos y, mezclados tal cual, la hacían saltar 45–70°)
+    for (const k in KICK_DUR) {
+      if (!clips[k]) continue;
+      const src = clips[k].upper, a = k === 'fire_rifle' ? T.AnimationUtils.subclip(src, k + '@add', 0, Math.round(KICK_DUR[k] * 30) + 1, 30) : src.clone();
+      a.name = k + '@add'; T.AnimationUtils.makeClipAdditive(a, 0, a, 30);
       clips[k].add = a;
     }
     const meshes = [0, 1, 2].map(i => scene.getObjectByName('personaje_LOD' + i));
@@ -5126,7 +5222,8 @@ const SDSoldier2 = (() => {
     const meshes = [0, 1, 2].map(i => root.getObjectByName('personaje_LOD' + i));
     for (const m of meshes) { m.material = material; m.castShadow = true; m.receiveShadow = false; m.morphTargetInfluences && m.morphTargetInfluences.fill(0); }
     const I = { root, meshes, arma: root.getObjectByName('arma'), mixer: new T.AnimationMixer(root), actions: {}, phase: 0, lod: -1, dead: 0, T, tpl,
-      hips: root.getObjectByName('Hips'), spine1: root.getObjectByName('Spine1'), legYaw: 0, legW: { fwd: 1, back: 0, left: 0, right: 0 }, legMode: 'fwd' };
+      hips: root.getObjectByName('Hips'), spine1: root.getObjectByName('Spine1'), spine2: root.getObjectByName('Spine2'), head: root.getObjectByName('Head'),
+      legYaw: 0, legW: { fwd: 1, back: 0, left: 0, right: 0 }, legMode: 'fwd', bl: {} };
     setLod(I, 0);
     return I;
   }
@@ -5137,7 +5234,7 @@ const SDSoldier2 = (() => {
     let a = I.actions[key];
     if (!a) {
       const c = I.tpl.clips[name]; if (!c) return null;
-      const clip = layer === 'add' ? c.add : c[layer];
+      const clip = layer === 'add' ? c.add : c[layer]; if (!clip) return null;
       a = I.mixer.clipAction(clip);
       if (layer === 'add') a.blendMode = I.T.AdditiveAnimationBlendMode;
       a.timeScale = 0; a.play(); a.setEffectiveWeight(0);
@@ -5174,19 +5271,38 @@ const SDSoldier2 = (() => {
     if (mode === 'back') return { mode, w: { back: 1 }, yaw: a - s * Math.PI };
     return { mode, w: { [s > 0 ? 'left' : 'right']: 1 }, yaw: a - s * Math.PI / 2 };
   }
-  // gira un hueso alrededor de la vertical del personaje (no de la del hueso)
-  let _qa, _qb, _Y;
-  function yawBone(I, b, ang) {
-    const T = I.T; if (!_qa) { _qa = new T.Quaternion(); _qb = new T.Quaternion(); _Y = new T.Vector3(0, 1, 0); }
+  // gira un hueso alrededor de un eje del personaje (no del hueso): la vertical (piernas) o el lateral (retroceso)
+  let _qa, _qb, _qc, _Y, _X;
+  function turnBone(I, b, axis, ang) {
     _qa.set(0, 0, 0, 1);
     for (let o = b.parent; o && o !== I.root; o = o.parent) _qa.premultiply(o.quaternion);
-    _qb.setFromAxisAngle(_Y, ang).premultiply(_qa.clone().invert()).multiply(_qa);
+    _qb.setFromAxisAngle(axis, ang).premultiply(_qc.copy(_qa).invert()).multiply(_qa);
     b.quaternion.premultiply(_qb);
+  }
+  function initAxes(T) { if (!_qa) { _qa = new T.Quaternion(); _qb = new T.Quaternion(); _qc = new T.Quaternion(); _Y = new T.Vector3(0, 1, 0); _X = new T.Vector3(1, 0, 0); } }
+  function yawBone(I, b, ang) { initAxes(I.T); turnBone(I, b, _Y, ang); }
+
+  /* empujón del disparo y tirón del impacto (rad): el pecho gira sobre sí mismo (con él, brazos, cabeza y arma).
+     pitch > 0 = hacia atrás; yaw > 0 = el hombro izquierdo hacia atrás. hitX/hitZ: hacia dónde está el tirador, en
+     coordenadas del personaje (+z delante, +x izquierda); sin dato, de frente. */
+  function recoil(st) {
+    let pitch = 0, yaw = 0, head = 0;
+    const K = KICK[st.wpn || 'rifle'];
+    if (K && live(st.fire) && st.fire < 0.6) pitch += K[0] * env(st.fire, 0.03, 0.09);
+    if (live(st.hit) && st.hit < 0.8) {
+      const e = env(st.hit, 0.04, 0.12), k = st.hitPart === 'head' ? 1.3 : st.hitPart === 'legs' ? 0.5 : 1;
+      const hx = st.hitX != null ? st.hitX : 0, hz = st.hitZ != null ? st.hitZ : 1;
+      pitch += 0.1 * k * e * hz; yaw += 0.14 * k * e * hx;
+      if (st.hitPart === 'head') head += 0.22 * e;
+    }
+    const a = 1 - (st.deadW != null ? st.deadW : (st.dead || 0) > 0 ? 1 : 0);
+    return { pitch: pitch * a, yaw: yaw * a, head: head * a };
   }
 
   function update(I, st, dt) {
-    const P = plan(st), clips = I.tpl.clips, used = new Set();
-    const crouchT = P.crouch > 0.5, spr = P.full.sprint > 0.5;
+    const B = blend(I.bl || (I.bl = {}), st, dt), q = blended(B, st);
+    const P = plan(q), clips = I.tpl.clips, used = new Set();
+    const crouchT = P.crouch > 0.5, spr = (P.full.sprint || 0) > 0.5;
     // piernas: qué clip de marcha y cuánto giran (suavizado: ~0,1 s al cambiar de dirección)
     const DIRS = ['fwd', 'back', 'left', 'right'];
     const walkW = DIRS.reduce((a, k) => a + (P.lower['walk_' + k] || 0), 0), moveW = walkW + (P.lower.crouch_walk || 0);
@@ -5226,21 +5342,26 @@ const SDSoldier2 = (() => {
     }
     for (const [k, w] of Object.entries(P.lower)) {
       const d = clips[k].lower.duration;
-      set(k, 'lower', w, k.startsWith('walk') || k === 'crouch_walk' ? I.phase * d : I.t % d);
+      set(k, 'lower', w, P.lowerT[k] != null ? P.lowerT[k] * d : k.startsWith('walk') || k === 'crouch_walk' ? I.phase * d : I.t % d);
     }
     for (const [k, w] of Object.entries(P.upper)) {
       const d = clips[k].upper.duration;
       set(k, 'upper', w, k === P.one ? P.oneT * d : I.t % d);
     }
-    for (const [k, w] of Object.entries(P.add)) set(k, 'add', w, 0);
+    for (const [k, w] of Object.entries(P.add)) set(k, 'add', w, P.addT[k] || 0);
     for (const key in I.actions) { const a = I.actions[key]; if (!used.has(a)) { a.setEffectiveWeight(0); a.enabled = false; } }
     I.mixer.update(0);
+    initAxes(I.T);
     const yaw = I.legYaw * Math.min(1, moveW);
-    if (Math.abs(yaw) > 1e-3 && I.hips && I.spine1) { yawBone(I, I.hips, yaw); yawBone(I, I.spine1, -yaw); }
+    if (Math.abs(yaw) > 1e-3 && I.hips && I.spine1) { turnBone(I, I.hips, _Y, yaw); turnBone(I, I.spine1, _Y, -yaw); }
+    const K = recoil(q);
+    if (I.spine2) { if (Math.abs(K.pitch) > 1e-4) turnBone(I, I.spine2, _X, -K.pitch); if (Math.abs(K.yaw) > 1e-4) turnBone(I, I.spine2, _Y, K.yaw); }
+    if (I.head && K.head > 1e-4) turnBone(I, I.head, _X, -K.head);
+    P.blend = B; P.recoil = K;
     return P;
   }
 
-  return { plan, gait, legPlan, template, create, update, setLod, cloneSkinned, AIM_OFFSET, LOWER_BONES };
+  return { plan, blend, blended, recoil, sprintOk, shellT, gait, legPlan, template, create, update, setLod, cloneSkinned, yawBone, AIM_OFFSET, LOWER_BONES, BLEND, KICK };
 })();
 if (typeof module !== 'undefined' && module.exports) module.exports = SDSoldier2;
 
@@ -5479,7 +5600,7 @@ const SDCamo = { draw, texture, detail, patch, swatch, SCALE };
 if (typeof module !== 'undefined' && module.exports) module.exports = SDCamo; else root.SDCamo = SDCamo;
 })(typeof window !== 'undefined' ? window : globalThis);
 
-const BUILD_ID="49771ed";const BUILD_HASH="f2c5f8c6ab";
+const BUILD_ID="5a17ef5";const BUILD_HASH="b053bc4a87";
 </script>
 <script>
 (function(){
@@ -7583,6 +7704,7 @@ function animateSoldier2(R,st,dt){
   R.v2plan=SDSoldier2.update(I,st,dt);
 }
 function makeSoldier(M,opts){
+  for(const k in M)visHook(M[k]);   // the box soldier (BAJO) too: SILUETA lights it and CONTORNO stays outside it (31-10-2026)
   opts=opts||{};const G=SOLDIER_GEO,MG=SOLDIER_MERGED,R={},mesh=(geo,mat,par,x,y,z,sx,sy,sz,shadow)=>{const m=new T.Mesh(geo,mat);m.position.set(x||0,y||0,z||0);if(sx)m.scale.set(sx,sy,sz);m.castShadow=!!shadow;par.add(m);return m;};
   R.root=new T.Group();
   R.hips=new T.Group();R.hips.position.y=0.95;R.root.add(R.hips);
@@ -7647,7 +7769,10 @@ function animateSoldier0(R,st,dt){
   const sp=Math.hypot(st.vx||0,st.vz||0),moving=sp>0.4&&!st.air&&!st.slide;
   R.phase+=dt*(moving?(2.4+sp*0.95):0);
   const cyc=Math.sin(R.phase),cyc2=Math.cos(R.phase);
-  const cr=st.crouch||0,dead=st.dead||0,sprint=st.sprint?1:0;
+  // GF-2: sprint and jump blend in and out (they used to snap the lean, the weapon and the feet in one frame)
+  if(R.sprW==null){R.sprW=st.sprint?1:0;R.airW=st.air?1:0;}
+  R.sprW+=clamp((st.sprint?1:0)-R.sprW,-dt/0.2,dt/0.16);R.airW+=clamp((st.air?1:0)-R.airW,-dt/0.1,dt/0.08);
+  const cr=st.crouch||0,dead=st.dead||0,sprint=ss(R.sprW),airW=ss(R.airW);
   // body height: crouch / slide lower the hips; walking bobs them
   // crouch / slide put the head where the hit zone is (low, over the feet): hips down and back
   // slide: a number 0..1 (how far down the slide is, from the eye height) so the body goes down and comes back up
@@ -7678,7 +7803,7 @@ function animateSoldier0(R,st,dt){
     let fx=side*(0.11+0.05*cr),fz=s*stride*lz+0.03,fy=0.085+lift;fx+=s*stride*lx;
     if(cr>0){fz+=side<0?0.12*cr:-0.08*cr;}
     if(st.slide){fz=side<0?0.55:0.0;fy=side<0?0.12:0.085;fx=side*0.12;}
-    if(st.air){fz=side<0?0.12:-0.1;fy=hy-0.62;}
+    if(airW>0){fz=lerp(fz,side<0?0.12:-0.1,airW);fy=lerp(fy,hy-0.62,airW);}
     if(dead>0){fy=lerp(fy,0.09,ss(dead));fz=lerp(fz,0.25*side+0.1,ss(dead));}
     _sFoot.set(fx,fy,fz);
     _sPoleK.set(side*0.15,0,1);   // knees forward
@@ -7739,7 +7864,8 @@ class Bot{
     scene.add(this.g);this.g.visible=false;this.alive=false;this.hp=100;
     this.reset();
   }
-  reset(){this.vx=0;this.vz=0;this.aiming=false;this.crouchW=0;this.flinch=0;this.fallV=new T.Vector3();this.spin=0;this.state='move';this.path=[];this.spot=0;this.aimT=0;this.cool=0;this.lostT=0;this.lastDamage=-99;this.yaw=0;this.deadT=0;this.watchT=0;this.lookYaw=0;this.losT=0;this.canSee=false;this.dist=999;this.alertT=0;this.reaction=1;this.stepT=0;}
+  reset(){this.vx=0;this.vz=0;this.aiming=false;this.crouchW=0;this.flinch=0;this.fallV=new T.Vector3();this.spin=0;this.state='move';this.path=[];this.spot=0;this.aimT=0;this.cool=0;this.lostT=0;this.lastDamage=-99;this.yaw=0;this.deadT=0;this.watchT=0;this.lookYaw=0;this.losT=0;this.canSee=false;this.dist=999;this.alertT=0;this.reaction=1;this.stepT=0;
+    this.fireT=9;this.hitT=9;this.hitPart='torso';this.hitX=0;this.hitZ=1;this.deathFront=false;this.deathTurn=0;this.yaw0=0;this.spinA=0;}
   spawn(){
     this.reset();this.hp=100;this.alive=true;this.g.visible=true;this.g.rotation.x=0;this.g.rotation.z=0;
     this.g.scale.set(1,1,1);
@@ -7777,16 +7903,19 @@ class Bot{
     this.update0(dt);this.fdt+=dt;
   }
   animFrame(){if(this.fdt>0&&this.g.visible)this.animate(this.fdt,this.fx0,this.fz0);this.fdt=0;}
-  // body animation from what the bot did this frame (speed and direction, aim, crouch, hit, death)
+  // body animation from what the bot did this frame (speed and direction, aim, crouch, shot and bolt, hit, death)
   animate(dt,x0,z0){
     const g=this.g,vx=(g.position.x-x0)/Math.max(dt,1e-4),vz=(g.position.z-z0)/Math.max(dt,1e-4);
+    this.fireT+=dt;this.hitT+=dt;
     this.lvx=damp(this.lvx,vx,10,dt);this.lvz=damp(this.lvz,vz,10,dt);
     const r=g.rotation.y,c=Math.cos(r),s=Math.sin(r);
     let pitch=0;
     if(this.alive&&(this.state==='aim'||this.aiming)){const dy=(P.pos.y+P.eye)-(g.position.y+1.5),dd=Math.hypot(P.pos.x-g.position.x,P.pos.z-g.position.z);pitch=Math.atan2(dy,dd);}
     this.rig.flinch=this.flinch||0;
     animateSoldier(this.rig,{far:g.position.distanceToSquared(camera.position)>900,vx:this.alive?this.lvx*c-this.lvz*s:0,vz:this.alive?this.lvx*s+this.lvz*c:0,pitch,wpn:this.rig.wpn,aim:this.alive&&(this.state==='aim'||this.aiming)?1:0,
-      sprint:Math.hypot(this.lvx,this.lvz)>4.5,crouch:this.trainer&&this.ms&&!this.ms.sliding?clamp((1-SDHitbox.scaleOf(this.ms.eye))/(1-MOVE.eyeCrouch/MOVE.eyeStand),0,1):0,slide:this.trainer&&this.ms&&this.ms.sliding?clamp((MOVE.eyeStand-this.ms.eye)/(MOVE.eyeStand-MOVE.eyeSlide),0,1):0,air:this.trainer&&this.ms&&!this.ms.onGround,dead:this.alive?0:Math.min(1,this.deadT/0.5)},dt);
+      sprint:Math.hypot(this.lvx,this.lvz)>4.5,crouch:this.trainer&&this.ms&&!this.ms.sliding?clamp((1-SDHitbox.scaleOf(this.ms.eye))/(1-MOVE.eyeCrouch/MOVE.eyeStand),0,1):0,slide:this.trainer&&this.ms&&this.ms.sliding?clamp((MOVE.eyeStand-this.ms.eye)/(MOVE.eyeStand-MOVE.eyeSlide),0,1):0,air:this.trainer&&this.ms&&!this.ms.onGround,dead:this.alive?0:Math.min(1,this.deadT/0.5),
+      // GF-2: the shot's kick, then the bolt like the online rival (its next shot is 1.6 s away or more: same timing)
+      fire:this.fireT,bolt:this.alive&&this.fireT<GUNCFG.bolt?this.fireT/GUNCFG.bolt:0,hit:this.hitT,hitPart:this.hitPart,hitX:this.hitX,hitZ:this.hitZ,deathFront:this.deathFront},dt);
   }
   update0(dt){
     const g=this.g;
@@ -7797,7 +7926,7 @@ class Bot{
       const t=this.deadT;const fall=t<0.5?ss(t/0.5):1+Math.sin(Math.min(1,(t-0.5)/0.25)*Math.PI)*0.04;
       g.rotation.x=this.rig.v2?0:-fall*Math.PI/2*0.95;   // con ?pj=2 cae el propio personaje (death_back)
       g.position.x+=this.fallV.x*dt;g.position.z+=this.fallV.z*dt;this.fallV.multiplyScalar(Math.exp(-5*dt));
-      this.yaw+=this.spin*dt*Math.exp(-4*t);g.rotation.y=this.yaw;g.rotation.z=this.spin*0.08*ss(t/0.4);
+      this.spinA+=this.spin*dt*Math.exp(-4*t);this.yaw=this.yaw0+this.deathTurn*ss(t/0.4)+this.spinA;g.rotation.y=this.yaw;g.rotation.z=this.spin*0.08*ss(t/0.4);
       if(t>1.8)g.position.y-=dt*0.7;
       if(t>2.6){g.visible=false;const me=this;later(0.4,()=>{if((state==='playing'||state==='dead')&&me.mode===mode&&(!me.trainer||me.trainerActive))me.spawn();});}
       return;
@@ -7817,13 +7946,13 @@ class Bot{
       // crouch and slide: the soldier takes the pose (animate) and the hit zones follow the eye height,
       // exactly the rule of the server's hit zones for a player (SDHitbox.scaleOf), so the visible head is the hit head
       g.scale.y=1;this.hitG.scale.y=SDHitbox.scaleOf(this.ms.eye);
-      if(this.ms.onGround&&!this.ms.sliding){this.stepT+=dt*Math.hypot(this.ms.vx,this.ms.vz)/3;g.position.y+=Math.abs(Math.sin(this.stepT*9))*0.035;}
+      if(this.ms.onGround&&!this.ms.sliding&&!this.rig.v2){this.stepT+=dt*Math.hypot(this.ms.vx,this.ms.vz)/3;g.position.y+=Math.abs(Math.sin(this.stepT*9))*0.035;}
       this.trainerCombat(dt);
       return;
     }
     if(this.slot){
       const sl=this.slot;
-      if(sl.move){this.phase+=dt*sl.move.speed/sl.move.amp;g.position.x=sl.x+Math.sin(this.phase)*sl.move.amp;this.stepT+=dt;g.position.y=Math.abs(Math.sin(this.stepT*9))*0.035;}
+      if(sl.move){this.phase+=dt*sl.move.speed/sl.move.amp;g.position.x=sl.x+Math.sin(this.phase)*sl.move.amp;this.stepT+=dt;g.position.y=this.rig.v2?0:Math.abs(Math.sin(this.stepT*9))*0.035;}
       return;
     }
     if(gameTime-this.lastDamage>4&&this.hp<100)this.hp=Math.min(100,this.hp+30*dt);
@@ -7862,7 +7991,8 @@ class Bot{
         this.steer(mx/md*vt,mz/md*vt,dt);
         g.position.x+=this.vx*dt;g.position.z+=this.vz*dt;
         this.yaw=turnTo(this.yaw,Math.atan2(this.vx,this.vz),6*dt);
-        this.stepT+=dt;g.position.y=Math.abs(Math.sin(this.stepT*9))*0.04;
+        // the 3D character's walk clip moves its own hips (GF-2: this bounce on top was a second, unsynced one)
+        this.stepT+=dt;g.position.y=this.rig.v2?0:Math.abs(Math.sin(this.stepT*9))*0.04;
         break;}
       case 'watch':{
         g.position.y=0;this.steer(0,0,dt);g.position.x+=this.vx*dt;g.position.z+=this.vz*dt;
@@ -7903,7 +8033,7 @@ class Bot{
   steer(tx,tz,dt){const dx=tx-(this.vx||0),dz=tz-(this.vz||0),d=Math.hypot(dx,dz),m=BOT_ACCEL*dt;if(d<=m){this.vx=tx;this.vz=tz;}else{this.vx=(this.vx||0)+dx/d*m;this.vz=(this.vz||0)+dz/d*m;}}
   enterAim(){this.state='aim';this.aimT=0;this.lostT=0;const r=DIFFS[diff].react;this.reaction=rand(r[0],r[1])*(this.alertT>0?0.8:1);this.glint.visible=true;this.path=[];}
   shoot(){
-    STATS.botShots=(STATS.botShots||0)+1;
+    STATS.botShots=(STATS.botShots||0)+1;this.fireT=0;
     const df=this.trainer?DIFFS[TRAIN_DIFF[TRAIN.level]||1]:DIFFS[diff];
     this.g.updateMatrixWorld(true);
     const mz=this.muzzle.clone().applyMatrix4(this.g.matrixWorld);
@@ -7936,6 +8066,9 @@ class Bot{
   damage(dmg,part,dist,vel){
     this.hp-=dmg;this.lastDamage=gameTime;
     this.flinch=part==='head'?1:0.7;
+    // GF-2: the body flinches away from the shot (where the shooter is, in the body's frame: +z ahead, +x left)
+    {this.hitT=0;this.hitPart=part||'torso';const l=vel?Math.hypot(vel.x,vel.z):0,c=Math.cos(this.yaw),s=Math.sin(this.yaw);
+     const dx=l?-vel.x/l:Math.sin(this.yaw),dz=l?-vel.z/l:Math.cos(this.yaw);this.hitX=dx*c-dz*s;this.hitZ=dx*s+dz*c;}
     if(this.trainer&&this.brain)this.brain.hurt=true;
     if(!this.slot&&!this.trainer){this.alertT=4;this.spot=Math.max(this.spot,0.85);if(this.state!=='aim'&&this.hp>0){this.enterAim();this.reaction*=1.15;}}
     if(this.hp<=0){this.die(part,dist,vel);return true;}
@@ -7943,9 +8076,13 @@ class Bot{
   }
   die(part,dist,vel){
     this.alive=false;this.deadT=0;this.glint.visible=false;
-    // turn the body so it falls away from the shooter
+    // falls away from the shooter. GF-2 (31-10-2026): no more snap of the whole body in one frame. The 3D character
+    // falls backwards if the shot came from the front (death_back) and forwards if it came from behind (death_front);
+    // the box soldier always falls backwards, so it turns to face the shooter. Both turn over the first 0.4 s.
     const dx=vel?vel.x:Math.sin(this.yaw+Math.PI),dz=vel?vel.z:Math.cos(this.yaw+Math.PI);const l=Math.hypot(dx,dz)||1;
-    this.yaw=Math.atan2(-dx/l,-dz/l);this.g.rotation.y=this.yaw;
+    const face=Math.atan2(-dx/l,-dz/l),a=angDiff(face,this.yaw);
+    this.deathFront=!!this.rig.v2&&Math.abs(a)>Math.PI/2;
+    this.deathTurn=this.deathFront?angDiff(face+Math.PI,this.yaw):a;this.yaw0=this.yaw;this.spinA=0;
     const k=part==='head'?3.4:part==='torso'?2.4:1.6;this.fallV.set(dx/l*k,0,dz/l*k);
     this.spin=rand(-2,2)*(part==='head'?1:0.5);
   }
@@ -7989,7 +8126,7 @@ function damagePlayer(dmg,bot,head){
   if((mode==='range'&&!TRAIN.lethal)||(mode==='duel'&&!DUEL_LETHAL)){   // BOTS PUEDEN MATARTE: NO — you see where it came from, nothing else
     const rel=bearingDeg(bot.g.position.x,bot.g.position.z)-heading();const dd=$('#dmgdir div');dd.style.transform='rotate('+rel+'deg)';dd.classList.remove('on');void dd.offsetWidth;dd.classList.add('on');
     P.shake=Math.max(P.shake,0.25);STATS.wouldHit=(STATS.wouldHit||0)+1;return;}
-  P.hp-=dmg;P.lastHit=gameTime;P.shake=Math.max(P.shake,0.9);
+  P.hp-=dmg;P.lastHit=gameTime;P.shake=Math.max(P.shake,0.9);selfHit(head?'head':'torso',bot.g.position.x,bot.g.position.z);
   SFX.hurt();vibrate(head?120:60);
   const fr=$('#flashRed');fr.classList.remove('on');void fr.offsetWidth;fr.classList.add('on');
   const rel=bearingDeg(bot.g.position.x,bot.g.position.z)-heading();
@@ -7999,7 +8136,7 @@ function damagePlayer(dmg,bot,head){
   updateHpUI();
 }
 function killPlayer(bot,head){
-  P.alive=false;P.deadT=0;STATS.deaths++;STATS.botKills++;
+  P.alive=false;P.deadT=0;STATS.deaths++;STATS.botKills++;SELF.killFrom={x:bot.g.position.x,z:bot.g.position.z,t:performance.now()};
   input.scope=false;input.scopeToggle=false;input.scopeHeld=false;input.fireAim=false;input.fireAimShot=0;
   $('#kBots').textContent=STATS.botKills;
   addFeed(bot.name+' ▸ TÚ'+(head?' · <em>HEADSHOT</em>':'')+' · '+Math.round(bot.dist)+' m','dead');
@@ -8172,19 +8309,23 @@ function impactFX(hit,dist,size){
 // a hit on a body (bots, and the rival online): a spark, a red mist sprayed along the bullet and a
 // few drops; bigger on the head
 /* =================== VISIBILIDAD DE ENEMIGOS (GF-4, 30-10-2026) ===================
-   AJUSTES › JUGABILIDAD: NORMAL (default) · SILUETA MEJORADA · CONTORNO SUTIL. Online too since 30-10-2026 (owner: the
-   improvements are for the real game): the same options and the same drawing for every player, on rivals only.
+   AJUSTES › JUGABILIDAD: NORMAL (default) · SILUETA MEJORADA · CONTORNO. Online too since 30-10-2026 (owner: the
+   improvements are for the real game): the same options and the same drawing for every player.
    - Fair by construction: both effects are drawn WITH the depth test, as part of the enemy's own drawing. They can only
      appear on the pixels of the enemy that are really seen: never through walls, floors, cover or foliage, and no extra
      data about hidden rivals is needed.
-   - By apparent distance (distance × the zoom's FOV ratio): nothing up close, the rim from ~12 m, the outline from ~24 m.
-     With the 8× scope a 40 m enemy looks like 5 m away: no effect, and the outline never grows with the zoom.
-   - The outline is ~1.3 CSS pixels wide on every profile (BAJO draws fewer pixels: same look as ALTO, no advantage).
+   - By apparent distance (distance × the zoom's FOV ratio): nothing up close, the rim from ~12 m, the enemy outline
+     from ~14 m. With the 8× scope a 40 m enemy looks like 5 m away: no effect, and the outline never grows with the zoom.
+   - The outline is 1.35 CSS pixels wide on every profile (BAJO draws fewer pixels: same look as ALTO, no advantage).
    SILUETA: the enemy's material lifts its light up to +35 % and adds a soft warm rim at grazing angles (visHook).
-   CONTORNO: a thin inverted hull, pushed out along the normals in view space, in a soft warm white (VIS_HULL), ONLY
-   outside the figure: every character body writes 1 in the stencil and the hull draws where it is not 1. Without that,
-   a far enemy (~12 px wide) was covered by the outlines of its own arms, legs and rifle and looked white (first test). */
-const VIS={rim:{value:0},k:{value:1},w:{value:1.1},px:{value:0.002},out:{value:0},built:false};
+   CONTORNO: an inverted hull, pushed out along the normals in view space (VIS_HULL), ONLY outside the figure: every
+   character body writes 1 in the stencil and the hull draws where it is not 1. Without that, a far enemy (~12 px wide)
+   was covered by the outlines of its own arms, legs and rifle (first test, 30-10).
+   Colours (31-10-2026, owner: «un rojo un poco así opaco para ver desde lejos, rojo enemigo azul amigo»): a matt, almost
+   opaque red on rivals and blue on team-mates (online EQUIPOS; team-mates at any distance). It is not tone-mapped and
+   not fogged, so 150 m away it is still the same red (and still only on the pixels of the enemy that are seen). */
+const VIS={rim:{value:0},k:{value:1},w:{value:1.35},px:{value:0.002},out:{value:0},built:false,botKind:'foe'};   // botKind: tests/captures draw offline bots as team-mates
+const VIS_COL={foe:'#c42d22',mate:'#3a7ee0'};
 const VIS_HOOKED=new WeakSet();   // (not userData: clone() copies userData but not onBeforeCompile)
 const VIS_RIM='{float sdDist=length(vViewPosition)*uVisK;float sdW=uVisRim*smoothstep(12.0,30.0,sdDist);'+
   'if(sdW>0.0){float sdF=1.0-clamp(dot(normalize(normal),normalize(vViewPosition)),0.0,1.0);sdF=sdF*sdF*sdF;'+
@@ -8199,37 +8340,49 @@ function visHook(m){
       .replace('gl_FragColor = vec4( outgoingLight, diffuseColor.a );',VIS_RIM+'\n\tgl_FragColor = vec4( outgoingLight, diffuseColor.a );');};
   return m;
 }
-const VIS_HULL=[false,true].map(sk=>{const m=new T.MeshBasicMaterial({color:0xe9e1cc,side:T.BackSide,transparent:true,depthWrite:false,skinning:sk,
-    stencilWrite:true,stencilRef:1,stencilFunc:T.NotEqualStencilFunc,stencilWriteMask:0,stencilZPass:T.KeepStencilOp});   // only where no body is
-  m.onBeforeCompile=sh=>{sh.uniforms.uVisW=VIS.w;sh.uniforms.uVisPx=VIS.px;sh.uniforms.uVisOut=VIS.out;sh.uniforms.uVisK=VIS.k;
-    sh.vertexShader=sh.vertexShader.replace('#include <common>','#include <common>\nuniform float uVisW;uniform float uVisPx;varying float vSdD;')
-      .replace('#include <begin_vertex>','vec3 objectNormal = vec3( normal );\n#include <skinnormal_vertex>\n#include <begin_vertex>')
-      .replace('#include <project_vertex>','#include <project_vertex>\n{float sdD=max(-mvPosition.z,0.1);vSdD=sdD;vec3 sdN=normalize(normalMatrix*objectNormal);'+
-        'mvPosition.xyz+=sdN*(uVisW*sdD*uVisPx);gl_Position=projectionMatrix*mvPosition;}');
-    sh.fragmentShader=sh.fragmentShader.replace('#include <common>','#include <common>\nuniform float uVisOut;uniform float uVisK;varying float vSdD;')
-      .replace('gl_FragColor = vec4( outgoingLight, diffuseColor.a );','gl_FragColor = vec4( outgoingLight, diffuseColor.a*uVisOut*smoothstep(24.0,34.0,vSdD*uVisK) );');};
-  return m;});
+// one pair (rigid, skinned) per colour; fade = apparent distances (m) where the outline goes from 0 to full
+function visHullMats(hex,opacity,fade){const F={value:new T.Vector2(fade[0],fade[1])};
+  return [false,true].map(sk=>{const m=new T.MeshBasicMaterial({color:new T.Color(hex).convertSRGBToLinear(),opacity,side:T.BackSide,transparent:true,depthWrite:false,skinning:sk,
+      fog:false,toneMapped:false,stencilWrite:true,stencilRef:1,stencilFunc:T.NotEqualStencilFunc,stencilWriteMask:0,stencilZPass:T.KeepStencilOp});   // only where no body is
+    m.onBeforeCompile=sh=>{sh.uniforms.uVisW=VIS.w;sh.uniforms.uVisPx=VIS.px;sh.uniforms.uVisOut=VIS.out;sh.uniforms.uVisK=VIS.k;sh.uniforms.uVisFade=F;
+      sh.vertexShader=sh.vertexShader.replace('#include <common>','#include <common>\nuniform float uVisW;uniform float uVisPx;varying float vSdD;')
+        .replace('#include <begin_vertex>','vec3 objectNormal = vec3( normal );\n#include <skinnormal_vertex>\n#include <begin_vertex>')
+        .replace('#include <project_vertex>','#include <project_vertex>\n{float sdD=max(-mvPosition.z,0.1);vSdD=sdD;vec3 sdN=normalize(normalMatrix*objectNormal);'+
+          'mvPosition.xyz+=sdN*(uVisW*sdD*uVisPx);gl_Position=projectionMatrix*mvPosition;}');
+      sh.fragmentShader=sh.fragmentShader.replace('#include <common>','#include <common>\nuniform float uVisOut;uniform float uVisK;uniform vec2 uVisFade;varying float vSdD;')
+        .replace('gl_FragColor = vec4( outgoingLight, diffuseColor.a );','gl_FragColor = vec4( outgoingLight, diffuseColor.a*uVisOut*clamp((vSdD*uVisK-uVisFade.x)/(uVisFade.y-uVisFade.x),0.0,1.0) );');};
+    return m;});}
+const VIS_HULL={foe:visHullMats(VIS_COL.foe,0.92,[14,24]),mate:visHullMats(VIS_COL.mate,0.85,[-2,-1])};
 // the rule in one place (tests call it): chosen in AJUSTES, during play (offline and online alike)
 function visOn(md,choice,st){return choice!=='normal'&&(st==='playing'||st==='dead');}
-// one hull per mesh of the enemy, a child of it (same skeleton, same LOD switch, same visibility)
-function visBuild(R){
+// one hull per mesh of the character, a child of it (same skeleton, same LOD switch, same visibility); kind = foe | mate
+function visBuild(R,kind){
   for(const h of R.visH||[])if(h.parent)h.parent.remove(h);
-  const src=[];if(R.v2)src.push(...R.v2.meshes);else R.root.traverse(o=>{if(o.isMesh&&!o.userData.visHull)src.push(o);});
-  R.visH=src.map(m=>{const h=m.isSkinnedMesh?new T.SkinnedMesh(m.geometry,VIS_HULL[1]):new T.Mesh(m.geometry,VIS_HULL[0]);
+  const M=VIS_HULL[kind]||VIS_HULL.foe,src=[];if(R.v2)src.push(...R.v2.meshes);else R.root.traverse(o=>{if(o.isMesh&&!o.userData.visHull)src.push(o);});
+  R.visH=src.map(m=>{const h=m.isSkinnedMesh?new T.SkinnedMesh(m.geometry,M[1]):new T.Mesh(m.geometry,M[0]);
     if(m.isSkinnedMesh)h.bind(m.skeleton,m.bindMatrix);h.userData.visHull=1;h.frustumCulled=m.frustumCulled;h.castShadow=false;h.receiveShadow=false;m.add(h);return h;});
-  R.visHv=R.v2;VIS.built=true;
+  R.visHv=R.v2;R.visK=kind;VIS.built=true;
+}
+// who is drawn, and in which colour: online every rival of the room (the 1v1 rival too) red and team-mates blue; offline
+// the bots and the range's targets, rivals (31-10-2026: the 1v1 online rival had been left out, only the rooms of several
+// players had it)
+function visWho(){
+  if(mode!=='online')return activeBots().map(b=>[b,VIS.botKind]);   // the duel bots, or the range's targets and bots
+  const out=Object.keys(REMOTES).map(id=>[REMOTES[id],netMate(id)?'mate':'foe']);
+  if(REMOTE&&!netMulti())out.push([REMOTE,'foe']);
+  return out;
 }
 const _visV=new T.Vector2();
 function visFrame(){
   const on=visOn(mode,SETTINGS.enemyVis,state),out=on&&SETTINGS.enemyVis==='contorno';
-  VIS.rim.value=on?(out?0.4:1):0;VIS.out.value=out?0.45:0;
+  VIS.rim.value=on?(out?0.4:1):0;VIS.out.value=out?1:0;
   const tf=Math.tan(camera.fov*Math.PI/360);VIS.k.value=tf/Math.tan(BASE_FOV*Math.PI/360);
   VIS.px.value=2*tf/Math.max(1,renderer.getSize(_visV).y);
   if(!out&&!VIS.built)return;
-  const who=mode==='online'?Object.keys(REMOTES).map(id=>[REMOTES[id],!netMate(id)]):BOTS.map(b=>[b,true]);
-  for(const [b,rival] of who){const R=b.rig;if(!R)continue;
-    if(out&&rival&&(!R.visH||R.visHv!==R.v2))visBuild(R);
-    if(R.visH)for(const h of R.visH)h.visible=out&&rival&&b.alive;}
+  for(const [b,kind] of visWho()){const R=b.rig;if(!R)continue;
+    if(out&&(!R.visH||R.visHv!==R.v2))visBuild(R,kind);
+    else if(R.visH&&R.visK!==kind){const M=VIS_HULL[kind]||VIS_HULL.foe;for(const h of R.visH)h.material=M[h.isSkinnedMesh?1:0];R.visK=kind;}
+    if(R.visH)for(const h of R.visH)h.visible=out&&b.alive;}
 }
 const BLOOD_FX={red:[0x7a140e,0x4e0b07],green:[0x2f6e12,0x1d4a08],yellow:[0x8a7410,0x5c4a06]};
 function bodyFX(pt,dir,head,dist){
@@ -8312,7 +8465,7 @@ function bulletHit(h,b){
 }
 /* ---- shot: direction from the last rendered aim (reticle), never from recoil or shake ---- */
 function vib(ms){if(SETTINGS.vibrate&&navigator.vibrate)try{navigator.vibrate(ms);}catch(e){}}
-function doFire(e,kind){vib(14);
+function doFire(e,kind){vib(14);SELF.fireT=0;
   const pistol=kind==='pistol',shotgun=kind==='shotgun',cfg=pistol?PCFG:shotgun?SCFG:GUNCFG,core=pistol?PCORE:shotgun?SCORE:WCORE;
   STATS.shots++;if(STATS.firstShot<0)STATS.firstShot=gameTime;RATS.shot={at:performance.now(),x:PM.x,z:PM.z};
   const scoped=!pistol&&!shotgun&&e.scoped;
@@ -9268,7 +9421,10 @@ function applyLook(){
    al punto real al que apuntas. Nada de esto llega al servidor. */
 const TP_OFF={r:0.55,u:0.22,b:2.3};
 const TPV={k:0,on:false,cx:0,cy:0,rayT:0,pt:new T.Vector3(),dir:new T.Vector3()};
-const SELF={g:null,rig:null,deadT:0,relW:0};
+const SELF={g:null,rig:null,deadT:0,relW:0,fireT:9,hitT:9,hitPart:'torso',hitX:0,hitZ:1,deathFront:false,killFrom:null,wasAlive:true};
+// GF-2: you are hit (sx, sz: where the shooter stands): your body in 3rd person flinches away from it
+function selfHit(part,sx,sz){SELF.hitT=0;SELF.hitPart=part||'torso';const r=SDHitbox.bodyYaw(P.yaw),c=Math.cos(r),s=Math.sin(r),dx=sx-P.pos.x,dz=sz-P.pos.z,l=Math.hypot(dx,dz)||1;
+  SELF.hitX=(dx*c-dz*s)/l;SELF.hitZ=(dx*s+dz*c)/l;}
 function tpCamera(dt,ads,px,py,pz){
   const want=SETTINGS.view==='tp'&&(state==='playing'||state==='dead'||state==='paused')?1:0;
   TPV.k=damp(TPV.k,want,8,dt);
@@ -9304,16 +9460,19 @@ function selfFrame(dt,px,py,pz){
   if(!SELF.g){const g=new T.Group();g.rotation.order='YXZ';SELF.g=g;SELF.rig=makeSoldier(RIVAL_MAT);g.add(SELF.rig.root);scene.add(g);
     if(SKIN_ON)pj2SetPack(SELF.rig,SKINS[SKIN].pack);}
   const R=SELF.rig,G=AG(),wp=LOAD.active==='knife'||LOAD.active==='pistol'||LOAD.active==='shotgun'?LOAD.active:'rifle';
-  SELF.deadT=P.alive?0:SELF.deadT+dt;
+  SELF.deadT=P.alive?0:SELF.deadT+dt;SELF.fireT+=dt;SELF.hitT+=dt;
+  if(!P.alive&&SELF.wasAlive){const K=SELF.killFrom,r=SDHitbox.bodyYaw(P.yaw);SELF.deathFront=!!(K&&performance.now()-K.t<1500&&(K.x-px)*Math.sin(r)+(K.z-pz)*Math.cos(r)<0);}
+  SELF.wasAlive=P.alive;
   SELF.g.visible=P.alive||SELF.deadT<2.6;
   SELF.g.position.set(px,py,pz);SELF.g.rotation.y=SDHitbox.bodyYaw(P.yaw);
   const r=SELF.g.rotation.y,c=Math.cos(r),s=Math.sin(r),vx=P.alive?PM.vx:0,vz=P.alive?PM.vz:0;
   const kk=SDHitbox.scaleOf(PM.eye),slide=PM.sliding?1:0,cr=slide?0:clamp((1-kk)/(1-MOVE.eyeCrouch/MOVE.eyeStand),0,1);
   SELF.relW+=((G.state==='reload'?1:0)-SELF.relW)*Math.min(1,dt*8);
-  const relDur=wp==='pistol'?PCFG.reload:wp==='shotgun'?0.8:GUNCFG.reload;
+  const relDur=wp==='pistol'?PCFG.reload:GUNCFG.reload,SH=SCFG.shells;
+  const relPh=G.state!=='reload'?0:wp==='shotgun'?(G.t<SH.start?0:((G.t-SH.start)%SH.each)/SH.each):clamp(G.t/relDur,0,1);
   animateSoldier(R,{far:false,vx:vx*c-vz*s,vz:vx*s+vz*c,crouch:cr,slide,air:!PM.onGround&&P.alive,sprint:!!PM.sprinting,aim:G.ads||0,
-    pitch:P.pitch,wpn:wp,reload:SELF.relW,relPh:G.state==='reload'?clamp(G.t/relDur,0,1):0,bolt:wp==='rifle'&&WCORE.state==='bolt'?clamp(WCORE.t/GUNCFG.bolt,0,1):0,
-    stab:0,dead:P.alive?0:Math.min(1,SELF.deadT/0.5)},dt);
+    pitch:P.pitch,wpn:wp,reload:SELF.relW,relPh,bolt:wp==='rifle'&&WCORE.state==='bolt'?clamp(WCORE.t/GUNCFG.bolt,0,1):0,
+    stab:0,dead:P.alive?0:Math.min(1,SELF.deadT/0.5),fire:SELF.fireT,hit:SELF.hitT,hitPart:SELF.hitPart,hitX:SELF.hitX,hitZ:SELF.hitZ,deathFront:SELF.deathFront},dt);
   SELF.g.rotation.x=R.v2||P.alive?0:-ss((SELF.deadT-0.12)/0.5)*Math.PI/2*0.95;
 }
 function updateCamera(dt,alpha){
@@ -9700,10 +9859,11 @@ class RemotePlayer{
     const hm=new T.MeshBasicMaterial({visible:false});
     for(const p of SDHitbox.PARTS){const geo=p.type==='sphere'?new T.SphereGeometry(p.r,10,8):new T.BoxGeometry(p.hx*2,p.hy*2,p.hz*2);const m=new T.Mesh(geo,hm);m.position.set(0,p.y,0);m.userData={remote:true,part:p.part};this.body.add(m);this.hit.push(m);}
     scene.add(g);g.visible=false;this.alive=false;this.deadT=0;this.walk=0;this.flashT=0;this.pose=null;
+    this.fireT=9;this.hitT=9;this.hitPart='torso';this.hitX=0;this.hitZ=1;this.deathFront=false;this.killFrom=null;
   }
   update(pose,dt){
     if(!pose){this.g.visible=false;this.alive=false;return;}
-    this.pose=pose;
+    this.pose=pose;this.fireT+=dt;this.hitT+=dt;
     const k=SDHitbox.scaleOf(pose.eye);
     this.g.position.set(pose.x,pose.y,pose.z);this.g.rotation.y=SDHitbox.bodyYaw(pose.yaw);
     this.body.scale.set(1,k,1);
@@ -9714,12 +9874,18 @@ class RemotePlayer{
     this.boltT=pose.ws==='bolt'?(this.boltT||0)+dt:0;
     this.stabT=wp==='knife'&&pose.ks==='attack'?(this.stabT||0)+dt:0;
     if(this.rig.pump)this.rig.pump.position.z=0.56-(wp==='shotgun'&&this.boltT>0?Math.sin(Math.min(1,this.boltT/SCFG.bolt)*Math.PI)*0.09:0);
-    const relDur=wp==='pistol'?PCFG.reload:wp==='shotgun'?0.8:GUNCFG.reload;
+    const relDur=wp==='pistol'?PCFG.reload:GUNCFG.reload,SH=SCFG.shells;
+    // the shotgun loads one shell at a time: its phase is the current shell's (GF-2: before, an 0.8 s cycle that did not
+    // follow the shells and snapped back at the start of each one)
+    const relPh=wp==='shotgun'?(this.relT<SH.start?0:((this.relT-SH.start)%SH.each)/SH.each):(this.relT%relDur)/relDur;
     const r=this.g.rotation.y,c=Math.cos(r),s=Math.sin(r),vx=pose.vx||0,vz=pose.vz||0;
+    // the moment it dies: it falls away from whoever killed it (the 'kill' message says who)
+    if(!pose.alive&&this.alive){const K=this.killFrom;this.deathFront=!!(K&&performance.now()-K.t<1500&&(K.x-pose.x)*s+(K.z-pose.z)*c<0);}
     const slide=pose.mode==='slide'?clamp((MOVE.eyeStand-(pose.eye||MOVE.eyeStand))/(MOVE.eyeStand-MOVE.eyeSlide),0,1):0,cr=slide?0:clamp((1-k)/(1-MOVE.eyeCrouch/MOVE.eyeStand),0,1);
     animateSoldier(this.rig,{far:this.g.position.distanceToSquared(camera.position)>900,vx:pose.alive?vx*c-vz*s:0,vz:pose.alive?vx*s+vz*c:0,crouch:cr,slide,air:!pose.g&&pose.alive,sprint:pose.mode==='sprint',aim:pose.ads||0,
-      pitch:pose.pitch,wpn:wp,reload:this.relW,relPh:(this.relT%relDur)/relDur,bolt:wp==='rifle'&&this.boltT>0?Math.min(1,this.boltT/GUNCFG.bolt):0,
-      stab:this.stabT>0?Math.min(1,this.stabT/0.3):0,dead:pose.alive?0:Math.min(1,this.deadT/0.5)},dt);
+      pitch:pose.pitch,wpn:wp,reload:this.relW,relPh,bolt:wp==='rifle'&&this.boltT>0?Math.min(1,this.boltT/GUNCFG.bolt):0,
+      stab:this.stabT>0?Math.min(1,this.stabT/0.3):0,dead:pose.alive?0:Math.min(1,this.deadT/0.5),
+      fire:this.fireT,hit:this.hitT,hitPart:this.hitPart,hitX:this.hitX,hitZ:this.hitZ,deathFront:this.deathFront},dt);
     const sp=Math.hypot(vx,vz);
     // the rival heard nearby (within 30 m, panned): footsteps (not crouched or sliding) and the bolt / reload
     const ddx=pose.x-P.pos.x,ddz=pose.z-P.pos.z,dist=Math.hypot(ddx,ddz);
@@ -9738,7 +9904,10 @@ class RemotePlayer{
   setMate(on){if(on&&!this.mate){const c=document.createElement('canvas');c.width=c.height=64;const x=c.getContext('2d');x.fillStyle='#4da3ff';x.strokeStyle='#0b1a2a';x.lineWidth=5;x.beginPath();x.moveTo(32,56);x.lineTo(10,18);x.lineTo(54,18);x.closePath();x.stroke();x.fill();
       this.mate=new T.Sprite(new T.SpriteMaterial({map:new T.CanvasTexture(c),depthTest:false,transparent:true}));this.mate.scale.set(0.32,0.32,1);this.mate.position.set(0,2.15,0);this.mate.renderOrder=5;this.g.add(this.mate);}
     if(this.mate)this.mate.visible=!!on&&this.alive;}
-  shoot(w){this.flashT=0.06;this.flash.material.rotation=Math.random()*6;const pi=w==='pistol',sg=w==='shotgun',g=this.rig.w[pi?'pistol':sg?'shotgun':'rifle'],m=g.userData.grips.muzzle;this.flash.position.set(m[0],m[1],m[2]+0.04);this.flash.scale.setScalar(pi?0.18:sg?0.5:0.35);}
+  // GF-2: hit by a shot (sx, sz: where the shooter stands): the body flinches away from it
+  hitBy(part,sx,sz){this.hitT=0;this.hitPart=part||'torso';const p=this.pose;if(!p){this.hitX=0;this.hitZ=1;return;}
+    const r=this.g.rotation.y,c=Math.cos(r),s=Math.sin(r),dx=sx-p.x,dz=sz-p.z,l=Math.hypot(dx,dz)||1;this.hitX=(dx*c-dz*s)/l;this.hitZ=(dx*s+dz*c)/l;}
+  shoot(w){this.flashT=0.06;this.fireT=0;this.flash.material.rotation=Math.random()*6;const pi=w==='pistol',sg=w==='shotgun',g=this.rig.w[pi?'pistol':sg?'shotgun':'rifle'],m=g.userData.grips.muzzle;this.flash.position.set(m[0],m[1],m[2]+0.04);this.flash.scale.setScalar(pi?0.18:sg?0.5:0.35);}
 }
 let REMOTE=null;
 /* SALAS PERSONALIZADAS (28-10-2026, docs/SALAS-PERSONALIZADAS.md): en 'todos' y 'equipos' hay hasta 5 rivales (personas o
@@ -9746,6 +9915,8 @@ let REMOTE=null;
 const REMOTES={};
 const netMulti=()=>!!(NET.N&&NET.N.mode&&NET.N.mode!=='duelo');
 const netMate=id=>{const N=NET.N;return !!(N&&N.mode==='equipos'&&N.teams&&N.teams[id]&&N.teams[id]===N.teams[N.you]);};
+const netPosOf=id=>{const N=NET.N;if(!N)return null;if(id===N.you)return {x:P.pos.x,z:P.pos.z};const p=netMulti()?N.remotePose(id):N.remotePose();return p?{x:p.x,z:p.z}:null;};
+const netBody=id=>{const N=NET.N;if(!N||id===N.you)return null;return netMulti()?REMOTES[id]||null:REMOTE;};
 const netName=id=>{const N=NET.N;if(!N)return 'RIVAL';if(id===N.you)return 'TÚ';const p=(N.players||[]).find(q=>q&&q.id===id);return ((N.names&&N.names[id])||(p&&p.name)||'RIVAL');};
 function remoteFor(id){
   if(REMOTES[id])return REMOTES[id];
@@ -9921,10 +10092,13 @@ function netEvent(e){
         const rp=netMulti()?N.remotePose(e.by):N.remotePose();if(rp){const rel=bearingDeg(rp.x,rp.z)-heading();const dd=$('#dmgdir div');dd.style.transform='rotate('+rel+'deg)';dd.classList.remove('on');void dd.offsetWidth;dd.classList.add('on');}
         SDWeapon.kickRecoil(RECOIL,0.03,rand(-0.03,0.03),GUNCFG.recoil);updateHpUI();
       }
+      // GF-2: whoever was hit flinches away from the shot (seen from outside; yourself in 3rd person)
+      {const sp=netPosOf(e.by),R=netBody(e.to);if(sp){if(R)R.hitBy(e.part,sp.x,sp.z);if(e.to===N.you)selfHit(e.part,sp.x,sp.z);}}
       break;
     case 'kill':{
       const multi=netMulti(),other=multi?(e.by===N.you?e.to:e.by):N.you==='A'?'B':'A',names=Object.assign({},N.names||{},{[other]:netName(other)});
       netScoreHud();
+      {const sp=netPosOf(e.by),R=netBody(e.to);if(sp){const K={x:sp.x,z:sp.z,t:performance.now()};if(R)R.killFrom=K;if(e.to===N.you)SELF.killFrom=K;}}
       const tag=e.weapon==='knife'?' · NAVAJA':e.part==='head'?' · <em>HEADSHOT</em>':e.weapon==='shotgun'?' · ESCOPETA':'';
       if(e.by===N.you){
         STATS.kills++;STATS.longest=Math.max(STATS.longest,e.dist);
@@ -10819,7 +10993,7 @@ if(FLORA.on){const gl=new T.GLTFLoader();let n=2;
       // the town's ground must exist first (rays land on it)
       if(P3W.kit)go();else{const w=setInterval(()=>{if(P3W.kit){clearInterval(w);go();}},300);}}}}
 
-window.__SD={MOVE_CLASSIC,MOV_CLASSIC,VIS,visOn,visFrame,PROF,KTX2,R2_ON,R2_URL,PIC,GYRO,gyroEv,crossApply,btnPress,settingsChanged,perfTexMB(){const t=perfTextures();return {real:SDPerf.textureMB(t),asRGBA:SDPerf.textureMB(t.map(x=>Object.assign({},x,{bytes:0})))};},REMOTES,netScoreHud,shotTargets,MINI,miniLayer,miniPing,clockFrame,setOffTime,get OFF_TIME(){return OFF_TIME;},ACC,accRefresh,INV,invSync,camoApply,openInv,invOpenBox,WSKIN,WS_ST,setWskin,get RIF(){return RIF;},TPV,SELF,get PROFILE(){return PROFILE;},openProfile,endMatch,PJ_MIX,MIX_ORDER,SKINS,get SKIN(){return SKIN;},setSkin,pj2SetPack,rivalSkin,PERF,perfRun,HUD2,get H2(){return HUD2?H2:null;},leanIn:HUD2?leanIn:null,h2Frame:HUD2?h2Frame:null,PJ2,pj2Load,CASA,casaLoad,XL,casaxlLoad,FLORA,RATS,RAT_WORLD,ratsFrame,SHADOW_FADE,setDuelLethal,get DUEL_LETHAL(){return DUEL_LETHAL;},gfxDiagText,get P3ON(){return P3ON;},COBCC,damagePlayer,TEX,sunFollow,setSunSnap(on){SUN_SNAP=!!on;},sun,P0,E10,e10Lod,DIAG,setTrainMove,LIGHT:{sun,hemi,skyMat,LOOK,P3},P3W,freeze(on){SIM_FREEZE=!!on;},SHOT,VMA,makeSoldier,animateSoldier,BOT_MAT,scene,camera,RemotePlayer,PMprev,PIS,PROOT,RIF,WROOT,SHO_:null,MANUAL,advance(ms){frameBody(last+ms);},get LAST_PELLETS(){return LAST_PELLETS;},SCORE,SCFG,SROOT,SHO,setPrimaryChoice,get PRIMARY(){return PRIMARY;},PCORE,PCFG,setWorld,WORLDS,get WORLD_ID(){return WORLD_ID;},renderer,GFX,gfxApply,get NET(){return NET;},get REMOTE(){return REMOTE;},W,get NAV(){return NAV;},setOffMap,get OFFMAP(){return OFFMAP;},TOUCH,EDIT,openEditor,get SETTINGS(){return SETTINGS;},get LAYOUT(){return LAYOUT;},checkOrientation,MAT,LOAD,TRAINERS,get RANGE_BOTS(){return RANGE_BOTS;},TRAIN,setTrain,setLethal,kitNote,GINS,TDIAG,AU,get TOUCH_EVENTS(){return TOUCH_EVENTS;},impactFX,bodyFX,get DECALS(){return DECALS;},surfaceOf,soundDelay,aimSelfTest,P,PM,WS,WCORE,RECOIL,AIM,BOTS,DUMMIES,BULLETS,EVENTS,PARTS,STATS,get state(){return state;},get mode(){return mode;},setMode,input,startMatch,simTick,frame,toMenu,pause,resume};
+window.__SD={MOVE_CLASSIC,MOV_CLASSIC,VIS,VIS_COL,VIS_HULL,visOn,visFrame,visWho,selfHit,PROF,KTX2,R2_ON,R2_URL,PIC,GYRO,gyroEv,crossApply,btnPress,settingsChanged,perfTexMB(){const t=perfTextures();return {real:SDPerf.textureMB(t),asRGBA:SDPerf.textureMB(t.map(x=>Object.assign({},x,{bytes:0})))};},REMOTES,netScoreHud,shotTargets,MINI,miniLayer,miniPing,clockFrame,setOffTime,get OFF_TIME(){return OFF_TIME;},ACC,accRefresh,INV,invSync,camoApply,openInv,invOpenBox,WSKIN,WS_ST,setWskin,get RIF(){return RIF;},TPV,SELF,get PROFILE(){return PROFILE;},openProfile,endMatch,PJ_MIX,MIX_ORDER,SKINS,get SKIN(){return SKIN;},setSkin,pj2SetPack,rivalSkin,PERF,perfRun,HUD2,get H2(){return HUD2?H2:null;},leanIn:HUD2?leanIn:null,h2Frame:HUD2?h2Frame:null,PJ2,pj2Load,CASA,casaLoad,XL,casaxlLoad,FLORA,RATS,RAT_WORLD,ratsFrame,SHADOW_FADE,setDuelLethal,get DUEL_LETHAL(){return DUEL_LETHAL;},gfxDiagText,get P3ON(){return P3ON;},COBCC,damagePlayer,TEX,sunFollow,setSunSnap(on){SUN_SNAP=!!on;},sun,P0,E10,e10Lod,DIAG,setTrainMove,LIGHT:{sun,hemi,skyMat,LOOK,P3},P3W,freeze(on){SIM_FREEZE=!!on;},SHOT,VMA,makeSoldier,animateSoldier,BOT_MAT,scene,camera,RemotePlayer,PMprev,PIS,PROOT,RIF,WROOT,SHO_:null,MANUAL,advance(ms){frameBody(last+ms);},get LAST_PELLETS(){return LAST_PELLETS;},SCORE,SCFG,SROOT,SHO,setPrimaryChoice,get PRIMARY(){return PRIMARY;},PCORE,PCFG,setWorld,WORLDS,get WORLD_ID(){return WORLD_ID;},renderer,GFX,gfxApply,get NET(){return NET;},get REMOTE(){return REMOTE;},W,get NAV(){return NAV;},setOffMap,get OFFMAP(){return OFFMAP;},TOUCH,EDIT,openEditor,get SETTINGS(){return SETTINGS;},get LAYOUT(){return LAYOUT;},checkOrientation,MAT,LOAD,TRAINERS,get RANGE_BOTS(){return RANGE_BOTS;},TRAIN,setTrain,setLethal,kitNote,GINS,TDIAG,AU,get TOUCH_EVENTS(){return TOUCH_EVENTS;},impactFX,bodyFX,get DECALS(){return DECALS;},surfaceOf,soundDelay,aimSelfTest,P,PM,WS,WCORE,RECOIL,AIM,BOTS,DUMMIES,BULLETS,EVENTS,PARTS,STATS,get state(){return state;},get mode(){return mode;},setMode,input,startMatch,simTick,frame,toMenu,pause,resume};
 })();
 </script>
 

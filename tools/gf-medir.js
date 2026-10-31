@@ -4,7 +4,7 @@
    animados por fotograma, y el tiempo de CPU por partes (__SD.PROF, ?prof=1).
      node tools/gf-medir.js <etiqueta> [segundos=8]        → .work/gf/<etiqueta>.json
    env GPU=1: Chromium con la GPU del PC (si no, WebGL por software: vale para la CPU por partes, NO para FPS del móvil).
-   env ONLY=arena,pueblo,sala5 · env URLX="&gf=1" (banderas extra). */
+   env ONLY=arena,pueblo,sala5 · env URLX="&gf=1" (banderas extra) · env PAGE=_antes.html (otra versión de la página). */
 'use strict';
 const { chromium } = require('playwright');
 const fs = require('fs'), path = require('path');
@@ -30,7 +30,7 @@ const stats = a => { const s = a.slice().sort((x, y) => x - y), q = f => s[Math.
     const p = await ctx.newPage(), errs = [];
     p.on('pageerror', e => errs.push(e.message));
     const q = '?prof=1' + URLX + (gs ? '&server=' + encodeURIComponent('http://127.0.0.1:' + gs.port) : '');
-    await p.goto(srv.url + q, { timeout: 180000 });
+    await p.goto(srv.url + (process.env.PAGE || "") + q, { timeout: 180000 });   // env PAGE=_antes.html: another build (git show HEAD:index.html > _antes.html)
     await p.waitForFunction(() => window.__SD && __SD.WORLDS, null, { timeout: 180000 });
     await p.evaluate(() => { HTMLCanvasElement.prototype.requestPointerLock = function () {}; });
     if (!out.renderer) out.renderer = await p.evaluate(() => { const g = __SD.renderer.getContext(), e = g.getExtension('WEBGL_debug_renderer_info'); return e ? g.getParameter(e.UNMASKED_RENDERER_WEBGL) : '?'; });

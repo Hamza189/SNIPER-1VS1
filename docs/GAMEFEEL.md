@@ -10,7 +10,8 @@ juego estable intacto (todo lo nuevo como opción) y el servidor autoritativo in
 |---|---|---|
 | GF-0 | Auditoría (movimiento, red, bots, animaciones, cámara) y medición por partes del fotograma | HECHO |
 | GF-1 | Movimiento **TÁCTICO**: reglamento del servidor y cámara nueva para todos (aprobado por el propietario) | IMPLEMENTADO · PROBADO EN NAVEGADOR · PROBADO ONLINE · PENDIENTE DE VALIDACIÓN EN IPHONE |
-| GF-4 | **Visibilidad de enemigos** (AJUSTES › JUGABILIDAD, por defecto NORMAL, online también) | IMPLEMENTADO · PROBADO EN NAVEGADOR · PENDIENTE DE VALIDACIÓN EN IPHONE |
+| GF-2 | **Transiciones de animación** (31-10): esprint, salto, muerte, apuntar y cambio de arma sin saltos; retroceso al disparar, reacción al impacto (online también), aterrizaje y caída hacia delante | IMPLEMENTADO · PROBADO EN NAVEGADOR · PROBADO ONLINE (servidor local) · PENDIENTE DE VALIDACIÓN EN IPHONE |
+| GF-4 | **Visibilidad de enemigos** (AJUSTES › JUGABILIDAD, por defecto NORMAL, online también); desde el 31-10 el CONTORNO es rojo en los enemigos y azul en los compañeros | IMPLEMENTADO · PROBADO EN NAVEGADOR · PROBADO ONLINE (servidor local) · PENDIENTE DE VALIDACIÓN EN IPHONE |
 | GF-5 | Los bots se animan **una vez por fotograma** (antes, 2 veces a 60 FPS y 4 a 30) | IMPLEMENTADO · PROBADO EN NAVEGADOR |
 
 La primera publicación no tocó `core/` ni `server/`. La segunda, aprobada por el propietario, cambia el reglamento de
@@ -49,7 +50,7 @@ movimiento de `core/config.js` y vuelve a publicar el servidor.
 - Tienen **29 clips**: andar en 4 direcciones, correr, agachado, deslizar, saltar, apuntar, disparar, recargar, navaja,
   impacto y muerte.
 - Se mezclan por pesos calculados en cada fotograma, con la cadencia sincronizada con la velocidad real.
-- Lo que falla:
+- Lo que fallaba (corregido el 31-10 en GF-2, salvo el peek):
   - el sprint, el salto y la muerte entran **de golpe** (pesos 0/1);
   - clips sin usar: `jump_land`, `fire_*`, `death_front`, el inicio de `fire_rifle`;
   - la recarga de la escopeta del rival no sigue a los cartuchos;
@@ -123,21 +124,109 @@ para tenerlo para mí en offline, que ni voy a jugar solo»). Desde entonces es 
   - El aviso de versión nueva del menú le pide recargar.
   - Subir el número habría dejado esas páginas antiguas sin poder conectar y sin explicación.
 
+## GF-2 — Transiciones de animación (31-10-2026)
+Petición del propietario: «Sigue mejorando animaciones».
+
+Antes, cuando el juego cambiaba de estado de golpe (empezar o dejar de esprintar, saltar, aterrizar, morir, apuntar los
+bots, cambiar de arma), el personaje saltaba de una postura a otra en un solo fotograma. Ahora cada cambio se mezcla en
+un tiempo corto y se usan los clips que había sin usar. Se ve en los rivales online, en los bots y en tu personaje en
+3ª persona (`client/soldier2.js`, funciones `blend` y `plan`).
+
+**Medido** con `node tools/anim-sheet.js op4` (personaje MILITAR, el de MEDIO; con SOLDADO da cifras parecidas): lo que
+más gira un hueso en un solo fotograma a 60 FPS. Andar normal ronda los 13° y esprintar, los 18°.
+
+| Caso | Antes | Ahora |
+|---|---|---|
+| Soltar el esprint | 99° | 18° (el propio paso de carrera) |
+| Saltar y aterrizar andando | 71° | 13° |
+| Salto largo (0,9 s en el aire) | 37° | 7° |
+| Morir andando | 130° | 21° |
+| Morir por un tiro en la espalda | 130° (caía hacia atrás) | 19° (cae hacia delante) |
+| Disparo y bombeo de la escopeta | 45° | 15° (es el retroceso) |
+| Recarga de la escopeta | 82° | 18° |
+| Apuntar de los bots | 21° | 2° |
+| Cambio de arma (rifle → pistola) | 41° | 5° |
+| Impacto | 33° | 11° |
+| Disparo de pistola | 0° (no se movía) | 5° (retroceso) |
+
+Hoja de fotogramas antes y después: `docs/img/transiciones-antes-ahora.jpg`.
+
+**Qué cambia**:
+- **Mezclas cortas**: esprint 0,22 s al entrar y al salir; salto 0,08 s al despegar y 0,1 s al aterrizar; muerte 0,25 s;
+  apuntar 0,15–0,18 s; cambio de arma 0,22 s. Si lo que llega del servidor ya cambia despacio (el apuntado del rival
+  sigue a su ADS), no añade retraso: solo convierte los saltos en rampas.
+- **Despegue y aterrizaje**: al despegar se ve el final de `jump_start` (las piernas se estiran). Al caer se ve
+  `jump_land`, más fuerte cuanto más tiempo en el aire; andando, más suave. Un escalón o un salto de menos de 0,08 s no
+  cuenta.
+- **Disparo**:
+  - retroceso con los clips `fire_rifle` (su inicio, antes de ir al cerrojo), `fire_pistol` y `fire_shotgun`, como una
+    capa que se suma a la postura que haya;
+  - un empujón del pecho hacia atrás: 4° con el rifle, 6° con la escopeta y 3° con la pistola;
+  - los clips de la escopeta parten de otra colocación de los brazos y, mezclados tal cual, la hacían saltar: por eso
+    solo se usa su movimiento (y no el clip de bombeo, que es casi una postura fija).
+- **Impacto**:
+  - `hit_react` en su tiempo, con entrada y salida (antes, una postura fija a peso 1 de golpe);
+  - un tirón del pecho hacia donde empuja el tiro, y la cabeza hacia atrás si fue en la cabeza;
+  - **online también**: el rival se encoge cuando le alcanza cualquier disparo, tuyo o de otro (mensaje `hit` del
+    servidor). Tu personaje en 3ª persona, igual.
+- **Muerte**:
+  - cae hacia atrás si el tiro vino de delante y hacia delante (`death_front`, antes sin usar) si vino de la espalda;
+  - online, según quién lo mató (mensaje `kill`);
+  - mientras se mezcla, las piernas siguen su paso (antes se cortaban de golpe).
+- **Recarga de la escopeta**: la mano va a la ventana de carga y vuelve en cada cartucho, al ritmo real (0,4 s por
+  cartucho). Antes era un ciclo de 0,8 s que no seguía a los cartuchos y saltaba al empezar cada uno.
+- **Bots sin conexión**:
+  - después de disparar mueven el cerrojo, como el rival online. Su siguiente disparo llega 1,6 s después o más, así que
+    no cambian ni su ritmo ni su puntería;
+  - al morir ya no giran de golpe para mirar al tirador: giran en 0,4 s, o caen hacia delante;
+  - ya no rebotan 4 cm por encima de su animación de andar. Era un segundo rebote, sin sincronizar, que además movía sus
+    zonas de impacto; ahora están quietas, como las del servidor.
+- **Perfil BAJO** (el soldado de cajas): el esprint y el salto también se mezclan.
+- **No cambia**: las zonas de impacto (cajas del servidor), la balística, los tiempos de las armas y la puntería de los
+  bots.
+- **Coste** (GPU del PC, `tools/gf-medir.js`, dos rondas de la versión anterior contra la nueva):
+  - 60 FPS en todas las escenas;
+  - CPU de animación de 0,19 a 0,25 ms por fotograma en PUEBLO y de 0,26 a 0,30 ms con 5 bots: unos 0,01–0,02 ms por
+    personaje;
+  - el envío de dibujo no cambia.
+- **Pruebas**:
+  - `soldier2`: 14 comprobaciones nuevas (ritmos de mezcla, aterrizaje, muerte, cambio de arma, retroceso, impacto,
+    recarga y pesos que suman 1);
+  - `gamefeel.browser`: ninguna transición gira un hueso más de 25° por fotograma; los bots disparan con retroceso y
+    cerrojo, caen sin girar de golpe y no rebotan;
+  - `online.browser` (dos navegadores contra el servidor local): el rival se encoge con el impacto, se ve el retroceso de
+    su disparo y se sabe quién lo mató.
+
 ## GF-4 — Visibilidad de enemigos
-AJUSTES › JUGABILIDAD › Visibilidad de enemigos: **NORMAL** (por defecto) · **SILUETA MEJORADA** · **CONTORNO SUTIL**.
-Desde el 30-10 también online. Son las mismas opciones y el mismo dibujo para todos los jugadores, y solo marca a los
-rivales, nunca a los compañeros de equipo. La SILUETA va en el material compartido, así que en EQUIPOS también aclara a
-los compañeros lejanos.
+AJUSTES › JUGABILIDAD › Visibilidad de enemigos: **NORMAL** (por defecto) · **SILUETA MEJORADA** · **CONTORNO**.
+Desde el 30-10 también online. Son las mismas opciones y el mismo dibujo para todos los jugadores. La SILUETA va en el
+material compartido, así que en EQUIPOS también aclara a los compañeros lejanos.
+
+**31-10-2026, el propietario**: «lo del delineado podría ser un rojo un poco así opaco para ver desde lejos, rojo
+enemigo, azul amigo». Desde entonces:
+- el CONTORNO es **rojo mate casi opaco** en los enemigos (#c42d22, opacidad 0,92) y **azul** en los compañeros de
+  equipo (#3a7ee0, opacidad 0,85);
+- algo más grueso: 1,35 px CSS (antes 1,1), igual en BAJO y en ALTO;
+- en los enemigos empieza a los 14 m aparentes y está entero a los 24 (antes, de 24 a 34 m). En los compañeros sale a
+  cualquier distancia;
+- no le afectan la niebla ni el estilo de imagen: a 90 m sigue siendo el mismo rojo;
+- en el **duelo online 1 contra 1** no se dibujaba (solo en las salas de varios jugadores, un fallo de la entrega del
+  30-10): corregido;
+- en el **perfil BAJO** (el soldado de cajas) la SILUETA no hacía nada y el contorno también se dibujaba por dentro de la
+  figura (entre brazos y torso): corregido, ahora es igual que en MEDIO y ALTO;
+- en el CAMPO DE TIRO también se dibuja, en las dianas y en los bots de entrenamiento;
+- se llamaba CONTORNO SUTIL; ahora, CONTORNO.
 
 - **SILUETA MEJORADA**: el material del enemigo da hasta +35 % de luz y añade un borde cálido suave (solo en los bordes,
   según el ángulo).
-- **CONTORNO SUTIL**: una línea fina (1,1 píxeles CSS) de color hueso con opacidad 0,45, **solo por fuera de la
-  figura**. Cada cuerpo marca sus píxeles en el stencil y el contorno solo se dibuja donde no hay cuerpo.
+- **CONTORNO**: una línea de 1,35 píxeles CSS, roja en los enemigos y azul en los compañeros, **solo por fuera de la
+  figura**. Cada cuerpo marca sus píxeles en el stencil y el contorno solo se dibuja donde no hay cuerpo. (Del 30 al 31-10
+  fue de color hueso, con opacidad 0,45 y 1,1 píxeles.)
   - En la primera versión no tenía esa máscara: los bordes de brazos, piernas y rifle cubrían casi todo el enemigo
     lejano (unos 12 píxeles de ancho) y se veía blanco. Esa versión se descartó.
 - **Distancia**: se mide la distancia aparente (distancia × zoom).
   - Cerca, nada.
-  - El brillo empieza hacia los 12 m y el contorno hacia los 24 m.
+  - El brillo empieza hacia los 12 m y el contorno de los enemigos hacia los 14 m.
   - Con el visor 8×, un enemigo a 40 m «está» a 5 m: no sale nada, y el contorno nunca crece con el zoom.
 - **Justo por construcción**:
   - Los dos efectos se dibujan con la prueba de profundidad, como parte del propio enemigo. Solo pueden aparecer en los
@@ -146,10 +235,14 @@ los compañeros lejanos.
   - El grosor es el mismo en BAJO que en ALTO.
 - **Medido** (`test/gamefeel.browser.test.js`, píxeles leídos de la GPU con el cuerpo en la misma pose):
   - enemigo **detrás de una fachada**: diferencia **0** entre NORMAL y CONTORNO;
-  - a la vista a 30 m: 2,2 de diferencia media en la zona del enemigo;
-  - a 8 m: 0.
-- **Capturas**: `node tools/capture-visibilidad.js <carpeta>`, el mismo enemigo a 10, 20, 30 y 40 m, detrás de la pared
-  y con el visor 8×. Están en `docs/img/visibilidad-distancias.jpg` y `docs/img/visibilidad-pared-visor.jpg`.
+  - a la vista a 30 m: el contorno se ve, y los píxeles que cambia son rojos (de media, R 120 · G 31 · B 23);
+  - a 8 m: 0 (cerca no se dibuja);
+  - el mismo bot como compañero: azul (R 44 · G 63 · B 131), también a 8 m;
+  - online, con dos navegadores contra el servidor local, el rival del duelo 1 contra 1 lleva su contorno rojo.
+- **Capturas**: `node tools/capture-visibilidad.js <carpeta>`: el mismo personaje a 10, 20, 30, 40, 60 y 90 m como
+  enemigo y como compañero, detrás de la pared y con el visor 8×. Comparativa del 31-10 en
+  `docs/img/contorno-rojo-azul.jpg`; las del 30-10 (color hueso) en `docs/img/visibilidad-distancias.jpg` y
+  `docs/img/visibilidad-pared-visor.jpg`.
 
 ## GF-5 — Bots animados una vez por fotograma
 - Antes, cada bot calculaba su pose en cada paso de simulación de 120 Hz: 2 veces por fotograma a 60 FPS y 4 a 30. Solo
@@ -171,7 +264,7 @@ los compañeros lejanos.
 ## Pendiente (próximas entregas)
 | Entrega | Qué | ¿Hace falta tu aprobación? |
 |---|---|---|
-| GF-2 | Transiciones suaves de animación (sprint, salto, muerte, apuntar de los bots en 0,1–0,2 s); usar los clips que ya hay (aterrizaje, disparo, muerte de frente); recarga de la escopeta del rival; reacción al impacto online | No (solo cómo se ve) |
+| GF-2b | Pies que dan pasos al girar sin moverse (hoy el cuerpo entero gira sobre sí mismo) y apoyo de los pies en escaleras y cuestas | No (solo cómo se ve) |
 | GF-6 | Bots más humanos: giros suavizados, rebote según lo que andan, frenada sin deslizar, pausas | No (no cambia su puntería ni su dificultad) |
 | GF-1b | Suavizar las correcciones online del servidor (sin publicarlo) y el paso de los rivales | No |
 | GF-3 | Armas en 1ª persona: retroceso con muelle por defecto (hoy con `?feel=2`), coherencia del cerrojo y la corredera | Ver con el propietario |
@@ -185,7 +278,10 @@ los compañeros lejanos.
 3. Juega una partida online, o en una sala con bots: anda, corre, frena, cambia de dirección, agáchate, salta y apunta
    andando. El movimiento nuevo ya es el del juego. Para notar la diferencia con el de antes, abre la página con
    `?mov=clasico` y juega un duelo sin conexión.
-4. AJUSTES › JUGABILIDAD › Visibilidad de enemigos: prueba **SILUETA MEJORADA** y **CONTORNO SUTIL** en PUEBLO 3.0,
-   con bots lejos (30–40 m) delante de fachadas y sombras, y con el visor 4× y 8×. Comprueba que un bot escondido tras
-   una pared no se ve.
-5. Dime qué valores cambiarías: más o menos lento, más o menos inercia, contorno más o menos visible.
+4. AJUSTES › JUGABILIDAD › Visibilidad de enemigos: prueba **SILUETA MEJORADA** y **CONTORNO** en PUEBLO 3.0, con
+   bots lejos (30–90 m) delante de fachadas y sombras, y con el visor 4× y 8×. Comprueba que un bot escondido tras una
+   pared no se ve. En una sala por EQUIPOS, tus compañeros salen en azul.
+5. **Animaciones**: fíjate en los bots y en el rival al empezar y dejar de correr, al saltar, al disparar (retroceso y
+   cerrojo), al recibir un tiro y al morir (por delante y por la espalda). Mejor aún en 3ª persona (tecla V o AJUSTES).
+6. Dime qué valores cambiarías: más o menos lento, más o menos inercia, contorno más o menos visible, animaciones más
+   rápidas o más suaves.

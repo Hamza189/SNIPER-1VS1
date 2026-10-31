@@ -133,7 +133,7 @@ reconciliación, interpolación del rival 110 ms, ping) · `vmrig.js` (materiale
 | `&sombra=libre`, `&sombrafade=0`, `&sombras=0` | Sombra sin ajuste a texels / sin fundido / sin sombras (diagnóstico) |
 | `?casa=1` / `?casa=0` | Muestra / oculta CASA ATLAS en los menús (se recuerda) |
 | `&techo=1` | Techo opcional en CASA ATLAS |
-| `?pj=2` | Personaje 3D (rev. 03, `client/soldier2.js`, `assets/personaje/`) en bots y rival online en vez de la figura de cajas; solo aspecto |
+| `?pj=2` | Personaje 3D (rev. 03, `client/soldier2.js`, `assets/personaje/`) en bots y rival online en vez de la figura de cajas; solo aspecto. Sus transiciones (GF-2, 31-10) se miden con `node tools/anim-sheet.js [op4\|op2\|op3\|v2]` |
 | (28-10) por defecto | Sin bandera = `?pj=pro` + `?hud=2`; personaje SOLDADO (el de `?pj=2`) elegible y el de por defecto. Volver a lo anterior: `?pj=0` (cajas) y `?hud=1` (HUD anterior) |
 | `?hud=2` | (por defecto desde el 28-10) HUD 2: iconos, barra de armas, inventario, asomarse en móvil, teclas de asomarse y editor ampliado (`client/hud2.js`, `docs/HUD-2.md`); solo presentación y entrada |
 | `?pj=mix` | Los 4 personajes a la vez contra bots (op2, op3, op4 y el de cajas; 4 bots; texturas 4K/2K/1K por calidad) para comparar y medir |

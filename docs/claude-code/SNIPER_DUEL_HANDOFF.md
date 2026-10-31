@@ -56,6 +56,7 @@ Antes de cambiar algo: lee el archivo entero que vas a tocar y busca su prueba e
 | `docs/ASSETS-3D.md` | Contrato de assets y cada entrega con medidas (§17 = CASA ATLAS) |
 | `docs/ONLINE.md`, `docs/PROTOCOLO.md` | Online: uso, fallos, protocolo, coste, reversión |
 | `docs/PRECISION.md`, `docs/PRUEBAS-Y-AJUSTES.md`, `docs/PUEBLO-3.md` | Puntería, pruebas manuales, PUEBLO 3.0 |
+| `docs/GAMEFEEL.md`, `docs/AJUSTES.md` | GAME FEEL 3.0 (movimiento TÁCTICO, transiciones de animación, visibilidad y contorno rojo/azul, medidas por partes del fotograma) y los ajustes del jugador |
 | `docs/ETAPA-D-AUDITORIA.md`, `docs/ETAPA-D-REQUISITOS.md` | Auditoría y requisitos originales del online |
 | `docs/PROMPT-CHATGPT-*.md` | Instrucciones que se dieron a ChatGPT para los assets |
 

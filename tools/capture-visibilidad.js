@@ -1,6 +1,8 @@
-/* Visibilidad de enemigos (GF-4, docs/VISIBILIDAD.md): el mismo enemigo, quieto y de frente, a 10, 20, 30 y 40 m en la
-   calle de (−4, −16) de PUEBLO 3.0 mirando al oeste (46 m libres, fachada al fondo), con NORMAL, SILUETA MEJORADA y CONTORNO SUTIL; además, el enemigo detrás de una fachada
-   (no debe verse nada) y a 40 m con el visor 8× (no debe aparecer nada: con el zoom parece estar a 5 m).
+/* Visibilidad de enemigos (GF-4, docs/GAMEFEEL.md): el mismo enemigo, quieto y de frente, a 10, 20, 30 y 40 m en la
+   calle de (−4, −16) de PUEBLO 3.0 mirando al oeste (46 m libres, fachada al fondo), y a 60 y 90 m desde la esquina
+   (−46, −46) mirando al norte (96 m libres), con NORMAL, SILUETA MEJORADA, CONTORNO (rojo) y CONTORNO de un compañero
+   (azul, 'amigo'); además, el enemigo detrás de una fachada (no debe verse nada) y a 40 m con el visor 8× (no debe
+   aparecer nada: con el zoom parece estar a 5 m).
      node tools/capture-visibilidad.js OUT_DIR           (WebGL por software: vale para comparar aspecto, no para FPS)
    Escribe OUT_DIR/<caso>-<modo>.png y OUT_DIR/casos.json (dónde queda el enemigo en la pantalla, para recortar). */
 'use strict';
@@ -9,11 +11,11 @@ const fs = require('fs');
 const ss = require('./static-server.js');
 const OUT = process.argv[2] || '.';
 fs.mkdirSync(OUT, { recursive: true });
-const MODES = ['normal', 'silueta', 'contorno'];
+const MODES = ['normal', 'silueta', 'contorno', 'amigo'];
 // [case, camera x, z, yaw, enemy distance along the view, scope]
 const Y = Math.PI / 2;
 const CASES = [['d10', -4, -16, Y, 10], ['d20', -4, -16, Y, 20], ['d30', -4, -16, Y, 30], ['d40', -4, -16, Y, 40],
-  ['pared', -9, 17, 2.76, 26], ['visor8x', -4, -16, Y, 40, true]];
+  ['d60', -46, -46, Math.PI, 60], ['d90', -46, -46, Math.PI, 90], ['pared', -9, 17, 2.76, 26], ['visor8x', -4, -16, Y, 40, true]];
 
 (async () => {
   const srv = await ss.start();
@@ -32,10 +34,10 @@ const CASES = [['d10', -4, -16, Y, 10], ['d20', -4, -16, Y, 20], ['d30', -4, -16
   const where = {};
   for (const [name, x, z, yaw, d, scope] of CASES) {
     for (const mode of MODES) {
-      if (name === 'visor8x' && mode === 'silueta') continue;
+      if ((name === 'visor8x' || name === 'pared') && (mode === 'silueta' || mode === 'amigo')) continue;
       const r = await p.evaluate(([x, z, yaw, d, scope, mode]) => {
         const S = __SD, B = S.BOTS[0];
-        S.SETTINGS.enemyVis = mode; S.MANUAL.on = true; S.SHOT.noVM = !scope;
+        S.SETTINGS.enemyVis = mode === 'amigo' ? 'contorno' : mode; S.VIS.botKind = mode === 'amigo' ? 'mate' : 'foe'; S.MANUAL.on = true; S.SHOT.noVM = !scope;
         document.getElementById('hud').hidden = true;
         B.update0 = () => {};   // the enemy stands still (its AI off), its body still animates (idle)
         Object.assign(S.PM, { x, y: 0, z, vx: 0, vy: 0, vz: 0 }); Object.assign(S.PMprev, { x, y: 0, z }); S.P.yaw = yaw; S.P.pitch = 0;
