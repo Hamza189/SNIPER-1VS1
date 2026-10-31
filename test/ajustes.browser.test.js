@@ -95,9 +95,12 @@ function check(name, cond, info) { if (cond) { pass++; console.log('  ok   ' + n
     await M.p.waitForTimeout(200);
     const gy = await M.p.evaluate(async () => { Object.defineProperty(screen.orientation, 'angle', { configurable: true, get: () => 90 });
       const P = __SD.P, y0 = P.yaw, p0 = P.pitch, ev = (b, g, t) => __SD.gyroEv({ rotationRate: { alpha: 0, beta: b, gamma: g }, timeStamp: t });
+      // the turn is applied on the next drawn frame: wait for frames, not for a time (a loaded machine can draw less than
+      // one frame in 300 ms with the software WebGL)
+      const frames = async n => { const f0 = __SD.GFX.frame, t = performance.now(); while (__SD.GFX.frame - f0 < n && performance.now() - t < 10000) await new Promise(r => setTimeout(r, 30)); };
       const t0 = performance.now(); ev(0, 0, t0); ev(30, -20, t0 + 100);   // 0.1 s turning left 30°/s and tilting up 20°/s
-      await new Promise(r => setTimeout(r, 300)); const on = { dy: P.yaw - y0, dp: P.pitch - p0 };
-      __SD.SETTINGS.gyro = 'off'; const y1 = P.yaw; ev(30, 0, t0 + 200); ev(30, 0, t0 + 300); await new Promise(r => setTimeout(r, 300));
+      await frames(3); const on = { dy: P.yaw - y0, dp: P.pitch - p0 };
+      __SD.SETTINGS.gyro = 'off'; const y1 = P.yaw; ev(30, 0, t0 + 200); ev(30, 0, t0 + 300); await frames(3);
       return { on, off: P.yaw - y1, want: 3 * Math.PI / 180 }; });
     check('giroscopio: girar el móvil 3° a la izquierda gira la cámara 3° (y hacia arriba al inclinarlo)', Math.abs(gy.on.dy - gy.want) < 0.004 && gy.on.dp > 0.02, JSON.stringify(gy));
     check('giroscopio apagado: no gira nada', Math.abs(gy.off) < 1e-6, gy.off);

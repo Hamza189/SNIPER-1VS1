@@ -11,7 +11,7 @@ Detalle de cada cambio (antes/después, medidas, cómo revertir): `docs/next-lev
 ### Siguiente prioridad
 | Tarea | Quién la desbloquea | Estado |
 |---|---|---|
-| **Miras** (31-10) — probar en el iPhone las 8 miras, cada una con un solo aumento (menú › ficha del arma › Mira del rifle, o el inventario en partida): que el punto rojo y la holográfica se vean bien con el rifle a la vista y que el 2×, 3×, 4×, 6×, 8× y 12× tengan el aumento y el aspecto que esperas (`docs/MIRAS.md`) | Claude (terminar `npm test` y publicar), luego propietario | COMMIT LOCAL · SIN PUBLICAR |
+| **Miras** (31-10) — probar en el iPhone las 8 miras, cada una con un solo aumento (menú › ficha del arma › Mira del rifle, o el inventario en partida): que el punto rojo y la holográfica se vean bien con el rifle a la vista y que el 2×, 3×, 4×, 6×, 8× y 12× tengan el aumento y el aspecto que esperas (`docs/MIRAS.md`) | Propietario | PUBLICADO · PENDIENTE DE VALIDACIÓN EN IPHONE |
 | **Parpadeo y menú** (31-10) — mirar en el iPhone que las fachadas lejanas ya no parpadean y que AJUSTES sale más pequeño; mandar MEDIR RENDIMIENTO para ver lo que cuesta el suavizado de bordes (se puede apagar en GRÁFICOS) (`docs/PARPADEO.md`) | Propietario | PUBLICADO · PENDIENTE DE VALIDACIÓN EN IPHONE |
 | **Game feel 3.0** — probar en el iPhone el movimiento TÁCTICO (ya es el del servidor), las animaciones nuevas (GF-2: esprint, salto, disparo, impacto y muerte sin saltos) y el CONTORNO rojo/azul; mandar MEDIR RENDIMIENTO con la línea «CPU por partes» (`docs/GAMEFEEL.md`) | Propietario | PUBLICADO · PENDIENTE DE VALIDACIÓN EN IPHONE |
 | **Cuentas** — probar en el iPhone: PERFIL › CREAR CUENTA (Face ID), ENTRAR en otro dispositivo, amigos e invitación (ya sin bandera) | Propietario | PUBLICADO · PENDIENTE DE VALIDACIÓN EN IPHONE |
@@ -112,7 +112,10 @@ Del propietario:
   y el daño son los mismos. `core/` y `server/` no se tocan.
 - El rival online sigue viendo tu rifle con su mira de siempre.
 
-**Estado**: pruebas nuevas `miras` (26) y `miras.browser` (49) en verde. IMPLEMENTADO · EN COMMIT LOCAL, SIN PUBLICAR: la sesión se cortó (límite de uso) con `npm test` a medias (27 de ~50 suites en verde). Siguiente paso: terminar `npm test` y `git push`.
+**Estado**: pruebas nuevas `miras` (26) y `miras.browser` (49).
+- La batería entera, en verde: 37 suites en la ejecución de `npm test`, más `ajustes.browser` y las 14 de detrás por
+  separado. `ajustes.browser` tenía una espera fija en la prueba del giroscopio y ahora espera fotogramas.
+- PUBLICADO · PENDIENTE DE VALIDACIÓN EN IPHONE.
 
 ## 31-10-2026 (7) — Parpadeo de los edificios lejanos y menú de AJUSTES más pequeño en Safari
 Del propietario, con un vídeo de su iPhone: «las texturas de los edificios desde lejos no se ven lisas, se ven como que
