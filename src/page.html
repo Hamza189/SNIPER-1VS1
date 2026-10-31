@@ -140,7 +140,7 @@ body.feel2 #hitmark.kill i,body.feel2 #hitmark.hs i{width:3px;left:-1.5px}
 
 /* ---------- Scope ---------- */
 #scope{position:fixed;inset:0;pointer-events:none;z-index:4;--r:min(46vmin,46vh);--px:0px;--py:0px}
-#scope .mask{position:absolute;left:calc(-30% + var(--px));top:calc(-30% + var(--py));width:160%;height:160%;background:radial-gradient(circle at center,rgba(0,0,0,0) 0,rgba(0,0,0,0) calc(var(--r) * .72),rgba(0,0,0,.55) calc(var(--r) - 3px),#000 var(--r))}
+#scope .mask{position:absolute;left:calc(-30% + var(--px));top:calc(-30% + var(--py));width:160%;height:160%;background:radial-gradient(circle at center,rgba(0,0,0,0) 0,rgba(0,0,0,0) calc(var(--r) * var(--rs,.72)),rgba(0,0,0,.55) calc(var(--r) - 3px),#000 var(--r))}
 #scope .ret{position:absolute;left:50%;top:50%;width:calc(var(--r) * 2);height:calc(var(--r) * 2);transform:translate(-50%,-50%)}
 #scope .ret svg{width:100%;height:100%;display:block;overflow:visible}
 #scope .data{position:absolute;left:50%;top:calc(50% + var(--r) * .58);transform:translateX(-50%);display:flex;gap:18px;font-size:11px;letter-spacing:.14em;color:rgba(255,190,120,.9);text-shadow:0 0 4px rgba(0,0,0,.8)}
@@ -155,6 +155,33 @@ body.feel2 #hitmark.kill i,body.feel2 #hitmark.hs i{width:3px;left:-1.5px}
 #breathLbl{font-size:9px;letter-spacing:.24em;color:rgba(255,255,255,.55)}
 #scopeFlash{position:absolute;inset:0;background:radial-gradient(circle,transparent 35%,rgba(255,220,170,.35) 75%,transparent 100%);opacity:0}
 #scopeFlash.on{animation:fr .12s ease-out}
+/* MIRAS (31-10-2026, client/miras.js, docs/MIRAS.md): the picture round each kind of optic. tube = the scope of always;
+   prism = a short scope (a much wider circle: on a phone in landscape it fills the height); reflex = no ring at all (the
+   rifle and the sight's window stay in view, the reticle floats in the middle) */
+#scope.k-prism{--r:min(66vmin,66vh)}
+#scope.k-prism .mask{background:radial-gradient(circle at center,rgba(0,0,0,0) 0,rgba(0,0,0,0) calc(var(--r) * .86),rgba(0,0,0,.72) calc(var(--r) - 3px),#000 var(--r))}
+#scope.k-reflex .mask{display:none}
+#scope.k-reflex .data{top:calc(50% + var(--r) * .52)}
+#scope.k-reflex #breathWrap{top:calc(50% + var(--r) * .64)}
+#scope.k-prism .data{top:calc(50% + var(--r) * .5)}
+#scope.k-prism #breathWrap{top:calc(50% + var(--r) * .6)}
+.miraPick{display:flex;align-items:center;gap:10px;width:100%;min-height:44px;padding:3px 12px 3px 3px;background:none;border:1px solid var(--line);cursor:pointer;text-align:left;color:var(--hud)}
+.miraPick img{width:78px;height:34px;object-fit:cover;background:var(--ink-2);flex:none}
+.miraPick b{font:500 20px/1 var(--f-display);letter-spacing:.04em;flex:1;padding-top:3px}
+.miraPick small{display:block;font:500 10px/1.2 var(--f-mono);letter-spacing:.12em;color:var(--dust)}
+.miraPick .lbl{color:var(--signal)}
+.miraPick:focus-visible{outline:2px solid var(--signal);outline-offset:2px}
+#miraOv{z-index:23;background:rgba(12,10,8,.96)}
+.miraGrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px}
+.miraGrid .skinCard img{aspect-ratio:16/7;max-height:none;object-position:50% 50%}
+.miraGrid .skinCard b{font-size:20px}
+.miraGrid .skinCard .z{font:500 15px/1 var(--f-display);color:var(--signal);letter-spacing:.06em}
+.miraGrid .skinCard{position:relative}.miraGrid .skinCard .tag{position:absolute;right:8px;top:9px;font-size:9px;letter-spacing:.14em;background:rgba(0,0,0,.7);padding:3px 5px;color:var(--hud)}
+/* phone in landscape: the 7 cards in one row, so LISTO is on screen without scrolling; the menu card's button smaller */
+@media (max-height:500px){#miraOv .panel{margin-block:6px;padding:10px 14px;gap:7px}#miraOv h2{display:none}.miraGrid{grid-template-columns:repeat(7,minmax(0,1fr));gap:5px}
+  .miraGrid .skinCard{padding:4px;gap:2px;min-width:0;overflow:hidden}.miraGrid .skinCard b{font-size:12.5px;letter-spacing:0;padding-top:2px}.miraGrid .skinCard .z{font-size:12px}.miraGrid .skinCard .tag{right:5px;top:6px;font-size:7px;padding:2px 3px}
+  #miraOv .btn{font-size:18px;padding:8px 16px 5px}
+  #menu .miraPick{gap:6px;padding:2px 6px 2px 2px;min-height:36px}#menu .miraPick img{width:54px;height:24px}#menu .miraPick b{font-size:15px}#menu .miraPick .lbl{display:none}}
 
 /* ---------- Overlays ---------- */
 .overlay{position:fixed;inset:0;z-index:20;overflow:auto;-webkit-overflow-scrolling:touch;touch-action:pan-y}
@@ -609,11 +636,17 @@ body.hud2 #stickBase.sprint #stickKnob svg{display:block}
   <div class="ret">
     <svg viewBox="-100 -100 200 200" aria-hidden="true">
       <g stroke="#0b0b0b" fill="none">
-        <path d="M-100 0H-42M42 0H100M0 -100V-42M0 42V100" stroke-width="2.6"/>
-        <path d="M-42 0H-2.2M2.2 0H42M0 -42V-2.2M0 2.2V42" stroke-width=".45"/>
+        <path id="retPosts" d="M-100 0H-42M42 0H100M0 -100V-42M0 42V100" stroke-width="2.6"/>
+        <path id="retCross" d="M-42 0H-2.2M2.2 0H42M0 -42V-2.2M0 2.2V42" stroke-width=".45"/>
         <path id="retMarks" d="" stroke-width=".4"/>
       </g>
+      <g>
+        <path id="retMils" d="" fill="#0b0b0b"/>
+      </g>
       <g id="retLabels" fill="#0b0b0b" font-size="3.2" font-family="'IBM Plex Mono',monospace"></g>
+      <path id="retLit" d="" fill="#ff3b2f"/>
+      <path id="retRing" d="" fill="none" stroke="#ff3b2f" stroke-width="0"/>
+      <circle id="retGlow" r="0" fill="#ff3b2f" opacity=".32"/>
       <circle id="retDot" r=".75" fill="#ff3b2f"/>
     </svg>
   </div>
@@ -697,11 +730,11 @@ body.hud2 #stickBase.sprint #stickKnob svg{display:block}
         <label class="sens"><span class="lbl">Suavizado</span><input id="sSM" type="range" min="0" max="0.8" step="0.05"><output id="sSMo"></output></label>
         <label class="sens"><span class="lbl">Sin mira · 1ª persona</span><input id="sFP" type="range" min="0.3" max="3" step="0.05"><output id="sFPo"></output></label>
         <label class="sens"><span class="lbl">Sin mira · 3ª persona</span><input id="sTP" type="range" min="0.3" max="3" step="0.05"><output id="sTPo"></output></label>
-        <label class="sens"><span class="lbl">Visor 4×</span><input id="sZ4" type="range" min="0.3" max="2" step="0.05"><output id="sZ4o"></output></label>
-        <label class="sens"><span class="lbl">Visor 8×</span><input id="sZ8" type="range" min="0.3" max="2" step="0.05"><output id="sZ8o"></output></label>
+        <label class="sens"><span class="lbl">Visor hasta 4×</span><input id="sZ4" type="range" min="0.3" max="2" step="0.05"><output id="sZ4o"></output></label>
+        <label class="sens"><span class="lbl">Visor de más de 4×</span><input id="sZ8" type="range" min="0.3" max="2" step="0.05"><output id="sZ8o"></output></label>
         <label class="chk"><input type="checkbox" id="sInv"> Invertir eje vertical</label>
       </div>
-      <p class="setHelp">Cómo se combinan: giro = movimiento × horizontal/vertical × dedo (móvil) × «sin mira» de tu vista (1ª o 3ª persona) o «al apuntar» (cualquier arma con la mira) × «visor francotirador» × el de su zoom (4× u 8×). El zoom ya se compensa solo y no hay aceleración: la misma distancia de dedo gira siempre lo mismo.</p>
+      <p class="setHelp">Cómo se combinan: giro = movimiento × horizontal/vertical × dedo (móvil) × «sin mira» de tu vista (1ª o 3ª persona) o «al apuntar» (cualquier arma con la mira) × «visor francotirador» × el de su zoom («hasta 4×» para el punto rojo, la holográfica, el 2×, el 3× y el 4×; «más de 4×» para el 6×, el 8× y el 12×). El zoom ya se compensa solo y no hay aceleración: la misma distancia de dedo gira siempre lo mismo.</p>
       <div id="gyroBox">
         <div class="lbl" style="margin:12px 0 6px">Giroscopio (girar el móvil mueve la cámara)</div>
         <div class="seg" id="gyroSeg" role="group" aria-label="Giroscopio"><button type="button" data-g="off">NO</button><button type="button" data-g="ads">AL APUNTAR</button><button type="button" data-g="on">SIEMPRE</button></div>
@@ -789,6 +822,17 @@ body.hud2 #stickBase.sprint #stickKnob svg{display:block}
       <p class="setHelp">No cambian la puntería ni el retroceso real: solo lo que se mueve o parpadea en pantalla.</p>
     </section>
     <div class="row setFoot"><button class="btn ghost" id="setResetTab" type="button" style="font-size:16px">RESTAURAR ESTA SECCIÓN</button><button class="btn ghost" id="setReset" type="button" style="font-size:16px">RESTAURAR TODO</button><button class="btn" id="setClose" type="button">LISTO</button></div>
+  </div>
+</div>
+
+<div id="miraOv" class="overlay center" hidden>
+  <div class="panel" style="width:min(900px,calc(100% - 24px));gap:12px">
+    <div class="eyebrow">Accesorio del rifle · se cambia cuando quieras, también en mitad de la partida</div>
+    <h2 style="font-size:clamp(34px,6vw,54px)">MIRAS</h2>
+    <div class="miraGrid" id="miraGrid"></div>
+    <p class="setHelp" id="miraDesc" style="margin:0;min-height:2.6em"></p>
+    <p class="setHelp" style="margin:0">Solo cambia lo que ves: con la mira puesta el disparo es exacto con todas, y el tiempo de apuntar, el retroceso y el daño son los mismos. El rival online ve tu rifle con su mira de siempre.</p>
+    <div class="row"><button class="btn" id="miraClose" type="button">LISTO</button></div>
   </div>
 </div>
 
@@ -922,6 +966,7 @@ body.hud2 #stickBase.sprint #stickKnob svg{display:block}
         <div class="stat"><span>Cadencia</span><div class="bar"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i></i></div></div>
         <div class="stat"><span>Movilidad</span><div class="bar"><i class="on"></i><i class="on"></i><i class="on"></i><i></i><i></i></div></div>
       </div>
+      <div style="display:grid;gap:5px"><span class="lbl">Mira del rifle</span><button type="button" class="miraPick" aria-label="Elegir la mira del rifle"><img alt=""><b></b><span class="lbl">CAMBIAR</span></button></div>
       <div class="dmg">
         <div><span class="lbl">Cabeza</span><b>250</b></div>
         <div><span class="lbl">Torso</span><b>85</b></div>
@@ -934,7 +979,7 @@ body.hud2 #stickBase.sprint #stickKnob svg{display:block}
         <kbd>ESPACIO</kbd><span>Saltar</span>
         <kbd>Q / E</kbd><span>Asomarse</span>
         <kbd>CLIC DER.</kbd><span>Mira (mantener)</span>
-        <kbd>RUEDA</kbd><span>Zoom 4× / 8×</span>
+        <kbd>RUEDA</kbd><span>Cambiar de arma (si lo activas en AJUSTES; cada mira tiene su propio aumento)</span>
         <kbd>CLIC IZQ.</kbd><span>Disparar</span>
         <kbd>R</kbd><span>Recargar</span>
         <kbd>1 / 2 / 3</kbd><span>Arma principal / pistola / navaja</span>
@@ -960,6 +1005,7 @@ body.hud2 #stickBase.sprint #stickKnob svg{display:block}
     <h2>EN ESPERA</h2>
     <div class="row"><button class="btn" id="resume" type="button">REANUDAR</button><button class="btn ghost" id="toMenu1" type="button">MENÚ</button></div>
     <div class="kitRow"><span class="lbl">Arma principal · al reaparecer</span><div class="seg kitSeg" role="group" aria-label="Arma principal"><button type="button" data-kit="rifle">HALCÓN R7</button><button type="button" data-kit="shotgun">FURIA 12</button></div><span class="lbl kitNote" id="kitNote"></span></div>
+    <div class="kitRow"><span class="lbl">Mira del rifle · se cambia al momento</span><button type="button" class="miraPick" aria-label="Elegir la mira del rifle" style="max-width:340px"><img alt=""><b></b><span class="lbl">CAMBIAR</span></button></div>
     <div class="row"><button class="btn ghost" id="pauseSettings" type="button" style="font-size:18px">AJUSTES</button><button class="btn ghost" id="dbgBtn" type="button" style="font-size:18px">PANEL TÉCNICO (F3)</button><button class="btn ghost" id="rangeReset" type="button" style="font-size:18px">REINICIAR ESTADÍSTICAS</button><button class="btn ghost" id="selfTestBtn" type="button" style="font-size:18px">AUTOTEST DE PUNTERÍA</button></div>
     <pre id="selfTestOut" hidden></pre>
   </div>
@@ -2279,6 +2325,7 @@ const HANDS=(()=>{
   RIF.mag=B(0.036,0.06,0.075,metal2,0,-0.055,-0.03);RIF.magY=-0.055;
   B(0.042,0.008,0.082,metal,0,-0.033,0,RIF.mag);
   // scope: rings with caps, tube, objective + sunshade, turrets with caps, parallax knob, power ring, ocular
+  const scope0=GUN.children.length;   // MIRAS: from here to the eyepiece glass, hidden while another optic is on
   for(const z of [-0.08,0.07]){B(0.03,0.04,0.018,metal,0,0.048,z);C(0.021,0.021,0.016,metal2,0,0.068,z);}
   C(0.0175,0.0175,0.26,scopeM,0,0.068,0.0);
   C(0.0175,0.029,0.06,scopeM,0,0.068,-0.155);
@@ -2294,6 +2341,7 @@ const HANDS=(()=>{
   // eyepiece glass: almost black seen from behind (a bright disc right in front of the eye looked wrong)
   const eyeGlass=new T.MeshStandardMaterial({color:0x080b0e,metalness:.2,roughness:.08,emissive:0x010304,envMap:ENV,envMapIntensity:0.35});
   const lr=new T.Mesh(new T.CircleGeometry(0.02,20),eyeGlass);lr.position.set(0,0.068,0.206);GUN.add(lr);
+  RIF.scopeParts=GUN.children.slice(scope0);
   // bolt: handle, bigger knob, body
   const bolt=new T.Group();bolt.position.set(0.024,0.012,0.08);GUN.add(bolt);RIF.bolt=bolt;
   const bh=new T.Mesh(new T.CylinderGeometry(0.0055,0.0055,0.06,8),metal);bh.rotation.z=Math.PI/2;bh.position.set(0.03,0,0);bolt.add(bh);
@@ -2501,6 +2549,7 @@ function setupViewmodels(g){
   VMA.rig=rig;VMA.P={root:pis,slide,mag,A};
   const hal=g.scene.getObjectByName('HALCON');
   if(hal){hal.position.set(0,0,0);hal.rotation.set(0,0,0);
+    miraUnstrip();   // the procedural rifle leaves (MIRAS gives back what it had hidden first)
     for(const c of [...GUN.children])c.visible=false;
     GUN.add(hal);GUN.add(RIF.flash);RIF.flash.visible=false;
     const hp=n=>hal.getObjectByName(n);
@@ -2526,6 +2575,7 @@ function setupViewmodels(g){
   for(const R of SOLDIERS)soldierUseModels(R);
   if(ARMAS_ON){wskinRifle(WSKIN.rifle);wskinKnife(WSKIN.knife);}
   camoApply();   // your camouflage (cajas): on the HALCÓN or on the weapon skin
+  miraApply();   // MIRAS: the chosen optic on the modelled rifle
 }
 // hand pose helpers: a spec (vmrig ARMPOSE format) → wrist position + rotation in camera space
 const _hp=[0,1,2,3,4,5,6].map(()=>({p:new T.Vector3(),q:new T.Quaternion(),f:null}));
@@ -4032,7 +4082,7 @@ window.addEventListener('mousemove',e=>{
   // only where the capture never works; otherwise the camera waits for the click that captures the mouse again
   if(pointerLocked||lockFails>=3){input.lookDX+=e.movementX||0;input.lookDY+=e.movementY||0;}
 });
-window.addEventListener('wheel',e=>{if(state==='playing'&&WS.ads>0.5){WS.zoom=WS.zoom===8?4:8;SFX.click(0,3000,0.15);}else if(HUD2&&state==='playing')h2Wheel(e);},{passive:true});
+window.addEventListener('wheel',e=>{if(state==='playing'&&WS.ads>0.5){const z=SDMiras.nextZoom(MIRA.id,WS.zoom);if(z!==WS.zoom){WS.zoom=z;SFX.click(0,3000,0.15);}}else if(HUD2&&state==='playing')h2Wheel(e);},{passive:true});
 function requestLock(){
   if(isTouch)return;
   const fail=()=>{if(pointerLocked)return;lockFails++;lockFailed=true;};
@@ -4102,9 +4152,9 @@ function h2Build(){
   if(!isTouch)bar.classList.add('keys');
   (isTouch?touchEl:$('#hud')).appendChild(bar);H2.bar=bar;H2.invBtn=ib;
   const p=document.createElement('div');p.id='inv2';p.hidden=true;p.setAttribute('role','dialog');p.setAttribute('aria-label','Inventario');document.body.appendChild(p);H2.inv=p;
-  p.addEventListener('pointerdown',e=>{const t=e.target.closest?e.target.closest('[data-isel],[data-ikit],[data-iclose]'):null;if(!t)return;e.preventDefault();audioInit();SFX.ui();
+  p.addEventListener('pointerdown',e=>{const t=e.target.closest?e.target.closest('[data-isel],[data-ikit],[data-imira],[data-iclose]'):null;if(!t)return;e.preventDefault();audioInit();SFX.ui();
     if(t.dataset.iclose!==undefined){h2Inv(false);return;}
-    if(t.dataset.ikit)setPrimaryChoice(t.dataset.ikit);else h2Select(+t.dataset.isel);
+    if(t.dataset.imira)setMira(t.dataset.imira);else if(t.dataset.ikit)setPrimaryChoice(t.dataset.ikit);else h2Select(+t.dataset.isel);
     H2.invKey='';h2InvRender();});
   // editor: visibility and opacity of the chosen element, compact / expanded bar
   const ep=$('#editPanel'),row=ep.querySelector('.row'),x=document.createElement('div');x.style.display='contents';
@@ -4201,6 +4251,9 @@ function h2InvRender(){
     '<span><b>'+w.name+'</b><small>'+w.state+(w.draw!=null?' · SACAR '+w.draw.toFixed(2).replace('.',',')+' s':'')+'</small></span><span class="iam">'+w.ammo+'<small>'+w.reserve+'</small></span></button>';
   h+='</div></div><div class="isec"><span class="lbl">Arma principal · al reaparecer</span><div class="seg" role="group" aria-label="Arma principal"><button type="button" data-ikit="rifle" aria-pressed="'+(PRIMARY==='rifle')+'">HALCÓN R7</button><button type="button" data-ikit="shotgun" aria-pressed="'+(PRIMARY==='shotgun')+'">FURIA 12</button></div>'+
     '<div class="inext">'+(M.nextDiffers?'SE APLICARÁ EN EL PRÓXIMO RESPAWN · AHORA LLEVAS '+M.primaryNow:'')+'</div></div>';
+  // MIRAS: the rifle's optic, changed at once (only what you see)
+  h+='<div class="isec"><span class="lbl">Mira del rifle · al momento</span><div class="seg" role="group" aria-label="Mira del rifle">'+SDMiras.ORDER.map(id=>{const O=SDMiras.get(id);
+    return '<button type="button" data-imira="'+id+'" aria-pressed="'+(MIRA.id===id)+'">'+(id==='punto'?'PUNTO':id==='holo'?'HOLO':O.short.replace(/ /g,''))+'</button>';}).join('')+'</div></div>';
   h+='<div class="isec"><span class="lbl">Estado</span><div class="istat"><span>SALUD<b>'+M.hp+'</b></span>'+(M.breath!=null?'<span>AIRE<b>'+M.breath+'%</b></span>':'')+'<span>ARMA PENDIENTE<b>'+(M.pending||'—')+'</b></span></div></div>';
   h+='<div class="isec"><span class="lbl">Restricciones</span><ul>'+M.rules.map(r=>'<li>'+r+'</li>').join('')+'</ul></div>';
   if(!isTouch)h+='<div class="ihint">1 / 2 / 3 EQUIPAN · CON EL RATÓN CAPTURADO ESTE PANEL ES INFORMATIVO: LA PRINCIPAL SE ELIGE EN PAUSA (ESC)</div>';
@@ -4229,7 +4282,7 @@ function h2SettingsBuild(){
     '<div class="lbl">Teclas (PC)</div><div class="seg" id="h2LeanMode" role="group" aria-label="Teclas de asomarse"><button type="button" data-lm="hold">MANTENER</button><button type="button" data-lm="toggle">PULSAR</button></div>'+
     '<div class="lbl">Botones (móvil)</div><div class="seg" id="h2LeanTouch" role="group" aria-label="Botones de asomarse"><button type="button" data-lt="toggle">PULSAR</button><button type="button" data-lt="hold">MANTENER</button></div>'+
     '<p class="setHelp">Asomarse solo mueve la cámara a un lado (hasta 45 cm, nunca a través de una pared) y se puede apuntar y disparar asomado. En móvil, PULSAR deja el pulgar libre para el joystick. Las zonas de impacto no cambian.</p>'+
-    '<label class="chk"><input type="checkbox" id="h2Wheel"> Rueda del ratón: cambiar de arma cuando no apuntas (apuntando sigue cambiando el zoom)</label>'+
+    '<label class="chk"><input type="checkbox" id="h2Wheel"> Rueda del ratón: cambiar de arma cuando no apuntas (cada mira tiene su propio aumento: apuntando, la rueda no hace nada)</label>'+
     '<div class="lbl" style="margin:6px 0 0">HUD 2 · Barra de armas</div>'+
     '<label class="sens"><span class="lbl">Fondo (0 = transparente)</span><input id="h2BarBg" type="range" min="0" max="1" step="0.05"><output id="h2BarBgOut"></output></label>';
   pane.insertBefore(d,oe.parentNode);
@@ -4295,7 +4348,7 @@ function btnPress(name,down,cancel){ // cancel: the system took the finger (call
     case 'jump':input.jumpPressed=true;break;
     case 'reload':input.reloadPressed=true;break;
     case 'breath':input.breath=true;break;
-    case 'zoom':WS.zoom=WS.zoom===8?4:8;SFX.click(0,3000,0.15);break;
+    case 'zoom':WS.zoom=SDMiras.nextZoom(MIRA.id,WS.zoom);SFX.click(0,3000,0.15);break;
     case 'pause':pause();break;
     case 'swap':{input.fireAim=false;const cur=LOAD.pending||LOAD.active;input.select=cur==='rifle'||cur==='shotgun'?'pistol':cur==='pistol'?'knife':'rifle';break;}
     case 'inspect':input.inspect=true;break;
@@ -4448,7 +4501,7 @@ function crossApply(){const X=SETTINGS;
     el.style.setProperty('--xc',X.xColor);el.style.setProperty('--xl',X.xLen+'px');el.style.setProperty('--xt',X.xThick+'px');
     el.style.setProperty('--xo',X.xOutline?(X.xColor==='#000000'?'0 0 2px rgba(255,255,255,.9)':'0 0 2px rgba(0,0,0,.9)'):'none');}
   $('#xPrev').style.setProperty('--gap',(10+X.xGap)+'px');
-  const lit=X.retLit?X.retColor:'#0b0b0b';$('#retDot').setAttribute('fill',X.retColor);$('#scope .ret svg g[stroke]').setAttribute('stroke',lit);$('#retLabels').setAttribute('fill',lit);
+  const lit=X.retLit?X.retColor:'#0b0b0b';$('#retDot').setAttribute('fill',X.retColor);$('#scope .ret svg g[stroke]').setAttribute('stroke',lit);$('#retLabels').setAttribute('fill',lit);RET_DIRTY=true;
   document.body.style.setProperty('--hm',X.hitColor);
 }
 const CROUCH_HELP={slide:'Un toque te agacha y otro te levanta. Si te deslizas corriendo, al acabar el deslizamiento te levantas solo.',toggle:'Un toque te agacha y otro te levanta; después de deslizarte sigues agachado.',hold:'Agachado mientras mantienes el botón o la tecla; al soltar te levantas.'};
@@ -4961,12 +5014,12 @@ function updateCamera(dt,alpha){
     sEl.style.setProperty('--px',px2.toFixed(1)+'px');sEl.style.setProperty('--py',py2.toFixed(1)+'px');
     $('#breathBar i').style.width=(P.breath*100).toFixed(0)+'%';$('#breathBar').classList.toggle('out',P.exhausted>0);
     $('#breathLbl').textContent=P.exhausted>0?'SIN AIRE':P.holding?'AGUANTANDO':(isTouch?'AIRE · AGUANTAR':'SHIFT · AGUANTAR AIRE');
-    $('#zoomLbl').textContent=WS.zoom+'×';
+    setText($('#zoomLbl'),SDMiras.zoomLabel(WS.zoom));
     const ready=WCORE.state==='ready'&&WCORE.ammo>0;const ch=$('#chamber');ch.textContent=ready?'● LISTO':WCORE.state==='reload'?'○ RECARGA':'○ CERROJO';ch.classList.toggle('cycling',!ready);
     $('#airVig').style.opacity=P.exhausted>0?(0.55+Math.sin(P.swayT*7)*0.2).toFixed(2):P.holding?(0.15*clamp(1-P.breath,0,1)+0.08).toFixed(2):0;
   }
   {const lh=document.getElementById('lockHint'),want=!isTouch&&!pointerLocked&&state==='playing';if(lh.hidden===want)lh.hidden=!want;}
-  if(isTouch&&!EDIT.on){const bz=$('#tbZoom'),bb=$('#tbBreath'),kn=LOAD.active==='knife';setHidden($('#tbScope'),kn);{const ih=!kn&&(ads>0.05||PM.sprinting);if($('#tbInspect').hidden!==ih)$('#tbInspect').hidden=ih;}setHidden($('#tbFire2'),!SETTINGS.leftFire||(SETTINGS.leftFireAds&&ads<0.05&&!input.fireHeld&&!input.fireAim&&!input.scopeHeld&&!input.scopeToggle));if(!HUD2){const ft=kn?'ATACAR':'FUEGO';setText($('#tbFire'),ft);setText($('#tbFire2'),ft);}if(bz.hidden===showScope){bz.hidden=!showScope;bb.hidden=!showScope;}setText(bz,WS.zoom+'×');bb.classList.toggle('on',P.holding);$('#tbScope').classList.toggle('on',input.scopeToggle||input.scopeHeld);$('#tbCrouch').classList.toggle('on',input.crouchHeld);}
+  if(isTouch&&!EDIT.on){const bz=$('#tbZoom'),bb=$('#tbBreath'),kn=LOAD.active==='knife';setHidden($('#tbScope'),kn);{const ih=!kn&&(ads>0.05||PM.sprinting);if($('#tbInspect').hidden!==ih)$('#tbInspect').hidden=ih;}setHidden($('#tbFire2'),!SETTINGS.leftFire||(SETTINGS.leftFireAds&&ads<0.05&&!input.fireHeld&&!input.fireAim&&!input.scopeHeld&&!input.scopeToggle));if(!HUD2){const ft=kn?'ATACAR':'FUEGO';setText($('#tbFire'),ft);setText($('#tbFire2'),ft);}{const zb=showScope&&miraOpt().zooms.length>1;if(bz.hidden===zb)bz.hidden=!zb;if(bb.hidden===showScope)bb.hidden=!showScope;}setText(bz,SDMiras.zoomLabel(WS.zoom));bb.classList.toggle('on',P.holding);$('#tbScope').classList.toggle('on',input.scopeToggle||input.scopeHeld);$('#tbCrouch').classList.toggle('on',input.crouchHeld);}
   if(HUD2)h2Frame(showScope);
   // hip crosshair shows the real spread cone
   const cr=$('#cross');
@@ -5085,8 +5138,9 @@ function updateViewmodel(dt){
   pos.y-=0.45*VM.deadW;
   if(RD&&RD.root){pos.set(RD.root[0],RD.root[1],RD.root[2]);rx=RD.root[3];ry=RD.root[4];rz=RD.root[5];}
   WROOT.position.copy(pos);WROOT.rotation.set(rx,ry,rz);
-  // hidden exactly when the scope picture appears: the rifle can never cover the sight
-  WROOT.visible=LOAD.active==='rifle'&&WCORE.ads<GUNCFG.scopeAt;
+  // hidden exactly when the scope picture appears: the rifle can never cover the sight (MIRAS: a red dot or a holographic
+  // sight is looked through, so the rifle stays; the ADS pose puts its window on the centre of the screen)
+  WROOT.visible=LOAD.active==='rifle'&&(WCORE.ads<GUNCFG.scopeAt||MIRA.reflex);
   RIF.arms.grp.visible=WROOT.visible&&(state==='playing'||state==='dead'||state==='paused');
   if(RIF.arms.grp.visible&&VMA.R){RIF.arms.grp.visible=false;WROOT.updateMatrixWorld(true);updateRifleArms(RIF.wR||0,RIF.wL||0);}
   if(RIF.arms.grp.visible){WROOT.updateMatrixWorld(true);HANDS.place(RIF.arms.R,RIF.rh.g,RIF.rh.wrist,0.26,-0.42,0.08);HANDS.place(RIF.arms.L,RIF.lh.g,RIF.lh.wrist,-0.15,-0.46,-0.18);}
@@ -5174,19 +5228,24 @@ $('#rangeReset').addEventListener('click',()=>{Object.assign(STATS,{kills:0,hs:0
    (the real speeds of SD_CONFIG.move: since 30-10-2026 1.95 / 4.05 / 7 m/s). A lead in angle does not depend on the distance: the bullet takes
    d/600 s and the target moves v·d/600 m, so the angle is v/600 rad at any range.                 */
 const RET={key:''};
+var RET_DIRTY=false;   // the reticle's colour changed (set from the settings, which run before RET exists: a var, not a const)
+// MIRAS (31-10-2026): every optic draws its own reticle (SDMiras.reticle): bdc / fino calibrated like these marks, the
+// chevron, the holographic ring and the red dot with a fixed size on screen and the colour of the centre dot
 function updateReticle(){
   const el=$('#scope .ret');if(!el)return;
   const rpx=el.getBoundingClientRect().width/2;if(!(rpx>0))return;
-  const zoom=WS.zoom,H=canvas.getBoundingClientRect().height||window.innerHeight;
-  const key=zoom+':'+Math.round(rpx)+':'+Math.round(H);if(key===RET.key)return;RET.key=key;
-  const fov=BASE_FOV/zoom,pxPerMrad=(H/2)/Math.tan(fov*Math.PI/360)/1000,u=pxPerMrad/(rpx/100);   // SVG units per mrad
-  const G=GUNCFG,drop=d=>G.gravity*(d-G.zero)/(2*G.speed*G.speed)*1000,lead=v=>v/G.speed*1000;
-  let dpath='',labels='';
-  for(const [d,w] of [[100,3.2],[150,2.6],[200,2.1]]){const y=drop(d)*u;if(y>40)continue;dpath+='M'+(-w)+' '+y.toFixed(2)+'H'+w;labels+='<text x="'+(w+0.8)+'" y="'+(y+1.1).toFixed(2)+'">'+d+'</text>';}
-  for(const [v,h,t] of [[MOVE.crouch,1.4,''],[MOVE.walk,2.4,'A'],[MOVE.sprint,3.4,'C']]){const x=lead(v)*u;if(x>40)continue;dpath+='M'+x.toFixed(2)+' '+(-h)+'V'+h+'M'+(-x).toFixed(2)+' '+(-h)+'V'+h;
-    if(t)labels+='<text x="'+(x-1).toFixed(2)+'" y="'+(-h-1)+'">'+t+'</text><text x="'+(-x-1).toFixed(2)+'" y="'+(-h-1)+'">'+t+'</text>';}
-  $('#retMarks').setAttribute('d',dpath);$('#retLabels').innerHTML=labels;
-  RET.pxPerMrad=pxPerMrad;RET.u=u;
+  const O=miraOpt(),zoom=WS.zoom,H=canvas.getBoundingClientRect().height||window.innerHeight;
+  if(RET_DIRTY){RET_DIRTY=false;RET.key='';}
+  const key=MIRA.id+':'+zoom+':'+Math.round(rpx)+':'+Math.round(H);if(key===RET.key)return;RET.key=key;
+  const R=SDMiras.reticle(O.reticle,{zoom,H,rpx,fovBase:BASE_FOV,gun:GUNCFG,move:MOVE});
+  const at=(id,k,v)=>$(id).setAttribute(k,v);
+  at('#retPosts','d',R.posts);at('#retPosts','stroke-width',R.postW);at('#retCross','d',R.cross);at('#retCross','stroke-width',R.crossW);
+  at('#retMarks','d',R.marks);at('#retMarks','stroke-width',R.marksW);$('#retLabels').innerHTML=R.labels;
+  at('#retMils','d',R.mils);at('#retMils','fill',$('#scope .ret svg g[stroke]').getAttribute('stroke'));
+  const col=$('#retDot').getAttribute('fill');
+  at('#retLit','d',R.lit);at('#retLit','fill',col);at('#retRing','d',R.ring);at('#retRing','stroke-width',R.ringW);at('#retRing','stroke',col);
+  at('#retDot','r',R.dot);at('#retGlow','r',R.glow);at('#retGlow','fill',col);
+  RET.pxPerMrad=R.pxPerMrad;RET.u=R.u;
 }
 window.addEventListener('resize',()=>{RET.key='';});
 
@@ -5714,6 +5773,7 @@ function wsDrop(k){
 }
 function wskinRifle(id){
   const hal=VMA.R&&VMA.R.root,S=WS_ST.rifle;if(!hal)return;
+  miraUnstrip();   // MIRAS: the old rifle's scope back before it leaves
   if(!S.base){S.base={bolt:RIF.bolt.position.clone(),mag:RIF.mag.position.clone(),magY:RIF.magY,flash:RIF.flash.position.clone(),meshes:[]};
     hal.traverse(o=>{if(o.isMesh)S.base.meshes.push(o);});}
   for(const o of S.objs)if(o.parent)o.parent.remove(o);S.objs=[];
@@ -5722,7 +5782,8 @@ function wskinRifle(id){
   const def=id==='halcon'||!WSKINS.rifle[id];
   // the HALCÓN stays in your hands until the skin has arrived (the 4K KTX2 ones take a while on a phone)
   for(const m of S.base.meshes)m.visible=true;
-  if(def){camoApply();return;}
+  if(def){camoApply();miraApply();return;}
+  miraApply();   // the HALCÓN while the skin loads
   wsLoad('rifle',id,A=>{
     if(S.cur!==id){wsDrop('rifle'+id);return;}   // another one was chosen while this one loaded
     if(S.objs.length)return;
@@ -5739,7 +5800,7 @@ function wskinRifle(id){
     if(bolt){bolt.position.set(0,0,0);RIF.bolt.add(bolt);S.objs.push(bolt);}
     if(mag){const p=P.at.mag;RIF.mag.position.copy(p);RIF.magY=p.y;mag.position.set(0,0,0);RIF.mag.add(mag);S.objs.push(mag);}
     if(I.muzzle)RIF.flash.position.set(I.muzzle[0],I.muzzle[1],I.muzzle[2]-0.015);
-    camoApply();
+    camoApply();miraApply();
   });
 }
 function wskinKnife(id){
@@ -5764,6 +5825,89 @@ if(ARMAS_ON){
     const by=document.createElement('span');by.className='lbl';by.textContent=WSKINS[slot][id].by;c.append(im,b,by);
     c.addEventListener('click',()=>{setWskin(slot,id);audioInit();SFX.ui();});$('#ws'+(slot==='rifle'?'Rifle':'Knife')+'Grid').append(c);}
 }
+/* =================== MIRAS (31-10-2026, client/miras.js, docs/MIRAS.md) ===================
+   Optics for the rifle as accessories (owner: «añade más miras y que sean como accesorio que se puedan cambiar … punto
+   rojo, la óptica por defecto del franco y miras aparte, faltan x2 y x6»; «x4, x8 y x12 independientes»): PUNTO ROJO,
+   HOLOGRÁFICA, VISOR 2×, TÁCTICA 3×, VISOR 4×, VISOR 6×, FRANCOTIRADOR 8× (each rifle's own scope, by default) and LARGO
+   ALCANCE 12×, one magnification each (no zoom button: on a phone you aim with two thumbs). Only what you see: the
+   zoom, the reticle, the picture round it and the model on the rifle. With another optic on, the rifle's own scope is
+   hidden (whole materials, or the triangles above its rail: SDMiras.RIFLES) and comes back with FRANCOTIRADOR. The rival
+   online still sees the HALCÓN with its scope. Saved on the device. */
+const MIRA={id:SDMiras.sanitize(store.get('mira','sniper')),models:{},model:null,rifle:'',strip:[],clips:new WeakMap(),place:{axisY:SDMiras.ADS_Y},reflex:false};
+const miraOpt=()=>SDMiras.get(MIRA.id);
+const miraImg=id=>'assets/miras/'+id+'.jpg?v='+BUILD_HASH;
+// which rifle model is in your hands: the procedural one (until assets/viewmodels.glb arrives), the HALCÓN or a skin
+function miraRifle(){const S=WS_ST.rifle;if(!VMA.R)return 'proc';if(S.cur&&S.cur!=='halcon'&&S.objs.length){const w=WSKINS.rifle[S.cur];return w?(w.dir||S.cur):'halcon';}return 'halcon';}
+// a mesh's geometry without the triangles whose centre (gun space, through M) is above y between z0 and z1: the same
+// vertex buffers, only a shorter index (so nothing is copied and the original comes back as it was)
+const _mcv=new T.Vector3();
+function miraClipGeo(g,M,box){
+  const pos=g.attributes.position,idx=g.index,n=idx?idx.count:pos.count,keep=[],z0=box[0],z1=box[1],yc=box[2];
+  for(let i=0;i+2<n;i+=3){const a=idx?idx.getX(i):i,b=idx?idx.getX(i+1):i+1,c=idx?idx.getX(i+2):i+2;
+    _mcv.set((pos.getX(a)+pos.getX(b)+pos.getX(c))/3,(pos.getY(a)+pos.getY(b)+pos.getY(c))/3,(pos.getZ(a)+pos.getZ(b)+pos.getZ(c))/3).applyMatrix4(M);
+    if(_mcv.y>yc&&_mcv.z>z0&&_mcv.z<z1)continue;keep.push(a,b,c);}
+  if(keep.length===n)return null;
+  const ng=new T.BufferGeometry();for(const k in g.attributes)ng.setAttribute(k,g.attributes[k]);
+  ng.setIndex(new T.BufferAttribute(pos.count>65535?new Uint32Array(keep):new Uint16Array(keep),1));
+  if(!g.boundingSphere)g.computeBoundingSphere();ng.boundingSphere=g.boundingSphere;ng.userData.miraKept=keep.length/3;ng.userData.miraFrom=n/3;
+  return ng;
+}
+function miraUnstrip(){for(const s of MIRA.strip){if(s.geo)s.mesh.geometry=s.geo;else s.mesh.visible=s.vis;}MIRA.strip=[];}
+function miraStrip(key){
+  const st=(SDMiras.RIFLES[key]||{}).strip;if(!st)return;
+  if(st.parts){for(const o of RIF.scopeParts||[]){MIRA.strip.push({mesh:o,vis:o.visible});o.visible=false;}return;}
+  const root=key==='halcon'?VMA.R&&VMA.R.root:WS_ST.rifle.objs[0];if(!root)return;
+  GUN.updateMatrixWorld(true);const inv=new T.Matrix4().copy(GUN.matrixWorld).invert(),M=new T.Matrix4();
+  root.traverse(o=>{
+    if(!o.isMesh||o.userData.miraSkip)return;
+    if(key==='halcon'&&!/^r_body/.test(o.name)&&!(o.parent&&/^r_body/.test(o.parent.name)))return;   // the body only (not the bolt, the magazine or the trigger)
+    const base=CAMO_ORIG.get(o)||o.material,mn=((Array.isArray(base)?base[0]:base)||{}).name||'';
+    if(st.mats&&st.mats.some(m=>mn.startsWith(m))){MIRA.strip.push({mesh:o,vis:o.visible});o.visible=false;return;}
+    if(!st.box)return;
+    let c=MIRA.clips.get(o);
+    if(!c||c.from!==o.geometry){M.multiplyMatrices(inv,o.matrixWorld);c={from:o.geometry,geo:miraClipGeo(o.geometry,M,st.box)};MIRA.clips.set(o,c);}
+    if(c.geo){MIRA.strip.push({mesh:o,geo:o.geometry});o.geometry=c.geo;}
+  });
+}
+function miraApply(){
+  miraUnstrip();
+  if(MIRA.model&&MIRA.model.parent)MIRA.model.parent.remove(MIRA.model);MIRA.model=null;
+  const O=miraOpt(),key=miraRifle();MIRA.rifle=key;
+  MIRA.place=SDMiras.placement(key,MIRA.id);MIRA.reflex=O.kind==='reflex';
+  _adsP.y=-MIRA.place.axisY;   // the ADS pose aims this optic's line of sight at the centre of the screen
+  WS.zoom=SDMiras.firstZoom(MIRA.id,WS.zoom);RET_DIRTY=true;
+  const sEl=$('#scope');for(const k of ['tube','prism','reflex'])sEl.classList.toggle('k-'+k,O.kind===k);sEl.dataset.ret=O.reticle;
+  // each scope its own picture: a bigger clear circle the lower its power, a darker edge the higher (the 8× as always)
+  if(O.ring){sEl.style.setProperty('--r','min('+O.ring+'vmin,'+O.ring+'vh)');sEl.style.setProperty('--rs',O.rs);}else{sEl.style.removeProperty('--r');sEl.style.removeProperty('--rs');}
+  if(O.builtin)return;
+  miraStrip(key);
+  const m=MIRA.models[MIRA.id]||(MIRA.models[MIRA.id]=SDMiras.build(T,MIRA.id,ENV));
+  m.position.set(0,MIRA.place.y,MIRA.place.z);m.rotation.set(MIRA.place.tilt,0,0);m.visible=true;
+  m.traverse(o=>{if(o.isMesh){o.frustumCulled=false;o.userData.miraSkip=true;}});
+  GUN.add(m);MIRA.model=m;
+}
+function setMira(id){
+  id=SDMiras.sanitize(id);const was=MIRA.id;MIRA.id=id;store.set('mira',id);miraApply();miraUI();
+  if(was!==id&&(state==='playing'||state==='paused'||state==='dead'))try{renderer.compile(wScene,wCam);}catch(e){}
+}
+function miraUI(){
+  const O=miraOpt();
+  document.querySelectorAll('.miraPick').forEach(b=>{const im=b.querySelector('img'),src=miraImg(MIRA.id);if(im.getAttribute('src')!==src)im.src=src;
+    b.querySelector('b').innerHTML=O.name+'<small>'+O.short+'</small>';});
+  document.querySelectorAll('#miraGrid .skinCard').forEach(c=>c.setAttribute('aria-pressed',String(c.dataset.mira===MIRA.id)));
+  setText($('#miraDesc'),O.name+' · '+O.short+' — '+O.desc);
+}
+function openMiras(){miraUI();$('#miraOv').hidden=false;$('#miraOv').scrollTop=0;for(const id of ['menu','pause'])$('#'+id).classList.add('under');}
+function closeMiras(){$('#miraOv').hidden=true;for(const id of ['menu','pause'])$('#'+id).classList.remove('under');}
+for(const id of SDMiras.ORDER){const O=SDMiras.get(id);
+  const c=document.createElement('button');c.type='button';c.className='skinCard';c.dataset.mira=id;
+  const im=document.createElement('img');im.alt='';im.src=miraImg(id);const b=document.createElement('b');b.textContent=O.name;
+  const z=document.createElement('span');z.className='z';z.textContent=O.short;c.append(im,b,z);
+  if(O.builtin){const tg=document.createElement('span');tg.className='tag';tg.textContent='DE SIEMPRE';c.append(tg);}
+  c.addEventListener('click',()=>{setMira(id);audioInit();SFX.ui();});$('#miraGrid').append(c);}
+document.querySelectorAll('.miraPick').forEach(b=>b.addEventListener('click',()=>{openMiras();audioInit();SFX.ui();}));
+$('#miraClose').addEventListener('click',()=>{closeMiras();SFX.ui();});
+miraApply();miraUI();
 // your character (?pj=pro / ?pj=mix): chosen in the menu or the room before playing; the online rival sees it
 function setSkin(id){if(!SKINS[id])return;SKIN=id;store.set('skin',id);if(SELF.rig&&SKIN_ON)pj2SetPack(SELF.rig,SKINS[id].pack);if(PROFILE.skin!==id){PROFILE.skin=id;SDProfile.save(LS,PROFILE);}skinUI();if(SKIN_ON&&NET.N&&NET.N.you)NET.N.chooseSkin(id);}
 function skinUI(){
@@ -5886,7 +6030,7 @@ function camoApply(){
   // in the menu: compile the new shader now, not in the first frame of the match
   if(it&&state==='menu'){try{const v=WROOT.visible;WROOT.visible=true;renderer.compile(wScene,wCam);WROOT.visible=v;}catch(e){}}
 }
-function retApply(){const it=invItem('ret'),d=document.getElementById('retDot');if(d)d.setAttribute('fill',it?it.c[0]:'#ff3b2f');}
+function retApply(){const it=invItem('ret'),d=document.getElementById('retDot');if(d)d.setAttribute('fill',it?it.c[0]:'#ff3b2f');RET_DIRTY=true;}
 // the account changed (entered, refreshed, opened a box, left): what you wear follows it
 function invSync(){
   const I=ACC.acc&&ACC.acc.inv;if(I)INV.equip=Object.assign({},I.equip);else if(!ACC.token)INV.equip={};
@@ -6184,7 +6328,8 @@ function perfTextures(){const seen=new Set(),out=[];const up=o=>{const ms=o.mate
 function perfStatus(t){const e=$('#perfStat');if(t==null){e.hidden=true;return;}e.hidden=false;e.textContent=t;}
 async function perfRun(quick){
   if(PERF.on||state!=='menu')return;PERF.on=true;
-  const keep={map:OFFMAP,mode,lethal:DUEL_LETHAL,adapt:GFX.adapt?GFX.adapt.enabled:false};
+  const keep={map:OFFMAP,mode,lethal:DUEL_LETHAL,adapt:GFX.adapt?GFX.adapt.enabled:false,mira:MIRA.id};
+  MIRA.id='sniper';miraApply();   // the scoped part always with the 8× of always, so every report compares (the choice comes back)
   $('#settings').hidden=true;$('#perfBox').hidden=true;renderer.info.autoReset=false;
   if(GFX.adapt){GFX.adapt.enabled=false;GFX.adapt.scale=1;}
   if(!PERF_LOW)renderer.setPixelRatio(SDQuality.pixelRatio(GFX.profile,window.devicePixelRatio,1));
@@ -6208,7 +6353,7 @@ async function perfRun(quick){
   }
   perfStatus(null);renderer.info.autoReset=true;
   if(GFX.adapt)GFX.adapt.enabled=keep.adapt;gfxApply();
-  setMode(keep.mode);setDuelLethal(keep.lethal);setOffMap(keep.map);
+  setMode(keep.mode);setDuelLethal(keep.lethal);setOffMap(keep.map);MIRA.id=keep.mira;miraApply();
   let gpu='?',gl2=false,maxTex=0;try{const g=renderer.getContext();gl2=typeof WebGL2RenderingContext!=='undefined'&&g instanceof WebGL2RenderingContext;const e=g.getExtension('WEBGL_debug_renderer_info');gpu=e?g.getParameter(e.UNMASKED_RENDERER_WEBGL):g.getParameter(g.RENDERER);maxTex=g.getParameter(g.MAX_TEXTURE_SIZE);}catch(e){}
   const nav=(performance.getEntriesByType&&performance.getEntriesByType('navigation')[0])||{},res=performance.getEntriesByType?performance.getEntriesByType('resource'):[];
   const size=e=>e.transferSize||e.encodedBodySize||0,big=res.slice().sort((a,b)=>size(b)-size(a)).slice(0,5);
@@ -6418,6 +6563,6 @@ if(FLORA.on){const gl=new T.GLTFLoader();let n=2;
       // the town's ground must exist first (rays land on it)
       if(P3W.kit)go();else{const w=setInterval(()=>{if(P3W.kit){clearInterval(w);go();}},300);}}}}
 
-window.__SD={MOVE_CLASSIC,MOV_CLASSIC,VIS,VIS_COL,VIS_HULL,visOn,visFrame,visWho,selfHit,PROF,KTX2,R2_ON,R2_URL,PIC,GYRO,gyroEv,crossApply,btnPress,settingsChanged,perfTexMB(){const t=perfTextures();return {real:SDPerf.textureMB(t),asRGBA:SDPerf.textureMB(t.map(x=>Object.assign({},x,{bytes:0})))};},REMOTES,netScoreHud,shotTargets,MINI,miniLayer,miniPing,clockFrame,setOffTime,get OFF_TIME(){return OFF_TIME;},ACC,accRefresh,INV,invSync,camoApply,openInv,invOpenBox,WSKIN,WS_ST,setWskin,get RIF(){return RIF;},TPV,SELF,get PROFILE(){return PROFILE;},openProfile,endMatch,PJ_MIX,MIX_ORDER,SKINS,get SKIN(){return SKIN;},setSkin,pj2SetPack,rivalSkin,PERF,perfRun,HUD2,get H2(){return HUD2?H2:null;},leanIn:HUD2?leanIn:null,h2Frame:HUD2?h2Frame:null,PJ2,pj2Load,CASA,casaLoad,XL,casaxlLoad,FLORA,RATS,RAT_WORLD,ratsFrame,SHADOW_FADE,setDuelLethal,get DUEL_LETHAL(){return DUEL_LETHAL;},gfxDiagText,get P3ON(){return P3ON;},COBCC,damagePlayer,TEX,sunFollow,setSunSnap(on){SUN_SNAP=!!on;},sun,P0,E10,e10Lod,DIAG,setTrainMove,LIGHT:{sun,hemi,skyMat,LOOK,P3},P3W,freeze(on){SIM_FREEZE=!!on;},SHOT,VMA,makeSoldier,animateSoldier,BOT_MAT,scene,camera,RemotePlayer,PMprev,PIS,PROOT,RIF,WROOT,SHO_:null,MANUAL,advance(ms){frameBody(last+ms);},get LAST_PELLETS(){return LAST_PELLETS;},SCORE,SCFG,SROOT,SHO,setPrimaryChoice,get PRIMARY(){return PRIMARY;},PCORE,PCFG,setWorld,WORLDS,get WORLD_ID(){return WORLD_ID;},renderer,GFX,gfxApply,get NET(){return NET;},get REMOTE(){return REMOTE;},W,get NAV(){return NAV;},setOffMap,get OFFMAP(){return OFFMAP;},TOUCH,EDIT,openEditor,get SETTINGS(){return SETTINGS;},get LAYOUT(){return LAYOUT;},checkOrientation,MAT,LOAD,TRAINERS,get RANGE_BOTS(){return RANGE_BOTS;},TRAIN,setTrain,setLethal,kitNote,GINS,TDIAG,AU,get TOUCH_EVENTS(){return TOUCH_EVENTS;},impactFX,bodyFX,get DECALS(){return DECALS;},surfaceOf,soundDelay,aimSelfTest,P,PM,WS,WCORE,RECOIL,AIM,BOTS,DUMMIES,BULLETS,EVENTS,PARTS,STATS,get state(){return state;},get mode(){return mode;},setMode,input,startMatch,simTick,frame,toMenu,pause,resume};
+window.__SD={MIRA,setMira,miraApply,miraClipGeo,miraRifle,openMiras,closeMiras,updateReticle,ENV,MOVE_CLASSIC,MOV_CLASSIC,VIS,VIS_COL,VIS_HULL,visOn,visFrame,visWho,selfHit,PROF,KTX2,R2_ON,R2_URL,PIC,GYRO,gyroEv,crossApply,btnPress,settingsChanged,perfTexMB(){const t=perfTextures();return {real:SDPerf.textureMB(t),asRGBA:SDPerf.textureMB(t.map(x=>Object.assign({},x,{bytes:0})))};},REMOTES,netScoreHud,shotTargets,MINI,miniLayer,miniPing,clockFrame,setOffTime,get OFF_TIME(){return OFF_TIME;},ACC,accRefresh,INV,invSync,camoApply,openInv,invOpenBox,WSKIN,WS_ST,setWskin,get RIF(){return RIF;},TPV,SELF,get PROFILE(){return PROFILE;},openProfile,endMatch,PJ_MIX,MIX_ORDER,SKINS,get SKIN(){return SKIN;},setSkin,pj2SetPack,rivalSkin,PERF,perfRun,HUD2,get H2(){return HUD2?H2:null;},leanIn:HUD2?leanIn:null,h2Frame:HUD2?h2Frame:null,PJ2,pj2Load,CASA,casaLoad,XL,casaxlLoad,FLORA,RATS,RAT_WORLD,ratsFrame,SHADOW_FADE,setDuelLethal,get DUEL_LETHAL(){return DUEL_LETHAL;},gfxDiagText,get P3ON(){return P3ON;},COBCC,damagePlayer,TEX,sunFollow,setSunSnap(on){SUN_SNAP=!!on;},sun,P0,E10,e10Lod,DIAG,setTrainMove,LIGHT:{sun,hemi,skyMat,LOOK,P3},P3W,freeze(on){SIM_FREEZE=!!on;},SHOT,VMA,makeSoldier,animateSoldier,BOT_MAT,scene,camera,RemotePlayer,PMprev,PIS,PROOT,RIF,WROOT,SHO_:null,MANUAL,advance(ms){frameBody(last+ms);},get LAST_PELLETS(){return LAST_PELLETS;},SCORE,SCFG,SROOT,SHO,setPrimaryChoice,get PRIMARY(){return PRIMARY;},PCORE,PCFG,setWorld,WORLDS,get WORLD_ID(){return WORLD_ID;},renderer,GFX,gfxApply,get NET(){return NET;},get REMOTE(){return REMOTE;},W,get NAV(){return NAV;},setOffMap,get OFFMAP(){return OFFMAP;},TOUCH,EDIT,openEditor,get SETTINGS(){return SETTINGS;},get LAYOUT(){return LAYOUT;},checkOrientation,MAT,LOAD,TRAINERS,get RANGE_BOTS(){return RANGE_BOTS;},TRAIN,setTrain,setLethal,kitNote,GINS,TDIAG,AU,get TOUCH_EVENTS(){return TOUCH_EVENTS;},impactFX,bodyFX,get DECALS(){return DECALS;},surfaceOf,soundDelay,aimSelfTest,P,PM,WS,WCORE,RECOIL,AIM,BOTS,DUMMIES,BULLETS,EVENTS,PARTS,STATS,get state(){return state;},get mode(){return mode;},setMode,input,startMatch,simTick,frame,toMenu,pause,resume};
 })();
 </script>

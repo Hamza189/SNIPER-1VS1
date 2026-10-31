@@ -713,3 +713,22 @@ sobre MakeHuman). La rev. 03 se rehízo entera en `assets/3d/imports/2026-10-19_
 - **En el juego:** `client/soldier2.js` (mezcla por capas con `AnimationMixer`) y `src/page.html` (`pj2*`,
   `animateSoldier2`). Medido con 3 bots (SwiftShader): 42 llamadas de dibujo frente a 129 del soldado de cajas;
   76 200 triángulos frente a 14 500 (contando la sombra).
+
+## 20. MIRAS del rifle, hechas por Claude por código (31-10-2026)
+Detalle completo en `docs/MIRAS.md`. Siete ópticas nuevas para el rifle, cada una con un solo aumento: PUNTO ROJO,
+HOLOGRÁFICA, VISOR 2×, TÁCTICA 3×, VISOR 4×, VISOR 6× y LARGO ALCANCE 12×. La de siempre (FRANCOTIRADOR, la de cada
+rifle, ahora 8× fijo) sigue siendo la de por defecto.
+- **Cómo están hechas:**
+  - en `client/miras.js` (`SDMiras.build`), con primitivas de Three.js: perfiles torneados para tubos, campanas y
+    oculares, y cajas biseladas para cuerpos y monturas;
+  - una malla por material y sin texturas ni assets de terceros;
+  - 400–2.400 triángulos y 6–7 mallas cada una.
+- **Montaje:** se montan en el riel medido de cada rifle (HALCÓN R7, TITÁN, ÚLTIMA, VECTOR, SAHARA). La mira de siempre
+  del rifle se quita en el momento:
+  - por materiales (TITÁN `Optical`, ÚLTIMA `05_Scope`, SAHARA `Zoom`);
+  - o con los triángulos por encima del riel, entre dos z (HALCÓN y VECTOR), con un índice más corto sobre los mismos
+    vértices.
+- **Hoja de comprobación:** `node tools/miras/hoja.js` → `docs/img/miras-rifles.jpg` (las 8 miras en los 5 rifles).
+- **Retratos de las fichas:** `node tools/miras/retratos.js` → `assets/miras/<id>.jpg` (560×245, dibujados por el
+  juego).
+- **Lo visual nunca define balas ni colisiones:** las miras no tocan las zonas de impacto ni el servidor.

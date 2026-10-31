@@ -35,6 +35,8 @@ check('con la mira puesta deja de contar la de 1ª/3ª persona', near(ads.yaw, a
 const z4 = S.lookDelta(10, 0, s1, { ...base, scoped: true, ads: 1, zoom: 4 }), z8 = S.lookDelta(10, 0, s1, { ...base, scoped: true, ads: 1, zoom: 8 }),
   z4r = S.lookDelta(10, 0, d, { ...base, scoped: true, ads: 1, zoom: 4 });
 check('visor: 4× y 8× cada uno con su multiplicador', near(z4.yaw, z4r.yaw * 2) && near(z8.yaw, z4r.yaw * 0.5));
+const zs = z => S.lookDelta(10, 0, s1, { ...base, scoped: true, ads: 1, zoom: z }).yaw / S.lookDelta(10, 0, d, { ...base, scoped: true, ads: 1, zoom: z }).yaw;
+check('miras: punto rojo, holográfica, 2× y 3× con «hasta 4×»; 6× y 12× con «más de 4×»', [1.25, 1.5, 2, 3].every(z => near(zs(z), 2)) && [6, 12].every(z => near(zs(z), 0.5)));
 check('fuera de los límites se recorta (0,3–3 y 0,3–2)', S.sanitize({ sensFP: 9, scope8: 0 }, false).sensFP === 3 && S.sanitize({ scope8: 0 }, false).scope8 === 0.3);
 
 console.log('\nGIROSCOPIO');

@@ -34,7 +34,7 @@ ni el equilibrio. Con los valores por defecto el juego se ve y se controla exact
 | CONTROLES | Botón MIRA en **MIXTO** | Un toque rápido (menos de 250 ms) fija la mira y otro la quita; si se mantiene, apunta solo mientras se mantiene. Con el mismo dedo se mueve la mira |
 | CONTROLES | FUEGO izquierdo **solo al apuntar** | El segundo botón de disparo aparece solo con la mira puesta (no se esconde si lo estás pulsando) |
 | SENSIBILIDAD | **Sin mira · 1ª persona** / **Sin mira · 3ª persona** | Multiplicadores para cada vista; se desvanecen mientras sube la mira |
-| SENSIBILIDAD | **Visor 4×** / **Visor 8×** | Un multiplicador para cada zoom del francotirador, encima de «visor francotirador» |
+| SENSIBILIDAD | **Visor 4×** / **Visor 8×** (31-10: **Visor hasta 4×** / **Visor de más de 4×**, por las miras nuevas) | Un multiplicador para cada zoom, encima de «visor francotirador» |
 | SENSIBILIDAD | **Giroscopio** (solo móvil): NO · AL APUNTAR · SIEMPRE, sensibilidad sin mira y apuntando, invertir | Girar el móvil gira la cámara. A 1,00 gira lo mismo que el móvil y con el visor se divide por su zoom. Apagado por defecto. En el iPhone Safari pide permiso la primera vez. No apunta por ti: es solo otra forma de mover la cámara |
 | MIRA (nueva) | **Cruceta**: 9 colores, 5 estilos (cruz y punto, cruz, punto, círculo, T), largo, grosor, separación extra, borde oscuro, con vista previa | La separación se sigue abriendo con la dispersión real del arma; la extra solo se suma |
 | MIRA | **Visor**: color del punto central y «retícula iluminada» | Las líneas del visor toman también ese color |
@@ -71,8 +71,8 @@ Estado: IMPLEMENTADO · PROBADO EN NAVEGADOR · PENDIENTE DE VALIDACIÓN EN IPHO
 
 ## Lo que no se ha copiado (y por qué)
 - Recogida automática de objetos: el juego no tiene botín.
-- Mira inclinada, visores 2×/3×/6× y cambio rápido de visor: las armas del juego solo tienen el visor 4×/8× del rifle y
-  las miras de hierro.
+- Mira inclinada (una segunda mira a 45°): el rifle lleva una sola óptica. Desde el 31-10 sí hay visores 2×, 3×, 6× y
+  12×, punto rojo y holográfica, que se cambian en el menú, la pausa o el inventario de HUD 2 (`docs/MIRAS.md`).
 - Calidad de los efectos de sonido (baja/alta/ultra): el sonido se genera en el navegador y ya es ligero.
 - Límite de FPS por encima de 60: la opción de 60 ya dibuja todos los fotogramas de la pantalla (144 Hz en un monitor
   de 144 Hz). Safari en el iPhone no pasa de 60.

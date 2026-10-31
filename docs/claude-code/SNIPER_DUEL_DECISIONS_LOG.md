@@ -11,6 +11,7 @@ Detalle de cada cambio (antes/después, medidas, cómo revertir): `docs/next-lev
 ### Siguiente prioridad
 | Tarea | Quién la desbloquea | Estado |
 |---|---|---|
+| **Miras** (31-10) — probar en el iPhone las 8 miras, cada una con un solo aumento (menú › ficha del arma › Mira del rifle, o el inventario en partida): que el punto rojo y la holográfica se vean bien con el rifle a la vista y que el 2×, 3×, 4×, 6×, 8× y 12× tengan el aumento y el aspecto que esperas (`docs/MIRAS.md`) | Claude (terminar `npm test` y publicar), luego propietario | COMMIT LOCAL · SIN PUBLICAR |
 | **Parpadeo y menú** (31-10) — mirar en el iPhone que las fachadas lejanas ya no parpadean y que AJUSTES sale más pequeño; mandar MEDIR RENDIMIENTO para ver lo que cuesta el suavizado de bordes (se puede apagar en GRÁFICOS) (`docs/PARPADEO.md`) | Propietario | PUBLICADO · PENDIENTE DE VALIDACIÓN EN IPHONE |
 | **Game feel 3.0** — probar en el iPhone el movimiento TÁCTICO (ya es el del servidor), las animaciones nuevas (GF-2: esprint, salto, disparo, impacto y muerte sin saltos) y el CONTORNO rojo/azul; mandar MEDIR RENDIMIENTO con la línea «CPU por partes» (`docs/GAMEFEEL.md`) | Propietario | PUBLICADO · PENDIENTE DE VALIDACIÓN EN IPHONE |
 | **Cuentas** — probar en el iPhone: PERFIL › CREAR CUENTA (Face ID), ENTRAR en otro dispositivo, amigos e invitación (ya sin bandera) | Propietario | PUBLICADO · PENDIENTE DE VALIDACIÓN EN IPHONE |
@@ -84,6 +85,34 @@ Detalle de cada cambio (antes/después, medidas, cómo revertir): `docs/next-lev
 | Encargos para ChatGPT: CASA XL, CASA XL v2 y personaje | 18-10 / 19-10 |
 | Personaje 3D rev. 03 hecho por Claude e integrado tras `?pj=2` (bots y rival online) | 20-10 · directo a `main` |
 | Personajes realistas + elegir personaje (con el SOLDADO de `?pj=2`) y HUD 2 por defecto (aprobado en iPhone y PC) | 28-10 · directo a `main` |
+
+## 31-10-2026 (8) — MIRAS: 8 ópticas para el rifle como accesorio, cada una con un solo aumento
+Del propietario:
+- «añade más miras y que sean como accesorio que se puedan cambiar»;
+- «mira punto rojo, mira óptica por defecto del franco y miras aparte que se puedan seleccionar, faltan x2 y x6»;
+- «la mira x4, x8 y x12 tienen que ser independientes y diferentes, cada una con sus características; en el móvil,
+  apuntando, es imposible alejar o acercar, solo jugamos con dos dedos».
+
+**Las miras** (detalle en `docs/MIRAS.md`)
+- PUNTO ROJO 1,25×, HOLOGRÁFICA 1,5×, VISOR 2×, TÁCTICA 3×, VISOR 4×, VISOR 6×, FRANCOTIRADOR 8× (la de cada rifle,
+  por defecto) y LARGO ALCANCE 12×.
+- Un solo aumento cada una: sin botón de zoom. El 4×, el 6×, el 8× y el 12× tienen cada uno su retícula (dúplex, puntos,
+  caída y adelanto, fina) y su círculo: más grande cuanto menos aumenta, más oscuro en el borde cuanto más.
+- **Cambio para quien usaba el 4× de la mira de siempre:** ahora es el VISOR 4×. El FRANCOTIRADOR queda en 8×.
+- Cada una tiene su retícula y su cuadro:
+  - tubo: el anillo negro de siempre;
+  - prisma: un círculo mucho más ancho;
+  - ventana: el punto rojo y la holográfica se miran a través de ellos, con el rifle a la vista.
+- Los modelos son de código (`client/miras.js`) y se montan en el riel medido de cada rifle. La mira de siempre se quita
+  y vuelve, también con TITÁN, ÚLTIMA, VECTOR y SAHARA.
+- Se eligen en la ficha del arma del menú, en la pausa y en el inventario de HUD 2 (al momento, también en partida).
+
+**Reglas**
+- No cambia nada: con la mira puesta el disparo es exacto con todas, y el tiempo de apuntar, el retroceso, la dispersión
+  y el daño son los mismos. `core/` y `server/` no se tocan.
+- El rival online sigue viendo tu rifle con su mira de siempre.
+
+**Estado**: pruebas nuevas `miras` (26) y `miras.browser` (49) en verde. IMPLEMENTADO · EN COMMIT LOCAL, SIN PUBLICAR: la sesión se cortó (límite de uso) con `npm test` a medias (27 de ~50 suites en verde). Siguiente paso: terminar `npm test` y `git push`.
 
 ## 31-10-2026 (7) — Parpadeo de los edificios lejanos y menú de AJUSTES más pequeño en Safari
 Del propietario, con un vídeo de su iPhone: «las texturas de los edificios desde lejos no se ven lisas, se ven como que

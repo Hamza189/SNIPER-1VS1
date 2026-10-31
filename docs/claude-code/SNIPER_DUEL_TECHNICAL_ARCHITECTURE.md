@@ -125,6 +125,7 @@ reconciliación, interpolación del rival 110 ms, ping) · `vmrig.js` (materiale
 | Bandera | Efecto |
 |---|---|
 | `?pueblo=3` / `?pueblo=0` | PUEBLO 3.0 sí / forzar no (también se guarda desde AJUSTES › GRÁFICOS) |
+| (31-10) Miras | Sin bandera: las 8 miras del rifle, un aumento cada una (`client/miras.js`, `docs/MIRAS.md`), elegidas en el menú, la pausa o el inventario; la elección se guarda en `sniperduel_mira`. FRANCOTIRADOR (la de siempre) por defecto |
 | `&aa=0` / `&aa=1` | (31-10) Fuerza el suavizado de bordes (MSAA 4×) apagado / encendido. Por defecto va en MEDIO y ALTO; AJUSTES › GRÁFICOS lo apaga. Se mide con `node tools/flicker.js` (`docs/PARPADEO.md`) |
 | `&suelo=0` / `&suelo=p0` | Suelo anterior / plaza P0 v2 |
 | `&adoquin=0`, `&adoquinm=<m>` | Adoquín anterior / tamaño de repetición del adoquín CC0 (2,7 por defecto) |

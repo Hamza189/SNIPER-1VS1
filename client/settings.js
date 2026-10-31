@@ -142,13 +142,13 @@ function resetCategory(s, cat, touch) {
 
 /* Converts a pointer movement in pixels into a yaw/pitch change in radians.
    ctx = { scoped (rifle scope up), ads (0..1, any weapon), fovRatio (tan(fov/2)/tan(baseFov/2)), touch,
-           tp (3rd person camera), zoom (4 or 8: the scope's zoom) }
+           tp (3rd person camera), zoom (the optic's zoom: «hasta 4×» uses scope4, more than 4× scope8; MIRAS, 31-10-2026) }
    Linear (no acceleration): the same finger travel always turns the same amount. */
 function sitMul(s, ctx) {
   const a = Math.max(0, Math.min(1, ctx.ads || 0)), m = v => v == null ? 1 : v;
   // no sight: 1st or 3rd person (fades out while the sight comes up); the scope: its zoom's own multiplier
   const view = 1 + (m(ctx.tp ? s.sensTP : s.sensFP) - 1) * (1 - a);
-  return { a, view, scope: ctx.scoped ? s.adsSens * m(ctx.zoom === 4 ? s.scope4 : s.scope8) : 1 };
+  return { a, view, scope: ctx.scoped ? s.adsSens * m(ctx.zoom <= 4.01 ? s.scope4 : s.scope8) : 1 };
 }
 function lookDelta(dx, dy, s, ctx) {
   const base = ctx.touch ? 0.0042 : 0.0022, M = sitMul(s, ctx);
