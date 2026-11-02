@@ -6,13 +6,14 @@ Cada entrada dice qué se decidió o cambió, quién lo decidió, y el estado re
 Las decisiones anteriores al 18-10-2026 están resumidas en `SNIPER_DUEL_MASTER_CONTEXT.md` §4.
 Detalle de cada cambio (antes/después, medidas, cómo revertir): `docs/next-level/NEXT_LEVEL_CHANGELOG.md`.
 
-## Tareas (resumen vivo, actualizado el 31-10-2026)
+## Tareas (resumen vivo, actualizado el 02-11-2026)
 
 ### Siguiente prioridad
 | Tarea | Quién la desbloquea | Estado |
 |---|---|---|
 | **CASA ATLAS 2.0** (02-11) — probar `https://hamza189.github.io/SNIPER-1VS1/?casa2=1` (menú › DUELO › CASA ATLAS 2.0 · EXP.) contra bots en el iPhone y en el PC; si la apruebas: (1) se añade al online (cambio del servidor: `docs/CASA-ATLAS-2.md`) y (2) se retira la CASA ATLAS XL (inventario en el mismo documento) | Propietario | PUBLICADO TRAS BANDERA · PENDIENTE DE VALIDACIÓN EN IPHONE · NECESITA APROBACIÓN |
 | **Miras de ventana y botón de MIRA** (02-11) — en el iPhone: que la holográfica, la 2× y la 3× se vean enteras con la retícula dentro, y el botón «1,5×/2×…» del HUD que cambia de mira con un toque | Propietario | PUBLICADO · PENDIENTE DE VALIDACIÓN EN IPHONE |
+| **MENÚ 2** (02-11) — probar el menú nuevo en el iPhone y en el PC: `https://hamza189.github.io/SNIPER-1VS1/?menu=2` (INICIO con tu operador 3D, PERSONAJE, ARMAS con mira/skin/cuchillo en 3D, MAPAS, AJUSTES). Decir si pasa a ser el de por defecto; `?menu=1` vuelve al de siempre (`docs/MENU-2.md`) | Propietario | PUBLICADO TRAS BANDERA · PENDIENTE DE VALIDACIÓN EN IPHONE |
 | **Miras** (31-10) — probar en el iPhone las 8 miras, cada una con un solo aumento (menú › ficha del arma › Mira del rifle, o el inventario en partida): que el punto rojo y la holográfica se vean bien con el rifle a la vista y que el 2×, 3×, 4×, 6×, 8× y 12× tengan el aumento y el aspecto que esperas (`docs/MIRAS.md`) | Propietario | PUBLICADO · PENDIENTE DE VALIDACIÓN EN IPHONE |
 | **Parpadeo y menú** (31-10) — mirar en el iPhone que las fachadas lejanas ya no parpadean y que AJUSTES sale más pequeño; mandar MEDIR RENDIMIENTO para ver lo que cuesta el suavizado de bordes (se puede apagar en GRÁFICOS) (`docs/PARPADEO.md`) | Propietario | PUBLICADO · PENDIENTE DE VALIDACIÓN EN IPHONE |
 | **Game feel 3.0** — probar en el iPhone el movimiento TÁCTICO (ya es el del servidor), las animaciones nuevas (GF-2: esprint, salto, disparo, impacto y muerte sin saltos) y el CONTORNO rojo/azul; mandar MEDIR RENDIMIENTO con la línea «CPU por partes» (`docs/GAMEFEEL.md`) | Propietario | PUBLICADO · PENDIENTE DE VALIDACIÓN EN IPHONE |
@@ -117,6 +118,33 @@ Del propietario (desde el iPhone y luego en el PC):
   BANDERA · PENDIENTE DE VALIDACIÓN EN IPHONE.
 - Online y retirada de la XL: preparados (inventario en `docs/CASA-ATLAS-2.md`), esperan su aprobación. El servidor no
   cambia.
+
+## 02-11-2026 — MENÚ 2: menú principal nuevo con la sala oscura y el operador en 3D (experimental, `?menu=2`)
+Del propietario: rediseñar la pantalla principal con dos imágenes de referencia; «la sala oscura debería ser la
+referencia principal; la primera sirve para organizar el botón JUGAR, las tarjetas y la navegación». Operador 3D real con
+el francotirador del juego, barra de abajo INICIO | PERSONAJE | ARMAS | MAPAS | AJUSTES, sin inventar monedas ni niveles,
+el menú antiguo recuperable y el nuevo como experimental hasta que lo apruebe.
+
+**Qué se hizo** (detalle en `docs/MENU-2.md`)
+- Sala táctica oscura ligera (`client/menu2.js`): hormigón, costillas de acero, LED naranja, tres lámparas con halo, cajas
+  y polvo; luces sin sombras y exposición propia. Unas 49 mallas y 632 triángulos.
+- El operador es el personaje elegido (GLB del juego, `makeSoldier` + `pj2SetPack`) con la animación de reposo, el rifle
+  bajo y un balanceo; se gira con el ratón o el dedo. Lleva en las manos tu rifle tal cual (skin, mira, camuflaje): son
+  copias de los nodos del de 1ª persona, sin cargar nada otra vez.
+- INICIO: MULTIJUGADOR 1V1 (abre las salas), VS BOTS, CAMPO DE TIRO, OPCIONES DE PARTIDA (los bloques del menú de siempre,
+  movidos tal cual) y JUGAR; tarjetas ARMAS y OPERADOR. PERSONAJE: los 5 operadores. ARMAS: FRANCOTIRADOR (8 miras, 5
+  skins) y ARMA DE MANO (NAVAJA, TÁCTICA) con el arma en 3D. MAPAS: vistas reales hechas con el juego
+  (`tools/menu2-mapas.js`); al crear una sala se pone el mapa elegido si el servidor lo tiene. AJUSTES: los de siempre.
+- Mientras juegas la sala se libera y no se dibuja; en el menú nuevo el mapa no se dibuja detrás (solo la sala).
+- El arma principal FURIA 12 sigue en OPCIONES DE PARTIDA (no es una tercera categoría de ARMAS, como pidió el propietario,
+  pero no se pierde).
+
+**Reglas:** nada cambia; `core/` y `server/` no se tocan. Skins, miras y cuchillos son solo aspecto, con las funciones de
+siempre.
+
+**Estado:** IMPLEMENTADO · PROBADO EN NAVEGADOR (capturas PC 1600 × 900 y móvil 932 × 430; `test/menu2.test.js` y
+`test/menu2.browser.test.js` pulsan cada botón) · PENDIENTE DE VALIDACIÓN EN IPHONE Y DE APROBACIÓN. Por defecto sigue el
+menú de siempre.
 
 ## 31-10-2026 (8) — MIRAS: 8 ópticas para el rifle como accesorio, cada una con un solo aumento
 Del propietario:
