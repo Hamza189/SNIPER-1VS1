@@ -134,6 +134,7 @@ reconciliación, interpolación del rival 110 ms, ping) · `vmrig.js` (materiale
 | `&ratas=0`, `&flora=0` | Sin ratas / sin vegetación |
 | `&sombra=libre`, `&sombrafade=0`, `&sombras=0` | Sombra sin ajuste a texels / sin fundido / sin sombras (diagnóstico) |
 | `?casa=1` / `?casa=0` | Muestra / oculta CASA ATLAS en los menús (se recuerda) |
+| `?casa2=1` / `?casa2=0` | CASA ATLAS 2.0 (02-11): las 4 CASA ATLAS unidas, en el menú del duelo contra bots (se recuerda); solo del cliente hasta que el propietario la apruebe (`client/casa2.js`, `docs/CASA-ATLAS-2.md`) |
 | `&techo=1` | Techo opcional en CASA ATLAS |
 | `?pj=2` | Personaje 3D (rev. 03, `client/soldier2.js`, `assets/personaje/`) en bots y rival online en vez de la figura de cajas; solo aspecto. Sus transiciones (GF-2, 31-10) se miden con `node tools/anim-sheet.js [op4\|op2\|op3\|v2]` |
 | (28-10) por defecto | Sin bandera = `?pj=pro` + `?hud=2`; personaje SOLDADO (el de `?pj=2`) elegible y el de por defecto. Volver a lo anterior: `?pj=0` (cajas) y `?hud=1` (HUD anterior) |

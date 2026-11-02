@@ -11,6 +11,8 @@ Detalle de cada cambio (antes/después, medidas, cómo revertir): `docs/next-lev
 ### Siguiente prioridad
 | Tarea | Quién la desbloquea | Estado |
 |---|---|---|
+| **CASA ATLAS 2.0** (02-11) — probar `https://hamza189.github.io/SNIPER-1VS1/?casa2=1` (menú › DUELO › CASA ATLAS 2.0 · EXP.) contra bots en el iPhone y en el PC; si la apruebas: (1) se añade al online (cambio del servidor: `docs/CASA-ATLAS-2.md`) y (2) se retira la CASA ATLAS XL (inventario en el mismo documento) | Propietario | PUBLICADO TRAS BANDERA · PENDIENTE DE VALIDACIÓN EN IPHONE · NECESITA APROBACIÓN |
+| **Miras de ventana y botón de MIRA** (02-11) — en el iPhone: que la holográfica, la 2× y la 3× se vean enteras con la retícula dentro, y el botón «1,5×/2×…» del HUD que cambia de mira con un toque | Propietario | PUBLICADO · PENDIENTE DE VALIDACIÓN EN IPHONE |
 | **Miras** (31-10) — probar en el iPhone las 8 miras, cada una con un solo aumento (menú › ficha del arma › Mira del rifle, o el inventario en partida): que el punto rojo y la holográfica se vean bien con el rifle a la vista y que el 2×, 3×, 4×, 6×, 8× y 12× tengan el aumento y el aspecto que esperas (`docs/MIRAS.md`) | Propietario | PUBLICADO · PENDIENTE DE VALIDACIÓN EN IPHONE |
 | **Parpadeo y menú** (31-10) — mirar en el iPhone que las fachadas lejanas ya no parpadean y que AJUSTES sale más pequeño; mandar MEDIR RENDIMIENTO para ver lo que cuesta el suavizado de bordes (se puede apagar en GRÁFICOS) (`docs/PARPADEO.md`) | Propietario | PUBLICADO · PENDIENTE DE VALIDACIÓN EN IPHONE |
 | **Game feel 3.0** — probar en el iPhone el movimiento TÁCTICO (ya es el del servidor), las animaciones nuevas (GF-2: esprint, salto, disparo, impacto y muerte sin saltos) y el CONTORNO rojo/azul; mandar MEDIR RENDIMIENTO con la línea «CPU por partes» (`docs/GAMEFEEL.md`) | Propietario | PUBLICADO · PENDIENTE DE VALIDACIÓN EN IPHONE |
@@ -85,6 +87,36 @@ Detalle de cada cambio (antes/después, medidas, cómo revertir): `docs/next-lev
 | Encargos para ChatGPT: CASA XL, CASA XL v2 y personaje | 18-10 / 19-10 |
 | Personaje 3D rev. 03 hecho por Claude e integrado tras `?pj=2` (bots y rival online) | 20-10 · directo a `main` |
 | Personajes realistas + elegir personaje (con el SOLDADO de `?pj=2`) y HUD 2 por defecto (aprobado en iPhone y PC) | 28-10 · directo a `main` |
+
+## 02-11-2026 — CASA ATLAS 2.0 (cuatro CASA ATLAS unidas) y miras de ventana con botón de MIRA
+Del propietario (desde el iPhone y luego en el PC):
+- Miras: «van bien menos la holográfica, la x2 y la x3… muy grande, ocupa toda la pantalla, tiene que verse la mira entera
+  y la retícula dentro» y «añade un botón en el HUD para poder cambiar la mira dándole solo al botón».
+- Mapa: encargo «CASA ATLAS 2.0»: ampliar la CASA ATLAS pequeña duplicándola (no rehacerla, no usar la XL), unir los cuatro
+  módulos con tres rutas, líneas de 25–40 m, salidas equilibradas, mismo mapa en cliente y servidor, y retirar la XL de
+  ChatGPT cuando la 2.0 funcione. Publicación final tras su aprobación; para probarla en el iPhone eligió «publicarla como
+  opción oculta con enlace aparte».
+
+**Qué se hizo**
+- MIRAS (`c1f6a71`, publicado):
+  - la 2× y la 3× pasan a ser miras de ventana como el punto rojo (rifle y mira enteros a la vista, ocular hueco);
+  - en punto, holo, 2× y 3× la retícula se dibuja dentro de la ventana, a su tamaño visto desde el ojo;
+  - la pila de la holográfica ya no tapa el cristal;
+  - botón de MIRA en el HUD táctil (el antiguo de zoom, con el aumento): cada toque pone la siguiente mira, también
+    apuntando. Detalle en `docs/MIRAS.md`.
+- CASA ATLAS 2.0 (`client/casa2.js`, `docs/CASA-ATLAS-2.md`, con `?casa2=1`, solo contra bots):
+  - 4 copias de la CASA ATLAS original (A tal cual, B y C en espejo, D girada) alrededor de un patio, en 43 × 33 m,
+    simétrica por el centro;
+  - se unen por el comedor (callejón), el estudio (pasillos laterales) y dos huecos en cada barandilla (patio);
+  - tres rutas de 49, 63 y 60 m; líneas de tiro de media 13,5 m y máxima 42 m (la original: 6,1 / 18,6);
+  - muretes y jardineras con los materiales de la casa;
+  - las salidas, a 39,8 m y sin verse;
+  - el mismo GLB y las mismas texturas que CASA ATLAS: 0 MB de texturas nuevas y ~32 mallas (la XL: +19 MB y 6,3 MB de
+    descarga).
+- Estado: IMPLEMENTADO · PROBADO EN NAVEGADOR (casa2 24/24, casa2.browser 19/19; bots 40 s sin atascarse) · PUBLICADO TRAS
+  BANDERA · PENDIENTE DE VALIDACIÓN EN IPHONE.
+- Online y retirada de la XL: preparados (inventario en `docs/CASA-ATLAS-2.md`), esperan su aprobación. El servidor no
+  cambia.
 
 ## 31-10-2026 (8) — MIRAS: 8 ópticas para el rifle como accesorio, cada una con un solo aumento
 Del propietario:

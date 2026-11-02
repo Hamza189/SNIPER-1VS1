@@ -58,6 +58,7 @@ Antes de cambiar algo: lee el archivo entero que vas a tocar y busca su prueba e
 | `docs/PRECISION.md`, `docs/PRUEBAS-Y-AJUSTES.md`, `docs/PUEBLO-3.md` | Puntería, pruebas manuales, PUEBLO 3.0 |
 | `docs/GAMEFEEL.md`, `docs/AJUSTES.md` | GAME FEEL 3.0 (movimiento TÁCTICO, transiciones de animación, visibilidad y contorno rojo/azul, medidas por partes del fotograma) y los ajustes del jugador |
 | `docs/MIRAS.md` | Las 8 miras del rifle como accesorio (un aumento cada una): catálogo, retículas, cuadros, montaje en cada rifle y cómo se quita la mira de siempre |
+| `docs/CASA-ATLAS-2.md` | CASA ATLAS 2.0 (`?casa2=1`): las 4 CASA ATLAS unidas en un complejo, rutas, medidas, pruebas, y el inventario para el online y la retirada de la XL |
 | `docs/PARPADEO.md` | Parpadeo de los edificios lejanos: causa (sin suavizado en el iPhone), suavizado de bordes MSAA y `tools/flicker.js` para medirlo |
 | `docs/ETAPA-D-AUDITORIA.md`, `docs/ETAPA-D-REQUISITOS.md` | Auditoría y requisitos originales del online |
 | `docs/PROMPT-CHATGPT-*.md` | Instrucciones que se dieron a ChatGPT para los assets |
