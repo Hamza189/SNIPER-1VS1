@@ -608,6 +608,166 @@ body.hud2 #stickBase.sprint #stickKnob svg{display:block}
 .h2keys .keyCap{min-width:64px;font:500 18px/1 var(--f-display);padding:7px 10px 4px}
 .h2keys .keyCap.wait{border-color:var(--signal);color:var(--signal)}
 @media (max-height:440px){#inv2{padding:8px 10px 10px;gap:7px}#inv2 .ihead h3{font-size:22px}#inv2 .irow{padding:4px 8px}#inv2 ul{display:none}}
+/* ---------- MENÚ 2 (?menu=2, 02-11-2026, client/menu2.js, docs/MENU-2.md) ----------
+   The 3D room is drawn by the game's canvas behind; this is the glass over it: a bar on top, the section in the middle
+   (its free part, .m2Stage, is where the operator stands), five tabs at the bottom. Graphite, warm white, a little orange.
+   No backdrop blur: over a WebGL canvas it costs a full-screen pass every frame on a phone. */
+body.m2 #menu{background:none;overflow:hidden;touch-action:none}
+body.m2 #menu .menuInner{display:none}
+#m2{position:fixed;inset:0;display:grid;grid-template-rows:auto minmax(0,1fr) auto;--m2top:clamp(46px,8vh,68px);--m2nav:clamp(50px,9vh,76px);--m2pad:max(16px,env(safe-area-inset-left,0px));--m2padR:max(16px,env(safe-area-inset-right,0px));--m2glass:rgba(17,17,18,.8);--m2line:rgba(244,234,216,.14)}
+#m2::before{content:"";position:absolute;inset:0;pointer-events:none;background:radial-gradient(ellipse 70% 80% at 50% 45%,transparent 45%,rgba(0,0,0,.55) 100%),linear-gradient(90deg,rgba(8,8,9,.75) 0,rgba(8,8,9,0) 34%,rgba(8,8,9,0) 66%,rgba(8,8,9,.6) 100%)}
+#m2>*{position:relative}
+#m2>.m2Sheet{position:fixed}
+.m2Top{display:flex;align-items:center;gap:18px;height:var(--m2top);padding:env(safe-area-inset-top,0px) var(--m2padR) 0 var(--m2pad);background:linear-gradient(180deg,rgba(8,8,9,.85),rgba(8,8,9,0))}
+.m2Logo{display:flex;align-items:center;gap:9px;color:var(--hud);flex:none}
+.m2Logo svg{width:clamp(28px,4.6vh,40px);height:auto}
+.m2Logo b{font:600 clamp(20px,3.6vh,30px)/.8 var(--f-display);letter-spacing:.04em;display:grid;padding-top:4px}
+.m2Logo b span{color:var(--signal)}
+.m2Me{display:flex;align-items:center;gap:10px;background:none;border:0;border-left:1px solid var(--m2line);padding:0 0 0 16px;cursor:pointer;text-align:left;min-width:0}
+.m2Me img{width:clamp(30px,5.4vh,44px);aspect-ratio:1;object-fit:cover;object-position:50% 18%;border:1px solid var(--m2line);background:#000}
+.m2Me b{display:block;font:500 clamp(17px,2.8vh,22px)/1 var(--f-display);letter-spacing:.05em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:22vw}
+.m2Me small{font-size:9px;letter-spacing:.2em;color:var(--signal)}
+.m2TopR{margin-left:auto;display:flex;gap:8px}
+.m2Ico{display:flex;align-items:center;gap:6px;height:38px;min-width:38px;justify-content:center;padding:0 8px;background:var(--m2glass);border:1px solid var(--m2line);cursor:pointer;color:var(--hud);font:500 18px/1 var(--f-display)}
+.m2Ico svg{width:22px;height:22px}
+.m2Body{min-height:0;position:relative}
+.m2Pane{position:absolute;inset:0;display:grid;gap:clamp(10px,2vw,28px);padding:clamp(4px,1.5vh,16px) var(--m2padR) clamp(8px,2vh,18px) var(--m2pad);animation:m2In .22s ease-out}
+@keyframes m2In{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){.m2Pane{animation:none}}
+.m2Stage{min-width:0;min-height:0;touch-action:none;cursor:grab}
+.m2Stage:active{cursor:grabbing}
+.m2Panel{background:var(--m2glass);border:1px solid var(--m2line);padding:clamp(10px,1.8vh,18px);min-height:0;box-sizing:border-box}
+#m2 .eyebrow{font-size:10px}
+/* INICIO */
+.m2Pane[data-pane="inicio"]{grid-template-columns:minmax(230px,25vw) minmax(0,1fr) minmax(190px,21vw);align-items:stretch}
+.m2Col{display:flex;flex-direction:column;gap:clamp(6px,1.4vh,12px);min-height:0;justify-content:center}
+.m2Modes{display:grid;gap:clamp(6px,1.4vh,12px)}
+.m2Mode{position:relative;display:flex;align-items:center;gap:12px;min-height:clamp(54px,12vh,104px);padding:0 14px;background:#0c0c0d;border:1px solid var(--m2line);cursor:pointer;text-align:left;overflow:hidden;color:var(--hud)}
+.m2Mode .m2Bg{position:absolute;inset:0;background:#141414 center/cover no-repeat;opacity:.5;transition:opacity .2s}
+.m2Mode::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,rgba(10,10,11,.92) 0,rgba(10,10,11,.55) 60%,rgba(10,10,11,.2) 100%)}
+.m2Mode>svg,.m2Mode>span{position:relative;z-index:1}
+.m2Mode>svg{width:clamp(24px,4.4vh,36px);height:auto;flex:none}
+.m2Mode b{display:block;font:500 clamp(21px,4vh,33px)/1 var(--f-display);letter-spacing:.05em;padding-top:3px}
+.m2Mode small{display:block;font-size:10px;letter-spacing:.12em;color:var(--sand);opacity:.85;margin-top:2px}
+.m2Mode[aria-pressed="true"]{border-color:var(--signal);box-shadow:inset 3px 0 0 var(--signal)}
+.m2Mode[aria-pressed="true"] .m2Bg{opacity:.8}
+.m2Mode:hover .m2Bg{opacity:.75}
+.m2Opts{display:flex;align-items:center;gap:8px;align-self:flex-start;background:none;border:0;padding:4px 0;cursor:pointer;font-size:10.5px;letter-spacing:.18em;color:var(--sand)}
+.m2Opts svg{width:18px;height:18px}.m2Opts:hover{color:var(--hud)}
+.m2Play{display:flex;align-items:center;justify-content:center;gap:14px;min-height:clamp(54px,11vh,88px);border:0;cursor:pointer;background:linear-gradient(180deg,#ffa24b,var(--signal) 55%,#e97416);color:#140d06;font:600 clamp(34px,7vh,58px)/1 var(--f-display);letter-spacing:.06em;box-shadow:0 8px 30px rgba(255,138,43,.18),inset 0 1px 0 rgba(255,255,255,.35);clip-path:polygon(0 0,100% 0,100% calc(100% - 12px),calc(100% - 12px) 100%,0 100%)}
+.m2Play svg{width:.62em;height:.62em}.m2Play span{padding-top:.12em}
+.m2Play:hover{filter:brightness(1.08)}
+.m2Play:focus-visible,.m2Mode:focus-visible,.m2Card:focus-visible,.m2Nav button:focus-visible,.m2Pick:focus-visible{outline:2px solid var(--hud);outline-offset:2px}
+.m2Note{font-size:10px;letter-spacing:.12em;color:var(--sand);min-height:1.3em;line-height:1.35}
+.m2Side{display:flex;flex-direction:column;gap:clamp(8px,1.6vh,14px);justify-content:center;min-height:0}
+.m2Card{position:relative;display:block;padding:0;background:#0c0c0d;border:1px solid var(--m2line);cursor:pointer;text-align:left;overflow:hidden;aspect-ratio:16/9;max-height:28vh;color:var(--hud)}
+.m2Card img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:50% 30%;opacity:.85}
+.m2Card::after{content:"";position:absolute;inset:0;background:linear-gradient(0deg,rgba(10,10,11,.92) 0,rgba(10,10,11,.2) 62%,transparent)}
+.m2Card span{position:absolute;left:12px;right:12px;bottom:9px;z-index:1}
+.m2Card b{display:block;font:500 clamp(20px,3.6vh,30px)/1 var(--f-display);letter-spacing:.05em}
+.m2Card small{display:block;font-size:10px;letter-spacing:.1em;color:var(--sand);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.m2Card:hover{border-color:rgba(244,234,216,.4)}
+/* PERSONAJE */
+.m2Pane[data-pane="personaje"]{grid-template-columns:minmax(220px,25vw) minmax(0,1fr) minmax(200px,22vw)}
+.m2List{display:flex;flex-direction:column;gap:8px;overflow:hidden}
+#m2PjList{display:grid;gap:6px;overflow:auto;min-height:0;touch-action:pan-y}
+.m2Pick{display:flex;align-items:center;gap:10px;padding:5px;background:#0c0c0d;border:1px solid var(--m2line);cursor:pointer;text-align:left;color:var(--hud);position:relative}
+.m2Pick img{width:clamp(40px,8vh,62px);aspect-ratio:1;object-fit:cover;object-position:50% 18%;background:#000;flex:none}
+.m2Pick b{display:block;font:500 clamp(18px,3vh,24px)/1 var(--f-display);letter-spacing:.05em;padding-top:3px}
+.m2Pick small{display:block;font-size:9px;letter-spacing:.06em;color:var(--dust)}
+.m2Pick[aria-pressed="true"]{border-color:var(--signal);box-shadow:inset 3px 0 0 var(--signal)}
+.m2Pick[aria-pressed="true"]::after{content:"✓";position:absolute;right:8px;top:6px;color:var(--signal);font-size:13px}
+.m2Info{align-self:end;display:grid;gap:6px}
+.m2Info h3{margin:0;font:600 clamp(32px,7vh,58px)/.85 var(--f-display);letter-spacing:.03em}
+.m2Info .setHelp{margin:4px 0 0;font-size:11px}
+.m2Hint{font-size:9.5px;letter-spacing:.18em;color:var(--dust);text-transform:uppercase}
+/* ARMAS */
+.m2Pane[data-pane="armas"]{grid-template-columns:minmax(150px,26vw) minmax(0,1fr)}
+.m2Arm{display:grid;grid-template-rows:auto auto minmax(70px,1fr) auto auto;gap:clamp(5px,1.2vh,10px);background:radial-gradient(ellipse 60% 45% at 50% 38%,rgba(60,58,54,.22),transparent 70%);border-color:transparent;padding-inline:0}
+.m2Arm>.m2Rows{background:var(--m2glass);border:1px solid var(--m2line);padding:8px}
+.m2ArmHead .seg{max-width:440px;background:rgba(0,0,0,.35)}
+.m2ArmHead .seg button{font-size:11px;padding:8px 6px}
+.m2ArmTitle{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap}
+.m2ArmTitle b{font:600 clamp(24px,5vh,42px)/.9 var(--f-display);letter-spacing:.04em}
+.m2ArmTitle small{font-size:10px;letter-spacing:.14em;color:var(--sand)}
+.m2Tag{margin-left:auto;font-size:9.5px;letter-spacing:.18em;color:#7fe0c4;border:1px solid rgba(127,224,196,.6);padding:3px 7px}
+.m2Slot{min-height:0;touch-action:none;cursor:grab;position:relative}
+.m2Rows{display:grid;gap:5px;min-width:0}
+.m2Rows .lbl{font-size:9.5px}
+.m2Row{display:flex;align-items:flex-start;gap:7px;overflow-x:auto;overflow-y:hidden;padding-bottom:3px;touch-action:pan-x;scrollbar-width:thin}
+.m2Row .m2W{flex:0 0 auto;width:clamp(96px,11.5vw,150px);display:grid;align-content:start;gap:2px;padding:4px;background:#0c0c0d;border:1px solid var(--m2line);cursor:pointer;text-align:left;color:var(--hud);position:relative}
+.m2Row .m2W img{width:100%;height:clamp(34px,7.5vh,62px);object-fit:cover;background:#000;display:block}
+.m2Row .m2W b,.m2Row .m2W small{display:block}
+.m2Row .m2W small{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.m2Row .m2W b{font:500 clamp(14px,2.4vh,19px)/1 var(--f-display);letter-spacing:.04em;padding-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.m2Row .m2W small{font:500 clamp(12px,2vh,15px)/1 var(--f-display);color:var(--signal);letter-spacing:.05em}
+.m2Row .m2W[aria-pressed="true"]{border-color:var(--signal);box-shadow:inset 0 0 0 1px var(--signal)}
+.m2Row .m2W[aria-pressed="true"]::after{content:"✓";position:absolute;right:7px;top:5px;color:var(--ink);background:var(--signal);font-size:10px;line-height:15px;width:15px;text-align:center}
+.m2Small{font-size:9.5px;letter-spacing:.06em;color:var(--dust);line-height:1.4}
+/* MAPAS */
+.m2Pane[data-pane="mapas"]{grid-template-rows:minmax(0,1fr) auto;background:rgba(9,9,10,.55)}
+.m2Maps{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(260px,42vw),1fr));gap:clamp(8px,1.6vw,16px);align-content:center;overflow:auto;min-height:0}
+.m2Map{position:relative;display:block;padding:0;background:#0c0c0d;border:1px solid var(--m2line);cursor:pointer;text-align:left;overflow:hidden;aspect-ratio:16/10;max-height:calc((100vh - var(--m2top) - var(--m2nav) - 90px)/1);color:var(--hud)}
+.m2Map img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.m2Map::after{content:"";position:absolute;inset:0;background:linear-gradient(0deg,rgba(10,10,11,.95) 0,rgba(10,10,11,.35) 50%,transparent 75%)}
+.m2Map span{position:absolute;left:12px;right:12px;bottom:10px;z-index:1}
+.m2Map b{display:block;font:600 clamp(24px,4.6vh,40px)/.9 var(--f-display);letter-spacing:.04em}
+.m2Map small{display:block;font-size:10px;letter-spacing:.06em;color:var(--sand);margin-top:3px}
+.m2Map i{position:absolute;left:10px;top:9px;z-index:1;display:flex;gap:5px;font-style:normal}
+.m2Map i em{font-style:normal;font-size:8.5px;letter-spacing:.16em;padding:3px 6px;background:rgba(0,0,0,.72);color:var(--hud);border:1px solid var(--m2line)}
+.m2Map i em.on{color:#7fe0c4;border-color:rgba(127,224,196,.5)}
+.m2Map[aria-pressed="true"]{border-color:var(--signal);box-shadow:inset 0 0 0 2px var(--signal)}
+.m2Map[aria-pressed="true"]::before{content:"SELECCIONADO";position:absolute;right:10px;top:9px;z-index:1;font-size:9px;letter-spacing:.18em;background:var(--signal);color:var(--ink);padding:3px 7px}
+.m2MapNote{text-align:center}
+/* bottom bar */
+.m2Nav{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));height:var(--m2nav);padding:0 var(--m2padR) env(safe-area-inset-bottom,0px) var(--m2pad);background:rgba(10,10,11,.9);border-top:1px solid var(--m2line)}
+.m2Nav button{position:relative;display:flex;align-items:center;justify-content:center;gap:10px;background:none;border:0;cursor:pointer;color:var(--sand);font:500 clamp(17px,3.2vh,26px)/1 var(--f-display);letter-spacing:.06em;min-width:0}
+.m2Nav button+button::before{content:"";position:absolute;left:0;top:28%;bottom:28%;width:1px;background:var(--m2line)}
+.m2Nav svg{width:clamp(20px,3.6vh,30px);height:auto;flex:none}
+.m2Nav span{padding-top:.15em;white-space:nowrap}
+.m2Nav button[aria-selected="true"]{color:var(--signal)}
+.m2Nav button[aria-selected="true"]::after{content:"";position:absolute;left:22%;right:22%;bottom:0;height:3px;background:var(--signal)}
+.m2Nav button:hover{color:var(--hud)}
+/* OPCIONES DE PARTIDA: the menu's own blocks (difficulty, time, training bots, main weapon…) moved here as they are */
+.m2Sheet{position:fixed;inset:0;z-index:3;display:grid;place-items:center;background:rgba(6,6,7,.6);padding:12px}
+.m2SheetIn{width:min(640px,100%);max-height:calc(100vh - 24px);overflow:auto;display:grid;gap:12px;touch-action:pan-y;background:rgba(20,20,21,.97)}
+.m2SheetBody{display:grid;gap:12px}
+#menu #m2 #rangeBlock,#menu #m2 #diffBlock{display:block}
+#menu #m2 #m2SheetBody .sub{display:block;margin:0;font-size:11px;line-height:1.45;color:var(--sand);min-height:0}
+#m2 .m2SheetBody .seg button{padding:9px 4px;font-size:10.5px}
+/* phones in landscape: everything smaller, the side cards and the long notes go */
+@media (max-height:500px){
+  #m2{--m2top:42px;--m2nav:46px}
+  .m2Logo b{font-size:19px}.m2Logo svg{width:26px}
+  .m2Me img{width:30px}.m2Me b{font-size:17px}
+  .m2Pane{gap:10px;padding-top:2px;padding-bottom:8px}
+  .m2Pane[data-pane="inicio"]{grid-template-columns:minmax(200px,31vw) minmax(0,1fr) minmax(130px,19vw)}
+  .m2Mode{min-height:48px;padding:0 10px;gap:9px}.m2Mode small{font-size:8.5px}
+  .m2Play{min-height:52px;font-size:36px}
+  .m2Opts{font-size:9px;padding:0}
+  .m2Note{font-size:8.5px;min-height:0}
+  .m2Card{max-height:none}.m2Card small{font-size:8.5px}
+  .m2Pane[data-pane="personaje"]{grid-template-columns:minmax(170px,27vw) minmax(0,1fr) minmax(150px,24vw)}
+  .m2Info .setHelp{display:none}
+  .m2Pane[data-pane="armas"]{grid-template-columns:minmax(90px,19vw) minmax(0,1fr)}
+  .m2Arm{padding:8px 10px;gap:4px;grid-template-rows:auto auto minmax(46px,1fr) auto auto}
+  .m2ArmHead .seg button{padding:6px 4px;font-size:9.5px}
+  .m2Row .m2W{width:84px;padding:3px}.m2Row .m2W img{height:34px}.m2Row .m2W b{font-size:13px}
+  .m2Small{font-size:8.5px}
+  .m2Arm>.m2Small{display:none}
+  .m2Nav button{gap:7px;font-size:17px}.m2Nav svg{width:20px}
+  .m2Map b{font-size:24px}.m2Map small{font-size:8.5px}
+  .m2Sheet{padding:6px}
+  .m2SheetIn{width:min(860px,100%);max-height:calc(100vh - 12px);padding:10px 14px;gap:8px}
+  .m2SheetBody{grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:6px 14px;align-items:start}
+  #menu #m2 #m2SheetBody .sub{grid-column:1/-1;font-size:9.5px;line-height:1.35}
+  #m2 .m2SheetBody .seg button{padding:7px 3px;font-size:9.5px}
+  #m2 .m2SheetBody .lbl{font-size:8.5px}
+  #m2 .m2SheetBody .chk{margin-top:4px;font-size:10px}
+  .m2SheetIn>.row .btn{font-size:20px;padding:8px 18px 5px}
+}
+.m2SheetIn>.row{position:sticky;bottom:-1px;background:inherit;padding-top:4px}
+@media (max-width:760px){.m2Me b{max-width:16vw}.m2Me small{display:none}}
 </style>
 </head>
 <body>
@@ -1011,6 +1171,84 @@ body.hud2 #stickBase.sprint #stickKnob svg{display:block}
       </div>
     </div>
   </div>
+  <!-- MENÚ 2 (?menu=2, 02-11-2026, client/menu2.js, docs/MENU-2.md): the dark tactical room with the operator in 3D, five
+       sections in a bar at the bottom. Lives inside #menu so everything that shows or hides the menu still works. -->
+  <div id="m2" hidden>
+    <header class="m2Top">
+      <div class="m2Logo"><svg viewBox="0 0 40 40" aria-hidden="true"><circle cx="20" cy="20" r="12.5" fill="none" stroke="currentColor" stroke-width="2.2"/><circle cx="20" cy="20" r="3" fill="var(--signal)"/><path d="M20 2v10M20 28v10M2 20h10M28 20h10" stroke="currentColor" stroke-width="2.2"/></svg><b>SNIPER<span>DUEL</span></b></div>
+      <button type="button" class="m2Me" id="m2Me" aria-label="Tu perfil"><img id="m2MeImg" alt=""><span><b id="m2MeName">JUGADOR</b><small id="m2MeSub">PERFIL</small></span></button>
+      <div class="m2TopR"><button type="button" class="m2Ico" id="m2Inv" hidden aria-label="Cajas y objetos"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 8.5 12 4l9 4.5v9L12 22l-9-4.5z M3 8.5 12 13l9-4.5 M12 13v9" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/></svg><span id="m2InvN"></span></button></div>
+    </header>
+    <main class="m2Body">
+      <section class="m2Pane" data-pane="inicio">
+        <div class="m2Col">
+          <div class="m2Modes" role="group" aria-label="Modo de juego">
+            <button type="button" class="m2Mode" data-sel="online"><i class="m2Bg" data-map="arena"></i><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="8" cy="8" r="3.2" fill="none" stroke="currentColor" stroke-width="1.7"/><circle cx="16.5" cy="8" r="3.2" fill="none" stroke="currentColor" stroke-width="1.7"/><path d="M2.5 19c.6-3.4 2.8-5.2 5.5-5.2s4.9 1.8 5.5 5.2M11 14.3c1.2-.9 2.5-1.5 5.5-1.5 2.7 0 4.9 1.8 5.5 5.2" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg><span><b>MULTIJUGADOR 1V1</b><small id="m2SubOnline">Sala privada con amigos</small></span></button>
+            <button type="button" class="m2Mode" data-sel="duel"><i class="m2Bg" id="m2BgDuel"></i><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 10.5a7 7 0 0 1 14 0v3.2c0 1.3-.7 2.5-1.8 3.1l-1.4.8V21H8.2v-3.4l-1.4-.8A3.6 3.6 0 0 1 5 13.7z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="M7.5 11.5h9" stroke="var(--signal)" stroke-width="2.2" stroke-linecap="round"/></svg><span><b>VS BOTS</b><small id="m2SubDuel"></small></span></button>
+            <button type="button" class="m2Mode" data-sel="range"><i class="m2Bg" data-map="pueblo"></i><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.5" fill="none" stroke="currentColor" stroke-width="1.7"/><circle cx="12" cy="12" r="4.5" fill="none" stroke="currentColor" stroke-width="1.7"/><circle cx="12" cy="12" r="1.4" fill="var(--signal)"/></svg><span><b>CAMPO DE TIRO</b><small id="m2SubRange"></small></span></button>
+          </div>
+          <button type="button" class="m2Opts" id="m2Opts"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h10M18 7h2M4 17h4M12 17h8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><circle cx="16" cy="7" r="2" fill="none" stroke="currentColor" stroke-width="1.8"/><circle cx="10" cy="17" r="2" fill="none" stroke="currentColor" stroke-width="1.8"/></svg>OPCIONES DE PARTIDA</button>
+          <button type="button" class="m2Play" id="m2Play"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4.5v15l12.5-7.5z" fill="currentColor"/></svg><span>JUGAR</span></button>
+          <span class="m2Note" id="m2PlayNote" aria-live="polite"></span>
+        </div>
+        <div class="m2Stage" data-stage aria-label="Tu operador (arrastra para girarlo)"></div>
+        <div class="m2Side">
+          <button type="button" class="m2Card" data-go="armas"><img id="m2CardRifle" alt=""><span><b>ARMAS</b><small id="m2CardRifleSub"></small></span></button>
+          <button type="button" class="m2Card" data-go="personaje"><img id="m2CardPj" alt=""><span><b>OPERADOR</b><small id="m2CardPjSub"></small></span></button>
+        </div>
+      </section>
+      <section class="m2Pane" data-pane="personaje" hidden>
+        <div class="m2Panel m2List"><div class="eyebrow">Operadores</div><div id="m2PjList" role="group" aria-label="Operadores"></div></div>
+        <div class="m2Stage" data-stage aria-label="Tu operador (arrastra para girarlo)"></div>
+        <div class="m2Panel m2Info">
+          <div class="eyebrow">Equipado</div>
+          <h3 id="m2PjName"></h3>
+          <span class="lbl" id="m2PjBy"></span>
+          <p class="setHelp" id="m2PjHelp">Solo cambia el aspecto: las zonas de impacto son las mismas para todos. Tu rival online ve el que elijas. En calidad BAJA todos se ven como el soldado clásico.</p>
+          <span class="m2Hint">Arrastra para girarlo</span>
+        </div>
+      </section>
+      <section class="m2Pane" data-pane="armas" hidden>
+        <div class="m2Stage" data-stage aria-label="Tu operador"></div>
+        <div class="m2Panel m2Arm">
+          <div class="m2ArmHead">
+            <div class="seg" id="m2Cat" role="group" aria-label="Categoría"><button type="button" data-cat="rifle">FRANCOTIRADOR</button><button type="button" data-cat="knife">ARMA DE MANO</button></div>
+          </div>
+          <div class="m2ArmTitle"><b id="m2ArmName"></b><small id="m2ArmSub"></small><span class="m2Tag">EQUIPADA</span></div>
+          <div class="m2Slot" id="m2Slot" aria-label="Vista previa del arma (arrastra para girarla)"></div>
+          <div class="m2Rows" data-catpane="rifle">
+            <div class="lbl">Mira (óptica) · <span id="m2MiraDesc"></span></div>
+            <div class="m2Row" id="m2Miras" role="group" aria-label="Miras"></div>
+            <div class="lbl">Skin (aspecto)</div>
+            <div class="m2Row" id="m2Skins" role="group" aria-label="Skins del rifle"></div>
+          </div>
+          <div class="m2Rows" data-catpane="knife" hidden>
+            <div class="lbl">Cuchillo · cuerpo a cuerpo (tecla 3)</div>
+            <div class="m2Row" id="m2Knives" role="group" aria-label="Cuchillos"></div>
+          </div>
+          <span class="m2Small">Solo aspecto: el daño, la cadencia, el retroceso y las balas son los del arma del juego.</span>
+        </div>
+      </section>
+      <section class="m2Pane" data-pane="mapas" hidden>
+        <div class="m2Maps" id="m2Maps" role="group" aria-label="Mapas"></div>
+        <span class="m2Small m2MapNote">VS BOTS se juega en el mapa elegido. En MULTIJUGADOR el mapa lo elige quien crea la sala (al crearla se pone el elegido aquí, si el servidor lo tiene).</span>
+      </section>
+    </main>
+    <nav class="m2Nav" role="tablist" aria-label="Menú principal">
+      <button type="button" role="tab" data-tab="inicio"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3.5 11 12 4l8.5 7M6 9.2V20h4.5v-5.5h3V20H18V9.2" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg><span>INICIO</span></button>
+      <button type="button" role="tab" data-tab="personaje"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6.5 10.5a5.5 5.5 0 0 1 11 0v1.5h-11z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M8 12v1.5a4 4 0 0 0 8 0V12M4.5 21c.8-3.3 3.8-5 7.5-5s6.7 1.7 7.5 5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M8.5 12.6h7" stroke="var(--signal)" stroke-width="1.8"/></svg><span>PERSONAJE</span></button>
+      <button type="button" role="tab" data-tab="armas"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12.5h13.5l1.5-1.5h5v2.2l-3 .3-1 1.2H12l-1.3 2.8H8.4l.6-2.8H5.5L3 16.2H2z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M8 9.5h6M9.5 9.5v3M12.5 9.5v3" stroke="currentColor" stroke-width="1.5"/></svg><span>ARMAS</span></button>
+      <button type="button" role="tab" data-tab="mapas"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6.5 8.5 4.5l7 2.5 5.5-2v13l-5.5 2-7-2.5L3 19.5z M8.5 4.5v13 M15.5 7v13" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg><span>MAPAS</span></button>
+      <button type="button" role="tab" data-tab="ajustes"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h9M17 6h3M4 12h3M11 12h9M4 18h11M19 18h1" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><circle cx="15" cy="6" r="2" fill="none" stroke="currentColor" stroke-width="1.8"/><circle cx="9" cy="12" r="2" fill="none" stroke="currentColor" stroke-width="1.8"/><circle cx="17" cy="18" r="2" fill="none" stroke="currentColor" stroke-width="1.8"/></svg><span>AJUSTES</span></button>
+    </nav>
+    <div class="m2Sheet" id="m2Sheet" hidden>
+      <div class="m2Panel m2SheetIn">
+        <div class="eyebrow">Opciones de partida</div>
+        <div class="m2SheetBody" id="m2SheetBody"></div>
+        <div class="row"><button class="btn" type="button" id="m2SheetClose">LISTO</button></div>
+      </div>
+    </div>
+  </div>
 </div>
 
 <div id="pause" class="overlay center" hidden>
@@ -1057,7 +1295,7 @@ body.hud2 #stickBase.sprint #stickKnob svg{display:block}
     <div id="mpLobby" hidden style="display:grid;gap:14px">
       <div style="display:grid;gap:4px"><span class="lbl">Código de sala</span><div id="mpCodeBig">------</div></div>
       <div class="row"><button class="btn ghost" id="mpCopy" type="button" style="font-size:20px">COPIAR CÓDIGO</button><button class="btn ghost" id="mpShare" type="button" style="font-size:20px">COMPARTIR INVITACIÓN</button></div>
-      <div style="display:grid;gap:6px"><p class="mpLink" id="mpLink" style="margin:0"></p><span class="lbl">Mapa (lo elige quien crea la sala)</span><div class="seg" id="mpMapSeg" role="group" aria-label="Mapa"><button type="button" data-map="arena">ARENA DE PRUEBAS</button><button type="button" data-map="pueblo">PUEBLO</button><button type="button" data-map="casa" hidden>CASA ATLAS · EXP.</button></div><span class="lbl">Modo (lo elige quien crea la sala)</span><div class="seg" id="mpModeSeg" role="group" aria-label="Modo"><button type="button" data-mode="duelo">1 CONTRA 1</button><button type="button" data-mode="todos">TODOS CONTRA TODOS</button><button type="button" data-mode="equipos">EQUIPOS</button></div><div id="mpCustom" hidden><span class="lbl" id="mpCustomLbl">Bots del servidor</span><div class="seg" id="mpBotsSeg" role="group" aria-label="Bots"><button type="button" data-b="0">SIN BOTS</button><button type="button" data-b="1">1</button><button type="button" data-b="2">2</button><button type="button" data-b="3">3</button><button type="button" data-b="4">4</button><button type="button" data-b="5">5</button></div><div class="seg" id="mpSizeSeg" role="group" aria-label="Tamaño de los equipos"><button type="button" data-s="2">2 CONTRA 2</button><button type="button" data-s="3">3 CONTRA 3</button></div><div class="seg" id="mpDiffSeg" role="group" aria-label="Dificultad de los bots"><button type="button" data-d="0">RECLUTA</button><button type="button" data-d="1">VETERANO</button><button type="button" data-d="2">ÉLITE</button></div><span class="lbl" id="mpTeamLbl">Tu equipo (puedes cambiarlo)</span><div class="seg" id="mpTeamSeg" role="group" aria-label="Tu equipo"><button type="button" data-team="rojo">EQUIPO ROJO</button><button type="button" data-team="azul">EQUIPO AZUL</button></div></div><span class="lbl">Bajas para ganar y tiempo (también los elige quien crea la sala)</span><div class="seg" id="mpKillSeg" role="group" aria-label="Bajas para ganar"><button type="button" data-k="5">5 BAJAS</button><button type="button" data-k="10">10</button><button type="button" data-k="20">20</button><button type="button" data-k="30">30</button></div><div class="seg" id="mpTimeSeg" role="group" aria-label="Tiempo de la partida"><button type="button" data-t="5">5 MIN</button><button type="button" data-t="10">10</button><button type="button" data-t="15">15</button><button type="button" data-t="20">20</button><button type="button" data-t="0">SIN LÍMITE</button></div><span class="lbl">Tu arma principal</span><div class="seg kitSeg" role="group" aria-label="Arma principal"><button type="button" data-kit="rifle">HALCÓN R7</button><button type="button" data-kit="shotgun">FURIA 12</button></div><span class="lbl skinOnly" hidden>Tu personaje (tu rival lo verá)</span><button type="button" class="skinPick skinOnly" aria-label="Elegir personaje" hidden><img alt=""><b></b><span class="lbl">CAMBIAR</span></button></div>
+      <div style="display:grid;gap:6px"><p class="mpLink" id="mpLink" style="margin:0"></p><span class="lbl">Mapa (lo elige quien crea la sala)</span><div class="seg" id="mpMapSeg" role="group" aria-label="Mapa"><button type="button" data-map="arena">ARENA DE PRUEBAS</button><button type="button" data-map="pueblo">PUEBLO</button><button type="button" data-map="casa" hidden>CASA ATLAS · EXP.</button><button type="button" data-map="casa2" hidden>CASA ATLAS 2.0</button></div><span class="lbl">Modo (lo elige quien crea la sala)</span><div class="seg" id="mpModeSeg" role="group" aria-label="Modo"><button type="button" data-mode="duelo">1 CONTRA 1</button><button type="button" data-mode="todos">TODOS CONTRA TODOS</button><button type="button" data-mode="equipos">EQUIPOS</button></div><div id="mpCustom" hidden><span class="lbl" id="mpCustomLbl">Bots del servidor</span><div class="seg" id="mpBotsSeg" role="group" aria-label="Bots"><button type="button" data-b="0">SIN BOTS</button><button type="button" data-b="1">1</button><button type="button" data-b="2">2</button><button type="button" data-b="3">3</button><button type="button" data-b="4">4</button><button type="button" data-b="5">5</button></div><div class="seg" id="mpSizeSeg" role="group" aria-label="Tamaño de los equipos"><button type="button" data-s="2">2 CONTRA 2</button><button type="button" data-s="3">3 CONTRA 3</button></div><div class="seg" id="mpDiffSeg" role="group" aria-label="Dificultad de los bots"><button type="button" data-d="0">RECLUTA</button><button type="button" data-d="1">VETERANO</button><button type="button" data-d="2">ÉLITE</button></div><span class="lbl" id="mpTeamLbl">Tu equipo (puedes cambiarlo)</span><div class="seg" id="mpTeamSeg" role="group" aria-label="Tu equipo"><button type="button" data-team="rojo">EQUIPO ROJO</button><button type="button" data-team="azul">EQUIPO AZUL</button></div></div><span class="lbl">Bajas para ganar y tiempo (también los elige quien crea la sala)</span><div class="seg" id="mpKillSeg" role="group" aria-label="Bajas para ganar"><button type="button" data-k="5">5 BAJAS</button><button type="button" data-k="10">10</button><button type="button" data-k="20">20</button><button type="button" data-k="30">30</button></div><div class="seg" id="mpTimeSeg" role="group" aria-label="Tiempo de la partida"><button type="button" data-t="5">5 MIN</button><button type="button" data-t="10">10</button><button type="button" data-t="15">15</button><button type="button" data-t="20">20</button><button type="button" data-t="0">SIN LÍMITE</button></div><span class="lbl">Tu arma principal</span><div class="seg kitSeg" role="group" aria-label="Arma principal"><button type="button" data-kit="rifle">HALCÓN R7</button><button type="button" data-kit="shotgun">FURIA 12</button></div><span class="lbl skinOnly" hidden>Tu personaje (tu rival lo verá)</span><button type="button" class="skinPick skinOnly" aria-label="Elegir personaje" hidden><img alt=""><b></b><span class="lbl">CAMBIAR</span></button></div>
       <ul id="mpPlayers"></ul>
       <p class="mpMsg" id="mpStatus">ESPERANDO AL SEGUNDO JUGADOR…</p>
       <div class="row"><button class="btn" id="mpReady" type="button">LISTO</button><button class="btn ghost" id="mpLeave" type="button" style="font-size:20px">SALIR</button></div>
@@ -2063,7 +2301,7 @@ if (isNode) module.exports = SDPlayer; else root.SDPlayer = SDPlayer;
    Client → server
      hello   { t, v, name, token? }          first message; token = reconnect to my seat
      ready   { t, on }                       lobby: I am ready / not ready
-     map     { t, id }                       lobby, creator only: choose the map ('pueblo', 'arena')
+     map     { t, id }                       lobby, creator only: choose the map ('pueblo', 'arena', 'casa', 'casa2')
      kit     { t, id }                       my primary: 'rifle' (HALCÓN R7) or 'shotgun' (FURIA 12), used from my next spawn
      skin    { t, id }                       my character (looks only): 'soldado', 'clasico', 'swat', 'fsb' or 'militar'
      acct    { t, tok }                      my cloud account session (optional): title in the lobby, box points
@@ -2166,7 +2404,7 @@ function parse(text) {
       return { msg: o };
     }
     case 'team': return m.id === 'rojo' || m.id === 'azul' ? { msg: { t: 'team', id: m.id } } : { error: 'shape' };
-    case 'map': return typeof m.id === 'string' && /^[a-z]{2,16}$/.test(m.id) ? { msg: { t: 'map', id: m.id } } : { error: 'shape' };
+    case 'map': return typeof m.id === 'string' && /^[a-z][a-z0-9]{1,15}$/.test(m.id) ? { msg: { t: 'map', id: m.id } } : { error: 'shape' };
     case 'rematch': return { msg: { t: 'rematch' } };
     case 'ping': return num(m.c, 0, 1e15) && (m.r === undefined || num(m.r, 0, 1e5)) ? { msg: { t: 'ping', c: m.c, r: m.r === undefined ? undefined : Math.min(600, m.r) } } : { error: 'shape' };
     case 'leave': return { msg: { t: 'leave' } };
@@ -5249,6 +5487,13 @@ function navGrid(cols, step, standH, rad) {
   return nav.map(nd => ({ x: nd.x, z: nd.z, n: nd.n.map(j => re[j]) }));
 }
 
+// the server's copy of the grid: every other point each way (0.5 m, ~3 000 points). Its bots link points within 0.75 m
+// when nothing is in between: still one piece (test/casa2.test.js), and a quarter of the size in core/mapdata.js
+function thin(nav) {
+  const on = v => Math.round(v / 0.25) % 2 === 0;
+  return nav.filter(n => on(n.x + XO) && on(n.z + ZN)).map(n => ({ x: n.x, z: n.z }));
+}
+
 /* ---------------- the model (THREE passed in) ----------------
    src: the loaded CASA ATLAS scene (casa_atlas.glb, already prepared by the page). Each of its meshes becomes ONE mesh
    with the 4 flats in it (cut where the openings are; mirrored flats with their triangles turned back the right way),
@@ -5338,7 +5583,7 @@ function build(T, src) {
   return out;
 }
 
-const SDCasa2 = { id: 'CASA_ATLAS_2', CX, CZ, XW, XO, ZN, MODS, CUTS, DROP, RAIL, place, extras, boxes, spawns, zones, navGrid, build };
+const SDCasa2 = { id: 'CASA_ATLAS_2', CX, CZ, XW, XO, ZN, MODS, CUTS, DROP, RAIL, place, extras, boxes, spawns, zones, navGrid, thin, build };
 if (typeof module !== 'undefined' && module.exports) module.exports = SDCasa2; else root.SDCasa2 = SDCasa2;
 })(typeof window !== 'undefined' ? window : globalThis);
 
@@ -6253,7 +6498,162 @@ const SDMiras = { OPTICS, ORDER, DEFAULT, RIFLES, ADS_Y, VM_FOV, get, sanitize, 
 if (typeof module !== 'undefined' && module.exports) module.exports = SDMiras; else root.SDMiras = SDMiras;
 })(typeof window !== 'undefined' ? window : globalThis);
 
-const BUILD_ID="dev";const BUILD_HASH="f79417d148";
+/* SNIPER DUEL — MENÚ 2 (?menu=2, 02-11-2026, docs/MENU-2.md): the dark tactical room behind the new main menu, and
+   the maths that frames the operator and the weapon in the free parts of the screen. Owner: «la sala oscura debería ser
+   la referencia principal … un menú con personalidad sin convertirlo en una copia de otros shooters».
+
+   Light on purpose: one room of ~30 boxes and planes (two textures of the game, shared with nothing else so their repeat
+   is their own), five lights without shadows, a blob shadow and a few hundred dust motes. The operator, his rifle and the
+   weapon on show are the game's own (page.html puts them in). Nothing here touches the rules: it is only what you see.
+
+   Room space: metres, the operator stands at the origin looking at +z (towards the camera); the back wall is at z -4.6.
+   buildRoom() is the only part that needs THREE (passed in); the rest is plain maths so node can test it. */
+(function (root) {
+'use strict';
+const TABS = ['inicio', 'personaje', 'armas', 'mapas', 'ajustes'];
+// the maps of the game; online: the room's server knows it (ARENA, PUEBLO and CASA ATLAS; CASA XL only against bots)
+const MAPS = [
+  { id: 'arena', name: 'ARENA', sub: 'Patio cerrado de 48 × 32 m · coberturas bajas y un bloque central', online: true },
+  { id: 'pueblo', name: 'PUEBLO', sub: 'Pueblo abandonado · calles largas, tejados y torre del agua', online: true },
+  { id: 'casa', name: 'CASA ATLAS', sub: 'Piso de 18 × 14 m · combate a corta distancia', online: true, exp: true },
+  { id: 'casaxl', name: 'CASA ATLAS XL', sub: 'Villa de 40 × 32 m · patio, jardín, garaje y calle', online: false, exp: true }
+];
+const clamp = (v, a, b) => v < a ? a : v > b ? b : v;
+// frame-rate independent ease towards b (k = how fast, 1/s)
+const damp = (a, b, k, dt) => b + (a - b) * Math.exp(-k * dt);
+// the angle a goes to b the short way round
+const dampAngle = (a, b, k, dt) => { let d = (b - a) % (Math.PI * 2); if (d > Math.PI) d -= Math.PI * 2; if (d < -Math.PI) d += Math.PI * 2; return a + d * (1 - Math.exp(-k * dt)); };   // continuous: no jump of 2π
+// camera distance so that h metres fill frac of the picture's height with a vertical fov in degrees
+const frameDist = (h, frac, fov) => h / (Math.max(0.05, frac) * 2 * Math.tan(fov * Math.PI / 360));
+/* where the operator goes: the free part of the screen (a rect in CSS px) for each tab, as an offset of the camera's
+   picture (THREE's setViewOffset) and the distance that makes him fill it. vw, vh: the window. Returns
+   {dist, ox, oy}: the camera's picture moves ox px right and oy px down so the room's centre lands in the rect's. */
+function stageFrame(rect, vw, vh, fov, height) {
+  const r = rect && rect.width > 20 && rect.height > 20 ? rect : { left: 0, top: 0, width: vw, height: vh };
+  const frac = clamp(r.height / vh, 0.25, 1) * 0.94;
+  return { dist: frameDist(height || 2.05, frac, fov), ox: r.left + r.width / 2 - vw / 2, oy: r.top + r.height / 2 - vh / 2 };
+}
+/* the weapon on show (ARMAS): its slot on screen (CSS px) → a point in front of the camera and how many metres a pixel is
+   at that depth. ndc: the slot's centre in the camera's picture (-1..1), already counting the picture's offset. */
+function slotPlace(rect, vw, vh, fov, depth) {
+  const cx = rect.left + rect.width / 2, cy = rect.top + rect.height / 2;
+  const perPx = 2 * depth * Math.tan(fov * Math.PI / 360) / vh;
+  return { ndcX: cx / vw * 2 - 1, ndcY: 1 - cy / vh * 2, perPx, width: rect.width * perPx, height: rect.height * perPx };
+}
+// a gentle "breathing" and weight shift for the operator in the menu (on top of the game's idle animation): rad / m
+function idleSway(t) {
+  return { yaw: Math.sin(t * 0.37) * 0.035 + Math.sin(t * 0.13) * 0.02, lean: Math.sin(t * 0.29 + 1.1) * 0.012, bob: Math.sin(t * 1.55) * 0.004 };
+}
+
+function buildRoom(T, opt) {
+  opt = opt || {};
+  const tex = opt.tex || (() => null), low = !!opt.low;
+  const scene = new T.Scene();
+  scene.background = new T.Color(0x09090a);
+  scene.fog = new T.Fog(0x09090a, 7.5, 17);
+  const add = (geo, mat, x, y, z, ry) => { const m = new T.Mesh(geo, mat); m.position.set(x, y, z); if (ry) m.rotation.y = ry; m.matrixAutoUpdate = false; m.updateMatrix(); scene.add(m); return m; };
+  const rep = (t, u, v) => { if (t) { t.repeat.set(u, v); } return t; };
+  // floor: the game's concrete, darkened; walls: the same concrete and the metal of the town, almost black
+  const floorMat = new T.MeshStandardMaterial({ color: 0x2e2c29, roughness: 0.82, metalness: 0.05, map: rep(tex('concrete'), 5, 5), normalMap: low ? null : rep(tex('concrete', true), 5, 5) });
+  if (floorMat.normalMap) floorMat.normalScale.set(0.6, 0.6);
+  const wallMat = new T.MeshStandardMaterial({ color: 0x161617, roughness: 0.92, map: rep(tex('concrete'), 4, 2) });
+  const ribMat = new T.MeshStandardMaterial({ color: 0x0f1011, roughness: 0.55, metalness: 0.5, map: rep(tex('metal'), 0.3, 3) });
+  const crateMat = new T.MeshStandardMaterial({ color: 0x2a2d27, roughness: 0.6, metalness: 0.45, map: rep(tex('metal'), 1, 1) });
+  const crateDark = new T.MeshStandardMaterial({ color: 0x18191c, roughness: 0.55, metalness: 0.5, map: rep(tex('metal'), 1, 1) });
+  const trimMat = new T.MeshStandardMaterial({ color: 0x111214, roughness: 0.4, metalness: 0.7 });
+  const lampMat = new T.MeshBasicMaterial({ color: 0xe9f1ff });
+  const accentMat = new T.MeshBasicMaterial({ color: 0xff8a2b });
+  add(new T.PlaneGeometry(18, 18).rotateX(-Math.PI / 2), floorMat, 0, 0, -1);
+  add(new T.BoxGeometry(18, 7, 0.3), wallMat, 0, 3.5, -4.75);
+  add(new T.BoxGeometry(0.3, 7, 12), wallMat, -6.2, 3.5, -0.5);
+  add(new T.BoxGeometry(0.3, 7, 12), wallMat, 6.2, 3.5, -0.5);
+  // the back wall: steel ribs every 1.5 m and a skirting band; an orange LED line low on the wall (the only colour)
+  const rib = new T.BoxGeometry(0.16, 7, 0.22);
+  for (let x = -6; x <= 6.01; x += 1.5) add(rib, ribMat, x, 3.5, -4.5);
+  add(new T.BoxGeometry(18, 0.35, 0.12), trimMat, 0, 0.175, -4.55);
+  add(new T.BoxGeometry(5.2, 0.025, 0.02), accentMat, -2.2, 0.42, -4.48);
+  add(new T.BoxGeometry(1.4, 0.025, 0.02), accentMat, 3.6, 0.42, -4.48);
+  // ceiling lights: two slanted strips and one long one (what lights the room in the reference), each with a soft glow
+  const glowTex = (() => {
+    if (typeof document === 'undefined') return null;
+    const c = document.createElement('canvas'); c.width = c.height = 64; const g = c.getContext('2d'); if (!g) return null;
+    const gr = g.createRadialGradient(32, 32, 0, 32, 32, 32); gr.addColorStop(0, 'rgba(255,255,255,1)'); gr.addColorStop(0.35, 'rgba(255,255,255,.35)'); gr.addColorStop(1, 'rgba(255,255,255,0)');
+    g.fillStyle = gr; g.fillRect(0, 0, 64, 64); const t = new T.CanvasTexture(c); return t;
+  })();
+  const glowMat = new T.MeshBasicMaterial({ color: 0xb9c9e4, map: glowTex, transparent: true, opacity: 0.4, depthWrite: false, blending: T.AdditiveBlending, fog: false });
+  const strips = [[-2.3, 2.95, -4.1, 0.24, 2.4], [2.5, 2.7, -3.8, -0.3, 2.0], [0.3, 3.25, -4.25, 0.04, 3.2]];
+  const lamps = new T.Group(); scene.add(lamps);
+  for (const [x, y, z, rz, L] of strips) {
+    const g = new T.Group(); g.position.set(x, y, z); g.rotation.set(0.1, 0.35 * Math.sign(x || 1), rz); lamps.add(g);
+    const tube = new T.Mesh(new T.BoxGeometry(L, 0.07, 0.16), lampMat); g.add(tube);
+    const can = new T.Mesh(new T.BoxGeometry(L + 0.1, 0.05, 0.2), trimMat); can.position.y = 0.06; g.add(can);
+    const glow = new T.Mesh(new T.PlaneGeometry(L * 1.3, 0.5), glowMat); glow.position.set(0, -0.02, 0.1); g.add(glow);
+  }
+  // the haze under each lamp: an open cone, additive and very faint (light through dust)
+  const haze = new T.MeshBasicMaterial({ color: 0x7f93b4, transparent: true, opacity: low ? 0.01 : 0.014, depthWrite: false, blending: T.AdditiveBlending, side: T.DoubleSide, fog: false });
+  for (const [x, y, z] of strips) { const c = new T.Mesh(new T.CylinderGeometry(0.4, 1.9, y, 20, 1, true), haze); c.position.set(x * 0.9, y / 2, z); c.matrixAutoUpdate = false; c.updateMatrix(); scene.add(c); }
+  // crates: a stack on the right, one on the left, a long one behind (gun cases) — lids and edges as dark trims
+  const crate = (w, h, d, x, z, y0, ry, mat) => {
+    const g = new T.Group(); g.position.set(x, (y0 || 0) + h / 2, z); g.rotation.y = ry || 0; scene.add(g);
+    g.add(new T.Mesh(new T.BoxGeometry(w, h, d), mat || crateMat));
+    const lid = new T.Mesh(new T.BoxGeometry(w + 0.04, 0.06, d + 0.04), trimMat); lid.position.y = h / 2 - 0.12; g.add(lid);
+    for (const sx of [-1, 1]) { const e = new T.Mesh(new T.BoxGeometry(0.05, h + 0.01, 0.05), trimMat); e.position.set(sx * (w / 2), 0, d / 2); g.add(e); }
+    const latch = new T.Mesh(new T.BoxGeometry(0.12, 0.08, 0.03), ribMat); latch.position.set(0, h / 2 - 0.2, d / 2 + 0.015); g.add(latch);
+    return g;
+  };
+  crate(1.5, 0.95, 1.0, 2.4, -2.1, 0, -0.35, crateMat);
+  crate(1.1, 0.62, 0.85, 2.55, -2.2, 0.95, -0.2, crateDark);
+  crate(1.2, 1.05, 1.0, -2.6, -2.6, 0, 0.4, crateDark);
+  crate(2.4, 0.5, 0.6, -0.6, -3.9, 0, 0, crateMat);
+  // the operator's spot: a dark rubber mat and a soft contact shadow
+  const stand = new T.Group(); scene.add(stand);
+  add(new T.BoxGeometry(2.2, 0.02, 1.6), new T.MeshStandardMaterial({ color: 0x151514, roughness: 0.95 }), 0, 0.01, 0);
+  if (typeof document !== 'undefined') {
+    const c = document.createElement('canvas'); c.width = c.height = 64; const g = c.getContext('2d');
+    if (g) {
+      const gr = g.createRadialGradient(32, 32, 2, 32, 32, 32); gr.addColorStop(0, 'rgba(0,0,0,.85)'); gr.addColorStop(1, 'rgba(0,0,0,0)'); g.fillStyle = gr; g.fillRect(0, 0, 64, 64);
+      const sh = new T.Mesh(new T.PlaneGeometry(1.5, 1.2).rotateX(-Math.PI / 2), new T.MeshBasicMaterial({ map: new T.CanvasTexture(c), transparent: true, depthWrite: false }));
+      sh.position.y = 0.025; stand.add(sh);
+    }
+  }
+  // lights: a warm key from the front left, a cold rim from behind on the right, a faint orange bounce near the LED line
+  const lights = {};
+  lights.hemi = new T.HemisphereLight(0x8d98aa, 0x0c0b0a, 0.14); scene.add(lights.hemi);
+  const key = lights.key = new T.SpotLight(0xffefdc, 3.2, 16, 0.3, 0.8, 1.1); key.position.set(-2.4, 4.4, 3.4); scene.add(key);
+  key.target.position.set(0, 1.0, 0); scene.add(key.target);
+  const rim = lights.rim = new T.SpotLight(0xb8cdf2, 3.5, 14, 0.32, 0.6, 1.2); rim.position.set(2.4, 3.6, -3.2); scene.add(rim);
+  rim.target.position.set(0, 1.3, 0); scene.add(rim.target);
+  const rim2 = lights.rim2 = new T.SpotLight(0xc7d6ef, 2.0, 14, 0.3, 0.7, 1.2); rim2.position.set(-2.8, 3.4, -2.8); scene.add(rim2);
+  rim2.target.position.set(0, 1.2, 0); scene.add(rim2.target);
+  lights.fill = new T.DirectionalLight(0xdde4ee, 0.12); lights.fill.position.set(1, 2, 5); scene.add(lights.fill);
+  lights.accent = new T.PointLight(0xff8a2b, 0.9, 4.5, 1.5); lights.accent.position.set(-1.5, 0.45, -4.0); scene.add(lights.accent);
+  // dust motes drifting through the light (a few hundred points, one draw call)
+  const N = low ? 120 : 320, pos = new Float32Array(N * 3), seed = [];
+  for (let i = 0; i < N; i++) { const s = [Math.random() * 7 - 3.5, Math.random() * 3.4, Math.random() * 6 - 4.2, Math.random() * Math.PI * 2]; seed.push(s); pos[i * 3] = s[0]; pos[i * 3 + 1] = s[1]; pos[i * 3 + 2] = s[2]; }
+  const pg = new T.BufferGeometry(); pg.setAttribute('position', new T.BufferAttribute(pos, 3));
+  const dust = new T.Points(pg, new T.PointsMaterial({ color: 0xc9d4e6, size: 0.012, transparent: true, opacity: 0.55, depthWrite: false, blending: T.AdditiveBlending, fog: true, map: glowTex }));
+  dust.frustumCulled = false; scene.add(dust);
+  function frame(t) {
+    const a = pg.attributes.position.array;
+    for (let i = 0; i < N; i++) { const s = seed[i]; a[i * 3] = s[0] + Math.sin(t * 0.07 + s[3]) * 0.35; a[i * 3 + 1] = (s[1] + t * 0.025 * (0.5 + (i % 7) / 7)) % 3.4; a[i * 3 + 2] = s[2] + Math.cos(t * 0.05 + s[3]) * 0.3; }
+    pg.attributes.position.needsUpdate = true;
+  }
+  // everything this room made, for when it is no longer needed (the menu frees it while you play)
+  function dispose() {
+    const seen = new Set();
+    scene.traverse(o => {
+      if (o.geometry && !seen.has(o.geometry)) { seen.add(o.geometry); o.geometry.dispose(); }
+      for (const m of [].concat(o.material || [])) { if (!m || seen.has(m)) continue; seen.add(m); for (const k of ['map', 'normalMap']) if (m[k] && !seen.has(m[k])) { seen.add(m[k]); m[k].dispose(); } m.dispose(); }
+    });
+  }
+  return { scene, stand, lights, lamps, frame, dispose, exposure: 0.78 };
+}
+
+const SDMenu2 = { TABS, MAPS, clamp, damp, dampAngle, frameDist, stageFrame, slotPlace, idleSway, buildRoom };
+if (typeof module !== 'undefined' && module.exports) module.exports = SDMenu2; else root.SDMenu2 = SDMenu2;
+})(typeof window !== 'undefined' ? window : globalThis);
+
+const BUILD_ID="7076310";const BUILD_HASH="fd543984a4";
 </script>
 <script>
 (function(){
@@ -7180,11 +7580,12 @@ function casaxlLoad(){
 }
 /* =================== CASA ATLAS 2.0 (02-11-2026, client/casa2.js, docs/CASA-ATLAS-2.md) ===================
    The original CASA ATLAS ×4 round a patio, joined by an alley and two side corridors: its GLB, materials and boxes,
-   nothing remade. Offered with ?casa2=1 (remembered on the device; ?casa2=0 hides it again) while the owner tries it;
-   duel vs bots only for now: world.local keeps it out of core/mapdata.js (the server) until he approves it. */
+   nothing remade. Approved by the owner on 02-11-2026 («aprobada, súbela online»): offered by default in the duel and
+   online menus (?casa2=0 hides it on this device). Always built, so a friend can join a room on it; its walkable grid
+   (11 000 points) is only made the first time something asks for it. The server gets every other point (navServer). */
 const C2={on:typeof SDCasa2!=='undefined'&&CASA.on,exp:false,ready:false,loading:false,failed:false,root:null,tris:0,calls:0,wait:[]};
-{const q=location.search.match(/[?&]casa2=([01])\b/);if(q)store.set('casa2Exp',q[1]==='1');C2.exp=C2.on&&store.get('casa2Exp',false)===true;}
-if(C2.on&&C2.exp){   // built only when offered (22 000 walkable points: no cost for everyone else)
+{const q=location.search.match(/[?&]casa2=([01])\b/);if(q)store.set('casa2Exp',q[1]==='1');C2.exp=C2.on&&store.get('casa2Exp',true)!==false;}
+if(C2.on){
   const prevC=W.colliders,prevR=W.ray,prevP=W.ramps;W.colliders=[];W.ray=[];W.ramps=[];
   const pm={},mk=f=>pm[f]||(pm[f]=new T.MeshBasicMaterial({visible:false}));
   {const fl=new T.Mesh(new T.PlaneGeometry(240,240),mk('concrete'));fl.rotation.x=-Math.PI/2;fl.userData.surf='concrete';fl.name='casa2_floor_ray';scene.add(fl);fl.updateMatrixWorld(true);W.ray.push(fl);}
@@ -7194,8 +7595,10 @@ if(C2.on&&C2.exp){   // built only when offered (22 000 walkable points: no cost
     const m=new T.Mesh(new T.BoxGeometry(x1-x0,y1-y0,z1-z0),mk(b.f));m.position.set((x0+x1)/2,(y0+y1)/2,(z0+z1)/2);
     m.userData.surf=b.f;m.name='casa2_'+b.n;scene.add(m);m.updateMatrixWorld(true);W.ray.push(m);
   }
-  const nav=SDCasa2.navGrid(W.colliders,SD_CONFIG.move.step,SD_CONFIG.move.heightStand);
-  WORLDS.casa2={colliders:W.colliders,ray:W.ray,ramps:W.ramps,objs:[],nav,label:'CASA ATLAS 2.0',spawns:SDCasa2.spawns(SDCasa),local:true};
+  const cols=W.colliders;let nav=null,navS=null;
+  WORLDS.casa2={colliders:W.colliders,ray:W.ray,ramps:W.ramps,objs:[],label:'CASA ATLAS 2.0',spawns:SDCasa2.spawns(SDCasa),
+    get nav(){return nav||(nav=SDCasa2.navGrid(cols,SD_CONFIG.move.step,SD_CONFIG.move.heightStand));},
+    get navServer(){return navS||(navS=SDCasa2.thin(this.nav));}};
   W.colliders=prevC;W.ray=prevR;W.ramps=prevP;
 }
 // what you see: CASA ATLAS's own loaded scene, its 32 meshes each merged ×4 (same material objects: the textures are
@@ -9780,7 +10183,7 @@ function showSetTab(t){if(!SET_TABS[t])return;setTab=t;store.set('setTab',t);$('
 document.querySelectorAll('.setTabs button').forEach(b=>b.addEventListener('click',()=>{showSetTab(b.dataset.tab);SFX.ui();$('#settings').scrollTop=0;}));
 let resetArm=0;function resetConfirm(on){resetArm=on?performance.now():0;const b=$('#setReset');b.classList.toggle('confirm',on);b.textContent=on?'¿SEGURO? TOCA OTRA VEZ':'RESTAURAR TODO';}
 function openSettings(from){settingsFrom=from;settingsToUI();try{$('#gfxDiag').textContent=gfxDiagText();}catch(e){}showSetTab(setTab);$('#settings').hidden=false;$('#settings').scrollTop=0;for(const id of ['menu','pause'])$('#'+id).classList.add('under');}
-function closeSettings(){$('#settings').hidden=true;for(const id of ['menu','pause'])$('#'+id).classList.remove('under');}
+function closeSettings(){$('#settings').hidden=true;for(const id of ['menu','pause'])$('#'+id).classList.remove('under');m2SettingsClosed();}
 $('#openSettings').addEventListener('click',()=>{audioInit();SFX.ui();openSettings('menu');});
 $('#pauseSettings').addEventListener('click',()=>{SFX.ui();openSettings('pause');});
 $('#setClose').addEventListener('click',()=>{closeSettings();SFX.ui();});
@@ -9804,7 +10207,7 @@ document.querySelectorAll('#diffSeg button').forEach(b=>b.addEventListener('clic
 setDiff(diff);
 const MODE_SUB={duel:'Pueblo abandonado. Tú contra bots francotiradores. Gana el primero que llegue a 10 bajas. Fíjate en el destello de sus miras: es lo único que te avisa antes del disparo.',
   duelCasa:'CASA ATLAS (EXPERIMENTAL): un piso de 18 × 14 m con salón, cocina, dormitorio, baño, estudio, comedor y balcón. Combate a corta distancia contra 1 bot (2 en ÉLITE). Gana el primero que llegue a 10 bajas. El cristal no para las balas.',
-  duelCasa2:'CASA ATLAS 2.0 (EXPERIMENTAL): cuatro pisos de CASA ATLAS unidos por un callejón, un patio central y dos pasillos laterales, en 42 × 33 m. Rutas por dentro, por el patio y por los flancos, y líneas de tiro de hasta 40 m. Contra 2 bots (3 en ÉLITE). De momento solo contra bots.',
+  duelCasa2:'CASA ATLAS 2.0: cuatro pisos de CASA ATLAS unidos por un callejón, un patio central y dos pasillos laterales, en 42 × 33 m. Rutas por dentro, por el patio y por los flancos, y líneas de tiro de hasta 40 m. Contra 2 bots (3 en ÉLITE); también online.',
   duelCasaXL:'CASA ATLAS XL (EXPERIMENTAL): una villa en una parcela de 40 × 32 m con patio y estanque, pérgola, jardín, garaje, calle y dos callejones. Líneas de tiro de hasta 40 m y tres rutas entre las salidas. Contra 2 bots (3 en ÉLITE). De momento solo contra bots.',
   duelArena:'ARENA DE PRUEBAS: un patio cerrado de 48 × 32 m, el mapa del 1v1 online. Tú contra bots, distancias cortas, coberturas bajas y un bloque central con tejado. Gana el primero que llegue a 10 bajas.',
   range:'Galería de tiro con dianas a 20, 50 y 100 m, fijas y en movimiento. Añade bots de entrenamiento desarmados que corren, esquivan y se cubren, y prueba el rifle y la navaja (tecla 3) sin que te maten.'};
@@ -9812,7 +10215,7 @@ const MODE_SUB={duel:'Pueblo abandonado. Tú contra bots francotiradores. Gana e
 let OFFMAP=store.get('offMap','arena');if(OFFMAP!=='arena'&&OFFMAP!=='pueblo'&&!(OFFMAP==='casa'&&CASA.exp)&&!(OFFMAP==='casaxl'&&XL.on&&CASA.exp)&&!(OFFMAP==='casa2'&&C2.exp))OFFMAP='arena';
 if(CASA.exp)document.querySelectorAll('#mapSeg [data-map=casa],#mpMapSeg [data-map=casa]').forEach(b=>b.hidden=false);
 if(CASA.exp&&XL.on)document.querySelectorAll('#mapSeg [data-map=casaxl]').forEach(b=>b.hidden=false);
-if(C2.exp)document.querySelectorAll('#mapSeg [data-map=casa2]').forEach(b=>b.hidden=false);   // ?casa2=1, duel vs bots only until the owner approves it   // duel vs bots only: the server does not have it yet
+if(C2.exp)document.querySelectorAll('#mapSeg [data-map=casa2],#mpMapSeg [data-map=casa2]').forEach(b=>b.hidden=false);   // duel vs bots only: the server does not have it yet
 const subKey=(m,id)=>m==='duel'&&id==='arena'?'duelArena':m==='duel'&&id==='casa'?'duelCasa':m==='duel'&&id==='casaxl'?'duelCasaXL':m==='duel'&&id==='casa2'?'duelCasa2':m;
 const offWorld=()=>mode==='range'?'pueblo':OFFMAP;
 function setOffMap(id){OFFMAP=id;store.set('offMap',id);document.querySelectorAll('#mapSeg button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.map===id)));if(mode!=='online')$('#modeSub').textContent=MODE_SUB[subKey(mode,id)];if(state==='menu')setWorld(offWorld());}
@@ -10669,7 +11072,7 @@ async function netCreate(){
   audioInit();SFX.ui();mpName();mpMsg('Creando sala…');
   const url=await netServerUrl();if(!url){mpMsg('SERVIDOR NO DISPONIBLE. Puedes seguir jugando offline.',true);return;}
   $('#mpCreate').disabled=true;
-  try{const r=await fetch(url+'/create',{method:'POST'});const j=await r.json();if(!r.ok||!j.code)throw new Error(j.error||r.status);netConnect(j.code);}
+  try{const r=await fetch(url+'/create',{method:'POST'});const j=await r.json();if(!r.ok||!j.code)throw new Error(j.error||r.status);M2.propose=true;netConnect(j.code);}
   catch(e){mpMsg('No se pudo crear la sala ('+(e.message||e)+'). Inténtalo otra vez.',true);netErr('create '+(e.message||e));}
   finally{$('#mpCreate').disabled=false;}
 }
@@ -10730,7 +11133,7 @@ function netEndOnline(){
   setWorld(offWorld());
 }
 function renderLobby(){
-  const N=NET.N;if(!N)return;
+  const N=NET.N;if(!N)return;m2LobbyMap();
   $('#mpCodeBig').textContent=NET.code||'------';$('#mpLink').textContent=inviteLink(NET.code);
   const ul=$('#mpPlayers');ul.innerHTML='';
   const C=Object.assign({kills:10,time:10,mode:'duelo',bots:0,diff:1,size:2},N.cfg),DIFN=['RECLUTA','VETERANO','ÉLITE'];
@@ -10754,6 +11157,7 @@ function renderLobby(){
   document.querySelectorAll('#mpDiffSeg button').forEach(b=>{b.setAttribute('aria-pressed',String(+b.dataset.d===C.diff));b.disabled=!host;});
   document.querySelectorAll('#mpTeamSeg button').forEach(b=>b.setAttribute('aria-pressed',String(!!me&&b.dataset.team===me.team)));
   if(N.map==='casa'){casaLoad();const cb=$('#mpMapSeg [data-map=casa]');if(cb)cb.hidden=false;}   // a guest without ?casa=1 still sees (and loads) the room's map
+  if(N.map==='casa2'&&C2.on){casa2Load();const cb=$('#mpMapSeg [data-map=casa2]');if(cb)cb.hidden=false;}
   $('#mpStatus').textContent=!two?(C.mode==='todos'?'Añade bots o espera a alguien: comparte el código o el enlace.':'ESPERANDO AL SEGUNDO JUGADOR… Comparte el código o el enlace.'):me&&me.ready?(C.mode==='duelo'?'Esperando a que el rival esté listo…':'Esperando a que los demás estén listos…'):C.mode==='duelo'?'Pulsa LISTO. Empieza cuando los dos lo estéis.':'Pulsa LISTO. Empieza cuando todas las personas de la sala lo estén.';
 }
 function netEvent(e){
@@ -11471,6 +11875,201 @@ function miniFrame(){
 }
 
 /* =================== LOOP =================== */
+/* =================== MENÚ 2 (?menu=2, 02-11-2026, client/menu2.js, docs/MENU-2.md) ===================
+   The new main menu, experimental until the owner approves it: ?menu=2 turns it on (and is remembered), ?menu=1 brings
+   back the menu of always. INICIO | PERSONAJE | ARMAS | MAPAS | AJUSTES over a dark tactical room where your operator
+   (the character you play with, the game's own GLB) stands with your rifle (the one in your hands: skin, optic and
+   camouflage) and can be turned with the mouse or a finger. Every choice is the game's own setter (setSkin, setWskin,
+   setMira, setOffMap, setMode…): nothing new is saved and nothing reaches the server that did not before. The menu's
+   own blocks (difficulty, time, training bots, main weapon, sensitivity) are moved, as they are, into OPCIONES DE
+   PARTIDA, and AJUSTES opens the settings of always. While you play the room is freed and nothing of it is drawn. */
+{const q=location.search.match(/[?&]menu=([12])\b/);if(q)store.set('menu2',q[1]==='2');}
+const M2={on:!!store.get('menu2',false)&&typeof SDMenu2!=='undefined',tab:'inicio',prevTab:'inicio',cat:'rifle',sel:'duel',
+  room:null,cam:null,pivot:null,R:null,held:null,show:null,spin:null,item:null,showLight:null,
+  yaw:0,yawV:0,wYaw:0,wYawV:0,drag:null,lastDrag:0,t:0,sig:'',wsig:'',held0:null,frame:{dist:5,ox:0,oy:0},cur:null,propose:false};
+const m2MapImg=id=>'assets/menu/mapa_'+id+'.jpg?v='+BUILD_HASH;
+const M2_MAPS=typeof SDMenu2!=='undefined'?SDMenu2.MAPS.filter(m=>m.id==='arena'||m.id==='pueblo'||(m.id==='casa'&&CASA.exp)||(m.id==='casaxl'&&CASA.exp&&XL.on)):[];
+const M2_DIFF=['RECLUTA','VETERANO','ÉLITE'],M2_TRAIN={off:'Dianas fijas y móviles',easy:'Bots de entrenamiento · FÁCIL',normal:'Bots de entrenamiento · NORMAL',hard:'Bots de entrenamiento · DIFÍCIL'};
+const m2MapName=id=>{const m=SDMenu2.MAPS.find(x=>x.id===id);return m?m.name:String(id).toUpperCase();};
+function m2Btn(cls,img,name,small,on){const c=document.createElement('button');c.type='button';c.className=cls;
+  const im=document.createElement('img');im.alt='';im.loading='lazy';im.src=img;const s=document.createElement('span'),b=document.createElement('b');b.textContent=name;s.append(b);
+  if(small){const sm=document.createElement('small');sm.textContent=small;s.append(sm);}c.append(im,s);c.addEventListener('click',()=>{on();audioInit();SFX.ui();m2Sync();});return c;}
+function m2Init(){
+  document.body.classList.add('m2');$('#m2').hidden=false;
+  // OPCIONES DE PARTIDA: the menu's blocks, moved (their listeners and saved values come with them)
+  const sb=$('#m2SheetBody'),old=$('#menu .menuInner');
+  const kit=old.querySelector('.kitSeg'),sens=old.querySelector('.sens');
+  for(const el of [$('#modeSub'),kit&&kit.parentElement,$('#diffBlock'),$('#rangeBlock'),sens&&sens.parentElement])if(el)sb.append(el);
+  $('#m2Opts').addEventListener('click',()=>{audioInit();SFX.ui();$('#m2Sheet').hidden=false;});
+  $('#m2SheetClose').addEventListener('click',()=>{SFX.ui();$('#m2Sheet').hidden=true;m2Sync();});
+  $('#m2Sheet').addEventListener('click',e=>{if(e.target===$('#m2Sheet')){$('#m2Sheet').hidden=true;m2Sync();}});
+  // modes: VS BOTS and CAMPO DE TIRO are the game's modes; MULTIJUGADOR opens the room screen of always
+  M2.sel=store.get('m2Sel',mode);if(!['online','duel','range'].includes(M2.sel))M2.sel=mode;
+  document.querySelectorAll('#m2 .m2Mode').forEach(b=>b.addEventListener('click',()=>{audioInit();SFX.ui();M2.sel=b.dataset.sel;store.set('m2Sel',M2.sel);if(M2.sel!=='online')setMode(M2.sel);m2Sync();}));
+  $('#m2Play').addEventListener('click',()=>{if(M2.sel==='online'){$('#mpBtn').click();return;}if(mode!==M2.sel)setMode(M2.sel);startMatch();});
+  document.querySelectorAll('#m2 .m2Card').forEach(b=>b.addEventListener('click',()=>{audioInit();SFX.ui();m2Tab(b.dataset.go);}));
+  document.querySelectorAll('#m2 .m2Nav button').forEach(b=>b.addEventListener('click',()=>{audioInit();SFX.ui();m2Tab(b.dataset.tab);}));
+  $('#m2Me').addEventListener('click',()=>{audioInit();SFX.ui();if(PROFILE_ON)openProfile();else m2Tab('personaje');});
+  if(PROFILE_ON){$('#m2Inv').hidden=false;$('#m2Inv').addEventListener('click',()=>{audioInit();SFX.ui();openInv();});}
+  // PERSONAJE: the characters you can really play with
+  const pl=$('#m2PjList');
+  if(SKIN_ON)for(const id in SKINS){const c=m2Btn('m2Pick',skinImg(id),SKINS[id].name,SKINS[id].by,()=>setSkin(id));c.dataset.skin=id;pl.append(c);}
+  else{$('#m2PjHelp').textContent='Con este enlace (?pj=…) no se elige personaje.';}
+  // ARMAS: the 8 optics, the rifle skins and the two knives
+  for(const id of SDMiras.ORDER){const O=SDMiras.get(id),c=m2Btn('m2W',miraImg(id),O.name,O.short,()=>setMira(id));c.dataset.mira=id;$('#m2Miras').append(c);}
+  for(const id in WSKINS.rifle){if(!ARMAS_ON&&id!=='halcon')continue;const c=m2Btn('m2W',wsImg('rifle',id),WSKINS.rifle[id].name,WSKINS.rifle[id].by,()=>setWskin('rifle',id));c.dataset.ws=id;$('#m2Skins').append(c);}
+  for(const id in WSKINS.knife){if(!ARMAS_ON&&id!=='navaja')continue;const c=m2Btn('m2W',wsImg('knife',id),WSKINS.knife[id].name,WSKINS.knife[id].by,()=>setWskin('knife',id));c.dataset.ws=id;$('#m2Knives').append(c);}
+  document.querySelectorAll('#m2Cat button').forEach(b=>b.addEventListener('click',()=>{audioInit();SFX.ui();M2.cat=b.dataset.cat;M2.wsig='';m2Sync();}));
+  // MAPAS
+  for(const m of M2_MAPS){const c=m2Btn('m2Map',m2MapImg(m.id),m.name,m.sub,()=>setOffMap(m.id));c.dataset.map=m.id;
+    const tags=document.createElement('i');tags.innerHTML=(m.online?'<em class="on">ONLINE</em>':'<em>SOLO CONTRA BOTS</em>')+(m.exp?'<em>EXPERIMENTAL</em>':'');c.append(tags);$('#m2Maps').append(c);}
+  document.querySelectorAll('#m2 .m2Bg[data-map]').forEach(el=>el.style.backgroundImage='url("'+m2MapImg(el.dataset.map)+'")');
+  // turning the operator (any stage) and the weapon on show, with the mouse or a finger
+  const drag=(el,key)=>{
+    el.addEventListener('pointerdown',e=>{M2.drag={id:e.pointerId,x:e.clientX,key,t:performance.now()};try{el.setPointerCapture(e.pointerId);}catch(x){}});
+    el.addEventListener('pointermove',e=>{const d=M2.drag;if(!d||d.id!==e.pointerId)return;const dx=e.clientX-d.x,now=performance.now();d.x=e.clientX;
+      const a=dx*0.011;M2[key]+=a;M2[key+'V']=a/Math.max(0.008,(now-d.t)/1000);d.t=now;M2.lastDrag=now;});
+    const up=e=>{if(M2.drag&&M2.drag.id===e.pointerId){M2.drag=null;M2.lastDrag=performance.now();}};
+    el.addEventListener('pointerup',up);el.addEventListener('pointercancel',up);};
+  document.querySelectorAll('#m2 [data-stage]').forEach(el=>drag(el,'yaw'));
+  drag($('#m2Slot'),'wYaw');
+  window.addEventListener('resize',()=>{M2.cur=null;});
+  m2Tab('inicio',true);
+}
+function m2Tab(id,quiet){
+  if(id==='ajustes'){M2.prevTab=M2.tab==='ajustes'?'inicio':M2.tab;M2.tab='ajustes';m2Nav();openSettings('menu');return;}
+  M2.tab=id;document.querySelectorAll('#m2 .m2Pane').forEach(p=>p.hidden=p.dataset.pane!==id);
+  m2Nav();M2.cur=null;M2.wsig='';if(!quiet)m2Sync();else m2Sync();
+}
+function m2Nav(){document.querySelectorAll('#m2 .m2Nav button').forEach(b=>b.setAttribute('aria-selected',String(b.dataset.tab===M2.tab)));}
+// closeSettings: back to the section you were in
+function m2SettingsClosed(){if(M2.on&&M2.tab==='ajustes')m2Tab(M2.prevTab||'inicio');}
+// what is chosen, everywhere it shows (also after a choice made in the old overlays: PERFIL › personaje, CAJAS…)
+function m2Sync(){
+  if(!M2.on)return;
+  const press=(sel,key,val)=>document.querySelectorAll(sel).forEach(c=>c.setAttribute('aria-pressed',String(c.dataset[key]===val)));
+  press('#m2 .m2Mode','sel',M2.sel);
+  setText($('#m2SubDuel'),m2MapName(OFFMAP)+' · '+M2_DIFF[diff]);
+  setText($('#m2SubRange'),M2_TRAIN[TRAIN.level]||'');
+  const bgD=$('#m2BgDuel'),u='url("'+m2MapImg(OFFMAP)+'")';if(bgD.style.backgroundImage!==u)bgD.style.backgroundImage=u;
+  const sub=$('#modeSub').textContent;
+  setText($('#m2PlayNote'),/^Cargando/.test(sub)?sub.toUpperCase():M2.sel==='online'?'Crea una sala o únete con un código':M2.sel==='range'?'CAMPO DE TIRO · PUEBLO':'VS BOTS · '+m2MapName(OFFMAP)+' · '+M2_DIFF[diff]+(OFF_TIME?' · '+OFF_TIME+' MIN':''));
+  const rs=WSKINS.rifle[WSKIN.rifle],O=miraOpt();
+  const ri=$('#m2CardRifle'),rsrc=wsImg('rifle',WSKIN.rifle);if(ri.getAttribute('src')!==rsrc)ri.src=rsrc;
+  setText($('#m2CardRifleSub'),(PRIMARY==='shotgun'?'FURIA 12 · ':'')+(rs?rs.name:'HALCÓN R7')+' · '+O.name);
+  const pi=$('#m2CardPj'),psrc=skinImg(SKIN);if(pi.getAttribute('src')!==psrc)pi.src=psrc;
+  setText($('#m2CardPjSub'),SKINS[SKIN].name);
+  const mi=$('#m2MeImg');if(mi.getAttribute('src')!==psrc)mi.src=psrc;
+  setText($('#m2MeName'),PROFILE.name||'JUGADOR');
+  const ib=$('#openInv');if(ib)setText($('#m2InvN'),(ib.textContent.match(/\((\d+)\)/)||['',''])[1]);
+  press('#m2PjList .m2Pick','skin',SKIN);setText($('#m2PjName'),SKINS[SKIN].name);setText($('#m2PjBy'),SKINS[SKIN].by);
+  press('#m2Cat button','cat',M2.cat);
+  document.querySelectorAll('#m2 [data-catpane]').forEach(p=>p.hidden=p.dataset.catpane!==M2.cat);
+  press('#m2Miras .m2W','mira',MIRA.id);press('#m2Skins .m2W','ws',WSKIN.rifle);press('#m2Knives .m2W','ws',WSKIN.knife);
+  const oName=O.name.includes(O.short)?O.name:O.name+' '+O.short;
+  setText($('#m2MiraDesc'),oName);
+  if(M2.cat==='rifle'){setText($('#m2ArmName'),rs&&WSKIN.rifle!=='halcon'?'HALCÓN R7 · '+rs.name:'HALCÓN R7');setText($('#m2ArmSub'),'RIFLE DE CERROJO · MIRA '+oName);}
+  else{const k=WSKINS.knife[WSKIN.knife];setText($('#m2ArmName'),k?k.name:'NAVAJA');setText($('#m2ArmSub'),'ARMA DE MANO · CUERPO A CUERPO');}
+  press('#m2Maps .m2Map','map',OFFMAP);
+  M2.sig=m2Sig();
+}
+const m2Sig=()=>[M2.sel,mode,OFFMAP,diff,OFF_TIME,TRAIN.level,PRIMARY,SKIN,WSKIN.rifle,WSKIN.knife,MIRA.id,PROFILE.name,$('#modeSub').textContent.slice(0,9),$('#openInv').textContent].join('|');
+// MULTIJUGADOR: a room you create starts on the map chosen in MAPAS (if the server has it)
+function m2LobbyMap(){const N=NET.N;if(!M2.on||!M2.propose||!N||!N.you||!netIsHost())return;M2.propose=false;
+  const m=M2_MAPS.find(x=>x.id===OFFMAP);if(m&&m.online&&N.map!==OFFMAP)N.chooseMap(OFFMAP);}
+// ---- the room in 3D ----
+function m2Wake(){
+  if(M2.room)return;
+  M2.room=SDMenu2.buildRoom(T,{tex:(n,nm)=>texLoad(n,nm,true),low:GFX.profile==='bajo'});
+  if(!M2.cam){M2.cam=new T.PerspectiveCamera(30,1,0.05,60);
+    M2.show=new T.Group();M2.spin=new T.Group();M2.show.add(M2.spin);M2.cam.add(M2.show);
+    M2.showLight=new T.DirectionalLight(0xfff4e6,1.1);M2.showLight.position.set(-0.6,0.9,0.6);M2.cam.add(M2.showLight);M2.showLight.target.position.set(0,0,-1.3);M2.cam.add(M2.showLight.target);
+    M2.showRim=new T.DirectionalLight(0xbcd0f0,0.9);M2.showRim.position.set(0.8,0.4,-2.2);M2.cam.add(M2.showRim);M2.showRim.target.position.set(0,0,-1.3);M2.cam.add(M2.showRim.target);
+    M2.pivot=new T.Group();}
+  M2.room.scene.add(M2.cam);M2.room.stand.add(M2.pivot);
+  if(!M2.R){M2.R=makeSoldier(RIVAL_MAT,{variant:'B'});M2.pivot.add(M2.R.root);}
+  if(SKIN_ON)pj2SetPack(M2.R,SKINS[SKIN].pack);
+  M2.wsig='';M2.cur=null;
+}
+// while you play: the room leaves the GPU (it comes back, rebuilt, with the menu); the operator and the guns are the
+// game's own objects and textures, so nothing of them is freed or loaded twice
+function m2Sleep(){
+  if(!M2.room)return;
+  if(M2.held&&M2.held.parent)M2.held.parent.remove(M2.held);M2.held=null;
+  if(M2.item&&M2.item.parent)M2.item.parent.remove(M2.item);M2.item=null;
+  M2.room.scene.remove(M2.cam);M2.room.stand.remove(M2.pivot);M2.room.dispose();M2.room=null;M2.wsig='';
+}
+// the rifle as it is in your hands now (skin, optic, camouflage): the same meshes and materials, new nodes
+function m2GunClone(){const g=new T.Group();for(const c of GUN.children){if(!c.visible||c===RIF.flash)continue;const k=c.clone(true);k.traverse(o=>{o.castShadow=false;});g.add(k);}return g;}
+function m2KnifeClone(){const g=new T.Group();for(const c of KNIFE.children){if(!c.visible)continue;g.add(c.clone(true));}return g;}
+const _m2b=new T.Box3(),_m2s=new T.Vector3(),_m2c=new T.Vector3();
+function m2Weapons(){
+  const ws=[VMA.ready,!!(M2.R&&M2.R.tp),WS_ST.rifle.cur,WS_ST.rifle.objs.length,WS_ST.knife.cur,WS_ST.knife.objs.length,MIRA.id,!!MIRA.model,(INV.equip&&INV.equip.camo)||'',M2.cat,M2.tab].join('|');
+  if(ws===M2.wsig)return;M2.wsig=ws;
+  // the rifle in the operator's hands (the 3rd-person HALCÓN hides; it is shared with nobody: this operator is only the menu's)
+  const R=M2.R;
+  if(R&&R.tp&&R.tp.rifle&&VMA.R){if(M2.held&&M2.held.parent)M2.held.parent.remove(M2.held);R.tp.rifle.visible=false;M2.held=m2GunClone();R.tp.rifle.parent.add(M2.held);}
+  // the weapon on show (ARMAS): turned side-on, its centre at the origin
+  if(M2.item&&M2.item.parent)M2.item.parent.remove(M2.item);M2.item=null;
+  if(M2.tab!=='armas'||!VMA.ready)return;
+  const inner=M2.cat==='knife'?m2KnifeClone():m2GunClone();inner.rotation.y=Math.PI/2;
+  const it=new T.Group();it.add(inner);it.updateMatrixWorld(true);
+  _m2b.setFromObject(inner);_m2b.getSize(_m2s);if(_m2s.y>_m2s.x*1.2){inner.rotation.z=-Math.PI/2;it.updateMatrixWorld(true);_m2b.setFromObject(inner);_m2b.getSize(_m2s);}
+  _m2b.getCenter(_m2c);inner.position.sub(_m2c);it.userData.size=_m2s.clone();
+  it.traverse(o=>{if(o.isMesh)o.frustumCulled=false;});
+  M2.spin.add(it);M2.item=it;
+}
+// where things go on screen this frame (the free part of the section, the weapon's slot); smoothed so a tab change glides
+function m2Layout(dt){
+  const vw=window.innerWidth||1,vh=window.innerHeight||1,cam=M2.cam,fov=cam.fov;
+  if(cam.aspect!==vw/vh)cam.aspect=vw/vh;
+  if(!M2.cur){const pane=$('#m2 .m2Pane[data-pane="'+(M2.tab==='ajustes'?M2.prevTab:M2.tab)+'"]'),st=pane&&pane.querySelector('[data-stage]');
+    const r=st?st.getBoundingClientRect():{left:vw*0.3,top:vh*0.12,width:vw*0.4,height:vh*0.76};
+    // MAPAS has no stage: the operator stays in the middle, behind the cards
+    M2.cur=Object.assign(SDMenu2.stageFrame(r,vw,vh,fov,M2.tab==='personaje'?1.95:2.05),{slot:M2.tab==='armas'?$('#m2Slot').getBoundingClientRect():null});
+    if(M2.tab==='armas'&&r.width<60)M2.cur.ox=-vw*0.36;}
+  const F=M2.frame,C=M2.cur,k=dt>0.2?100:7;
+  F.dist=SDMenu2.damp(F.dist,C.dist,k,dt);F.ox=SDMenu2.damp(F.ox,C.ox,k,dt);F.oy=SDMenu2.damp(F.oy,C.oy,k,dt);
+  // the camera: slightly from the left and above, at the operator's chest, drifting a little like a hand-held shot
+  const t=M2.t,yaw=0.16+Math.sin(t*0.21)*0.018,el=0.07+Math.sin(t*0.17+1)*0.01,tgY=1.0;
+  cam.position.set(Math.sin(yaw)*Math.cos(el)*F.dist,tgY+Math.sin(el)*F.dist,Math.cos(yaw)*Math.cos(el)*F.dist);
+  cam.lookAt(0,tgY,0);
+  cam.setViewOffset(vw,vh,-F.ox,-F.oy,vw,vh);
+  // the weapon on show: in camera space at the centre of its slot, as wide as the slot allows
+  if(M2.item&&C.slot&&C.slot.width>40){
+    const d=1.3,P=SDMenu2.slotPlace(C.slot,vw,vh,fov,d),sz=M2.item.userData.size;
+    const x=(C.slot.left+C.slot.width/2-vw/2-F.ox)*P.perPx,y=-(C.slot.top+C.slot.height/2-vh/2-F.oy)*P.perPx;
+    M2.show.position.set(x,y,-d);
+    const s=Math.min(P.width*0.9/Math.max(0.01,sz.x),P.height*0.86/Math.max(0.01,sz.y));M2.item.scale.setScalar(s);M2.show.visible=true;
+  }else M2.show.visible=false;
+}
+// the pose: turned a little to his right, rifle low ("low ready"), like a portrait
+const M2_YAW0=-0.42,M2_PITCH=-0.55;
+function m2Frame(rdt){
+  if(!M2.room)m2Wake();
+  M2.t+=rdt;const dt=Math.min(rdt,0.1),now=performance.now();
+  if(M2.sig!==m2Sig())m2Sync();
+  if(M2.R&&SKIN_ON&&M2.R.skinPack!==SKINS[SKIN].pack)pj2SetPack(M2.R,SKINS[SKIN].pack);
+  m2Weapons();
+  // the operator: the game's idle animation with a rifle low, a little sway, and the turn you gave him (back to the
+  // front a few seconds after you let go)
+  const idle=now-M2.lastDrag>2600&&!M2.drag;
+  if(!M2.drag){M2.yaw+=M2.yawV*dt;M2.yawV=SDMenu2.damp(M2.yawV,0,5,dt);if(idle)M2.yaw=SDMenu2.dampAngle(M2.yaw,0,1.4,dt);
+    M2.wYaw+=M2.wYawV*dt;M2.wYawV=SDMenu2.damp(M2.wYawV,0,5,dt);if(idle)M2.wYaw=SDMenu2.dampAngle(M2.wYaw,0,1.4,dt);}
+  M2.wIdle=SDMenu2.damp(M2.wIdle||0,idle?1:0,1.5,dt);
+  const sw=SDMenu2.idleSway(M2.t);
+  M2.pivot.rotation.set(0,M2_YAW0+M2.yaw+sw.yaw,sw.lean);M2.pivot.position.y=sw.bob;
+  M2.pivot.visible=M2.tab!=='mapas';   // MAPAS: the cards fill the screen, nobody stands between them
+  if(M2.R)animateSoldier(M2.R,{wpn:PRIMARY==='shotgun'?'shotgun':'rifle',vx:0,vz:0,pitch:M2_PITCH,aim:0,crouch:0},dt);
+  M2.spin.rotation.set(0.1,M2.wYaw+M2.wIdle*Math.sin(M2.t*0.45)*0.4,0);   // on show: side-on, swinging gently
+  M2.room.frame(M2.t);
+  m2Layout(rdt);
+  // the soldier's level of detail is measured from the game camera: put it where the menu camera is
+  camera.position.copy(M2.cam.position);
+  WROOT.visible=false;KROOT.visible=false;PROOT.visible=false;SROOT.visible=false;
+}
+if(M2.on)m2Init();
+
 let last=performance.now();let menuAng=0;let rangeT=0;let simAcc=0;
 // test hook: MANUAL.on stops the clock-driven loop so a recorder can step exact 1/30 s frames (__SD.advance)
 const MANUAL={on:false};
@@ -11484,6 +12083,7 @@ function frameBody(now){
   const pmark=k=>{if(!pf)return;const t=performance.now();PROF.t[k]=(PROF.t[k]||0)+t-pt;pt=t;};
   const rdt=Math.min(PERF_LOW?0.34:0.1,(now-last)/1000);last=now; // test mode: very low FPS still simulates in real time
   if(slowmo>0)slowmo-=rdt;
+  if(M2.room&&state!=='menu')m2Sleep();   // MENÚ 2: its room leaves while you play
   const fxdt=rdt*(slowmo>0?0.35:1); // slow motion touches only particles and tracers
   if(calloutTimer>0)calloutTimer-=rdt;
   if(state==='playing'||state==='dead'||(mode==='online'&&state==='paused')){
@@ -11505,6 +12105,9 @@ function frameBody(now){
     pmark('arma1p');
     updateCompass();clockFrame();miniFrame();
     if(WCORE.ads>=GUNCFG.scopeAt){rangeT-=rdt;if(rangeT<=0){rangeT=0.1;_ae.set(AIM.pitch,AIM.yaw,0,'YXZ');_aq.setFromEuler(_ae);RAY.set(camera.position,new T.Vector3(0,0,-1).applyQuaternion(_aq));RAY.near=0;RAY.far=400;const h=RAY.intersectObjects(shotTargets(),false);$('#rng').textContent=h.length?String(Math.round(h[0].distance)).padStart(3,'0'):'---';}}
+  }else if(state==='menu'&&M2.on){
+    m2Frame(rdt);
+    if(Math.abs(camera.fov-BASE_FOV)>0.01){camera.fov=BASE_FOV;camera.updateProjectionMatrix();}
   }else if(state==='menu'){
     menuAng+=rdt*0.04;
     camera.position.set(Math.cos(menuAng)*44,13+Math.sin(menuAng*2)*2,Math.sin(menuAng)*44);
@@ -11536,7 +12139,8 @@ function frameBody(now){
   if(RATS.ready)ratsFrame(drawDt);
   if(FLORA.ready)FLORA.time.value=now/1000%1000;
   pmark('mundo');
-  renderer.render(scene,camera);
+  if(M2.room&&state==='menu'){const ex=renderer.toneMappingExposure;renderer.toneMappingExposure=M2.room.exposure*(SETTINGS.bright||1);renderer.render(M2.room.scene,M2.cam);renderer.toneMappingExposure=ex;}
+  else renderer.render(scene,camera);
   pmark('dibujo');
   if(!SHOT.noVM&&!TPV.on&&(WROOT.visible||KROOT.visible||PROOT.visible||SROOT.visible)&&(state==='playing'||state==='dead')){renderer.clearDepth();renderer.render(wScene,wCam);}
   pmark('dibujoArma');if(pf)PROF.n++;
@@ -11800,7 +12404,7 @@ if(FLORA.on){const gl=new T.GLTFLoader();let n=2;
       // the town's ground must exist first (rays land on it)
       if(P3W.kit)go();else{const w=setInterval(()=>{if(P3W.kit){clearInterval(w);go();}},300);}}}}
 
-window.__SD={MIRA,setMira,miraApply,miraClipGeo,miraRifle,openMiras,closeMiras,updateReticle,ENV,MOVE_CLASSIC,MOV_CLASSIC,VIS,VIS_COL,VIS_HULL,visOn,visFrame,visWho,selfHit,PROF,KTX2,R2_ON,R2_URL,PIC,GYRO,gyroEv,crossApply,btnPress,settingsChanged,perfTexMB(){const t=perfTextures();return {real:SDPerf.textureMB(t),asRGBA:SDPerf.textureMB(t.map(x=>Object.assign({},x,{bytes:0})))};},REMOTES,netScoreHud,shotTargets,MINI,miniLayer,miniPing,clockFrame,setOffTime,get OFF_TIME(){return OFF_TIME;},ACC,accRefresh,INV,invSync,camoApply,openInv,invOpenBox,WSKIN,WS_ST,setWskin,get RIF(){return RIF;},TPV,SELF,get PROFILE(){return PROFILE;},openProfile,endMatch,PJ_MIX,MIX_ORDER,SKINS,get SKIN(){return SKIN;},setSkin,pj2SetPack,rivalSkin,PERF,perfRun,HUD2,get H2(){return HUD2?H2:null;},leanIn:HUD2?leanIn:null,h2Frame:HUD2?h2Frame:null,PJ2,pj2Load,CASA,casaLoad,C2,casa2Load,XL,casaxlLoad,FLORA,RATS,RAT_WORLD,ratsFrame,SHADOW_FADE,setDuelLethal,get DUEL_LETHAL(){return DUEL_LETHAL;},gfxDiagText,get P3ON(){return P3ON;},COBCC,damagePlayer,TEX,sunFollow,setSunSnap(on){SUN_SNAP=!!on;},sun,P0,E10,e10Lod,DIAG,setTrainMove,LIGHT:{sun,hemi,skyMat,LOOK,P3},P3W,freeze(on){SIM_FREEZE=!!on;},SHOT,VMA,makeSoldier,animateSoldier,BOT_MAT,scene,camera,RemotePlayer,PMprev,PIS,PROOT,RIF,WROOT,SHO_:null,MANUAL,advance(ms){frameBody(last+ms);},get LAST_PELLETS(){return LAST_PELLETS;},SCORE,SCFG,SROOT,SHO,setPrimaryChoice,get PRIMARY(){return PRIMARY;},PCORE,PCFG,setWorld,WORLDS,get WORLD_ID(){return WORLD_ID;},renderer,GFX,gfxApply,get NET(){return NET;},get REMOTE(){return REMOTE;},W,get NAV(){return NAV;},setOffMap,get OFFMAP(){return OFFMAP;},TOUCH,EDIT,openEditor,get SETTINGS(){return SETTINGS;},get LAYOUT(){return LAYOUT;},checkOrientation,MAT,LOAD,TRAINERS,get RANGE_BOTS(){return RANGE_BOTS;},TRAIN,setTrain,setLethal,kitNote,GINS,TDIAG,AU,get TOUCH_EVENTS(){return TOUCH_EVENTS;},impactFX,bodyFX,get DECALS(){return DECALS;},surfaceOf,soundDelay,aimSelfTest,P,PM,WS,WCORE,RECOIL,AIM,BOTS,DUMMIES,BULLETS,EVENTS,PARTS,STATS,get state(){return state;},get mode(){return mode;},setMode,input,startMatch,simTick,frame,toMenu,pause,resume};
+window.__SD={M2,m2Tab,m2Sync,m2Sleep,openSettings,closeSettings,MIRA,setMira,miraApply,miraClipGeo,miraRifle,openMiras,closeMiras,updateReticle,ENV,MOVE_CLASSIC,MOV_CLASSIC,VIS,VIS_COL,VIS_HULL,visOn,visFrame,visWho,selfHit,PROF,KTX2,R2_ON,R2_URL,PIC,GYRO,gyroEv,crossApply,btnPress,settingsChanged,perfTexMB(){const t=perfTextures();return {real:SDPerf.textureMB(t),asRGBA:SDPerf.textureMB(t.map(x=>Object.assign({},x,{bytes:0})))};},REMOTES,netScoreHud,shotTargets,MINI,miniLayer,miniPing,clockFrame,setOffTime,get OFF_TIME(){return OFF_TIME;},ACC,accRefresh,INV,invSync,camoApply,openInv,invOpenBox,WSKIN,WS_ST,setWskin,get RIF(){return RIF;},TPV,SELF,get PROFILE(){return PROFILE;},openProfile,endMatch,PJ_MIX,MIX_ORDER,SKINS,get SKIN(){return SKIN;},setSkin,pj2SetPack,rivalSkin,PERF,perfRun,HUD2,get H2(){return HUD2?H2:null;},leanIn:HUD2?leanIn:null,h2Frame:HUD2?h2Frame:null,PJ2,pj2Load,CASA,casaLoad,C2,casa2Load,XL,casaxlLoad,FLORA,RATS,RAT_WORLD,ratsFrame,SHADOW_FADE,setDuelLethal,get DUEL_LETHAL(){return DUEL_LETHAL;},gfxDiagText,get P3ON(){return P3ON;},COBCC,damagePlayer,TEX,sunFollow,setSunSnap(on){SUN_SNAP=!!on;},sun,P0,E10,e10Lod,DIAG,setTrainMove,LIGHT:{sun,hemi,skyMat,LOOK,P3},P3W,freeze(on){SIM_FREEZE=!!on;},SHOT,VMA,makeSoldier,animateSoldier,BOT_MAT,scene,camera,RemotePlayer,PMprev,PIS,PROOT,RIF,WROOT,SHO_:null,MANUAL,advance(ms){frameBody(last+ms);},get LAST_PELLETS(){return LAST_PELLETS;},SCORE,SCFG,SROOT,SHO,setPrimaryChoice,get PRIMARY(){return PRIMARY;},PCORE,PCFG,setWorld,WORLDS,get WORLD_ID(){return WORLD_ID;},renderer,GFX,gfxApply,get NET(){return NET;},get REMOTE(){return REMOTE;},W,get NAV(){return NAV;},setOffMap,get OFFMAP(){return OFFMAP;},TOUCH,EDIT,openEditor,get SETTINGS(){return SETTINGS;},get LAYOUT(){return LAYOUT;},checkOrientation,MAT,LOAD,TRAINERS,get RANGE_BOTS(){return RANGE_BOTS;},TRAIN,setTrain,setLethal,kitNote,GINS,TDIAG,AU,get TOUCH_EVENTS(){return TOUCH_EVENTS;},impactFX,bodyFX,get DECALS(){return DECALS;},surfaceOf,soundDelay,aimSelfTest,P,PM,WS,WCORE,RECOIL,AIM,BOTS,DUMMIES,BULLETS,EVENTS,PARTS,STATS,get state(){return state;},get mode(){return mode;},setMode,input,startMatch,simTick,frame,toMenu,pause,resume};
 })();
 </script>
 
