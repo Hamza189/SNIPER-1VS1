@@ -24,7 +24,7 @@ async function dumpWorld(page, id) {
       for (let i = 0; i < n; i++) { const k = idx ? idx.getX(i) : i; v.fromBufferAttribute(pos, k).applyMatrix4(m.matrixWorld); out.push(r3(v.x), r3(v.y), r3(v.z)); }
     }
     const rb = o => { const c = {}; for (const k in o) c[k] = typeof o[k] === 'number' ? r3(o[k]) : o[k]; return c; };
-    const nav = (id && __SD.WORLDS[id] ? __SD.WORLDS[id].nav : __SD.NAV).map(n => [n.x, n.z]);
+    const w = id && __SD.WORLDS[id], nav = (w ? w.navServer || w.nav : __SD.NAV).map(n => [n.x, n.z]);   // navServer: a lighter grid for the server (CASA ATLAS 2.0)
     const res = { tris: out, ds, colliders: W.colliders.map(rb), ramps: (W.ramps || []).map(rb), nav };
     const sp = id && __SD.WORLDS[id] && __SD.WORLDS[id].spawns;   // fixed first spawns A/B (CASA ATLAS)
     if (sp) res.spawns = sp.map(s => ({ team: s.team, x: s.x, z: s.z, yaw: s.yaw }));

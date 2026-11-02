@@ -66,6 +66,13 @@ const zones = C2.zones(C), empty = zones.filter(z => !NAV.some(n => inZone(n, z)
 check('todas las habitaciones de los 4 pisos, el patio, el callejón y los dos pasillos tienen puntos (ninguna inaccesible)', empty.length === 0, empty.map(z => z.name).join(', ') || zones.length + ' zonas');
 check('ningún punto dentro de una caja', NAV.every(n => !cols.some(c => c.maxY > 0.35 && c.minY < 1.8 && n.x > c.minX && n.x < c.maxX && n.z > c.minZ && n.z < c.maxZ)));
 
+// the server's copy (every other point, 0.5 m): its bots link points within 0.75 m with nothing in between (at 0.5 and 1.2 m)
+{ const T = C2.thin(NAV), nb = T.map(() => []);
+  for (let i = 0; i < T.length; i++) for (let j = i + 1; j < T.length; j++) { const d = Math.hypot(T[i].x - T[j].x, T[i].z - T[j].z);
+    if (d < 0.751 && !blocked(T[i].x, 0.5, T[i].z, T[j].x, 0.5, T[j].z) && !blocked(T[i].x, 1.2, T[i].z, T[j].x, 1.2, T[j].z)) { nb[i].push(j); nb[j].push(i); } }
+  const seen = new Uint8Array(T.length), q = [0]; seen[0] = 1; for (let h = 0; h < q.length; h++) for (const j of nb[q[h]]) if (!seen[j]) { seen[j] = 1; q.push(j); }
+  check('la copia del servidor (un punto cada 0,5 m, como enlazan sus bots) también es un solo trozo', q.length === T.length && T.length < NAV.length / 3, T.length + ' puntos'); }
+
 console.log('\nTRES RUTAS ENTRE LAS SALIDAS');
 const Z = Object.fromEntries(zones.map(z => [z.name, z]));
 // the patio (with its balconies) and the alley cross in the middle: the interior route may cross there, the patio route

@@ -163,6 +163,13 @@ function navGrid(cols, step, standH, rad) {
   return nav.map(nd => ({ x: nd.x, z: nd.z, n: nd.n.map(j => re[j]) }));
 }
 
+// the server's copy of the grid: every other point each way (0.5 m, ~3 000 points). Its bots link points within 0.75 m
+// when nothing is in between: still one piece (test/casa2.test.js), and a quarter of the size in core/mapdata.js
+function thin(nav) {
+  const on = v => Math.round(v / 0.25) % 2 === 0;
+  return nav.filter(n => on(n.x + XO) && on(n.z + ZN)).map(n => ({ x: n.x, z: n.z }));
+}
+
 /* ---------------- the model (THREE passed in) ----------------
    src: the loaded CASA ATLAS scene (casa_atlas.glb, already prepared by the page). Each of its meshes becomes ONE mesh
    with the 4 flats in it (cut where the openings are; mirrored flats with their triangles turned back the right way),
@@ -252,6 +259,6 @@ function build(T, src) {
   return out;
 }
 
-const SDCasa2 = { id: 'CASA_ATLAS_2', CX, CZ, XW, XO, ZN, MODS, CUTS, DROP, RAIL, place, extras, boxes, spawns, zones, navGrid, build };
+const SDCasa2 = { id: 'CASA_ATLAS_2', CX, CZ, XW, XO, ZN, MODS, CUTS, DROP, RAIL, place, extras, boxes, spawns, zones, navGrid, thin, build };
 if (typeof module !== 'undefined' && module.exports) module.exports = SDCasa2; else root.SDCasa2 = SDCasa2;
 })(typeof window !== 'undefined' ? window : globalThis);

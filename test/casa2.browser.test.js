@@ -1,5 +1,6 @@
-/* CASA ATLAS 2.0 (02-11-2026) en la página de verdad, solo contra bots (?casa2=1) hasta que el propietario la apruebe:
-   - con ?casa2=1 sale en el menú del duelo; sin ella no existe (nadie paga sus 11 000 puntos de red); el servidor no la tiene
+/* CASA ATLAS 2.0 (02-11-2026) en la página de verdad (aprobada por el propietario el mismo día: también online):
+   - sale en los menús del duelo y del online; ?casa2=0 la oculta; core/mapdata.js (el servidor) tiene sus mismas cajas
+   - su red de 11 000 puntos solo se construye cuando hace falta (no al abrir la página)
    - carga sobre el GLB de CASA ATLAS: los MISMOS materiales y texturas (nada nuevo en la GPU salvo vértices), ~40 llamadas
    - lo que se ve coincide con las cajas: cada pieza nueva tiene su caja a ±3 cm, y las puertas nuevas están abiertas para
      la vista, las balas y el cuerpo (sin paredes invisibles ni agujeros)
@@ -14,7 +15,8 @@ let pass = 0, fail = 0;
 function check(name, cond, info) { if (cond) { pass++; console.log('  ok   ' + name + (info !== undefined ? '  (' + info + ')' : '')); } else { fail++; console.log('  FAIL ' + name + (info !== undefined ? '  (' + info + ')' : '')); } }
 (async () => {
   console.log('\nDATOS');
-  check('el servidor no la tiene todavía (core/mapdata.js sin casa2): nada que desplegar', !MAP.maps.casa2);
+  check('el servidor la tiene: sus 434 cajas, las salidas A y B y su red ligera (un punto de cada cuatro)', MAP.maps.casa2 && MAP.maps.casa2.colliders.length === C2.boxes(C).length &&
+    MAP.maps.casa2.spawns.length === 2 && MAP.maps.casa2.nav.length > 2500 && MAP.maps.casa2.nav.length < 4000, MAP.maps.casa2 && MAP.maps.casa2.nav.length + ' puntos');
   const srv = await ss.start();
   const b = await chromium.launch({ args: ['--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist'] });
   try {
@@ -26,16 +28,18 @@ function check(name, cond, info) { if (cond) { pass++; console.log('  ok   ' + n
       await p.goto(srv.url + (process.env.PAGE || '') + '?vm=0' + q); await p.waitForFunction(() => window.__SD && __SD.WORLDS && __SD.W, null, { timeout: 180000 });
       return { ctx, p, errs, bad }; };
 
-    console.log('\nSIN LA BANDERA');
+    console.log('\nCON ?casa2=0');
     { const { ctx, p } = await mk('&casa2=0');
-      const r = await p.evaluate(() => ({ world: !!__SD.WORLDS.casa2, btn: document.querySelector('#mapSeg [data-map=casa2]').hidden }));
-      check('no se construye ni sale en el menú', !r.world && r.btn, JSON.stringify(r)); await ctx.close(); }
+      const r = await p.evaluate(() => ({ world: !!__SD.WORLDS.casa2, btn: document.querySelector('#mapSeg [data-map=casa2]').hidden && document.querySelector('#mpMapSeg [data-map=casa2]').hidden }));
+      check('oculta en los menús (el mundo existe igual: un amigo puede unirse a una sala en ella)', r.world && r.btn, JSON.stringify(r)); await ctx.close(); }
 
-    console.log('\nCON ?casa2=1');
-    const { ctx, p, errs, bad } = await mk('&casa2=1');
-    const menu = await p.evaluate(() => ({ duel: !document.querySelector('#mapSeg [data-map=casa2]').hidden, online: !!document.querySelector('#mpMapSeg [data-map=casa2]'),
-      local: __SD.WORLDS.casa2.local, nav: __SD.WORLDS.casa2.nav.length, boxes: __SD.WORLDS.casa2.colliders.length }));
-    check('sale en el menú del duelo y no en el online; mundo solo del cliente', menu.duel && !menu.online && menu.local, JSON.stringify(menu));
+    console.log('\nPOR DEFECTO');
+    const { ctx, p, errs, bad } = await mk('');
+    const lazy = await p.evaluate(() => { const d = Object.getOwnPropertyDescriptor(__SD.WORLDS.casa2, 'nav'); return !!(d && d.get); });
+    const menu = await p.evaluate(() => ({ duel: !document.querySelector('#mapSeg [data-map=casa2]').hidden, online: !document.querySelector('#mpMapSeg [data-map=casa2]').hidden,
+      local: !!__SD.WORLDS.casa2.local, nav: __SD.WORLDS.casa2.nav.length, boxes: __SD.WORLDS.casa2.colliders.length }));
+    check('sale en el menú del duelo y en el online; no es solo del cliente', menu.duel && menu.online && !menu.local, JSON.stringify(menu));
+    check('su red se construye la primera vez que se pide, no al abrir la página', lazy);
     check('las mismas cajas que client/casa2.js (las que recibirá el servidor)', menu.boxes === C2.boxes(C).length, menu.boxes + ' cajas · ' + menu.nav + ' puntos');
     await p.evaluate(() => { document.querySelector('#mapSeg [data-map=casa2]').click(); __SD.setMode('duel'); __SD.setDuelLethal(false); __SD.startMatch(); });
     await p.waitForFunction(() => __SD.C2.ready && __SD.state === 'playing', null, { timeout: 180000 });

@@ -4,7 +4,7 @@
    Client → server
      hello   { t, v, name, token? }          first message; token = reconnect to my seat
      ready   { t, on }                       lobby: I am ready / not ready
-     map     { t, id }                       lobby, creator only: choose the map ('pueblo', 'arena')
+     map     { t, id }                       lobby, creator only: choose the map ('pueblo', 'arena', 'casa', 'casa2')
      kit     { t, id }                       my primary: 'rifle' (HALCÓN R7) or 'shotgun' (FURIA 12), used from my next spawn
      skin    { t, id }                       my character (looks only): 'soldado', 'clasico', 'swat', 'fsb' or 'militar'
      acct    { t, tok }                      my cloud account session (optional): title in the lobby, box points
@@ -107,7 +107,7 @@ function parse(text) {
       return { msg: o };
     }
     case 'team': return m.id === 'rojo' || m.id === 'azul' ? { msg: { t: 'team', id: m.id } } : { error: 'shape' };
-    case 'map': return typeof m.id === 'string' && /^[a-z]{2,16}$/.test(m.id) ? { msg: { t: 'map', id: m.id } } : { error: 'shape' };
+    case 'map': return typeof m.id === 'string' && /^[a-z][a-z0-9]{1,15}$/.test(m.id) ? { msg: { t: 'map', id: m.id } } : { error: 'shape' };
     case 'rematch': return { msg: { t: 'rematch' } };
     case 'ping': return num(m.c, 0, 1e15) && (m.r === undefined || num(m.r, 0, 1e5)) ? { msg: { t: 'ping', c: m.c, r: m.r === undefined ? undefined : Math.min(600, m.r) } } : { error: 'shape' };
     case 'leave': return { msg: { t: 'leave' } };
