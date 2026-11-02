@@ -63,6 +63,13 @@ const nd = (ml.mils.match(/a/g) || []).length / 2, st = 5 * ml.u, firstX = parse
 check('6×: un punto cada 5 milésimas en los cuatro brazos (ángulo real a 6×) y el centro iluminado', nd >= 16 && nd % 4 === 0 && Math.abs(firstX - st) < 0.02 && ml.dot > 0, nd + ' puntos · paso ' + st.toFixed(2));
 check('chevrón: la punta en el centro y ~3 % de la altura de la imagen', /^M0 0L/.test(ch.lit) && Math.abs(parseFloat(ch.lit.split('L')[1]) * unit - 0.03 * 430) < 0.2 && ch.cross === '');
 check('holográfica: anillo de ~6 % de la altura y punto central', Math.abs(parseFloat(ho.ring.slice(1)) * -unit - 0.06 * 430) < 0.2 && ho.dot > 0 && ho.glow > ho.dot);
+check('miras de ventana (02-11): punto, holográfica, 2× y 3× con el rifle a la vista, su ventana medida en cada rifle (5–25 % de media pantalla)',
+  ['punto', 'holo', 'x2', 'tactica'].every(id => M.OPTICS[id].kind === 'reflex' && M.OPTICS[id].win) &&
+  Object.keys(M.RIFLES).every(r => ['punto', 'holo', 'x2', 'tactica'].every(id => { const k = M.windowFrac(id, M.placement(r, id)); return k > 0.05 && k < 0.25; })));
+check('miras de ventana: la retícula entera dentro de la ventana (el propietario: «tiene que verse la mira entera y la retícula dentro»)', ['cruz', 'chevron', 'holo', 'dot'].every(st => {
+  const R = M.reticle(st, { zoom: st === 'cruz' ? 2 : 3, H: 430, rpx: 26, fovBase: 70, gun: { gravity: 9.81, zero: 50, speed: 850 }, move: { crouch: 1, walk: 3, sprint: 6 }, see: true });
+  const nums = (R.posts + R.cross + R.lit + R.ring).match(/-?\d+(\.\d+)?/g) || [];
+  return nums.every(n => Math.abs(+n) <= 95) && R.dot <= 16 && (st !== 'holo' || parseFloat(R.ring.slice(1)) >= -62); }));
 check('punto rojo: al menos 2 px y con halo', dt.dot * unit >= 2 && dt.glow > dt.dot && dt.ring === '' && dt.lit === '');
 
 console.log('\nMODELOS');

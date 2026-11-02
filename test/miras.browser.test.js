@@ -50,8 +50,7 @@ function check(name, cond, info) { if (cond) { pass++; console.log('  ok   ' + n
         axis: S.MIRA.place.axisY, lit: document.getElementById('retLit').getAttribute('d').length, ring: document.getElementById('retRing').getAttribute('d').length,
         dot: +document.getElementById('retDot').getAttribute('r'), dotCol: document.getElementById('retDot').getAttribute('fill'), litCol: document.getElementById('retLit').getAttribute('fill'),
         self: Array.isArray(st) ? st[0] : '' };
-      R.zooms = [S.WS.zoom]; for (let i = 0; i < 3; i++) { S.btnPress('zoom', true); S.btnPress('zoom', false); R.zooms.push(S.WS.zoom); }
-      R.zbHidden = document.getElementById('tbZoom').hidden; R.cssR = sc.style.getPropertyValue('--r'); R.cssRs = sc.style.getPropertyValue('--rs');
+      R.zooms = [S.WS.zoom]; R.cssR = sc.style.getPropertyValue('--r'); R.cssRs = sc.style.getPropertyValue('--rs');
       let full = 0, cut = 0, kept = 0, from = 0; S.VMA.R.root.traverse(o => { if (o.isMesh && /^r_body/.test(o.name + (o.parent ? o.parent.name : ''))) { const u = o.geometry.userData; if (u.miraKept) { cut++; kept += u.miraKept; from += u.miraFrom; } else full++; } });
       R.cut = cut; R.full = full; R.keptPct = from ? Math.round(kept / from * 1000) / 10 : 100;
       // every triangle that is not the scope is still there (centre at or under the cut, or outside its stretch of the rifle),
@@ -79,7 +78,9 @@ function check(name, cond, info) { if (cond) { pass++; console.log('  ok   ' + n
       const cyc = O.zooms.length > 1 ? R.zooms.join() === [z0, ...O.zooms, O.zooms[0]].slice(0, 4).join() || new Set(R.zooms).size === O.zooms.length : R.zooms.every(z => z === z0);
       const modelOk = O.builtin ? !R.model && R.cut === 0 : R.model && R.cut > 0 && R.should === R.have && R.have > 0 && R.keptPct < 99.5;
       check(O.name + ': campo de visión de ' + z0 + '× y cuadro ' + O.kind + (O.kind === 'reflex' ? ' con el rifle a la vista' : ' con el rifle oculto'), fovOk && kindOk && vmOk, 'fov ' + R.fov.toFixed(2) + ' · ' + R.cls + ' · rifle ' + R.vm);
-      check(O.name + ': un solo aumento (' + O.zooms.join() + '×): el botón de zoom no lo cambia ni aparece', cyc && R.zbHidden, R.zooms.join(' → '));
+      check(O.name + ': un solo aumento (' + O.zooms.join() + '×)', cyc, R.zooms.join(' → '));
+      if (O.kind === 'reflex') { const want = await p.evaluate(() => (SDMiras.windowFrac(__SD.MIRA.id, __SD.MIRA.place) * 50).toFixed(2) + 'vh');
+        check(O.name + ': la retícula ocupa la ventana de la mira, medida desde el ojo', R.cssR === want, R.cssR + ' · ' + want); }
       if (O.kind === 'tube') check(O.name + ': su círculo de ' + O.ring + ' vmin y su borde', R.cssR === 'min(' + O.ring + 'vmin,' + O.ring + 'vh)' && +R.cssRs === O.rs, R.cssR + ' · ' + R.cssRs);
       check(O.name + (O.builtin ? ': la mira de siempre entera, ningún modelo nuevo' : ': su modelo en el riel; de la mira de siempre no queda nada y del resto del HALCÓN no falta nada'), modelOk, JSON.stringify({ model: R.model, cut: R.cut, kept: R.keptPct + ' %', should: R.should, have: R.have, axis: +R.axis.toFixed(4) }));
       check(O.name + ': el centro de la pantalla = dirección del disparo (autotest)', /✔/.test(R.self), R.self.slice(0, 90));
@@ -87,6 +88,15 @@ function check(name, cond, info) { if (cond) { pass++; console.log('  ok   ' + n
       if (O.reticle === 'holo') check(O.name + ': anillo y punto central', R.ring > 10 && R.dot > 0.5, JSON.stringify({ ring: R.ring, dot: R.dot }));
       if (O.reticle === 'dot') check(O.name + ': solo el punto (sin cruz) y con halo', R.dot > 0.5 && R.lit === 0 && R.ring === 0, JSON.stringify({ dot: R.dot, lit: R.lit, ring: R.ring }));
     }
+
+    console.log('\nBOTÓN DE MIRA (02-11-2026: un toque, la siguiente)');
+    const bt = await p.evaluate(async () => { const S = __SD, w = ms => new Promise(r => setTimeout(r, ms)), seq = [];
+      S.setMira('tactica'); for (let i = 0; i < 6; i++) { S.btnPress('zoom', true); S.btnPress('zoom', false); seq.push(S.MIRA.id); }
+      S.input.scopeToggle = true; const t = performance.now(); while (S.WCORE.ads < 0.999 && performance.now() - t < 6000) await w(50);
+      S.btnPress('zoom', true); S.btnPress('zoom', false); const aimed = { id: S.MIRA.id, zoom: S.WS.zoom, ads: S.WCORE.ads };
+      S.input.scopeToggle = false; await w(600); return { seq, aimed }; });
+    check('cada toque pone la siguiente mira, de la 12× vuelve al punto rojo', bt.seq.join() === 'x4,x6,sniper,largo,punto,holo', bt.seq.join(' → '));
+    check('también apuntando: cambia al momento, con su aumento, sin dejar de apuntar', bt.aimed.id === 'x2' && bt.aimed.zoom === 2 && bt.aimed.ads > 0.99, JSON.stringify(bt.aimed));
 
     console.log('\nVOLVER A LA DE SIEMPRE Y GUARDAR');
     const back = await p.evaluate(() => { const S = __SD; S.setMira('sniper'); let cut = 0; S.VMA.R.root.traverse(o => { if (o.isMesh && o.geometry.userData.miraKept) cut++; });

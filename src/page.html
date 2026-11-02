@@ -161,8 +161,8 @@ body.feel2 #hitmark.kill i,body.feel2 #hitmark.hs i{width:3px;left:-1.5px}
 #scope.k-prism{--r:min(66vmin,66vh)}
 #scope.k-prism .mask{background:radial-gradient(circle at center,rgba(0,0,0,0) 0,rgba(0,0,0,0) calc(var(--r) * .86),rgba(0,0,0,.72) calc(var(--r) - 3px),#000 var(--r))}
 #scope.k-reflex .mask{display:none}
-#scope.k-reflex .data{top:calc(50% + var(--r) * .52)}
-#scope.k-reflex #breathWrap{top:calc(50% + var(--r) * .64)}
+#scope.k-reflex .data{top:calc(50% + min(46vmin,46vh) * .52)}
+#scope.k-reflex #breathWrap{top:calc(50% + min(46vmin,46vh) * .64)}
 #scope.k-prism .data{top:calc(50% + var(--r) * .5)}
 #scope.k-prism #breathWrap{top:calc(50% + var(--r) * .6)}
 .miraPick{display:flex;align-items:center;gap:10px;width:100%;min-height:44px;padding:3px 12px 3px 3px;background:none;border:1px solid var(--line);cursor:pointer;text-align:left;color:var(--hud)}
@@ -677,7 +677,7 @@ body.hud2 #stickBase.sprint #stickKnob svg{display:block}
   <button class="tb" id="tbJump" data-btn="jump" aria-label="Saltar">SALTO</button>
   <button class="tb" id="tbReload" data-btn="reload" aria-label="Recargar">R</button>
   <button class="tb" id="tbBreath" data-btn="breath" aria-label="Aguantar respiración" hidden>AIRE</button>
-  <button class="tb" id="tbZoom" data-btn="zoom" aria-label="Cambiar zoom" hidden>8×</button>
+  <button class="tb" id="tbZoom" data-btn="zoom" aria-label="Cambiar de mira" hidden>8×</button>
   <button class="tb" id="tbSwap" data-btn="swap" aria-label="Cambiar arma">ARMA</button>
   <button class="tb" id="tbInspect" data-btn="inspect" aria-label="Inspeccionar arma" hidden>INSP</button>
   <button class="tb" id="tbFire2" data-btn="fire2" aria-label="Disparar (izquierda)" hidden>FUEGO</button>
@@ -4348,7 +4348,9 @@ function btnPress(name,down,cancel){ // cancel: the system took the finger (call
     case 'jump':input.jumpPressed=true;break;
     case 'reload':input.reloadPressed=true;break;
     case 'breath':input.breath=true;break;
-    case 'zoom':WS.zoom=SDMiras.nextZoom(MIRA.id,WS.zoom);SFX.click(0,3000,0.15);break;
+    // MIRA (02-11-2026, owner: «un botón en el HUD para poder cambiar la mira dándole solo al botón»): one tap, the next
+    // optic (punto → holo → 2× → 3× → 4× → 6× → 8× → 12× → punto), at once, also while aiming
+    case 'zoom':{const o=SDMiras.ORDER;setMira(o[(o.indexOf(MIRA.id)+1)%o.length]);SFX.click(0,3000,0.15);break;}
     case 'pause':pause();break;
     case 'swap':{input.fireAim=false;const cur=LOAD.pending||LOAD.active;input.select=cur==='rifle'||cur==='shotgun'?'pistol':cur==='pistol'?'knife':'rifle';break;}
     case 'inspect':input.inspect=true;break;
@@ -5019,7 +5021,7 @@ function updateCamera(dt,alpha){
     $('#airVig').style.opacity=P.exhausted>0?(0.55+Math.sin(P.swayT*7)*0.2).toFixed(2):P.holding?(0.15*clamp(1-P.breath,0,1)+0.08).toFixed(2):0;
   }
   {const lh=document.getElementById('lockHint'),want=!isTouch&&!pointerLocked&&state==='playing';if(lh.hidden===want)lh.hidden=!want;}
-  if(isTouch&&!EDIT.on){const bz=$('#tbZoom'),bb=$('#tbBreath'),kn=LOAD.active==='knife';setHidden($('#tbScope'),kn);{const ih=!kn&&(ads>0.05||PM.sprinting);if($('#tbInspect').hidden!==ih)$('#tbInspect').hidden=ih;}setHidden($('#tbFire2'),!SETTINGS.leftFire||(SETTINGS.leftFireAds&&ads<0.05&&!input.fireHeld&&!input.fireAim&&!input.scopeHeld&&!input.scopeToggle));if(!HUD2){const ft=kn?'ATACAR':'FUEGO';setText($('#tbFire'),ft);setText($('#tbFire2'),ft);}{const zb=showScope&&miraOpt().zooms.length>1;if(bz.hidden===zb)bz.hidden=!zb;if(bb.hidden===showScope)bb.hidden=!showScope;}setText(bz,SDMiras.zoomLabel(WS.zoom));bb.classList.toggle('on',P.holding);$('#tbScope').classList.toggle('on',input.scopeToggle||input.scopeHeld);$('#tbCrouch').classList.toggle('on',input.crouchHeld);}
+  if(isTouch&&!EDIT.on){const bz=$('#tbZoom'),bb=$('#tbBreath'),kn=LOAD.active==='knife';setHidden($('#tbScope'),kn);{const ih=!kn&&(ads>0.05||PM.sprinting);if($('#tbInspect').hidden!==ih)$('#tbInspect').hidden=ih;}setHidden($('#tbFire2'),!SETTINGS.leftFire||(SETTINGS.leftFireAds&&ads<0.05&&!input.fireHeld&&!input.fireAim&&!input.scopeHeld&&!input.scopeToggle));if(!HUD2){const ft=kn?'ATACAR':'FUEGO';setText($('#tbFire'),ft);setText($('#tbFire2'),ft);}{const zb=LOAD.active==='rifle';if(bz.hidden===zb)bz.hidden=!zb;if(bb.hidden===showScope)bb.hidden=!showScope;}setText(bz,SDMiras.zoomLabel(WS.zoom));bb.classList.toggle('on',P.holding);$('#tbScope').classList.toggle('on',input.scopeToggle||input.scopeHeld);$('#tbCrouch').classList.toggle('on',input.crouchHeld);}
   if(HUD2)h2Frame(showScope);
   // hip crosshair shows the real spread cone
   const cr=$('#cross');
@@ -5237,7 +5239,7 @@ function updateReticle(){
   const O=miraOpt(),zoom=WS.zoom,H=canvas.getBoundingClientRect().height||window.innerHeight;
   if(RET_DIRTY){RET_DIRTY=false;RET.key='';}
   const key=MIRA.id+':'+zoom+':'+Math.round(rpx)+':'+Math.round(H);if(key===RET.key)return;RET.key=key;
-  const R=SDMiras.reticle(O.reticle,{zoom,H,rpx,fovBase:BASE_FOV,gun:GUNCFG,move:MOVE});
+  const R=SDMiras.reticle(O.reticle,{zoom,H,rpx,fovBase:BASE_FOV,gun:GUNCFG,move:MOVE,see:O.kind==='reflex'});
   const at=(id,k,v)=>$(id).setAttribute(k,v);
   at('#retPosts','d',R.posts);at('#retPosts','stroke-width',R.postW);at('#retCross','d',R.cross);at('#retCross','stroke-width',R.crossW);
   at('#retMarks','d',R.marks);at('#retMarks','stroke-width',R.marksW);$('#retLabels').innerHTML=R.labels;
@@ -5879,6 +5881,9 @@ function miraApply(){
   const sEl=$('#scope');for(const k of ['tube','prism','reflex'])sEl.classList.toggle('k-'+k,O.kind===k);sEl.dataset.ret=O.reticle;
   // each scope its own picture: a bigger clear circle the lower its power, a darker edge the higher (the 8× as always)
   if(O.ring){sEl.style.setProperty('--r','min('+O.ring+'vmin,'+O.ring+'vh)');sEl.style.setProperty('--rs',O.rs);}else{sEl.style.removeProperty('--r');sEl.style.removeProperty('--rs');}
+  // a sight you look through: the reticle's box is its window, as big as it looks from the eye (02-11-2026: the whole sight
+  // in view and the reticle inside it)
+  if(O.kind==='reflex')sEl.style.setProperty('--r',(SDMiras.windowFrac(MIRA.id,MIRA.place)*50).toFixed(2)+'vh');
   if(O.builtin)return;
   miraStrip(key);
   const m=MIRA.models[MIRA.id]||(MIRA.models[MIRA.id]=SDMiras.build(T,MIRA.id,ENV));

@@ -123,7 +123,7 @@ console.log('\nDISPOSICIÓN DE BOTONES');
     check('por defecto todos los botones caben en ' + name + ' (' + w + '×' + h + ')', off === 0, off + ' fuera');
   }
   // the buttons visible at the same time must not overlap on a typical phone
-  const groups = [['fire', 'scope', 'crouch', 'jump', 'reload', 'swap'], ['fire', 'crouch', 'jump', 'reload', 'swap', 'inspect'], ['fire', 'scope', 'crouch', 'jump', 'reload', 'swap', 'inspect'], ['fire', 'scope', 'crouch', 'jump', 'reload', 'swap', 'breath', 'zoom']];
+  const groups = [['fire', 'scope', 'crouch', 'jump', 'reload', 'swap'], ['fire', 'crouch', 'jump', 'reload', 'swap', 'inspect', 'zoom', 'view'], ['fire', 'scope', 'crouch', 'jump', 'reload', 'swap', 'inspect', 'zoom', 'view'], ['fire', 'scope', 'crouch', 'jump', 'reload', 'swap', 'breath', 'zoom']];
   let overl = [];
   for (const g of groups) for (let i = 0; i < g.length; i++) for (let j = i + 1; j < g.length; j++) {
     const a = LY.rect(g[i], L.buttons[g[i]], 844, 390), b = LY.rect(g[j], L.buttons[g[j]], 844, 390);

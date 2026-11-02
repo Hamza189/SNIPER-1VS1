@@ -13,9 +13,9 @@ const BUTTONS = {
   jump:    { label: 'SALTO',  anchor: 'br', dx: 64,  dy: 152, size: 56 },
   reload:  { label: 'R',      anchor: 'br', dx: 132, dy: 136, size: 48 },
   breath:  { label: 'AIRE',   anchor: 'br', dx: 200, dy: 124, size: 56 },
-  zoom:    { label: '8×',     anchor: 'br', dx: 63,  dy: 219, size: 46 },
+  zoom:    { label: '8×',     anchor: 'br', dx: 132, dy: 198, size: 44 },   // MIRA (02-11-2026): one tap = the next optic; always there with the rifle
   swap:    { label: 'ARMA',   anchor: 'br', dx: 202, dy: 190, size: 48 },
-  inspect: { label: 'INSP',   anchor: 'br', dx: 63,  dy: 219, size: 46 },   // same spot as the zoom: INSP hides while aiming, the zoom only shows then
+  inspect: { label: 'INSP',   anchor: 'br', dx: 63,  dy: 219, size: 46 },   // INSP hides while aiming
   fire2:   { label: 'FUEGO',  anchor: 'bl', dx: 70,  dy: 232, size: 70 },
   view:    { label: '3ª',     anchor: 'br', dx: 63,  dy: 268, size: 40 }    // 1ª / 3ª persona (28-10-2026), encima de INSP (se puede mover con el editor)
 };
@@ -34,6 +34,7 @@ function sanitize(o) {
   if (o.buttons && typeof o.buttons === 'object') for (const k in BUTTONS) {
     const s = o.buttons[k]; if (!s) continue;
     if (k === 'inspect' && s.dx === 262 && s.dy === 124) continue;   // the old default spot (knife only then): take the new one
+    if (k === 'zoom' && s.dx === 63 && s.dy === 219) continue;        // the zoom's old spot (on INSP: it only showed while aiming then)
     for (const f of ['dx', 'dy', 'size']) { const v = Number(s[f]); if (isFinite(v)) d.buttons[k][f] = v; }
     d.buttons[k].size = clamp(d.buttons[k].size, SIZE[0], SIZE[1]);
     d.buttons[k].dx = Math.max(0, d.buttons[k].dx); d.buttons[k].dy = Math.max(0, d.buttons[k].dy);

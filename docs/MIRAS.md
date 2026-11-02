@@ -12,12 +12,24 @@ Lo que pidió el propietario:
 Ya no hay botón de zoom ni hace falta un tercer dedo: cada aumento es una mira distinta y se elige antes o durante la
 partida. La de siempre del rifle es ahora el FRANCOTIRADOR 8× fijo; el 4× pasa a ser su propia mira.
 
+**02-11-2026 (el propietario, desde el iPhone):** la holográfica, la 2× y la 3× estaban mal: «muy grande, ocupa toda la
+pantalla… tiene que verse la mira entera y la retícula dentro». Desde entonces:
+- la 2× y la 3× son miras **de ventana**, como el punto rojo: el rifle y la mira se ven enteros y se mira por su ocular
+  (los modelos tienen el tubo hueco y el cristal claro), sin el círculo negro de visor;
+- en las cuatro miras de ventana la retícula se dibuja **dentro de su ventana**, del tamaño con el que se ve la ventana
+  desde el ojo (`SDMiras.windowFrac`: la abertura más pequeña de cada mira, medida en cada rifle; del 9 al 19 % de media
+  pantalla);
+- la holográfica tenía la pila delante del cristal: ahora va debajo;
+- **botón de MIRA en el HUD táctil** (el que antes era de zoom, con el aumento escrito, p. ej. «1,5×»): cada toque pone la
+  siguiente mira (punto → holo → 2× → 3× → 4× → 6× → 8× → 12× → punto). Sale siempre con el rifle, también apuntando;
+  por defecto encima de R, sin tapar a INSP. Se mueve con el editor de botones como los demás.
+
 | Mira | Aumento | Cuadro al apuntar | Retícula |
 |---|---|---|---|
 | **PUNTO ROJO** | 1,25× | Sin anillo: miras a través de la ventana y el rifle sigue a la vista | Un punto con halo |
 | **HOLOGRÁFICA** | 1,5× | Sin anillo, ventana grande | Anillo con punto central |
-| **VISOR 2×** | 2× | Prisma: círculo mucho más ancho (en horizontal llena la altura) | Cruz fina con punto iluminado |
-| **TÁCTICA 3×** | 3× | Prisma | Chevrón iluminado: la punta es donde va la bala |
+| **VISOR 2×** | 2× | Ventana (desde el 02-11): la mira entera a la vista, la retícula en su ocular | Cruz fina con punto iluminado |
+| **TÁCTICA 3×** | 3× | Ventana (desde el 02-11) | Chevrón iluminado: la punta es donde va la bala |
 | **VISOR 4×** | 4× | Tubo, el círculo más grande (54 vmin) y el borde más suave | Dúplex: cruz gruesa por fuera y fina en el centro, sin punto |
 | **VISOR 6×** | 6× | Tubo, 50 vmin | Un punto cada 5 milésimas en los cuatro brazos (una persona de pie a 100 m mide unos 3,5 puntos) y centro iluminado |
 | **FRANCOTIRADOR** (por defecto) | 8× | Tubo de siempre (46 vmin) | La de siempre: marcas de caída a 100/150/200 m y de adelanto (agachado, andando, corriendo) |
@@ -90,11 +102,12 @@ Medido con los vértices de cada modelo; la mira de siempre vuelve al elegir FRA
 Recortar no copia nada: es el mismo búfer de vértices con un índice más corto.
 
 ## Pruebas
-- `node test/miras.test.js` (26): catálogo de un aumento cada una, sensibilidad, montaje en los 6 rifles, retículas
+- `node test/miras.test.js` (28): catálogo de un aumento cada una, sensibilidad, montaje en los 6 rifles, retículas
   calibradas y de tamaño fijo, y modelos.
-- `node test/miras.browser.test.js` (49), en el juego, con cada mira:
+- `node test/miras.browser.test.js` (55), en el juego, con cada mira:
   - aumento, cuadro y rifle oculto o a la vista;
-  - el botón de zoom no aparece ni cambia el aumento;
+  - en las de ventana, la retícula del tamaño de la ventana;
+  - el botón de MIRA: cada toque la siguiente, también apuntando;
   - cada visor con su círculo y su borde;
   - el modelo va en el riel; de la mira de siempre no queda ningún triángulo y del resto del HALCÓN no falta ninguno
     (contados uno a uno sobre la geometría original);

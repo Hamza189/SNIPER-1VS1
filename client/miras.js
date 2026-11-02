@@ -7,7 +7,10 @@
 
    kind  tube   a scope: dark ring round the picture, the rifle hidden while you look through it (as always)
          prism  a short scope: the same, with a much wider picture
-         reflex red dot / holographic: the rifle stays in view and the reticle floats in its window
+         reflex a sight you look through (red dot, holographic, 2× and 3×): the rifle and the whole sight stay in view and the
+                reticle sits inside its window (sized to the window: owner, 02-11-2026, «tiene que verse la mira entera y la
+                retícula dentro»; the 2× and the 3× were scopes filling the screen). win: its apertures [radius, z], the one
+                that looks smallest from the eye is the window
    Gun space (the HALCÓN R7's, which every rifle model is converted to): x right, y up, -z forward, bore y 0.004; the
    eye is at z +0.27 when aiming (the ADS pose puts the gun origin 27 cm in front of it). */
 (function (root) {
@@ -21,14 +24,14 @@ const clamp = (v, a, b) => v < a ? a : v > b ? b : v;
 // button, you pick the optic. ring: radius of the clear picture of a scope (vmin; lower power = bigger eye box) and rs:
 // where its dark edge starts (a high power one closes in more)
 const OPTICS = {
-  punto: { name: 'PUNTO ROJO', short: '1,25×', zooms: [1.25], kind: 'reflex', reticle: 'dot', axis: 0.034, rear: 0.0195, foot: [-0.018, 0.018], eye: 0.1,
+  punto: { name: 'PUNTO ROJO', short: '1,25×', zooms: [1.25], kind: 'reflex', reticle: 'dot', win: [[0.0127, -0.024]], axis: 0.034, rear: 0.0195, foot: [-0.018, 0.018], eye: 0.1,
     desc: 'Lo más rápido para cerca: casi sin aumento, el rifle a la vista y un punto rojo en el centro.' },
-  holo: { name: 'HOLOGRÁFICA', short: '1,5×', zooms: [1.5], kind: 'reflex', reticle: 'holo', axis: 0.032, rear: 0.046, foot: [-0.044, 0.044], eye: 0.08,
+  holo: { name: 'HOLOGRÁFICA', short: '1,5×', zooms: [1.5], kind: 'reflex', reticle: 'holo', win: [[0.0155, -0.036]], axis: 0.032, rear: 0.046, foot: [-0.044, 0.044], eye: 0.08,
     desc: 'Ventana grande: ves todo alrededor. Anillo con punto central (el punto es donde va la bala).' },
-  x2: { name: 'VISOR 2×', short: '2×', zooms: [2], kind: 'prism', reticle: 'cruz', axis: 0.034, rear: 0.072, foot: [-0.035, 0.035], eye: 0.17,
-    desc: 'Poco aumento y mucho campo: para media distancia sin perder lo que pasa alrededor. Cruz fina con punto iluminado.' },
-  tactica: { name: 'TÁCTICA 3×', short: '3×', zooms: [3], kind: 'prism', reticle: 'chevron', axis: 0.034, rear: 0.064, foot: [-0.025, 0.025], eye: 0.16,
-    desc: 'Visor corto de prisma: ves mucho más alrededor. Chevrón iluminado: la punta es donde va la bala.' },
+  x2: { name: 'VISOR 2×', short: '2×', zooms: [2], kind: 'reflex', reticle: 'cruz', win: [[0.0136, -0.035], [0.0172, -0.07], [0.0176, 0.072]], axis: 0.034, rear: 0.072, foot: [-0.035, 0.035], eye: 0.17,
+    desc: 'Poco aumento y mucho campo: para media distancia. El rifle y la mira se ven; cruz fina con punto iluminado dentro del ocular.' },
+  tactica: { name: 'TÁCTICA 3×', short: '3×', zooms: [3], kind: 'reflex', reticle: 'chevron', win: [[0.015, -0.03], [0.0196, -0.078], [0.0168, 0.064]], axis: 0.034, rear: 0.064, foot: [-0.025, 0.025], eye: 0.16,
+    desc: 'Visor corto de prisma: el rifle y la mira se ven y alrededor sigues viendo. Chevrón iluminado: la punta es donde va la bala.' },
   x4: { name: 'VISOR 4×', short: '4×', zooms: [4], kind: 'tube', reticle: 'duplex', ring: 54, rs: 0.78, axis: 0.034, rear: 0.17, foot: [-0.05, 0.05], eye: 0.19,
     desc: 'Visor de caza clásico: el círculo más grande de los visores y una cruz gruesa por fuera y fina en el centro, fácil de seguir.' },
   x6: { name: 'VISOR 6×', short: '6×', zooms: [6], kind: 'tube', reticle: 'mil', ring: 50, rs: 0.75, axis: 0.036, rear: 0.2, foot: [-0.06, 0.06], eye: 0.2,
@@ -75,14 +78,24 @@ function placement(rifle, id) {
   return { z, y, tilt, axisY: y + O.axis };
 }
 
+/* How big the window of a sight you look through looks: its radius as a fraction of half the screen height (the
+   viewmodel camera: vertical field of view VM_FOV), for the eye ads metres behind the gun origin (the ADS pose). */
+const VM_FOV = 50;
+function windowFrac(id, place, ads) {
+  const O = get(id); if (!O.win || !place) return 0;
+  let k = Infinity; for (const [r, z] of O.win) { const d = (ads || 0.27) - (place.z + z); if (d > 0.01) k = Math.min(k, r / d); }
+  return k === Infinity ? 0 : k / Math.tan(VM_FOV * Math.PI / 360);
+}
+
 /* The reticle for the SVG of the sight (viewBox -100…100 over the sight's circle, radius rpx px).
    c = { zoom, H (picture height, px), rpx, gun: {gravity, zero, speed}, move: {crouch, walk, sprint} }
    bdc / fino / mil: real angles at this zoom (drop below the 50 m zero, lead of a target crossing your view, 5 mrad
-   dots); duplex / cruz / chevron / holo / dot: a fixed size on screen (at 1,25–4× the true sizes would be a pixel or two). */
+   dots); duplex / cruz / chevron / holo / dot: a fixed size on screen (at 1,25–4× the true sizes would be a pixel or two).
+   c.see: a sight you look through, the viewBox is its window: everything stays inside it (cut to the window's size). */
 function reticle(style, c) {
   const fov = c.fovBase / c.zoom, pxPerMrad = (c.H / 2) / Math.tan(fov * Math.PI / 360) / 1000, unit = c.rpx / 100, u = pxPerMrad / unit;
   const G = c.gun, drop = d => G.gravity * (d - G.zero) / (2 * G.speed * G.speed) * 1000, lead = v => v / G.speed * 1000;
-  const f = v => (Math.round(v * 100) / 100).toString();
+  const f = v => (Math.round(v * 100) / 100).toString(), cap = (v, m) => c.see ? Math.min(v, m) : v;
   const o = { posts: '', postW: 0, cross: '', crossW: 0, marks: '', marksW: 0.4, labels: '', mils: '', lit: '', dot: 0, glow: 0, ring: '', ringW: 0, u, pxPerMrad };
   if (style === 'bdc' || style === 'fino') {
     const fine = style === 'fino', g = fine ? 1.4 : 2.2, edge = fine ? 58 : 42;
@@ -123,22 +136,23 @@ function reticle(style, c) {
     o.dot = Math.max(1.1 / unit, 0.0028 * c.H / unit); o.glow = o.dot * 2;
   } else if (style === 'cruz') {
     // thin cross with a gap, thicker posts outside, an illuminated dot (fixed size: at 2× the true angles are tiny)
-    const g = Math.max(1.2, 0.012 * c.H / unit), e = 52;
-    o.posts = 'M-100 0H-' + e + 'M' + e + ' 0H100M0 ' + e + 'V100'; o.postW = Math.max(0.8, 0.005 * c.H / unit);
-    o.cross = 'M-' + e + ' 0H-' + f(g) + 'M' + f(g) + ' 0H' + e + 'M0 -' + e + 'V-' + f(g) + 'M0 ' + f(g) + 'V' + e; o.crossW = Math.max(0.25, 0.0022 * c.H / unit);
-    o.dot = Math.max(1.4 / unit, 0.0045 * c.H / unit); o.glow = o.dot * 2.2;
+    const g = cap(Math.max(1.2, 0.012 * c.H / unit), 9), e = c.see ? 58 : 52, end = c.see ? 94 : 100;
+    o.posts = 'M-' + end + ' 0H-' + e + 'M' + e + ' 0H' + end + 'M0 ' + e + 'V' + end; o.postW = cap(Math.max(0.8, 0.005 * c.H / unit), 5);
+    o.cross = 'M-' + e + ' 0H-' + f(g) + 'M' + f(g) + ' 0H' + e + 'M0 -' + e + 'V-' + f(g) + 'M0 ' + f(g) + 'V' + e; o.crossW = cap(Math.max(0.25, 0.0022 * c.H / unit), 1.6);
+    o.dot = cap(Math.max(1.4 / unit, 0.0045 * c.H / unit), 4); o.glow = o.dot * 2.2;
   } else if (style === 'chevron') {
     // the tip of the chevron is the aim point; a post below it and lines at the sides, none crossing the centre
-    const s = Math.max(1.6, 0.03 * c.H / unit);   // ~3 % of the picture height
+    const s = cap(Math.max(1.6, 0.03 * c.H / unit), 17);   // ~3 % of the picture height (in a window: an eighth of it)
     o.lit = 'M0 0L' + f(s) + ' ' + f(s * 0.9) + 'L' + f(s * 0.62) + ' ' + f(s * 0.9) + 'L0 ' + f(s * 0.34) + 'L' + f(-s * 0.62) + ' ' + f(s * 0.9) + 'L' + f(-s) + ' ' + f(s * 0.9) + 'Z';
-    o.posts = 'M0 ' + f(s * 1.6) + 'V100M-100 0H-' + f(s * 3.2) + 'M' + f(s * 3.2) + ' 0H100'; o.postW = Math.max(0.5, 0.0035 * c.H / unit);
+    const end = c.see ? 92 : 100;
+    o.posts = 'M0 ' + f(s * 1.6) + 'V' + end + 'M-' + end + ' 0H-' + f(s * 3.2) + 'M' + f(s * 3.2) + ' 0H' + end; o.postW = cap(Math.max(0.5, 0.0035 * c.H / unit), 3.5);
   } else if (style === 'holo') {
-    const r = 0.06 * c.H / unit, w = Math.max(0.35, 0.0045 * c.H / unit), t = 0.022 * c.H / unit;
+    const r = cap(0.06 * c.H / unit, 62), w = cap(Math.max(0.35, 0.0045 * c.H / unit), 4.5), t = c.see ? r * 0.37 : 0.022 * c.H / unit;
     o.ring = 'M' + f(-r) + ' 0A' + f(r) + ' ' + f(r) + ' 0 1 0 ' + f(r) + ' 0A' + f(r) + ' ' + f(r) + ' 0 1 0 ' + f(-r) + ' 0' +
       'M0 ' + f(-r) + 'V' + f(-r + t) + 'M0 ' + f(r) + 'V' + f(r - t) + 'M' + f(-r) + ' 0H' + f(-r + t) + 'M' + f(r) + ' 0H' + f(r - t);
-    o.ringW = w; o.dot = Math.max(1.4 / unit, 0.0042 * c.H / unit); o.glow = o.dot * 2.4;
+    o.ringW = w; o.dot = cap(Math.max(1.4 / unit, 0.0042 * c.H / unit), 5); o.glow = o.dot * 2.4;
   } else if (style === 'dot') {
-    o.dot = Math.max(2 / unit, 0.0058 * c.H / unit); o.glow = o.dot * 2.6;
+    o.dot = cap(Math.max(2 / unit, 0.0058 * c.H / unit), 16); o.glow = o.dot * 2.6;
   }
   return o;
 }
@@ -172,11 +186,12 @@ function build(T, id, env) {
   const ycyl = (r, h, x, y, z, m, segs) => add(new T.CylinderGeometry(r, r, h, segs || 20), m, x, y, z);
   const box = (w, h, d, x, y, z, m, rx, ry, rz) => add(new T.BoxGeometry(w, h, d), m, x, y, z, rx, ry, rz);
   // a box with rounded long edges (along z): a rounded rectangle in x-y, extruded
-  const rbox = (w, h, d, r, x, y, z, m) => {
+  const rbox = (w, h, d, r, x, y, z, m, hole) => {
     const s = new T.Shape(), a = w / 2, b = h / 2;
     s.moveTo(-a + r, -b); s.lineTo(a - r, -b); s.quadraticCurveTo(a, -b, a, -b + r); s.lineTo(a, b - r); s.quadraticCurveTo(a, b, a - r, b);
     s.lineTo(-a + r, b); s.quadraticCurveTo(-a, b, -a, b - r); s.lineTo(-a, -b + r); s.quadraticCurveTo(-a, -b, -a + r, -b);
-    const g = new T.ExtrudeGeometry(s, { depth: d, bevelEnabled: false, curveSegments: 4 }); g.translate(0, 0, -d / 2); return add(g, m, x, y, z);
+    if (hole) { const h = new T.Path(); h.absarc(0, 0, hole, 0, Math.PI * 2, true); s.holes.push(h); }
+    const g = new T.ExtrudeGeometry(s, { depth: d, bevelEnabled: false, curveSegments: hole ? 16 : 4 }); g.translate(0, 0, -d / 2); return add(g, m, x, y, z);
   };
   const disc = (r, z, m, y, back) => { const g = new T.CircleGeometry(r, 28); if (!back) g.rotateY(Math.PI); return add(g, m, 0, y == null ? A : y, z); };
   // picatinny clamp: a foot on the rail, its cross bolt and the nut on the right
@@ -198,7 +213,7 @@ function build(T, id, env) {
     box(0.032, 0.01, 0.088, 0, 0.005, 0, M.body);
     xcyl(0.0026, 0.04, 0, 0.004, 0.024, M.steel, 10);
     box(0.004, 0.006, 0.03, -0.018, 0.005, 0.024, M.dark, 0, 0.12, 0);                       // quick-release lever
-    xcyl(0.0085, 0.034, 0, 0.0138, -0.03, M.body); xcyl(0.0094, 0.004, 0.0185, 0.0138, -0.03, M.dark, 24);             // battery and its cap
+    xcyl(0.0072, 0.034, 0, 0.0085, -0.03, M.body); xcyl(0.008, 0.004, 0.0185, 0.0085, -0.03, M.dark, 24);             // battery and its cap (under the window)
     // the electronics: a low block at the back, under the window (it must never cross the line of sight)
     const eh = A - 0.0175 - 0.01;
     box(0.036, eh, 0.03, 0, 0.01 + eh / 2, 0.031, M.body);
@@ -213,7 +228,8 @@ function build(T, id, env) {
     // short prism scope in sand colour: housing, eyepiece, objective, a fibre on top, two adjusters, thumbscrew mount
     box(0.026, 0.016, 0.05, 0, 0.008, 0, M.fde);
     for (const sz of [-1, 1]) { xcyl(0.006, 0.006, -0.017, 0.007, sz * 0.015, M.dark, 16); box(0.003, 0.014, 0.004, -0.0215, 0.007, sz * 0.015, M.dark); }
-    rbox(0.042, 0.036, 0.06, 0.006, 0, A, 0, M.fde);
+    rbox(0.042, 0.036, 0.06, 0.006, 0, A, 0, M.fde, 0.0155);                                    // housing, bored through
+    zcyl(0.0151, 0.0151, 0.0302, -0.0302, M.inner, A, 32, 0, true);
     lathe([[0.016, 0.03], [0.0172, 0.046], [0.0185, 0.055], [0.0188, 0.058]], M.fde, 32);
     lathe([[0.0192, 0.056], [0.0196, 0.064], [0.0168, 0.064]], M.rubber, 32);
     lathe([[0.017, -0.03], [0.019, -0.048], [0.0212, -0.068], [0.0218, -0.078], [0.0196, -0.078]], M.fde, 32);
@@ -221,19 +237,19 @@ function build(T, id, env) {
     for (let i = -1; i <= 1; i++) box(0.0165, 0.0022, 0.004, 0, A + 0.0212, 0.006 + i * 0.01, M.dark);
     zcyl(0.0019, 0.0019, 0.03, -0.024, M.fiber, A + 0.0245, 10, 0.009);                          // fibre (lights the chevron)
     ycyl(0.0068, 0.006, 0, A + 0.021, -0.022, M.dark); xcyl(0.0068, 0.006, 0.0237, A, -0.022, M.dark);
-    disc(0.0195, -0.074, M.lens); disc(0.0166, 0.058, M.eye, A, true);
+    disc(0.0195, -0.074, M.lensR); disc(0.0166, 0.058, M.glass, A, true);
   } else if (id === 'x2') {
     // compact 2× scope: quick-release cantilever mount, 30 mm tube, big eyepiece, illumination knob
     box(0.026, 0.008, 0.07, 0, 0.004, 0, M.body);
-    for (const z of [-0.02, 0.02]) { box(0.018, A - 0.008 - 0.012, 0.012, 0, 0.008 + (A - 0.02) / 2, z, M.body); zcyl(0.0178, 0.0178, z + 0.006, z - 0.006, M.body, A, 32); }
+    for (const z of [-0.02, 0.02]) { box(0.018, A - 0.008 - 0.012, 0.012, 0, 0.008 + (A - 0.02) / 2, z, M.body); zcyl(0.0178, 0.0178, z + 0.006, z - 0.006, M.body, A, 32, 0, true); }
     box(0.004, 0.006, 0.026, -0.0155, 0.006, 0, M.dark, 0, 0.1, 0);                               // throw lever
-    zcyl(0.015, 0.015, 0.035, -0.035, M.body, A, 32);
+    zcyl(0.015, 0.015, 0.035, -0.035, M.body, A, 32, 0, true); zcyl(0.0136, 0.0136, 0.035, -0.035, M.inner, A, 32, 0, true);   // open: you look through it
     lathe([[0.015, 0.035], [0.0195, 0.05], [0.0205, 0.062]], M.body, 32);
     lathe([[0.0208, 0.06], [0.0212, 0.072], [0.0175, 0.072]], M.rubber, 32);
     lathe([[0.015, -0.035], [0.0185, -0.05], [0.019, -0.07], [0.0172, -0.07]], M.body, 32);
     xcyl(0.0085, 0.008, -0.0185, A, 0, M.dark, 24); xcyl(0.0035, 0.0012, -0.0232, A + 0.004, 0, M.accent, 10);   // illumination
     ycyl(0.0075, 0.006, 0, A + 0.018, 0, M.dark); ycyl(0.0058, 0.0016, 0, A + 0.0218, 0, M.body);
-    disc(0.0172, -0.068, M.lens); disc(0.0172, 0.07, M.eye, A, true);
+    disc(0.0172, -0.068, M.lensR); disc(0.0172, 0.07, M.glass, A, true);
   } else if (id === 'x4') {
     // classic 4× hunting scope: 1" tube on two low rings, small capped turrets, 32 mm objective, bronze line on the ocular
     for (const z of [-0.04, 0.04]) {
@@ -301,6 +317,6 @@ function build(T, id, env) {
   return g;
 }
 
-const SDMiras = { OPTICS, ORDER, DEFAULT, RIFLES, ADS_Y, get, sanitize, nextZoom, firstZoom, zoomLabel, sensKey, placement, reticle, build };
+const SDMiras = { OPTICS, ORDER, DEFAULT, RIFLES, ADS_Y, VM_FOV, get, sanitize, nextZoom, firstZoom, zoomLabel, sensKey, placement, windowFrac, reticle, build };
 if (typeof module !== 'undefined' && module.exports) module.exports = SDMiras; else root.SDMiras = SDMiras;
 })(typeof window !== 'undefined' ? window : globalThis);
