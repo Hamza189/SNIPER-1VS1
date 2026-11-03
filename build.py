@@ -26,7 +26,20 @@ tex += b"".join(p.read_bytes() for p in sorted((root / "assets" / "personaje").r
 tex += b"".join(p.read_bytes() for p in sorted((root / "assets" / "armas").rglob("*")) if p.is_file())       # aspectos de arma (?pj=pro)
 kit = root / "assets" / "kit.glb"
 build_hash = hashlib.sha1((code + page).encode() + (glb.read_bytes() if glb.exists() else b"") + (kit.read_bytes() if kit.exists() else b"") + tex).hexdigest()[:10]
-fragment = page.replace("/*@@CORE@@*/", code + "\nconst BUILD_ID=" + repr(build_id).replace("'", '"') + ";const BUILD_HASH=" + json.dumps(build_hash) + ";", 1)
+# CARGA (03-11-2026, docs/CARGA.md): every file the game loads gets the hash of its OWN content as its version (ASSET_V,
+# used through THREE's URL modifier in page.html), not the build's: a publish only makes the browser download again the
+# files that really changed (before, every publish changed every URL and the phone downloaded everything again).
+WEB = {".glb", ".gltf", ".bin", ".jpg", ".jpeg", ".png", ".webp", ".ktx2", ".json", ".js", ".wasm", ".mp3", ".ogg", ".wav", ".svg"}
+asset_v = {}
+used_imports = set(__import__("re").findall(r"assets/3d/imports/([^/'\"]+)/", code + page))   # only the deliveries the code loads
+for base in ("assets", "vendor"):
+    for f in sorted((root / base).rglob("*")):
+        rel = f.relative_to(root).parts
+        if len(rel) > 3 and rel[1] == "3d" and rel[2] == "imports" and (rel[3] not in used_imports or "preview" in rel or "src" in rel):
+            continue
+        if f.is_file() and f.suffix.lower() in WEB:
+            asset_v[f.relative_to(root).as_posix()] = hashlib.sha1(f.read_bytes()).hexdigest()[:8]
+fragment = page.replace("/*@@CORE@@*/", code + "\nconst BUILD_ID=" + repr(build_id).replace("'", '"') + ";const BUILD_HASH=" + json.dumps(build_hash) + ";const ASSET_V=" + json.dumps(asset_v, separators=(",", ":")) + ";", 1)
 (root / "version.json").write_text(json.dumps({"hash": build_hash, "rev": build_id}) + "\n", encoding="utf-8")
 
 # split the fragment: everything up to the end of the first <style> belongs in <head>

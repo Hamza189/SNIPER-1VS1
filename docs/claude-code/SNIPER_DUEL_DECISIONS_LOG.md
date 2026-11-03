@@ -88,6 +88,20 @@ Detalle de cada cambio (antes/después, medidas, cómo revertir): `docs/next-lev
 | Personaje 3D rev. 03 hecho por Claude e integrado tras `?pj=2` (bots y rival online) | 20-10 · directo a `main` |
 | Personajes realistas + elegir personaje (con el SOLDADO de `?pj=2`) y HUD 2 por defecto (aprobado en iPhone y PC) | 28-10 · directo a `main` |
 
+## 03-11-2026 (5) — CARGA: versión por archivo, service worker y arranque sin compilar de golpe
+Del propietario: «Los personajes, armas, mapas tardan en cargar, optimiza esto… si hace falta utilizar C, C++ o C# puedes
+utilizarlo» (guardado en la memoria del proyecto). Detalle en `docs/CARGA.md`.
+- Cada archivo se pide con la huella de su propio contenido (`ASSET_V` de `build.py`, `av()` en los cargadores): tras
+  publicar solo se descarga lo que cambió (antes, todo cada vez).
+- `sw.js`: los archivos se guardan en el dispositivo y la segunda visita no los vuelve a pedir; `?sw=0` lo quita.
+- Una compilación de sombreadores por tanda de cargas, después del primer fotograma del menú; hierba en diferido; el
+  MENÚ 2 prepara el mapa una vez. Nada se compila a mitad de partida (se hace al pulsar JUGAR si quedaba algo).
+- `tools/carga.js`: perfil de CPU del arranque como un móvil.
+- Siguiente: meshoptimizer (C++) para la geometría de personajes y armas, y texturas progresivas.
+
+**Estado:** IMPLEMENTADO · PROBADO EN NAVEGADOR (54 de 55 suites; `ajustes.browser` ya fallaba) · PENDIENTE DE VALIDACIÓN
+EN IPHONE.
+
 ## 03-11-2026 (4) — PUEBLO: qué cuesta, parpadeo y rejas lejanas
 Del propietario: «hay que ir optimizando poco a poco el juego todo lo que se pueda… vuelve a hacerlo [lo del parpadeo] y
 ve mejorando PUEBLO».

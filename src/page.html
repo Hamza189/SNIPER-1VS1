@@ -1315,6 +1315,23 @@ body.m2 #menu .menuInner{display:none}
 'use strict';
 if(!window.THREE){document.getElementById('loadErr').hidden=false;return;}
 const T=window.THREE;
+/* CARGA (03-11-2026, docs/CARGA.md): every file under assets/ or vendor/ is asked for with the hash of its own content
+   (ASSET_V, made by build.py) instead of the build's: after a publish only what changed is downloaded again. All of
+   three.js's loaders go through this (the URL modifier of the default loading manager), also for the files on R2. */
+const ASSET_RE=/(?:^|\/)((?:assets|vendor)\/[^?#]+)/;
+function av(u){
+  if(typeof ASSET_V==='undefined'||typeof u!=='string'||/^(blob|data):/.test(u))return u;
+  const m=ASSET_RE.exec(u);if(!m)return u;let h;try{h=ASSET_V[decodeURIComponent(m[1])];}catch(e){h=ASSET_V[m[1]];}if(!h)return u;
+  const i=u.indexOf('?'),base=i<0?u:u.slice(0,i),rest=i<0?'':u.slice(i+1).split('&').filter(x=>x&&!/^v=/.test(x)).join('&');
+  return base+'?v='+h+(rest?'&'+rest:'');
+}
+T.DefaultLoadingManager.setURLModifier(av);
+/* and a service worker keeps those files on the device (sw.js): a second visit takes them from there without asking
+   the network. On https only (not in the local tests); ?sw=0 removes it from this device. */
+if('serviceWorker' in navigator&&location.protocol==='https:'){
+  if(/[?&]sw=0\b/.test(location.search))navigator.serviceWorker.getRegistrations().then(rs=>rs.forEach(r=>r.unregister())).catch(()=>{});
+  else window.addEventListener('load',()=>{navigator.serviceWorker.register('sw.js').catch(e=>console.warn('sw',e));});
+}
 const $=s=>document.querySelector(s);
 // writes a text only when it changes: every write makes the browser recompute styles (per frame on iPhone it adds up)
 const setText=(el,v)=>{if(el&&el.textContent!==v)el.textContent=v;};
@@ -1380,6 +1397,11 @@ renderer.autoClear=false;
    (ACES) so bright faces roll off instead of clipping to white and shadows keep their colour.
    Every colour in the code is an sRGB hex (as designed on screen); csFix() converts each material,
    light and colour texture once, wherever it was created (scene, viewmodels, effects, models). */
+/* &shadercheck=0 (03-11-2026, to try on the iPhone, docs/CARGA.md): three.js asks the GPU, after compiling each shader
+   program, whether it compiled, and waits for the answer. Without the question the GPU may compile in parallel, but
+   Safari could then compile at the first draw instead (a hitch in play). Not measured better on the PC: off only with
+   the flag. */
+renderer.debug.checkShaderErrors=!/[?&]shadercheck=0\b/.test(location.search);
 renderer.outputEncoding=T.sRGBEncoding;
 renderer.toneMapping=T.ACESFilmicToneMapping;
 /* ESTILO DE IMAGEN y MODO DALTÓNICO (AJUSTES › GRÁFICOS, 30-10-2026): the grading goes inside the ACES tone mapping that
@@ -3237,7 +3259,7 @@ const LS=(()=>{try{return window.localStorage;}catch(e){return {getItem(){return
 let PROFILE=SDProfile.load(LS);   // perfil local (client/profile.js)
 if(store.get('skin')==null&&SKINS[PROFILE.skin])SKIN=PROFILE.skin;else if(PROFILE.skin!==SKIN){PROFILE.skin=SKIN;SDProfile.save(LS,PROFILE);}
 if(!PROFILE.name&&store.get('mpName','')){PROFILE.name=SDProfile.clean({name:store.get('mpName','')}).name;SDProfile.save(LS,PROFILE);}
-const skinImg=id=>'assets/personaje/retratos/'+id+'.jpg?v='+BUILD_HASH;
+const skinImg=id=>av('assets/personaje/retratos/'+id+'.jpg?v='+BUILD_HASH);
 const PJ2={on:(['2','3'].includes(PJ_VERSION)||(PJ_PRO&&GFX.profile!=='bajo')||PJ_MIX)&&typeof SDSoldier2!=='undefined',assetRoot:PJ_VERSION==='3'?'assets/personaje/v4/':'assets/personaje/',tpl:null,mats:{},list:[],loading:false,failed:false,
   tpls:{},loadingRoots:{},failedRoots:{}};
 /* móviles y tabletas (28-10-2026): el iPhone cerraba la página («ha generado un problema repetidamente») en cuanto empezaba
@@ -3288,7 +3310,7 @@ const ktx2For=root=>KTX2_ON&&GFX.profile!=='bajo'&&KTX2_ROOTS.includes(root);
 const KTX2={loader:null,ready:null};
 function ktx2Ready(){
   if(KTX2.ready)return KTX2.ready;
-  return KTX2.ready=new Promise(res=>{const s=document.createElement('script');s.src='vendor/KTX2Loader.js?v='+BUILD_HASH;
+  return KTX2.ready=new Promise(res=>{const s=document.createElement('script');s.src=av('vendor/KTX2Loader.js?v='+BUILD_HASH);
     s.onload=()=>{try{const L=new T.KTX2Loader();L.setTranscoderPath('vendor/basis/');L.detectSupport(renderer);if(PJ2_PHONE)L.basisLoader.setWorkerLimit(1);   // phones: one transcoder, less memory at once
         const c=L.basisLoader&&L.basisLoader.workerConfig;KTX2.support=c;
         if(!c||Object.values(c).some(Boolean)){KTX2.loader=L;const load0=L.load.bind(L);L.load=(u,ok,pr,err)=>load0(u,t=>{ktx2Lean(t);if(ok)ok(t);},pr,err);}
@@ -4842,6 +4864,7 @@ function startMatch(){
   audioInit();SFX.ui();
   const df=DIFFS[diff];
   setWorld(offWorld());
+  floraFlush();precompileFlush();   // CARGA: what was left for later is done now, before the first frame of play
   if(M2.on)m2Warm(performance.now(),true);   // MENÚ 2: the map was not drawn in the menu; ready now if it was not yet
   // CASA ATLAS: its GLB loads the first time; the match starts when it is there (or without it if it fails: the boxes are what count)
   if(WORLD_ID==='casa2'&&!C2.ready&&!C2.failed){$('#modeSub').textContent='Cargando CASA ATLAS 2.0…';if(!C2.wait.includes(startMatch))C2.wait.push(startMatch);casa2Load();return;}
@@ -5958,7 +5981,7 @@ const WSKIN={rifle:WSKINS.rifle[store.get('wsRifle')]?store.get('wsRifle'):'halc
 const WS_ST={rifle:{cur:null,objs:[],base:null},knife:{cur:null,objs:[],base:null},cache:{},ktx2:{},pend:{}};
 KTX2.want=u=>{const d=ktx2Dir(u);return !!d&&(d===(WSKINS.rifle[WSKIN.rifle].dir||WSKIN.rifle)||d===(WSKINS.knife[WSKIN.knife].dir||WSKIN.knife));};   // the chosen skins first
 const wsDir=(slot,id)=>'assets/armas/'+(WSKINS[slot][id].dir||id)+'/';
-const wsImg=(slot,id)=>(slot==='rifle'&&id==='halcon'||slot==='knife'&&id==='navaja'?'assets/armas/'+id+'/':wsDir(slot,id))+'retrato.jpg?v='+BUILD_HASH;
+const wsImg=(slot,id)=>av((slot==='rifle'&&id==='halcon'||slot==='knife'&&id==='navaja'?'assets/armas/'+id+'/':wsDir(slot,id))+'retrato.jpg?v='+BUILD_HASH);
 // load once: the model and its pivots (info.json); the materials get the viewmodel's reflections.
 // 29-10-2026 («todo en 4K y en su máxima resolución»): arma_ktx2.glb, the same model with every texture at the size of
 // its original (4K in ÚLTIMA and VECTOR) compressed for the GPU, like the characters (docs/KTX2.md). Its textures are
@@ -5969,7 +5992,7 @@ function wsLoad(slot,id,done){
   if(WS_ST.pend[k])return void WS_ST.pend[k].push(done);   // already on its way: one download, not two
   WS_ST.pend[k]=[done];
   const d=wsDir(slot,id);
-  fetch(d+'info.json?v='+BUILD_HASH).then(r=>r.json()).catch(()=>({})).then(info=>{
+  fetch(av(d+'info.json?v='+BUILD_HASH)).then(r=>r.json()).catch(()=>({})).then(info=>{
     const ok=g=>{
       g.scene.traverse(o=>{if(o.isMesh){o.frustumCulled=false;o.castShadow=false;const m=o.material;if(m&&m.isMeshStandardMaterial){m.envMap=ENV;m.envMapIntensity=0.55;m.needsUpdate=true;}}});
       ktx2Upload(g.scene);
@@ -6053,7 +6076,7 @@ if(ARMAS_ON){
    online still sees the HALCÓN with its scope. Saved on the device. */
 const MIRA={id:SDMiras.sanitize(store.get('mira','sniper')),models:{},model:null,rifle:'',strip:[],clips:new WeakMap(),place:{axisY:SDMiras.ADS_Y},reflex:false};
 const miraOpt=()=>SDMiras.get(MIRA.id);
-const miraImg=id=>'assets/miras/'+id+'.jpg?v='+BUILD_HASH;
+const miraImg=id=>av('assets/miras/'+id+'.jpg?v='+BUILD_HASH);
 // which rifle model is in your hands: the procedural one (until assets/viewmodels.glb arrives), the HALCÓN or a skin
 function miraRifle(){const S=WS_ST.rifle;if(!VMA.R)return 'proc';if(S.cur&&S.cur!=='halcon'&&S.objs.length){const w=WSKINS.rifle[S.cur];return w?(w.dir||S.cur):'halcon';}return 'halcon';}
 // a mesh's geometry without the triangles whose centre (gun space, through M) is above y between z0 and z1: the same
@@ -6468,7 +6491,7 @@ function miniFrame(){
 const M2={on:store.get('menuOld',false)!==true&&typeof SDMenu2!=='undefined',tab:'inicio',prevTab:'inicio',cat:'rifle',sel:'duel',
   room:null,cam:null,pivot:null,R:null,held:null,show:null,spin:null,item:null,showLight:null,
   n:0,yaw:0,yawV:0,wYaw:0,wYawV:0,drag:null,lastDrag:0,t:0,sig:'',wsig:'',held0:null,frame:{dist:5,ox:0,oy:0},cur:null,propose:false};
-const m2MapImg=id=>'assets/menu/mapa_'+id+'.jpg?v='+BUILD_HASH;
+const m2MapImg=id=>av('assets/menu/mapa_'+id+'.jpg?v='+BUILD_HASH);
 const M2_MAPS=typeof SDMenu2!=='undefined'?SDMenu2.MAPS.filter(m=>m.id==='arena'||m.id==='pueblo'||(m.id==='casa'&&CASA.exp)||(m.id==='casa2'&&C2.exp)):[];
 const M2_DIFF=['RECLUTA','VETERANO','ÉLITE'],M2_TRAIN={off:'Dianas fijas y móviles',easy:'Bots de entrenamiento · FÁCIL',normal:'Bots de entrenamiento · NORMAL',hard:'Bots de entrenamiento · DIFÍCIL'};
 const m2MapName=id=>{const m=SDMenu2.MAPS.find(x=>x.id===id);return m?m.name:String(id).toUpperCase();};
@@ -6655,9 +6678,12 @@ const M2_YAW0=-0.42,M2_PITCH=-0.55,_m2cp=new T.Vector3();
    match (a hitch: test/perf saw ARENA start with 0 frames). Whenever the map or what it has loaded changes, compile it
    and send its textures now, while you are in the menu (at most once a second) */
 function m2Warm(now,force){
-  if(!force&&now-(M2.warmT||0)<1000)return;M2.warmT=now;
+  if(!force&&now-(M2.warmT||0)<500)return;M2.warmT=now;
   const sig=WORLD_ID+'|'+scene.children.length+'|'+(TEX.ok||0)+'|'+(E10.ready?1:0)+'|'+P3W.meshes.length+'|'+(CASA.ready?1:0)+'|'+(C2.ready?1:0)+'|'+Object.keys(PJ2.tpls).length;
-  if(sig===M2.warmSig)return;M2.warmSig=sig;
+  if(sig===M2.warmSig)return;
+  // CARGA: in the menu, wait until nothing new has arrived for 1,5 s (one warm, not one per file)
+  if(!force){if(sig!==M2.warmCand){M2.warmCand=sig;M2.warmSince=now;return;}if(now-M2.warmSince<1500)return;}
+  M2.warmSig=sig;
   try{renderer.compile(scene,camera);}catch(e){}
   const seen=new Set();
   scene.traverseVisible(o=>{if(!o.material)return;for(const m of [].concat(o.material))if(m)for(const k in m){const t=m[k];
@@ -6853,10 +6879,19 @@ resize();
 // Called again whenever something with new materials finishes loading (viewmodels, flora, rats).
 // The first duel bot is built now (hidden; startMatch builds the rest), so its soldier materials compile in the menu too,
 // and every texture of both scenes is uploaded to the GPU here instead of in the first frame of play.
-function precompileAll(){try{if(!BOTS.length)BOTS.push(new Bot(0));csFix(scene);csFix(wScene);renderer.compile(scene,camera);renderer.compile(wScene,wCam);
+/* CARGA (03-11-2026, docs/CARGA.md): every loader called this as soon as it finished (viewmodels, each character, rats,
+   flora…) and each call compiled both scenes again (1,8 s of CPU at the start on a phone-like CPU). Now a burst of loads
+   gives ONE compile, 400 ms after the last one, and the first at the start waits for the menu's first frame. A match
+   that starts before it ran runs it there (precompileFlush in startMatch): nothing is compiled in the middle of play. */
+const PRECOMP={t:0,at:0,want:false};
+function precompileAll(){PRECOMP.want=true;PRECOMP.at=performance.now();if(!PRECOMP.t)PRECOMP.t=setTimeout(precompileWait,400);}
+// (400 ms after the LAST call: a later call moves it on)
+function precompileWait(){PRECOMP.t=0;const w=400-(performance.now()-PRECOMP.at);if(w>20)PRECOMP.t=setTimeout(precompileWait,w);else precompileFlush();}
+function precompileFlush(){if(!PRECOMP.want)return;PRECOMP.want=false;precompileNow();}
+function precompileNow(){try{if(!BOTS.length)BOTS.push(new Bot(0));csFix(scene);csFix(wScene);renderer.compile(scene,camera);renderer.compile(wScene,wCam);
   const seen=new Set(),up=o=>{const ms=o.material?(Array.isArray(o.material)?o.material:[o.material]):[];for(const m of ms)for(const k of ['map','normalMap','roughnessMap','metalnessMap','aoMap','emissiveMap','alphaMap','envMap'])
     {const tx=m[k];if(tx&&!seen.has(tx)&&!tx.isCubeTexture&&tx.image){seen.add(tx);renderer.initTexture(tx);}}};scene.traverse(up);wScene.traverse(up);}catch(e){console.warn('precompile',e);}}
-precompileAll();
+precompileAll();   // (deferred: the menu is drawn first)
 requestAnimationFrame(frame);
 /* REJAS LEJANAS (03-11-2026, docs/PARPADEO.md): the balcony railings and window grilles of the kit (2–3 cm bars, merged per
    district) fade out between 40 and 60 m of APPARENT distance (the distance divided by the scope's zoom, VIS.k: through
@@ -7056,9 +7091,12 @@ if(FLORA.on){const gl=new T.GLTFLoader();let n=2;
   new T.FileLoader().setResponseType('json').load('assets/3d/flora/grass_cards.json?v='+BUILD_HASH,j=>{FLORA.cards=j;done();},undefined,e=>{FLORA.failed=true;console.warn('flora cards',e);});
   gl.load('assets/3d/flora/dandelion.glb?v='+BUILD_HASH,g=>{FLORA.glb.dandelion=g.scene;done();},undefined,e=>{FLORA.failed=true;console.warn('flora glb',e);});
   function done(){if(--n===0){
-      const go=()=>{try{floraSetup();}catch(e){FLORA.failed=true;console.warn('flora',e);}};
+      const go=()=>{FLORA.go=null;try{floraSetup();}catch(e){FLORA.failed=true;console.warn('flora',e);}};
       // the town's ground must exist first (rays land on it)
-      if(P3W.kit)go();else{const w=setInterval(()=>{if(P3W.kit){clearInterval(w);go();}},300);}}}}
+      // CARGA: 2 s later (1,4 s of CPU on a phone, and in the menu it is not seen); a match starting first builds it then
+      const later=()=>{FLORA.go=go;setTimeout(()=>{if(FLORA.go)go();},2000);};
+      if(P3W.kit)later();else{const w=setInterval(()=>{if(P3W.kit){clearInterval(w);later();}},300);}}}}
+function floraFlush(){if(FLORA.go)FLORA.go();}
 
 window.__SD={M2,m2Tab,m2Sync,m2Sleep,openSettings,closeSettings,MIRA,setMira,miraApply,miraClipGeo,miraRifle,openMiras,closeMiras,updateReticle,ENV,MOVE_CLASSIC,MOV_CLASSIC,VIS,VIS_COL,VIS_HULL,visOn,visFrame,visWho,selfHit,PROF,KTX2,R2_ON,R2_URL,PIC,GYRO,gyroEv,crossApply,btnPress,settingsChanged,perfTexMB(){const t=perfTextures();return {real:SDPerf.textureMB(t),asRGBA:SDPerf.textureMB(t.map(x=>Object.assign({},x,{bytes:0})))};},REMOTES,netScoreHud,shotTargets,MINI,miniLayer,miniPing,clockFrame,setOffTime,get OFF_TIME(){return OFF_TIME;},ACC,accRefresh,INV,invSync,camoApply,openInv,invOpenBox,WSKIN,WS_ST,setWskin,get RIF(){return RIF;},TPV,SELF,get PROFILE(){return PROFILE;},openProfile,endMatch,PJ_MIX,MIX_ORDER,SKINS,get SKIN(){return SKIN;},setSkin,pj2SetPack,rivalSkin,PERF,perfRun,HUD2,get H2(){return HUD2?H2:null;},leanIn:HUD2?leanIn:null,h2Frame:HUD2?h2Frame:null,PJ2,pj2Load,CASA,casaLoad,C2,casa2Load,FLORA,RATS,RAT_WORLD,ratsFrame,SHADOW_FADE,setDuelLethal,get DUEL_LETHAL(){return DUEL_LETHAL;},gfxDiagText,get P3ON(){return P3ON;},COBCC,damagePlayer,TEX,sunFollow,setSunSnap(on){SUN_SNAP=!!on;},sun,P0,E10,e10Lod,DIAG,setTrainMove,LIGHT:{sun,hemi,skyMat,LOOK,P3},P3W,freeze(on){SIM_FREEZE=!!on;},SHOT,VMA,makeSoldier,animateSoldier,BOT_MAT,scene,camera,RemotePlayer,PMprev,PIS,PROOT,RIF,WROOT,SHO_:null,MANUAL,advance(ms){frameBody(last+ms);},get LAST_PELLETS(){return LAST_PELLETS;},SCORE,SCFG,SROOT,SHO,setPrimaryChoice,get PRIMARY(){return PRIMARY;},PCORE,PCFG,setWorld,WORLDS,get WORLD_ID(){return WORLD_ID;},renderer,GFX,gfxApply,get NET(){return NET;},get REMOTE(){return REMOTE;},W,get NAV(){return NAV;},setOffMap,get OFFMAP(){return OFFMAP;},TOUCH,EDIT,openEditor,get SETTINGS(){return SETTINGS;},get LAYOUT(){return LAYOUT;},checkOrientation,MAT,LOAD,TRAINERS,get RANGE_BOTS(){return RANGE_BOTS;},TRAIN,setTrain,setLethal,kitNote,GINS,TDIAG,AU,get TOUCH_EVENTS(){return TOUCH_EVENTS;},impactFX,bodyFX,get DECALS(){return DECALS;},surfaceOf,soundDelay,aimSelfTest,P,PM,WS,WCORE,RECOIL,AIM,BOTS,DUMMIES,BULLETS,EVENTS,PARTS,STATS,get state(){return state;},get mode(){return mode;},setMode,input,startMatch,simTick,frame,toMenu,pause,resume};
 })();

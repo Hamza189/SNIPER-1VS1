@@ -57,6 +57,7 @@ Antes de cambiar algo: lee el archivo entero que vas a tocar y busca su prueba e
 | `docs/ONLINE.md`, `docs/PROTOCOLO.md` | Online: uso, fallos, protocolo, coste, reversión |
 | `docs/PRECISION.md`, `docs/PRUEBAS-Y-AJUSTES.md`, `docs/PUEBLO-3.md` | Puntería, pruebas manuales, PUEBLO 3.0 |
 | `docs/GAMEFEEL.md`, `docs/AJUSTES.md` | GAME FEEL 3.0 (movimiento TÁCTICO, transiciones de animación, visibilidad y contorno rojo/azul, medidas por partes del fotograma) y los ajustes del jugador |
+| `docs/CARGA.md` | Carga más rápida: versión por archivo, service worker (`sw.js`), arranque y lo siguiente (meshoptimizer) |
 | `docs/MENU-2.md` | El menú principal nuevo (`?menu=2`): sala oscura con el operador en 3D, secciones, archivos y pruebas |
 | `docs/MIRAS.md` | Las 8 miras del rifle como accesorio (un aumento cada una): catálogo, retículas, cuadros, montaje en cada rifle y cómo se quita la mira de siempre |
 | `docs/CASA-ATLAS-2.md` | CASA ATLAS 2.0 (`?casa2=1`): las 4 CASA ATLAS unidas en un complejo, rutas, medidas, pruebas, y el inventario para el online y la retirada de la XL |
