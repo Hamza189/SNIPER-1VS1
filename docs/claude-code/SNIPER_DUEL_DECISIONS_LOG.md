@@ -88,6 +88,13 @@ Detalle de cada cambio (antes/después, medidas, cómo revertir): `docs/next-lev
 | Personaje 3D rev. 03 hecho por Claude e integrado tras `?pj=2` (bots y rival online) | 20-10 · directo a `main` |
 | Personajes realistas + elegir personaje (con el SOLDADO de `?pj=2`) y HUD 2 por defecto (aprobado en iPhone y PC) | 28-10 · directo a `main` |
 
+## 03-11-2026 (6) — CARGA PROGRESIVA del operador y del arma en el menú
+Del propietario: «el personaje sigue quedándose ahí pensando/cargando; quiero que el personaje y el arma carguen rápido».
+El operador sale con su versión 1K (JPG) y pasa solo a la completa; el arma enseña su modelo ligero (`arma_tp.glb`)
+mientras se descomprime la 4K. Con CPU de móvil: operador 17 → 10,6 s, arma ÚLTIMA 42 → 12,8 s (`docs/CARGA.md`).
+
+**Estado:** IMPLEMENTADO · PROBADO EN NAVEGADOR (menu2, pro, pj2, ktx2, armas en verde) · PENDIENTE DE VALIDACIÓN EN IPHONE.
+
 ## 03-11-2026 (5) — CARGA: versión por archivo, service worker y arranque sin compilar de golpe
 Del propietario: «Los personajes, armas, mapas tardan en cargar, optimiza esto… si hace falta utilizar C, C++ o C# puedes
 utilizarlo» (guardado en la memoria del proyecto). Detalle en `docs/CARGA.md`.

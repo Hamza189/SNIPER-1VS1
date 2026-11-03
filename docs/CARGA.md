@@ -42,11 +42,34 @@ la GPU real del PC), dos visitas seguidas, y saca un perfil de CPU: qué funcion
 5. **El MENÚ 2 prepara el mapa una sola vez**, cuando deja de llegar nada nuevo durante 1,5 s (antes, ~10 veces mientras
    cargaba).
 
+## Carga progresiva del operador y del arma (03-11-2026, segunda parte)
+Del propietario: «la web carga más rápido, pero el personaje sigue quedándose ahí pensando/cargando; quiero que el
+personaje y el arma carguen rápido».
+
+Ya descargados, lo que tarda es la CPU: cada personaje trae tres texturas 4K en KTX2 que el transcodificador
+(WebAssembly, C++) descomprime de una en una en el móvil, y cada skin del rifle unas 17 (ÚLTIMA, SAHARA).
+
+- **Operador:** el menú carga a la vez su versión 1K (`personaje_1k.glb`: mismo modelo y animaciones, texturas JPG que
+  el navegador descomprime solo) y la completa. Sale con la 1K en cuanto llega y se cambia sola a la completa; la 1K sale
+  después de la GPU. Mientras, una nota pequeña dice «ALTA RESOLUCIÓN…».
+- **Arma:** cada skin tiene un modelo ligero (`arma_tp.glb`, 0,1–0,3 MB, mismo sistema de coordenadas y mismas piezas).
+  Mientras la 4K se descomprime, la muestra de ARMAS y las manos del operador llevan ese modelo en vez de «CARGANDO…» o el
+  HALCÓN.
+- Solo en el menú: los personajes y las armas de la partida no cambian.
+
+Medido con `node tools/carga-operador.js` (CPU ×4 como un móvil, FSB y ÚLTIMA, desde que se abre la página, que ya
+tarda 7–10 s en ese PC con la CPU frenada):
+
+| | Antes (solo 4K) | Ahora |
+|---|---|---|
+| Operador en pantalla | ~17 s | 10,6 s (1K; la completa entra sola a los ~17 s) |
+| Arma ÚLTIMA en ARMAS | ~42 s | 12,8 s (modelo ligero; la 4K entra sola después) |
+
 ## Lo siguiente (no hecho todavía)
 - **Comprimir la geometría y las animaciones con meshoptimizer** (C++; su decodificador es WebAssembly y three.js r128 lo
   admite: `EXT_meshopt_compression`). Bajaría cada personaje unos 2–3 MB y cada arma algo menos. Hace falta comprobar que
   las animaciones, los morphs (agacharse) y las zonas de impacto quedan idénticos.
-- **Texturas progresivas:** cargar primero las de 1K/2K y cambiar a las 4K cuando lleguen (el personaje sale antes).
+- **Lo mismo en partida** (personajes de los bots y del rival, tu arma en 1ª persona), si hace falta.
 
 ## Pruebas
 - La batería completa (`npm test`).
