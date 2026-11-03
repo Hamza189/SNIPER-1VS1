@@ -107,5 +107,23 @@ iPhone Pro Max, Safari, ALTO, píxeles ×2, 60 Hz. Primera medición con el arre
   esta medición no muestra.
 - Falta la prueba larga: sala con 5 bots en PUEBLO 3.0 durante varios minutos.
 
+### 03-11-2026, 12:47 — MEDIR RENDIMIENTO con el MENÚ 2 por defecto (versión 7d973e3f42)
+iPhone Pro Max, Safari, ALTO, píxeles ×2, 60 Hz. El propietario: «he estado jugando y bastante bien» (VICTORIA 10–3 contra
+bots, 9 a la cabeza).
+
+| Escena | Fotograma p50 / p95 / máx | CPU media | Llamadas | Triángulos | Texturas |
+|---|---|---|---|---|---|
+| ARENA | 17 / 17 / 17 ms → 60 FPS (tirones 0 %) | 3,0 ms | 51 | 114 mil | 121 ≈ 629 MB |
+| PUEBLO | 17 / 25 / 34 ms → 55 FPS (tirones 1,5 %) | 3,0 ms | 249 | 401 mil | 121 ≈ 629 MB |
+| CASA ATLAS 2.0 | 17 / 17 / 21 ms → 60 FPS (tirones 0 %) | 2,9 ms | 67 | 113 mil | 121 ≈ 629 MB |
+
+- El menú nuevo no ha empeorado nada: entrar en la partida tarda 17–18 ms (864 ms la primera vez en CASA ATLAS 2.0,
+  que carga su modelo), sin tirones al empezar, y la memoria de texturas baja de ~684 a ~629 MB.
+- La CPU va sobrada (3 ms de 16,7). El PUEBLO baja a 55 FPS al girar la cámara: es la GPU, con más dibujo que el 30-10
+  (249 llamadas y 401 mil triángulos frente a 202 y 355 mil). Mira 8×: 54 FPS en ARENA, 48 en PUEBLO, 60 en CASA 2.0.
+- Carga de la página la primera vez tras publicar: lista en 11,1 s, primer fotograma 7,0 s, 12,1 MB (versión nueva:
+  la caché se renueva). Las siguientes veces sale de la caché.
+- Pendiente: averiguar qué ha añadido dibujo al PUEBLO desde el 30-10.
+
 Código: `client/perfprobe.js` (cálculos e informe, puro) y el bloque «MEDIR RENDIMIENTO» de `src/page.html`.
 Prueba: `node test/perf.test.js`.

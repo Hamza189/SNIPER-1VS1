@@ -88,6 +88,15 @@ Detalle de cada cambio (antes/después, medidas, cómo revertir): `docs/next-lev
 | Personaje 3D rev. 03 hecho por Claude e integrado tras `?pj=2` (bots y rival online) | 20-10 · directo a `main` |
 | Personajes realistas + elegir personaje (con el SOLDADO de `?pj=2`) y HUD 2 por defecto (aprobado en iPhone y PC) | 28-10 · directo a `main` |
 
+## 03-11-2026 (3) — MEDIR RENDIMIENTO en el iPhone con el menú nuevo por defecto
+Del propietario: «he estado jugando y bastante bien», con el informe de la versión 7d973e3f42 (iPhone Pro Max, ALTO).
+ARENA 60 FPS (0 % tirones), PUEBLO 55 FPS (p95 25 ms, 1,5 % tirones), CASA ATLAS 2.0 60 FPS; CPU ~3 ms; texturas ~629 MB
+(antes ~684). Entrar en partida 17–18 ms: el menú nuevo no deja tirón al empezar. La medida por software (≈25 frente a ≈45
+fotogramas en ARENA) no se confirma en el iPhone. Pendiente aparte: el PUEBLO tiene más dibujo que el 30-10 (249
+llamadas y 401 mil triángulos frente a 202 y 355 mil). Detalle en `docs/RENDIMIENTO-IPHONE.md`.
+
+**Estado:** MEDIDO EN IPHONE.
+
 ## 03-11-2026 (2) — MENÚ 2 pasa a ser el menú principal por defecto
 Del propietario, tras probarlo en el iPhone: «funciona mejor… al entrar al link original ya cargara el nuevo menú
 principal». El enlace normal abre el menú nuevo; `?menu=1` vuelve al de antes y se recuerda (`sniperduel_menuOld`; la

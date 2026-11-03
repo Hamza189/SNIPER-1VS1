@@ -8,7 +8,9 @@ del juego, sin imágenes generadas como fondo.
   normal (`https://hamza189.github.io/SNIPER-1VS1/`) abra ya este menú.
 - **Volver al de antes:** `?menu=1` (se recuerda en el dispositivo, `sniperduel_menuOld`); `?menu=2` vuelve al nuevo. El
   menú antiguo no se ha borrado: sigue entero en la página.
-- **Estado:** POR DEFECTO · PROBADO EN NAVEGADOR (PC y tamaño iPhone) · PROBADO POR EL PROPIETARIO EN IPHONE (03-11).
+- **Estado:** POR DEFECTO · PROBADO EN NAVEGADOR (PC y tamaño iPhone) · PROBADO POR EL PROPIETARIO EN IPHONE (03-11) ·
+  MEDIDO EN IPHONE: 60 FPS en ARENA y CASA ATLAS 2.0, 55 en PUEBLO, ~629 MB de texturas, sin tirón al empezar
+  (`docs/RENDIMIENTO-IPHONE.md`, 03-11-2026).
 
 ## Qué hay
 
@@ -75,5 +77,4 @@ la siguiente vez sale al momento.
 
 ## Pendiente
 
-- Medir en el iPhone los FPS del menú (el contador de AJUSTES › GRÁFICOS sirve también en el menú).
 - Si pasado un tiempo nadie usa `?menu=1`, se podrá retirar el menú antiguo (pidiéndolo antes al propietario).
