@@ -125,5 +125,20 @@ bots, 9 a la cabeza).
   la caché se renueva). Las siguientes veces sale de la caché.
 - Pendiente: averiguar qué ha añadido dibujo al PUEBLO desde el 30-10.
 
+### 03-11-2026 — Por qué el PUEBLO va a 55 FPS: qué se ha medido en el PC
+- **El pueblo no ha engordado.** `tools/pueblo-dibujo.js` cuenta cada llamada de dibujo por objeto en una vuelta
+  completa de cámara en la plaza (ALTO, 932×430 a 2×). La versión del 30-10 (a3de14b) y la de hoy dan exactamente lo mismo:
+  210 llamadas y 335 mil triángulos de media. Las 249 llamadas del informe del iPhone frente a las 202 del 30-10 dependen
+  de dónde deja la medida al jugador y de los bots que hay a la vista.
+- **Reparto del dibujo en el PUEBLO** (media por fotograma): los edificios del kit (barrios este, oeste y de fuera) unas 60
+  llamadas y 150 mil triángulos, más 21 llamadas de sus sombras; el rifle en 1ª persona 15 llamadas; los dientes de león
+  43 mil triángulos en 5 llamadas; el suelo de PUEBLO 3.0 ~10 llamadas; ratas 11 mil triángulos.
+- **La GPU del PC no sirve para saber qué le cuesta al iPhone.** `tools/gpu-coste.js` quita una cosa cada vez (sombras,
+  suavizado, hierba, sombras del kit, ratas) y mide el fotograma hasta que la GPU termina. La GTX 1050 Ti tarda 2,7–3,1 ms
+  en todas las variantes, también con 4 veces más píxeles: es demasiado rápida para notar las diferencias.
+- **Siguiente paso: medir en el iPhone.** MEDIR RENDIMIENTO con una cosa quitada cada vez, con estos enlaces (ninguna
+  bandera se queda guardada): `?medir=1` (base), `?medir=1&sombras=0`, `?medir=1&aa=0`, `?medir=1&flora=0`. Lo que más
+  suba los FPS del PUEBLO es lo que hay que optimizar primero.
+
 Código: `client/perfprobe.js` (cálculos e informe, puro) y el bloque «MEDIR RENDIMIENTO» de `src/page.html`.
 Prueba: `node test/perf.test.js`.

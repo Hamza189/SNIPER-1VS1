@@ -6655,7 +6655,7 @@ const SDMenu2 = { TABS, MAPS, clamp, damp, dampAngle, frameDist, stageFrame, slo
 if (typeof module !== 'undefined' && module.exports) module.exports = SDMenu2; else root.SDMenu2 = SDMenu2;
 })(typeof window !== 'undefined' ? window : globalThis);
 
-const BUILD_ID="e8ac4b5";const BUILD_HASH="7d973e3f42";
+const BUILD_ID="33fd686";const BUILD_HASH="a691a2ee2d";
 </script>
 <script>
 (function(){
@@ -12205,6 +12205,30 @@ function precompileAll(){try{if(!BOTS.length)BOTS.push(new Bot(0));csFix(scene);
     {const tx=m[k];if(tx&&!seen.has(tx)&&!tx.isCubeTexture&&tx.image){seen.add(tx);renderer.initTexture(tx);}}};scene.traverse(up);wScene.traverse(up);}catch(e){console.warn('precompile',e);}}
 precompileAll();
 requestAnimationFrame(frame);
+/* REJAS LEJANAS (03-11-2026, docs/PARPADEO.md): the balcony railings and window grilles of the kit (2–3 cm bars, merged per
+   district) fade out between 40 and 60 m of APPARENT distance (the distance divided by the scope's zoom, VIS.k: through
+   the 8× they come back). Further away a bar is less than half a pixel: it only flickered on/off while the camera moved
+   (the flicker map's brightest spots) and cost triangles. With the antialiasing on the fade goes through alpha to
+   coverage (smooth, no dither pattern); without it the bars just stop at 60 m. Lamp posts and street poles (thick, their
+   own meshes: '@lamp_post', '@street_pole') do not fade. Only what you see: bullets never used these meshes.
+   &rejas=0 turns it off (to compare). */
+const FAR_FADE=!/[?&]rejas=0\b/.test(location.search);
+const FAR_U={near:{value:40},far:{value:60}};
+function farFadeMat(m0){
+  const m=m0.clone();m.name=m0.name+'_lejos';m.userData.cs=1;
+  if(GFX.aa)m.alphaToCoverage=true;
+  m.onBeforeCompile=sh=>{sh.uniforms.uVisK=VIS.k;sh.uniforms.uFarN=FAR_U.near;sh.uniforms.uFarF=FAR_U.far;
+    sh.vertexShader=sh.vertexShader.replace('#include <common>','#include <common>\nvarying float vSdDist;').replace('#include <project_vertex>','#include <project_vertex>\n\tvSdDist = -mvPosition.z;');
+    sh.fragmentShader=sh.fragmentShader.replace('#include <common>','#include <common>\nvarying float vSdDist;uniform float uVisK;uniform float uFarN;uniform float uFarF;')
+      .replace('#include <map_fragment>','#include <map_fragment>\n{ float sdA = 1.0 - smoothstep(uFarN, uFarF, vSdDist * uVisK); if (sdA <= 0.0) discard; diffuseColor.a *= sdA; }');};
+  m.customProgramCacheKey=()=>'sdfar'+(GFX.aa?1:0);
+  return m;
+}
+function farFade(meshes){
+  if(!FAR_FADE)return;const made=new Map();
+  for(const o of meshes){if(!/^kit_\w+_iron$/.test(o.name))continue;   // the railings and grilles, not the posts ('@…')
+    let m=made.get(o.material);if(!m){m=farFadeMat(o.material);made.set(o.material,m);}o.material=m;}
+}
 /* PUEBLO 3.0: the kit arrives (assets/kit.glb) → one instanced mesh per piece and material; shop signs */
 function p3Signs(kit){
   const part=(kit.pieces.sign||[]).find(p=>p.mat==='sign');if(!part||!P3W.signs.length)return;
@@ -12235,6 +12259,7 @@ if(P3ON&&T.GLTFLoader){
     P3W.ctx.separate=new Set(THIN);P3W.axes=list.filter(p=>THIN.includes(p.k)).map(p=>[p.x,p.z]);
     const r=KIT3D.merge(T,kit,list,P3W.ctx,regionOf);P3W.kitTris=r.tris;
     for(const m of r.meshes){scene.add(m);WORLDS.pueblo.objs.push(m);m.visible=WORLD_ID==='pueblo';P3W.meshes.push(m);}
+    farFade(r.meshes);
     p3Signs(kit);
     if(DIAG_NOKITSH)for(const m of P3W.meshes)m.castShadow=false;   // &kitsombra=0 (diagnostic)
     waterPolish();

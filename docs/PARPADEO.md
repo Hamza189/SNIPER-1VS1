@@ -55,6 +55,27 @@ con MEDIR RENDIMIENTO. Si bajara, el modo AUTO baja la resolución solo y la cas
 - **Siguiente paso si hiciera falta:** un nivel de detalle para los barrotes a más de unos 50 m (calculado con la distancia
   aparente, para que con el visor vuelvan).
 
+## 03-11-2026 — Segunda pasada: rejas lejanas y medidas con la GPU real
+El propietario: «vuelve a hacerlo y ve mejorando PUEBLO».
+
+- **Medir con la GPU de verdad.** `tools/flicker.js` acepta `GPU=1`: el navegador de pruebas usa la tarjeta del PC
+  (GTX 1050 Ti, Direct3D 11) en vez de WebGL por software, que no aplica cosas como el filtrado anisótropo.
+- **Referencia de hoy** (suavizado 4× activo): parpadeo 2,18 / 2,03 / 1,74 con software, lo mismo que el 31-10. Con la
+  GPU real: 1,91 / 1,79 / 2,16. Sin suavizado (`aa=0`): 3,08 / 2,68 / 3,32. El suavizado sigue siendo lo que más quita.
+- **Descartado: filtrado anisótropo 16×** en todas las texturas (variante `xaniso=16`). Con la GPU real da lo mismo
+  (1,906 frente a 1,906): las rayas que bailan no son de textura.
+- **Hecho: rejas lejanas.** Las barandillas y rejas del kit (barrotes de 2–3 cm, unidos en una malla por barrio) se
+  desvanecen entre 40 y 60 m de distancia aparente (la distancia dividida por el aumento: con el visor 8× vuelven). Más
+  lejos, un barrote mide menos de medio píxel y solo encendía y apagaba píxeles. El fundido va por *alpha to coverage*
+  con el suavizado activo (sin trama de puntos); sin suavizado se cortan a 60 m. Farolas y postes no cambian. Las balas
+  nunca usaron esas mallas. `&rejas=0` lo apaga para comparar.
+- **Lo que gana es poco:** con la GPU real, en la plaza el parpadeo baja de 1,91 a 1,86 y los peores píxeles (p99,9)
+  de 50 a 44. Lo que queda está repartido en todos los bordes lejanos (marcos, contraventanas, aleros, toldos).
+- **La medida tiene ruido:** la hierba se mueve con el viento y las ratas andan aunque la cámara esté parada. Una
+  variante salió una vez con cifras disparadas (7,4 y 15,8) que no se repiten. Comparar siempre varias pasadas.
+- **Siguiente paso posible** (no hecho): un suavizado temporal (TAA) quitaría casi todo el parpadeo restante, pero cuesta
+  una pasada de pantalla completa en el iPhone y desenfoca un poco. Solo si el propietario lo quiere probar.
+
 ## Pruebas
 - `test/ajustes.test.js`: el ajuste nuevo va encendido por defecto, se puede apagar y RESTAURAR lo vuelve a encender.
 - `test/ajustes.browser.test.js`, en el móvil:

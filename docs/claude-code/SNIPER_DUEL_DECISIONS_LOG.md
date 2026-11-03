@@ -88,6 +88,20 @@ Detalle de cada cambio (antes/después, medidas, cómo revertir): `docs/next-lev
 | Personaje 3D rev. 03 hecho por Claude e integrado tras `?pj=2` (bots y rival online) | 20-10 · directo a `main` |
 | Personajes realistas + elegir personaje (con el SOLDADO de `?pj=2`) y HUD 2 por defecto (aprobado en iPhone y PC) | 28-10 · directo a `main` |
 
+## 03-11-2026 (4) — PUEBLO: qué cuesta, parpadeo y rejas lejanas
+Del propietario: «hay que ir optimizando poco a poco el juego todo lo que se pueda… vuelve a hacerlo [lo del parpadeo] y
+ve mejorando PUEBLO».
+- El PUEBLO no ha engordado desde el 30-10: misma cámara, mismas 210 llamadas y 335 mil triángulos
+  (`tools/pueblo-dibujo.js`). La diferencia del iPhone era de la posición y de los bots a la vista.
+- Herramientas nuevas con la GPU real del PC: `tools/flicker.js` con `GPU=1` y `tools/gpu-coste.js`. La GTX 1050 Ti es
+  demasiado rápida para decir qué le cuesta al iPhone (2,7–3,1 ms en todas las variantes).
+- Rejas y barandillas lejanas del kit: se desvanecen entre 40 y 60 m de distancia aparente (vuelven con el visor).
+  Parpadeo en la plaza 1,91 → 1,86, peores píxeles 50 → 44. Poco, pero sin coste. `&rejas=0` para comparar.
+- Descartado el filtrado anisótropo 16× (no cambia nada).
+- Siguiente: MEDIR RENDIMIENTO en el iPhone con `?medir=1`, `&sombras=0`, `&aa=0` y `&flora=0` para saber qué optimizar.
+
+**Estado:** IMPLEMENTADO · PROBADO EN NAVEGADOR (cover, p0, e10 en verde) · PENDIENTE DE MEDIR EN IPHONE.
+
 ## 03-11-2026 (3) — MEDIR RENDIMIENTO en el iPhone con el menú nuevo por defecto
 Del propietario: «he estado jugando y bastante bien», con el informe de la versión 7d973e3f42 (iPhone Pro Max, ALTO).
 ARENA 60 FPS (0 % tirones), PUEBLO 55 FPS (p95 25 ms, 1,5 % tirones), CASA ATLAS 2.0 60 FPS; CPU ~3 ms; texturas ~629 MB

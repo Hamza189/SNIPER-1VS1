@@ -6,7 +6,8 @@
    node tools/flicker.js OUT_DIR [prefix]
    env: VARIANTS='base:aa=0;msaa:aa=1;near:aa=0&near=0.15' (name:extra URL; a variant can also say dpr=3) · W=932 H=430
    DPR=2 (iPhone 15 Pro Max in landscape at the game's 2× resolution) · N=16 frames · STEP=0.25 (px of turn per frame) ·
-   Q=alto · ONLY=views
+   Q=alto · ONLY=views · GPU=1 (the PC's graphics card; default: software WebGL) · xaniso=N in a variant: every texture
+   with anisotropic filtering N (to measure it)
    The camera pans slowly and evenly (STEP px per frame). Two numbers per view, both per pixel (0–255) over the upper
    70 % of the picture (the buildings, not the ground at the feet):
    - cambio: mean |frame − previous frame|. Any edge that moves changes a little, smooth or not.
@@ -33,7 +34,9 @@ const ONLY = process.env.ONLY ? process.env.ONLY.split(',') : null;
 (async () => {
   fs.mkdirSync(OUT, { recursive: true });
   const srv = await ss.start();
-  const b = await chromium.launch({ args: ['--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist'] });
+  // GPU=1: the PC's real graphics card (Direct3D 11 through ANGLE) instead of software WebGL: what software rendering
+  // leaves out (anisotropic filtering, the GPU's own antialiasing) is then measured too (03-11-2026)
+  const b = await chromium.launch({ args: process.env.GPU === '1' ? ['--use-angle=d3d11', '--enable-gpu', '--ignore-gpu-blocklist'] : ['--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist'] });
   const res = {};
   for (let [vname, extra] of VARIANTS) {
     const dpr = +((extra.match(/(?:^|&)dpr=([0-9.]+)/) || [])[1] || DPR); extra = extra.replace(/(?:^|&)dpr=[0-9.]+/, '');
@@ -46,6 +49,10 @@ const ONLY = process.env.ONLY ? process.env.ONLY.split(',') : null;
     await p.evaluate(() => { __SD.setTrain('off'); __SD.setMode('duel'); __SD.startMatch(); });
     await p.waitForFunction(() => __SD.P3W && __SD.P3W.kit && (!__SD.E10.on || __SD.E10.ready || __SD.E10.failed), null, { timeout: 120000 });
     await p.waitForTimeout(1500);
+    // xaniso=N (measurement only): every texture of the scene with anisotropic filtering N (capped by the GPU)
+    const xa = +((extra.match(/(?:^|&)xaniso=([0-9]+)/) || [])[1] || 0);
+    if (xa) await p.evaluate(n => { const S = __SD, R = S.renderer, mx = R.capabilities.getMaxAnisotropy(), seen = new Set();
+      S.scene.traverse(o => { for (const m of [].concat(o.material || [])) if (m) for (const k in m) { const t = m[k]; if (t && t.isTexture && !seen.has(t)) { seen.add(t); t.anisotropy = Math.min(n, mx); t.needsUpdate = true; } } }); }, xa);
     const aa = await p.evaluate(() => { const gl = __SD.renderer.getContext(); return { samples: gl.getParameter(gl.SAMPLES), near: __SD.camera.near, pr: __SD.renderer.getPixelRatio() }; });
     console.log(vname, extra, JSON.stringify(aa));
     res[vname] = { url: extra, gl: aa, views: {} };
