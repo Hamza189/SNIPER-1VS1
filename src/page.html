@@ -607,6 +607,7 @@ body.m2 #menu .menuInner{display:none}
 #m2::before{content:"";position:absolute;inset:0;pointer-events:none;background:radial-gradient(ellipse 70% 80% at 50% 45%,transparent 45%,rgba(0,0,0,.55) 100%),linear-gradient(90deg,rgba(8,8,9,.75) 0,rgba(8,8,9,0) 34%,rgba(8,8,9,0) 66%,rgba(8,8,9,.6) 100%)}
 #m2>*{position:relative}
 #m2>.m2Sheet{position:fixed}
+#m2>.m2Load{position:absolute}
 .m2Top{display:flex;align-items:center;gap:18px;height:var(--m2top);padding:env(safe-area-inset-top,0px) var(--m2padR) 0 var(--m2pad);background:linear-gradient(180deg,rgba(8,8,9,.85),rgba(8,8,9,0))}
 .m2Logo{display:flex;align-items:center;gap:9px;color:var(--hud);flex:none}
 .m2Logo svg{width:clamp(28px,4.6vh,40px);height:auto}
@@ -695,8 +696,8 @@ body.m2 #menu .menuInner{display:none}
 .m2Small{font-size:9.5px;letter-spacing:.06em;color:var(--dust);line-height:1.4}
 /* MAPAS */
 .m2Pane[data-pane="mapas"]{grid-template-rows:minmax(0,1fr) auto;background:rgba(9,9,10,.55)}
-.m2Maps{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(260px,42vw),1fr));gap:clamp(8px,1.6vw,16px);align-content:center;overflow:auto;min-height:0}
-.m2Map{position:relative;display:block;padding:0;background:#0c0c0d;border:1px solid var(--m2line);cursor:pointer;text-align:left;overflow:hidden;aspect-ratio:16/10;max-height:calc((100vh - var(--m2top) - var(--m2nav) - 90px)/1);color:var(--hud)}
+.m2Maps{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:clamp(8px,1.6vw,16px);align-content:center;overflow:auto;min-height:0;width:min(100%,calc((100vh - var(--m2top) - var(--m2nav) - 80px) * 1.6 + 16px));justify-self:center}
+.m2Map{position:relative;display:block;padding:0;background:#0c0c0d;border:1px solid var(--m2line);cursor:pointer;text-align:left;overflow:hidden;aspect-ratio:16/10;color:var(--hud)}
 .m2Map img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
 .m2Map::after{content:"";position:absolute;inset:0;background:linear-gradient(0deg,rgba(10,10,11,.95) 0,rgba(10,10,11,.35) 50%,transparent 75%)}
 .m2Map span{position:absolute;left:12px;right:12px;bottom:10px;z-index:1}
@@ -708,6 +709,14 @@ body.m2 #menu .menuInner{display:none}
 .m2Map[aria-pressed="true"]{border-color:var(--signal);box-shadow:inset 0 0 0 2px var(--signal)}
 .m2Map[aria-pressed="true"]::before{content:"SELECCIONADO";position:absolute;right:10px;top:9px;z-index:1;font-size:9px;letter-spacing:.18em;background:var(--signal);color:var(--ink);padding:3px 7px}
 .m2MapNote{text-align:center}
+/* loading: a thin ring and a line of text, where the operator or the weapon will be (03-11-2026: owner's video) */
+.m2Load{position:absolute;z-index:1;display:flex;flex-direction:column;align-items:center;gap:10px;transform:translate(-50%,-50%);pointer-events:none;font-size:10px;letter-spacing:.2em;color:var(--sand);text-align:center;text-shadow:0 1px 4px #000;white-space:nowrap}
+.m2Load i{width:34px;height:34px;border-radius:50%;border:2px solid rgba(244,234,216,.15);border-top-color:var(--signal);animation:m2Spin .9s linear infinite}
+.m2Load small{display:block;margin-top:4px;font-size:9px;letter-spacing:.08em;color:var(--dust);white-space:normal;max-width:300px}
+.m2Load.mini{flex-direction:row;gap:8px}.m2Load.mini i{width:16px;height:16px}
+.m2SlotLoad{left:50%;top:50%}
+@keyframes m2Spin{to{transform:rotate(360deg)}}
+@media (prefers-reduced-motion:reduce){.m2Load i{animation-duration:3s}}
 /* bottom bar */
 .m2Nav{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));height:var(--m2nav);padding:0 var(--m2padR) env(safe-area-inset-bottom,0px) var(--m2pad);background:rgba(10,10,11,.9);border-top:1px solid var(--m2line)}
 .m2Nav button{position:relative;display:flex;align-items:center;justify-content:center;gap:10px;background:none;border:0;cursor:pointer;color:var(--sand);font:500 clamp(17px,3.2vh,26px)/1 var(--f-display);letter-spacing:.06em;min-width:0}
@@ -1201,7 +1210,7 @@ body.m2 #menu .menuInner{display:none}
             <div class="seg" id="m2Cat" role="group" aria-label="Categoría"><button type="button" data-cat="rifle">FRANCOTIRADOR</button><button type="button" data-cat="knife">ARMA DE MANO</button></div>
           </div>
           <div class="m2ArmTitle"><b id="m2ArmName"></b><small id="m2ArmSub"></small><span class="m2Tag">EQUIPADA</span></div>
-          <div class="m2Slot" id="m2Slot" aria-label="Vista previa del arma (arrastra para girarla)"></div>
+          <div class="m2Slot" id="m2Slot" aria-label="Vista previa del arma (arrastra para girarla)"><div class="m2Load m2SlotLoad" id="m2SlotLoad" hidden aria-live="polite"><i></i><span id="m2SlotTxt"></span></div></div>
           <div class="m2Rows" data-catpane="rifle">
             <div class="lbl">Mira (óptica) · <span id="m2MiraDesc"></span></div>
             <div class="m2Row" id="m2Miras" role="group" aria-label="Miras"></div>
@@ -1220,6 +1229,7 @@ body.m2 #menu .menuInner{display:none}
         <span class="m2Small m2MapNote">VS BOTS se juega en el mapa elegido. En MULTIJUGADOR el mapa lo elige quien crea la sala (al crearla se pone el elegido aquí, si el servidor lo tiene).</span>
       </section>
     </main>
+    <div class="m2Load" id="m2Load" hidden aria-live="polite"><i></i><span id="m2LoadTxt">CARGANDO OPERADOR…</span></div>
     <nav class="m2Nav" role="tablist" aria-label="Menú principal">
       <button type="button" role="tab" data-tab="inicio"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3.5 11 12 4l8.5 7M6 9.2V20h4.5v-5.5h3V20H18V9.2" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg><span>INICIO</span></button>
       <button type="button" role="tab" data-tab="personaje"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6.5 10.5a5.5 5.5 0 0 1 11 0v1.5h-11z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M8 12v1.5a4 4 0 0 0 8 0V12M4.5 21c.8-3.3 3.8-5 7.5-5s6.7 1.7 7.5 5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M8.5 12.6h7" stroke="var(--signal)" stroke-width="1.8"/></svg><span>PERSONAJE</span></button>
@@ -3305,11 +3315,16 @@ function ktx2Upload(root){root.traverse(o=>{if(!o.isMesh)return;for(const m of [
 canvas.addEventListener('webglcontextrestored',()=>{if(KTX2.freed)location.reload();});
 // KTX2 textures that come as files of their own (weapon skins, docs/ARMAS-EXT.md): through a queue, one at a time on
 // phones (a 4K one is ~10 MB to download and ~45 MB while it is unpacked), 3 on PC. GLTFLoader only calls load().
+// 03-11-2026 (owner's video: a skin chosen took ~2 min): the textures of the skins you have chosen NOW go first
+// (KTX2.want), not behind those of one you chose before (ÚLTIMA is 139 MB); KTX2.prog counts each skin's textures
+// (assets/armas/<dir>/) so the menu can say how far it has got.
+const ktx2Dir=u=>{const m=/assets\/armas\/([^/]+)\//.exec(u);return m?m[1]:'';};
 function ktx2Queue(L){
-  if(KTX2.q)return KTX2.q;const q=[],n=PJ2_PHONE?1:3;let busy=0;
-  const pump=()=>{while(busy<n&&q.length){busy++;const [u,ok,pr,err]=q.shift();
-    L.load(u,t=>{busy--;pump();if(ok)ok(t);},pr,e=>{busy--;pump();if(err)err(e);});}};
-  return KTX2.q=Object.assign(Object.create(L),{load(u,ok,pr,err){q.push([u,ok,pr,err]);pump();},queue:q});
+  if(KTX2.q)return KTX2.q;const q=[],n=PJ2_PHONE?1:3;let busy=0;const P=KTX2.prog||(KTX2.prog={});
+  const tick=(u,done)=>{const d=ktx2Dir(u);if(!d)return;const c=P[d]||(P[d]={n:0,done:0});if(done)c.done++;else c.n++;};
+  const pump=()=>{while(busy<n&&q.length){const w=KTX2.want?q.findIndex(x=>KTX2.want(x[0])):-1;busy++;const [u,ok,pr,err]=q.splice(w<0?0:w,1)[0];
+    L.load(u,t=>{busy--;tick(u,1);pump();if(ok)ok(t);},pr,e=>{busy--;tick(u,1);pump();if(err)err(e);});}};
+  return KTX2.q=Object.assign(Object.create(L),{load(u,ok,pr,err){q.push([u,ok,pr,err]);tick(u,0);pump();},queue:q});
 }
 function pj2Load(root){
   root=root||pj2Root('B');
@@ -5940,6 +5955,7 @@ const WSKINS={rifle:{halcon:{name:'HALCÓN R7',by:'Sniper Duel'},titan:{name:'TI
   knife:{navaja:{name:'NAVAJA',by:'Sniper Duel'},tactica:{name:'TÁCTICA',by:'lunea · CC BY'}}};
 const WSKIN={rifle:WSKINS.rifle[store.get('wsRifle')]?store.get('wsRifle'):'halcon',knife:WSKINS.knife[store.get('wsKnife')]?store.get('wsKnife'):'navaja'};
 const WS_ST={rifle:{cur:null,objs:[],base:null},knife:{cur:null,objs:[],base:null},cache:{},ktx2:{},pend:{}};
+KTX2.want=u=>{const d=ktx2Dir(u);return !!d&&(d===(WSKINS.rifle[WSKIN.rifle].dir||WSKIN.rifle)||d===(WSKINS.knife[WSKIN.knife].dir||WSKIN.knife));};   // the chosen skins first
 const wsDir=(slot,id)=>'assets/armas/'+(WSKINS[slot][id].dir||id)+'/';
 const wsImg=(slot,id)=>(slot==='rifle'&&id==='halcon'||slot==='knife'&&id==='navaja'?'assets/armas/'+id+'/':wsDir(slot,id))+'retrato.jpg?v='+BUILD_HASH;
 // load once: the model and its pivots (info.json); the materials get the viewmodel's reflections.
@@ -6449,7 +6465,7 @@ function miniFrame(){
 {const q=location.search.match(/[?&]menu=([12])\b/);if(q)store.set('menu2',q[1]==='2');}
 const M2={on:!!store.get('menu2',false)&&typeof SDMenu2!=='undefined',tab:'inicio',prevTab:'inicio',cat:'rifle',sel:'duel',
   room:null,cam:null,pivot:null,R:null,held:null,show:null,spin:null,item:null,showLight:null,
-  yaw:0,yawV:0,wYaw:0,wYawV:0,drag:null,lastDrag:0,t:0,sig:'',wsig:'',held0:null,frame:{dist:5,ox:0,oy:0},cur:null,propose:false};
+  n:0,yaw:0,yawV:0,wYaw:0,wYawV:0,drag:null,lastDrag:0,t:0,sig:'',wsig:'',held0:null,frame:{dist:5,ox:0,oy:0},cur:null,propose:false};
 const m2MapImg=id=>'assets/menu/mapa_'+id+'.jpg?v='+BUILD_HASH;
 const M2_MAPS=typeof SDMenu2!=='undefined'?SDMenu2.MAPS.filter(m=>m.id==='arena'||m.id==='pueblo'||(m.id==='casa'&&CASA.exp)||(m.id==='casa2'&&C2.exp)):[];
 const M2_DIFF=['RECLUTA','VETERANO','ÉLITE'],M2_TRAIN={off:'Dianas fijas y móviles',easy:'Bots de entrenamiento · FÁCIL',normal:'Bots de entrenamiento · NORMAL',hard:'Bots de entrenamiento · DIFÍCIL'};
@@ -6497,6 +6513,10 @@ function m2Init(){
   document.querySelectorAll('#m2 [data-stage]').forEach(el=>drag(el,'yaw'));
   drag($('#m2Slot'),'wYaw');
   window.addEventListener('resize',()=>{M2.cur=null;});
+  // your character first, before the bots' (the KTX2 characters load one after another)
+  if(SKIN_ON&&PJ2.on&&SKINS[SKIN].pack)pj2Load(packRoot(SKINS[SKIN].pack));
+  // PC: pointing at an operator starts loading him (the phone loads only the one you choose: memory)
+  if(!isTouch)document.querySelectorAll('#m2PjList .m2Pick').forEach(c=>c.addEventListener('pointerenter',()=>{const k=SKINS[c.dataset.skin].pack;if(PJ2.on&&k)pj2Load(packRoot(k));}));
   m2Tab('inicio',true);
 }
 function m2Tab(id,quiet){
@@ -6540,6 +6560,25 @@ const m2Sig=()=>[M2.sel,mode,OFFMAP,diff,OFF_TIME,TRAIN.level,PRIMARY,SKIN,WSKIN
 // MULTIJUGADOR: a room you create starts on the map chosen in MAPAS (if the server has it)
 function m2LobbyMap(){const N=NET.N;if(!M2.on||!M2.propose||!N||!N.you||!netIsHost())return;M2.propose=false;
   const m=M2_MAPS.find(x=>x.id===OFFMAP);if(m&&m.online&&N.map!==OFFMAP)N.chooseMap(OFFMAP);}
+// ---- the operator: the one you chose, as soon as he is there (never the box figure while he downloads) ----
+const m2PackOk=k=>k===null||!PJ2.on||!!PJ2.tpls[packRoot(k)]||!!PJ2.failedRoots[packRoot(k)];
+function m2Operator(){
+  const R=M2.R;if(!R)return;
+  const want=SKIN_ON?SKINS[SKIN].pack:R.skinPack;
+  if(SKIN_ON&&R.skinPack!==want){if(m2PackOk(want))pj2SetPack(R,want);else pj2Load(packRoot(want));}   // the one before stays until then
+  const k=R.skinPack,shown=!PJ2.on||!SKIN_ON?true:k===undefined?false:(k===null||!!R.v2||!!PJ2.failedRoots[packRoot(k)]);
+  M2.opShown=shown;
+  const busy=!shown?'CARGANDO OPERADOR…':R.skinPack!==want?'CARGANDO '+SKINS[SKIN].name+'…':'';
+  const el=$('#m2Load');setHidden(el,!busy||M2.tab==='mapas');
+  if(busy){setText($('#m2LoadTxt'),busy);el.classList.toggle('mini',shown);
+    const C=M2.cur;if(C&&C.st){const x=Math.round(C.st.left+C.st.width/2)+'px',y=Math.round(shown?C.st.top+C.st.height-24:C.st.top+C.st.height/2)+'px';if(el.style.left!==x)el.style.left=x;if(el.style.top!==y)el.style.top=y;}}
+}
+// a weapon skin still on its way: what to say (the first time ÚLTIMA is 139 MB; then the browser keeps it)
+function m2SkinWait(slot){
+  const id=WSKIN[slot],S=WS_ST[slot];if(id==='halcon'||id==='navaja'||S.cur!==id||S.objs.length)return '';
+  const P=KTX2.prog&&KTX2.prog[WSKINS[slot][id].dir||id],pc=P&&P.n?Math.round(P.done/P.n*100):0;
+  return 'CARGANDO '+WSKINS[slot][id].name+(pc?' · '+pc+' %':'…');
+}
 // ---- the room in 3D ----
 function m2Wake(){
   if(M2.room)return;
@@ -6550,8 +6589,9 @@ function m2Wake(){
     M2.showRim=new T.DirectionalLight(0xbcd0f0,0.9);M2.showRim.position.set(0.8,0.4,-2.2);M2.cam.add(M2.showRim);M2.showRim.target.position.set(0,0,-1.3);M2.cam.add(M2.showRim.target);
     M2.pivot=new T.Group();}
   M2.room.scene.add(M2.cam);M2.room.stand.add(M2.pivot);
+  // built without its default character (that would download the S.W.A.T. or the FSB for nothing): only the chosen one
+  if(!M2.R&&SKIN_ON){const on=PJ2.on;PJ2.on=false;M2.R=makeSoldier(RIVAL_MAT,{variant:'B'});PJ2.on=on;if(on){M2.R.pj2v='B';PJ2.list.push(M2.R);}M2.pivot.add(M2.R.root);}
   if(!M2.R){M2.R=makeSoldier(RIVAL_MAT,{variant:'B'});M2.pivot.add(M2.R.root);}
-  if(SKIN_ON)pj2SetPack(M2.R,SKINS[SKIN].pack);
   M2.wsig='';M2.cur=null;
 }
 // while you play: the room leaves the GPU (it comes back, rebuilt, with the menu); the operator and the guns are the
@@ -6574,7 +6614,7 @@ function m2Weapons(){
   if(R&&R.tp&&R.tp.rifle&&VMA.R){if(M2.held&&M2.held.parent)M2.held.parent.remove(M2.held);R.tp.rifle.visible=false;M2.held=m2GunClone();R.tp.rifle.parent.add(M2.held);}
   // the weapon on show (ARMAS): turned side-on, its centre at the origin
   if(M2.item&&M2.item.parent)M2.item.parent.remove(M2.item);M2.item=null;
-  if(M2.tab!=='armas'||!VMA.ready)return;
+  if(M2.tab!=='armas'||!VMA.ready||m2SkinWait(M2.cat))return;   // still downloading: the loader instead of the HALCÓN
   const inner=M2.cat==='knife'?m2KnifeClone():m2GunClone();inner.rotation.y=Math.PI/2;
   const it=new T.Group();it.add(inner);it.updateMatrixWorld(true);
   _m2b.setFromObject(inner);_m2b.getSize(_m2s);if(_m2s.y>_m2s.x*1.2){inner.rotation.z=-Math.PI/2;it.updateMatrixWorld(true);_m2b.setFromObject(inner);_m2b.getSize(_m2s);}
@@ -6589,7 +6629,7 @@ function m2Layout(dt){
   if(!M2.cur){const pane=$('#m2 .m2Pane[data-pane="'+(M2.tab==='ajustes'?M2.prevTab:M2.tab)+'"]'),st=pane&&pane.querySelector('[data-stage]');
     const r=st?st.getBoundingClientRect():{left:vw*0.3,top:vh*0.12,width:vw*0.4,height:vh*0.76};
     // MAPAS has no stage: the operator stays in the middle, behind the cards
-    M2.cur=Object.assign(SDMenu2.stageFrame(r,vw,vh,fov,M2.tab==='personaje'?1.95:2.05),{slot:M2.tab==='armas'?$('#m2Slot').getBoundingClientRect():null});
+    M2.cur=Object.assign(SDMenu2.stageFrame(r,vw,vh,fov,M2.tab==='personaje'?1.95:2.05),{st:r,slot:M2.tab==='armas'?$('#m2Slot').getBoundingClientRect():null});
     if(M2.tab==='armas'&&r.width<60)M2.cur.ox=-vw*0.36;}
   const F=M2.frame,C=M2.cur,k=dt>0.2?100:7;
   F.dist=SDMenu2.damp(F.dist,C.dist,k,dt);F.ox=SDMenu2.damp(F.ox,C.ox,k,dt);F.oy=SDMenu2.damp(F.oy,C.oy,k,dt);
@@ -6612,7 +6652,7 @@ function m2Frame(rdt){
   if(!M2.room)m2Wake();
   M2.t+=rdt;const dt=Math.min(rdt,0.1),now=performance.now();
   if(M2.sig!==m2Sig())m2Sync();
-  if(M2.R&&SKIN_ON&&M2.R.skinPack!==SKINS[SKIN].pack)pj2SetPack(M2.R,SKINS[SKIN].pack);
+  m2Operator();
   m2Weapons();
   // the operator: the game's idle animation with a rifle low, a little sway, and the turn you gave him (back to the
   // front a few seconds after you let go)
@@ -6622,7 +6662,9 @@ function m2Frame(rdt){
   M2.wIdle=SDMenu2.damp(M2.wIdle||0,idle?1:0,1.5,dt);
   const sw=SDMenu2.idleSway(M2.t);
   M2.pivot.rotation.set(0,M2_YAW0+M2.yaw+sw.yaw,sw.lean);M2.pivot.position.y=sw.bob;
-  M2.pivot.visible=M2.tab!=='mapas';   // MAPAS: the cards fill the screen, nobody stands between them
+  M2.pivot.visible=M2.tab!=='mapas'&&M2.opShown!==false;   // MAPAS: the cards fill the screen; and never a half-loaded operator
+  if(++M2.n%10===1)csFix(M2.pivot);   // the box figure's colours as in the game (CLÁSICO looked white)
+  const sw2=M2.tab==='armas'?m2SkinWait(M2.cat):'';setHidden($('#m2SlotLoad'),!sw2);if(sw2)setText($('#m2SlotTxt'),sw2);
   if(M2.R)animateSoldier(M2.R,{wpn:PRIMARY==='shotgun'?'shotgun':'rifle',vx:0,vz:0,pitch:M2_PITCH,aim:0,crouch:0},dt);
   M2.spin.rotation.set(0.1,M2.wYaw+M2.wIdle*Math.sin(M2.t*0.45)*0.4,0);   // on show: side-on, swinging gently
   M2.room.frame(M2.t);

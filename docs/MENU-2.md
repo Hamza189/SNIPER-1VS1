@@ -57,6 +57,21 @@ sombra de contacto pintada bajo el operador). Exposición propia (0,78) para que
 - `test/menu2.browser.test.js` — cada botón del menú nuevo, el de siempre intacto sin la bandera, JUGAR, la sala liberada
   al jugar, y el móvil en horizontal.
 
+## Correcciones del 03-11-2026 (vídeo del propietario en el PC)
+
+El propietario grabó el menú en su PC: «al principio parece ser que tarda bastante en cargar todos los personajes… hay
+varios fallos que hay que pulir». Visto en el vídeo y corregido:
+
+| Fallo | Causa | Arreglo |
+|---|---|---|
+| Al abrir el menú salía un soldado de cajas blanco durante segundos, y otra vez al cambiar de operador | El operador del menú nacía con el personaje por defecto (S.W.A.T. o FSB), que se descargaba antes que el tuyo, y mientras llegaba se veía la figura de cajas | El operador nace sin personaje y se descarga primero el tuyo. Mientras no está, no se ve nadie y sale «CARGANDO OPERADOR…». Al cambiar, el anterior se queda hasta que el nuevo está listo («CARGANDO MILITAR…»). En el PC, al pasar el ratón por un operador ya empieza a cargarse |
+| Al elegir una skin del rifle, la muestra seguía siendo el HALCÓN casi dos minutos (en partida también) | Las texturas 4K de las skins se descargan en cola (3 a la vez). La skin elegida antes (ÚLTIMA, 139 MB) seguía ocupando la cola y la nueva esperaba detrás | Las texturas de la skin elegida ahora pasan delante en la cola (también en partida). En ARMAS, mientras llega, sale «CARGANDO TITÁN · 40 %» en lugar del HALCÓN |
+| El CLÁSICO se veía blanco | A los colores de la figura de cajas les faltaba la corrección de color que el juego aplica a su escena | Se aplica también al operador del menú |
+| MAPAS: tarjetas pequeñas arriba y media pantalla vacía | Rejilla de 4 en fila | 2 × 2, del tamaño que permita la pantalla |
+
+La primera descarga de una skin 4K sigue tardando lo que tarda (ÚLTIMA son 139 MB). Después el navegador la guarda y
+la siguiente vez sale al momento.
+
 ## Pendiente
 
 - Que el propietario lo pruebe en el iPhone 15 Pro Max y en el PC y lo apruebe (o pida cambios). Hasta entonces sigue

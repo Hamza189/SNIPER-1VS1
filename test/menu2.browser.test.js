@@ -65,10 +65,21 @@ const wait = (p, fn, arg, ms) => p.waitForFunction(fn, arg, { timeout: ms || 120
     check('las tarjetas ARMAS y OPERADOR llevan a su sección', cards === 'armas,personaje', cards);
 
     console.log('\nPERSONAJE');
-    const pj = await p.evaluate(async () => { const S = __SD, out = []; for (const id of Object.keys(S.SKINS)) { document.querySelector('#m2PjList [data-skin="' + id + '"]').click(); for (let i = 0; i < 3; i++) S.advance(16);
+    const pj = await p.evaluate(async () => { const S = __SD, out = [], bad = []; let waitSeen = false, keptOld = false;
+      for (const id of Object.keys(S.SKINS)) { const before = S.M2.R.skinPack; document.querySelector('#m2PjList [data-skin="' + id + '"]').click();
+        const t = performance.now(); let first = true;
+        while (performance.now() - t < 120000) { S.advance(16); const R = S.M2.R;
+          // never the box figure in place of a realistic operator that is still on its way
+          if (S.M2.pivot.visible && S.SKINS[id].pack !== null && R.skinPack !== null && !R.v2) bad.push(id);
+          if (first && R.skinPack !== S.SKINS[id].pack && S.SKINS[id].pack) { if (R.skinPack === before) keptOld = true; if (!document.getElementById('m2Load').hidden && /CARGANDO/.test(document.getElementById('m2LoadTxt').textContent)) waitSeen = true; }
+          first = false;
+          if (R.skinPack === S.SKINS[id].pack && (S.SKINS[id].pack === null || R.v2)) break; await new Promise(r => setTimeout(r, 50)); }
         out.push(id + ':' + (S.SKIN === id) + ':' + (S.M2.R.skinPack === S.SKINS[id].pack) + ':' + (JSON.parse(localStorage.getItem('sniperduel_skin')) === id) + ':' + (document.getElementById('m2PjName').textContent === S.SKINS[id].name)); }
-      document.querySelector('#m2PjList [data-skin="fsb"]').click(); return out; });
-    check('cada operador: se elige, se guarda, lo lleva el de la sala y sale su nombre', pj.length === 5 && pj.every(x => !/false/.test(x)), pj.join(' '));
+      let lin = true; S.M2.R.root.traverse(o => { if (o.isMesh && o.visible && o.material && o.material.isMeshStandardMaterial && !o.material.userData.cs) lin = false; });
+      document.querySelector('#m2PjList [data-skin="fsb"]').click(); return { out, bad: [...new Set(bad)], waitSeen, keptOld, lin }; });
+    check('cada operador: se elige, se guarda, lo lleva el de la sala y sale su nombre', pj.out.length === 5 && pj.out.every(x => !/false/.test(x)), pj.out.join(' '));
+    check('nunca se ve el soldado de cajas mientras llega un operador realista; el anterior se queda y sale «CARGANDO…»', pj.bad.length === 0 && pj.keptOld && pj.waitSeen, JSON.stringify(pj));
+    check('el CLÁSICO con los colores del juego (no blanco: corrección de color aplicada)', pj.lin);
 
     console.log('\nARMAS');
     await p.evaluate(() => document.querySelector('#m2 .m2Nav [data-tab=armas]').click());
@@ -76,7 +87,9 @@ const wait = (p, fn, arg, ms) => p.waitForFunction(fn, arg, { timeout: ms || 120
       const names = o => { const n = []; o.traverse(x => n.push(x.name)); return n; };
       out.mira = S.MIRA.id === 'x4' && JSON.parse(localStorage.getItem('sniperduel_mira')) === 'x4';
       out.show = !!S.M2.item && names(S.M2.item).includes('mira_x4'); out.hands = !!S.M2.held && names(S.M2.held).includes('mira_x4');
-      document.querySelector('#m2Skins [data-ws=vector]').click();
+      document.querySelector('#m2Skins [data-ws=vector]').click(); S.advance(16);
+      out.wait = !document.getElementById('m2SlotLoad').hidden && /CARGANDO VECTOR/.test(document.getElementById('m2SlotTxt').textContent) && !S.M2.item;
+      out.first = S.KTX2.want('https://x/assets/armas/vector/ktx2/a.ktx2') && !S.KTX2.want('https://x/assets/armas/ratio/ktx2/a.ktx2');
       const t = performance.now(); while (!(S.WS_ST.rifle.cur === 'vector' && S.WS_ST.rifle.objs.length) && performance.now() - t < 90000) { await new Promise(r => setTimeout(r, 100)); S.advance(16); }
       for (let i = 0; i < 3; i++) S.advance(16);
       out.skin = S.WSKIN.rifle === 'vector' && JSON.parse(localStorage.getItem('sniperduel_wsRifle')) === 'vector';
@@ -92,6 +105,7 @@ const wait = (p, fn, arg, ms) => p.waitForFunction(fn, arg, { timeout: ms || 120
     check('mira: se elige y se guarda', arm.mira, JSON.stringify(arm));
     check('la mira elegida se ve en el arma de muestra y en las manos del operador', arm.show && arm.hands);
     check('skin del rifle: se elige, se guarda y se ve en la muestra y en sus manos', arm.skin && arm.skinShow && arm.skinHands && /VECTOR/.test(arm.title));
+    check('mientras se descarga: «CARGANDO VECTOR…» en su sitio (no el HALCÓN) y sus texturas pasan delante en la cola', arm.wait && arm.first);
     check('ARMA DE MANO: los dos cuchillos; el elegido se ve en la muestra', arm.knifePane && arm.knife);
     check('y todo vuelve a lo de siempre', arm.back);
 

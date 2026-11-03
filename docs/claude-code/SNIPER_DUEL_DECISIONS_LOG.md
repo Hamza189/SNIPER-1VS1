@@ -89,6 +89,20 @@ Detalle de cada cambio (antes/después, medidas, cómo revertir): `docs/next-lev
 | Personaje 3D rev. 03 hecho por Claude e integrado tras `?pj=2` (bots y rival online) | 20-10 · directo a `main` |
 | Personajes realistas + elegir personaje (con el SOLDADO de `?pj=2`) y HUD 2 por defecto (aprobado en iPhone y PC) | 28-10 · directo a `main` |
 
+## 03-11-2026 — MENÚ 2: correcciones tras el vídeo del propietario (carga de personajes y skins)
+Del propietario, con un vídeo del PC: «al principio parece ser que tarda bastante en cargar todos los personajes… hay
+varios fallos que hay que pulir». Detalle en `docs/MENU-2.md` (Correcciones del 03-11-2026).
+- El operador del menú ya no descarga un personaje por defecto: el tuyo primero. Nunca se ve la figura de cajas mientras
+  llega uno realista («CARGANDO OPERADOR…»). Al cambiar, el anterior se queda hasta que el nuevo está listo. En el PC
+  empieza a cargarse al pasar el ratón.
+- Cola de texturas KTX2 de las skins (`ktx2Queue`, también en partida): la skin elegida ahora pasa delante. Antes, al
+  cambiar de ÚLTIMA a otra, la nueva esperaba a que terminasen los 139 MB de ÚLTIMA (casi 2 min en el vídeo). En ARMAS
+  sale el progreso de la descarga.
+- CLÁSICO con sus colores (le faltaba la corrección de color en la sala). MAPAS en 2 × 2, grande.
+
+**Estado:** PROBADO EN NAVEGADOR (menu2.browser 34/34; ktx2, armas, pro, miras y browser en verde) · PENDIENTE DE
+VALIDACIÓN EN EL PC DEL PROPIETARIO Y EN IPHONE.
+
 ## 03-11-2026 — CASA ATLAS 2.0 aprobada: online, y CASA ATLAS XL retirada
 Del propietario: «Aprobada, súbela online».
 - `b7f5524`: el servidor recibe el mapa. `core/mapdata.js` con casa2 y una red ligera para sus bots; el protocolo admite ids
