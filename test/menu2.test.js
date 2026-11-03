@@ -13,9 +13,9 @@ const near = (a, b, e) => Math.abs(a - b) < (e || 1e-6);
 
 console.log('\nSECCIONES Y MAPAS');
 check('INICIO | PERSONAJE | ARMAS | MAPAS | AJUSTES', M.TABS.join('|') === 'inicio|personaje|armas|mapas|ajustes');
-check('los 4 mapas del juego, con nombre y descripción', M.MAPS.map(m => m.id).join() === 'arena,pueblo,casa,casaxl' && M.MAPS.every(m => m.name && m.sub));
-check('online: ARENA, PUEBLO y CASA ATLAS (los que tiene el servidor); CASA XL solo contra bots', M.MAPS.filter(m => m.online).map(m => m.id).join() === 'arena,pueblo,casa');
-check('CASA ATLAS y CASA XL marcadas como experimentales', M.MAPS.filter(m => m.exp).map(m => m.id).join() === 'casa,casaxl');
+check('los 4 mapas del juego, con nombre y descripción', M.MAPS.map(m => m.id).join() === 'arena,pueblo,casa,casa2' && M.MAPS.every(m => m.name && m.sub));
+check('online: los cuatro (el servidor los tiene); la CASA ATLAS XL, retirada, ya no sale', M.MAPS.filter(m => m.online).map(m => m.id).join() === 'arena,pueblo,casa,casa2' && !M.MAPS.some(m => m.id === 'casaxl'));
+check('CASA ATLAS marcada como experimental', M.MAPS.filter(m => m.exp).map(m => m.id).join() === 'casa');
 
 console.log('\nENCUADRE');
 // a vertical fov of 30°: a 2.05 m operator filling 94 % of a hole as tall as the screen

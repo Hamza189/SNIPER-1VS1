@@ -6511,12 +6511,13 @@ if (typeof module !== 'undefined' && module.exports) module.exports = SDMiras; e
 (function (root) {
 'use strict';
 const TABS = ['inicio', 'personaje', 'armas', 'mapas', 'ajustes'];
-// the maps of the game; online: the room's server knows it (ARENA, PUEBLO and CASA ATLAS; CASA XL only against bots)
+// the maps of the game; online: the room's server knows it (all four since CASA ATLAS 2.0 went online, 02-11-2026; the
+// CASA ATLAS XL was retired by the owner the same day)
 const MAPS = [
   { id: 'arena', name: 'ARENA', sub: 'Patio cerrado de 48 × 32 m · coberturas bajas y un bloque central', online: true },
   { id: 'pueblo', name: 'PUEBLO', sub: 'Pueblo abandonado · calles largas, tejados y torre del agua', online: true },
   { id: 'casa', name: 'CASA ATLAS', sub: 'Piso de 18 × 14 m · combate a corta distancia', online: true, exp: true },
-  { id: 'casaxl', name: 'CASA ATLAS XL', sub: 'Villa de 40 × 32 m · patio, jardín, garaje y calle', online: false, exp: true }
+  { id: 'casa2', name: 'CASA ATLAS 2.0', sub: '4 pisos de CASA ATLAS unidos · 43 × 33 m con patio central', online: true }
 ];
 const clamp = (v, a, b) => v < a ? a : v > b ? b : v;
 // frame-rate independent ease towards b (k = how fast, 1/s)
@@ -6653,7 +6654,7 @@ const SDMenu2 = { TABS, MAPS, clamp, damp, dampAngle, frameDist, stageFrame, slo
 if (typeof module !== 'undefined' && module.exports) module.exports = SDMenu2; else root.SDMenu2 = SDMenu2;
 })(typeof window !== 'undefined' ? window : globalThis);
 
-const BUILD_ID="902155c";const BUILD_HASH="fd543984a4";
+const BUILD_ID="b7f5524";const BUILD_HASH="7e35f9ff36";
 </script>
 <script>
 (function(){
@@ -11888,7 +11889,7 @@ const M2={on:!!store.get('menu2',false)&&typeof SDMenu2!=='undefined',tab:'inici
   room:null,cam:null,pivot:null,R:null,held:null,show:null,spin:null,item:null,showLight:null,
   yaw:0,yawV:0,wYaw:0,wYawV:0,drag:null,lastDrag:0,t:0,sig:'',wsig:'',held0:null,frame:{dist:5,ox:0,oy:0},cur:null,propose:false};
 const m2MapImg=id=>'assets/menu/mapa_'+id+'.jpg?v='+BUILD_HASH;
-const M2_MAPS=typeof SDMenu2!=='undefined'?SDMenu2.MAPS.filter(m=>m.id==='arena'||m.id==='pueblo'||(m.id==='casa'&&CASA.exp)||(m.id==='casaxl'&&CASA.exp&&XL.on)):[];
+const M2_MAPS=typeof SDMenu2!=='undefined'?SDMenu2.MAPS.filter(m=>m.id==='arena'||m.id==='pueblo'||(m.id==='casa'&&CASA.exp)||(m.id==='casa2'&&C2.exp)):[];
 const M2_DIFF=['RECLUTA','VETERANO','ÉLITE'],M2_TRAIN={off:'Dianas fijas y móviles',easy:'Bots de entrenamiento · FÁCIL',normal:'Bots de entrenamiento · NORMAL',hard:'Bots de entrenamiento · DIFÍCIL'};
 const m2MapName=id=>{const m=SDMenu2.MAPS.find(x=>x.id===id);return m?m.name:String(id).toUpperCase();};
 function m2Btn(cls,img,name,small,on){const c=document.createElement('button');c.type='button';c.className=cls;

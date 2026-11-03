@@ -101,7 +101,7 @@ const wait = (p, fn, arg, ms) => p.waitForFunction(fn, arg, { timeout: ms || 120
       const out = { ids: cards.map(c => c.dataset.map).join(), imgs: cards.every(c => c.querySelector('img').naturalWidth >= 640) };
       document.querySelector('#m2Maps [data-map=pueblo]').click(); out.off = __SD.OFFMAP; out.world = __SD.WORLD_ID; out.pressed = document.querySelector('#m2Maps [aria-pressed=true]').dataset.map;
       out.sub = document.getElementById('m2SubDuel').textContent; document.querySelector('#m2Maps [data-map=arena]').click(); return out; });
-    check('las tarjetas de los mapas del juego, con su vista real', maps.ids === 'arena,pueblo,casa,casaxl' && maps.imgs, JSON.stringify(maps));
+    check('las tarjetas de los mapas del juego, con su vista real', maps.ids === 'arena,pueblo,casa,casa2' && maps.imgs, JSON.stringify(maps));
     check('elegir un mapa es el mapa de VS BOTS', maps.off === 'pueblo' && maps.world === 'pueblo' && maps.pressed === 'pueblo' && /PUEBLO/.test(maps.sub));
 
     console.log('\nAJUSTES');

@@ -11,12 +11,13 @@
 (function (root) {
 'use strict';
 const TABS = ['inicio', 'personaje', 'armas', 'mapas', 'ajustes'];
-// the maps of the game; online: the room's server knows it (ARENA, PUEBLO and CASA ATLAS; CASA XL only against bots)
+// the maps of the game; online: the room's server knows it (all four since CASA ATLAS 2.0 went online, 02-11-2026; the
+// CASA ATLAS XL was retired by the owner the same day)
 const MAPS = [
   { id: 'arena', name: 'ARENA', sub: 'Patio cerrado de 48 × 32 m · coberturas bajas y un bloque central', online: true },
   { id: 'pueblo', name: 'PUEBLO', sub: 'Pueblo abandonado · calles largas, tejados y torre del agua', online: true },
   { id: 'casa', name: 'CASA ATLAS', sub: 'Piso de 18 × 14 m · combate a corta distancia', online: true, exp: true },
-  { id: 'casaxl', name: 'CASA ATLAS XL', sub: 'Villa de 40 × 32 m · patio, jardín, garaje y calle', online: false, exp: true }
+  { id: 'casa2', name: 'CASA ATLAS 2.0', sub: '4 pisos de CASA ATLAS unidos · 43 × 33 m con patio central', online: true }
 ];
 const clamp = (v, a, b) => v < a ? a : v > b ? b : v;
 // frame-rate independent ease towards b (k = how fast, 1/s)

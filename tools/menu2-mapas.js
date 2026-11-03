@@ -12,7 +12,7 @@ const VIEWS = {
   arena: ['arena', -23, 6, -15, -2.2, -0.3],
   pueblo: ['pueblo', 8, 9, -12, 2.83, -0.25],
   casa: ['casa', -4.3, 0, 4.6, -0.8, -0.03],
-  casaxl: ['casaxl', 9, 7, 19, 0.2, -0.33]
+  casa2: ['casa2', 0, 9, 21, 0, -0.42]
 };
 const ONLY = process.env.ONLY ? process.env.ONLY.split(',') : null;
 (async () => {
@@ -29,9 +29,9 @@ const ONLY = process.env.ONLY ? process.env.ONLY.split(',') : null;
   await p.waitForTimeout(2000);
   for (const [id, [world, x, y, z, yaw, pitch]] of Object.entries(VIEWS)) {
     if (ONLY && !ONLY.includes(id)) continue;
-    await p.evaluate(w => { __SD.setWorld(w); if (w === 'casa') __SD.casaLoad(); if (w === 'casaxl') __SD.casaxlLoad(); }, world);
+    await p.evaluate(w => { __SD.setWorld(w); if (w === 'casa') __SD.casaLoad(); if (w === 'casa2') __SD.casa2Load(); }, world);
     if (world === 'casa') await p.waitForFunction(() => __SD.CASA.ready || __SD.CASA.failed, null, { timeout: 180000 });
-    if (world === 'casaxl') await p.waitForFunction(() => __SD.XL.ready || __SD.XL.failed, null, { timeout: 240000 });
+    if (world === 'casa2') await p.waitForFunction(() => __SD.C2.ready || __SD.C2.failed, null, { timeout: 240000 });
     await p.waitForTimeout(2500);
     await p.evaluate(([world, x, y, z, yaw, pitch]) => {
       const S = __SD; S.setWorld(world); S.freeze(true); S.SHOT.noVM = true; S.MANUAL.on = true;
