@@ -19,7 +19,7 @@ async function until(p, fn, arg, ms) { try { await p.waitForFunction(fn, arg, { 
     console.log('\nPÁGINA PÚBLICA + SERVIDOR PÚBLICO: ' + page0);
     const A = await open('');
     check('la página pública carga el juego', await A.evaluate(() => !!window.THREE && document.getElementById('loadErr').hidden));
-    await A.click('#mpBtn'); await A.fill('#mpName', 'Prueba A'); await A.click('#mpCreate');
+    await A.click('#m2 .m2Mode[data-sel=online]'); await A.click('#m2Play'); await A.fill('#mpName', 'Prueba A'); await A.click('#mpCreate');
     check('A crea sala en el servidor público', await until(A, () => /^[A-Z0-9]{6}$/.test(document.getElementById('mpCodeBig').textContent), null, 15000), await A.textContent('#mpMsg'));
     const code = await A.textContent('#mpCodeBig');
     const B = await open('&sala=' + code);

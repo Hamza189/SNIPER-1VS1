@@ -25,7 +25,7 @@ function check(name, cond, info) { if (cond) { pass++; console.log('  ok   ' + n
     return { ctx, p, errs };
   };
   const create = async (P, name) => {
-    await P.p.click('#mpBtn'); await P.p.fill('#mpName', name); await P.p.click('#mpCreate');
+    await P.p.click('#m2 .m2Mode[data-sel=online]'); await P.p.click('#m2Play'); await P.p.fill('#mpName', name); await P.p.click('#mpCreate');
     await P.p.waitForFunction(() => /^[A-Z0-9]{6}$/.test(document.getElementById('mpCodeBig').textContent), null, { timeout: 15000 });
     return P.p.textContent('#mpCodeBig');
   };

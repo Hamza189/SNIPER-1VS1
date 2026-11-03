@@ -13,7 +13,6 @@ Detalle de cada cambio (antes/después, medidas, cómo revertir): `docs/next-lev
 |---|---|---|
 | **CASA ATLAS 2.0** (aprobada el 02-11, online el 03-11) — probarla en el iPhone contra bots y online con otra persona (menú › CASA ATLAS 2.0); la XL ya está retirada (`docs/CASA-ATLAS-2.md`) | Propietario | PUBLICADO · PROBADO ONLINE · PENDIENTE DE VALIDACIÓN EN IPHONE |
 | **Miras de ventana y botón de MIRA** (02-11) — en el iPhone: que la holográfica, la 2× y la 3× se vean enteras con la retícula dentro, y el botón «1,5×/2×…» del HUD que cambia de mira con un toque | Propietario | PUBLICADO · PENDIENTE DE VALIDACIÓN EN IPHONE |
-| **MENÚ 2** (02-11) — probar el menú nuevo en el iPhone y en el PC: `https://hamza189.github.io/SNIPER-1VS1/?menu=2` (INICIO con tu operador 3D, PERSONAJE, ARMAS con mira/skin/cuchillo en 3D, MAPAS, AJUSTES). Decir si pasa a ser el de por defecto; `?menu=1` vuelve al de siempre (`docs/MENU-2.md`) | Propietario | PUBLICADO TRAS BANDERA · PENDIENTE DE VALIDACIÓN EN IPHONE |
 | **Miras** (31-10) — probar en el iPhone las 8 miras, cada una con un solo aumento (menú › ficha del arma › Mira del rifle, o el inventario en partida): que el punto rojo y la holográfica se vean bien con el rifle a la vista y que el 2×, 3×, 4×, 6×, 8× y 12× tengan el aumento y el aspecto que esperas (`docs/MIRAS.md`) | Propietario | PUBLICADO · PENDIENTE DE VALIDACIÓN EN IPHONE |
 | **Parpadeo y menú** (31-10) — mirar en el iPhone que las fachadas lejanas ya no parpadean y que AJUSTES sale más pequeño; mandar MEDIR RENDIMIENTO para ver lo que cuesta el suavizado de bordes (se puede apagar en GRÁFICOS) (`docs/PARPADEO.md`) | Propietario | PUBLICADO · PENDIENTE DE VALIDACIÓN EN IPHONE |
 | **Game feel 3.0** — probar en el iPhone el movimiento TÁCTICO (ya es el del servidor), las animaciones nuevas (GF-2: esprint, salto, disparo, impacto y muerte sin saltos) y el CONTORNO rojo/azul; mandar MEDIR RENDIMIENTO con la línea «CPU por partes» (`docs/GAMEFEEL.md`) | Propietario | PUBLICADO · PENDIENTE DE VALIDACIÓN EN IPHONE |
@@ -88,6 +87,23 @@ Detalle de cada cambio (antes/después, medidas, cómo revertir): `docs/next-lev
 | Encargos para ChatGPT: CASA XL, CASA XL v2 y personaje | 18-10 / 19-10 |
 | Personaje 3D rev. 03 hecho por Claude e integrado tras `?pj=2` (bots y rival online) | 20-10 · directo a `main` |
 | Personajes realistas + elegir personaje (con el SOLDADO de `?pj=2`) y HUD 2 por defecto (aprobado en iPhone y PC) | 28-10 · directo a `main` |
+
+## 03-11-2026 (2) — MENÚ 2 pasa a ser el menú principal por defecto
+Del propietario, tras probarlo en el iPhone: «funciona mejor… al entrar al link original ya cargara el nuevo menú
+principal». El enlace normal abre el menú nuevo; `?menu=1` vuelve al de antes y se recuerda (`sniperduel_menuOld`; la
+bandera vieja `sniperduel_menu2` ya no cuenta, así que todos los dispositivos pasan al nuevo). El menú antiguo sigue en
+la página.
+- Como el menú nuevo no dibuja el mapa detrás, lo que antes hacía ese dibujo se hace aparte: las posiciones del mapa se
+  actualizan cada fotograma, sus sombreadores y texturas se preparan cuando cambia (y al pulsar JUGAR si aún no estaba:
+  sin tirón al empezar), y la cámara del juego sigue girando alrededor del mapa como antes (nivel de detalle, sombras).
+- MEDIR RENDIMIENTO espera a que tu operador y los personajes terminen de cargar antes de medir.
+- Pruebas que pulsaban botones del menú antiguo ahora recorren el nuevo (MULTIJUGADOR + JUGAR, AJUSTES en la barra,
+  OPCIONES DE PARTIDA, PERFIL y CAJAS arriba). Batería: 54 de 55 suites en verde. La que falla, `ajustes.browser` («FUEGO
+  izquierdo solo al apuntar»), ya fallaba en 7076310, antes de este cambio, también con `?menu=1`: queda pendiente.
+- WebGL por software: ARENA, el primer mapa de MEDIR RENDIMIENTO rápido, da menos fotogramas que con el menú antiguo
+  (≈25 frente a ≈45; PUEBLO y CASA 2.0 iguales). No sirve para FPS reales: confirmar con MEDIR RENDIMIENTO en el iPhone.
+
+**Estado:** POR DEFECTO · PROBADO EN NAVEGADOR · PROBADO POR EL PROPIETARIO EN IPHONE.
 
 ## 03-11-2026 — MENÚ 2: correcciones tras el vídeo del propietario (carga de personajes y skins)
 Del propietario, con un vídeo del PC: «al principio parece ser que tarda bastante en cargar todos los personajes… hay

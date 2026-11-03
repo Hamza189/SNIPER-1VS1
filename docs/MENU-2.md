@@ -1,13 +1,14 @@
-# MENÚ 2 — el menú principal nuevo (experimental)
+# MENÚ 2 — el menú principal (por defecto desde el 03-11-2026)
 
 Pedido por el propietario el 02-11-2026 con dos imágenes de referencia: «la sala oscura debería ser la referencia
 principal; la primera sirve para organizar el botón JUGAR, las tarjetas y la navegación». Construido con los recursos
 del juego, sin imágenes generadas como fondo.
 
-- **Cómo verlo:** `https://hamza189.github.io/SNIPER-1VS1/?menu=2` (se recuerda en el dispositivo).
-- **Volver al de siempre:** `?menu=1` (también se recuerda). El menú antiguo no se ha tocado: sigue en la página entera.
-- **Estado:** IMPLEMENTADO · PROBADO EN NAVEGADOR (PC y tamaño iPhone, Chromium) · PENDIENTE DE VALIDACIÓN EN IPHONE Y
-  DE APROBACIÓN. Hasta que el propietario lo apruebe, lo de por defecto sigue siendo el menú de siempre.
+- **Por defecto** desde el 03-11-2026: el propietario lo probó en el iPhone («funciona mejor») y pidió que el enlace
+  normal (`https://hamza189.github.io/SNIPER-1VS1/`) abra ya este menú.
+- **Volver al de antes:** `?menu=1` (se recuerda en el dispositivo, `sniperduel_menuOld`); `?menu=2` vuelve al nuevo. El
+  menú antiguo no se ha borrado: sigue entero en la página.
+- **Estado:** POR DEFECTO · PROBADO EN NAVEGADOR (PC y tamaño iPhone) · PROBADO POR EL PROPIETARIO EN IPHONE (03-11).
 
 ## Qué hay
 
@@ -74,7 +75,5 @@ la siguiente vez sale al momento.
 
 ## Pendiente
 
-- Que el propietario lo pruebe en el iPhone 15 Pro Max y en el PC y lo apruebe (o pida cambios). Hasta entonces sigue
-  tras `?menu=2`.
 - Medir en el iPhone los FPS del menú (el contador de AJUSTES › GRÁFICOS sirve también en el menú).
-- Si se aprueba: hacerlo lo de por defecto y dejar `?menu=1` para el antiguo.
+- Si pasado un tiempo nadie usa `?menu=1`, se podrá retirar el menú antiguo (pidiéndolo antes al propietario).

@@ -239,7 +239,7 @@ function fingers(cdp) {
     console.log('\nONLINE CON ?hud=2 (servidor local)');
     { const gs = await startServer({ port: 0, debug: true }), server = 'http://127.0.0.1:' + gs.port;
       const A = (await page(b, base + '&hud=2&server=' + encodeURIComponent(server), { vp: { width: 667, height: 375 } })).p;
-      await A.click('#mpBtn'); await A.fill('#mpName', 'Hamza'); await A.click('#mpCreate');
+      await A.click('#m2 .m2Mode[data-sel=online]'); await A.click('#m2Play'); await A.fill('#mpName', 'Hamza'); await A.click('#mpCreate');
       await until(A, () => /^[A-Z0-9]{6}$/.test(document.getElementById('mpCodeBig').textContent));
       const code = await A.textContent('#mpCodeBig');
       const B = (await page(b, base + '&server=' + encodeURIComponent(server) + '&sala=' + code, { vp: { width: 667, height: 375 } })).p;

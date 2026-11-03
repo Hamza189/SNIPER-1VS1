@@ -32,13 +32,13 @@ function check(name, cond, info) { if (cond) { pass++; console.log('  ok   ' + n
     await duel(A.p);
     await A.p.waitForTimeout(400);
     check('al empezar el reloj marca 10:00 (o 9:59) bajo el marcador', await A.p.evaluate(() => !document.getElementById('clock').hidden && /^(10:00|9:59)$/.test(document.getElementById('clock').textContent)), await A.p.textContent('#clock'));
-    await A.p.evaluate(() => __SD.toMenu()); await A.p.click('#offTimeSeg [data-t="5"]');
+    await A.p.evaluate(() => __SD.toMenu()); await A.p.click('#m2Opts'); await A.p.click('#offTimeSeg [data-t="5"]'); await A.p.click('#m2SheetClose');   // MENÚ 2: OPCIONES DE PARTIDA
     await duel(A.p);
     check('5 MIN en el menú: el reloj empieza en 5:00 y se guarda', await A.p.waitForFunction(() => /^(5:00|4:59)$/.test(document.getElementById('clock').textContent), null, { timeout: 5000 }).then(() => true, () => false) && await A.p.evaluate(() => JSON.parse(localStorage.getItem('sniperduel_offTime')) === 5));
     await A.p.evaluate(() => { __SD.STATS.start -= 300; });
     check('se acaba el tiempo 0–0: EMPATE, «Se acabó el tiempo»', await A.p.waitForFunction(() => __SD.state === 'over', null, { timeout: 5000 }).then(() => true, () => false)
       && await A.p.evaluate(() => document.getElementById('overTitle').textContent === 'EMPATE' && /Se acabó el tiempo/.test(document.getElementById('overEyebrow').textContent)));
-    await A.p.evaluate(() => __SD.toMenu()); await A.p.click('#offTimeSeg [data-t="0"]'); await duel(A.p);
+    await A.p.evaluate(() => __SD.toMenu()); await A.p.click('#m2Opts'); await A.p.click('#offTimeSeg [data-t="0"]'); await A.p.click('#m2SheetClose'); await duel(A.p);   // MENÚ 2: OPCIONES DE PARTIDA
     check('SIN LÍMITE: no hay reloj', await A.p.evaluate(() => document.getElementById('clock').hidden));
 
     console.log('\nMINIMAPA');
@@ -69,7 +69,7 @@ function check(name, cond, info) { if (cond) { pass++; console.log('  ok   ' + n
 
     console.log('\nAJUSTES DE SALA ONLINE');
     const H = await open('&pj=0');
-    await H.p.click('#mpBtn'); await H.p.fill('#mpName', 'Hamza'); await H.p.click('#mpCreate');
+    await H.p.click('#m2 .m2Mode[data-sel=online]'); await H.p.click('#m2Play'); await H.p.fill('#mpName', 'Hamza'); await H.p.click('#mpCreate');
     await H.p.waitForFunction(() => /^[A-Z0-9]{6}$/.test(document.getElementById('mpCodeBig').textContent), null, { timeout: 15000 });
     const sala = await H.p.textContent('#mpCodeBig');
     const N = await open('&pj=0&sala=' + sala);

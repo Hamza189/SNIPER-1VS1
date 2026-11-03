@@ -1,5 +1,5 @@
 /* MENÚ 2 en el juego (?menu=2, 02-11-2026): el menú nuevo, botón por botón, y el de siempre intacto.
-   - sin bandera: el menú de siempre, sin nada del nuevo
+   - el enlace normal abre el menú nuevo (por defecto desde el 03-11-2026); ?menu=1, el de antes, intacto
    - ?menu=2: la sala 3D con tu operador y tu rifle; las cinco secciones de la barra de abajo
    - INICIO: MULTIJUGADOR abre las salas, VS BOTS y CAMPO DE TIRO son los modos del juego, OPCIONES DE PARTIDA lleva
      los bloques del menú de siempre (dificultad, tiempo, bots de entrenamiento, arma principal, sensibilidad)
@@ -28,24 +28,24 @@ const wait = (p, fn, arg, ms) => p.waitForFunction(fn, arg, { timeout: ms || 120
     p.on('pageerror', e => errs.push(e.message));
     await p.addInitScript(() => { HTMLCanvasElement.prototype.requestPointerLock = function () {}; });
 
-    console.log('\nSIN BANDERA: EL MENÚ DE SIEMPRE');
-    await p.goto(srv.url + '?ktx2=0', { timeout: 180000 });
+    console.log('\n?menu=1: EL MENÚ DE ANTES');
+    await p.goto(srv.url + '?ktx2=0&menu=1', { timeout: 180000 });
     await wait(p, () => window.__SD && __SD.WORLDS && __SD.VMA.ready);
     const d0 = await p.evaluate(() => ({ m2: !document.getElementById('m2').hidden, cls: document.body.classList.contains('m2'), inner: getComputedStyle(document.querySelector('#menu .menuInner')).display, diff: !!document.querySelector('#menu .menuInner #diffBlock'), room: !!__SD.M2.room }));
-    check('sin ?menu=2 no hay nada del menú nuevo y los bloques siguen en su sitio', !d0.m2 && !d0.cls && d0.inner !== 'none' && d0.diff && !d0.room, JSON.stringify(d0));
+    check('con ?menu=1 no hay nada del menú nuevo y los bloques siguen en su sitio', !d0.m2 && !d0.cls && d0.inner !== 'none' && d0.diff && !d0.room, JSON.stringify(d0));
 
-    console.log('\n?menu=2');
+    console.log('\nEL MENÚ NUEVO (?menu=2 lo vuelve a poner tras ?menu=1)');
     await p.goto(srv.url + '?ktx2=0&menu=2', { timeout: 180000 });
     await wait(p, () => window.__SD && __SD.VMA.ready && __SD.M2.room && __SD.M2.held);
     const d1 = await p.evaluate(() => { const S = __SD; S.advance(16); const r = S.renderer.info.render;
       return { m2: !document.getElementById('m2').hidden, inner: getComputedStyle(document.querySelector('#menu .menuInner')).display, tabs: [...document.querySelectorAll('#m2 .m2Nav button')].map(x => x.textContent.trim()).join('|'),
         sel: document.querySelector('#m2 .m2Nav [aria-selected=true]').dataset.tab, calls: r.calls, tris: r.triangles, held: !!S.M2.held && !!S.M2.held.parent, op: !!S.M2.R && S.M2.R.root.parent === S.M2.pivot,
-        stored: localStorage.getItem('sniperduel_menu2') }; });
+        stored: localStorage.getItem('sniperduel_menuOld') }; });
     check('se ve el menú nuevo y no el de siempre', d1.m2 && d1.inner === 'none', JSON.stringify(d1));
     check('barra de abajo: INICIO | PERSONAJE | ARMAS | MAPAS | AJUSTES, INICIO elegida', d1.tabs === 'INICIO|PERSONAJE|ARMAS|MAPAS|AJUSTES' && d1.sel === 'inicio', d1.tabs);
     check('la sala 3D: el operador del juego con tu rifle en las manos', d1.op && d1.held);
     check('ligera: menos de 150 llamadas de dibujo', d1.calls > 0 && d1.calls < 150, d1.calls + ' llamadas, ' + d1.tris + ' triángulos');
-    check('la bandera se recuerda', d1.stored === 'true');
+    check('?menu=2 deshace ?menu=1 (se recuerda)', d1.stored === 'false');
 
     console.log('\nINICIO');
     const mode = await p.evaluate(() => { const out = {}; const c = s => document.querySelector('#m2 .m2Mode[data-sel=' + s + ']').click();
@@ -143,7 +143,7 @@ const wait = (p, fn, arg, ms) => p.waitForFunction(fn, arg, { timeout: ms || 120
     await c2.route(/fonts\.(googleapis|gstatic)\.com/, r => r.abort());
     const q = await c2.newPage(), e2 = [];
     q.on('pageerror', e => e2.push(e.message));
-    await q.goto(srv.url + '?ktx2=0&menu=2', { timeout: 180000 });
+    await q.goto(srv.url + '?ktx2=0', { timeout: 180000 });   // the plain link: the new menu, nothing in the URL
     await wait(q, () => window.__SD && __SD.M2.room);
     const ph = await q.evaluate(() => { const out = {}; const inView = el => { const r = el.getBoundingClientRect(); return r.width > 0 && r.left >= -1 && r.top >= -1 && r.right <= innerWidth + 1 && r.bottom <= innerHeight + 1; };
       for (const t of ['inicio', 'personaje', 'armas', 'mapas']) { document.querySelector('#m2 .m2Nav [data-tab=' + t + ']').click();
@@ -165,8 +165,8 @@ const wait = (p, fn, arg, ms) => p.waitForFunction(fn, arg, { timeout: ms || 120
     check('sin errores (móvil)', e2.length === 0, e2.slice(0, 3).join(' | '));
     await q.goto(srv.url + '?ktx2=0&menu=1', { timeout: 180000 });
     await wait(q, () => window.__SD && __SD.WORLDS);
-    const back = await q.evaluate(() => ({ m2: !document.getElementById('m2').hidden, stored: localStorage.getItem('sniperduel_menu2') }));
-    check('?menu=1 devuelve el menú de siempre (y se recuerda)', !back.m2 && back.stored === 'false', JSON.stringify(back));
+    const back = await q.evaluate(() => ({ m2: !document.getElementById('m2').hidden, stored: localStorage.getItem('sniperduel_menuOld') }));
+    check('?menu=1 devuelve el menú de antes (y se recuerda)', !back.m2 && back.stored === 'true', JSON.stringify(back));
     await c2.close();
   } catch (e) { fail++; console.log('  FAIL ' + (e && e.stack || e)); }
   await b.close(); srv.close();

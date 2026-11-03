@@ -35,7 +35,7 @@ function check(name, cond, info) { if (cond) { pass++; console.log('  ok   ' + n
     console.log('\nCAJAS SIN CUENTA');
     const A = await open();
     check('el menú tiene el botón CAJAS', await A.p.evaluate(() => !document.getElementById('openInv').hidden && /CAJAS/.test(document.getElementById('openInv').textContent)));
-    await A.p.click('#openInv');
+    await A.p.click('#m2Inv');
     check('sin cuenta: invita a crearla y todo está bloqueado salvo «de serie»', await A.p.evaluate(() => !!document.querySelector('#invHead [data-inv="perfil"]')
       && [...document.querySelectorAll('#invGrid .invCard')].every((c, i) => i === 0 ? !c.disabled : c.disabled && c.classList.contains('lock'))));
     await shot(A.p, 'cajas-sin-cuenta');
@@ -93,7 +93,7 @@ function check(name, cond, info) { if (cond) { pass++; console.log('  ok   ' + n
     await A.p.evaluate(() => __SD.toMenu());
 
     console.log('\nEL TÍTULO EN LA SALA ONLINE');
-    await A.p.click('#mpBtn'); await A.p.fill('#mpName', 'Hamza'); await A.p.click('#mpCreate');
+    await A.p.click('#m2 .m2Mode[data-sel=online]'); await A.p.click('#m2Play'); await A.p.fill('#mpName', 'Hamza'); await A.p.click('#mpCreate');
     await A.p.waitForFunction(() => /^[A-Z0-9]{6}$/.test(document.getElementById('mpCodeBig').textContent), null, { timeout: 15000 });
     const sala = await A.p.textContent('#mpCodeBig');
     const B = await open('&sala=' + sala);

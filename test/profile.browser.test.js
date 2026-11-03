@@ -28,7 +28,7 @@ function check(name, cond, info) { if (cond) { pass++; console.log('  ok   ' + n
     await off.ctx.close();
     const A = await open('');
     check('sin bandera (= ?pj=pro desde el 28-10) sale PERFIL junto a AJUSTES y se ve entero, y el personaje es el SOLDADO', await A.p.evaluate(() => __SD.SKIN === 'soldado' && document.querySelectorAll('#skinGrid .skinCard').length === 5) && await A.p.evaluate(() => { const r = document.getElementById('openProfile').getBoundingClientRect(); return !document.getElementById('openProfile').hidden && r.bottom <= innerHeight && r.right <= innerWidth; }));
-    await A.p.click('#openProfile');
+    await A.p.click('#m2Me');
     await A.p.fill('#profName', 'Hamza'); await A.p.press('#profName', 'Tab');
     check('el apodo del perfil es el nombre del online', await A.p.evaluate(() => __SD.PROFILE.name === 'Hamza' && document.getElementById('mpName').value === 'Hamza' && JSON.parse(localStorage.getItem('sniperduel_mpName')) === 'Hamza'));
     await A.p.click('#profOv .skinPick');
@@ -48,7 +48,7 @@ function check(name, cond, info) { if (cond) { pass++; console.log('  ok   ' + n
     const code = await A.p.textContent('#profCode');
     check('COPIAR CÓDIGO enseña el código (SD1.…)', /^SD1\./.test(code), code.slice(0, 20) + '…');
     const B = await open('&pj=pro');
-    await B.p.click('#openProfile'); await B.p.click('#profPaste');
+    await B.p.click('#m2Me'); await B.p.click('#profPaste');
     await B.p.fill('#profIn', code.slice(0, -1) + (code.slice(-1) === 'a' ? 'b' : 'a')); await B.p.click('#profPaste');
     check('un código mal copiado se rechaza', /no es válido/.test(await B.p.textContent('#profMsg')));
     await B.p.fill('#profIn', code); await B.p.click('#profPaste');

@@ -33,7 +33,7 @@ async function until(page, fn, arg, ms) { try { await page.waitForFunction(fn, a
   try {
     console.log('\nPARTIDA 1v1 EN DOS NAVEGADORES REALES (servidor local)');
     const A = await open('');
-    await A.click('#mpBtn'); await A.fill('#mpName', 'Hamza'); await A.click('#mpCreate');
+    await A.click('#m2 .m2Mode[data-sel=online]'); await A.click('#m2Play'); await A.fill('#mpName', 'Hamza'); await A.click('#mpCreate');
     if (process.env.SHOTS) { await sleep(300); await A.screenshot({ path: process.env.SHOTS + '/lobby-movil.png' }); }
     check('A crea la sala y ve el código', await until(A, () => /^[A-Z0-9]{6}$/.test(document.getElementById('mpCodeBig').textContent)));
     const code = await A.textContent('#mpCodeBig');

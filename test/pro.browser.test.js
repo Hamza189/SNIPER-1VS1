@@ -18,7 +18,7 @@ async function open(b, url, q, phone) {
   p.on('pageerror', e => errs.push(e.message));
   p.on('console', m => { if (/pj2/.test(m.text())) errs.push(m.text()); });
   p.on('response', r => { const u = r.url(); if (/\/assets\//.test(u) && r.status() >= 400) bad.push(r.status() + ' ' + u.replace(/^.*\/assets\//, '')); if (/\/assets\/personaje\/pro\//.test(u)) files.push(u.replace(/^.*\/assets\/personaje\/pro\//, '').replace(/\?.*/, '')); });
-  await p.goto(url + '&ktx2=0');   // these checks are about the JPG files (KTX2 by default since 29-10: test/ktx2.browser.test.js)
+  await p.goto(url + '&ktx2=0', { timeout: 180000 });   // (the same margin as the other browser tests: a second page loads slowly while the first draws 4K characters in software) these checks are about the JPG files (KTX2 by default since 29-10: test/ktx2.browser.test.js)
   await p.waitForFunction(() => window.__SD && __SD.WORLDS, null, { timeout: 120000 });
   await p.evaluate(() => { __SD.setDuelLethal(false); __SD.setMode('duel'); __SD.setOffMap('arena'); __SD.startMatch(); });
   await p.waitForTimeout(1500);
@@ -43,7 +43,8 @@ const zones = p => p.evaluate(() => __SD.BOTS.map(b => b.hit.map(m => [m.userDat
     const ra = await A.p.evaluate(() => ({ roots: Object.keys(__SD.PJ2.tpls).sort(), botTpl: __SD.BOTS[0].rig.v2.meshes[0].geometry.index.count / 3, rivalTpl: __R.v2.meshes[0].geometry.index.count / 3,
       tex: __SD.BOTS[0].rig.v2.meshes[0].material.map && __SD.BOTS[0].rig.v2.meshes[0].material.map.image && __SD.BOTS[0].rig.v2.meshes[0].material.map.image.width,
       oldHidden: __SD.BOTS[0].rig.root.children.filter(c => c !== __SD.BOTS[0].rig.v2.root).every(c => !c.visible) }));
-    check('los bots llevan op3 (FSB) y el rival online op2 (S.W.A.T.)', okA && ra.roots.join() === 'assets/personaje/pro/op2/,assets/personaje/pro/op3/' && ra.botTpl !== ra.rivalTpl, ra.roots.join(' '));
+    // (+ assets/personaje/: the SOLDADO, your operator in the menu's room since 03-11-2026)
+    check('los bots llevan op3 (FSB) y el rival online op2 (S.W.A.T.)', okA && ra.roots.join() === 'assets/personaje/,assets/personaje/pro/op2/,assets/personaje/pro/op3/' && ra.botTpl !== ra.rivalTpl, ra.roots.join(' '));
     check('texturas 4K en ALTO', ra.tex === 4096, ra.tex);
     check('el soldado de cajas queda oculto (sigue existiendo: es la vuelta atrás)', ra.oldHidden);
     check('sin 404 ni errores', A.bad.length === 0 && A.errs.length === 0, A.bad.concat(A.errs).slice(0, 3).join(' | ') || A.files.join(' '));
@@ -68,7 +69,7 @@ const zones = p => p.evaluate(() => __SD.BOTS.map(b => b.hit.map(m => [m.userDat
     const M = await open(b, srv.url + '?vm=1&pj=pro', 'medio');
     const okM = await M.p.waitForFunction(() => __SD.BOTS.every(b => b.rig.v2), null, { timeout: 180000 }).then(() => true, () => false);
     const rm = await M.p.evaluate(() => Object.keys(__SD.PJ2.tpls));
-    check('MEDIO: todos con op4 y no se descargan op2/op3', okM && rm.join() === 'assets/personaje/pro/op4/' && M.files.every(f => f.startsWith('op4/')), M.files.join(' '));
+    check('MEDIO: todos con op4 (y tu SOLDADO en el menú) y no se descargan op2/op3', okM && rm.sort().join() === 'assets/personaje/,assets/personaje/pro/op4/' && M.files.every(f => f.startsWith('op4/')), rm.join(' ') + ' · ' + M.files.join(' '));
     check('MEDIO: sin 404 ni errores', M.bad.length === 0 && M.errs.length === 0, M.bad.concat(M.errs).slice(0, 3).join(' | '));
     await M.ctx.close();
 
@@ -112,10 +113,10 @@ const zones = p => p.evaluate(() => __SD.BOTS.map(b => b.hit.map(m => [m.userDat
     const OA = await on('fsb'), OB = await on('militar');
     const ui = await OA.p.evaluate(() => ({ shown: !document.getElementById('skinBlock').hidden, name: document.querySelector('#skinBlock .skinPick b').textContent, cards: document.querySelectorAll('#skinGrid .skinCard').length }));
     check('el menú muestra «Tu personaje» con el elegido y la ventana tiene los 5 (con el SOLDADO de ?pj=2)', ui.shown && ui.name === 'FSB' && ui.cards === 5, JSON.stringify(ui));
-    await OA.p.click('#mpBtn'); await OA.p.fill('#mpName', 'Hamza'); await OA.p.click('#mpCreate');
+    await OA.p.click('#m2 .m2Mode[data-sel=online]'); await OA.p.click('#m2Play'); await OA.p.fill('#mpName', 'Hamza'); await OA.p.click('#mpCreate');
     await OA.p.waitForFunction(() => /^[A-Z0-9]{6}$/.test(document.getElementById('mpCodeBig').textContent), null, { timeout: 15000 });
     const code = await OA.p.textContent('#mpCodeBig');
-    await OB.p.click('#mpBtn'); await OB.p.fill('#mpName', 'Novia'); await OB.p.fill('#mpCode', code); await OB.p.click('#mpJoin');
+    await OB.p.click('#m2 .m2Mode[data-sel=online]'); await OB.p.click('#m2Play'); await OB.p.fill('#mpName', 'Novia'); await OB.p.fill('#mpCode', code); await OB.p.click('#mpJoin');
     const inLobby = await OA.p.waitForFunction(() => /MILITAR/.test(document.getElementById('mpPlayers').textContent) && /FSB/.test(document.getElementById('mpPlayers').textContent), null, { timeout: 15000 }).then(() => true, () => false);
     check('en la sala cada uno ve el personaje del otro', inLobby, await OA.p.textContent('#mpPlayers'));
     // B cambia de personaje en la sala: A lo ve al momento (el SOLDADO, nuevo el 28-10, lo acepta el servidor)

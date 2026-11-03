@@ -30,7 +30,7 @@ async function open(b, url, opts) {
 
   console.log('\nSIN ?casa=1');
   { const o = await open(b, srv.url + '?vm=0'); await o.p.waitForTimeout(1500);
-    const r = await o.p.evaluate(() => ({ btn: [...document.querySelectorAll('[data-map=casa]')].map(x => x.hidden), exp: __SD.CASA.exp, built: !!__SD.WORLDS.casa }));
+    const r = await o.p.evaluate(() => ({ btn: [...document.querySelectorAll('#mapSeg [data-map=casa],#mpMapSeg [data-map=casa]')].map(x => x.hidden), exp: __SD.CASA.exp, built: !!__SD.WORLDS.casa }));
     // since 18-10-2026 every map is offered in the menu (owner); ?casa=0 still hides the experimental ones
     check('el botón CASA ATLAS aparece en los dos menús (duelo y online)', r.btn.length === 2 && r.btn.every(h => !h), JSON.stringify(r.btn));
     check('el mapa existe y se ofrece', r.built && r.exp);
@@ -39,7 +39,7 @@ async function open(b, url, opts) {
 
   console.log('\nCON ?casa=1 · DUELO VS BOTS');
   const o = await open(b, srv.url + '?vm=1&casa=1', { diff: 1 }), p = o.p;
-  const m0 = await p.evaluate(() => ({ btn: [...document.querySelectorAll('[data-map=casa]')].map(x => x.hidden), exp: __SD.CASA.exp, stored: localStorage.getItem('sniperduel_casaExp') }));
+  const m0 = await p.evaluate(() => ({ btn: [...document.querySelectorAll('#mapSeg [data-map=casa],#mpMapSeg [data-map=casa]')].map(x => x.hidden), exp: __SD.CASA.exp, stored: localStorage.getItem('sniperduel_casaExp') }));
   check('con ?casa=1 aparece en DUELO VS BOTS y en ONLINE, y se recuerda', m0.btn.every(h => !h) && m0.exp && m0.stored === 'true');
   await p.evaluate(() => { __SD.setMode('duel'); document.querySelector('#mapSeg [data-map=casa]').click(); __SD.startMatch(); });
   await p.waitForFunction(() => __SD.state === 'playing' && __SD.CASA.ready, null, { timeout: 120000 });

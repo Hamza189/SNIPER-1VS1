@@ -6655,7 +6655,7 @@ const SDMenu2 = { TABS, MAPS, clamp, damp, dampAngle, frameDist, stageFrame, slo
 if (typeof module !== 'undefined' && module.exports) module.exports = SDMenu2; else root.SDMenu2 = SDMenu2;
 })(typeof window !== 'undefined' ? window : globalThis);
 
-const BUILD_ID="869fd42";const BUILD_HASH="b0ae4386d6";
+const BUILD_ID="e8ac4b5";const BUILD_HASH="7d973e3f42";
 </script>
 <script>
 (function(){
@@ -10189,6 +10189,7 @@ function startMatch(){
   audioInit();SFX.ui();
   const df=DIFFS[diff];
   setWorld(offWorld());
+  if(M2.on)m2Warm(performance.now(),true);   // MENÚ 2: the map was not drawn in the menu; ready now if it was not yet
   // CASA ATLAS: its GLB loads the first time; the match starts when it is there (or without it if it fails: the boxes are what count)
   if(WORLD_ID==='casa2'&&!C2.ready&&!C2.failed){$('#modeSub').textContent='Cargando CASA ATLAS 2.0…';if(!C2.wait.includes(startMatch))C2.wait.push(startMatch);casa2Load();return;}
   if(WORLD_ID==='casa'&&!CASA.ready&&!CASA.failed){$('#modeSub').textContent='Cargando CASA ATLAS…';if(!CASA.wait.includes(startMatch))CASA.wait.push(startMatch);casaLoad();return;}
@@ -11802,15 +11803,16 @@ function miniFrame(){
 
 /* =================== LOOP =================== */
 /* =================== MENÚ 2 (?menu=2, 02-11-2026, client/menu2.js, docs/MENU-2.md) ===================
-   The new main menu, experimental until the owner approves it: ?menu=2 turns it on (and is remembered), ?menu=1 brings
-   back the menu of always. INICIO | PERSONAJE | ARMAS | MAPAS | AJUSTES over a dark tactical room where your operator
+   The main menu since 03-11-2026 (owner, after trying it on the iPhone: «funciona mejor… al entrar al link original ya
+   cargara el nuevo menú principal»). ?menu=1 brings back the menu of before (remembered: sniperduel_menuOld), ?menu=2
+   the new one again. INICIO | PERSONAJE | ARMAS | MAPAS | AJUSTES over a dark tactical room where your operator
    (the character you play with, the game's own GLB) stands with your rifle (the one in your hands: skin, optic and
    camouflage) and can be turned with the mouse or a finger. Every choice is the game's own setter (setSkin, setWskin,
    setMira, setOffMap, setMode…): nothing new is saved and nothing reaches the server that did not before. The menu's
    own blocks (difficulty, time, training bots, main weapon, sensitivity) are moved, as they are, into OPCIONES DE
    PARTIDA, and AJUSTES opens the settings of always. While you play the room is freed and nothing of it is drawn. */
-{const q=location.search.match(/[?&]menu=([12])\b/);if(q)store.set('menu2',q[1]==='2');}
-const M2={on:!!store.get('menu2',false)&&typeof SDMenu2!=='undefined',tab:'inicio',prevTab:'inicio',cat:'rifle',sel:'duel',
+{const q=location.search.match(/[?&]menu=([12])\b/);if(q)store.set('menuOld',q[1]==='1');}
+const M2={on:store.get('menuOld',false)!==true&&typeof SDMenu2!=='undefined',tab:'inicio',prevTab:'inicio',cat:'rifle',sel:'duel',
   room:null,cam:null,pivot:null,R:null,held:null,show:null,spin:null,item:null,showLight:null,
   n:0,yaw:0,yawV:0,wYaw:0,wYawV:0,drag:null,lastDrag:0,t:0,sig:'',wsig:'',held0:null,frame:{dist:5,ox:0,oy:0},cur:null,propose:false};
 const m2MapImg=id=>'assets/menu/mapa_'+id+'.jpg?v='+BUILD_HASH;
@@ -11832,7 +11834,7 @@ function m2Init(){
   // modes: VS BOTS and CAMPO DE TIRO are the game's modes; MULTIJUGADOR opens the room screen of always
   M2.sel=store.get('m2Sel',mode);if(!['online','duel','range'].includes(M2.sel))M2.sel=mode;
   document.querySelectorAll('#m2 .m2Mode').forEach(b=>b.addEventListener('click',()=>{audioInit();SFX.ui();M2.sel=b.dataset.sel;store.set('m2Sel',M2.sel);if(M2.sel!=='online')setMode(M2.sel);m2Sync();}));
-  $('#m2Play').addEventListener('click',()=>{if(M2.sel==='online'){$('#mpBtn').click();return;}if(mode!==M2.sel)setMode(M2.sel);startMatch();});
+  $('#m2Play').addEventListener('click',()=>{if(M2.sel==='online'){$('#mpBtn').click();return;}startMatch();});
   document.querySelectorAll('#m2 .m2Card').forEach(b=>b.addEventListener('click',()=>{audioInit();SFX.ui();m2Tab(b.dataset.go);}));
   document.querySelectorAll('#m2 .m2Nav button').forEach(b=>b.addEventListener('click',()=>{audioInit();SFX.ui();m2Tab(b.dataset.tab);}));
   $('#m2Me').addEventListener('click',()=>{audioInit();SFX.ui();if(PROFILE_ON)openProfile();else m2Tab('personaje');});
@@ -11877,6 +11879,7 @@ function m2SettingsClosed(){if(M2.on&&M2.tab==='ajustes')m2Tab(M2.prevTab||'inic
 // what is chosen, everywhere it shows (also after a choice made in the old overlays: PERFIL › personaje, CAJAS…)
 function m2Sync(){
   if(!M2.on)return;
+  if(M2.sel!=='online'&&M2.sel!==mode)M2.sel=mode;
   const press=(sel,key,val)=>document.querySelectorAll(sel).forEach(c=>c.setAttribute('aria-pressed',String(c.dataset[key]===val)));
   press('#m2 .m2Mode','sel',M2.sel);
   setText($('#m2SubDuel'),m2MapName(OFFMAP)+' · '+M2_DIFF[diff]);
@@ -11887,9 +11890,9 @@ function m2Sync(){
   const rs=WSKINS.rifle[WSKIN.rifle],O=miraOpt();
   const ri=$('#m2CardRifle'),rsrc=wsImg('rifle',WSKIN.rifle);if(ri.getAttribute('src')!==rsrc)ri.src=rsrc;
   setText($('#m2CardRifleSub'),(PRIMARY==='shotgun'?'FURIA 12 · ':'')+(rs?rs.name:'HALCÓN R7')+' · '+O.name);
-  const pi=$('#m2CardPj'),psrc=skinImg(SKIN);if(pi.getAttribute('src')!==psrc)pi.src=psrc;
-  setText($('#m2CardPjSub'),SKINS[SKIN].name);
-  const mi=$('#m2MeImg');if(mi.getAttribute('src')!==psrc)mi.src=psrc;
+  const pi=$('#m2CardPj'),psrc=SKIN_ON?skinImg(SKIN):'';if(SKIN_ON&&pi.getAttribute('src')!==psrc)pi.src=psrc;
+  setText($('#m2CardPjSub'),SKIN_ON?SKINS[SKIN].name:'SOLDADO');
+  const mi=$('#m2MeImg');if(SKIN_ON&&mi.getAttribute('src')!==psrc)mi.src=psrc;setHidden(mi,!SKIN_ON);
   setText($('#m2MeName'),PROFILE.name||'JUGADOR');
   const ib=$('#openInv');if(ib)setText($('#m2InvN'),(ib.textContent.match(/\((\d+)\)/)||['',''])[1]);
   press('#m2PjList .m2Pick','skin',SKIN);setText($('#m2PjName'),SKINS[SKIN].name);setText($('#m2PjBy'),SKINS[SKIN].by);
@@ -11994,11 +11997,33 @@ function m2Layout(dt){
   }else M2.show.visible=false;
 }
 // the pose: turned a little to his right, rifle low ("low ready"), like a portrait
-const M2_YAW0=-0.42,M2_PITCH=-0.55;
+const M2_YAW0=-0.42,M2_PITCH=-0.55,_m2cp=new T.Vector3();
+/* the map behind is not drawn in MENÚ 2, so its shaders and textures would reach the GPU in the first frame of the
+   match (a hitch: test/perf saw ARENA start with 0 frames). Whenever the map or what it has loaded changes, compile it
+   and send its textures now, while you are in the menu (at most once a second) */
+function m2Warm(now,force){
+  if(!force&&now-(M2.warmT||0)<1000)return;M2.warmT=now;
+  const sig=WORLD_ID+'|'+scene.children.length+'|'+(TEX.ok||0)+'|'+(E10.ready?1:0)+'|'+P3W.meshes.length+'|'+(CASA.ready?1:0)+'|'+(C2.ready?1:0)+'|'+Object.keys(PJ2.tpls).length;
+  if(sig===M2.warmSig)return;M2.warmSig=sig;
+  try{renderer.compile(scene,camera);}catch(e){}
+  const seen=new Set();
+  scene.traverseVisible(o=>{if(!o.material)return;for(const m of [].concat(o.material))if(m)for(const k in m){const t=m[k];
+    if(!t||!t.isTexture||seen.has(t))continue;seen.add(t);
+    // only what has arrived and is not on the GPU yet (KTX2 ones send themselves: ktx2Upload)
+    const im=t.image;if(!im||t.version===0||t.isCompressedTexture||renderer.properties.get(t).__webglTexture)continue;
+    const ok=typeof HTMLImageElement!=='undefined'&&im instanceof HTMLImageElement?im.complete&&im.naturalWidth>0:
+      typeof HTMLCanvasElement!=='undefined'&&im instanceof HTMLCanvasElement?im.width>0:typeof ImageBitmap!=='undefined'&&im instanceof ImageBitmap?im.width>0:false;
+    if(ok)try{renderer.initTexture(t);}catch(e){}}});
+  // and draw it once, tiny and off screen: that also compiles what only drawing compiles (the sun's shadow pass)
+  try{const rt=M2.rt||(M2.rt=new T.WebGLRenderTarget(64,64));renderer.setRenderTarget(rt);renderer.render(scene,camera);}catch(e){}
+  renderer.setRenderTarget(null);
+}
 function m2Frame(rdt){
   if(!M2.room)m2Wake();
   M2.t+=rdt;const dt=Math.min(rdt,0.1),now=performance.now();
   if(M2.sig!==m2Sig())m2Sync();
+  scene.updateMatrixWorld();   // drawing the map did this every frame: what arrives while you are in the menu gets its place
+  m2Warm(now);
   m2Operator();
   m2Weapons();
   // the operator: the game's idle animation with a rifle low, a little sway, and the turn you gave him (back to the
@@ -12012,12 +12037,11 @@ function m2Frame(rdt){
   M2.pivot.visible=M2.tab!=='mapas'&&M2.opShown!==false;   // MAPAS: the cards fill the screen; and never a half-loaded operator
   if(++M2.n%10===1)csFix(M2.pivot);   // the box figure's colours as in the game (CLÁSICO looked white)
   const sw2=M2.tab==='armas'?m2SkinWait(M2.cat):'';setHidden($('#m2SlotLoad'),!sw2);if(sw2)setText($('#m2SlotTxt'),sw2);
-  if(M2.R)animateSoldier(M2.R,{wpn:PRIMARY==='shotgun'?'shotgun':'rifle',vx:0,vz:0,pitch:M2_PITCH,aim:0,crouch:0},dt);
+  // the soldier's level of detail is measured from the game camera: lend it the menu camera's place just for this call
+  if(M2.R){_m2cp.copy(camera.position);camera.position.copy(M2.cam.position);animateSoldier(M2.R,{wpn:PRIMARY==='shotgun'?'shotgun':'rifle',vx:0,vz:0,pitch:M2_PITCH,aim:0,crouch:0},dt);camera.position.copy(_m2cp);}
   M2.spin.rotation.set(0.1,M2.wYaw+M2.wIdle*Math.sin(M2.t*0.45)*0.4,0);   // on show: side-on, swinging gently
   M2.room.frame(M2.t);
   m2Layout(rdt);
-  // the soldier's level of detail is measured from the game camera: put it where the menu camera is
-  camera.position.copy(M2.cam.position);
   WROOT.visible=false;KROOT.visible=false;PROOT.visible=false;SROOT.visible=false;
 }
 if(M2.on)m2Init();
@@ -12057,10 +12081,10 @@ function frameBody(now){
     pmark('arma1p');
     updateCompass();clockFrame();miniFrame();
     if(WCORE.ads>=GUNCFG.scopeAt){rangeT-=rdt;if(rangeT<=0){rangeT=0.1;_ae.set(AIM.pitch,AIM.yaw,0,'YXZ');_aq.setFromEuler(_ae);RAY.set(camera.position,new T.Vector3(0,0,-1).applyQuaternion(_aq));RAY.near=0;RAY.far=400;const h=RAY.intersectObjects(shotTargets(),false);$('#rng').textContent=h.length?String(Math.round(h[0].distance)).padStart(3,'0'):'---';}}
-  }else if(state==='menu'&&M2.on){
-    m2Frame(rdt);
-    if(Math.abs(camera.fov-BASE_FOV)>0.01){camera.fov=BASE_FOV;camera.updateProjectionMatrix();}
   }else if(state==='menu'){
+    // MENÚ 2 draws its own room, but the game camera still circles the map as with the old menu: the map's level of
+    // detail, its shadows and what it has on the GPU stay exactly as they were (the servers' map checks count on it)
+    if(M2.on)m2Frame(rdt);
     menuAng+=rdt*0.04;
     camera.position.set(Math.cos(menuAng)*44,13+Math.sin(menuAng*2)*2,Math.sin(menuAng)*44);
     camera.lookAt(0,3,0);
@@ -12128,6 +12152,8 @@ async function perfRun(quick){
   if(!PERF_LOW)renderer.setPixelRatio(SDQuality.pixelRatio(GFX.profile,window.devicePixelRatio,1));
   const target=1000/Math.min(SETTINGS.fpsCap,Math.max(30,Math.round(GFX.hz||60)));
   const spinS=quick?1.5:10,scopeS=quick?0.8:3,warm=quick?400:2000,maps=[];
+  // MENÚ 2: your operator downloads and unpacks while the menu opens; measuring meanwhile would count that too
+  if(M2.on){perfStatus('PREPARANDO LA MEDIDA…');await perfUntil(()=>M2.opShown!==false&&!(M2.R&&SKIN_ON&&M2.R.skinPack!==SKINS[SKIN].pack),60000);if(KTX2.chain)await Promise.race([KTX2.chain,perfSleep(30000)]);await perfSleep(500);}
   for(const [id,name] of [['arena','ARENA DE PRUEBAS'],['pueblo','PUEBLO'],['casa2','CASA ATLAS 2.0']]){
     perfStatus('MIDIENDO · '+name+' · NO TOQUES LA PANTALLA');
     setMode('duel');setDuelLethal(false);setOffMap(id);

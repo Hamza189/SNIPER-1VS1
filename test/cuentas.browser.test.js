@@ -67,7 +67,7 @@ function check(name, cond, info) { if (cond) { pass++; console.log('  ok   ' + n
     if (process.env.SHOTS) { await A.p.evaluate(() => document.getElementById('accBox').scrollIntoView({ block: 'center' })); await A.p.waitForTimeout(300); await A.p.screenshot({ path: process.env.SHOTS + '/cuenta.png' }); }
     // A creates a room and invites B
     await A.p.evaluate(() => { document.getElementById('profClose').click(); });
-    await A.p.click('#mpBtn'); await A.p.fill('#mpName', 'Hamza'); await A.p.click('#mpCreate');
+    await A.p.click('#m2 .m2Mode[data-sel=online]'); await A.p.click('#m2Play'); await A.p.fill('#mpName', 'Hamza'); await A.p.click('#mpCreate');
     await A.p.waitForFunction(() => /^[A-Z0-9]{6}$/.test(document.getElementById('mpCodeBig').textContent), null, { timeout: 15000 });
     const sala = await A.p.textContent('#mpCodeBig');
     await A.p.evaluate(() => { __SD.openProfile(); });

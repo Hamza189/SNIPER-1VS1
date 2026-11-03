@@ -46,7 +46,7 @@ const shown = page => page.evaluate(ids => ids.filter(id => { const e = document
       const ov = await shown(page);
       check('en el menú no se ve ninguna pantalla que debería estar oculta', ov.length === 0, ov.join(', ') || 'ninguna');
       check('el botón JUGAR se ve', st.play);
-      await page.click('#openSettings');
+      await page.click('#m2 .m2Nav [data-tab=ajustes]');   // MENÚ 2 (por defecto desde el 03-11-2026)
       check('AJUSTES desde el menú se ve por encima del menú (no detrás)', await page.evaluate(() => { const e = document.elementFromPoint(innerWidth / 2, innerHeight / 2); return !!(e && e.closest('#settings')); }));
       check('con AJUSTES abierto el menú queda oculto (en iPhone se pintaba encima)', await page.evaluate(() => getComputedStyle(document.getElementById('menu')).visibility === 'hidden'));
       { // tabs, real audio channels, per-section reset and the two-tap RESTAURAR TODO
@@ -94,7 +94,7 @@ const shown = page => page.evaluate(ids => ids.filter(id => { const e = document
       { const vp = page.viewportSize(), fit = [];
         for (const [w, h] of [[1536, 775], [1366, 657], [1920, 969]]) {
           await page.setViewportSize({ width: w, height: h }); await page.waitForTimeout(150);
-          fit.push(await page.evaluate(() => { const i = document.querySelector('#menu .menuInner'), b = document.getElementById('play').getBoundingClientRect(); return { over: i.scrollHeight - innerHeight, play: b.bottom <= innerHeight }; }));
+          fit.push(await page.evaluate(() => { const i = document.getElementById('menu'), b = document.getElementById('m2Play').getBoundingClientRect(); return { over: i.scrollHeight - innerHeight, play: b.bottom <= innerHeight }; }));
         }
         await page.setViewportSize(vp);
         check('PC: el menú cabe entero sin deslizar y JUGAR se ve (1536×775, 1366×657, 1920×969)', fit.every(f => f.over <= 0 && f.play), JSON.stringify(fit)); }
@@ -170,7 +170,9 @@ const shown = page => page.evaluate(ids => ids.filter(id => { const e = document
       // E4: the rival's jointed body: hands on the rifle, head where the server's head is (standing and
       // crouched), the weapon dropped on death
       const sol = await page.evaluate(() => {
-        const RP = new __SD.RemotePlayer(), V = () => new THREE.Vector3(), base = { x: 0, y: 0, z: 70, yaw: 0, pitch: 0, eye: 1.62, alive: true, g: true, vx: 0, vz: 0, wpn: 'rifle', ws: 'ready', mode: 'walk' };
+        // the box figure's joints (CLÁSICO, and BAJO): the realistic character may already be loaded (since 03-11 the menu
+        // loads characters sooner), so ask for the box figure explicitly; the realistic ones are checked in pro/pj2
+        const RP = new __SD.RemotePlayer(); __SD.pj2SetPack(RP.rig, null); const V = () => new THREE.Vector3(); const base = { x: 0, y: 0, z: 70, yaw: 0, pitch: 0, eye: 1.62, alive: true, g: true, vx: 0, vz: 0, wpn: 'rifle', ws: 'ready', mode: 'walk' };
         const run = (p, n) => { for (let i = 0; i < (n || 5); i++) RP.update(Object.assign({}, base, p), 1 / 30); RP.g.updateMatrixWorld(true); };
         const headY = () => { const v = V(); RP.rig.head.getWorldPosition(v); return v.y; };
         run({}); const r = RP.rig, hand = V(), grip = V();
@@ -220,7 +222,9 @@ const shown = page => page.evaluate(ids => ids.filter(id => { const e = document
       const wf = (fn, ms, arg) => page.waitForFunction(fn, arg, { timeout: ms || 8000, polling: 40 }).then(() => true, () => false);
       const snap = async n => { if (process.env.SHOTS) await page.screenshot({ path: process.env.SHOTS + '/' + n + '.png' }); };
       await page.evaluate(() => __SD.setMode('range'));
+      await page.click('#m2Opts');   // MENÚ 2: the main weapon is in OPCIONES DE PARTIDA
       await page.locator('#menu .kitSeg button[data-kit="shotgun"]').click();
+      await page.click('#m2SheetClose');
       check('en el menú se elige FURIA 12 como arma principal (y se recuerda)', await page.evaluate(() => __SD.PRIMARY === 'shotgun' && localStorage.length >= 0 && document.querySelector('#menu .kitSeg button[data-kit="shotgun"]').getAttribute('aria-pressed') === 'true'));
       await page.getByRole('button', { name: 'JUGAR', exact: true }).click();
       await wf(() => __SD.LOAD.active === 'shotgun' && __SD.SCORE.state === 'ready', 8000);

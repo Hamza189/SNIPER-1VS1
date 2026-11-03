@@ -28,7 +28,8 @@ async function until(page, fn, arg, ms) { try { await page.waitForFunction(fn, a
   try {
     console.log('\nCASA ATLAS 2.0 ONLINE (dos navegadores, servidor local)');
     const A = await open('A', '');
-    await A.click('#mpBtn'); await A.fill('#mpName', 'Hamza'); await A.click('#mpCreate');
+    await A.click('#m2 .m2Mode[data-sel=online]'); await A.click('#m2Play');   // MENÚ 2: MULTIJUGADOR + JUGAR
+    await A.fill('#mpName', 'Hamza'); await A.click('#mpCreate');
     check('A crea la sala', await until(A, () => /^[A-Z0-9]{6}$/.test(document.getElementById('mpCodeBig').textContent)));
     const code = await A.textContent('#mpCodeBig');
     const B = await open('B', '&sala=' + code);
