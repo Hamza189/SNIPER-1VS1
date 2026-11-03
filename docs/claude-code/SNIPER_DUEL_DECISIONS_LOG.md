@@ -98,9 +98,11 @@ ve mejorando PUEBLO».
 - Rejas y barandillas lejanas del kit: se desvanecen entre 40 y 60 m de distancia aparente (vuelven con el visor).
   Parpadeo en la plaza 1,91 → 1,86, peores píxeles 50 → 44. Poco, pero sin coste. `&rejas=0` para comparar.
 - Descartado el filtrado anisótropo 16× (no cambia nada).
-- Siguiente: MEDIR RENDIMIENTO en el iPhone con `?medir=1`, `&sombras=0`, `&aa=0` y `&flora=0` para saber qué optimizar.
+- Medido en el iPhone (14:14–14:23, con las rejas lejanas): el PUEBLO va a 60 FPS fijos tal cual, y también sin sombras,
+  sin suavizado o sin hierba: nada lo frena y no se quita nada. Texturas ~282 MB. Los 55 FPS de las 12:47 eran de esa
+  medida (posición, bots, skin 4K cargada).
 
-**Estado:** IMPLEMENTADO · PROBADO EN NAVEGADOR (cover, p0, e10 en verde) · PENDIENTE DE MEDIR EN IPHONE.
+**Estado:** IMPLEMENTADO · MEDIDO EN IPHONE (60 FPS en los tres mapas).
 
 ## 03-11-2026 (3) — MEDIR RENDIMIENTO en el iPhone con el menú nuevo por defecto
 Del propietario: «he estado jugando y bastante bien», con el informe de la versión 7d973e3f42 (iPhone Pro Max, ALTO).

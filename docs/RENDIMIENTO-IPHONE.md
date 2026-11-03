@@ -140,5 +140,21 @@ bots, 9 a la cabeza).
   bandera se queda guardada): `?medir=1` (base), `?medir=1&sombras=0`, `?medir=1&aa=0`, `?medir=1&flora=0`. Lo que más
   suba los FPS del PUEBLO es lo que hay que optimizar primero.
 
+### 03-11-2026, 14:14–14:23 — PUEBLO en el iPhone con una cosa quitada cada vez (versión a691a2ee2d, con rejas lejanas)
+iPhone Pro Max, Safari, ALTO, píxeles ×2.
+
+| PUEBLO | Fotograma p50 / p95 / máx | FPS | Llamadas | Triángulos |
+|---|---|---|---|---|
+| Normal (`?medir=1`) | 17 / 17 / 19 ms (0 % tirones) | **60** | 184 | 398 mil |
+| Sin sombras (`&sombras=0`) | 17 / 17 / 32 ms | 59,9 | 148 | 326 mil |
+| Sin suavizado (`&aa=0`) | 17 / 17 / 25 ms | 60 | 220 | 497 mil |
+| Sin hierba (`&flora=0`) | 17 / 17 / 19 ms | 60 | 203 | 327 mil |
+
+- El PUEBLO va a 60 FPS fijos también tal cual: ninguna pieza lo frena, así que no se quita nada. ARENA y CASA ATLAS 2.0,
+  60 FPS en todas. CPU 2,7–3,3 ms.
+- Los 55 FPS de las 12:47 fueron de esa medida (posición, bots a la vista y ~629 MB de texturas, probablemente con la skin
+  ÚLTIMA en 4K). Ahora: ~282 MB, lo que se esperaba desde `ead572a`.
+- Lo que hay que vigilar es la memoria de texturas (lo que hacía cerrar Safari), no los FPS.
+
 Código: `client/perfprobe.js` (cálculos e informe, puro) y el bloque «MEDIR RENDIMIENTO» de `src/page.html`.
 Prueba: `node test/perf.test.js`.
