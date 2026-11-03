@@ -11,7 +11,7 @@ Detalle de cada cambio (antes/después, medidas, cómo revertir): `docs/next-lev
 ### Siguiente prioridad
 | Tarea | Quién la desbloquea | Estado |
 |---|---|---|
-| **CASA ATLAS 2.0** (02-11) — probar `https://hamza189.github.io/SNIPER-1VS1/?casa2=1` (menú › DUELO › CASA ATLAS 2.0 · EXP.) contra bots en el iPhone y en el PC; si la apruebas: (1) se añade al online (cambio del servidor: `docs/CASA-ATLAS-2.md`) y (2) se retira la CASA ATLAS XL (inventario en el mismo documento) | Propietario | PUBLICADO TRAS BANDERA · PENDIENTE DE VALIDACIÓN EN IPHONE · NECESITA APROBACIÓN |
+| **CASA ATLAS 2.0** (aprobada el 02-11, online el 03-11) — probarla en el iPhone contra bots y online con otra persona (menú › CASA ATLAS 2.0); la XL ya está retirada (`docs/CASA-ATLAS-2.md`) | Propietario | PUBLICADO · PROBADO ONLINE · PENDIENTE DE VALIDACIÓN EN IPHONE |
 | **Miras de ventana y botón de MIRA** (02-11) — en el iPhone: que la holográfica, la 2× y la 3× se vean enteras con la retícula dentro, y el botón «1,5×/2×…» del HUD que cambia de mira con un toque | Propietario | PUBLICADO · PENDIENTE DE VALIDACIÓN EN IPHONE |
 | **MENÚ 2** (02-11) — probar el menú nuevo en el iPhone y en el PC: `https://hamza189.github.io/SNIPER-1VS1/?menu=2` (INICIO con tu operador 3D, PERSONAJE, ARMAS con mira/skin/cuchillo en 3D, MAPAS, AJUSTES). Decir si pasa a ser el de por defecto; `?menu=1` vuelve al de siempre (`docs/MENU-2.md`) | Propietario | PUBLICADO TRAS BANDERA · PENDIENTE DE VALIDACIÓN EN IPHONE |
 | **Miras** (31-10) — probar en el iPhone las 8 miras, cada una con un solo aumento (menú › ficha del arma › Mira del rifle, o el inventario en partida): que el punto rojo y la holográfica se vean bien con el rifle a la vista y que el 2×, 3×, 4×, 6×, 8× y 12× tengan el aumento y el aspecto que esperas (`docs/MIRAS.md`) | Propietario | PUBLICADO · PENDIENTE DE VALIDACIÓN EN IPHONE |
@@ -88,6 +88,21 @@ Detalle de cada cambio (antes/después, medidas, cómo revertir): `docs/next-lev
 | Encargos para ChatGPT: CASA XL, CASA XL v2 y personaje | 18-10 / 19-10 |
 | Personaje 3D rev. 03 hecho por Claude e integrado tras `?pj=2` (bots y rival online) | 20-10 · directo a `main` |
 | Personajes realistas + elegir personaje (con el SOLDADO de `?pj=2`) y HUD 2 por defecto (aprobado en iPhone y PC) | 28-10 · directo a `main` |
+
+## 03-11-2026 — CASA ATLAS 2.0 aprobada: online, y CASA ATLAS XL retirada
+Del propietario: «Aprobada, súbela online».
+- `b7f5524`: el servidor recibe el mapa. `core/mapdata.js` con casa2 y una red ligera para sus bots; el protocolo admite ids
+  con cifras.
+  - Desplegado y comprobado en el servidor público (una sala en CASA ATLAS 2.0).
+  - Prueba nueva con dos navegadores contra el servidor Node (13/13).
+- Por error, el commit del menú 2 (`e4f8332`) subió antes parte de los cambios de la página; `b7f5524` los completó unos
+  minutos después.
+- La XL, retirada del juego (detalle e inventario en `docs/CASA-ATLAS-2.md`):
+  - quitados su código, su prueba y `assets/maps/casa_atlas_xl/`;
+  - MEDIR RENDIMIENTO mide ahora la 2.0;
+  - se conservan las entregas de `assets/3d/imports/` (Codex trabaja en una);
+  - punto de recuperación: `b7f5524`.
+- Estado: PUBLICADO · PROBADO ONLINE (servidor local y público) · PENDIENTE DE VALIDACIÓN EN IPHONE.
 
 ## 02-11-2026 — CASA ATLAS 2.0 (cuatro CASA ATLAS unidas) y miras de ventana con botón de MIRA
 Del propietario (desde el iPhone y luego en el PC):

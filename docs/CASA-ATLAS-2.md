@@ -1,9 +1,9 @@
 # CASA ATLAS 2.0: cuatro CASA ATLAS unidas en un complejo para el 1v1 (02-11-2026)
 
-**Estado:** IMPLEMENTADO · PROBADO EN NAVEGADOR (contra bots) · PENDIENTE DE VALIDACIÓN EN IPHONE · SIN SERVIDOR TODAVÍA.
-Se prueba con el enlace `https://hamza189.github.io/SNIPER-1VS1/?casa2=1` (el dispositivo lo recuerda; `?casa2=0` lo quita).
-En el menú aparece como **CASA ATLAS 2.0 · EXP.**, solo en el duelo contra bots. El online llega cuando el propietario lo
-apruebe.
+**Estado (03-11-2026):** APROBADA por el propietario («Aprobada, súbela online») · PUBLICADA en el duelo y ONLINE ·
+servidor desplegado (`b7f5524`, comprobado en el servidor público: una sala en CASA ATLAS 2.0) · CASA ATLAS XL retirada
+(punto de recuperación: `b7f5524`) · PENDIENTE DE VALIDACIÓN EN IPHONE. Sale por defecto en los menús; `?casa2=0` la oculta
+en ese dispositivo.
 
 El encargo (el propietario, 02-11): «amplía la CASA ATLAS original que ya me gusta, sin rehacerla: duplica sus módulos,
 reutiliza sus materiales, conéctalos… un complejo residencial con rutas, flanqueos, obstáculos, habitaciones y líneas de
@@ -104,22 +104,33 @@ Mismas 3 vistas por mapa, 1280 × 720. Con `GPU=1` es la GPU del PC: **no** vale
   - `node tools/casa2/medir.js`: la tabla de arriba;
   - `tools/casa2/glb.js`: lector de GLB para auditar piezas.
 
-## Lo que falta (necesita al propietario)
-1. **Probarla en el iPhone** con `?casa2=1` (menú › DUELO › CASA ATLAS 2.0 · EXP.) y aprobarla o pedir cambios.
-2. **Online:** quitar `local: true`, `node tools/export-map.js` y publicar despliega el servidor con el mapa nuevo. Antes:
-   - sus ~11 000 puntos de red harían `core/mapdata.js` ~250 KB más grande: se mandaría uno de cada cuatro;
-   - probar dos jugadores (aparición, colisiones, disparos, reaparición, revancha, reconexión).
-   Es un cambio del servidor: espera su aprobación.
-3. **Retirar CASA ATLAS XL** cuando apruebe la 2.0. Inventario:
-   - `client/casaxl.js` y su línea en `build.py`;
-   - el bloque «CASA ATLAS XL» de `src/page.html`: `XL`, `casaxlLoad`, `xlRetex`, `XL_TEXSET`, el botón `casaxl` del menú,
-     `duelCasaXL`, `OFFMAP`, `setWorld`, `startMatch` y MEDIR RENDIMIENTO (que mide la XL como tercera escena: pasaría a
-     medir la 2.0);
-   - el mapa de `client/menu2.js` (de la sesión del menú nuevo);
-   - `test/casaxl.browser.test.js` y su línea en `package.json`;
-   - `assets/maps/casa_atlas_xl/` (17 MB);
-   - `assets/3d/imports/2026-10-18_casa_atlas_xl/` (19 MB) y `2026-10-19_casa_atlas_xl_v2/` (151 MB). **Ojo:** Codex tiene
-     cambios sin confirmar en esta última carpeta;
-   - documentos que la mencionan (se dejan como historia).
-   - El servidor **no** la tiene (era solo del cliente): retirarla no toca `core/` ni `server/`.
-   - Punto de recuperación: el commit anterior a la retirada (se apunta aquí cuando se haga).
+## Online (03-11-2026)
+- `core/mapdata.js` lleva `casa2`: sus 434 cajas, 4010 triángulos de bala, las salidas A y B y una red para los bots del
+  servidor de un punto cada 0,5 m (3073 puntos, un solo trozo con la regla de enlace de sus bots; `SDCasa2.thin`).
+- `core/protocol.js`: los ids de mapa admiten cifras (`casa2`).
+- La página construye siempre el mundo (un invitado puede entrar en una sala en él); su red de 11 000 puntos se crea la
+  primera vez que se pide.
+- `node test/casa2.online.browser.test.js` (13): dos navegadores contra el servidor Node real: elegir el mapa, salidas,
+  impacto a través del patio, la pared del estudio lo para, muerte y reaparición dentro del complejo.
+- Balística, daño y zonas de impacto: sin cambios.
+
+## CASA ATLAS XL: retirada (03-11-2026)
+- Se quitaron:
+  - `client/casaxl.js` y su línea en `build.py`;
+  - el bloque de `src/page.html` (`XL`, `casaxlLoad`, `xlRetex`, `?xlv`, `?xltex`, el botón del menú, `duelCasaXL`);
+  - `test/casaxl.browser.test.js` y su línea en `package.json`;
+  - `tools/casa/make_casaxl_js.py`;
+  - `assets/maps/casa_atlas_xl/`.
+- MEDIR RENDIMIENTO mide ahora la CASA ATLAS 2.0 como tercera escena.
+- El menú 2 (otra sesión) cambió su tarjeta por la de la 2.0 (`5ca53d0`).
+- El servidor nunca la tuvo: no cambia.
+- **Se conservan:**
+  - las entregas originales de ChatGPT en `assets/3d/imports/2026-10-18_casa_atlas_xl/` y `2026-10-19_casa_atlas_xl_v2/`
+    (fuentes e historia; Codex tiene cambios sin confirmar en la segunda: borrarlas es decisión del propietario);
+  - los documentos antiguos que la mencionan.
+- **Recuperarla:** `git checkout b7f5524 -- client/casaxl.js assets/maps/casa_atlas_xl test/casaxl.browser.test.js` y el bloque
+  de `src/page.html` de ese commit.
+
+## Lo que falta
+- **Probarla en el iPhone**: contra bots y online con otra persona (tu novia en el Samsung): rendimiento, salidas, rutas y
+  coberturas.

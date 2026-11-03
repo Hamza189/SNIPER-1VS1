@@ -1,4 +1,4 @@
-/* CASA ATLAS (original) · CASA ATLAS 2.0 · CASA ATLAS XL, medidos igual (02-11-2026, docs/CASA-ATLAS-2.md): lo que se
+/* CASA ATLAS (original) y CASA ATLAS 2.0, medidos igual (la XL se midió así antes de retirarla: docs/CASA-ATLAS-2.md) (02-11-2026, docs/CASA-ATLAS-2.md): lo que se
    descarga del mapa, cuánto tarda en estar listo, llamadas de dibujo, triángulos, texturas en la GPU (estimadas por el
    juego) y ms por fotograma en 3 vistas. Una página nueva por mapa (nada se comparte entre medidas).
    node tools/casa2/medir.js [SALIDA.json]     env GPU=1: la GPU del PC (ms reales de ESTE PC, no del iPhone) · Q=alto */
@@ -9,7 +9,6 @@ const PI = Math.PI, gpu = process.env.GPU === '1', Q = process.env.Q || 'alto';
 const MAPS = {
   casa: { q: '&casa=1', ready: '__SD.CASA.ready', views: [[-7.45, 0.95, -PI / 2], [-4.2, 4.6, -0.8], [4.6, 0.3, -0.5]] },
   casa2: { q: '&casa=1&casa2=1', ready: '__SD.C2.ready', views: [[-17.94, -8.63, -PI / 2], [-20.2, 0.6, -PI / 2], [0.3, -15.8, PI]] },
-  casaxl: { q: '&casa=1', ready: '__SD.XL.ready&&__SD.XL.roof', views: [[-14, -8, -PI / 2], [0, 0, 0], [10, 10, PI]] },
 };
 (async () => {
   const srv = await ss.start(), rows = [];

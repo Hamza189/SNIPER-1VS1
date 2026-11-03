@@ -134,7 +134,7 @@ reconciliación, interpolación del rival 110 ms, ping) · `vmrig.js` (materiale
 | `&ratas=0`, `&flora=0` | Sin ratas / sin vegetación |
 | `&sombra=libre`, `&sombrafade=0`, `&sombras=0` | Sombra sin ajuste a texels / sin fundido / sin sombras (diagnóstico) |
 | `?casa=1` / `?casa=0` | Muestra / oculta CASA ATLAS en los menús (se recuerda) |
-| `?casa2=1` / `?casa2=0` | CASA ATLAS 2.0 (02-11): las 4 CASA ATLAS unidas, en el menú del duelo contra bots (se recuerda); solo del cliente hasta que el propietario la apruebe (`client/casa2.js`, `docs/CASA-ATLAS-2.md`) |
+| `?casa2=0` / `?casa2=1` | Oculta / muestra CASA ATLAS 2.0 en los menús (se recuerda; por defecto se muestra). Aprobada el 02-11: duelo y online (`client/casa2.js`, `docs/CASA-ATLAS-2.md`). La CASA ATLAS XL (`?xlv`, `?xltex`) se retiró el 03-11 |
 | `?menu=2` / `?menu=1` | MENÚ 2: el menú principal nuevo con la sala 3D (se recuerda) / el de siempre (`docs/MENU-2.md`) |
 | `&techo=1` | Techo opcional en CASA ATLAS |
 | `?pj=2` | Personaje 3D (rev. 03, `client/soldier2.js`, `assets/personaje/`) en bots y rival online en vez de la figura de cajas; solo aspecto. Sus transiciones (GF-2, 31-10) se miden con `node tools/anim-sheet.js [op4\|op2\|op3\|v2]` |

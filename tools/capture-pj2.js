@@ -3,13 +3,13 @@
    la misma cámara con y sin ?pj=2. Mide llamadas de dibujo, triángulos y ms de CPU de la animación de los 3 bots.
    SwiftShader: sirve para comparar aspecto y contar llamadas/triángulos, no para FPS de GPU.
 
-   node tools/capture-pj2.js [salida=docs/next-level/pj2] [mapas=pueblo,casaxl] [calidad=alto]           */
+   node tools/capture-pj2.js [salida=docs/next-level/pj2] [mapas=pueblo,casa2] [calidad=alto]           */
 'use strict';
 const path = require('path'), fs = require('fs');
 const { chromium } = require('playwright');
 const ss = require('./static-server.js');
 const out = path.resolve(process.argv[2] || 'docs/next-level/pj2');
-const maps = (process.argv[3] || 'pueblo,casaxl').split(',');
+const maps = (process.argv[3] || 'pueblo,casa2').split(',');
 const Q = process.argv[4] || 'alto';
 const versions = (process.env.PJ_COMPARE || '2,0').split(',').map(Number);
 const portrait = process.env.PJ_PORTRAIT === '1';
@@ -33,7 +33,7 @@ fs.mkdirSync(out, { recursive: true });
       await p.evaluate(m => { __SD.setMode('duel'); __SD.setOffMap(m); __SD.startMatch(); }, map);
       await p.waitForTimeout(2500);
       if (pj) await p.waitForFunction(() => __SD.PJ2.tpl || __SD.PJ2.failed, null, { timeout: 120000 });
-      if (map === 'casaxl') await p.waitForFunction(() => __SD.XL && (__SD.XL.ready || __SD.XL.failed), null, { timeout: 180000 }).catch(() => {});
+      if (map === 'casa2') await p.waitForFunction(() => __SD.C2 && (__SD.C2.ready || __SD.C2.failed), null, { timeout: 180000 }).catch(() => {});
       const r = await p.evaluate(async fixedCam => {
         const S = __SD, cam = S.camera, bots = S.BOTS;
         S.pause();
