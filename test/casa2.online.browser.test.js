@@ -2,14 +2,14 @@
    real: A crea la sala y elige el mapa; B entra con el enlace y lo recibe (lo ve marcado, lo carga, no puede cambiarlo);
    juegan en él: salidas A y B (el estudio del piso A y el del D), se ven a través del patio, un impacto con la entrada
    real, la pared del estudio lo para, y al morir se reaparece dentro del complejo.
-   Run: node test/casa2.online.browser.test.js        --v2: el diseño 2 (mapa casa2b, con ?casa2v=2) */
+   Run: node test/casa2.online.browser.test.js        --v2: el diseño 2 (casa2b, ?casa2v=2) · --v3: el jardín (casa2c, ?casa2v=3) */
 'use strict';
 let chromium;
 try { ({ chromium } = require('playwright')); } catch (e) { console.log('\nCASA 2.0 ONLINE: playwright no está instalado, se omite'); process.exit(0); }
 const { startServer } = require('../server/node.js');
 const statics = require('../tools/static-server.js');
-const V2 = process.argv.includes('--v2'), ID = V2 ? 'casa2b' : 'casa2', ST = V2 ? 'C2B' : 'C2';
-const C = require('../client/casa.js'), C2 = V2 ? require('../client/casa2.js').v2 : require('../client/casa2.js');
+const V3 = process.argv.includes('--v3'), V2 = process.argv.includes('--v2') || V3, ID = V3 ? 'casa2c' : V2 ? 'casa2b' : 'casa2', ST = V3 ? 'C2J' : V2 ? 'C2B' : 'C2';
+const C = require('../client/casa.js'), C2 = V3 ? require('../client/casa2j.js') : V2 ? require('../client/casa2.js').v2 : require('../client/casa2.js');
 let pass = 0, fail = 0;
 const check = (n, c, i) => { (c ? pass++ : fail++); console.log((c ? '  ok   ' : '  FAIL ') + n + (i !== undefined ? '  (' + i + ')' : '')); };
 const sleep = ms => new Promise(r => setTimeout(r, ms));
@@ -22,12 +22,12 @@ async function until(page, fn, arg, ms) { try { await page.waitForFunction(fn, a
     const ctx = await browser.newContext({ viewport: { width: 667, height: 375 } });
     await ctx.route(/fonts\.(googleapis|gstatic)\.com/, r => r.abort());
     const page = await ctx.newPage(); page.on('pageerror', e => errors.push(who + ': ' + e.message));
-    page.on('response', r => { if (/casa_atlas\.glb/.test(r.url()) && r.status() < 400) files[who]++; });
-    await page.goto(web.url + (process.env.PAGE || '') + '?perf=low&server=' + encodeURIComponent(server) + (V2 ? '&casa2v=2' : '') + q); await page.waitForFunction(() => window.__SD);
+    page.on('response', r => { if ((V3 ? /casa_atlas_jardin\.glb/ : /casa_atlas\.glb/).test(r.url()) && r.status() < 400) files[who]++; });
+    await page.goto(web.url + (process.env.PAGE || '') + '?perf=low&server=' + encodeURIComponent(server) + (V3 ? '&casa2v=3' : V2 ? '&casa2v=2' : '') + q); await page.waitForFunction(() => window.__SD);
     return page;
   };
   try {
-    console.log('\nCASA ATLAS 2.0 ONLINE (dos navegadores, servidor local)' + (V2 ? ' · DISEÑO 2' : ''));
+    console.log('\nCASA ATLAS 2.0 ONLINE (dos navegadores, servidor local)' + (V3 ? ' · JARDÍN' : V2 ? ' · DISEÑO 2' : ''));
     const A = await open('A', '');
     await A.click('#m2 .m2Mode[data-sel=online]'); await A.click('#m2Play');   // MENÚ 2: MULTIJUGADOR + JUGAR
     await A.fill('#mpName', 'Hamza'); await A.click('#mpCreate');
@@ -49,7 +49,7 @@ async function until(page, fn, arg, ms) { try { await page.waitForFunction(fn, a
     const SP = C2.spawns(C), sa = room.seats.A.p.ms, sb = room.seats.B.p.ms;
     check('aparecen en las salidas A y B del mapa (a 40 m, sin verse)', Math.hypot(sa.x - SP[0].x, sa.z - SP[0].z) < 0.05 && Math.hypot(sb.x - SP[1].x, sb.z - SP[1].z) < 0.05,
       sa.x.toFixed(2) + ',' + sa.z.toFixed(2) + ' / ' + sb.x.toFixed(2) + ',' + sb.z.toFixed(2));
-    check('cada uno descarga el GLB de CASA ATLAS una vez (el mismo para los 4 pisos)', files.A === 1 && files.B === 1, JSON.stringify(files));
+    check(V3 ? 'cada uno descarga el GLB del jardín una vez' : 'cada uno descarga el GLB de CASA ATLAS una vez (el mismo para los 4 pisos)', files.A === 1 && files.B === 1, JSON.stringify(files));
     // across the patio, 12.5 m apart, between the planters
     const PA = V2 ? [-6, -3] : [-6, -1.8], PB = V2 ? [6, -3] : [6, 1.8];   // diseño 2: a lo largo del balcón (el seto del centro tapa la diagonal)
     room.debug.place('A', PA[0], PA[1], -Math.PI / 2); room.debug.place('B', PB[0], PB[1], Math.PI / 2); await sleep(1500);
@@ -67,7 +67,7 @@ async function until(page, fn, arg, ms) { try { await page.waitForFunction(fn, a
     check('A dispara cruzando el patio: el servidor confirma el impacto y B pierde vida', room.seats.A.hits === h0 + 1 && await until(B, () => __SD.P.hp < 100, null, 4000), room.seats.A.hits - h0);
     room.debug.set('B', 'hp', 100); room.debug.set('B', 'lastHit', 1e15);
     // the wall between the study and the living room of flat A (x −15.3): the shot is fired, nothing is hit
-    const dx = V2 ? 1.7 : 0;   // the flats are 1.7 m closer to the centre in the second design
+    const dx = V3 ? -0.7 : V2 ? 1.7 : 0;   // the flats are 1.7 m closer to the centre in the second design
     room.debug.place('A', -17.2 + dx, -11.3, -Math.PI / 2); room.debug.place('B', -13.6 + dx, -11.3, Math.PI / 2); await sleep(1800);
     const s0 = room.seats.A.shots; h0 = room.seats.A.hits;
     await A.evaluate(() => { const P = __SD.P; P.yaw = -Math.PI / 2; P.pitch = 0; __SD.input.firePressed = true; }); await sleep(1200);

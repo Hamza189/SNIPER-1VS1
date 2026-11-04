@@ -185,5 +185,35 @@ general, tema texturas, también el cristal».
   - `node test/casa2.online.browser.test.js --v2`, dos navegadores contra el servidor: 13.
 - **Capturas:** `MAP=casa2b node tools/casa2/capturas.js CARPETA` → `docs/img/casa2/v2-*.jpg`.
 
+## Diseño 3 · JARDÍN (04-11-2026): el GLB de ChatGPT · PENDIENTE DE APROBACIÓN
+Entrega de ChatGPT/Codex (`COSAS DEL JUEGO/MATERIAL 04 11/CASA_ATLAS_2_JARDIN`, copia de las notas en
+`assets/3d/imports/2026-11-04_casa_atlas_jardin/`), hecha a partir del diseño 2.
+
+![jardín](img/casa2/v3-aerea-diagonal.jpg)
+
+- **Qué es:**
+  - las dos casas grandes desplazadas 2,4 m en sentidos opuestos, con tejados escalonados y porches;
+  - césped y senderos en el patio, la pérgola y 5 coberturas;
+  - pasillos de jardín por los flancos;
+  - 44 × 33 m, 23 426 triángulos, 4 MB, con sus 19 texturas dentro del GLB.
+- **Cómo verlo:** `?casa2v=3` (se recuerda; `?casa2v=1` o `?casa2v=2` cambia de diseño). Sale como «CASA ATLAS 2.0 · JARDÍN».
+  Para el servidor es el mapa `casa2c`.
+- **Integración:**
+  - `client/casa2j.js`: sus 365 cajas y sus dos salidas, tal como las entregó. La red de los bots sale de las mismas funciones
+    que el diseño 2.
+  - La página carga su GLB y le pone el cristal Fresnel del diseño 2.
+- **Comprobado:**
+  - `node test/casa2j.test.js` (12): simétrico; salidas a 41 m sin verse; una sola red (también la del servidor); tres rutas
+    de 44, 43 y 58 m; líneas de tiro de hasta 40 m.
+  - `node test/casa2j.browser.test.js` (8):
+    - carga y empieza en la salida A con 2 bots;
+    - sin paredes invisibles en 1 093 de 1 104 caras de caja comprobadas;
+    - las piezas nuevas (límites, coberturas, pérgola y tejados) coinciden a ±3 cm;
+    - los bots se mueven 40 s sin meterse en nada.
+  - `node test/casa2.online.browser.test.js --v3` (13): dos navegadores contra el servidor.
+- **Pendiente:** en las jardineras, entre la piedra (0,65 m) y lo alto de su caja (1,1 m), las hojas no la llenan. Un tiro
+  a 1 m puede pararse en «nada» (11 rayos de 1 104). Pasa igual en los diseños 1 y 2.
+- **Capturas:** `MAP=casa2c node tools/casa2/capturas.js CARPETA` → `docs/img/casa2/v3-*.jpg`.
+
 ## Validación
 - 04-11-2026: el propietario la probó en el iPhone y dio el visto bueno («todo bien»).

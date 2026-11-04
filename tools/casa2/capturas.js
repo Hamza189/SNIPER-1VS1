@@ -40,8 +40,20 @@ const VIEWS_B = [
   ['pasillo-oeste', 'casa2b', -18.6, 0, -15.6, PI, 0],
   ['salon-B', 'casa2b', 10.6, 0, -8.0, PI / 2 + 0.8, -0.03],
 ];
+// jardín (04-11-2026, «casa2c», el GLB de ChatGPT). env MAP=casa2c
+const VIEWS_C = [
+  ['aerea', 'casa2c', 0, 40, 0.01, 0, -1.5707],
+  ['aerea-diagonal', 'casa2c', -4, 20, 32, 0, -0.62],
+  ['spawn-A', 'casa2c', -18.64, 0, -8.63, -PI / 2, 0],
+  ['patio-largo', 'casa2c', -16.5, 0, -0.5, -PI / 2, 0],
+  ['patio-centro', 'casa2c', -7, 0, -2.6, -PI / 2 - 0.3, -0.02],
+  ['pergola', 'casa2c', -4.5, 0, -2.4, -PI / 2 - 0.5, 0.32],
+  ['jardin-flanco', 'casa2c', -21, 0, -14.5, PI, 0],
+  ['salon', 'casa2c', -10, 0, -8, -PI / 2 + 0.6, -0.03],
+];
 const MAPID = process.env.MAP || 'casa2';
 if (MAPID === 'casa2b') VIEWS.splice(0, VIEWS.length, ...VIEWS_B);
+if (MAPID === 'casa2c') VIEWS.splice(0, VIEWS.length, ...VIEWS_C);
 (async () => {
   fs.mkdirSync(OUT, { recursive: true });
   const srv = await ss.start();
@@ -50,7 +62,7 @@ if (MAPID === 'casa2b') VIEWS.splice(0, VIEWS.length, ...VIEWS_B);
   await ctx.route(/fonts\.(googleapis|gstatic)\.com/, r => r.abort());
   await ctx.addInitScript(q => { try { localStorage.setItem('sniperduel_settings', JSON.stringify({ quality: q, v: 3 })); } catch (e) {} }, process.env.Q || 'alto');
   const p = await ctx.newPage(); p.on('pageerror', e => console.log('ERR', e.message));
-  await p.goto(srv.url + '?casa=1&casa2=1&ktx2=0' + (MAPID === 'casa2b' ? '&casa2v=2' : '&casa2v=1') + (process.env.URLX || ''), { timeout: 180000 });
+  await p.goto(srv.url + '?casa=1&casa2=1&ktx2=0' + (MAPID === 'casa2b' ? '&casa2v=2' : MAPID === 'casa2c' ? '&casa2v=3' : '&casa2v=1') + (process.env.URLX || ''), { timeout: 180000 });
   await p.waitForFunction(() => window.__SD && __SD.W && __SD.WORLDS.casa2, null, { timeout: 180000 });
   await p.evaluate(() => { HTMLCanvasElement.prototype.requestPointerLock = function () {}; });
   await p.addStyleTag({ content: '#hud,#lockHint,#fpsBox,#cross,#touch,#mini,#h2bar{display:none!important}' });

@@ -11,6 +11,7 @@ Detalle de cada cambio (antes/después, medidas, cómo revertir): `docs/next-lev
 ### Siguiente prioridad
 | Tarea | Quién la desbloquea | Estado |
 |---|---|---|
+| **CASA ATLAS 2.0 · JARDÍN** (04-11) — probar `https://hamza189.github.io/SNIPER-1VS1/?casa2v=3` y compararlo con `?casa2v=2`: elegir el diseño que se queda | Propietario | PUBLICADO TRAS BANDERA · PENDIENTE DE APROBACIÓN |
 | **CASA ATLAS 2.0 · diseño 2** (04-11) — probar `https://hamza189.github.io/SNIPER-1VS1/?casa2v=2` (menú › CASA ATLAS 2.0 · NUEVA) en el iPhone, contra bots y online; si le gusta, pasa a ser la CASA ATLAS 2.0 de todos y se retira el diseño 1 | Propietario | PUBLICADO TRAS BANDERA · PENDIENTE DE APROBACIÓN |
 | **Cuenta admin** (04-11) — mirar en el perfil que pone ADMIN y que en CAJAS Y OBJETOS se pueden equipar los 33 objetos | Propietario | DESPLEGADO · PENDIENTE DE VALIDACIÓN |
 | **Entrar con Google** (04-11, activado) — en PERFIL de tu cuenta ADMIN: «Continuar con Google» para vincularla; en otro dispositivo, «Iniciar sesión con Google». Mientras la app de Google esté «En prueba» solo entran los usuarios de prueba; para abrirla a todos, «Información de la marca» + «Publicar app» (`docs/CUENTAS-Y-MONETIZACION.md`) | Propietario | PUBLICADO · BOTÓN REAL COMPROBADO EN LA WEB · PENDIENTE DE SU PRIMERA ENTRADA |
@@ -87,6 +88,24 @@ Detalle de cada cambio (antes/después, medidas, cómo revertir): `docs/next-lev
 | Encargos para ChatGPT: CASA XL, CASA XL v2 y personaje | 18-10 / 19-10 |
 | Personaje 3D rev. 03 hecho por Claude e integrado tras `?pj=2` (bots y rival online) | 20-10 · directo a `main` |
 | Personajes realistas + elegir personaje (con el SOLDADO de `?pj=2`) y HUD 2 por defecto (aprobado en iPhone y PC) | 28-10 · directo a `main` |
+
+## 04-11-2026 (4) — Material del 04-11: triaje, CASA ATLAS JARDÍN integrada y fallo de `9b977c6` corregido
+Del propietario: «te he dejado cosas para que añadas, y que implementes a pueblo, o añadas nuevo mapa, o juntes todo», y
+después «las dos a la vez» (el jardín y un mapa nuevo con la calle abandonada).
+- **Fallo mío, corregido** (`9cc306d`): el commit `9b977c6` compiló `index.html` con un `client/casa2.js` sin guardar de otra
+  sesión (un prototipo de Codex). De 12:22 a 13:00, con `?casa2v=2`, la web no coincidía con el servidor. Ahora, antes de
+  publicar `index.html`, compruebo que las fuentes coinciden con `main`.
+- **Triaje del material:**
+  - Sí: el jardín, la calle abandonada, las torres de fondo, el garaje abandonado y los cuadros. Las licencias son Sketchfab
+    Standard (uso en juegos) y CC-BY (con créditos).
+  - Más adelante: el salón vintage (105 mil triángulos, 46 MB; el estilo choca).
+  - No:
+    - el AK dorado (700 mil triángulos y un arma nueva toca el equilibrio);
+    - «City Game ready» (estilo dibujo animado);
+    - la caja dorada (no sirve);
+    - «nfs edge mobile garage» y «garage interior from RCD», porque parecen sacados de otros juegos (regla 11).
+- **CASA ATLAS 2.0 · JARDÍN** (`casa2c`, `?casa2v=3`): pruebas 12/12, 8/8 en navegador y 13/13 online.
+  - Estado: PROBADO EN NAVEGADOR · PROBADO ONLINE (servidor local) · PENDIENTE DE APROBACIÓN.
 
 ## 04-11-2026 (3) — Entrar con Google
 Del propietario: «Entrar con Google» (elegido entre Google y correo con contraseña).
