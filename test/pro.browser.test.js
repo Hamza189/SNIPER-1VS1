@@ -39,7 +39,7 @@ const zones = p => p.evaluate(() => __SD.BOTS.map(b => b.hit.map(m => [m.userDat
     console.log('\nALTO (?pj=pro)');
     const A = await open(b, srv.url + '?vm=1&pj=pro', 'alto');
     await A.p.evaluate(() => { const S = __SD; window.__R = S.makeSoldier(S.BOT_MAT, { variant: 'B' }); S.scene.add(__R.root); });
-    const okA = await A.p.waitForFunction(() => __SD.BOTS.every(b => b.rig.v2) && __R.v2, null, { timeout: 180000 }).then(() => true, () => false);
+    const okA = await A.p.waitForFunction(() => __SD.BOTS.every(b => (b.rig.v2 && !b.rig.v2prev)) && (__R.v2 && !__R.v2prev), null, { timeout: 180000 }).then(() => true, () => false);
     const ra = await A.p.evaluate(() => ({ roots: Object.keys(__SD.PJ2.tpls).sort(), botTpl: __SD.BOTS[0].rig.v2.meshes[0].geometry.index.count / 3, rivalTpl: __R.v2.meshes[0].geometry.index.count / 3,
       tex: __SD.BOTS[0].rig.v2.meshes[0].material.map && __SD.BOTS[0].rig.v2.meshes[0].material.map.image && __SD.BOTS[0].rig.v2.meshes[0].material.map.image.width,
       oldHidden: __SD.BOTS[0].rig.root.children.filter(c => c !== __SD.BOTS[0].rig.v2.root).every(c => !c.visible) }));
@@ -58,7 +58,7 @@ const zones = p => p.evaluate(() => __SD.BOTS.map(b => b.hit.map(m => [m.userDat
     check('se anima con las animaciones del juego: agachado baja la cabeza con el morph', r2.morph > 0.99 && r2.crouch < r2.stand - 0.3, r2.stand.toFixed(2) + ' → ' + r2.crouch.toFixed(2) + ' m');
     // phones (28-10-2026): Safari on the iPhone closed the page with the 4K characters (340 MB each): never more than 2K there
     { const M = await open(b, srv.url + '?vm=1&pj=pro', 'alto', true);
-      const okM = await M.p.waitForFunction(() => __SD.BOTS.length && __SD.BOTS.every(b => b.rig.v2), null, { timeout: 180000 }).then(() => true, () => false);
+      const okM = await M.p.waitForFunction(() => __SD.BOTS.length && __SD.BOTS.every(b => (b.rig.v2 && !b.rig.v2prev)), null, { timeout: 180000 }).then(() => true, () => false);
       const rm = await M.p.evaluate(() => ({ roots: Object.keys(__SD.PJ2.tpls).sort().join(' '), tex: __SD.BOTS[0].rig.v2.meshes[0].material.map.image.width }));
       check('en un móvil con ALTO: los mismos personajes (FSB en los bots) pero con texturas de 2K, nunca 4K', okM && rm.tex === 2048 && /op3/.test(rm.roots) && !M.files.some(f => /personaje\.glb/.test(f) && /op[23]/.test(f)), rm.roots + ' · ' + rm.tex + ' · ' + M.files.join(' '));
       await M.ctx.close(); }
@@ -67,7 +67,7 @@ const zones = p => p.evaluate(() => __SD.BOTS.map(b => b.hit.map(m => [m.userDat
 
     console.log('\nMEDIO (?pj=pro)');
     const M = await open(b, srv.url + '?vm=1&pj=pro', 'medio');
-    const okM = await M.p.waitForFunction(() => __SD.BOTS.every(b => b.rig.v2), null, { timeout: 180000 }).then(() => true, () => false);
+    const okM = await M.p.waitForFunction(() => __SD.BOTS.every(b => (b.rig.v2 && !b.rig.v2prev)), null, { timeout: 180000 }).then(() => true, () => false);
     const rm = await M.p.evaluate(() => Object.keys(__SD.PJ2.tpls));
     check('MEDIO: todos con op4 (y tu SOLDADO en el menú) y no se descargan op2/op3', okM && rm.sort().join() === 'assets/personaje/,assets/personaje/pro/op4/' && M.files.every(f => f.startsWith('op4/')), rm.join(' ') + ' · ' + M.files.join(' '));
     check('MEDIO: sin 404 ni errores', M.bad.length === 0 && M.errs.length === 0, M.bad.concat(M.errs).slice(0, 3).join(' | '));
@@ -85,7 +85,7 @@ const zones = p => p.evaluate(() => __SD.BOTS.map(b => b.hit.map(m => [m.userDat
     for (const [q, suf] of [['alto', ''], ['medio', '_2k'], ['bajo', '_1k']]) {
       console.log('\nMEZCLA ?pj=mix (' + q.toUpperCase() + ')');
       const X = await open(b, srv.url + '?vm=1&pj=mix', q);
-      const ok = await X.p.waitForFunction(() => __SD.BOTS.length >= 4 && __SD.BOTS.slice(0, 3).every(b => b.rig.v2), null, { timeout: 240000 }).then(() => true, () => false);
+      const ok = await X.p.waitForFunction(() => __SD.BOTS.length >= 4 && __SD.BOTS.slice(0, 3).every(b => (b.rig.v2 && !b.rig.v2prev)), null, { timeout: 240000 }).then(() => true, () => false);
       const r = await X.p.evaluate(() => __SD.BOTS.slice(0, 4).map(b => ({ pack: b.rig.mixPack, v2: !!b.rig.v2, box: b.rig.root.children.some(c => c.visible && (!b.rig.v2 || c !== b.rig.v2.root)), alive: b.alive })));
       check(q + ': 4 bots, cada uno con su personaje (S.W.A.T., FSB, Military suit y el soldado de cajas)', ok && r.length === 4 && r[0].pack === 'op2' && r[1].pack === 'op3' && r[2].pack === 'op4' && r[3].pack === null && r[0].v2 && r[1].v2 && r[2].v2 && !r[3].v2 && r[3].box && r.every(x => x.alive),
         r.map(x => (x.pack || 'cajas') + (x.v2 ? '·3D' : '')).join(' '));
@@ -125,8 +125,8 @@ const zones = p => p.evaluate(() => __SD.BOTS.map(b => b.hit.map(m => [m.userDat
     await OB.p.evaluate(() => __SD.setSkin('swat'));
     check('B cambia a S.W.A.T. en la sala y A lo ve', await OA.p.waitForFunction(() => /S\.W\.A\.T\./.test(document.getElementById('mpPlayers').textContent), null, { timeout: 8000 }).then(() => true, () => false));
     await OA.p.click('#mpReady'); await OB.p.click('#mpReady');
-    const vA = await OA.p.waitForFunction(() => __SD.REMOTE && __SD.REMOTE.rig.v2 && __SD.REMOTE.rig.skinPack === 'op2', null, { timeout: 180000 }).then(() => true, () => false);
-    const vB = await OB.p.waitForFunction(() => __SD.REMOTE && __SD.REMOTE.rig.v2 && __SD.REMOTE.rig.skinPack === 'op3', null, { timeout: 180000 }).then(() => true, () => false);
+    const vA = await OA.p.waitForFunction(() => __SD.REMOTE && (__SD.REMOTE.rig.v2 && !__SD.REMOTE.rig.v2prev) && __SD.REMOTE.rig.skinPack === 'op2', null, { timeout: 180000 }).then(() => true, () => false);
+    const vB = await OB.p.waitForFunction(() => __SD.REMOTE && (__SD.REMOTE.rig.v2 && !__SD.REMOTE.rig.v2prev) && __SD.REMOTE.rig.skinPack === 'op3', null, { timeout: 180000 }).then(() => true, () => false);
     check('en la partida A ve a B como S.W.A.T. y B ve a A como FSB (texturas 2K en MEDIO)', vA && vB && OA.files.includes('op2/personaje_2k.glb') && OB.files.includes('op3/personaje_2k.glb'), OA.files.join(' ') + ' | ' + OB.files.join(' '));
     const hz = await OA.p.evaluate(() => __SD.REMOTE.hit.map(m => m.userData.part + ':' + m.position.y).join(' '));
     check('las zonas de impacto del rival son las del servidor (no dependen del personaje)', hz === 'head:1.63 torso:1.17 legs:0.43', hz);
@@ -134,7 +134,7 @@ const zones = p => p.evaluate(() => __SD.BOTS.map(b => b.hit.map(m => [m.userDat
     const sw = await OA.p.evaluate(() => { const R = __SD.REMOTE.rig; __SD.pj2SetPack(R, null); const box = !R.v2 && R.root.children.some(c => c.visible); __SD.pj2SetPack(R, 'op2'); return { box, back: !!R.v2 }; });
     check('pasar al CLÁSICO vuelve a la figura de cajas y se puede volver', sw.box && sw.back, JSON.stringify(sw));
     await OA.p.evaluate(() => __SD.pj2SetPack(__SD.REMOTE.rig, 'v2'));
-    const sol = await OA.p.waitForFunction(() => __SD.REMOTE.rig.v2 && __SD.PJ2.tpls['assets/personaje/'], null, { timeout: 180000 }).then(() => true, () => false);
+    const sol = await OA.p.waitForFunction(() => (__SD.REMOTE.rig.v2 && !__SD.REMOTE.rig.v2prev) && __SD.PJ2.tpls['assets/personaje/'], null, { timeout: 180000 }).then(() => true, () => false);
     check('el SOLDADO se dibuja con el personaje de ?pj=2 (assets/personaje/)', sol);
     check('sin errores en las dos páginas', OA.errs.length === 0 && OB.errs.length === 0, OA.errs.concat(OB.errs).slice(0, 3).join(' | '));
     await OA.ctx.close(); await OB.ctx.close(); await gs.close();

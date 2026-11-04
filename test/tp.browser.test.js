@@ -25,7 +25,7 @@ function check(name, cond, info) { if (cond) { pass++; console.log('  ok   ' + n
     await p.evaluate(() => { document.querySelector('canvas').requestPointerLock = () => Promise.reject(new Error('sin captura')); __SD.setDuelLethal(false); __SD.setMode('duel'); __SD.setOffMap('arena'); __SD.startMatch(); });
     await p.waitForTimeout(800);
     await p.keyboard.press('KeyV');
-    const ok = await p.waitForFunction(() => __SD.TPV.on && __SD.SELF.g && __SD.SELF.g.visible && __SD.SELF.rig.v2, null, { timeout: 180000 }).then(() => true, () => false);
+    const ok = await p.waitForFunction(() => __SD.TPV.on && __SD.SELF.g && __SD.SELF.g.visible && (__SD.SELF.rig.v2 && !__SD.SELF.rig.v2prev), null, { timeout: 180000 }).then(() => true, () => false);
     const r = await p.evaluate(() => { const S = __SD, c = S.camera.position, d = Math.hypot(c.x - S.AIM.ox, c.y - S.AIM.oy, c.z - S.AIM.oz);
       return { d, view: S.SETTINGS.view, saved: JSON.parse(localStorage.getItem('sniperduel_settings')).view, pack: S.SELF.rig.skinPack, eyeY: S.AIM.oy - S.P.pos.y, cross: document.getElementById('cross').style.transform }; });
     check('la tecla V pasa a 3ª persona y se guarda', ok && r.view === 'tp' && r.saved === 'tp');

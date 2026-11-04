@@ -33,7 +33,7 @@ function check(name, cond, info) { if (cond) { pass++; console.log('  ok   ' + n
     await p.goto(srv.url + q, { timeout: 180000 });
     await p.waitForFunction(() => window.__SD && __SD.WORLDS, null, { timeout: 180000 });
     await p.evaluate(() => { __SD.setMode('duel'); __SD.setDuelLethal(false); __SD.setOffMap('arena'); __SD.startMatch(); });
-    await p.waitForFunction(() => __SD.state === 'playing' && __SD.BOTS.length && __SD.BOTS.every(b => b.rig.v2), null, { timeout: 240000 }).catch(() => {});
+    await p.waitForFunction(() => __SD.state === 'playing' && __SD.BOTS.length && __SD.BOTS.every(b => (b.rig.v2 && !b.rig.v2prev)), null, { timeout: 240000 }).catch(() => {});
     await p.waitForTimeout(3000);
     return { ctx, p, errs, files, fromR2 };
   };

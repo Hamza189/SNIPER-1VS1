@@ -105,7 +105,7 @@ function check(name, cond, info) { if (cond) { pass++; console.log('  ok   ' + n
     console.log('\nGF-2 · TRANSICIONES DE ANIMACIÓN (personaje 3D)');
     const G2 = await open('?pj=2&ktx2=0', { quality: 'medio', v: 3 });
     await play(G2.p, 'arena');
-    await G2.p.waitForFunction(() => __SD.BOTS.length && __SD.BOTS.every(b => b.rig.v2), null, { timeout: 180000 });
+    await G2.p.waitForFunction(() => __SD.BOTS.length && __SD.BOTS.every(b => (b.rig.v2 && !b.rig.v2prev)), null, { timeout: 180000 });
     // a rig like the bots', driven at 60 FPS with the inputs the online rival and the bots give: the most a bone turns
     // in one frame after the first 0.25 s (walking normally ~13°, a weight jumping 0 → 1 gave 21–130°)
     const tr = await G2.p.evaluate(() => {

@@ -39,8 +39,11 @@ function check(name, cond, info) { if (cond) { pass++; console.log('  ok   ' + n
     const MAX = { titan: 4096, ultima: 4096, vector: 2048, sahara: 2048 };   // vector: JPG 2K (its KTX2 is blocked above)
     for (const id of ['titan', 'ultima', 'vector', 'sahara']) {
       await p.evaluate(id => __SD.setWskin('rifle', id), id);
-      if (id === 'titan') check('mientras llega el aspecto, el HALCÓN sigue en las manos', await p.evaluate(() => __SD.WS_ST.rifle.objs.length === 0 && __SD.WS_ST.rifle.base.meshes.every(m => m.visible)));
-      const ok = await p.waitForFunction(() => __SD.WS_ST.rifle.objs.length > 0, null, { timeout: 60000 }).then(() => true, () => false);
+      // 04-11-2026 (CARGA PROGRESIVA): while it arrives, the HALCÓN — or, as soon as it is here, the skin's light model
+      if (id === 'titan') { check('mientras llega el aspecto, el HALCÓN sigue en las manos', await p.evaluate(() => __SD.WS_ST.rifle.objs.length === 0 && __SD.WS_ST.rifle.base.meshes.every(m => m.visible)));
+        const lt = await p.waitForFunction(() => __SD.WS_ST.rifle.objs.length > 0, null, { timeout: 60000 }).then(() => p.evaluate(() => { const S = __SD.WS_ST.rifle; return { light: !!S.light, n: S.objs.length, hid: S.base.meshes.every(m => !m.visible) }; }), () => null);
+        check('y en cuanto llega su modelo ligero (arma_tp.glb), ese en las manos hasta que llega el completo', !!lt && (lt.light ? lt.n > 0 && lt.hid : lt.n > 0), JSON.stringify(lt)); }
+      const ok = await p.waitForFunction(() => __SD.WS_ST.rifle.objs.length > 0 && !__SD.WS_ST.rifle.light, null, { timeout: 120000 }).then(() => true, () => false);
       const r = await p.evaluate(() => { const S = __SD.WS_ST.rifle, R = __SD.RIF; return { hid: S.base.meshes.every(m => !m.visible), n: S.objs.length, boltZ: R.boltZ, bolt: R.bolt.children.some(c => S.objs.includes(c)), mag: R.mag.children.some(c => S.objs.includes(c)) }; });
       check(id + ': el HALCÓN se oculta y el aspecto ocupa su sitio (cuerpo' + (r.bolt ? ', cerrojo' : '') + (r.mag ? ', cargador' : '') + ')', ok && r.hid && r.n >= 1, JSON.stringify(r));
       const t = await tex(), k2 = await p.evaluate(id => !!__SD.WS_ST.ktx2['rifle' + id], id);
@@ -63,7 +66,7 @@ function check(name, cond, info) { if (cond) { pass++; console.log('  ok   ' + n
     check('el aspecto que se deja sale de la memoria (solo queda el que llevas)', await p.evaluate(() => Object.keys(__SD.WS_ST.cache).filter(k => /^rifle/.test(k)).join(',') === 'riflesahara'), await p.evaluate(() => Object.keys(__SD.WS_ST.cache).join(',')));
     // choosing a skin used before: it comes back (from the browser's cache)
     await p.evaluate(() => __SD.setWskin('rifle', 'ultima'));
-    await p.waitForFunction(() => __SD.WS_ST.rifle.objs.length === 3, null, { timeout: 120000 }).catch(() => {});
+    await p.waitForFunction(() => __SD.WS_ST.rifle.objs.length === 3 && !__SD.WS_ST.rifle.light, null, { timeout: 120000 }).catch(() => {});
     await p.waitForTimeout(300);
     const back = await p.evaluate(() => { const S = __SD.WS_ST.rifle; return { n: S.objs.length, hid: S.base.meshes.every(m => !m.visible), boltZ: +__SD.RIF.boltZ.toFixed(3), inHands: S.objs.every(o => !!o.parent) }; });
     check('volver a elegir ÚLTIMA después de otra: vuelve a las manos con su cerrojo', back.n === 3 && back.hid && back.inHands && back.boltZ === 0.059, JSON.stringify(back));
@@ -71,7 +74,7 @@ function check(name, cond, info) { if (cond) { pass++; console.log('  ok   ' + n
     check('volver al HALCÓN: su modelo vuelve y el cerrojo a su sitio', await p.evaluate(() => { const S = __SD.WS_ST.rifle; return S.base.meshes.every(m => m.visible) && S.objs.length === 0 && Math.abs(__SD.RIF.boltZ - 0.08) < 1e-6; }));
     // knife
     await p.evaluate(() => { __SD.setWskin('knife', 'tactica'); __SD.input.select = 'knife'; });
-    const kn = await p.waitForFunction(() => __SD.WS_ST.knife.objs.length > 0 && __SD.LOAD.active === 'knife', null, { timeout: 60000 }).then(() => true, () => false);
+    const kn = await p.waitForFunction(() => __SD.WS_ST.knife.objs.length > 0 && !__SD.WS_ST.knife.light && __SD.LOAD.active === 'knife', null, { timeout: 60000 }).then(() => true, () => false);
     check('cuchillo TÁCTICA en la mano en lugar de la NAVAJA', kn && await p.evaluate(() => __SD.WS_ST.knife.base.meshes.every(m => !m.visible)));
     check('y en KTX2, a 2K (el arma.glb lo lleva a 1K)', await p.evaluate(() => { let w = 0; __SD.WS_ST.knife.objs[0].traverse(x => { if (x.isMesh && x.material.map && x.material.map.isCompressedTexture) w = Math.max(w, x.material.map.mipmaps[0].width); }); return w === 2048 && !!__SD.WS_ST.ktx2.knifetactica; }));
     if (process.env.SHOTS) { await p.waitForTimeout(800); await p.screenshot({ path: process.env.SHOTS + '/arma-tactica.png' }); }
@@ -95,7 +98,7 @@ function check(name, cond, info) { if (cond) { pass++; console.log('  ok   ' + n
     await mp.goto(srv.url + '?vm=1');
     await mp.waitForFunction(() => window.__SD && __SD.WORLDS && __SD.VMA.ready, null, { timeout: 180000 });
     await mp.evaluate(() => { __SD.setDuelLethal(false); __SD.setMode('duel'); __SD.setOffMap('arena'); __SD.startMatch(); __SD.setWskin('rifle', 'ultima'); });
-    const mok = await mp.waitForFunction(() => __SD.WS_ST.rifle.objs.length > 0, null, { timeout: 300000 }).then(() => true, () => false);
+    const mok = await mp.waitForFunction(() => __SD.WS_ST.rifle.objs.length > 0 && !__SD.WS_ST.rifle.light, null, { timeout: 300000 }).then(() => true, () => false);
     const mt = await mp.evaluate(() => { let n = 0, c = 0, w = 0; for (const o of __SD.WS_ST.rifle.objs) o.traverse(x => { if (x.isMesh && x.material.map) { n++; if (x.material.map.isCompressedTexture) { c++; w = Math.max(w, x.material.map.mipmaps[0].width); } } }); return { n, c, w }; });
     check('ÚLTIMA en el móvil: a 4K y comprimida para la GPU', mok && mt.n > 0 && mt.c === mt.n && mt.w === 4096, JSON.stringify(mt));
     check('sus texturas llegan como archivos aparte, de una en una (poca memoria a la vez)', files >= 15 && most === 1, files + ' archivos · ' + most + ' a la vez como mucho');

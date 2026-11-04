@@ -65,11 +65,24 @@ tarda 7–10 s en ese PC con la CPU frenada):
 | Operador en pantalla | ~17 s | 10,6 s (1K; la completa entra sola a los ~17 s) |
 | Arma ÚLTIMA en ARMAS | ~42 s | 12,8 s (modelo ligero; la 4K entra sola después) |
 
+## Carga progresiva también en partida (04-11-2026)
+El propietario, cuando se le ofreció: «sí».
+
+- **Todos los personajes** (el operador del menú, los bots, el rival online y tú en 3ª persona) salen con su versión 1K
+  en vez de la figura de cajas mientras llega la completa, y se cambian solos. Está en el código común de los personajes
+  (`pj2Attach` / `pj2PrevLoad`): el menú ya no tiene nada propio. La 1K de un personaje sale de la GPU cuando nadie la
+  lleva. Las zonas de impacto no cambian (nunca salieron del modelo).
+- **Tu arma en 1ª persona y el cuchillo**: el modelo ligero de la skin (`arma_tp.glb`) en vez del HALCÓN o la NAVAJA
+  mientras llega la completa (`wskinRifle` / `wskinKnife`, `WS_ST.<rifle|knife>.light`). Se monta en los mismos nodos
+  (cuerpo, cerrojo, cargador), así que recargar y accionar el cerrojo funcionan igual. Al cambiar de skin salen de la
+  memoria la completa y la ligera de la anterior; la ligera de la actual, en cuanto entra la completa.
+- Las pruebas que esperaban «el personaje / la skin ha llegado» ahora esperan a la versión completa (`!v2prev`,
+  `!light`); `armas.browser` comprueba además que el modelo ligero está en las manos mientras llega.
+
 ## Lo siguiente (no hecho todavía)
 - **Comprimir la geometría y las animaciones con meshoptimizer** (C++; su decodificador es WebAssembly y three.js r128 lo
   admite: `EXT_meshopt_compression`). Bajaría cada personaje unos 2–3 MB y cada arma algo menos. Hace falta comprobar que
   las animaciones, los morphs (agacharse) y las zonas de impacto quedan idénticos.
-- **Lo mismo en partida** (personajes de los bots y del rival, tu arma en 1ª persona), si hace falta.
 
 ## Pruebas
 - La batería completa (`npm test`).

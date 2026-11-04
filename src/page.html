@@ -3391,6 +3391,7 @@ function pj2Load(root){
       if(PJ_MIX)pj2Mat('bots',root);
       for(const R of PJ2.list)pj2Attach(R);try{precompileAll();}catch(e){}}catch(e){fail(e);}};
   const plain=()=>{try{new T.GLTFLoader().load(root+'personaje'+pj2Suffix(root)+'.glb?v='+BUILD_HASH,done,undefined,fail);}catch(e){fail(e);}};
+  if(pj2Suffix(root)!=='_1k'||ktx2For(root))pj2PrevLoad(root);   // CARGA PROGRESIVA: the 1K one meanwhile
   if(!ktx2For(root))return plain();
   // one KTX2 character at a time (each model is 17–27 MB and is unpacked in memory while it loads)
   KTX2.chain=(KTX2.chain||Promise.resolve()).then(()=>ktx2Ready()).then(L=>new Promise(next=>{if(!L){plain();return next();}
@@ -3410,22 +3411,48 @@ function pj2Mat(v,root){
   t.flipY=false;t.encoding=T.sRGBEncoding;t.anisotropy=aniso;return PJ2.mats[key]=m;
 }
 function pj2Aim(R,w){const o=SDSoldier2.AIM_OFFSET[w]||SDSoldier2.AIM_OFFSET.rifle;R.aim.position.set(o[0],o[1],o[2]);R.v2w=w;}
+/* CARGA PROGRESIVA (03-11-2026 y 04-11, docs/CARGA.md; owner: «el personaje sigue quedándose ahí pensando/cargando»):
+   the full character (KTX2: three 4K textures the WebAssembly transcoder unpacks one by one on a phone; or the 2K/4K
+   JPG one) takes seconds even when it is already downloaded. Its 1K version (personaje_1k.glb: the same skeleton,
+   animations and morphs, small JPG textures the browser decodes by itself) comes much sooner: every character (the
+   menu's operator, the bots, the online rival, you in 3rd person) wears it instead of the box figure and swaps to the
+   full one when it is ready; the 1K one then leaves the GPU. Only the look: hit zones never came from the model. */
+PJ2.prev={};PJ2.prevBusy={};
+function pj2PrevLoad(root){
+  if(!PJ2.on||PJ2.prev[root]||PJ2.prevBusy[root]||PJ2.tpls[root]||!T.GLTFLoader)return;PJ2.prevBusy[root]=true;
+  new T.GLTFLoader().load(root+'personaje_1k.glb?v='+BUILD_HASH,g=>{PJ2.prevBusy[root]=false;if(PJ2.tpls[root])return;
+    try{const tp=SDSoldier2.template(g,T);visHook(tp.material);PJ2.prev[root]=tp;for(const R of PJ2.list)if(!R.v2)pj2Attach(R);}catch(e){console.warn('pj2 1k',root,e);}},
+    undefined,()=>{PJ2.prevBusy[root]=false;});
+}
+// the 1K one of a character nobody wears any more leaves the GPU
+function pj2PrevDrop(root){
+  const tp=PJ2.prev[root];if(!tp||PJ2.list.some(R=>R.v2prev===root))return;delete PJ2.prev[root];const seen=new Set();
+  const go=o=>o&&o.traverse&&o.traverse(x=>{if(x.geometry&&!seen.has(x.geometry)){seen.add(x.geometry);x.geometry.dispose();}
+    for(const m of [].concat(x.material||[])){if(!m||seen.has(m))continue;seen.add(m);for(const k in m){const t=m[k];if(t&&t.isTexture&&t!==ENV&&!seen.has(t)){seen.add(t);t.dispose();}}m.dispose();}});
+  go(tp.scene||tp.root);const m=tp.material;if(m&&!seen.has(m)){for(const k in m){const t=m[k];if(t&&t.isTexture&&t!==ENV)t.dispose();}m.dispose();}
+}
 function pj2Attach(R){
   const v=R.pj2v||'B',root=pj2Root(v,R),tpl=root&&PJ2.tpls[root];
-  if(R.v2||!root)return;
-  if(!tpl){if(!PJ2.failedRoots[root])pj2Load(root);return;}
-  const I=SDSoldier2.create(tpl,T,pj2Mat(v,root));R.v2=I;
+  if(!root)return;
+  let was=null;
+  if(R.v2){if(!(R.v2prev&&tpl))return;was=R.v2prev;pj2Detach(R);}   // wearing the 1K one and the full one is here: swap
+  if(!tpl){if(!PJ2.failedRoots[root])pj2Load(root);const pv=PJ2.prev[root];if(!pv)return;
+    const I=SDSoldier2.create(pv,T,pv.material);R.v2=I;R.v2prev=root;pj2Wear(R,I);return;}
+  const I=SDSoldier2.create(tpl,T,pj2Mat(v,root));R.v2=I;pj2Wear(R,I);
+  if(was)pj2PrevDrop(was);
+}
+function pj2Wear(R,I){
   R.v2hid=R.root.children.filter(c=>c.visible);for(const c of R.v2hid)c.visible=false;   // fuera la figura de cajas (sigue existiendo: es la vuelta atrás)
   R.root.add(I.root);
   I.arma.add(R.aim);R.aim.rotation.set(0,0,0);pj2Aim(R,R.wpn||'rifle');   // armas, fogonazo y destello de la mira van con el arma
 }
 // cambiar de personaje (el rival online elige el suyo): vuelve la figura de cajas y se pone el nuevo cuando esté cargado
 function pj2Detach(R){
-  const I=R.v2;if(!I)return;R.root.remove(I.root);R.v2=null;R.v2w=null;
+  const I=R.v2;if(!I)return;R.root.remove(I.root);R.v2=null;R.v2w=null;R.v2prev=null;
   R.chest.add(R.aim);R.aim.position.set(0,0.46,0.02);R.aim.rotation.set(0,0,0);
   for(const c of R.v2hid||[])c.visible=true;R.v2hid=null;
 }
-function pj2SetPack(R,pack){if(!PJ2.on||R.skinPack===pack)return;pj2Detach(R);R.skinPack=pack;pj2Attach(R);}
+function pj2SetPack(R,pack){if(!PJ2.on||R.skinPack===pack)return;const was=R.v2prev;pj2Detach(R);R.skinPack=pack;pj2Attach(R);if(was&&was!==R.v2prev)pj2PrevDrop(was);}
 // el rival online: su personaje elegido (se precarga en la sala, antes de empezar)
 function rivalSkin(){
   const N=NET.N;if(!N||!SKIN_ON||!PJ2.on)return;
@@ -6050,25 +6077,34 @@ function wsDrop(k){
       for(const kk in m){const t=m[kk];if(t&&t.isTexture&&t!==ENV&&!seen.has(t)){seen.add(t);t.dispose();}}m.dispose();}});
   go(A.scene);if(A.parts)for(const p of Object.values(A.parts))if(p&&p.isObject3D)go(p);
 }
+/* CARGA PROGRESIVA del arma (03-11-2026 y 04-11, docs/CARGA.md): every skin also has a light model (arma_tp.glb, made
+   for the 3rd person: the same frame and pieces — body, bolt, magazine — small textures, 0,1–0,3 MB). While its full one
+   (KTX2 4K: up to 17 textures unpacked one by one on a phone) arrives, you carry the light one instead of the HALCÓN;
+   the full one takes its place when it is ready. Only the look: the HALCÓN R7 is the gun either way. */
+function wsLoadLight(slot,id,done){
+  const k=slot+id+'#tp';if(WS_ST.cache[k])return done(WS_ST.cache[k]);
+  if(WS_ST.pend[k])return void WS_ST.pend[k].push(done);WS_ST.pend[k]=[done];
+  new T.GLTFLoader().load(wsDir(slot,id)+'arma_tp.glb?v='+BUILD_HASH,g=>{
+    g.scene.traverse(o=>{if(o.isMesh){o.frustumCulled=false;o.castShadow=false;const m=o.material;if(m&&m.isMeshStandardMaterial){m.envMap=ENV;m.envMapIntensity=0.55;m.needsUpdate=true;}}});
+    const A=WS_ST.cache[k]={scene:g.scene,info:null,light:true},cbs=WS_ST.pend[k]||[];delete WS_ST.pend[k];for(const f of cbs)f(A);},undefined,()=>{delete WS_ST.pend[k];});
+}
 function wskinRifle(id){
   const hal=VMA.R&&VMA.R.root,S=WS_ST.rifle;if(!hal)return;
   miraUnstrip();   // MIRAS: the old rifle's scope back before it leaves
   if(!S.base){S.base={bolt:RIF.bolt.position.clone(),mag:RIF.mag.position.clone(),magY:RIF.magY,flash:RIF.flash.position.clone(),meshes:[]};
     hal.traverse(o=>{if(o.isMesh)S.base.meshes.push(o);});}
-  for(const o of S.objs)if(o.parent)o.parent.remove(o);S.objs=[];
-  if(S.cur&&S.cur!==id)wsDrop('rifle'+S.cur);S.cur=id;
-  RIF.bolt.position.copy(S.base.bolt);RIF.boltZ=S.base.bolt.z;RIF.mag.position.copy(S.base.mag);RIF.magY=S.base.magY;RIF.flash.position.copy(S.base.flash);
+  const unmount=()=>{for(const o of S.objs)if(o.parent)o.parent.remove(o);S.objs=[];S.light=false;
+    RIF.bolt.position.copy(S.base.bolt);RIF.boltZ=S.base.bolt.z;RIF.mag.position.copy(S.base.mag);RIF.magY=S.base.magY;RIF.flash.position.copy(S.base.flash);
+    for(const m of S.base.meshes)m.visible=true;};
+  unmount();
+  if(S.cur&&S.cur!==id){wsDrop('rifle'+S.cur);wsDrop('rifle'+S.cur+'#tp');}S.cur=id;
   const def=id==='halcon'||!WSKINS.rifle[id];
-  // the HALCÓN stays in your hands until the skin has arrived (the 4K KTX2 ones take a while on a phone)
-  for(const m of S.base.meshes)m.visible=true;
   if(def){camoApply();miraApply();return;}
-  miraApply();   // the HALCÓN while the skin loads
-  wsLoad('rifle',id,A=>{
-    if(S.cur!==id){wsDrop('rifle'+id);return;}   // another one was chosen while this one loaded
-    if(S.objs.length)return;
+  miraApply();   // the HALCÓN until a model of the skin is here
+  // the parts move into the HALCÓN's nodes and leave the scene: keep them, and where they were, for the next time this
+  // skin is chosen (29-10-2026: choosing it again after another one left the hands empty)
+  const mount=A=>{
     const sc=A.scene,I=A.info||{};
-    // the parts move into the HALCÓN's nodes and leave the scene: keep them, and where they were, for the next time this
-    // skin is chosen (29-10-2026: choosing it again after another one left the hands empty)
     const P=A.parts||(A.parts={body:sc.getObjectByName('cuerpo'),bolt:sc.getObjectByName('cerrojo'),mag:sc.getObjectByName('carg')});
     if(!P.at)P.at={bolt:P.bolt&&P.bolt.position.clone(),mag:P.mag&&P.mag.position.clone()};
     const {body,bolt,mag}=P;
@@ -6077,19 +6113,27 @@ function wskinRifle(id){
     const bp=bolt?P.at.bolt:I.boltPivot?new T.Vector3().fromArray(I.boltPivot):null;
     if(bp){RIF.bolt.position.set(bp.x,bp.y,bp.z);RIF.boltZ=bp.z;}
     if(bolt){bolt.position.set(0,0,0);RIF.bolt.add(bolt);S.objs.push(bolt);}
-    if(mag){const p=P.at.mag;RIF.mag.position.copy(p);RIF.magY=p.y;mag.position.set(0,0,0);RIF.mag.add(mag);S.objs.push(mag);}
+    if(mag){const q=P.at.mag;RIF.mag.position.copy(q);RIF.magY=q.y;mag.position.set(0,0,0);RIF.mag.add(mag);S.objs.push(mag);}
     if(I.muzzle)RIF.flash.position.set(I.muzzle[0],I.muzzle[1],I.muzzle[2]-0.015);
-    camoApply();miraApply();
+    S.light=!!A.light;camoApply();miraApply();
+  };
+  wsLoad('rifle',id,A=>{
+    if(S.cur!==id){wsDrop('rifle'+id);return;}   // another one was chosen while this one loaded
+    if(S.objs.length&&!S.light)return;
+    miraUnstrip();unmount();mount(A);wsDrop('rifle'+id+'#tp');   // the light one is no longer needed
   });
+  if(!WS_ST.cache['rifle'+id])wsLoadLight('rifle',id,A=>{if(S.cur!==id||S.objs.length)return;miraUnstrip();mount(A);});
 }
 function wskinKnife(id){
   const nav=VMA.K&&VMA.K.root,S=WS_ST.knife;if(!nav)return;
   if(!S.base){S.base={meshes:[]};nav.traverse(o=>{if(o.isMesh)S.base.meshes.push(o);});}
-  for(const o of S.objs)if(o.parent)o.parent.remove(o);S.objs=[];S.cur=id;
+  const unmount=()=>{for(const o of S.objs)if(o.parent)o.parent.remove(o);S.objs=[];S.light=false;for(const m of S.base.meshes)m.visible=true;};
+  unmount();if(S.cur&&S.cur!==id){wsDrop('knife'+S.cur+'#tp');}S.cur=id;
   const def=id==='navaja'||!WSKINS.knife[id];
-  for(const m of S.base.meshes)m.visible=true;   // the NAVAJA until the skin arrives
-  if(def)return;
-  wsLoad('knife',id,A=>{if(S.cur!==id)return;for(const m of S.base.meshes)m.visible=false;const c=A.scene.clone(true);nav.add(c);S.objs.push(c);});
+  if(def)return;   // the NAVAJA until the skin arrives
+  const mount=A=>{for(const m of S.base.meshes)m.visible=false;const c=A.scene.clone(true);nav.add(c);S.objs.push(c);S.light=!!A.light;};
+  wsLoad('knife',id,A=>{if(S.cur!==id||(S.objs.length&&!S.light))return;unmount();mount(A);wsDrop('knife'+id+'#tp');});
+  if(!WS_ST.cache['knife'+id])wsLoadLight('knife',id,A=>{if(S.cur!==id||S.objs.length)return;mount(A);});
 }
 function setWskin(slot,id){
   if(!WSKINS[slot][id])return;WSKIN[slot]=id;store.set(slot==='rifle'?'wsRifle':'wsKnife',id);
@@ -6610,7 +6654,7 @@ function m2Init(){
   drag($('#m2Slot'),'wYaw');
   window.addEventListener('resize',()=>{M2.cur=null;});
   // your character first, before the bots' (the KTX2 characters load one after another)
-  if(SKIN_ON&&PJ2.on&&SKINS[SKIN].pack){m2PrevLoad(packRoot(SKINS[SKIN].pack));pj2Load(packRoot(SKINS[SKIN].pack));}
+  if(SKIN_ON&&PJ2.on&&SKINS[SKIN].pack)pj2Load(packRoot(SKINS[SKIN].pack));
   // PC: pointing at an operator starts loading him (the phone loads only the one you choose: memory)
   if(!isTouch)document.querySelectorAll('#m2PjList .m2Pick').forEach(c=>c.addEventListener('pointerenter',()=>{const k=SKINS[c.dataset.skin].pack;if(PJ2.on&&k)pj2Load(packRoot(k));}));
   m2Tab('inicio',true);
@@ -6659,39 +6703,12 @@ function m2LobbyMap(){const N=NET.N;if(!M2.on||!M2.propose||!N||!N.you||!netIsHo
   const m=M2_MAPS.find(x=>x.id===OFFMAP);if(m&&m.online&&N.map!==OFFMAP)N.chooseMap(OFFMAP);}
 // ---- the operator: the one you chose, as soon as he is there (never the box figure while he downloads) ----
 const m2PackOk=k=>k===null||!PJ2.on||!!PJ2.tpls[packRoot(k)]||!!PJ2.failedRoots[packRoot(k)];
-/* CARGA PROGRESIVA (03-11-2026, docs/CARGA.md; owner: «el personaje sigue quedándose ahí pensando/cargando»): the full
-   character (KTX2, three 4K textures that the WebAssembly transcoder unpacks one by one on a phone) takes seconds even
-   when it is already downloaded. Its 1K version (personaje_1k.glb: the same model and animations, JPG textures that the
-   browser decodes by itself) comes in well under a second: the menu shows it at once and swaps to the full one when it
-   is ready; the 1K one then leaves the GPU. Only the menu's operator: the game's characters are as always. */
-const M2P={tpl:{},busy:{}};
-function m2PrevLoad(root){
-  if(M2P.tpl[root]||M2P.busy[root]||PJ2.tpls[root]||!T.GLTFLoader)return;M2P.busy[root]=true;
-  new T.GLTFLoader().load(root+'personaje_1k.glb?v='+BUILD_HASH,g=>{M2P.busy[root]=false;
-    try{if(!PJ2.tpls[root]){const tp=SDSoldier2.template(g,T);visHook(tp.material);M2P.tpl[root]=tp;}}catch(e){console.warn('m2 1k',e);}},undefined,()=>{M2P.busy[root]=false;});
-}
-function m2PrevAttach(R,root){
-  const I=SDSoldier2.create(M2P.tpl[root],T,M2P.tpl[root].material);R.v2=I;R.v2prev=root;
-  R.v2hid=R.root.children.filter(c=>c.visible);for(const c of R.v2hid)c.visible=false;
-  R.root.add(I.root);I.arma.add(R.aim);R.aim.rotation.set(0,0,0);pj2Aim(R,R.wpn||'rifle');
-}
-// the 1K one is no longer needed (the full one is on): its geometry, materials and textures leave the GPU
-function m2PrevDrop(root){
-  const tp=M2P.tpl[root];if(!tp)return;delete M2P.tpl[root];const seen=new Set();
-  const go=o=>o&&o.traverse&&o.traverse(x=>{if(x.geometry&&!seen.has(x.geometry)){seen.add(x.geometry);x.geometry.dispose();}
-    for(const m of [].concat(x.material||[])){if(!m||seen.has(m))continue;seen.add(m);for(const k in m){const t=m[k];if(t&&t.isTexture&&t!==ENV&&!seen.has(t)){seen.add(t);t.dispose();}}m.dispose();}});
-  go(tp.scene||tp.root);if(tp.material&&!seen.has(tp.material)){for(const k in tp.material){const t=tp.material[k];if(t&&t.isTexture&&t!==ENV)t.dispose();}tp.material.dispose();}
-}
+// (the 1K version while the full one arrives is the characters' own: pj2Attach, CARGA PROGRESIVA)
 function m2Operator(){
   const R=M2.R;if(!R)return;
   const want=SKIN_ON?SKINS[SKIN].pack:R.skinPack;
-  if(SKIN_ON&&want&&PJ2.on){const root=packRoot(want),full=!!PJ2.tpls[root];
-    if(!full&&!PJ2.failedRoots[root]){pj2Load(root);m2PrevLoad(root);}
-    if(full&&(R.skinPack!==want||R.v2prev)){const was=R.v2prev;pj2Detach(R);R.v2prev=null;R.skinPack=undefined;pj2SetPack(R,want);if(was)m2PrevDrop(was);}   // the full one is in
-    else if(!full&&R.skinPack!==want&&M2P.tpl[root]){pj2Detach(R);R.v2prev=null;R.skinPack=want;m2PrevAttach(R,root);}   // the 1K one, meanwhile
-  }
-  if(SKIN_ON&&R.skinPack!==want){if(m2PackOk(want))pj2SetPack(R,want);else if(want)pj2Load(packRoot(want));}   // the one before stays until then
-  if(R.v2prev&&!(R.v2&&R.skinPack&&packRoot(R.skinPack)===R.v2prev)){const was=R.v2prev;R.v2prev=null;if(!(R.skinPack&&packRoot(R.skinPack)===was))m2PrevDrop(was);}   // the 1K one went with a change
+  if(SKIN_ON&&R.skinPack!==want){const root=want?packRoot(want):null;
+    if(m2PackOk(want)||(root&&PJ2.prev[root]))pj2SetPack(R,want);else if(want)pj2Load(root);}   // the one before stays until then
   const k=R.skinPack,shown=!PJ2.on||!SKIN_ON?true:k===undefined?false:(k===null||!!R.v2||!!PJ2.failedRoots[packRoot(k)]);
   M2.opShown=shown;
   const busy=!shown?'CARGANDO OPERADOR…':R.skinPack!==want?'CARGANDO '+SKINS[SKIN].name+'…':R.v2prev?'ALTA RESOLUCIÓN…':'';
@@ -6699,21 +6716,12 @@ function m2Operator(){
   if(busy){setText($('#m2LoadTxt'),busy);el.classList.toggle('mini',shown);
     const C=M2.cur;if(C&&C.st){const x=Math.round(C.st.left+C.st.width/2)+'px',y=Math.round(shown?C.st.top+C.st.height-24:C.st.top+C.st.height/2)+'px';if(el.style.left!==x)el.style.left=x;if(el.style.top!==y)el.style.top=y;}}
 }
-/* CARGA PROGRESIVA del arma: every skin also has a light model (arma_tp.glb, made for the 3rd person: same frame and
-   pieces, small textures, ~0,1–0,3 MB). While its full one (KTX2 4K) unpacks, the weapon on show and the operator's
-   hands carry that one instead of a «CARGANDO…» or the HALCÓN. */
-const M2W={sc:{},busy:{}};
-function m2LightLoad(slot,id){
-  const k=slot+id;if(M2W.sc[k]||M2W.busy[k]||!T.GLTFLoader)return;M2W.busy[k]=true;
-  new T.GLTFLoader().load(wsDir(slot,id)+'arma_tp.glb?v='+BUILD_HASH,g=>{M2W.busy[k]=false;
-    g.scene.traverse(o=>{if(o.isMesh){o.castShadow=false;const m=o.material;if(m&&m.isMeshStandardMaterial){m.envMap=ENV;m.envMapIntensity=0.55;}}});M2W.sc[k]=g.scene;},undefined,()=>{M2W.busy[k]=false;});
-}
-function m2Light(slot){const id=WSKIN[slot];return m2SkinWait(slot)?M2W.sc[slot+id]||null:null;}
-// a weapon skin still on its way: what to say (the first time ÚLTIMA is 139 MB; then the browser keeps it)
+// a weapon skin still on its way: what to say (the first time ÚLTIMA is 139 MB; then the browser keeps it). With its
+// light model already in the hands (S.light) the note is a small one
 function m2SkinWait(slot){
-  const id=WSKIN[slot],S=WS_ST[slot];if(id==='halcon'||id==='navaja'||S.cur!==id||S.objs.length)return '';
+  const id=WSKIN[slot],S=WS_ST[slot];if(id==='halcon'||id==='navaja'||S.cur!==id||(S.objs.length&&!S.light))return '';
   const P=KTX2.prog&&KTX2.prog[WSKINS[slot][id].dir||id],pc=P&&P.n?Math.round(P.done/P.n*100):0;
-  return 'CARGANDO '+WSKINS[slot][id].name+(pc?' · '+pc+' %':'…');
+  return (S.light?'ALTA RESOLUCIÓN':'CARGANDO '+WSKINS[slot][id].name)+(pc?' · '+pc+' %':'…');
 }
 // ---- the room in 3D ----
 function m2Wake(){
@@ -6743,17 +6751,15 @@ function m2GunClone(){const g=new T.Group();for(const c of GUN.children){if(!c.v
 function m2KnifeClone(){const g=new T.Group();for(const c of KNIFE.children){if(!c.visible)continue;g.add(c.clone(true));}return g;}
 const _m2b=new T.Box3(),_m2s=new T.Vector3(),_m2c=new T.Vector3();
 function m2Weapons(){
-  for(const sl of ['rifle','knife'])if(m2SkinWait(sl))m2LightLoad(sl,WSKIN[sl]);
-  const ws=[VMA.ready,!!(M2.R&&M2.R.tp),WS_ST.rifle.cur,WS_ST.rifle.objs.length,WS_ST.knife.cur,WS_ST.knife.objs.length,MIRA.id,!!MIRA.model,(INV.equip&&INV.equip.camo)||'',M2.cat,M2.tab,!!m2Light('rifle'),!!m2Light('knife')].join('|');
+  const ws=[VMA.ready,!!(M2.R&&M2.R.tp),WS_ST.rifle.cur,WS_ST.rifle.objs.length,WS_ST.knife.cur,WS_ST.knife.objs.length,MIRA.id,!!MIRA.model,(INV.equip&&INV.equip.camo)||'',M2.cat,M2.tab,WS_ST.rifle.light,WS_ST.knife.light].join('|');
   if(ws===M2.wsig)return;M2.wsig=ws;
   // the rifle in the operator's hands (the 3rd-person HALCÓN hides; it is shared with nobody: this operator is only the menu's)
   const R=M2.R;
-  if(R&&R.tp&&R.tp.rifle&&VMA.R){if(M2.held&&M2.held.parent)M2.held.parent.remove(M2.held);R.tp.rifle.visible=false;const L=m2Light('rifle');M2.held=L?L.clone(true):m2GunClone();R.tp.rifle.parent.add(M2.held);}
+  if(R&&R.tp&&R.tp.rifle&&VMA.R){if(M2.held&&M2.held.parent)M2.held.parent.remove(M2.held);R.tp.rifle.visible=false;M2.held=m2GunClone();R.tp.rifle.parent.add(M2.held);}
   // the weapon on show (ARMAS): turned side-on, its centre at the origin
   if(M2.item&&M2.item.parent)M2.item.parent.remove(M2.item);M2.item=null;
-  const light=m2Light(M2.cat);
-  if(M2.tab!=='armas'||!VMA.ready||(m2SkinWait(M2.cat)&&!light))return;   // still downloading and no light model yet: the loader
-  const inner=light?light.clone(true):M2.cat==='knife'?m2KnifeClone():m2GunClone();inner.rotation.y=Math.PI/2;
+  if(M2.tab!=='armas'||!VMA.ready||(m2SkinWait(M2.cat)&&!WS_ST[M2.cat].light))return;   // nothing of the skin yet: the loader
+  const inner=M2.cat==='knife'?m2KnifeClone():m2GunClone();inner.rotation.y=Math.PI/2;
   const it=new T.Group();it.add(inner);it.updateMatrixWorld(true);
   _m2b.setFromObject(inner);_m2b.getSize(_m2s);if(_m2s.y>_m2s.x*1.2){inner.rotation.z=-Math.PI/2;it.updateMatrixWorld(true);_m2b.setFromObject(inner);_m2b.getSize(_m2s);}
   _m2b.getCenter(_m2c);inner.position.sub(_m2c);it.userData.size=_m2s.clone();
@@ -6827,7 +6833,7 @@ function m2Frame(rdt){
   M2.pivot.rotation.set(0,M2_YAW0+M2.yaw+sw.yaw,sw.lean);M2.pivot.position.y=sw.bob;
   M2.pivot.visible=M2.tab!=='mapas'&&M2.opShown!==false;   // MAPAS: the cards fill the screen; and never a half-loaded operator
   if(++M2.n%10===1)csFix(M2.pivot);   // the box figure's colours as in the game (CLÁSICO looked white)
-  const sw2=M2.tab==='armas'?m2SkinWait(M2.cat):'';setHidden($('#m2SlotLoad'),!sw2);if(sw2){setText($('#m2SlotTxt'),sw2);$('#m2SlotLoad').classList.toggle('mini',!!m2Light(M2.cat));}
+  const sw2=M2.tab==='armas'?m2SkinWait(M2.cat):'';setHidden($('#m2SlotLoad'),!sw2);if(sw2){setText($('#m2SlotTxt'),sw2);$('#m2SlotLoad').classList.toggle('mini',!!WS_ST[M2.cat].light);}
   // the soldier's level of detail is measured from the game camera: lend it the menu camera's place just for this call
   if(M2.R){_m2cp.copy(camera.position);camera.position.copy(M2.cam.position);animateSoldier(M2.R,{wpn:PRIMARY==='shotgun'?'shotgun':'rifle',vx:0,vz:0,pitch:M2_PITCH,aim:0,crouch:0},dt);camera.position.copy(_m2cp);}
   M2.spin.rotation.set(0.1,M2.wYaw+M2.wIdle*Math.sin(M2.t*0.45)*0.4,0);   // on show: side-on, swinging gently

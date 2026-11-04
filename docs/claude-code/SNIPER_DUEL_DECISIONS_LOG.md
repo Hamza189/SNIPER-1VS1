@@ -130,6 +130,14 @@ Del propietario, preguntado si había probado en el iPhone la CASA ATLAS 2.0 y l
 - Miras de ventana (holográfica, 2×, 3×) y botón de MIRA: VALIDADO EN IPHONE. Con lo que dijo el 02-11 («el zoom de las
   miras x4 x6 x8 y x12 es correcto»), las 8 miras quedan validadas.
 
+## 04-11-2026 — CARGA PROGRESIVA en partida (personajes y armas)
+Del propietario: «sí» (a llevar al juego la versión 1K del personaje y el modelo ligero del arma mientras llegan las 4K).
+Bots, rival online y tú en 3ª persona salen con la 1K en vez del soldado de cajas; tu rifle y tu cuchillo con el modelo
+ligero de la skin en vez del HALCÓN o la NAVAJA. Código común (`pj2Attach`, `wskinRifle`, `wskinKnife`); el menú usa lo
+mismo. Detalle en `docs/CARGA.md`.
+
+**Estado:** IMPLEMENTADO · PROBADO EN NAVEGADOR · PENDIENTE DE VALIDACIÓN EN IPHONE.
+
 ## 03-11-2026 (6) — CARGA PROGRESIVA del operador y del arma en el menú
 Del propietario: «el personaje sigue quedándose ahí pensando/cargando; quiero que el personaje y el arma carguen rápido».
 El operador sale con su versión 1K (JPG) y pasa solo a la completa; el arma enseña su modelo ligero (`arma_tp.glb`)

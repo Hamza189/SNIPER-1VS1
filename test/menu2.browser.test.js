@@ -90,7 +90,7 @@ const wait = (p, fn, arg, ms) => p.waitForFunction(fn, arg, { timeout: ms || 120
       document.querySelector('#m2Skins [data-ws=vector]').click(); S.advance(16);
       out.wait = !document.getElementById('m2SlotLoad').hidden && /CARGANDO VECTOR/.test(document.getElementById('m2SlotTxt').textContent) && !S.M2.item;
       out.first = S.KTX2.want('https://x/assets/armas/vector/ktx2/a.ktx2') && !S.KTX2.want('https://x/assets/armas/ratio/ktx2/a.ktx2');
-      const t = performance.now(); while (!(S.WS_ST.rifle.cur === 'vector' && S.WS_ST.rifle.objs.length) && performance.now() - t < 90000) { await new Promise(r => setTimeout(r, 100)); S.advance(16); }
+      const t = performance.now(); while (!(S.WS_ST.rifle.cur === 'vector' && S.WS_ST.rifle.objs.length && !S.WS_ST.rifle.light) && performance.now() - t < 90000) { await new Promise(r => setTimeout(r, 100)); S.advance(16); }
       for (let i = 0; i < 3; i++) S.advance(16);
       out.skin = S.WSKIN.rifle === 'vector' && JSON.parse(localStorage.getItem('sniperduel_wsRifle')) === 'vector';
       const body = S.WS_ST.rifle.objs[0], same = o => { let ok = false; o.traverse(x => { if (x.isMesh && body) body.traverse(y => { if (y.isMesh && y.geometry === x.geometry) ok = true; }); }); return ok; };
@@ -98,7 +98,7 @@ const wait = (p, fn, arg, ms) => p.waitForFunction(fn, arg, { timeout: ms || 120
       document.querySelector('#m2Cat [data-cat=knife]').click(); S.advance(16);
       out.knifePane = !document.querySelector('[data-catpane=knife]').hidden && document.querySelector('[data-catpane=rifle]').hidden && document.querySelectorAll('#m2Knives .m2W').length === 2;
       document.querySelector('#m2Knives [data-ws=tactica]').click();
-      const t2 = performance.now(); while (!S.WS_ST.knife.objs.length && performance.now() - t2 < 90000) { await new Promise(r => setTimeout(r, 100)); S.advance(16); }
+      const t2 = performance.now(); while (!(S.WS_ST.knife.objs.length && !S.WS_ST.knife.light) && performance.now() - t2 < 90000) { await new Promise(r => setTimeout(r, 100)); S.advance(16); }
       S.advance(16); out.knife = S.WSKIN.knife === 'tactica' && !!S.M2.item && S.M2.item.userData.size.x < 0.6 && document.getElementById('m2ArmName').textContent === 'TÁCTICA';
       document.querySelector('#m2Knives [data-ws=navaja]').click(); document.querySelector('#m2Cat [data-cat=rifle]').click(); document.querySelector('#m2Skins [data-ws=halcon]').click(); document.querySelector('#m2Miras [data-mira=sniper]').click();
       S.advance(16); out.back = S.MIRA.id === 'sniper' && S.WSKIN.rifle === 'halcon'; return out; });

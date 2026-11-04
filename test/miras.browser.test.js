@@ -123,7 +123,7 @@ function check(name, cond, info) { if (cond) { pass++; console.log('  ok   ' + n
     await q.waitForFunction(() => window.__SD && __SD.VMA.ready, null, { timeout: 180000 });
     for (const [skin, dir] of [['titan', 'titan'], ['ultima', 'ratio'], ['vector', 'vector'], ['sahara', 'lince']]) {
       const r = await q.evaluate(async ([skin, dir]) => { const S = __SD; S.setWskin('rifle', skin);
-        const t = performance.now(); while (!(S.WS_ST.rifle.objs.length && S.miraRifle() === dir) && performance.now() - t < 60000) await new Promise(r => setTimeout(r, 100));
+        const t = performance.now(); while (!(S.WS_ST.rifle.objs.length && !S.WS_ST.rifle.light && S.miraRifle() === dir) && performance.now() - t < 60000) await new Promise(r => setTimeout(r, 100));
         let hid = 0, cut = 0; const body = S.WS_ST.rifle.objs[0]; if (body) body.traverse(o => { if (!o.isMesh) return; if (!o.visible) hid++; if (o.geometry.userData.miraKept) cut++; });
         const on = { rifle: S.miraRifle(), hid, cut, model: !!S.MIRA.model && S.MIRA.model.visible, axis: +S.MIRA.place.axisY.toFixed(4) };
         S.setMira('sniper'); let hid2 = 0, cut2 = 0; if (body) body.traverse(o => { if (!o.isMesh) return; if (!o.visible) hid2++; if (o.geometry.userData.miraKept) cut2++; });
