@@ -6,7 +6,7 @@ Lo que pidió el propietario:
 - «la mira x4, x8 y x12 tienen que ser independientes y diferentes, cada una con sus características; en el móvil,
   apuntando, es imposible alejar o acercar: solo jugamos con dos dedos».
 
-**Estado:** IMPLEMENTADO · PROBADO EN NAVEGADOR · PENDIENTE DE VALIDACIÓN EN IPHONE.
+**Estado:** IMPLEMENTADO · PROBADO EN NAVEGADOR · VALIDADO EN IPHONE por el propietario (04-11-2026: las 8 miras y el botón de MIRA).
 
 ## Las 8 miras: cada una con un solo aumento
 Ya no hay botón de zoom ni hace falta un tercer dedo: cada aumento es una mira distinta y se elige antes o durante la

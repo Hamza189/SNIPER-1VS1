@@ -2,7 +2,7 @@
 
 **Estado (03-11-2026):** APROBADA por el propietario («Aprobada, súbela online») · PUBLICADA en el duelo y ONLINE ·
 servidor desplegado (`b7f5524`, comprobado en el servidor público: una sala en CASA ATLAS 2.0) · CASA ATLAS XL retirada
-(punto de recuperación: `b7f5524`) · PENDIENTE DE VALIDACIÓN EN IPHONE. Sale por defecto en los menús; `?casa2=0` la oculta
+(punto de recuperación: `b7f5524`) · VALIDADO EN IPHONE por el propietario (04-11: «todo bien»). Sale por defecto en los menús; `?casa2=0` la oculta
 en ese dispositivo.
 
 El encargo (el propietario, 02-11): «amplía la CASA ATLAS original que ya me gusta, sin rehacerla: duplica sus módulos,
@@ -131,6 +131,5 @@ Mismas 3 vistas por mapa, 1280 × 720. Con `GPU=1` es la GPU del PC: **no** vale
 - **Recuperarla:** `git checkout b7f5524 -- client/casaxl.js assets/maps/casa_atlas_xl test/casaxl.browser.test.js` y el bloque
   de `src/page.html` de ese commit.
 
-## Lo que falta
-- **Probarla en el iPhone**: contra bots y online con otra persona (tu novia en el Samsung): rendimiento, salidas, rutas y
-  coberturas.
+## Validación
+- 04-11-2026: el propietario la probó en el iPhone y dio el visto bueno («todo bien»).

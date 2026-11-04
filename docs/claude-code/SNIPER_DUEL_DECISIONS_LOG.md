@@ -11,9 +11,6 @@ Detalle de cada cambio (antes/después, medidas, cómo revertir): `docs/next-lev
 ### Siguiente prioridad
 | Tarea | Quién la desbloquea | Estado |
 |---|---|---|
-| **CASA ATLAS 2.0** (aprobada el 02-11, online el 03-11) — probarla en el iPhone contra bots y online con otra persona (menú › CASA ATLAS 2.0); la XL ya está retirada (`docs/CASA-ATLAS-2.md`) | Propietario | PUBLICADO · PROBADO ONLINE · PENDIENTE DE VALIDACIÓN EN IPHONE |
-| **Miras de ventana y botón de MIRA** (02-11) — en el iPhone: que la holográfica, la 2× y la 3× se vean enteras con la retícula dentro, y el botón «1,5×/2×…» del HUD que cambia de mira con un toque | Propietario | PUBLICADO · PENDIENTE DE VALIDACIÓN EN IPHONE |
-| **Miras** (31-10) — probar en el iPhone las 8 miras, cada una con un solo aumento (menú › ficha del arma › Mira del rifle, o el inventario en partida): que el punto rojo y la holográfica se vean bien con el rifle a la vista y que el 2×, 3×, 4×, 6×, 8× y 12× tengan el aumento y el aspecto que esperas (`docs/MIRAS.md`) | Propietario | PUBLICADO · PENDIENTE DE VALIDACIÓN EN IPHONE |
 | **Parpadeo y menú** (31-10) — mirar en el iPhone que las fachadas lejanas ya no parpadean y que AJUSTES sale más pequeño; mandar MEDIR RENDIMIENTO para ver lo que cuesta el suavizado de bordes (se puede apagar en GRÁFICOS) (`docs/PARPADEO.md`) | Propietario | PUBLICADO · PENDIENTE DE VALIDACIÓN EN IPHONE |
 | **Game feel 3.0** — probar en el iPhone el movimiento TÁCTICO (ya es el del servidor), las animaciones nuevas (GF-2: esprint, salto, disparo, impacto y muerte sin saltos) y el CONTORNO rojo/azul; mandar MEDIR RENDIMIENTO con la línea «CPU por partes» (`docs/GAMEFEEL.md`) | Propietario | PUBLICADO · PENDIENTE DE VALIDACIÓN EN IPHONE |
 | **Cuentas** — probar en el iPhone: PERFIL › CREAR CUENTA (Face ID), ENTRAR en otro dispositivo, amigos e invitación (ya sin bandera) | Propietario | PUBLICADO · PENDIENTE DE VALIDACIÓN EN IPHONE |
@@ -87,6 +84,13 @@ Detalle de cada cambio (antes/después, medidas, cómo revertir): `docs/next-lev
 | Encargos para ChatGPT: CASA XL, CASA XL v2 y personaje | 18-10 / 19-10 |
 | Personaje 3D rev. 03 hecho por Claude e integrado tras `?pj=2` (bots y rival online) | 20-10 · directo a `main` |
 | Personajes realistas + elegir personaje (con el SOLDADO de `?pj=2`) y HUD 2 por defecto (aprobado en iPhone y PC) | 28-10 · directo a `main` |
+
+## 04-11-2026 — CASA ATLAS 2.0 y miras validadas en el iPhone
+Del propietario, preguntado si había probado en el iPhone la CASA ATLAS 2.0 y las miras de ventana con el botón de MIRA:
+«Si todo bien» y «si».
+- CASA ATLAS 2.0 (contra bots y online): VALIDADO EN IPHONE. Sale de la tabla de tareas abiertas.
+- Miras de ventana (holográfica, 2×, 3×) y botón de MIRA: VALIDADO EN IPHONE. Con lo que dijo el 02-11 («el zoom de las
+  miras x4 x6 x8 y x12 es correcto»), las 8 miras quedan validadas.
 
 ## 03-11-2026 (6) — CARGA PROGRESIVA del operador y del arma en el menú
 Del propietario: «el personaje sigue quedándose ahí pensando/cargando; quiero que el personaje y el arma carguen rápido».
