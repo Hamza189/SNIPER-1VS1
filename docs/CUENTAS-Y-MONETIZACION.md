@@ -96,7 +96,11 @@ cuenta de desarrollador de 99 $/año). Las passkeys no necesitan nada de eso.
      - no hace falta ninguna URI de redirección.
   4. Copiar el **ID de cliente** (termina en `.apps.googleusercontent.com`) y pasárselo a Claude. Es público, no es una
      contraseña. El «secreto de cliente» **no** hace falta: no lo compartas.
-  5. Claude lo pone en `GOOGLE_CLIENT_ID` (`wrangler.toml`) y publica. Hasta entonces el botón no sale.
+  5. Claude lo pone en `GOOGLE_CLIENT_ID` (`wrangler.toml`) y publica. Hecho el 04-11-2026 (proyecto «sniper-duel-513711»).
+  6. Mientras la app esté «En prueba», solo entran los «usuarios de prueba» de «Público». Para abrirla a todos:
+     «Información de la marca» con página principal `https://hamza189.github.io/SNIPER-1VS1/`, política
+     `https://hamza189.github.io/SNIPER-1VS1/privacidad.html` (`privacidad.html`) y dominio `hamza189.github.io`;
+     luego «Publicar app».
 - **Pruebas:**
   - `node test/accounts.test.js` (Google con una llave RSA de prueba: crear, volver, vincular y rechazos);
   - `node test/google.browser.test.js` (la página con un Google simulado).

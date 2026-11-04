@@ -10,7 +10,7 @@ ALLOWED_ORIGINS = "https://hamza189.github.io,http://localhost,http://127.0.0.1"
 # cuentas de administrador: todos los objetos desbloqueados para probarlos (server/accounts.js). La del propietario.
 ADMIN_IDS = "SD-QTFX-77ZM"
 # Entrar con Google: el ID de cliente OAuth (público, no es secreto) de Google Cloud. Vacío = el botón no sale.
-GOOGLE_CLIENT_ID = ""
+GOOGLE_CLIENT_ID = "1054334204272-tqvhk7uab6q4hmsploia0tv8asl7dffg.apps.googleusercontent.com"
 
 [[durable_objects.bindings]]
 name = "ROOMS"
