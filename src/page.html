@@ -1018,7 +1018,7 @@ body.m2 #menu .menuInner{display:none}
       <div class="row"><button class="btn ghost" id="profCopy" type="button" style="font-size:18px">COPIAR CÓDIGO</button><button class="btn ghost" id="profPaste" type="button" style="font-size:18px">RESTAURAR</button></div>
       <p id="profCode" hidden></p><input type="text" id="profIn" placeholder="Pega aquí el código (SD1.…)" autocomplete="off" spellcheck="false" hidden><span class="lbl kitNote" id="profMsg"></span></div>
     <div id="accBox" aria-live="polite"></div>
-    <p class="setHelp" style="margin:0">Jugar no pide cuenta. Con cuenta entras desde cualquier dispositivo con una llave (passkey: Face ID, huella o el PIN del móvil; sin contraseñas) y tienes amigos e invitaciones.</p>
+    <p class="setHelp" style="margin:0">Jugar no pide cuenta. Con cuenta entras desde cualquier dispositivo con tu cuenta de Google o con una llave (passkey: Face ID, huella o el PIN del móvil); sin contraseñas. Y tienes amigos, invitaciones y tus objetos.</p>
     <div class="row"><button class="btn ghost" id="profClose" type="button" style="font-size:20px">VOLVER</button></div>
   </div>
 </div>
@@ -6224,6 +6224,8 @@ async function accApi(p,body){
 }
 const ACC_ERR={session:'La sesión ha caducado: vuelve a entrar.',no_account:'Esa cuenta no existe.',not_friends:'Solo puedes invitar a tus amigos.',id:'Ese código no es válido (SD-XXXX-XXXX).',
   busy:'Demasiados intentos: espera un minuto.',full:'Lista llena.',signature:'La llave no coincide.',cred:'Esa llave no es de esta cuenta.',challenge:'Ha pasado demasiado tiempo: vuelve a intentarlo.',expired:'Ha pasado demasiado tiempo: vuelve a intentarlo.',
+  google:'Google no ha confirmado tu cuenta: vuelve a intentarlo.',google_taken:'Esa cuenta de Google ya es de otra cuenta del juego.',google_other:'Esta cuenta ya tiene otro Google vinculado.',
+  google_off:'Entrar con Google aún no está activado.',google_keys:'No se pudo hablar con Google: vuelve a intentarlo.',
   no_boxes:'No te quedan cajas: se ganan jugando.',daily_done:'Ya has recogido la caja de hoy.',not_owned:'Ese objeto aún no es tuyo.',wait:'Puntos de caja: espera un minuto entre partidas.',short:'Partida demasiado corta para sumar puntos de caja.'};
 function accMsg(t){ACC.msg=t||'';const m=document.getElementById('accMsg');if(m)m.textContent=ACC.msg;}
 const accErrText=e=>e&&e.name==='NotAllowedError'?'Cancelado.':e&&e.status===0?'No hay conexión con el servidor.':ACC_ERR[e&&e.message]||('No se pudo ('+(e&&e.message||'error')+').');
@@ -6276,10 +6278,11 @@ function accUI(){
   const A=ACC.acc,e=escapeHtml,row=(name,id,btns)=>'<div><b>'+e(name||'JUGADOR')+'</b><span class="lbl">'+e(id)+'</span>'+btns.map(([l,a,v])=>'<button type="button" data-acc="'+a+'" data-id="'+e(v||id)+'">'+l+'</button>').join('')+'</div>';
   let h='<span class="lbl">Cuenta en la nube</span>';
   if(!ACC.token||!A){
-    h+=ACC.token?'<span class="lbl">Cargando la cuenta…</span>':'<div class="row"><button class="btn" type="button" data-acc="crear">CREAR CUENTA</button><button class="btn ghost" type="button" data-acc="entrar">ENTRAR</button></div>';
+    h+=ACC.token?'<span class="lbl">Cargando la cuenta…</span>':'<div class="row" id="accGoogle" hidden></div><div class="row"><button class="btn" type="button" data-acc="crear">CREAR CUENTA</button><button class="btn ghost" type="button" data-acc="entrar">ENTRAR</button><span class="lbl" style="align-self:center">con llave (Face ID, huella o PIN)</span></div>';
   }else{
     h+='<div class="row"><span class="lbl" style="flex:1">Tu código de amigo: <b style="font-size:16px;color:var(--hud)">'+e(A.id)+'</b></span><button class="btn ghost" type="button" data-acc="copiar">COPIAR</button><button class="btn ghost" type="button" data-acc="salir">SALIR</button></div>';
     if(A.inv)h+='<div class="row"><span class="lbl" style="flex:1">Cajas: <b style="font-size:16px;color:var(--hud)">'+A.inv.boxes+'</b> · objetos: '+A.inv.items.length+'/'+SDItems.ITEMS.length+(A.inv.admin?' · <b style="color:var(--hud)">ADMIN</b>':'')+(A.inv.title?' · título: <b style="color:var(--hud)">'+e(A.inv.title)+'</b>':'')+'</span><button class="btn ghost" type="button" data-acc="cajas">CAJAS Y OBJETOS</button></div>';
+    if(!A.google)h+='<div class="row" id="accGoogle" hidden><span class="lbl" style="flex-basis:100%">Vincula tu Google para entrar con él en cualquier dispositivo (tu cuenta y tus objetos no cambian)</span><div id="accGoogleBtn"></div></div>';
     h+='<div class="row"><input type="text" id="accFriend" maxlength="12" placeholder="Código de un amigo (SD-…)" autocomplete="off" spellcheck="false" style="flex:1;min-width:150px"><button class="btn ghost" type="button" data-acc="pedir">AÑADIR</button></div>';
     if(A.invites.length)h+='<span class="lbl">Invitaciones</span><div class="accList">'+A.invites.map(i=>row(i.name+' · sala '+i.sala,i.id,[['UNIRSE','unirse',i.sala]])).join('')+'</div>';
     if(A.requests.length)h+='<span class="lbl">Solicitudes</span><div class="accList">'+A.requests.map(r=>row(r.name,r.id,[['ACEPTAR','aceptar'],['RECHAZAR','rechazar']])).join('')+'</div>';
@@ -6287,6 +6290,36 @@ function accUI(){
   }
   h+='<span class="lbl kitNote" id="accMsg">'+e(ACC.msg)+'</span>';
   box.innerHTML=h;
+  gsiRender();
+}
+/* ENTRAR CON GOOGLE (04-11-2026, owner: «mejor registrarse con Google… lo del Face ID de primeras es raro»; server/accounts.js,
+   docs/CUENTAS-Y-MONETIZACION.md). Google's own button (Google Identity Services, loaded only when the account panel shows
+   and the server has a client ID); its signed token goes to our server, which checks it and opens or creates the account.
+   Its nonce is one of our login challenges (kept 4 min, then a fresh one). Signed in already: the button links Google to
+   that account instead. */
+const GSI={id:null,asked:null,script:null,nonce:'',at:0};
+function gsiConfig(){return GSI.asked||(GSI.asked=accApi('/cuenta/google/config').then(j=>GSI.id=j.clientId||'',()=>{GSI.asked=null;return '';}));}
+function gsiScript(){return GSI.script||(GSI.script=new Promise((res,rej)=>{const sc=document.createElement('script');sc.src='https://accounts.google.com/gsi/client';sc.async=true;
+  sc.onload=res;sc.onerror=()=>{GSI.script=null;rej(new Error('gsi'));};document.head.appendChild(sc);}));}
+async function gsiRender(){
+  const box=document.getElementById('accGoogle');if(!box)return;
+  const id=await gsiConfig();if(!id||!document.body.contains(box))return;
+  try{
+    await gsiScript();if(!window.google||!google.accounts||!google.accounts.id)return;
+    if(!GSI.nonce||performance.now()-GSI.at>240000){GSI.nonce=(await accApi('/cuenta/entrar/reto')).challenge;GSI.at=performance.now();
+      google.accounts.id.initialize({client_id:id,nonce:GSI.nonce,callback:gsiDone,ux_mode:'popup',context:'signin',itp_support:true});}
+    const el=document.getElementById(ACC.token?'accGoogleBtn':'accGoogle');if(!el)return;
+    box.hidden=false;el.innerHTML='';google.accounts.id.renderButton(el,{theme:'filled_black',size:'large',shape:'rectangular',text:ACC.token?'continue_with':'signin_with',locale:'es',width:280});
+  }catch(e){}
+}
+async function gsiDone(resp){
+  GSI.nonce='';   // used: the next button gets a fresh challenge
+  accMsg('Entrando con Google…');
+  try{
+    if(ACC.token&&ACC.acc){const j=await accApi('/cuenta/google/vincular',{credential:resp&&resp.credential});ACC.acc=j.account;accUI();accMsg('GOOGLE VINCULADO: ya puedes entrar con Google en cualquier dispositivo.');}
+    else{const name=PROFILE.name||SDProto.cleanName($('#profName').value)||'';
+      const j=await accApi('/cuenta/google',{credential:resp&&resp.credential,name,id:PROFILE.id});accSet(j.token,j.account);accMsg('DENTRO');}
+  }catch(e){accFail(e);gsiRender();}
 }
 document.addEventListener('click',ev=>{const b=ev.target.closest&&ev.target.closest('#accBox [data-acc]');if(!b)return;SFX.ui();const a=b.dataset.acc,id=b.dataset.id;
   if(a==='crear')accCreate();else if(a==='entrar')accLogin();else accDo(a,id);});
@@ -7177,6 +7210,6 @@ if(FLORA.on){const gl=new T.GLTFLoader();let n=2;
       if(P3W.kit)later();else{const w=setInterval(()=>{if(P3W.kit){clearInterval(w);later();}},300);}}}}
 function floraFlush(){if(FLORA.go)FLORA.go();}
 
-window.__SD={M2,m2Tab,m2Sync,m2Sleep,openSettings,closeSettings,MIRA,setMira,miraApply,miraClipGeo,miraRifle,openMiras,closeMiras,updateReticle,ENV,MOVE_CLASSIC,MOV_CLASSIC,VIS,VIS_COL,VIS_HULL,visOn,visFrame,visWho,selfHit,PROF,KTX2,R2_ON,R2_URL,PIC,GYRO,gyroEv,crossApply,btnPress,settingsChanged,perfTexMB(){const t=perfTextures();return {real:SDPerf.textureMB(t),asRGBA:SDPerf.textureMB(t.map(x=>Object.assign({},x,{bytes:0})))};},REMOTES,netScoreHud,shotTargets,MINI,miniLayer,miniPing,clockFrame,setOffTime,get OFF_TIME(){return OFF_TIME;},ACC,accRefresh,INV,invSync,camoApply,openInv,invOpenBox,WSKIN,WS_ST,setWskin,get RIF(){return RIF;},TPV,SELF,get PROFILE(){return PROFILE;},openProfile,endMatch,PJ_MIX,MIX_ORDER,SKINS,get SKIN(){return SKIN;},setSkin,pj2SetPack,rivalSkin,PERF,perfRun,HUD2,get H2(){return HUD2?H2:null;},leanIn:HUD2?leanIn:null,h2Frame:HUD2?h2Frame:null,PJ2,pj2Load,CASA,casaLoad,C2,C2B,C2S,casa2Load,FLORA,RATS,RAT_WORLD,ratsFrame,SHADOW_FADE,setDuelLethal,get DUEL_LETHAL(){return DUEL_LETHAL;},gfxDiagText,get P3ON(){return P3ON;},COBCC,damagePlayer,TEX,sunFollow,setSunSnap(on){SUN_SNAP=!!on;},sun,P0,E10,e10Lod,DIAG,setTrainMove,LIGHT:{sun,hemi,skyMat,LOOK,P3},P3W,freeze(on){SIM_FREEZE=!!on;},SHOT,VMA,makeSoldier,animateSoldier,BOT_MAT,scene,camera,RemotePlayer,PMprev,PIS,PROOT,RIF,WROOT,SHO_:null,MANUAL,advance(ms){frameBody(last+ms);},get LAST_PELLETS(){return LAST_PELLETS;},SCORE,SCFG,SROOT,SHO,setPrimaryChoice,get PRIMARY(){return PRIMARY;},PCORE,PCFG,setWorld,WORLDS,get WORLD_ID(){return WORLD_ID;},renderer,GFX,gfxApply,get NET(){return NET;},get REMOTE(){return REMOTE;},W,get NAV(){return NAV;},setOffMap,get OFFMAP(){return OFFMAP;},TOUCH,EDIT,openEditor,get SETTINGS(){return SETTINGS;},get LAYOUT(){return LAYOUT;},checkOrientation,MAT,LOAD,TRAINERS,get RANGE_BOTS(){return RANGE_BOTS;},TRAIN,setTrain,setLethal,kitNote,GINS,TDIAG,AU,get TOUCH_EVENTS(){return TOUCH_EVENTS;},impactFX,bodyFX,get DECALS(){return DECALS;},surfaceOf,soundDelay,aimSelfTest,P,PM,WS,WCORE,RECOIL,AIM,BOTS,DUMMIES,BULLETS,EVENTS,PARTS,STATS,get state(){return state;},get mode(){return mode;},setMode,input,startMatch,simTick,frame,toMenu,pause,resume};
+window.__SD={GSI,gsiDone,gsiRender,M2,m2Tab,m2Sync,m2Sleep,openSettings,closeSettings,MIRA,setMira,miraApply,miraClipGeo,miraRifle,openMiras,closeMiras,updateReticle,ENV,MOVE_CLASSIC,MOV_CLASSIC,VIS,VIS_COL,VIS_HULL,visOn,visFrame,visWho,selfHit,PROF,KTX2,R2_ON,R2_URL,PIC,GYRO,gyroEv,crossApply,btnPress,settingsChanged,perfTexMB(){const t=perfTextures();return {real:SDPerf.textureMB(t),asRGBA:SDPerf.textureMB(t.map(x=>Object.assign({},x,{bytes:0})))};},REMOTES,netScoreHud,shotTargets,MINI,miniLayer,miniPing,clockFrame,setOffTime,get OFF_TIME(){return OFF_TIME;},ACC,accRefresh,INV,invSync,camoApply,openInv,invOpenBox,WSKIN,WS_ST,setWskin,get RIF(){return RIF;},TPV,SELF,get PROFILE(){return PROFILE;},openProfile,endMatch,PJ_MIX,MIX_ORDER,SKINS,get SKIN(){return SKIN;},setSkin,pj2SetPack,rivalSkin,PERF,perfRun,HUD2,get H2(){return HUD2?H2:null;},leanIn:HUD2?leanIn:null,h2Frame:HUD2?h2Frame:null,PJ2,pj2Load,CASA,casaLoad,C2,C2B,C2S,casa2Load,FLORA,RATS,RAT_WORLD,ratsFrame,SHADOW_FADE,setDuelLethal,get DUEL_LETHAL(){return DUEL_LETHAL;},gfxDiagText,get P3ON(){return P3ON;},COBCC,damagePlayer,TEX,sunFollow,setSunSnap(on){SUN_SNAP=!!on;},sun,P0,E10,e10Lod,DIAG,setTrainMove,LIGHT:{sun,hemi,skyMat,LOOK,P3},P3W,freeze(on){SIM_FREEZE=!!on;},SHOT,VMA,makeSoldier,animateSoldier,BOT_MAT,scene,camera,RemotePlayer,PMprev,PIS,PROOT,RIF,WROOT,SHO_:null,MANUAL,advance(ms){frameBody(last+ms);},get LAST_PELLETS(){return LAST_PELLETS;},SCORE,SCFG,SROOT,SHO,setPrimaryChoice,get PRIMARY(){return PRIMARY;},PCORE,PCFG,setWorld,WORLDS,get WORLD_ID(){return WORLD_ID;},renderer,GFX,gfxApply,get NET(){return NET;},get REMOTE(){return REMOTE;},W,get NAV(){return NAV;},setOffMap,get OFFMAP(){return OFFMAP;},TOUCH,EDIT,openEditor,get SETTINGS(){return SETTINGS;},get LAYOUT(){return LAYOUT;},checkOrientation,MAT,LOAD,TRAINERS,get RANGE_BOTS(){return RANGE_BOTS;},TRAIN,setTrain,setLethal,kitNote,GINS,TDIAG,AU,get TOUCH_EVENTS(){return TOUCH_EVENTS;},impactFX,bodyFX,get DECALS(){return DECALS;},surfaceOf,soundDelay,aimSelfTest,P,PM,WS,WCORE,RECOIL,AIM,BOTS,DUMMIES,BULLETS,EVENTS,PARTS,STATS,get state(){return state;},get mode(){return mode;},setMode,input,startMatch,simTick,frame,toMenu,pause,resume};
 })();
 </script>

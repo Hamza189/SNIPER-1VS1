@@ -65,6 +65,42 @@ cuenta de desarrollador de 99 $/año). Las passkeys no necesitan nada de eso.
   administración en la página.
 - Para añadir o quitar una cuenta: editar `ADMIN_IDS` (separadas por comas) y publicar. En el servidor local: `ADMIN_IDS=... node server/node.js`.
 
+## Entrar con Google (04-11-2026)
+- **Pedido del propietario:** «mejor registrarse por correo, lo del Face ID de primeras es un poco raro», y después eligió
+  «Entrar con Google».
+- **Cómo funciona:**
+  - El botón es el de Google (Google Identity Services). Google le da a la página un token firmado y el servidor
+    (`server/accounts.js`) comprueba cuatro cosas:
+    - la firma, con las llaves públicas de Google;
+    - que el token es para nuestro ID de cliente;
+    - que no ha caducado;
+    - que su «nonce» es un reto nuestro sin usar.
+  - La primera vez se crea la cuenta; las siguientes se entra en la misma.
+  - Solo se guarda el identificador de Google (`sub`): ni el correo ni la contraseña.
+  - Las llaves (passkeys) siguen funcionando igual.
+- **Vincular:** dentro de una cuenta hecha con llave (la del propietario, con ADMIN), PERFIL ofrece «Continuar con Google».
+  Después, Google abre esa misma cuenta, con sus objetos.
+- **Coste:** cero. No hace falta ningún servicio de pago ni mandar correos.
+- **Lo que tiene que hacer el propietario (una vez, gratis, unos 5 minutos):**
+  1. Entrar en https://console.cloud.google.com/ con su cuenta de Google y crear un proyecto («SNIPER DUEL»).
+  2. «APIs y servicios» › «Pantalla de consentimiento de OAuth» (o «Google Auth Platform»):
+     - tipo **Externo**;
+     - nombre de la app «SNIPER DUEL»;
+     - su correo de asistencia;
+     - publicar la app («En producción»), para que entre cualquiera.
+
+     Solo se piden los datos básicos (nombre e ID): Google no exige revisión.
+  3. «Credenciales» › «Crear credenciales» › «ID de cliente de OAuth»:
+     - tipo **Aplicación web**;
+     - en «Orígenes de JavaScript autorizados», añadir `https://hamza189.github.io`;
+     - no hace falta ninguna URI de redirección.
+  4. Copiar el **ID de cliente** (termina en `.apps.googleusercontent.com`) y pasárselo a Claude. Es público, no es una
+     contraseña. El «secreto de cliente» **no** hace falta: no lo compartas.
+  5. Claude lo pone en `GOOGLE_CLIENT_ID` (`wrangler.toml`) y publica. Hasta entonces el botón no sale.
+- **Pruebas:**
+  - `node test/accounts.test.js` (Google con una llave RSA de prueba: crear, volver, vincular y rechazos);
+  - `node test/google.browser.test.js` (la página con un Google simulado).
+
 ## 3. Objetos: skins, armas y cajas
 - **Solo cosméticos**: nada que cambie daño, cadencia, munición, velocidad ni zonas de impacto (no pay-to-win). Las
   zonas de impacto son las mismas para todos los personajes; ya lo comprueba `tools/check-character-hitbox.js`.

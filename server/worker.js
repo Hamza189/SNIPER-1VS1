@@ -41,7 +41,7 @@ export default {
     if (url.pathname.startsWith('/cuenta/') && req.method === 'POST') {
       if (!originOk(env, req.headers.get('Origin'))) return json({ error: 'origin' }, 403, h);
       // creating accounts and login challenges: no more than 10 a minute from one address
-      if (env.CREATE_LIMITER && (url.pathname === '/cuenta/nueva' || url.pathname === '/cuenta/entrar/reto')) {
+      if (env.CREATE_LIMITER && (url.pathname === '/cuenta/nueva' || url.pathname === '/cuenta/entrar/reto' || url.pathname === '/cuenta/google')) {
         try { const ip = req.headers.get('CF-Connecting-IP') || 'x'; const { success } = await env.CREATE_LIMITER.limit({ key: 'acc:' + ip }); if (!success) return json({ error: 'busy' }, 429, h); } catch (e) {}
       }
       let body = {}; try { const t = await req.text(); if (t.length > 16384) return json({ error: 'big' }, 413, h); body = t ? JSON.parse(t) : {}; } catch (e) { return json({ error: 'bad' }, 400, h); }
@@ -49,7 +49,7 @@ export default {
         const r = await ns.get(ns.idFromName(name)).fetch('https://acc/x', { method: 'POST', body: JSON.stringify({ action, body: b, token }) });
         return r.json();
       };
-      const r = await SDAccounts.api(url.pathname, body, req.headers.get('Authorization'), { acc: id => call(env.ACCOUNTS, id), dir: call(env.DIR, 'directorio') });
+      const r = await SDAccounts.api(url.pathname, body, req.headers.get('Authorization'), { acc: id => call(env.ACCOUNTS, id), dir: call(env.DIR, 'directorio'), google: { clientId: env.GOOGLE_CLIENT_ID || '' } });
       return json(r.body, r.status, h);
     }
     const m = /^\/room\/([A-Z0-9]{6})$/.exec(url.pathname);

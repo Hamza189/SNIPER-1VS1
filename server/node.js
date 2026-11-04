@@ -30,7 +30,8 @@ function startServer(opts) {
   // accounts: one store per account and one directory, like the Durable Objects on Cloudflare
   const accStores = new Map(), dirStore = memStore(), accOpts = { origins, now: () => clock(), admins: (opts.admins || process.env.ADMIN_IDS || '').toString().split(',').map(s => s.trim()).filter(Boolean) };
   const accounts = { acc: id => { if (!accStores.has(id)) accStores.set(id, memStore()); return SDAccounts.account(accStores.get(id), accOpts); },
-    dir: SDAccounts.directory(dirStore, accOpts) };
+    dir: SDAccounts.directory(dirStore, accOpts),
+    google: { clientId: opts.googleClientId || process.env.GOOGLE_CLIENT_ID || '', keys: opts.googleKeys, now: opts.googleNow } };
 
   function makeRoom() {
     let code; do { code = PR.codeFrom(crypto.randomBytes(6)); } while (rooms.has(code));

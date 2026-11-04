@@ -14,6 +14,9 @@
      /cuenta/entrar {cred}                → {token, account}          entrar: 2) la firma (la cuenta sale de userHandle)
      /cuenta/yo *                         → {account}                 nombre, amigos, solicitudes, invitaciones
      /cuenta/nombre * {name}   /cuenta/salir *
+     /cuenta/google/config                → {clientId}                Entrar con Google (04-11-2026): el ID público del cliente
+     /cuenta/google {credential, name?, id?} → {token, account}       entrar con Google o crear la cuenta con ella (nonce = reto)
+     /cuenta/google/vincular * {credential} → {account}               añadir Google a la cuenta en la que estás
      /cuenta/amigos/pedir * {id}   aceptar * {id}   rechazar * {id}   quitar * {id}   invitar * {id, sala}
      /cuenta/caja/abrir *  /cuenta/caja/diaria *  /cuenta/equipar * {slot, id}  /cuenta/partida * {won, secs}  (paso D)
    Inventario y cajas (paso D, docs/INVENTARIO-Y-CAJAS.md): lo que tienes lo guarda y lo concede el servidor. Las cajas
@@ -133,7 +136,7 @@ function account(store, opts) {
     friends: Object.entries(a.friends).map(([id, f]) => ({ id, name: f.name })),
     requests: Object.entries(a.requests).map(([id, r]) => ({ id, name: r.name })),
     invites: Object.entries(a.invites).filter(([, v]) => v.exp > t).map(([id, v]) => ({ id, name: v.name, sala: v.sala })),
-    inv: pubInv(a, t) }; };
+    inv: pubInv(a, t), google: !!a.google }; };
   const pubInv = (a, t) => { const I = inv(a), D = today(I, t);
     return { boxes: I.boxes, pts: I.pts, frag: I.frag, items: isAdmin(a) ? IT.ITEMS.map(it => it.id) : Object.keys(I.items), admin: isAdmin(a), equip: Object.assign({}, I.equip), title: titleOf(I),
       daily: I.daily < dayOf(t), dailyIn: (dayOf(t) + 1) * DAY - t, botsLeft: Math.max(0, PTS.botsDay - D.bots), onlineLeft: Math.max(0, PTS.onlineDay - D.online) }; };
@@ -211,6 +214,21 @@ function account(store, opts) {
           const a = await store.get('acc'); if (!a || !a.friends[body.from]) return err(403, 'not_friends');
           a.invites[body.from] = { name: cleanName(body.name), sala: body.sala, exp: now() + LIM.inviteMs }; await store.put('acc', a); return ok({});
         }
+        // Entrar con Google (04-11-2026): api() ya comprobó el token de Google; aquí solo se crea o se abre la cuenta
+        case 'google-crear': {
+          if (await store.get('acc')) return err(409, 'taken');
+          if (typeof body.sub !== 'string' || !body.sub) return err(400, 'bad');
+          const a = { id: body.id, name: cleanName(body.name) || 'JUGADOR', created: now(), creds: [], google: body.sub, friends: {}, requests: {}, invites: {}, tokens: {} };
+          inv(a);
+          const tokenOut = await issue(a); await store.put('acc', a);
+          return ok({ token: tokenOut, account: pub(a) });
+        }
+        case 'google-entrar': {
+          const a = await store.get('acc'); if (!a) return err(404, 'no_account');
+          if (!a.google || a.google !== body.sub) return err(401, 'google');
+          const tokenOut = await issue(a); await store.put('acc', a);
+          return ok({ token: tokenOut, account: pub(a) });
+        }
         case 'existe': { const a = await store.get('acc'); return a ? ok({ id: a.id, name: a.name }) : err(404, 'no_account'); }
         case 'premio': {   // puntos de una partida online (matchReward); cada partida cuenta una sola vez
           const a = await store.get('acc'); if (!a) return err(404, 'no_account');
@@ -228,6 +246,10 @@ function account(store, opts) {
       const a = s.a;
       switch (action) {
         case 'yo': return ok({ account: pub(a) });
+        case 'google-vincular': {
+          if (a.google && a.google !== body.sub) return err(409, 'google_other');
+          a.google = body.sub; await store.put('acc', a); return ok({ account: pub(a) });
+        }
         case 'nombre': a.name = cleanName(body.name) || a.name; await store.put('acc', a); return ok({ account: pub(a) });
         case 'salir': delete a.tokens[s.h]; await store.put('acc', a); return ok({});
         case 'aceptar': if (!a.requests[body.id]) return err(404, 'no_request');
@@ -276,12 +298,48 @@ function directory(store, opts) {
       if (Object.keys(list).length >= LIM.dirChallenges) return err(429, 'busy');
       const ch = b64u(rand(32)); list[ch] = t + LIM.challengeMs; await store.put('ch', list); return ok({ challenge: ch });
     }
+    if (action === 'g-buscar') { const id = typeof body.sub === 'string' ? await store.get('g:' + body.sub) : null; return id ? ok({ id }) : err(404, 'no_account'); }
+    if (action === 'g-guardar') {
+      if (typeof body.sub !== 'string' || !isId(body.id)) return err(400, 'bad');
+      const old = await store.get('g:' + body.sub); if (old && old !== body.id) return err(409, 'google_taken');
+      await store.put('g:' + body.sub, body.id); return ok({});
+    }
     if (action === 'consumir') {
       const ok_ = typeof body.ch === 'string' && list[body.ch] > t; delete list[body.ch]; await store.put('ch', list);
       return ok_ ? ok({}) : err(400, 'challenge');
     }
     return err(404, 'action');
   };
+}
+
+// ---- Entrar con Google (04-11-2026, docs/CUENTAS-Y-MONETIZACION.md): el botón de Google da al navegador un «ID token»
+// (un JWT firmado por Google, RS256). Aquí se comprueba la firma con las llaves públicas de Google, que es para nuestro
+// cliente (aud), que no ha caducado y que su «nonce» es un reto nuestro sin usar (no se puede reutilizar un token robado).
+// Solo se guarda el identificador de Google (sub), ni el correo ni el nombre de la cuenta de Google.
+const GKEYS = { keys: null, exp: 0 };
+async function googleKeys() {
+  if (GKEYS.keys && GKEYS.exp > Date.now()) return GKEYS.keys;
+  const r = await fetch('https://www.googleapis.com/oauth2/v3/certs'); const j = await r.json();
+  GKEYS.keys = j.keys || []; GKEYS.exp = Date.now() + 3600000; return GKEYS.keys;
+}
+async function googleCheck(cred, deps) {
+  const G = deps.google || {}, bad = e => ({ err: err(401, e || 'google') });
+  if (!G.clientId) return { err: err(503, 'google_off') };
+  if (typeof cred !== 'string' || cred.length > 4096) return bad();
+  const p = cred.split('.'); if (p.length !== 3) return bad();
+  let h, c; try { h = JSON.parse(utf8(unb64u(p[0]))); c = JSON.parse(utf8(unb64u(p[1]))); } catch (e) { return bad(); }
+  if (h.alg !== 'RS256') return bad();
+  let keys; try { keys = await (G.keys || googleKeys)(); } catch (e) { return { err: err(503, 'google_keys') }; }
+  const k = (keys || []).find(x => x.kid === h.kid && x.kty === 'RSA'); if (!k) return bad();
+  try {
+    const key = await C.subtle.importKey('jwk', { kty: 'RSA', n: k.n, e: k.e, alg: 'RS256', ext: true }, { name: 'RSASSA-PKCS1-v1_5', hash: 'SHA-256' }, false, ['verify']);
+    if (!await C.subtle.verify('RSASSA-PKCS1-v1_5', key, unb64u(p[2]), new TextEncoder().encode(p[0] + '.' + p[1]))) return bad();
+  } catch (e) { return bad(); }
+  const t = (G.now ? G.now() : Date.now()) / 1000;
+  if (c.iss !== 'accounts.google.com' && c.iss !== 'https://accounts.google.com') return bad();
+  if (c.aud !== G.clientId || !(c.exp > t) || typeof c.sub !== 'string' || !c.sub) return bad();
+  const d = await deps.dir('consumir', { ch: c.nonce }); if (d.status !== 200) return { err: d };
+  return { sub: c.sub, name: typeof c.given_name === 'string' ? c.given_name : '' };
 }
 
 // ---- las rutas: igual en Cloudflare y en Node. deps.acc(id) → handler de esa cuenta; deps.dir → del directorio
@@ -300,6 +358,18 @@ async function api(path, body, authHeader, deps) {
     }
     case '/cuenta/registrar': return isId(body.id) ? deps.acc(body.id)('registrar', { cred: body.cred }) : err(400, 'id');
     case '/cuenta/entrar/reto': return deps.dir('reto', {});
+    case '/cuenta/google/config': return ok({ clientId: (deps.google && deps.google.clientId) || '' });
+    case '/cuenta/google': {
+      const g = await googleCheck(body.credential, deps); if (g.err) return g.err;
+      const f = await deps.dir('g-buscar', { sub: g.sub });
+      if (f.status === 200) return deps.acc(f.body.id)('google-entrar', { sub: g.sub });
+      for (let i = 0; i < 5; i++) {
+        const id = i === 0 && isId(body.id) ? body.id : newId();
+        const r = await deps.acc(id)('google-crear', { sub: g.sub, id, name: body.name || g.name });
+        if (r.status === 200) { await deps.dir('g-guardar', { sub: g.sub, id }); return r; }
+      }
+      return err(503, 'busy');
+    }
     case '/cuenta/entrar': {
       const c = body.cred || {};
       let id, ch;
@@ -315,6 +385,14 @@ async function api(path, body, authHeader, deps) {
     case '/cuenta/yo': return me('yo', {}, tok);
     case '/cuenta/nombre': return me('nombre', body, tok);
     case '/cuenta/salir': return me('salir', {}, tok);
+    case '/cuenta/google/vincular': {
+      const g = await googleCheck(body.credential, deps); if (g.err) return g.err;
+      const f = await deps.dir('g-buscar', { sub: g.sub });
+      if (f.status === 200 && f.body.id !== meId) return err(409, 'google_taken');
+      const r = await me('google-vincular', { sub: g.sub }, tok); if (r.status !== 200) return r;
+      await deps.dir('g-guardar', { sub: g.sub, id: meId });
+      return r;
+    }
     case '/cuenta/amigos/pedir': {
       if (!isId(body.id) || body.id === meId) return err(400, 'id');
       const s = await me('yo-interno', {}, tok); if (s.status !== 200) return s;

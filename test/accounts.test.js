@@ -1,6 +1,6 @@
 /* Cuentas (server/accounts.js) con passkeys sintéticas: una llave P-256 de WebCrypto hace de autenticador.
    Crear, entrar, rechazos (firma falsa, otra web, reto repetido o caducado, contador hacia atrás, sesión cerrada),
-   amigos (pedir, aceptar, quitar) e invitación a sala.   Run: node test/accounts.test.js */
+   amigos (pedir, aceptar, quitar), invitación a sala, cuenta admin y Entrar con Google (con una llave RSA de prueba).   Run: node test/accounts.test.js */
 'use strict';
 const A = require('../server/accounts.js');
 const C = globalThis.crypto;
@@ -171,6 +171,43 @@ async function login(acc, o) {
   check('una cuenta sola contra bots del servidor: puntos de bots (+25 ganar, +10 perder)', sb.A === P.botWin && sb2.A === P.botLoss, JSON.stringify([sb, sb2]));
   for (let m = 3; m < 12; m++) await A.matchReward({ code: 'BOT234', match: m, winner: 'A', why: 'bajas', ms: 200000, mode: 'todos', acc: { A: Q.id }, bots: 3 }, deps.acc);
   check('y con el tope diario de los bots (100 puntos)', (await invOf(Q)).botsLeft === 0);
+  // ---- Entrar con Google (04-11-2026): tokens firmados por una llave RSA de prueba que hace de Google
+  {
+    const gk = await C.subtle.generateKey({ name: 'RSASSA-PKCS1-v1_5', modulusLength: 2048, publicExponent: new Uint8Array([1, 0, 1]), hash: 'SHA-256' }, true, ['sign', 'verify']);
+    const fake = await C.subtle.generateKey({ name: 'RSASSA-PKCS1-v1_5', modulusLength: 2048, publicExponent: new Uint8Array([1, 0, 1]), hash: 'SHA-256' }, true, ['sign', 'verify']);
+    const jwk = Object.assign(await C.subtle.exportKey('jwk', gk.publicKey), { kid: 'k1', use: 'sig', alg: 'RS256' });
+    const CID = 'prueba.apps.googleusercontent.com', te = new TextEncoder();
+    const b64j = o => A.b64u(te.encode(JSON.stringify(o)));
+    const jwt = async (claims, key) => { const h = b64j({ alg: 'RS256', kid: 'k1', typ: 'JWT' }), c = b64j(claims);
+      const sig = new Uint8Array(await C.subtle.sign('RSASSA-PKCS1-v1_5', (key || gk).privateKey, te.encode(h + '.' + c))); return h + '.' + c + '.' + A.b64u(sig); };
+    const nonce = async () => (await api('/cuenta/entrar/reto', {})).body.challenge;
+    const claims = async (sub, more) => Object.assign({ iss: 'https://accounts.google.com', aud: CID, sub, exp: T / 1000 + 600, iat: T / 1000, nonce: await nonce(), given_name: 'Ana' }, more || {});
+    check('sin ID de cliente configurado: el botón no sale (config vacía) y la ruta responde «apagado»', (await api('/cuenta/google/config', {})).body.clientId === ''
+      && (await api('/cuenta/google', { credential: await jwt(await claims('g-1')) })).body.error === 'google_off');
+    deps.google = { clientId: CID, keys: async () => [jwk], now: () => T };
+    check('con él, la config da el ID público', (await api('/cuenta/google/config', {})).body.clientId === CID);
+    const g1 = await api('/cuenta/google', { credential: await jwt(await claims('g-1')) });
+    check('Google por primera vez: crea la cuenta (con el nombre de Google si no hay otro) y da sesión', g1.status === 200 && A.isId(g1.body.account.id) && g1.body.account.name === 'Ana' && g1.body.account.google === true
+      && (await api('/cuenta/yo', {}, g1.body.token)).status === 200, g1.status + ' ' + JSON.stringify(g1.body.account && g1.body.account.name));
+    const g2 = await api('/cuenta/google', { credential: await jwt(await claims('g-1')) });
+    check('la segunda vez entra en la MISMA cuenta', g2.status === 200 && g2.body.account.id === g1.body.account.id);
+    const reused = await jwt(await claims('g-1')); await api('/cuenta/google', { credential: reused });
+    check('el mismo token dos veces: no (su reto ya se usó)', (await api('/cuenta/google', { credential: reused })).status === 400);
+    check('para otra web (otro ID de cliente): no', (await api('/cuenta/google', { credential: await jwt(await claims('g-1', { aud: 'otro.apps.googleusercontent.com' })) })).status === 401);
+    check('caducado: no', (await api('/cuenta/google', { credential: await jwt(await claims('g-1', { exp: T / 1000 - 1 })) })).status === 401);
+    check('firmado con otra llave (falso): no', (await api('/cuenta/google', { credential: await jwt(await claims('g-1'), fake) })).body.error === 'google');
+    check('de otro emisor o sin reto nuestro: no', (await api('/cuenta/google', { credential: await jwt(await claims('g-1', { iss: 'https://evil.example' })) })).status === 401
+      && (await api('/cuenta/google', { credential: await jwt(await claims('g-1', { nonce: 'inventado' })) })).status === 400);
+    check('basura en lugar de token: no', (await api('/cuenta/google', { credential: 'a.b.c' })).status === 401 && (await api('/cuenta/google', { credential: 42 })).status === 401);
+    // linking Google to an account made with a passkey (the owner's admin account): then Google opens that same account
+    const P2 = await newAccount('Llave');
+    const v = await api('/cuenta/google/vincular', { credential: await jwt(await claims('g-2')) }, P2.token);
+    const g3 = await api('/cuenta/google', { credential: await jwt(await claims('g-2')) });
+    check('vincular Google a una cuenta con llave: luego Google entra en ESA cuenta (con sus cosas)', v.status === 200 && v.body.account.google === true && g3.status === 200 && g3.body.account.id === P2.id);
+    check('vincular sin sesión: no', (await api('/cuenta/google/vincular', { credential: await jwt(await claims('g-3')) })).status === 401);
+    check('un Google que ya es de otra cuenta no se puede vincular a la tuya', (await api('/cuenta/google/vincular', { credential: await jwt(await claims('g-1')) }, P2.token)).body.error === 'google_taken');
+    delete deps.google;
+  }
   // cuenta de administrador (ADMIN_IDS): todos los objetos para probarlos; las demás cuentas, igual que siempre
   const ITS = require('../core/items.js').ITEMS, Ad = await newAccount('Admin'); opts.admins = [Ad.id];
   const ai = await invOf(Ad), last = ITS[ITS.length - 1];

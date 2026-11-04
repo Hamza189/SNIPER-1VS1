@@ -13,7 +13,7 @@ Detalle de cada cambio (antes/después, medidas, cómo revertir): `docs/next-lev
 |---|---|---|
 | **CASA ATLAS 2.0 · diseño 2** (04-11) — probar `https://hamza189.github.io/SNIPER-1VS1/?casa2v=2` (menú › CASA ATLAS 2.0 · NUEVA) en el iPhone, contra bots y online; si le gusta, pasa a ser la CASA ATLAS 2.0 de todos y se retira el diseño 1 | Propietario | PUBLICADO TRAS BANDERA · PENDIENTE DE APROBACIÓN |
 | **Cuenta admin** (04-11) — mirar en el perfil que pone ADMIN y que en CAJAS Y OBJETOS se pueden equipar los 33 objetos | Propietario | DESPLEGADO · PENDIENTE DE VALIDACIÓN |
-| **Registro por correo** (04-11) — decidir cómo: con Google, con correo y contraseña, o con código por correo (necesita un servicio de envío) | Propietario | NECESITA DECISIÓN |
+| **Entrar con Google** (04-11) — crear el ID de cliente de Google (gratis, 5 min; pasos en `docs/CUENTAS-Y-MONETIZACION.md` «Entrar con Google») y pasárselo a Claude; luego, en PERFIL, «Continuar con Google» para vincularlo a tu cuenta ADMIN | Propietario | IMPLEMENTADO · PROBADO CON GOOGLE SIMULADO · ESPERA SU ID DE CLIENTE |
 | **Parpadeo y menú** (31-10) — mirar en el iPhone que las fachadas lejanas ya no parpadean y que AJUSTES sale más pequeño; mandar MEDIR RENDIMIENTO para ver lo que cuesta el suavizado de bordes (se puede apagar en GRÁFICOS) (`docs/PARPADEO.md`) | Propietario | PUBLICADO · PENDIENTE DE VALIDACIÓN EN IPHONE |
 | **Game feel 3.0** — probar en el iPhone el movimiento TÁCTICO (ya es el del servidor), las animaciones nuevas (GF-2: esprint, salto, disparo, impacto y muerte sin saltos) y el CONTORNO rojo/azul; mandar MEDIR RENDIMIENTO con la línea «CPU por partes» (`docs/GAMEFEEL.md`) | Propietario | PUBLICADO · PENDIENTE DE VALIDACIÓN EN IPHONE |
 | **Cuentas** — probar en el iPhone: PERFIL › CREAR CUENTA (Face ID), ENTRAR en otro dispositivo, amigos e invitación (ya sin bandera) | Propietario | PUBLICADO · PENDIENTE DE VALIDACIÓN EN IPHONE |
@@ -87,6 +87,20 @@ Detalle de cada cambio (antes/después, medidas, cómo revertir): `docs/next-lev
 | Encargos para ChatGPT: CASA XL, CASA XL v2 y personaje | 18-10 / 19-10 |
 | Personaje 3D rev. 03 hecho por Claude e integrado tras `?pj=2` (bots y rival online) | 20-10 · directo a `main` |
 | Personajes realistas + elegir personaje (con el SOLDADO de `?pj=2`) y HUD 2 por defecto (aprobado en iPhone y PC) | 28-10 · directo a `main` |
+
+## 04-11-2026 (3) — Entrar con Google
+Del propietario: «Entrar con Google» (elegido entre Google y correo con contraseña).
+- **Servidor** (`server/accounts.js`):
+  - comprueba el token de Google: firma RS256 con las llaves públicas de Google, ID de cliente, caducidad y nonce (un reto
+    nuestro de un solo uso);
+  - crea la cuenta o entra en ella; también vincula Google a una cuenta hecha con llave;
+  - solo guarda el `sub` de Google.
+- **Página:** el botón oficial de Google en PERFIL. Solo se carga si el servidor tiene ID de cliente; si no, todo sigue como
+  antes.
+- **Pruebas:** accounts 64/64 (13 nuevas de Google); `test/google.browser.test.js` 8/8 (Google simulado). Cuentas y cajas en
+  navegador, en verde.
+- **Falta:** el ID de cliente, que crea el propietario en Google Cloud (gratis). Estado: IMPLEMENTADO · PROBADO CON GOOGLE
+  SIMULADO · SIN ACTIVAR.
 
 ## 04-11-2026 (2) — Cuenta admin del propietario y CASA ATLAS 2.0 · diseño 2 (más conectado, texturas y cristal)
 Del propietario: «todo va bien, en iPhone carga bastante rápido… en PC 59-60 FPS, en iPhone 60 FPS clavados», y además:
