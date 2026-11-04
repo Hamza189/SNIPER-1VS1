@@ -2306,13 +2306,15 @@ function mergeByMaterial(root){
     g.setAttribute('uv',new T.Float32BufferAttribute(G.u,2));g.computeBoundingSphere();out.add(new T.Mesh(g,mat));}
   return out;
 }
+// 05-11-2026: brick, concrete blocks and pavers from free-3dtextureshd.com (the owner's MATERIAL 05 11; free in games,
+// no credit asked; their normal maps were DirectX, turned to OpenGL), assets/tex/br_*
 function barrioMats(prof){
   const M={},mat=(tex,tile,o)=>{o=o||{};const m=new T.MeshStandardMaterial({color:o.col!=null?o.col:0xffffff,roughness:o.r!=null?o.r:0.9,metalness:o.m||0});
     m.map=texLoad(tex,false,true);if(prof!=='bajo')m.normalMap=texLoad(tex,true,true);if(o.rmap){m.roughnessMap=texLoad(tex+'_r',false,true,true);m.roughness=1;}
     for(const t of [m.map,m.normalMap,m.roughnessMap])if(t)t.repeat.set(1/tile,1/tile);if(m.normalMap)m.normalScale.set(o.n||0.7,o.n||0.7);if(o.env){m.envMap=ENV;m.envMapIntensity=o.env;}return m;};
-  M.asphalt=mat('asphalt',4,{rmap:1});M.pavement=mat('p0_sidewalk',2.4,{rmap:1});M.lane=mat('slabs',2.4,{rmap:1,col:0xbdb6aa});
-  M.brick=mat('brick',2.2,{n:0.9});M.plaster=mat('stucco',2.6,{col:0xd9cfbe});M.concrete=mat('concrete',3,{col:0xc9c4bb});
-  M.plinth=mat('concrete',3,{col:0x6f6a63});M.cornice=mat('concrete',3,{col:0xe6e0d6});
+  M.asphalt=mat('asphalt',4,{rmap:1});M.pavement=mat('br_pavers',2.4,{rmap:1,n:0.8});M.lane=mat('slabs',2.4,{rmap:1,col:0xbdb6aa});
+  M.brick=mat('br_brick',1.2,{rmap:1,n:1.0});M.plaster=mat('stucco',2.6,{col:0xd9cfbe});M.concrete=mat('br_blocks',1.8,{rmap:1,n:0.9});
+  M.plinth=mat('br_blocks',1.8,{rmap:1,col:0x77726b});M.cornice=mat('concrete',3,{col:0xe6e0d6});
   M.hoard=mat('metal',2.4,{col:0x8a6a3c,r:0.7,m:0.3});M.container=mat('metal',2.4,{col:0xa0402c,r:0.6,m:0.35,env:0.3});
   M.barrier=mat('concrete',2,{col:0xdcd8d0});M.wreck=mat('metal',2.4,{col:0x3d3835,r:0.75,m:0.4});M.bin=mat('metal',2.4,{col:0x2f5a3c,r:0.6,m:0.35});
   M.crate=mat('wood',0.9,{n:0.6});M.kiosk=mat('metal',2.4,{col:0x2d4a63,r:0.5,m:0.35,env:0.4});M.kioskroof=mat('metal',2.4,{col:0x26282b,r:0.5,m:0.4});

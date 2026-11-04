@@ -34,6 +34,14 @@ const ITEMS = [
   { id: 'camo_oro', type: 'camo', r: 'legendaria', name: 'ORO', pat: 'liso', c: ['#d8a93a', '#b98b25'], metal: 1, rough: 0.2 },
   { id: 'camo_dragon', type: 'camo', r: 'legendaria', name: 'DRAGÓN', pat: 'escamas', c: ['#6e1007', '#2a0603', '#ff5a1a'], glow: 1, rough: 0.4 },
   { id: 'camo_neon', type: 'camo', r: 'legendaria', name: 'NEÓN', pat: 'circuito', c: ['#0c1116', '#1a2129', '#18e0ff'], glow: 1, metal: 0.4, rough: 0.3 },
+  // 05-11-2026: scanned materials from the owner's MATERIAL 05 11 (free-3dtextureshd.com, free in games; assets/camo/*.jpg).
+  // pat 'img': the picture instead of a drawing (c: its colours until it arrives and for the swatch's outline)
+  { id: 'camo_aluminio', type: 'camo', r: 'rara', name: 'ALUMINIO', pat: 'img', img: 'aluminio', c: ['#d9dadc', '#bfc1c4'], metal: 0.9, rough: 0.35 },
+  { id: 'camo_carbono_rojo', type: 'camo', r: 'epica', name: 'CARBONO ROJO', pat: 'img', img: 'carbono_rojo', c: ['#7a1d22', '#1a1a1a'], metal: 0.3, rough: 0.25 },
+  { id: 'camo_carbono_azul', type: 'camo', r: 'epica', name: 'CARBONO AZUL', pat: 'img', img: 'carbono_azul', c: ['#3b6fc4', '#1a1a1a'], metal: 0.3, rough: 0.25 },
+  { id: 'camo_panal', type: 'camo', r: 'epica', name: 'PANAL DE CARBONO', pat: 'img', img: 'panal', c: ['#2a2b2e', '#111214'], metal: 0.35, rough: 0.3 },
+  { id: 'camo_oro_pulido', type: 'camo', r: 'legendaria', name: 'ORO PULIDO', pat: 'img', img: 'oro_pulido', c: ['#e9b949', '#c99a2e'], metal: 1, rough: 0.12 },
+  { id: 'camo_oro_rejilla', type: 'camo', r: 'legendaria', name: 'REJILLA DE ORO', pat: 'img', img: 'oro_rejilla', c: ['#e2b23f', '#2a2014'], metal: 1, rough: 0.22 },
   { id: 'ret_verde', type: 'ret', r: 'comun', name: 'VERDE', c: ['#3dff6a'] },
   { id: 'ret_cian', type: 'ret', r: 'comun', name: 'CIAN', c: ['#2ee6ff'] },
   { id: 'ret_amarillo', type: 'ret', r: 'comun', name: 'AMARILLO', c: ['#ffe02e'] },

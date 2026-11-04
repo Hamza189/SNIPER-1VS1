@@ -81,8 +81,26 @@ function circuitTraces(g, C, s) {
     dot(i * P + P / 2, j * P + P / 2, 2.5);
   }
 }
-// el dibujo de un objeto → canvas 256×256
+// camuflajes de foto (pat 'img', 05-11-2026): la imagen de assets/camo/<img>.jpg (1024 px, sin costuras). Se pide una vez;
+// mientras llega, el lienzo lleva su primer color, y quien la use (textura del arma, muestra) se repinta al llegar.
+const IMG = {};
+function photo(it) {
+  if (IMG[it.img]) return IMG[it.img];
+  const im = new Image(), rec = { im, ok: false, wait: [] };
+  const u = 'assets/camo/' + it.img + '.jpg';
+  im.onload = () => { rec.ok = true; for (const f of rec.wait.splice(0)) f(); };
+  im.src = typeof root.av === 'function' ? root.av(u) : u;
+  return (IMG[it.img] = rec);
+}
+function drawPhoto(it) {
+  const cv = document.createElement('canvas'); cv.width = cv.height = 1024; const g = cv.getContext('2d'), rec = photo(it);
+  const paint = () => g.drawImage(rec.im, 0, 0, 1024, 1024);
+  if (rec.ok) paint(); else { g.fillStyle = it.c[0]; g.fillRect(0, 0, 1024, 1024); cv._wait = []; rec.wait.push(() => { paint(); for (const f of cv._wait.splice(0)) f(); }); }
+  return cv;
+}
+// el dibujo de un objeto → canvas 256×256 (o la foto, 1024)
 function draw(it) {
+  if (it.pat === 'img' && it.img && typeof document !== 'undefined') return drawPhoto(it);
   const cv = document.createElement('canvas'); cv.width = cv.height = N;
   const g = cv.getContext('2d'), im = g.createImageData(N, N), d = im.data, C = it.c.map(rgb), s = hash(it.id);
   const put = (x, y, c) => { const k = (y * N + x) * 4; d[k] = c[0]; d[k + 1] = c[1]; d[k + 2] = c[2]; d[k + 3] = 255; };
@@ -92,7 +110,8 @@ function draw(it) {
   return cv;
 }
 function texture(T, it, renderer) {
-  const t = new T.CanvasTexture(draw(it)); t.wrapS = t.wrapT = T.RepeatWrapping;
+  const cv = draw(it), t = new T.CanvasTexture(cv); t.wrapS = t.wrapT = T.RepeatWrapping;
+  if (cv._wait) cv._wait.push(() => { t.needsUpdate = true; });
   try { t.anisotropy = Math.min(4, renderer.capabilities.getMaxAnisotropy()); } catch (e) {}
   return t;
 }
@@ -144,17 +163,25 @@ function swatch(it, w, h) {
   g.fillStyle = '#1c1d20'; rect(100, 43, 112, 55); g.fill(); rect(91, 24, 97, 30); g.fill(); rect(111, 24, 117, 30); g.fill();
   const body = [[4, 28], [22, 25], [60, 30], [70, 28], [120, 28], [127, 32], [150, 32], [150, 40], [121, 40], [109, 44], [99, 59], [88, 59], [92, 44], [70, 44], [60, 40], [26, 52], [4, 55]];
   const scope = [[72, 12], [82, 15], [124, 15], [136, 10], [136, 27], [124, 23], [82, 23], [72, 26]];
+  const src = draw(it), zk = src.width > N ? N / src.width : 1;   // a photo (1024 px) at the scale of a drawing
+  if (src._wait) src._wait.push(() => { g.clearRect(0, 0, w, h); paintAll(); });
   const fillCamo = pts => {
     poly(pts); g.save(); g.clip();
-    const pat = g.createPattern(draw(it), 'repeat'), z = 0.35 * k; g.setTransform(z, 0, 0, z, 0, 0); g.fillStyle = pat; g.fillRect(0, 0, w / z, h / z);
+    const pat = g.createPattern(src, 'repeat'), z = 0.35 * k * zk; g.setTransform(z, 0, 0, z, 0, 0); g.fillStyle = pat; g.fillRect(0, 0, w / z, h / z);
     g.setTransform(1, 0, 0, 1, 0, 0);
     const sh = g.createLinearGradient(0, oy + 10 * k, 0, oy + 60 * k); sh.addColorStop(0, 'rgba(255,255,255,.18)'); sh.addColorStop(0.45, 'rgba(255,255,255,0)'); sh.addColorStop(1, 'rgba(0,0,0,.35)');
     g.fillStyle = sh; g.fillRect(0, 0, w, h); g.restore();
     poly(pts); g.strokeStyle = 'rgba(0,0,0,.6)'; g.lineWidth = Math.max(1, k); g.stroke();
   };
+  const paintAll = () => {
+    g.fillStyle = '#8f949a'; rect(148, 33, 194, 37.5); g.fill(); rect(188, 31, 198, 39.5); g.fill();
+    g.fillStyle = '#1c1d20'; rect(100, 43, 112, 55); g.fill(); rect(91, 24, 97, 30); g.fill(); rect(111, 24, 117, 30); g.fill();
+    fillCamo(body); fillCamo(scope); };
   fillCamo(body); fillCamo(scope);
   return cv;
 }
-const SDCamo = { draw, texture, detail, patch, swatch, SCALE };
+// a photo camouflage has arrived (tools and tests wait for it)
+const ready = it => { if (!it || it.pat !== 'img' || typeof document === 'undefined') return Promise.resolve(); const r = photo(it); return r.ok ? Promise.resolve() : new Promise(res => r.wait.push(res)); };
+const SDCamo = { draw, texture, detail, patch, swatch, ready, SCALE };
 if (typeof module !== 'undefined' && module.exports) module.exports = SDCamo; else root.SDCamo = SDCamo;
 })(typeof window !== 'undefined' ? window : globalThis);

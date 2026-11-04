@@ -16,7 +16,10 @@ tiene (mapa `barrio`), así que se puede jugar online.
     coche quemado, escombros, columnas y hiedra. Hay dos, uno en cada fila, abiertos a la calle.
   - «street city (7) for games FREE»: bloques de pisos. Se agrandan ×3,5 (unos 43 m) y hacen de horizonte detrás de los
     edificios. Nunca se pisan.
-- Todo lo demás son cajas con las texturas del propio juego: ladrillo, estuco, hormigón, metal, asfalto, acera y losas.
+- Todo lo demás son cajas con texturas.
+  - Desde el 05-11, el ladrillo, los bloques de hormigón y las losas de las aceras son escaneos 4K del material del
+    propietario (`docs/ASSETS-3D.md` §23).
+  - El resto (estuco, metal, asfalto y losas del callejón) son del juego.
 
 ## Plano (56 × 40 m, simétrico por el centro)
 - Calle de asfalto de 10 m, con aceras de 3,5 m a cada lado.
@@ -71,7 +74,7 @@ tiene (mapa `barrio`), así que se puede jugar online.
 
   La mayoría de los triángulos son de las torres (86 mil cada horizonte) y los garajes (29 mil cada uno).
 - **Pendiente:**
-  - los edificios son cajas lisas, sin ventanas;
+  - los edificios son cajas sin ventanas (desde el 05-11, con ladrillo y bloques escaneados);
   - las paredes laterales del garaje son planos en su modelo: de canto, en el borde de su entrada, hay 11 cm sin dibujo.
 
 ## Herramientas

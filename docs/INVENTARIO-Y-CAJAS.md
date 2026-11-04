@@ -95,3 +95,20 @@ Con eso acepta la parte gratuita de la decisión 4 de `docs/CUENTAS-Y-MONETIZACI
 - Camuflaje en tu 3ª persona.
 - Usar los fragmentos cuando lleguen objetos nuevos; añadir más objetos al catálogo (p. ej. el 5º personaje).
 - Tienda con precio a la vista: decisiones 2, 3 y 5 del plan de monetización.
+
+## Camuflajes de foto (05-11-2026)
+- Seis camuflajes nuevos hechos con texturas escaneadas del material del propietario (`docs/ASSETS-3D.md` §23):
+  - ALUMINIO (rara);
+  - CARBONO ROJO, CARBONO AZUL y PANAL DE CARBONO (épicas);
+  - ORO PULIDO y REJILLA DE ORO (legendarias).
+
+  Con ellos hay 39 objetos.
+- **Cómo funcionan:**
+  - `pat: 'img'` en `core/items.js`: en lugar de dibujarse con código, `client/camo.js` usa la foto `assets/camo/<img>.jpg`
+    (1024 px, sin costuras).
+  - Se proyecta igual que los dibujos (por los tres ejes del arma, un dibujo cada 20 cm).
+  - Mientras llega la foto, el arma y la muestra llevan su primer color; al llegar se repintan.
+  - `SDCamo.ready(it)` espera a que llegue.
+- **Cambio en el sorteo:** cada rareza tiene más objetos donde elegir. Las probabilidades por rareza no cambian; la de
+  cada objeto concreto baja un poco.
+- **Hoja:** `node tools/camo-sheet.js` → `docs/img/camuflajes.jpg` (ya con los seis).

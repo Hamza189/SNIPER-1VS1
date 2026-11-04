@@ -11,6 +11,7 @@ Detalle de cada cambio (antes/después, medidas, cómo revertir): `docs/next-lev
 ### Siguiente prioridad
 | Tarea | Quién la desbloquea | Estado |
 |---|---|---|
+| **Camuflajes de foto** (05-11) — en CAJAS Y OBJETOS (con la cuenta ADMIN están todos): probar ALUMINIO, los tres CARBONOS y los dos OROS en el iPhone | Propietario | PUBLICADO · PENDIENTE DE VALIDACIÓN EN IPHONE |
 | **BARRIO** (04-11) — probar `https://hamza189.github.io/SNIPER-1VS1/?barrio=1` (menú › BARRIO) en el iPhone, contra bots y online: FPS, aspecto de los garajes y las torres, rutas | Propietario | PUBLICADO TRAS BANDERA · PENDIENTE DE APROBACIÓN |
 | **CASA ATLAS 2.0 · JARDÍN** (04-11) — probar `https://hamza189.github.io/SNIPER-1VS1/?casa2v=3` y compararlo con `?casa2v=2`: elegir el diseño que se queda | Propietario | PUBLICADO TRAS BANDERA · PENDIENTE DE APROBACIÓN |
 | **CASA ATLAS 2.0 · diseño 2** (04-11) — probar `https://hamza189.github.io/SNIPER-1VS1/?casa2v=2` (menú › CASA ATLAS 2.0 · NUEVA) en el iPhone, contra bots y online; si le gusta, pasa a ser la CASA ATLAS 2.0 de todos y se retira el diseño 1 | Propietario | PUBLICADO TRAS BANDERA · PENDIENTE DE APROBACIÓN |
@@ -89,6 +90,16 @@ Detalle de cada cambio (antes/después, medidas, cómo revertir): `docs/next-lev
 | Encargos para ChatGPT: CASA XL, CASA XL v2 y personaje | 18-10 / 19-10 |
 | Personaje 3D rev. 03 hecho por Claude e integrado tras `?pj=2` (bots y rival online) | 20-10 · directo a `main` |
 | Personajes realistas + elegir personaje (con el SOLDADO de `?pj=2`) y HUD 2 por defecto (aprobado en iPhone y PC) | 28-10 · directo a `main` |
+
+## 05-11-2026 — Material del 05-11: texturas para BARRIO y 6 camuflajes nuevos
+Del propietario: la carpeta `COSAS DEL JUEGO/MATERIAL 05 11`, con 12 texturas PBR en 4K de free-3dtextureshd.com. Son
+libres en juegos y no piden crédito.
+- **BARRIO:** ladrillo, bloques de hormigón y losas escaneados en lugar de los lisos. Sus normales eran DirectX y se
+  convirtieron.
+- **Cajas:** 6 camuflajes de foto (ALUMINIO, CARBONO ROJO, CARBONO AZUL, PANAL DE CARBONO, ORO PULIDO, REJILLA DE ORO).
+  Con un tipo nuevo `pat: 'img'` en `client/camo.js`. Hay 39 objetos; la cuenta ADMIN los tiene todos.
+- **Pruebas:** accounts 64, room 155, core 74, cajas 15, barrio.browser 8, browser 61 y armas 29, todas en verde.
+- **Estado:** PROBADO EN NAVEGADOR · PENDIENTE DE VALIDACIÓN EN IPHONE.
 
 ## 04-11-2026 (5) — BARRIO: mapa nuevo con el garaje y las torres
 Del propietario, tras ver que la calle abandonada no servía de cerca: «mapa con torres y garaje».

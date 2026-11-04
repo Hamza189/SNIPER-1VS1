@@ -20,6 +20,7 @@ const W = BIG ? 900 : 420, H = BIG ? 394 : 184;
   await p.goto(srv.url + '?vm=1&pj=pro');
   await p.waitForFunction(() => window.__SD && __SD.WORLDS && __SD.VMA.R, null, { timeout: 180000 });
   // one studio picture of the first-person rifle as it is now (whatever skin and camouflage it wears)
+  await p.evaluate(() => Promise.all(SDItems.ITEMS.map(it => SDCamo.ready(it))));   // the photo ones (05-11-2026)
   await p.evaluate(([W, H]) => {
     window.__shot = (label, color) => {
       const S = __SD, T = THREE, r = S.renderer, hal = S.VMA.R.root;

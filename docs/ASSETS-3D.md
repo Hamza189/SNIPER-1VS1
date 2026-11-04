@@ -774,3 +774,32 @@ rifle, ahora 8× fijo) sigue siendo la de por defecto.
   - «AK 47 Gold»: 700 mil triángulos, y añadir un arma toca el equilibrio;
   - «modular vintage living room»: más adelante; pesa 46 MB;
   - «nfs edge mobile garage» y «garage interior from RCD»: parecen sacados de otros juegos (regla 11).
+
+## 23. Texturas del material del 05-11-2026: BARRIO y camuflajes
+
+- **Origen:** `COSAS DEL JUEGO/MATERIAL 05 11`, 12 paquetes PBR en 4K de free-3dtextureshd.com.
+- **Licencia** (https://free-3dtextureshd.com/license/):
+  - libres para uso personal y comercial, también en videojuegos;
+  - sin crédito obligatorio;
+  - no se pueden vender ni repartir sueltas, solo dentro del proyecto.
+- **Sus normales venían en formato DirectX.** Lo confirmé por la correlación con su mapa de altura y con la versión
+  «Unity» de la misma textura. Al convertirlas se invierte el verde.
+
+  | En el juego | Paquete | Uso |
+  |---|---|---|
+  | `assets/tex/br_brick_{c,n,r}.jpg` | Brick wall 10 | BARRIO: edificios de ladrillo (1,2 m por repetición) |
+  | `assets/tex/br_blocks_{c,n,r}.jpg` | Concrete_1 («Brick wall 14», bloques grises) | BARRIO: edificios de hormigón, muros y zócalos |
+  | `assets/tex/br_pavers_{c,n,r}.jpg` | Tiles_12 (losas de hormigón) | BARRIO: aceras |
+  | `assets/camo/aluminio.jpg` | Aluminium_7 | Camuflaje ALUMINIO (rara) |
+  | `assets/camo/carbono_rojo.jpg` | Carbon_fiber_12 | CARBONO ROJO (épica) |
+  | `assets/camo/carbono_azul.jpg` | Carbon_fiber_8 | CARBONO AZUL (épica) |
+  | `assets/camo/panal.jpg` | Carbon_fiber_9 (hexágonos) | PANAL DE CARBONO (épica) |
+  | `assets/camo/oro_pulido.jpg` | gold_1 | ORO PULIDO (legendaria) |
+  | `assets/camo/oro_rejilla.jpg` | gold_9 | REJILLA DE ORO (legendaria) |
+
+  - Mapas: color y relieve a 1024 px, rugosidad a 512 px.
+  - Camuflajes: el color a 1024 px, sin costuras.
+- **Sin usar por ahora:**
+  - Carbon_fiber_10, casi igual que el 9;
+  - Classic-brick-wall 11, otro ladrillo;
+  - Tiles_15, baldosa blanca: para baños o interiores de un mapa futuro.
