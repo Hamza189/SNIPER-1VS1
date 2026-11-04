@@ -177,6 +177,7 @@ general, tema texturas, también el cristal».
   | Líneas de tiro: media · máxima | 13,5 · 42,3 m | 12,4 · 37,4 m |
   | Salidas | a 39,8 m, sin verse | a 36,8 m, sin verse |
   | Llamadas de dibujo · triángulos (vistas a la altura de los ojos) | ~50 · 39 mil | ~51 · 39 mil |
+  | PC, GPU, ALTO (`GPU=1 node tools/casa2/medir.js`; no vale para el iPhone): ms/fotograma · triángulos · texturas del mapa | 9,2 ms · 86 mil · 30,8 MB | 7,6 ms · 73 mil · 36,1 MB |
 
 - **Pruebas nuevas:**
   - `test/casa2v2.test.js`, sin navegador: 33;
