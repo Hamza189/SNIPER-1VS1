@@ -6,11 +6,14 @@ Cada entrada dice qué se decidió o cambió, quién lo decidió, y el estado re
 Las decisiones anteriores al 18-10-2026 están resumidas en `SNIPER_DUEL_MASTER_CONTEXT.md` §4.
 Detalle de cada cambio (antes/después, medidas, cómo revertir): `docs/next-level/NEXT_LEVEL_CHANGELOG.md`.
 
-## Tareas (resumen vivo, actualizado el 02-11-2026)
+## Tareas (resumen vivo, actualizado el 04-11-2026)
 
 ### Siguiente prioridad
 | Tarea | Quién la desbloquea | Estado |
 |---|---|---|
+| **CASA ATLAS 2.0 · diseño 2** (04-11) — probar `https://hamza189.github.io/SNIPER-1VS1/?casa2v=2` (menú › CASA ATLAS 2.0 · NUEVA) en el iPhone, contra bots y online; si le gusta, pasa a ser la CASA ATLAS 2.0 de todos y se retira el diseño 1 | Propietario | PUBLICADO TRAS BANDERA · PENDIENTE DE APROBACIÓN |
+| **Cuenta admin** (04-11) — mirar en el perfil que pone ADMIN y que en CAJAS Y OBJETOS se pueden equipar los 33 objetos | Propietario | DESPLEGADO · PENDIENTE DE VALIDACIÓN |
+| **Registro por correo** (04-11) — decidir cómo: con Google, con correo y contraseña, o con código por correo (necesita un servicio de envío) | Propietario | NECESITA DECISIÓN |
 | **Parpadeo y menú** (31-10) — mirar en el iPhone que las fachadas lejanas ya no parpadean y que AJUSTES sale más pequeño; mandar MEDIR RENDIMIENTO para ver lo que cuesta el suavizado de bordes (se puede apagar en GRÁFICOS) (`docs/PARPADEO.md`) | Propietario | PUBLICADO · PENDIENTE DE VALIDACIÓN EN IPHONE |
 | **Game feel 3.0** — probar en el iPhone el movimiento TÁCTICO (ya es el del servidor), las animaciones nuevas (GF-2: esprint, salto, disparo, impacto y muerte sin saltos) y el CONTORNO rojo/azul; mandar MEDIR RENDIMIENTO con la línea «CPU por partes» (`docs/GAMEFEEL.md`) | Propietario | PUBLICADO · PENDIENTE DE VALIDACIÓN EN IPHONE |
 | **Cuentas** — probar en el iPhone: PERFIL › CREAR CUENTA (Face ID), ENTRAR en otro dispositivo, amigos e invitación (ya sin bandera) | Propietario | PUBLICADO · PENDIENTE DE VALIDACIÓN EN IPHONE |
@@ -84,6 +87,27 @@ Detalle de cada cambio (antes/después, medidas, cómo revertir): `docs/next-lev
 | Encargos para ChatGPT: CASA XL, CASA XL v2 y personaje | 18-10 / 19-10 |
 | Personaje 3D rev. 03 hecho por Claude e integrado tras `?pj=2` (bots y rival online) | 20-10 · directo a `main` |
 | Personajes realistas + elegir personaje (con el SOLDADO de `?pj=2`) y HUD 2 por defecto (aprobado en iPhone y PC) | 28-10 · directo a `main` |
+
+## 04-11-2026 (2) — Cuenta admin del propietario y CASA ATLAS 2.0 · diseño 2 (más conectado, texturas y cristal)
+Del propietario: «todo va bien, en iPhone carga bastante rápido… en PC 59-60 FPS, en iPhone 60 FPS clavados», y además:
+«a mi perfil ponle la cuenta admin; si no pruebo las otras skins, ¿cómo voy a saber si funcionan?»; «mejor registrarse por
+correo, lo del Face ID de primeras es un poco raro»; y, con un vídeo: «hay demasiados obstáculos para moverse libremente, el
+diseño es muy simple… que estén más conectadas, que no sean literalmente 4 casas en cuatro esquinas; mejora texturas y el
+cristal, busca un .glb de cristal».
+- **Cuenta admin** (`c58b1d4`, servidor desplegado): `ADMIN_IDS` en `wrangler.toml` con su cuenta (`SD-QTFX-77ZM`). Tiene los
+  33 objetos y puede equiparlos; su perfil pone ADMIN. Sin claves en la página: hace falta su passkey. PROBADO EN PRUEBAS
+  (accounts 51/51) · desplegado · PENDIENTE DE QUE LO VEA EN SU PERFIL.
+- **Registro por correo:** pendiente de su decisión. Mandar correos necesita un servicio externo, y una contraseña sin correo
+  no permite recuperarla.
+- **CASA ATLAS 2.0 · diseño 2** (`docs/CASA-ATLAS-2.md`, «Diseño 2»):
+  - los pisos espalda con espalda: dos casas grandes, unidas por dentro (comedores y cocinas);
+  - sin barandillas, bancos, mesa baja ni isla de cocina;
+  - el patio, de casa a casa, con 5 coberturas en lugar de 18, un seto en el centro y una pérgola;
+  - suelos escaneados de Poly Haven (CC0) y un cristal más claro con reflejo Fresnel.
+- **El cristal:** no se buscó un GLB. La geometría ya era buena; el fallo estaba en el material (43 % opaco, lechoso).
+- **Cómo está:** como opción, `?casa2v=2`, mapa `casa2b` en el servidor; el diseño 1 sigue igual para todos.
+  - Pruebas: casa2v2 33/33, casa2v2.browser 22/22, online --v2 13/13.
+  - Estado: PROBADO EN NAVEGADOR · PROBADO ONLINE (servidor local) · PENDIENTE DE SU APROBACIÓN EN IPHONE.
 
 ## 04-11-2026 — CASA ATLAS 2.0 y miras validadas en el iPhone
 Del propietario, preguntado si había probado en el iPhone la CASA ATLAS 2.0 y las miras de ventana con el botón de MIRA:

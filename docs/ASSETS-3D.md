@@ -732,3 +732,21 @@ rifle, ahora 8× fijo) sigue siendo la de por defecto.
 - **Retratos de las fichas:** `node tools/miras/retratos.js` → `assets/miras/<id>.jpg` (560×245, dibujados por el
   juego).
 - **Lo visual nunca define balas ni colisiones:** las miras no tocan las zonas de impacto ni el servidor.
+
+## 21. CASA ATLAS 2.0 · diseño 2: suelos escaneados CC0 y cristal nuevo (04-11-2026)
+
+- **Pedido del propietario:** «mejora CASA ATLAS 2.0 en general, tema texturas, también el cristal».
+- **Texturas** (Poly Haven, licencia **CC0**, descargadas de su API a 1K y recomprimidas en `assets/tex/c2_*`):
+
+  | En el juego | Escaneo | Autor | Cubre | Uso |
+  |---|---|---|---|---|
+  | `c2_wood_{c,n,r}.jpg` | `wood_floor` | Dimitrios Savva | 1,7 m | Salones, dormitorios, estudios y recibidor (parqué de roble) |
+  | `c2_tiles_{c,n,r}.jpg` | `floor_tiles_06` | Rob Tuytel | 3 m | Cocinas, comedores y baños (damero de piedra) |
+  | `c2_patio_{c,n,r}.jpg` | `patio_tiles` | Dario Barresi | 2,15 m | Patio y balcones (baldosa de barro) |
+
+  - Color 1024 px (calidad 86), relieve 1024 px (92), rugosidad 512 px. En BAJO no se usa el relieve.
+  - Descartado al mirarlo: `marble_tiles` (parece terrazo).
+- **Solo en el diseño 2:** son copias de los materiales de CASA ATLAS. La CASA ATLAS original y el diseño 1 no cambian.
+- **Cristal:** no se buscó un GLB. El cristal de la casa ya es geometría correcta (paneles con su marco); lo que se veía mal era el
+  material: lechoso (43 % opaco). Ahora es casi transparente (12 %), algo verdoso, refleja más el cielo y, con el efecto Fresnel,
+  se vuelve más reflectante cuanto más de lado se mira, como un cristal de verdad. No cuesta texturas.

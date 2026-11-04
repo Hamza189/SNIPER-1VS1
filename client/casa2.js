@@ -28,27 +28,57 @@
    (same materials: no texture is loaded twice; ~38 draw calls, like one flat). */
 (function (root) {
 'use strict';
-const CX = 10.49, CZ = 9.58;           // module centres: alley 3.4 m (between the flats' east walls), patio 5 m (between the rails)
-const XW = 19.28, XO = 21.28;          // the side corridors: from the flats' outer wall to the boundary wall (2 m)
-const ZN = 16.37;                      // north / south boundary (the flats' outer wall face)
+// in each flat (its own coordinates): every triangle with ALL its vertices inside one of these goes
+const CUT_DOORS = [
+  { n: 'dining_door', a: [8.55, -0.05, 2.105], b: [8.85, 2.405, 4.495] },      // sill, glass and frame of the dining-room window
+  { n: 'dining_plant', a: [7.55, -0.05, 4.2], b: [8.35, 0.75, 4.85] },          // the pot plant at its end
+  { n: 'study_door', a: [-8.85, -0.05, -0.445], b: [-8.55, 2.455, 1.945] },    // the same in the study (west) window
+  { n: 'study_plant', a: [-8.5, -0.05, 0.75], b: [-7.8, 0.65, 1.4] },          // the pot plant in front of it
+];
+const LAYOUTS = {
+  // v1 (02-11-2026, approved and online): the 4 flats round a cross of patio and alley
+  1: {
+    CX: 10.49, CZ: 9.58,           // module centres: alley 3.4 m (between the flats' east walls), patio 5 m (between the rails)
+    XW: 19.28, XO: 21.28,          // the side corridors: from the flats' outer wall to the boundary wall (2 m)
+    ZN: 16.37,                     // north / south boundary (the flats' outer wall face)
+    CUTS: CUT_DOORS.concat([{ n: 'rail_bars', a: [-8.7, 0.1, 6.9], b: [8.7, 1.2, 7.1] }]),   // the rail's two long bars (posts stay)
+    // their boxes in client/casa.js
+    DROP: ['wall_x_8.7_3.3_0', 'glass_e_s', 'wall_x_-8.7_0.75_0', 'glass_w', 'balcony_front_player_boundary', 'rail_front_tall'],
+    // the rail again, with two gaps in front of the balcony doors (between its posts: 1.64 m clear)
+    RAIL: [[-8.65, -3.27], [-1.63, 3.53], [5.17, 8.65]],
+  },
+  /* v2 (04-11-2026, owner: «hay demasiados obstáculos para moverse libremente… que estén más conectadas, que no sean
+     literalmente 4 casas en cuatro esquinas»). The flats stand back to back (no alley): A+B and C+D are two big houses,
+     each joined inside by two doors through the party wall (dining rooms and kitchens). Their balconies lose rails,
+     benches and plants and open onto one courtyard (8.6 m between the houses' glass fronts) with 5 pieces of cover and
+     a pergola from house to house. Also out: the coffee table and the kitchen island (the kitchen is now a way through). */
+  2: {
+    CX: 8.79, CZ: 9.58,            // party walls back to back (outer faces at x = 0); courtyard as before
+    XW: 17.58, XO: 19.58,          // side corridors, 2 m
+    ZN: 16.37,
+    CUTS: CUT_DOORS.concat([
+      { n: 'kitchen_door', a: [8.55, -0.05, -3.505], b: [8.85, 2.405, -1.095] },   // the kitchen window: a second door between the flats
+      { n: 'balcony', a: [-8.95, -0.05, 5.45], b: [8.95, 1.2, 7.1] },              // rails, posts, benches and pot plants
+      { n: 'balcony_side_w', a: [-8.95, -0.05, 5.15], b: [-8.75, 1.2, 7.1] },      // the side rails (they start at the wall; the
+      { n: 'balcony_side_e', a: [8.75, -0.05, 5.15], b: [8.95, 1.2, 7.1] },        // glass doors' floor tracks at z 5.25 stay)
+      { n: 'balcony_slab', a: [-9.05, -0.45, 5.29], b: [9.05, 0.001, 7.01] },      // the slab (the courtyard floor replaces it)
+      { n: 'coffee_table', a: [-1.4, -0.05, 1.3], b: [0.1, 0.5, 2.1] },
+      { n: 'kitchen_island', a: [5.4, -0.05, -2.97], b: [6.7, 0.95, -0.83] },
+    ]),
+    DROP: ['wall_x_8.7_3.3_0', 'glass_e_s', 'wall_x_8.7_-2.3_0', 'glass_e_n', 'wall_x_-8.7_0.75_0', 'glass_w',
+      'balcony_front_player_boundary', 'rail_front_tall', 'balcony_left_player_boundary', 'balcony_right_player_boundary',
+      'rail_left_tall', 'rail_right_tall', 'bench_balcony_w', 'bench_balcony_e', 'coffee_top', 'kitchen_island'],
+    RAIL: null,
+  },
+};
+function make(L, version) {
+const { CX, CZ, XW, XO, ZN, CUTS, DROP, RAIL } = L;
 const MODS = [                          // sx, sz: mirror (−1) on that axis; t: where the flat's origin goes
   { id: 'A', sx: 1, sz: 1, t: [-CX, -CZ] },
   { id: 'B', sx: -1, sz: 1, t: [CX, -CZ] },
   { id: 'C', sx: 1, sz: -1, t: [-CX, CZ] },
   { id: 'D', sx: -1, sz: -1, t: [CX, CZ] },
 ];
-// in each flat (its own coordinates): every triangle with ALL its vertices inside one of these goes
-const CUTS = [
-  { n: 'dining_door', a: [8.55, -0.05, 2.105], b: [8.85, 2.405, 4.495] },      // sill, glass and frame of the dining-room window
-  { n: 'dining_plant', a: [7.55, -0.05, 4.2], b: [8.35, 0.75, 4.85] },          // the pot plant at its end
-  { n: 'study_door', a: [-8.85, -0.05, -0.445], b: [-8.55, 2.455, 1.945] },    // the same in the study (west) window
-  { n: 'study_plant', a: [-8.5, -0.05, 0.75], b: [-7.8, 0.65, 1.4] },          // the pot plant in front of it
-  { n: 'rail_bars', a: [-8.7, 0.1, 6.9], b: [8.7, 1.2, 7.1] },                 // the rail's two long bars (posts stay)
-];
-// their boxes in client/casa.js
-const DROP = ['wall_x_8.7_3.3_0', 'glass_e_s', 'wall_x_-8.7_0.75_0', 'glass_w', 'balcony_front_player_boundary', 'rail_front_tall'];
-// the rail again, with two gaps in front of the balcony doors (between its posts: 1.64 m clear)
-const RAIL = [[-8.65, -3.27], [-1.63, 3.53], [5.17, 8.65]];
 
 
 /* ---------------- boxes ---------------- */
@@ -67,13 +97,29 @@ function extras() {
   for (const s of [-1, 1]) {
     const z0 = s < 0 ? -ZN - 0.2 : ZN, z1 = s < 0 ? -ZN : ZN + 0.2, k = s < 0 ? 'n' : 's';
     add('boundary_' + k + '_w', [-XO, 0, z0], [-XW, H, z1], 1, 'plaster', 'wall');
-    add('boundary_' + k + '_alley', [-1.79, 0, z0], [1.79, H, z1], 1, 'plaster', 'wall');
+    if (version === 1) add('boundary_' + k + '_alley', [-1.79, 0, z0], [1.79, H, z1], 1, 'plaster', 'wall');
     add('boundary_' + k + '_e', [XW, 0, z0], [XO, H, z1], 1, 'plaster', 'wall');
   }
   // patio cover (symmetric through the centre). Low walls 1.05 m: cover crouching, you shoot over them standing.
   // Planters 1.1 m (the shrub inside the box). Every 5–9 m along the 42 m patio; the middle of the alley stays open.
   const wall = (n, cx, cz, lx, lz) => add(n, [cx - lx / 2, 0, cz - lz / 2], [cx + lx / 2, 1.05, cz + lz / 2], 1, 'plaster', 'lowwall');
-  const pot = (n, cx, cz, l) => add(n, [cx - l / 2, 0, cz - l / 2], [cx + l / 2, 1.1, cz + l / 2], 1, 'concrete', 'planter');
+  const pot = (n, cx, cz, l, lz) => add(n, [cx - l / 2, 0, cz - (lz || l) / 2], [cx + l / 2, 1.1, cz + (lz || l) / 2], 1, 'concrete', 'planter');
+  if (version === 2) {
+    // the courtyard: 5 pieces of cover, nothing in the corridors. A long planter in the middle, then a low wall and a
+    // planter on each side (one piece every ~6 m along its 35 m)
+    // in the middle, a planter with a 2 m hedge: the spawns' diagonal (it always crosses the centre) stays blocked
+    add('planter_centre', [-1.3, 0, -0.5], [1.3, 2.0, 0.5], 1, 'concrete', 'planter');
+    for (const s of [-1, 1]) {
+      const k = s < 0 ? 'w' : 'e';
+      wall('lowwall_' + k, s * 7.2, -s * 1.6, 2.6, 0.32);
+      pot('planter_' + k, s * 13.2, s * 1.4, 1.1);
+    }
+    // the pergola from house to house over the middle of the courtyard (above the head: it only stops bullets)
+    const zf = CZ - 5.39;   // the balcony walls' outer face
+    for (const x of [-3, -1.8, -0.6, 0.6, 1.8, 3]) add('pergola_' + x, [x - 0.07, 2.9, -zf], [x + 0.07, 3.1, zf], 1, 'metal', 'beam');
+    for (const z of [-1.6, 1.6]) add('pergola_long_' + z, [-3.2, 2.78, z - 0.06], [3.2, 2.9, z + 0.06], 1, 'metal', 'beam');
+    return E;
+  }
   for (const s of [-1, 1]) {
     const k = s < 0 ? 'w' : 'e';
     pot('planter_' + k + '_cross_n', s * 2.75, -s * 1.55, 1.0);    // round the crossing of the alley and the patio
@@ -106,7 +152,7 @@ function boxes(casa) {
       if (DROP.includes(bx.n)) continue;
       out.push(Object.assign({ n: M.id + '_' + bx.n, s: bx.s, f: bx.f }, place(M, bx.a, bx.b)));
     }
-    out.push(...railBoxes(M));
+    if (RAIL) out.push(...railBoxes(M));
   }
   for (const e of extras()) out.push({ n: e.n, a: e.a, b: e.b, s: e.s, f: e.f });
   return out;
@@ -127,8 +173,9 @@ function zones(casa) {
     const p = place(M, [z.bounds[0], 0, z.bounds[1]], [z.bounds[2], 0, z.bounds[3]]);
     out.push({ name: M.id + '_' + z.name, bounds: [p.a[0], p.a[2], p.b[0], p.b[2]] });
   }
-  out.push({ name: 'PATIO', bounds: [-XW, -2.5, XW, 2.5] }, { name: 'CALLEJON', bounds: [-1.7, -ZN, 1.7, ZN] },
-    { name: 'PASILLO_O', bounds: [-XO, -ZN, -XW, ZN] }, { name: 'PASILLO_E', bounds: [XW, -ZN, XO, ZN] });
+  if (version === 1) out.push({ name: 'PATIO', bounds: [-XW, -2.5, XW, 2.5] }, { name: 'CALLEJON', bounds: [-1.7, -ZN, 1.7, ZN] });
+  else out.push({ name: 'PATIO', bounds: [-XW, -2.5, XW, 2.5] });
+  out.push({ name: 'PASILLO_O', bounds: [-XO, -ZN, -XW, ZN] }, { name: 'PASILLO_E', bounds: [XW, -ZN, XO, ZN] });
   return out;
 }
 
@@ -167,7 +214,8 @@ function navGrid(cols, step, standH, rad) {
 // when nothing is in between: still one piece (test/casa2.test.js), and a quarter of the size in core/mapdata.js
 function thin(nav) {
   const on = v => Math.round(v / 0.25) % 2 === 0;
-  return nav.filter(n => on(n.x + XO) && on(n.z + ZN)).map(n => ({ x: n.x, z: n.z }));
+  // v2: also the points along walls and furniture on one of the two lines (narrow strips, like beside a bed, stay joined)
+  return nav.filter(n => (on(n.x + XO) && on(n.z + ZN)) || (version === 2 && n.n.length < 8 && (on(n.x + XO) || on(n.z + ZN)))).map(n => ({ x: n.x, z: n.z }));
 }
 
 /* ---------------- the model (THREE passed in) ----------------
@@ -194,7 +242,7 @@ function build(T, src) {
       const id = [0, 1, 2].map(k => I ? I.getX(i + k) : i + k), w = id.map(k => v.fromBufferAttribute(P, k).applyMatrix4(mw).toArray());
       if (w.every(p => inCut(p[0], p[1], p[2]))) {
         // the pot plant taken out of the study door: its leaves become the shrubs of the planters
-        if (o.name === 'details__green_leaf') crown.push(id.map((k, j) => ({ p: w[j], n: Nn ? v.fromBufferAttribute(Nn, k).applyMatrix3(nm).normalize().toArray() : [0, 1, 0] })));
+        if (o.name === 'details__green_leaf' && w.every(p => p[0] < -7.8 && p[2] > 0.75 && p[2] < 1.4)) crown.push(id.map((k, j) => ({ p: w[j], n: Nn ? v.fromBufferAttribute(Nn, k).applyMatrix3(nm).normalize().toArray() : [0, 1, 0] })));
         continue;
       }
       tri.push(id.map((k, j) => ({ p: w[j], n: Nn ? v.fromBufferAttribute(Nn, k).applyMatrix3(nm).normalize().toArray() : [0, 1, 0], u: U ? [U.getX(k), U.getY(k)] : [0, 0] })));
@@ -218,17 +266,19 @@ function build(T, src) {
       side([x0, 0, z1], [x1, 0, z1], [0, 0, 1]); side([x1, 0, z0], [x0, 0, z0], [0, 0, -1]);
       side([x1, 0, z1], [x1, 0, z0], [1, 0, 0]); side([x0, 0, z0], [x0, 0, z1], [-1, 0, 0]);
     }
+    if (faces.includes('b')) quad([[x0, y0, z0], [x1, y0, z0], [x1, y0, z1], [x0, y0, z1]], [0, -1, 0], [[x0 / k, z0 / k], [x1 / k, z0 / k], [x1 / k, z1 / k], [x0 / k, z1 / k]]);
     if (faces.includes('t')) quad([[x0, y1, z1], [x1, y1, z1], [x1, y1, z0], [x0, y1, z0]], [0, 1, 0], [[x0 / k, z1 / k], [x1 / k, z1 / k], [x1 / k, z0 / k], [x0 / k, z0 / k]]);
   };
-  const MB = name => bucket(name, srcMats[{ architecture__wall_plaster: 'sd_apto_wall_plaster', architecture__balcony_stone: 'sd_apto_balcony_stone',
+  const MB = (name, key) => bucket(key || name, srcMats[{ architecture__wall_plaster: 'sd_apto_wall_plaster', architecture__balcony_stone: 'sd_apto_balcony_stone',
     details__terracotta: 'sd_apto_terracotta', details__green_leaf: 'sd_apto_green_leaf', architecture__metal_dark: 'sd_apto_metal_dark',
     details__trim_white: 'sd_apto_trim_white' }[name]]);
   for (const e of extras()) {
     if (e.v === 'wall') { boxGeo(MB('architecture__wall_plaster'), e.a, e.b, 'st'); continue; }
+    if (e.v === 'beam') { boxGeo(MB('architecture__metal_dark'), e.a, e.b, 'stb'); continue; }
     if (e.v === 'lowwall') { boxGeo(MB('architecture__wall_plaster'), e.a, [e.b[0], e.b[1] - 0.06, e.b[2]], 's');
       boxGeo(MB('details__trim_white'), [e.a[0] - 0.03, e.b[1] - 0.06, e.a[2] - 0.03], [e.b[0] + 0.03, e.b[1], e.b[2] + 0.03], 'st'); continue; }
     if (e.v === 'planter') {   // stone planter with a white rim, the shrub (the flat's own leaves) fills the top
-      const top = 0.7; boxGeo(MB('architecture__balcony_stone'), e.a, [e.b[0], top - 0.05, e.b[2]], 's');
+      const top = 0.7; boxGeo(MB('architecture__balcony_stone', version === 2 ? 'extras__planter_stone' : null), e.a, [e.b[0], top - 0.05, e.b[2]], 's');   // v2: its own mesh (the courtyard floor gets other tiles)
       boxGeo(MB('details__trim_white'), [e.a[0] - 0.02, top - 0.05, e.a[2] - 0.02], [e.b[0] + 0.02, top, e.b[2] + 0.02], 'st');
       if (crown.length) {
         let x0 = 1e9, x1 = -1e9, y0 = 1e9, y1 = -1e9, z0 = 1e9, z1 = -1e9;
@@ -242,12 +292,14 @@ function build(T, src) {
       }
     }
   }
-  for (const M of MODS) for (const [x0, x1] of RAIL) for (const [y0, y1] of [[0.17, 0.22], [1.07, 1.13]]) {
+  if (RAIL) for (const M of MODS) for (const [x0, x1] of RAIL) for (const [y0, y1] of [[0.17, 0.22], [1.07, 1.13]]) {
     const p = place(M, [x0, y0, 6.96], [x1, y1, 7.04]); boxGeo(MB('architecture__metal_dark'), p.a, p.b, 'st');
   }
   // floors: the patio, the alley and the corridors in the balcony's stone (5 mm under the flats' floors: no flicker)
   const F = MB('architecture__balcony_stone'), y = -0.005;
-  for (const [a, b] of [[[-XO, -2.6], [XO, 2.6]], [[-1.79, -ZN], [1.79, ZN]], [[-XO, -ZN], [-XW, ZN]], [[XW, -ZN], [XO, ZN]]])
+  const zf = CZ - 5.39;   // v2: the courtyard floor runs from house to house (the balcony slabs are cut)
+  for (const [a, b] of version === 1 ? [[[-XO, -2.6], [XO, 2.6]], [[-1.79, -ZN], [1.79, ZN]], [[-XO, -ZN], [-XW, ZN]], [[XW, -ZN], [XO, ZN]]]
+    : [[[-XW, -zf], [XW, zf]], [[-XO, -ZN], [-XW, ZN]], [[XW, -ZN], [XO, ZN]]])
     boxGeo(F, [a[0], y - 0.3, a[1]], [b[0], y, b[1]], 't');
   for (const [name, B] of buckets) {
     if (!B.p.length || !B.mat) continue;
@@ -259,6 +311,9 @@ function build(T, src) {
   return out;
 }
 
-const SDCasa2 = { id: 'CASA_ATLAS_2', CX, CZ, XW, XO, ZN, MODS, CUTS, DROP, RAIL, place, extras, boxes, spawns, zones, navGrid, thin, build };
+return { id: 'CASA_ATLAS_2', version, CX, CZ, XW, XO, ZN, MODS, CUTS, DROP, RAIL, place, extras, boxes, spawns, zones, navGrid, thin, build };
+}
+// SDCasa2: the layout online today (v1); SDCasa2.v2: the new one (behind ?casa2v=2 until the owner approves it)
+const SDCasa2 = Object.assign(make(LAYOUTS[1], 1), { v2: make(LAYOUTS[2], 2), make, LAYOUTS });
 if (typeof module !== 'undefined' && module.exports) module.exports = SDCasa2; else root.SDCasa2 = SDCasa2;
 })(typeof window !== 'undefined' ? window : globalThis);

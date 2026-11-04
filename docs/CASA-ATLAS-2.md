@@ -131,5 +131,58 @@ Mismas 3 vistas por mapa, 1280 × 720. Con `GPU=1` es la GPU del PC: **no** vale
 - **Recuperarla:** `git checkout b7f5524 -- client/casaxl.js assets/maps/casa_atlas_xl test/casaxl.browser.test.js` y el bloque
   de `src/page.html` de ese commit.
 
+## Diseño 2 (04-11-2026): más conectado y más libre · PENDIENTE DE APROBACIÓN
+Del propietario, tras probarla (con vídeo): «hay demasiados obstáculos para poder moverse libremente, y el diseño es muy simple;
+ajusta las casas, que estén más conectadas, que no sean literalmente 4 casas en cuatro esquinas. Y mejora CASA ATLAS 2.0 en
+general, tema texturas, también el cristal».
+
+![diseño 2](img/casa2/v2-resumen.jpg)
+
+- **Cómo verlo:** `?casa2v=2` (se recuerda en el dispositivo; `?casa2v=1` vuelve al diseño 1). Sale como «CASA ATLAS 2.0 ·
+  NUEVA» en el menú del duelo, en el online y en MAPAS. Para el servidor es otro mapa (`casa2b`), así que las salas en el
+  diseño 1 no cambian. Si se aprueba, pasa a ser «CASA ATLAS 2.0» para todos y el diseño 1 se retira.
+- **Qué cambia** (`client/casa2.js` → `SDCasa2.v2`):
+  - **Sin callejón:** los pisos A y B (y C y D) quedan espalda con espalda.
+    - Son **dos casas grandes**, cada una unida por dentro con **dos puertas** en la pared común: de comedor a comedor y de
+      cocina a cocina.
+    - Ya no son cuatro casas sueltas.
+  - **Fuera obstáculos:**
+    - las barandillas del balcón, también las laterales;
+    - los bancos y las macetas del balcón;
+    - la mesa baja del salón;
+    - la isla de la cocina, que pasa a ser un paso.
+
+    El balcón se abre entero al patio.
+  - **Patio de casa a casa** (8,6 m entre las cristaleras y 35 m de largo), con **5 coberturas** en lugar de 14 más
+    4 contrafuertes:
+    - un seto de 2 m en el centro, que tapa la diagonal entre las salidas;
+    - a cada lado, un murete de 1,05 m y una jardinera de 1,1 m.
+  - **Pérgola** de metal oscuro sobre el centro del patio, de una casa a la otra. Va por encima de la cabeza; las balas sí la
+    tocan.
+  - **Pasillos laterales despejados**, sin contrafuertes.
+  - **Tamaño:** 39,6 × 33,1 m.
+  - **Texturas y cristal** (solo en este diseño):
+    - parqué, damero de piedra y baldosa de barro, escaneados de Poly Haven (CC0);
+    - un cristal casi transparente que refleja más el cielo cuanto más de lado se mira.
+
+    Detalle en `docs/ASSETS-3D.md` §21.
+- **Medido** (`node test/casa2v2.test.js`, 33 comprobaciones):
+
+  | | Diseño 1 | Diseño 2 |
+  |---|---|---|
+  | Cajas que estorban a la altura del cuerpo | 262 | 227 |
+  | Coberturas en el patio | 14 + 4 contrafuertes | 5 |
+  | Parte del patio y los balcones por la que se puede andar | — | 91 % |
+  | Rutas entre salidas (por dentro / patio / flanco) | 49 / 63 / 60 m | 42 / 42 / 56 m |
+  | Líneas de tiro: media · máxima | 13,5 · 42,3 m | 12,4 · 37,4 m |
+  | Salidas | a 39,8 m, sin verse | a 36,8 m, sin verse |
+  | Llamadas de dibujo · triángulos (vistas a la altura de los ojos) | ~50 · 39 mil | ~51 · 39 mil |
+
+- **Pruebas nuevas:**
+  - `test/casa2v2.test.js`, sin navegador: 33;
+  - `test/casa2v2.browser.test.js`, en la página: 22;
+  - `node test/casa2.online.browser.test.js --v2`, dos navegadores contra el servidor: 13.
+- **Capturas:** `MAP=casa2b node tools/casa2/capturas.js CARPETA` → `docs/img/casa2/v2-*.jpg`.
+
 ## Validación
 - 04-11-2026: el propietario la probó en el iPhone y dio el visto bueno («todo bien»).

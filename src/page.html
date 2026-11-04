@@ -2182,37 +2182,72 @@ CASA.wait=[];
    nothing remade. Approved by the owner on 02-11-2026 («aprobada, súbela online»): offered by default in the duel and
    online menus (?casa2=0 hides it on this device). Always built, so a friend can join a room on it; its walkable grid
    (11 000 points) is only made the first time something asks for it. The server gets every other point (navServer). */
-const C2={on:typeof SDCasa2!=='undefined'&&CASA.on,exp:false,ready:false,loading:false,failed:false,root:null,tris:0,calls:0,wait:[]};
+const C2={id:'casa2',on:typeof SDCasa2!=='undefined'&&CASA.on,exp:false,ready:false,loading:false,failed:false,root:null,tris:0,calls:0,wait:[],L:typeof SDCasa2!=='undefined'?SDCasa2:null};
 {const q=location.search.match(/[?&]casa2=([01])\b/);if(q)store.set('casa2Exp',q[1]==='1');C2.exp=C2.on&&store.get('casa2Exp',true)!==false;}
-if(C2.on){
+/* the second design (04-11-2026, owner: «demasiados obstáculos… que estén más conectadas, que no sean 4 casas en cuatro
+   esquinas»): the flats back to back, joined inside, a clear courtyard (client/casa2.js → SDCasa2.v2). Its own map id
+   (casa2b, the server has both) and offered in place of the first with ?casa2v=2 (remembered; ?casa2v=1 goes back)
+   until the owner approves it. */
+const C2B={id:'casa2b',on:C2.on,exp:false,ready:false,loading:false,failed:false,root:null,tris:0,calls:0,wait:[],L:C2.L&&C2.L.v2};
+{const q=location.search.match(/[?&]casa2v=([12])\b/);if(q)store.set('casa2v',+q[1]);C2B.exp=C2.exp&&!!C2B.L&&store.get('casa2v',1)===2;}
+const C2S={casa2:C2,casa2b:C2B};
+function c2World(S,label){
   const prevC=W.colliders,prevR=W.ray,prevP=W.ramps;W.colliders=[];W.ray=[];W.ramps=[];
   const pm={},mk=f=>pm[f]||(pm[f]=new T.MeshBasicMaterial({visible:false}));
-  {const fl=new T.Mesh(new T.PlaneGeometry(240,240),mk('concrete'));fl.rotation.x=-Math.PI/2;fl.userData.surf='concrete';fl.name='casa2_floor_ray';scene.add(fl);fl.updateMatrixWorld(true);W.ray.push(fl);}
-  for(const b of SDCasa2.boxes(SDCasa)){
+  {const fl=new T.Mesh(new T.PlaneGeometry(240,240),mk('concrete'));fl.rotation.x=-Math.PI/2;fl.userData.surf='concrete';fl.name=S.id+'_floor_ray';scene.add(fl);fl.updateMatrixWorld(true);W.ray.push(fl);}
+  for(const b of S.L.boxes(SDCasa)){
     const [x0,y0,z0]=b.a,[x1,y1,z1]=b.b;addCollider(x0,y0,z0,x1,y1,z1);
     if(!b.s)continue;
     const m=new T.Mesh(new T.BoxGeometry(x1-x0,y1-y0,z1-z0),mk(b.f));m.position.set((x0+x1)/2,(y0+y1)/2,(z0+z1)/2);
-    m.userData.surf=b.f;m.name='casa2_'+b.n;scene.add(m);m.updateMatrixWorld(true);W.ray.push(m);
+    m.userData.surf=b.f;m.name=S.id+'_'+b.n;scene.add(m);m.updateMatrixWorld(true);W.ray.push(m);
   }
-  const cols=W.colliders;let nav=null,navS=null;
-  WORLDS.casa2={colliders:W.colliders,ray:W.ray,ramps:W.ramps,objs:[],label:'CASA ATLAS 2.0',spawns:SDCasa2.spawns(SDCasa),
-    get nav(){return nav||(nav=SDCasa2.navGrid(cols,SD_CONFIG.move.step,SD_CONFIG.move.heightStand));},
-    get navServer(){return navS||(navS=SDCasa2.thin(this.nav));}};
+  const cols=W.colliders,L=S.L;let nav=null,navS=null;
+  WORLDS[S.id]={colliders:W.colliders,ray:W.ray,ramps:W.ramps,objs:[],label,spawns:L.spawns(SDCasa),
+    get nav(){return nav||(nav=L.navGrid(cols,SD_CONFIG.move.step,SD_CONFIG.move.heightStand));},
+    get navServer(){return navS||(navS=L.thin(this.nav));}};
   W.colliders=prevC;W.ray=prevR;W.ramps=prevP;
+}
+if(C2.on){c2World(C2,'CASA ATLAS 2.0');if(C2B.L)c2World(C2B,'CASA ATLAS 2.0 · NUEVA');}
+/* the new design's own look (04-11-2026, owner: «mejora CASA ATLAS 2.0 en general, tema texturas, también el cristal»):
+   floors from Poly Haven CC0 scans (wood_floor, floor_tiles_06, patio_tiles: assets/tex/c2_*, docs/CASA-ATLAS-2.md) and a
+   clearer glass that reflects the sky more at a glancing angle (Fresnel). On copies of CASA ATLAS's materials: the
+   original flat and the first design keep theirs. [texture, metres the scan covers, normal strength] */
+const C2B_LOOK={architecture__floor_oak:['c2_wood',1.7,0.8],architecture__floor_tile:['c2_tiles',3,0.7],architecture__balcony_stone:['c2_patio',2.15,0.9]};
+function c2bLook(root,prof){
+  const made={};let glass=null;
+  root.traverse(o=>{if(!o.isMesh)return;
+    const L=C2B_LOOK[o.name];
+    if(L){if(!made[o.name]){const m=o.material.clone(),src=o.material;
+        // the flat's UVs: 1.75 m per repeat on the floors, 1.2 m on the balcony stone (here the courtyard)
+        const rep=(o.name==='architecture__balcony_stone'?1.2:1.75)/L[1];
+        m.color.setRGB(1,1,1);m.roughness=1;m.metalness=0;m.map=texLoad(L[0],false,true);m.roughnessMap=texLoad(L[0]+'_r',false,true,true);
+        m.normalMap=prof==='bajo'?null:texLoad(L[0],true,true);if(m.normalMap)m.normalScale.set(L[2],L[2]);
+        for(const t of [m.map,m.normalMap,m.roughnessMap])if(t)t.repeat.set(rep,rep);
+        m.name=src.name+'_c2b';m.needsUpdate=true;made[o.name]=m;}
+      o.material=made[o.name];return;}
+    if(/glass/.test(o.material.name)){
+      if(!glass){glass=o.material.clone();glass.name=o.material.name+'_c2b';glass.color.setHex(0x9cc3cc);glass.opacity=0.12;glass.roughness=0.03;glass.metalness=0.1;
+        glass.envMap=ENV;glass.envMapIntensity=1.8;glass.transparent=true;glass.depthWrite=false;
+        glass.onBeforeCompile=sh=>{sh.fragmentShader=sh.fragmentShader.replace('#include <dithering_fragment>',
+          '#include <dithering_fragment>\n{float fr=1.0-abs(dot(normalize(vViewPosition),normalize(normal)));fr*=fr*fr;gl_FragColor.a=clamp(gl_FragColor.a+fr*0.55,0.0,0.85);}');};
+        glass.customProgramCacheKey=()=>'c2bGlass';}
+      o.material=glass;}
+  });
 }
 // what you see: CASA ATLAS's own loaded scene, its 32 meshes each merged ×4 (same material objects: the textures are
 // the ones CASA ATLAS uses, on the GPU once)
-function casa2Load(){
-  if(!WORLDS.casa2||C2.ready||C2.loading)return;
-  const fail=e=>{C2.failed=true;C2.loading=false;console.warn('casa2',e);for(const f of C2.wait.splice(0))f();};
-  if(!CASA.ready){if(CASA.failed)return fail('casa');C2.loading=true;CASA.wait.push(()=>{C2.loading=false;casa2Load();});casaLoad();return;}
+function casa2Load(id){
+  const S=C2S[id||'casa2'];if(!S||!WORLDS[S.id]||S.ready||S.loading)return;
+  const fail=e=>{S.failed=true;S.loading=false;console.warn(S.id,e);for(const f of S.wait.splice(0))f();};
+  if(!CASA.ready){if(CASA.failed)return fail('casa');S.loading=true;CASA.wait.push(()=>{S.loading=false;casa2Load(S.id);});casaLoad();return;}
   try{
-    const prof=GFX.profile,root=SDCasa2.build(T,CASA.root);
-    root.traverse(o=>{if(!o.isMesh)return;o.receiveShadow=true;o.castShadow=/wall_plaster/.test(o.name)||(prof==='alto'&&/^furniture__(wood|steel|sofa)/.test(o.name));
-      C2.calls++;C2.tris+=o.geometry.attributes.position.count/3;});
-    scene.add(root);C2.root=root;WORLDS.casa2.objs.push(root);root.visible=WORLD_ID==='casa2';C2.ready=true;
+    const prof=GFX.profile,root=S.L.build(T,CASA.root);
+    if(S===C2B)c2bLook(root,prof);
+    root.traverse(o=>{if(!o.isMesh)return;o.receiveShadow=true;o.castShadow=/wall_plaster|metal_dark/.test(o.name)||(prof==='alto'&&/^furniture__(wood|steel|sofa)/.test(o.name));
+      S.calls++;S.tris+=o.geometry.attributes.position.count/3;});
+    scene.add(root);S.root=root;WORLDS[S.id].objs.push(root);root.visible=WORLD_ID===S.id;S.ready=true;
     try{renderer.compile(scene,camera);}catch(e){}
-    for(const f of C2.wait.splice(0))f();
+    for(const f of S.wait.splice(0))f();
   }catch(e){fail(e);}
 }
 let WORLD_ID='pueblo';
@@ -2225,10 +2260,10 @@ function setWorld(id){
   if(typeof clearDecals==='function')clearDecals();
   // CASA ATLAS: the town ground sinks 4 cm under the flat's floors (no z-fighting; outside the windows it is still there),
   // and the sun's shadow box shrinks to the flat (±16 m instead of ±62 m: 4× finer shadows indoors)
-  const casa=id==='casa',c2=id==='casa2';GROUND.position.y=casa||c2?-0.04:0;GROUND.updateMatrixWorld(true);
+  const casa=id==='casa',c2=!!C2S[id];GROUND.position.y=casa||c2?-0.04:0;GROUND.updateMatrixWorld(true);
   const half=casa?16:c2?23:62;if(sc.right!==half){sc.left=sc.bottom=-half;sc.right=sc.top=half;sc.updateProjectionMatrix();sunBiasFor(sun.shadow.mapSize.x);}
   if(casa)casaLoad();
-  if(c2)casa2Load();
+  if(c2)casa2Load(id);
   waterPolish();
 }
 
@@ -3818,7 +3853,7 @@ function pickPlayerSpawn(){
 }
 function respawnPlayer(){
   clearPendingInput();
-  const n=mode==='range'?RANGE.spawn:(WORLD_ID==='casa'||WORLD_ID==='casa2')&&STATS.deaths===0&&STATS.kills===0&&mode!=='online'?WORLDS[WORLD_ID].spawns[0]:pickPlayerSpawn();
+  const n=mode==='range'?RANGE.spawn:(WORLD_ID==='casa'||C2S[WORLD_ID])&&STATS.deaths===0&&STATS.kills===0&&mode!=='online'?WORLDS[WORLD_ID].spawns[0]:pickPlayerSpawn();
   Object.assign(PM,SDMovement.createState(n.x,0,n.z));PMprev.x=n.x;PMprev.y=0;PMprev.z=n.z;
   P.yaw=mode==='range'?Math.PI:Math.atan2(n.x,n.z);P.pitch=0;P.hp=100;P.alive=true;P.deadT=0;P.roll=0;
   P.breath=1;P.exhausted=0;P.holding=false;
@@ -4811,13 +4846,16 @@ setDiff(diff);
 const MODE_SUB={duel:'Pueblo abandonado. Tú contra bots francotiradores. Gana el primero que llegue a 10 bajas. Fíjate en el destello de sus miras: es lo único que te avisa antes del disparo.',
   duelCasa:'CASA ATLAS (EXPERIMENTAL): un piso de 18 × 14 m con salón, cocina, dormitorio, baño, estudio, comedor y balcón. Combate a corta distancia contra 1 bot (2 en ÉLITE). Gana el primero que llegue a 10 bajas. El cristal no para las balas.',
   duelCasa2:'CASA ATLAS 2.0: cuatro pisos de CASA ATLAS unidos por un callejón, un patio central y dos pasillos laterales, en 42 × 33 m. Rutas por dentro, por el patio y por los flancos, y líneas de tiro de hasta 40 m. Contra 2 bots (3 en ÉLITE); también online.',
+  duelCasa2b:'CASA ATLAS 2.0 (nueva): los cuatro pisos espalda con espalda en dos casas grandes unidas por dentro (comedores y cocinas), un patio despejado de casa a casa con una pérgola y 5 coberturas, y pasillos por los flancos. Contra 2 bots (3 en ÉLITE).',
   duelArena:'ARENA DE PRUEBAS: un patio cerrado de 48 × 32 m, el mapa del 1v1 online. Tú contra bots, distancias cortas, coberturas bajas y un bloque central con tejado. Gana el primero que llegue a 10 bajas.',
   range:'Galería de tiro con dianas a 20, 50 y 100 m, fijas y en movimiento. Añade bots de entrenamiento desarmados que corren, esquivan y se cubren, y prueba el rifle y la navaja (tecla 3) sin que te maten.'};
 // offline map (duel vs bots): ARENA DE PRUEBAS by default; the shooting range lives in the town
-let OFFMAP=store.get('offMap','arena');if(OFFMAP!=='arena'&&OFFMAP!=='pueblo'&&!(OFFMAP==='casa'&&CASA.exp)&&!(OFFMAP==='casa2'&&C2.exp))OFFMAP='arena';
+let OFFMAP=store.get('offMap','arena');if(OFFMAP!=='arena'&&OFFMAP!=='pueblo'&&!(OFFMAP==='casa'&&CASA.exp)&&!(OFFMAP==='casa2'&&C2.exp)&&!(OFFMAP==='casa2b'&&C2B.exp))OFFMAP='arena';
+if(C2B.exp&&OFFMAP==='casa2')OFFMAP='casa2b';
 if(CASA.exp)document.querySelectorAll('#mapSeg [data-map=casa],#mpMapSeg [data-map=casa]').forEach(b=>b.hidden=false);
-if(C2.exp)document.querySelectorAll('#mapSeg [data-map=casa2],#mpMapSeg [data-map=casa2]').forEach(b=>b.hidden=false);   // duel vs bots only: the server does not have it yet
-const subKey=(m,id)=>m==='duel'&&id==='arena'?'duelArena':m==='duel'&&id==='casa'?'duelCasa':m==='duel'&&id==='casa2'?'duelCasa2':m;
+if(C2B.exp)document.querySelectorAll('#mapSeg [data-map=casa2],#mpMapSeg [data-map=casa2]').forEach(b=>{b.dataset.map='casa2b';b.textContent='CASA ATLAS 2.0 · NUEVA';});
+if(C2.exp)document.querySelectorAll('#mapSeg [data-map^=casa2],#mpMapSeg [data-map^=casa2]').forEach(b=>b.hidden=false);
+const subKey=(m,id)=>m==='duel'&&id==='arena'?'duelArena':m==='duel'&&id==='casa'?'duelCasa':m==='duel'&&id==='casa2'?'duelCasa2':m==='duel'&&id==='casa2b'?'duelCasa2b':m;
 const offWorld=()=>mode==='range'?'pueblo':OFFMAP;
 function setOffMap(id){OFFMAP=id;store.set('offMap',id);document.querySelectorAll('#mapSeg button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.map===id)));if(mode!=='online')$('#modeSub').textContent=MODE_SUB[subKey(mode,id)];if(state==='menu')setWorld(offWorld());}
 function setMode(m){mode=m;store.set('mode',m);$('#rangeBlock').hidden=m!=='range';$('#mapBlock').hidden=m==='range';document.querySelectorAll('#modeSeg button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.m===m)));$('#modeSub').textContent=MODE_SUB[subKey(m,OFFMAP)];$('#diffBlock').hidden=m==='range';if(state==='menu')setWorld(offWorld());}
@@ -4867,10 +4905,10 @@ function startMatch(){
   floraFlush();precompileFlush();   // CARGA: what was left for later is done now, before the first frame of play
   if(M2.on)m2Warm(performance.now(),true);   // MENÚ 2: the map was not drawn in the menu; ready now if it was not yet
   // CASA ATLAS: its GLB loads the first time; the match starts when it is there (or without it if it fails: the boxes are what count)
-  if(WORLD_ID==='casa2'&&!C2.ready&&!C2.failed){$('#modeSub').textContent='Cargando CASA ATLAS 2.0…';if(!C2.wait.includes(startMatch))C2.wait.push(startMatch);casa2Load();return;}
+  {const S=C2S[WORLD_ID];if(S&&!S.ready&&!S.failed){$('#modeSub').textContent='Cargando CASA ATLAS 2.0…';if(!S.wait.includes(startMatch))S.wait.push(startMatch);casa2Load(S.id);return;}}
   if(WORLD_ID==='casa'&&!CASA.ready&&!CASA.failed){$('#modeSub').textContent='Cargando CASA ATLAS…';if(!CASA.wait.includes(startMatch))CASA.wait.push(startMatch);casaLoad();return;}
   // the arena is small: fewer bots (2, or 3 on ÉLITE); CASA ATLAS is a 1v1 flat: 1 bot (2 on ÉLITE)
-  let nBots=WORLD_ID==='arena'||WORLD_ID==='casa2'?Math.min(df.bots,diff===2?3:2):WORLD_ID==='casa'?Math.min(df.bots,diff===2?2:1):df.bots;
+  let nBots=WORLD_ID==='arena'||C2S[WORLD_ID]?Math.min(df.bots,diff===2?3:2):WORLD_ID==='casa'?Math.min(df.bots,diff===2?2:1):df.bots;
   if(PJ_MIX&&WORLD_ID!=='casa')nBots=Math.max(nBots,MIX_ORDER.length);   // ?pj=mix: los 4 tipos de personaje a la vez
   while(BOTS.length<nBots)BOTS.push(new Bot(BOTS.length));
   while(DUMMIES.length<RANGE_SLOTS.length)DUMMIES.push(new Bot(DUMMIES.length,RANGE_SLOTS[DUMMIES.length]));
@@ -5759,7 +5797,7 @@ function renderLobby(){
   document.querySelectorAll('#mpDiffSeg button').forEach(b=>{b.setAttribute('aria-pressed',String(+b.dataset.d===C.diff));b.disabled=!host;});
   document.querySelectorAll('#mpTeamSeg button').forEach(b=>b.setAttribute('aria-pressed',String(!!me&&b.dataset.team===me.team)));
   if(N.map==='casa'){casaLoad();const cb=$('#mpMapSeg [data-map=casa]');if(cb)cb.hidden=false;}   // a guest without ?casa=1 still sees (and loads) the room's map
-  if(N.map==='casa2'&&C2.on){casa2Load();const cb=$('#mpMapSeg [data-map=casa2]');if(cb)cb.hidden=false;}
+  if(C2S[N.map]&&C2.on){casa2Load(N.map);const cb=$('#mpMapSeg [data-map='+N.map+']');if(cb)cb.hidden=false;}
   $('#mpStatus').textContent=!two?(C.mode==='todos'?'Añade bots o espera a alguien: comparte el código o el enlace.':'ESPERANDO AL SEGUNDO JUGADOR… Comparte el código o el enlace.'):me&&me.ready?(C.mode==='duelo'?'Esperando a que el rival esté listo…':'Esperando a que los demás estén listos…'):C.mode==='duelo'?'Pulsa LISTO. Empieza cuando los dos lo estéis.':'Pulsa LISTO. Empieza cuando todas las personas de la sala lo estén.';
 }
 function netEvent(e){
@@ -6491,8 +6529,8 @@ function miniFrame(){
 const M2={on:store.get('menuOld',false)!==true&&typeof SDMenu2!=='undefined',tab:'inicio',prevTab:'inicio',cat:'rifle',sel:'duel',
   room:null,cam:null,pivot:null,R:null,held:null,show:null,spin:null,item:null,showLight:null,
   n:0,yaw:0,yawV:0,wYaw:0,wYawV:0,drag:null,lastDrag:0,t:0,sig:'',wsig:'',held0:null,frame:{dist:5,ox:0,oy:0},cur:null,propose:false};
-const m2MapImg=id=>av('assets/menu/mapa_'+id+'.jpg?v='+BUILD_HASH);
-const M2_MAPS=typeof SDMenu2!=='undefined'?SDMenu2.MAPS.filter(m=>m.id==='arena'||m.id==='pueblo'||(m.id==='casa'&&CASA.exp)||(m.id==='casa2'&&C2.exp)):[];
+const m2MapImg=id=>av('assets/menu/mapa_'+(id==='casa2b'?'casa2':id)+'.jpg?v='+BUILD_HASH);
+const M2_MAPS=typeof SDMenu2!=='undefined'?SDMenu2.MAPS.filter(m=>m.id==='arena'||m.id==='pueblo'||(m.id==='casa'&&CASA.exp)||(m.id==='casa2'&&C2.exp)).map(m=>m.id==='casa2'&&C2B.exp?Object.assign({},m,{id:'casa2b',name:'CASA ATLAS 2.0 · NUEVA',sub:'Dos casas grandes unidas por dentro · patio despejado y pérgola · 40 × 33 m'}):m):[];
 const M2_DIFF=['RECLUTA','VETERANO','ÉLITE'],M2_TRAIN={off:'Dianas fijas y móviles',easy:'Bots de entrenamiento · FÁCIL',normal:'Bots de entrenamiento · NORMAL',hard:'Bots de entrenamiento · DIFÍCIL'};
 const m2MapName=id=>{const m=SDMenu2.MAPS.find(x=>x.id===id);return m?m.name:String(id).toUpperCase();};
 function m2Btn(cls,img,name,small,on){const c=document.createElement('button');c.type='button';c.className=cls;
@@ -6720,7 +6758,7 @@ const M2_YAW0=-0.42,M2_PITCH=-0.55,_m2cp=new T.Vector3();
    and send its textures now, while you are in the menu (at most once a second) */
 function m2Warm(now,force){
   if(!force&&now-(M2.warmT||0)<500)return;M2.warmT=now;
-  const sig=WORLD_ID+'|'+scene.children.length+'|'+(TEX.ok||0)+'|'+(E10.ready?1:0)+'|'+P3W.meshes.length+'|'+(CASA.ready?1:0)+'|'+(C2.ready?1:0)+'|'+Object.keys(PJ2.tpls).length;
+  const sig=WORLD_ID+'|'+scene.children.length+'|'+(TEX.ok||0)+'|'+(E10.ready?1:0)+'|'+P3W.meshes.length+'|'+(CASA.ready?1:0)+'|'+(C2.ready?1:0)+(C2B.ready?1:0)+'|'+Object.keys(PJ2.tpls).length;
   if(sig===M2.warmSig)return;
   // CARGA: in the menu, wait until nothing new has arrived for 1,5 s (one warm, not one per file)
   if(!force){if(sig!==M2.warmCand){M2.warmCand=sig;M2.warmSince=now;return;}if(now-M2.warmSince<1500)return;}
@@ -7139,6 +7177,6 @@ if(FLORA.on){const gl=new T.GLTFLoader();let n=2;
       if(P3W.kit)later();else{const w=setInterval(()=>{if(P3W.kit){clearInterval(w);later();}},300);}}}}
 function floraFlush(){if(FLORA.go)FLORA.go();}
 
-window.__SD={M2,m2Tab,m2Sync,m2Sleep,openSettings,closeSettings,MIRA,setMira,miraApply,miraClipGeo,miraRifle,openMiras,closeMiras,updateReticle,ENV,MOVE_CLASSIC,MOV_CLASSIC,VIS,VIS_COL,VIS_HULL,visOn,visFrame,visWho,selfHit,PROF,KTX2,R2_ON,R2_URL,PIC,GYRO,gyroEv,crossApply,btnPress,settingsChanged,perfTexMB(){const t=perfTextures();return {real:SDPerf.textureMB(t),asRGBA:SDPerf.textureMB(t.map(x=>Object.assign({},x,{bytes:0})))};},REMOTES,netScoreHud,shotTargets,MINI,miniLayer,miniPing,clockFrame,setOffTime,get OFF_TIME(){return OFF_TIME;},ACC,accRefresh,INV,invSync,camoApply,openInv,invOpenBox,WSKIN,WS_ST,setWskin,get RIF(){return RIF;},TPV,SELF,get PROFILE(){return PROFILE;},openProfile,endMatch,PJ_MIX,MIX_ORDER,SKINS,get SKIN(){return SKIN;},setSkin,pj2SetPack,rivalSkin,PERF,perfRun,HUD2,get H2(){return HUD2?H2:null;},leanIn:HUD2?leanIn:null,h2Frame:HUD2?h2Frame:null,PJ2,pj2Load,CASA,casaLoad,C2,casa2Load,FLORA,RATS,RAT_WORLD,ratsFrame,SHADOW_FADE,setDuelLethal,get DUEL_LETHAL(){return DUEL_LETHAL;},gfxDiagText,get P3ON(){return P3ON;},COBCC,damagePlayer,TEX,sunFollow,setSunSnap(on){SUN_SNAP=!!on;},sun,P0,E10,e10Lod,DIAG,setTrainMove,LIGHT:{sun,hemi,skyMat,LOOK,P3},P3W,freeze(on){SIM_FREEZE=!!on;},SHOT,VMA,makeSoldier,animateSoldier,BOT_MAT,scene,camera,RemotePlayer,PMprev,PIS,PROOT,RIF,WROOT,SHO_:null,MANUAL,advance(ms){frameBody(last+ms);},get LAST_PELLETS(){return LAST_PELLETS;},SCORE,SCFG,SROOT,SHO,setPrimaryChoice,get PRIMARY(){return PRIMARY;},PCORE,PCFG,setWorld,WORLDS,get WORLD_ID(){return WORLD_ID;},renderer,GFX,gfxApply,get NET(){return NET;},get REMOTE(){return REMOTE;},W,get NAV(){return NAV;},setOffMap,get OFFMAP(){return OFFMAP;},TOUCH,EDIT,openEditor,get SETTINGS(){return SETTINGS;},get LAYOUT(){return LAYOUT;},checkOrientation,MAT,LOAD,TRAINERS,get RANGE_BOTS(){return RANGE_BOTS;},TRAIN,setTrain,setLethal,kitNote,GINS,TDIAG,AU,get TOUCH_EVENTS(){return TOUCH_EVENTS;},impactFX,bodyFX,get DECALS(){return DECALS;},surfaceOf,soundDelay,aimSelfTest,P,PM,WS,WCORE,RECOIL,AIM,BOTS,DUMMIES,BULLETS,EVENTS,PARTS,STATS,get state(){return state;},get mode(){return mode;},setMode,input,startMatch,simTick,frame,toMenu,pause,resume};
+window.__SD={M2,m2Tab,m2Sync,m2Sleep,openSettings,closeSettings,MIRA,setMira,miraApply,miraClipGeo,miraRifle,openMiras,closeMiras,updateReticle,ENV,MOVE_CLASSIC,MOV_CLASSIC,VIS,VIS_COL,VIS_HULL,visOn,visFrame,visWho,selfHit,PROF,KTX2,R2_ON,R2_URL,PIC,GYRO,gyroEv,crossApply,btnPress,settingsChanged,perfTexMB(){const t=perfTextures();return {real:SDPerf.textureMB(t),asRGBA:SDPerf.textureMB(t.map(x=>Object.assign({},x,{bytes:0})))};},REMOTES,netScoreHud,shotTargets,MINI,miniLayer,miniPing,clockFrame,setOffTime,get OFF_TIME(){return OFF_TIME;},ACC,accRefresh,INV,invSync,camoApply,openInv,invOpenBox,WSKIN,WS_ST,setWskin,get RIF(){return RIF;},TPV,SELF,get PROFILE(){return PROFILE;},openProfile,endMatch,PJ_MIX,MIX_ORDER,SKINS,get SKIN(){return SKIN;},setSkin,pj2SetPack,rivalSkin,PERF,perfRun,HUD2,get H2(){return HUD2?H2:null;},leanIn:HUD2?leanIn:null,h2Frame:HUD2?h2Frame:null,PJ2,pj2Load,CASA,casaLoad,C2,C2B,C2S,casa2Load,FLORA,RATS,RAT_WORLD,ratsFrame,SHADOW_FADE,setDuelLethal,get DUEL_LETHAL(){return DUEL_LETHAL;},gfxDiagText,get P3ON(){return P3ON;},COBCC,damagePlayer,TEX,sunFollow,setSunSnap(on){SUN_SNAP=!!on;},sun,P0,E10,e10Lod,DIAG,setTrainMove,LIGHT:{sun,hemi,skyMat,LOOK,P3},P3W,freeze(on){SIM_FREEZE=!!on;},SHOT,VMA,makeSoldier,animateSoldier,BOT_MAT,scene,camera,RemotePlayer,PMprev,PIS,PROOT,RIF,WROOT,SHO_:null,MANUAL,advance(ms){frameBody(last+ms);},get LAST_PELLETS(){return LAST_PELLETS;},SCORE,SCFG,SROOT,SHO,setPrimaryChoice,get PRIMARY(){return PRIMARY;},PCORE,PCFG,setWorld,WORLDS,get WORLD_ID(){return WORLD_ID;},renderer,GFX,gfxApply,get NET(){return NET;},get REMOTE(){return REMOTE;},W,get NAV(){return NAV;},setOffMap,get OFFMAP(){return OFFMAP;},TOUCH,EDIT,openEditor,get SETTINGS(){return SETTINGS;},get LAYOUT(){return LAYOUT;},checkOrientation,MAT,LOAD,TRAINERS,get RANGE_BOTS(){return RANGE_BOTS;},TRAIN,setTrain,setLethal,kitNote,GINS,TDIAG,AU,get TOUCH_EVENTS(){return TOUCH_EVENTS;},impactFX,bodyFX,get DECALS(){return DECALS;},surfaceOf,soundDelay,aimSelfTest,P,PM,WS,WCORE,RECOIL,AIM,BOTS,DUMMIES,BULLETS,EVENTS,PARTS,STATS,get state(){return state;},get mode(){return mode;},setMode,input,startMatch,simTick,frame,toMenu,pause,resume};
 })();
 </script>
