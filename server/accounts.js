@@ -125,13 +125,17 @@ const ok = body => ({ status: 200, body });
 // ---- una cuenta (su almacenamiento: {get, put, delete} asíncronos, como el de un Durable Object)
 function account(store, opts) {
   const now = () => (opts.now ? opts.now() : Date.now()), origins = opts.origins;
+  // cuentas de administrador (04-11-2026): las del propietario, para probar todos los objetos. Lista de identificadores en
+  // la configuración del servidor (ADMIN_IDS); el identificador no es secreto: hace falta entrar con la passkey de esa cuenta
+  const admins = opts.admins || [], isAdmin = a => admins.includes(a.id);
+  const owns = (a, id) => isAdmin(a) || !!inv(a).items[id];
   const pub = a => { const t = now(); return { id: a.id, name: a.name, created: a.created,
     friends: Object.entries(a.friends).map(([id, f]) => ({ id, name: f.name })),
     requests: Object.entries(a.requests).map(([id, r]) => ({ id, name: r.name })),
     invites: Object.entries(a.invites).filter(([, v]) => v.exp > t).map(([id, v]) => ({ id, name: v.name, sala: v.sala })),
     inv: pubInv(a, t) }; };
   const pubInv = (a, t) => { const I = inv(a), D = today(I, t);
-    return { boxes: I.boxes, pts: I.pts, frag: I.frag, items: Object.keys(I.items), equip: Object.assign({}, I.equip), title: titleOf(I),
+    return { boxes: I.boxes, pts: I.pts, frag: I.frag, items: isAdmin(a) ? IT.ITEMS.map(it => it.id) : Object.keys(I.items), admin: isAdmin(a), equip: Object.assign({}, I.equip), title: titleOf(I),
       daily: I.daily < dayOf(t), dailyIn: (dayOf(t) + 1) * DAY - t, botsLeft: Math.max(0, PTS.botsDay - D.bots), onlineLeft: Math.max(0, PTS.onlineDay - D.online) }; };
   async function issue(a) {
     const tok = b64u(rand(32)), h = hex(await sha256(new TextEncoder().encode(tok))), t = now();
@@ -245,7 +249,7 @@ function account(store, opts) {
         case 'equipar': {
           const I = inv(a); if (!IT.SLOTS[body.slot]) return err(400, 'slot');
           if (body.id == null || body.id === '') delete I.equip[body.slot];
-          else { const it = IT.byId(body.id); if (!it || it.type !== body.slot) return err(400, 'item'); if (!I.items[it.id]) return err(403, 'not_owned'); I.equip[body.slot] = it.id; }
+          else { const it = IT.byId(body.id); if (!it || it.type !== body.slot) return err(400, 'item'); if (!owns(a, it.id)) return err(403, 'not_owned'); I.equip[body.slot] = it.id; }
           await store.put('acc', a); return ok({ account: pub(a) });
         }
         case 'partida': {   // una partida contra bots, contada por el navegador: tope diario y un minuto entre partidas

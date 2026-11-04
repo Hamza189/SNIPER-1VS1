@@ -171,6 +171,14 @@ async function login(acc, o) {
   check('una cuenta sola contra bots del servidor: puntos de bots (+25 ganar, +10 perder)', sb.A === P.botWin && sb2.A === P.botLoss, JSON.stringify([sb, sb2]));
   for (let m = 3; m < 12; m++) await A.matchReward({ code: 'BOT234', match: m, winner: 'A', why: 'bajas', ms: 200000, mode: 'todos', acc: { A: Q.id }, bots: 3 }, deps.acc);
   check('y con el tope diario de los bots (100 puntos)', (await invOf(Q)).botsLeft === 0);
+  // cuenta de administrador (ADMIN_IDS): todos los objetos para probarlos; las demás cuentas, igual que siempre
+  const ITS = require('../core/items.js').ITEMS, Ad = await newAccount('Admin'); opts.admins = [Ad.id];
+  const ai = await invOf(Ad), last = ITS[ITS.length - 1];
+  check('admin: tiene todos los objetos y puede equipar cualquiera', ai.admin === true && ai.items.length === ITS.length
+    && (await api('/cuenta/equipar', { slot: last.type, id: last.id }, Ad.token)).status === 200, ai.items.length);
+  const qi = await invOf(Q);
+  check('una cuenta normal no es admin ni gana objetos', qi.admin === false && qi.items.length < ITS.length);
+  delete opts.admins;
   console.log('\n' + pass + ' correctas, ' + fail + ' fallidas');
   process.exit(fail ? 1 : 0);
 })().catch(e => { console.log('  FAIL ' + (e && e.stack || e)); process.exit(1); });

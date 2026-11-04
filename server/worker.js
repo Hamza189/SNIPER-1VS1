@@ -66,7 +66,7 @@ export default {
 // accounts: one Durable Object per account and one directory; their storage is the account module's store
 const allowed = env => (env.ALLOWED_ORIGINS || 'https://hamza189.github.io').split(',').map(s => s.trim());
 export class AccountDO {
-  constructor(state, env) { this.h = SDAccounts.account(state.storage, { origins: allowed(env) }); }
+  constructor(state, env) { this.h = SDAccounts.account(state.storage, { origins: allowed(env), admins: (env.ADMIN_IDS || '').split(',').map(s => s.trim()).filter(Boolean) }); }
   async fetch(req) { const { action, body, token } = await req.json(); return Response.json(await this.h(action, body, token)); }
 }
 export class DirDO {

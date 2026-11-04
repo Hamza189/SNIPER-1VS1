@@ -57,6 +57,14 @@ Firebase): más piezas y datos fuera de Cloudflare; no la recomiendo.
 Iniciar sesión con Google/Apple: posible más adelante, pero exige registrar la app en Google/Apple (y para Apple, la
 cuenta de desarrollador de 99 $/año). Las passkeys no necesitan nada de eso.
 
+## Cuentas de administrador (04-11-2026)
+- Pedido del propietario: «a mi perfil ponle la cuenta admin; si no pruebo las otras skins, ¿cómo sé si funcionan?».
+- `ADMIN_IDS` en `wrangler.toml` (ahora `SD-QTFX-77ZM`, la suya). Una cuenta de la lista tiene todos los objetos y puede
+  equiparlos; su perfil pone ADMIN. No cambia las cajas ni los puntos de nadie más.
+- El identificador no es secreto, pero no basta: hay que entrar con la passkey de esa cuenta. No hay ninguna clave de
+  administración en la página.
+- Para añadir o quitar una cuenta: editar `ADMIN_IDS` (separadas por comas) y publicar. En el servidor local: `ADMIN_IDS=... node server/node.js`.
+
 ## 3. Objetos: skins, armas y cajas
 - **Solo cosméticos**: nada que cambie daño, cadencia, munición, velocidad ni zonas de impacto (no pay-to-win). Las
   zonas de impacto son las mismas para todos los personajes; ya lo comprueba `tools/check-character-hitbox.js`.

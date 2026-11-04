@@ -7,6 +7,8 @@ workers_dev = true
 
 [vars]
 ALLOWED_ORIGINS = "https://hamza189.github.io,http://localhost,http://127.0.0.1"
+# cuentas de administrador: todos los objetos desbloqueados para probarlos (server/accounts.js). La del propietario.
+ADMIN_IDS = "SD-QTFX-77ZM"
 
 [[durable_objects.bindings]]
 name = "ROOMS"

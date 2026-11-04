@@ -28,7 +28,7 @@ function startServer(opts) {
   const cors = (req, res) => { const o = req.headers.origin; if (o && okOrigin(o)) { res.setHeader('Access-Control-Allow-Origin', o); res.setHeader('Vary', 'Origin'); } };
   const createLimit = new Map();   // ip → [timestamps]  (no more than 10 rooms a minute per address)
   // accounts: one store per account and one directory, like the Durable Objects on Cloudflare
-  const accStores = new Map(), dirStore = memStore(), accOpts = { origins, now: () => clock() };
+  const accStores = new Map(), dirStore = memStore(), accOpts = { origins, now: () => clock(), admins: (opts.admins || process.env.ADMIN_IDS || '').toString().split(',').map(s => s.trim()).filter(Boolean) };
   const accounts = { acc: id => { if (!accStores.has(id)) accStores.set(id, memStore()); return SDAccounts.account(accStores.get(id), accOpts); },
     dir: SDAccounts.directory(dirStore, accOpts) };
 
