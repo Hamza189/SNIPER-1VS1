@@ -750,3 +750,27 @@ rifle, ahora 8× fijo) sigue siendo la de por defecto.
 - **Cristal:** no se buscó un GLB. El cristal de la casa ya es geometría correcta (paneles con su marco); lo que se veía mal era el
   material: lechoso (43 % opaco). Ahora es casi transparente (12 %), algo verdoso, refleja más el cielo y, con el efecto Fresnel,
   se vuelve más reflectante cuanto más de lado se mira, como un cristal de verdad. No cuesta texturas.
+
+## 22. BARRIO: el garaje abandonado y las torres de Sketchfab (04-11-2026)
+
+- **Origen:** material del propietario en `COSAS DEL JUEGO/MATERIAL 04 11` (descargas de Sketchfab). Detalle del mapa en
+  `docs/BARRIO.md`.
+
+  | En el juego | Modelo | Autor | Licencia |
+  |---|---|---|---|
+  | `assets/maps/barrio/garaje.glb` | «an abandoned garage» | dasy444 | Sketchfab Standard |
+  | `assets/maps/barrio/torres.glb` | «street city (7) for games FREE» | dasy444 | Sketchfab Standard |
+
+  - La licencia Sketchfab Standard permite usarlos en juegos, también comerciales, pero no revenderlos sueltos como modelos.
+  - Créditos (no obligatorios, pero los ponemos): «an abandoned garage» y «street city (7) for games FREE», de dasy444
+    (https://sketchfab.com/dasy444).
+- **Empaquetado:** `python tools/barrio/pack.py CARPETA SALIDA.glb [MAX] [materiales a quitar]`. Pasa el glTF a un solo GLB,
+  con texturas JPEG (PNG si tienen transparencia) a 1024 px (garaje) o 512 px (torres). A las torres les quita sus suelos y
+  bolardos.
+- **Descartados del mismo material:**
+  - «abandoned city street»: borroso de cerca;
+  - «City Game ready»: estilo dibujo animado;
+  - «GOLD GLTF»: no sirve;
+  - «AK 47 Gold»: 700 mil triángulos, y añadir un arma toca el equilibrio;
+  - «modular vintage living room»: más adelante; pesa 46 MB;
+  - «nfs edge mobile garage» y «garage interior from RCD»: parecen sacados de otros juegos (regla 11).

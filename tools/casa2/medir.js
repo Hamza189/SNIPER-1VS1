@@ -10,6 +10,8 @@ const MAPS = {
   casa: { q: '&casa=1', ready: '__SD.CASA.ready', views: [[-7.45, 0.95, -PI / 2], [-4.2, 4.6, -0.8], [4.6, 0.3, -0.5]] },
   casa2: { q: '&casa=1&casa2=1&casa2v=1', ready: '__SD.C2.ready', views: [[-17.94, -8.63, -PI / 2], [-20.2, 0.6, -PI / 2], [0.3, -15.8, PI]] },
   // diseño 2 (04-11-2026): la salida, el patio de punta a punta y del comedor al del piso de al lado
+  // BARRIO (04-11-2026): la salida, la calle de punta a punta y desde la puerta de un garaje
+  barrio: { q: '&barrio=1', ready: '__SD.BAR.ready', views: [[-26.5, -18.7, -PI / 2], [-26, 3, -PI / 2], [-13, -8.6, 0.6]] },
   casa2b: { q: '&casa=1&casa2=1&casa2v=2', ready: '__SD.C2B.ready', views: [[-16.24, -8.63, -PI / 2], [-18.6, 0.4, -PI / 2], [-3.4, -6.3, -PI / 2]] },
 };
 (async () => {

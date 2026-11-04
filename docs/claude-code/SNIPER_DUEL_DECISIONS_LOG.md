@@ -11,6 +11,7 @@ Detalle de cada cambio (antes/después, medidas, cómo revertir): `docs/next-lev
 ### Siguiente prioridad
 | Tarea | Quién la desbloquea | Estado |
 |---|---|---|
+| **BARRIO** (04-11) — probar `https://hamza189.github.io/SNIPER-1VS1/?barrio=1` (menú › BARRIO) en el iPhone, contra bots y online: FPS, aspecto de los garajes y las torres, rutas | Propietario | PUBLICADO TRAS BANDERA · PENDIENTE DE APROBACIÓN |
 | **CASA ATLAS 2.0 · JARDÍN** (04-11) — probar `https://hamza189.github.io/SNIPER-1VS1/?casa2v=3` y compararlo con `?casa2v=2`: elegir el diseño que se queda | Propietario | PUBLICADO TRAS BANDERA · PENDIENTE DE APROBACIÓN |
 | **CASA ATLAS 2.0 · diseño 2** (04-11) — probar `https://hamza189.github.io/SNIPER-1VS1/?casa2v=2` (menú › CASA ATLAS 2.0 · NUEVA) en el iPhone, contra bots y online; si le gusta, pasa a ser la CASA ATLAS 2.0 de todos y se retira el diseño 1 | Propietario | PUBLICADO TRAS BANDERA · PENDIENTE DE APROBACIÓN |
 | **Cuenta admin** (04-11) — mirar en el perfil que pone ADMIN y que en CAJAS Y OBJETOS se pueden equipar los 33 objetos | Propietario | DESPLEGADO · PENDIENTE DE VALIDACIÓN |
@@ -88,6 +89,18 @@ Detalle de cada cambio (antes/después, medidas, cómo revertir): `docs/next-lev
 | Encargos para ChatGPT: CASA XL, CASA XL v2 y personaje | 18-10 / 19-10 |
 | Personaje 3D rev. 03 hecho por Claude e integrado tras `?pj=2` (bots y rival online) | 20-10 · directo a `main` |
 | Personajes realistas + elegir personaje (con el SOLDADO de `?pj=2`) y HUD 2 por defecto (aprobado en iPhone y PC) | 28-10 · directo a `main` |
+
+## 04-11-2026 (5) — BARRIO: mapa nuevo con el garaje y las torres
+Del propietario, tras ver que la calle abandonada no servía de cerca: «mapa con torres y garaje».
+- **BARRIO** (`client/barrio.js`, `docs/BARRIO.md`, `?barrio=1`, mapa `barrio` en el servidor):
+  - una calle entre dos filas de edificios, con callejones y un callejón trasero para flanquear;
+  - un garaje abandonado en cada fila, abierto a la calle;
+  - las torres de pisos ×3,5 de horizonte.
+- **Pruebas:** 13/13, 8/8 en navegador y 13/13 online. En el PC, 10,9 ms por fotograma en ALTO (la CASA ATLAS 2.0, 10,2 ms);
+  327 mil triángulos y 12,4 MB de descarga.
+- **Arreglado durante la prueba online:** la superficie «brick» no tenía efectos de impacto (error al dar a un ladrillo);
+  ahora es «plaster».
+- **Estado:** PROBADO EN NAVEGADOR · PROBADO ONLINE (servidor local) · PENDIENTE DE APROBACIÓN Y DE VALIDACIÓN EN IPHONE.
 
 ## 04-11-2026 (4) — Material del 04-11: triaje, CASA ATLAS JARDÍN integrada y fallo de `9b977c6` corregido
 Del propietario: «te he dejado cosas para que añadas, y que implementes a pueblo, o añadas nuevo mapa, o juntes todo», y

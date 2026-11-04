@@ -137,6 +137,7 @@ reconciliación, interpolación del rival 110 ms, ping) · `vmrig.js` (materiale
 | `?casa2=0` / `?casa2=1` | Oculta / muestra CASA ATLAS 2.0 en los menús (se recuerda; por defecto se muestra). Aprobada el 02-11: duelo y online (`client/casa2.js`, `docs/CASA-ATLAS-2.md`). La CASA ATLAS XL (`?xlv`, `?xltex`) se retiró el 03-11 |
 | `?casa2v=2` / `?casa2v=1` | CASA ATLAS 2.0 · diseño 2 (04-11): los pisos espalda con espalda, patio despejado, pérgola, suelos CC0 y cristal nuevo, en lugar del diseño 1 en los menús (se recuerda). Otro mapa para el servidor (`casa2b`); pendiente de aprobación (`docs/CASA-ATLAS-2.md`) |
 | `?casa2v=3` | CASA ATLAS 2.0 · JARDÍN (04-11): el GLB de ChatGPT con sus 365 cajas (`client/casa2j.js`, mapa `casa2c` en el servidor), en lugar de los otros diseños en los menús (se recuerda). Pendiente de aprobación |
+| `?barrio=1` / `?barrio=0` | BARRIO (04-11): calle con dos garajes abandonados y torres de fondo (`client/barrio.js`, `docs/BARRIO.md`), en los menús del duelo y online (se recuerda). Mapa `barrio` en el servidor. Pendiente de aprobación |
 | `&rejas=0` | Sin el desvanecido de las rejas lejanas del kit (para comparar; `docs/PARPADEO.md`, 03-11-2026) |
 | `?menu=1` / `?menu=2` | El menú principal de antes (se recuerda) / el nuevo con la sala 3D, que es el de por defecto desde el 03-11-2026 (`docs/MENU-2.md`) |
 | `&techo=1` | Techo opcional en CASA ATLAS |
