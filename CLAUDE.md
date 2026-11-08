@@ -10,7 +10,7 @@ https://hamza189.github.io/SNIPER-1VS1/ desde la rama `main`.
 
 ## El propietario
 - Hamza. Escribe en español: responde en español, claro y sin jerga innecesaria.
-- Prueba en iPhone 15 Pro Max y en un portátil MSI (GPU NVIDIA GTX 1050 Ti Max-Q); su novia prueba en un Samsung.
+- Prueba en iPhone 15 Pro Max y en un portátil MSI (GPU NVIDIA GTX 1050 Ti Max-Q); Tambien tiene acceso a Android para poder probar.
 - Nunca le digas «descansa» ni le mandes a dormir.
 - Reparto: ChatGPT fabrica assets 3D y dirección de arte; Claude integra, valida, mide, optimiza y publica (solo Claude
   toca el código); el propietario prueba y aprueba.
@@ -32,10 +32,13 @@ https://hamza189.github.io/SNIPER-1VS1/ desde la rama `main`.
 11. No introducir compras, APIs de pago ni assets de licencia dudosa sin autorización (Poly Haven CC0 y modelos propios
     hechos con Blender por código, sí).
 12. Pedir aprobación antes de cambios importantes de equilibrio (daño, cadencia, munición) o de arquitectura.
-13. Sin límite de almacenamiento para assets; la regla es que vaya fluido en su iPhone y que no baje mucho el FPS.
+13. Sin límite de almacenamiento para assets; la regla es que vaya fluido en su iPhone, PC y Android, que no baje mucho el FPS.
+14. A partir del 08/11/2026 ir implementando C, C++ Y C# para mejorar rendimiento, fluidez y almacenamiento, ademas de ahorrar codigo y ir mejorando, de aqui un mes intentar dar el paso a
+    WebGPU + TypeScript + C++/WebAssembly, pero hay algo fundamental: no hace falta reescribir todo el juego ni abandonar Three.js. Podemos evolucionar el motor que ya tengo creado.
 
 ## Forma de trabajar
 - Por fases y en commits pequeños, cada uno estable, con mensaje en español y con estas líneas al final:
+  `Authored-By: Hamza <Hamzaimtiaz2015@gmail.com>`,
   `Co-Authored-By: Claude <noreply@anthropic.com>` (y la línea de sesión si el entorno la da).
 - Etiqueta siempre el estado real: IMPLEMENTADO · PROBADO EN NAVEGADOR · PROBADO ONLINE · PENDIENTE DE VALIDACIÓN EN IPHONE.
   No confundas «anunciado» con «comprobado».
