@@ -11,6 +11,7 @@ Detalle de cada cambio (antes/después, medidas, cómo revertir): `docs/next-lev
 ### Siguiente prioridad
 | Tarea | Quién la desbloquea | Estado |
 |---|---|---|
+| **ARSENAL (GUNSMITH)** (08-11) — probar ARMAS en el iPhone: el rifle grande, girar y acercar, elegir modelo y mira (fotos de cada modelo), GUARDAR y RESTABLECER, ESTADÍSTICAS y DAÑO; decir si el silenciador puede cambiar el sonido (G3) y si apruebas el diseño de BALA DURA (`docs/GUNSMITH.md`) | Propietario | PUBLICADO · PENDIENTE DE VALIDACIÓN EN IPHONE · NECESITA DECISIÓN |
 | **Camuflajes de foto** (05-11) — en CAJAS Y OBJETOS (con la cuenta ADMIN están todos): probar ALUMINIO, los tres CARBONOS y los dos OROS en el iPhone | Propietario | PUBLICADO · PENDIENTE DE VALIDACIÓN EN IPHONE |
 | **BARRIO** (04-11) — probar `https://hamza189.github.io/SNIPER-1VS1/?barrio=1` (menú › BARRIO) en el iPhone, contra bots y online: FPS, aspecto de los garajes y las torres, rutas | Propietario | PUBLICADO TRAS BANDERA · PENDIENTE DE APROBACIÓN |
 | **CASA ATLAS 2.0 · JARDÍN** (04-11) — probar `https://hamza189.github.io/SNIPER-1VS1/?casa2v=3` y compararlo con `?casa2v=2`: elegir el diseño que se queda | Propietario | PUBLICADO TRAS BANDERA · PENDIENTE DE APROBACIÓN |
@@ -90,6 +91,36 @@ Detalle de cada cambio (antes/después, medidas, cómo revertir): `docs/next-lev
 | Encargos para ChatGPT: CASA XL, CASA XL v2 y personaje | 18-10 / 19-10 |
 | Personaje 3D rev. 03 hecho por Claude e integrado tras `?pj=2` (bots y rival online) | 20-10 · directo a `main` |
 | Personajes realistas + elegir personaje (con el SOLDADO de `?pj=2`) y HUD 2 por defecto (aprobado en iPhone y PC) | 28-10 · directo a `main` |
+
+## 08-11-2026 — GUNSMITH 2.0: G1 (auditoría de skins) y G2 (ARSENAL nuevo); estadísticas de una sola fuente
+Del propietario: el encargo «SNIPER DUEL — GUNSMITH 2.0» (fases G1–G8). Prioridades:
+- «primero que el rifle, los accesorios y las skins se vean y funcionen perfectamente en el arsenal»;
+- «después BALA DURA con pruebas de colisión y autoridad del servidor»;
+- «Empieza por G1 y G2»;
+- «Utiliza la GPU para las pruebas».
+
+Detalle en `docs/GUNSMITH.md`.
+- **G1 (auditoría):** en el PC las 5 skins cargan, pero había cuatro fallos.
+  - El camuflaje (uno para todas) tapaba el modelo: la captura del propietario era la ÚLTIMA con REJILLA DE ORO.
+  - Las miniaturas de las miras siempre enseñaban el HALCÓN.
+  - El peso 4K: ÚLTIMA 139 MB de descarga y 454 MB en la GPU. Pendiente de medir en el iPhone; no se baja sin medirlo.
+  - Los rivales y los bots ven siempre el HALCÓN.
+- **G2 (ARSENAL), con lo arreglado de G1:**
+  - el arma grande en el centro (girar y acercar);
+  - los modelos a la izquierda;
+  - seis botones (MIRA, CARGADOR, BÍPODE, SILENCIADOR, EMPUÑADURA y CAMUFLAJE) que abren selectores con solo lo que existe;
+  - ESTADÍSTICAS y DAÑO reales, y BALA DURA «EN DESARROLLO · NO ACTIVA»;
+  - GUARDAR y RESTABLECER, con borrador y mira y camuflaje por modelo;
+  - 32 fotos nuevas de cada mira en cada modelo;
+  - `?arsenal=0`: el ARMAS de antes.
+- **G5:** `core/gunstats.js` es la única cuenta del daño (servidor, juego contra bots y ARSENAL) y la balística del ARSENAL.
+  - Sin cambiar ningún número: room 155/155, pistol 15/15, shotgun 27/27.
+- **Pruebas:** gunstats 15/15 (con impactos en una sala real del servidor), arsenal.browser 24/24, menu2 34/34, miras 55/55,
+  armas 29/29 y cajas 15/15.
+- **Estado:** PROBADO EN NAVEGADOR (PC con GPU y móvil en horizontal) · PENDIENTE DE VALIDACIÓN EN IPHONE.
+- **Necesita al propietario:**
+  - G3: si el silenciador puede cambiar el sonido y el fogonazo (cambia el juego);
+  - G6/G7: aprobar el diseño de BALA DURA de `docs/GUNSMITH.md` antes de programarla.
 
 ## 05-11-2026 — Material del 05-11: texturas para BARRIO y 6 camuflajes nuevos
 Del propietario: la carpeta `COSAS DEL JUEGO/MATERIAL 05 11`, con 12 texturas PBR en 4K de free-3dtextureshd.com. Son

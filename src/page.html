@@ -694,6 +694,76 @@ body.m2 #menu .menuInner{display:none}
 .m2Row .m2W[aria-pressed="true"]{border-color:var(--signal);box-shadow:inset 0 0 0 1px var(--signal)}
 .m2Row .m2W[aria-pressed="true"]::after{content:"✓";position:absolute;right:7px;top:5px;color:var(--ink);background:var(--signal);font-size:10px;line-height:15px;width:15px;text-align:center}
 .m2Small{font-size:9.5px;letter-spacing:.06em;color:var(--dust);line-height:1.4}
+/* ARMAS · GUNSMITH (08-11-2026, docs/GUNSMITH.md): the weapon big in the middle, the models on the left, the five
+   accessories and the camouflage under it (each opens a small picker), the real numbers on the right */
+.m2Pane.gsPane{grid-template-columns:minmax(176px,17vw) minmax(0,1fr) minmax(250px,24vw);align-items:stretch}
+.gsList{display:flex;flex-direction:column;gap:7px;overflow:auto;min-height:0;touch-action:pan-y;scrollbar-width:thin}
+.gsCatH{display:grid;gap:1px;padding:2px 2px 0}
+.gsCatH b{font:600 clamp(17px,2.9vh,23px)/1 var(--f-display);letter-spacing:.06em}
+.gsCatH small{font-size:8.5px;letter-spacing:.14em;color:var(--sand)}
+.gsItems{display:grid;gap:5px}
+.gsIt{display:grid;grid-template-columns:clamp(56px,6vw,82px) minmax(0,1fr);align-items:center;gap:8px;padding:4px;background:#0c0c0d;border:1px solid var(--m2line);cursor:pointer;text-align:left;color:var(--hud);position:relative}
+.gsIt img{width:100%;aspect-ratio:16/9;object-fit:cover;background:#000;display:block}
+.gsIt b{display:block;font:500 clamp(14px,2.3vh,19px)/1 var(--f-display);letter-spacing:.05em;padding-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.gsIt small{display:block;font-size:8.5px;letter-spacing:.04em;color:var(--dust);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.gsIt em{display:block;font-style:normal;font-size:8px;letter-spacing:.14em;color:#7fe0c4;margin-top:2px}
+.gsIt[aria-pressed="true"]{border-color:var(--signal);box-shadow:inset 3px 0 0 var(--signal)}
+.gsIt:hover{border-color:rgba(244,234,216,.4)}
+.gsCenter{position:relative;display:grid;grid-template-rows:auto minmax(0,1fr) auto;gap:clamp(6px,1.2vh,12px);min-width:0;min-height:0}
+.gsTitle{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;min-width:0}
+.gsTitle b{font:600 clamp(26px,5.6vh,48px)/.9 var(--f-display);letter-spacing:.04em}
+.gsTitle small{font-size:10px;letter-spacing:.14em;color:var(--sand)}
+.gsSlot{position:relative;min-height:0;touch-action:none;cursor:grab;background:radial-gradient(ellipse 52% 46% at 50% 54%,rgba(255,138,43,.06),transparent 72%)}
+.gsSlot:active{cursor:grabbing}
+.gsLoad{left:50%;top:50%}
+.gsHint{position:absolute;left:50%;bottom:4px;transform:translateX(-50%);font-size:8.5px;letter-spacing:.18em;color:var(--dust);white-space:nowrap;pointer-events:none;opacity:.8}
+.gsAcc{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:6px}
+.gsAccB{display:grid;align-content:start;gap:2px;min-height:clamp(54px,9.5vh,80px);padding:7px 8px;background:rgba(12,12,13,.92);border:1px solid var(--m2line);cursor:pointer;text-align:left;color:var(--hud);position:relative;min-width:0}
+.gsAccB i{font-style:normal;font-size:8.5px;letter-spacing:.18em;color:var(--sand)}
+.gsAccB b{font:500 clamp(13px,2.1vh,17px)/1.02 var(--f-display);letter-spacing:.03em;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;word-break:normal;overflow-wrap:normal}
+.gsAccB small{font-size:9px;letter-spacing:.06em;color:var(--signal);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.gsAccB::after{content:"CAMBIAR";position:absolute;right:6px;top:6px;font-size:7.5px;letter-spacing:.16em;color:var(--dust)}
+.gsAccB.one::after{content:"ÚNICA"}
+.gsAccB:hover,.gsAccB[aria-expanded="true"]{border-color:var(--signal)}
+.gsAccB[aria-expanded="true"]{box-shadow:inset 0 -3px 0 var(--signal)}
+.gsPick{position:absolute;left:0;right:0;bottom:var(--gsAccH,90px);z-index:2;display:grid;grid-template-rows:auto minmax(0,1fr) auto;gap:8px;max-height:calc(100% - var(--gsAccH,90px) - 6px);padding:10px;background:rgba(15,15,16,.97);border:1px solid var(--signal);box-shadow:0 10px 40px rgba(0,0,0,.6)}
+.gsPickH{display:flex;align-items:center;gap:10px}
+.gsPickH b{font:600 clamp(18px,3.2vh,26px)/1 var(--f-display);letter-spacing:.05em}
+.gsPickX{margin-left:auto;background:none;border:1px solid var(--m2line);color:var(--hud);width:30px;height:30px;cursor:pointer}
+.gsPickL{display:grid;grid-template-columns:repeat(auto-fill,minmax(clamp(104px,11vw,150px),1fr));gap:6px;overflow:auto;min-height:0;touch-action:pan-y}
+.gsOpt{display:grid;align-content:start;gap:2px;padding:4px;background:#0c0c0d;border:1px solid var(--m2line);cursor:pointer;text-align:left;color:var(--hud);position:relative}
+.gsOpt img,.gsOpt canvas{width:100%;aspect-ratio:16/9;object-fit:cover;background:#000;display:block}
+.gsOpt b{display:block;font:500 clamp(13px,2.2vh,17px)/1 var(--f-display);letter-spacing:.04em;padding-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.gsOpt small{display:block;font-size:8.5px;color:var(--signal);letter-spacing:.06em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.gsOpt[aria-pressed="true"]{border-color:var(--signal);box-shadow:inset 0 0 0 1px var(--signal)}
+.gsOpt[aria-pressed="true"]::after{content:"✓";position:absolute;right:6px;top:5px;color:var(--ink);background:var(--signal);font-size:10px;line-height:15px;width:15px;text-align:center}
+.gsOpt:disabled{cursor:default;opacity:.45}
+.gsPickN{font-size:9.5px;letter-spacing:.04em;color:var(--dust);line-height:1.4}
+.gsSide{display:grid;grid-template-rows:auto minmax(0,1fr) auto auto;gap:10px;min-height:0;overflow:hidden}
+.gsTabs{background:rgba(0,0,0,.35)}.gsTabs button{font-size:10.5px;padding:8px 4px}
+.gsStats{display:grid;gap:8px;align-content:start;overflow:auto;min-height:0;touch-action:pan-y;scrollbar-width:thin;padding-right:2px}
+.gsRow{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:baseline;gap:1px 10px}
+.gsRow>span{font-size:9.5px;letter-spacing:.14em;color:var(--sand)}
+.gsRow>b{font:500 clamp(15px,2.5vh,20px)/1 var(--f-display);letter-spacing:.04em;text-align:right;font-variant-numeric:tabular-nums}
+.gsRow>small{grid-column:1/-1;font-size:9px;color:var(--dust);letter-spacing:.03em;line-height:1.35}
+.gsBar{grid-column:1/-1;height:4px;background:rgba(244,234,216,.1);position:relative}
+.gsBar i{position:absolute;left:0;top:0;bottom:0;background:linear-gradient(90deg,#e97416,var(--signal))}
+.gsTbl{width:100%;border-collapse:collapse;font-size:11px;font-variant-numeric:tabular-nums}
+.gsTbl th{font-size:8.5px;letter-spacing:.12em;color:var(--sand);font-weight:400;text-align:right;padding:3px 4px;border-bottom:1px solid var(--m2line)}
+.gsTbl th:first-child,.gsTbl td:first-child{text-align:left}
+.gsTbl td{text-align:right;padding:4px;border-bottom:1px solid rgba(244,234,216,.06);color:var(--hud)}
+.gsTbl td small{color:var(--dust);font-size:9px}
+.gsNote{font-size:9px;color:var(--dust);line-height:1.45;letter-spacing:.02em}
+.gsPas{display:grid;gap:5px}
+.gsPas>div{border:1px dashed rgba(244,234,216,.22);padding:7px 9px;display:grid;gap:2px}
+.gsPas b{font:500 clamp(15px,2.4vh,19px)/1 var(--f-display);letter-spacing:.05em}
+.gsPas em{font-style:normal;font-size:8px;letter-spacing:.16em;color:var(--signal)}
+.gsPas small{font-size:9.5px;color:var(--dust);line-height:1.4}
+.gsBtns{display:grid;grid-template-columns:minmax(0,1fr);gap:6px}
+.gsBtns small{grid-column:1/-1;font-size:9.5px;letter-spacing:.1em;color:var(--signal);min-height:1.2em}
+#menu .gsBtns .btn{font-size:clamp(15px,2.4vh,19px);padding:10px 6px 7px;white-space:nowrap;width:100%}
+#menu .gsBtns .btn.ghost{order:2;padding:6px 6px 4px;font-size:clamp(13px,2vh,16px)}
+.gsBtns .btn:disabled{opacity:.4;cursor:default}
 /* MAPAS */
 .m2Pane[data-pane="mapas"]{grid-template-rows:minmax(0,1fr) auto;background:rgba(9,9,10,.55)}
 .m2Maps{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:clamp(8px,1.6vw,16px);align-content:center;overflow:auto;min-height:0;width:min(100%,calc((100vh - var(--m2top) - var(--m2nav) - 80px) * 1.6 + 16px));justify-self:center}
@@ -753,6 +823,20 @@ body.m2 #menu .menuInner{display:none}
   .m2Row .m2W{width:84px;padding:3px}.m2Row .m2W img{height:34px}.m2Row .m2W b{font-size:13px}
   .m2Small{font-size:8.5px}
   .m2Arm>.m2Small{display:none}
+  .m2Pane.gsPane{grid-template-columns:minmax(132px,17vw) minmax(0,1fr) minmax(188px,25vw);gap:8px}
+  .gsList{gap:4px}.gsCatH small{display:none}.gsCatH b{font-size:14px}
+  .gsIt{grid-template-columns:34px minmax(0,1fr);gap:5px;padding:3px}.gsIt b{font-size:12.5px}.gsIt small{display:none}.gsIt em{font-size:7px;margin-top:1px}
+  .gsTitle b{font-size:22px}.gsTitle small{font-size:8.5px}
+  .gsHint{display:none}
+  .gsAcc{gap:3px}.gsAccB{min-height:40px;padding:4px 4px}.gsAccB b{font-size:10.5px;letter-spacing:.01em}.gsAccB i{font-size:7px;letter-spacing:.1em}.gsAccB small{display:none}.gsAccB::after{display:none}
+  .gsPickL{grid-template-columns:repeat(auto-fill,minmax(92px,1fr))}.gsOpt b{font-size:12px}
+  .gsPickH b{font-size:16px}.gsPickN{font-size:8.5px}
+  .gsTabs button{font-size:9px;padding:6px 3px}
+  .gsStats{gap:5px}.gsRow>span{font-size:8px;letter-spacing:.08em}.gsRow>b{font-size:13px}.gsRow>small{display:none}
+  .gsTbl{font-size:9.5px}.gsTbl th{font-size:7.5px;padding:2px}.gsTbl td{padding:2px 3px}
+  .gsSide{gap:5px}.gsStats>.gsNote:first-child{display:none}.gsPas>.lbl{display:none}
+  .gsPas>div{padding:4px 6px}.gsPas b{font-size:12px}.gsPas small{display:none}.gsPas em{font-size:7px}
+  .gsBtns{gap:3px}#menu .gsBtns .btn{font-size:12.5px;padding:6px 3px 4px;letter-spacing:.02em}#menu .gsBtns .btn.ghost{font-size:11px;padding:4px}.gsBtns small{font-size:8.5px}
   .m2Nav button{gap:7px;font-size:17px}.m2Nav svg{width:20px}
   .m2Map b{font-size:24px}.m2Map small{font-size:8.5px}
   .m2Sheet{padding:6px}
@@ -1222,6 +1306,34 @@ body.m2 #menu .menuInner{display:none}
             <div class="m2Row" id="m2Knives" role="group" aria-label="Cuchillos"></div>
           </div>
           <span class="m2Small">Solo aspecto: el daño, la cadencia, el retroceso y las balas son los del arma del juego.</span>
+        </div>
+      </section>
+      <!-- GUNSMITH (08-11-2026, docs/GUNSMITH.md): the ARSENAL. Becomes the ARMAS section at start (?arsenal=0: the one above) -->
+      <section class="m2Pane gsPane" data-pane="gs" hidden>
+        <div class="m2Panel gsList">
+          <div class="gsCatH" data-gcat="rifle"><b>FRANCOTIRADOR</b><small>MODELO · cambia el rifle entero</small></div>
+          <div class="gsItems" id="gsRifles" role="group" aria-label="Modelos del rifle"></div>
+          <div class="gsCatH" data-gcat="knife"><b>ARMA DE MANO</b><small>CUCHILLO · tecla 3</small></div>
+          <div class="gsItems" id="gsKnives" role="group" aria-label="Cuchillos"></div>
+        </div>
+        <div class="gsCenter">
+          <div class="gsTitle"><b id="gsName"></b><small id="gsSub"></small></div>
+          <div class="gsSlot" id="gsSlot" aria-label="El arma en 3D: arrástrala para girarla; rueda o pellizco para acercarla">
+            <div class="m2Load gsLoad" id="gsLoad" hidden aria-live="polite"><i></i><span id="gsLoadTxt"></span></div>
+            <span class="gsHint" id="gsHint">ARRASTRA PARA GIRAR · RUEDA O PELLIZCO PARA ACERCAR</span>
+          </div>
+          <div class="gsAcc" id="gsAcc" role="group" aria-label="Accesorios"></div>
+          <div class="gsPick" id="gsPick" hidden role="dialog" aria-labelledby="gsPickT">
+            <div class="gsPickH"><b id="gsPickT"></b><button type="button" class="gsPickX" id="gsPickX" aria-label="Cerrar">✕</button></div>
+            <div class="gsPickL" id="gsPickL"></div>
+            <small class="gsPickN" id="gsPickN"></small>
+          </div>
+        </div>
+        <div class="m2Panel gsSide">
+          <div class="seg gsTabs" id="gsTabs" role="group" aria-label="Datos del arma"><button type="button" data-gt="stats">ESTADÍSTICAS</button><button type="button" data-gt="dmg">DAÑO</button></div>
+          <div class="gsStats" id="gsStats"></div>
+          <div class="gsPas"><span class="lbl">HABILIDAD PASIVA</span><div id="gsPas"></div></div>
+          <div class="gsBtns"><small id="gsDirty" aria-live="polite"></small><button type="button" class="btn ghost" id="gsReset">RESTABLECER</button><button type="button" class="btn" id="gsSave">GUARDAR CONFIGURACIÓN</button></div>
         </div>
       </section>
       <section class="m2Pane" data-pane="mapas" hidden>
@@ -4306,16 +4418,15 @@ function bulletHit(h,b){
   const ud=h.object.userData;const dist=b.dist;
   if(ud.remote)return; // online: a predicted hit is not a confirmed one (the server sends the hit)
   if(ud.bot&&ud.bot.alive&&b.shot){   // a pellet: blood here, damage summed per shot in flushPellets()
-    const bot=ud.bot,part=ud.part,bc=b.cfg,f=bc.falloff,fk=!f||dist<=f.from?1:dist>=f.to?f.min:1-(1-f.min)*(dist-f.from)/(f.to-f.from);
-    const key=b.shot.id+':'+bot.name,dmg=Math.round(bc.dmg[part]*fk),q=PELLET_HITS.get(key);
+    const bot=ud.bot,part=ud.part,bc=b.cfg;
+    const key=b.shot.id+':'+bot.name,dmg=SDGunStats.dmgAt(bc,part,dist),q=PELLET_HITS.get(key);   // the server's own sum (core/gunstats.js)
     if(!q)PELLET_HITS.set(key,{bot,part,dmg,dist,n:1,dir:{x:b.vx,z:b.vz}});else{q.dmg+=dmg;q.n++;if(PART_RANK[part]>PART_RANK[q.part])q.part=part;}
     bodyFX(h.point,_bd,part==='head',dist);
     return;
   }
   if(ud.bot&&ud.bot.alive){
     const bot=ud.bot,part=ud.part;STATS.hits++;
-    const bc=b.cfg||GUNCFG,f=bc.falloff,fk=!f||dist<=f.from?1:dist>=f.to?f.min:1-(1-f.min)*(dist-f.from)/(f.to-f.from);
-    const dmg=Math.round(bc.dmg[part]*fk);STATS.damage+=Math.min(dmg,Math.max(0,bot.hp));
+    const bc=b.cfg||GUNCFG,dmg=SDGunStats.dmgAt(bc,part,dist);STATS.damage+=Math.min(dmg,Math.max(0,bot.hp));
     const killed=bot.damage(dmg,part,dist,{x:b.vx,z:b.vz});
     bodyFX(h.point,_bd,part==='head',dist);
     if(part==='head')STATS.rangeHs++;
@@ -6762,7 +6873,9 @@ function m2Init(){
 }
 function m2Tab(id,quiet){
   if(id==='ajustes'){M2.prevTab=M2.tab==='ajustes'?'inicio':M2.tab;M2.tab='ajustes';m2Nav();openSettings('menu');return;}
+  if(GS.on&&M2.tab==='armas'&&id!=='armas'){gsLeave();GS.draft=null;}   // GUNSMITH: leaving with changes unsaved puts the saved ones back
   M2.tab=id;document.querySelectorAll('#m2 .m2Pane').forEach(p=>p.hidden=p.dataset.pane!==id);
+  if(GS.on&&id==='armas'&&!GS.draft)gsEnter();
   m2Nav();M2.cur=null;M2.wsig='';if(!quiet)m2Sync();else m2Sync();
 }
 function m2Nav(){document.querySelectorAll('#m2 .m2Nav button').forEach(b=>b.setAttribute('aria-selected',String(b.dataset.tab===M2.tab)));}
@@ -6797,6 +6910,7 @@ function m2Sync(){
   else{const k=WSKINS.knife[WSKIN.knife];setText($('#m2ArmName'),k?k.name:'NAVAJA');setText($('#m2ArmSub'),'ARMA DE MANO · CUERPO A CUERPO');}
   press('#m2Maps .m2Map','map',OFFMAP);
   M2.sig=m2Sig();
+  if(GS.on)gsSync();
 }
 const m2Sig=()=>[M2.sel,mode,OFFMAP,diff,OFF_TIME,TRAIN.level,PRIMARY,SKIN,WSKIN.rifle,WSKIN.knife,MIRA.id,PROFILE.name,$('#modeSub').textContent.slice(0,9),$('#openInv').textContent].join('|');
 // MULTIJUGADOR: a room you create starts on the map chosen in MAPAS (if the server has it)
@@ -6874,7 +6988,7 @@ function m2Layout(dt){
   if(!M2.cur){const pane=$('#m2 .m2Pane[data-pane="'+(M2.tab==='ajustes'?M2.prevTab:M2.tab)+'"]'),st=pane&&pane.querySelector('[data-stage]');
     const r=st?st.getBoundingClientRect():{left:vw*0.3,top:vh*0.12,width:vw*0.4,height:vh*0.76};
     // MAPAS has no stage: the operator stays in the middle, behind the cards
-    M2.cur=Object.assign(SDMenu2.stageFrame(r,vw,vh,fov,M2.tab==='personaje'?1.95:2.05),{st:r,slot:M2.tab==='armas'?$('#m2Slot').getBoundingClientRect():null});
+    M2.cur=Object.assign(SDMenu2.stageFrame(r,vw,vh,fov,M2.tab==='personaje'?1.95:2.05),{st:r,slot:M2.tab==='armas'?$(GS.on?'#gsSlot':'#m2Slot').getBoundingClientRect():null});
     if(M2.tab==='armas'&&r.width<60)M2.cur.ox=-vw*0.36;}
   const F=M2.frame,C=M2.cur,k=dt>0.2?100:7;
   F.dist=SDMenu2.damp(F.dist,C.dist,k,dt);F.ox=SDMenu2.damp(F.ox,C.ox,k,dt);F.oy=SDMenu2.damp(F.oy,C.oy,k,dt);
@@ -6888,7 +7002,7 @@ function m2Layout(dt){
     const d=1.3,P=SDMenu2.slotPlace(C.slot,vw,vh,fov,d),sz=M2.item.userData.size;
     const x=(C.slot.left+C.slot.width/2-vw/2-F.ox)*P.perPx,y=-(C.slot.top+C.slot.height/2-vh/2-F.oy)*P.perPx;
     M2.show.position.set(x,y,-d);
-    const s=Math.min(P.width*0.9/Math.max(0.01,sz.x),P.height*0.86/Math.max(0.01,sz.y));M2.item.scale.setScalar(s);M2.show.visible=true;
+    const s=Math.min(P.width*0.9/Math.max(0.01,sz.x),P.height*0.86/Math.max(0.01,sz.y))*(M2.wZoom||1);M2.item.scale.setScalar(s);M2.show.visible=true;
   }else M2.show.visible=false;
 }
 // the pose: turned a little to his right, rifle low ("low ready"), like a portrait
@@ -6928,21 +7042,208 @@ function m2Frame(rdt){
   // front a few seconds after you let go)
   const idle=now-M2.lastDrag>2600&&!M2.drag;
   if(!M2.drag){M2.yaw+=M2.yawV*dt;M2.yawV=SDMenu2.damp(M2.yawV,0,5,dt);if(idle)M2.yaw=SDMenu2.dampAngle(M2.yaw,0,1.4,dt);
-    M2.wYaw+=M2.wYawV*dt;M2.wYawV=SDMenu2.damp(M2.wYawV,0,5,dt);if(idle)M2.wYaw=SDMenu2.dampAngle(M2.wYaw,0,1.4,dt);}
+    M2.wYaw+=M2.wYawV*dt;M2.wYawV=SDMenu2.damp(M2.wYawV,0,5,dt);if(idle)M2.wYaw=SDMenu2.dampAngle(M2.wYaw,0,1.4,dt);
+    if(idle&&!GS.on)M2.wPitch=SDMenu2.damp(M2.wPitch||0,0,1.4,dt);}
   M2.wIdle=SDMenu2.damp(M2.wIdle||0,idle?1:0,1.5,dt);
   const sw=SDMenu2.idleSway(M2.t);
   M2.pivot.rotation.set(0,M2_YAW0+M2.yaw+sw.yaw,sw.lean);M2.pivot.position.y=sw.bob;
-  M2.pivot.visible=M2.tab!=='mapas'&&M2.opShown!==false;   // MAPAS: the cards fill the screen; and never a half-loaded operator
+  M2.pivot.visible=M2.tab!=='mapas'&&!(GS.on&&M2.tab==='armas')&&M2.opShown!==false;   // MAPAS: the cards fill the screen; the ARSENAL is the weapon's; never a half-loaded operator
   if(++M2.n%10===1)csFix(M2.pivot);   // the box figure's colours as in the game (CLÁSICO looked white)
-  const sw2=M2.tab==='armas'?m2SkinWait(M2.cat):'';setHidden($('#m2SlotLoad'),!sw2);if(sw2){setText($('#m2SlotTxt'),sw2);$('#m2SlotLoad').classList.toggle('mini',!!WS_ST[M2.cat].light);}
+  const sw2=M2.tab==='armas'?m2SkinWait(M2.cat):'',ld=$(GS.on?'#gsLoad':'#m2SlotLoad');setHidden(ld,!sw2);if(sw2){setText($(GS.on?'#gsLoadTxt':'#m2SlotTxt'),sw2);ld.classList.toggle('mini',!!WS_ST[M2.cat].light);}
+  if(GS.on&&M2.tab==='armas'&&GS.msgT&&performance.now()>GS.msgT){GS.msgT=0;gsSync();}   // the line under the buttons goes back to what it was
   // the soldier's level of detail is measured from the game camera: lend it the menu camera's place just for this call
   if(M2.R){_m2cp.copy(camera.position);camera.position.copy(M2.cam.position);animateSoldier(M2.R,{wpn:PRIMARY==='shotgun'?'shotgun':'rifle',vx:0,vz:0,pitch:M2_PITCH,aim:0,crouch:0},dt);camera.position.copy(_m2cp);}
-  M2.spin.rotation.set(0.1,M2.wYaw+M2.wIdle*Math.sin(M2.t*0.45)*0.4,0);   // on show: side-on, swinging gently
+  M2.spin.rotation.set(0.1+(M2.wPitch||0),M2.wYaw+M2.wIdle*Math.sin(M2.t*0.45)*(GS.on?0.25:0.4),0);   // on show: side-on, swinging gently (ARSENAL: and tilted as you left it)
   M2.room.frame(M2.t);
   m2Layout(rdt);
   WROOT.visible=false;KROOT.visible=false;PROOT.visible=false;SROOT.visible=false;
 }
-if(M2.on)m2Init();
+/* =================== ARMAS · GUNSMITH (08-11-2026, docs/GUNSMITH.md) ===================
+   Owner: «un sistema GUNSMITH profesional… que todo lo que el jugador seleccione tenga un resultado real y verificable».
+   The ARMAS section: the weapon big in the middle (the one in your hands: model, optic, camouflage; turn it, zoom it),
+   the models on the left (a MODEL replaces the whole rifle; a CAMOUFLAGE paints the one you have on), under it the five
+   accessory slots and the camouflage, each opening a small picker with only what really exists, and on the right the
+   real numbers (core/gunstats.js: the server's own damage and ballistics). A choice is a draft shown at once on the
+   weapon; GUARDAR keeps it (each model keeps its optic and camouflage), RESTABLECER goes back to what is saved, and
+   leaving ARMAS with changes unsaved puts the saved ones back. ?arsenal=0 brings back the ARMAS of before. */
+{const q=location.search.match(/[?&]arsenal=([01])\b/);if(q)store.set('arsenalOld',q[1]==='0');}
+const GS={on:M2.on&&store.get('arsenalOld',false)!==true,tab:'stats',pick:null,draft:null,saved:null,cfg:null,msgT:0,ptr:new Map(),pinch:0};
+const gsClone=o=>JSON.parse(JSON.stringify(o));
+// what each model keeps (store: sniperduel_gsCfg). The optic and camouflage of the model in your hands are the game's
+// own (MIRA.id, your account's camouflage): the saved state always starts from them
+function gsLoadCfg(){
+  const raw=store.get('gsCfg',null),c={v:1,models:{}};
+  if(raw&&raw.models)for(const id in raw.models){if(!WSKINS.rifle[id])continue;const m=raw.models[id]||{};
+    c.models[id]={mira:SDMiras.sanitize(m.mira),camo:typeof m.camo==='string'&&SDItems.byId(m.camo)&&SDItems.byId(m.camo).type==='camo'?m.camo:''};}
+  return c;
+}
+function gsSavedNow(){
+  const cfg=gsClone(GS.cfg.models);cfg[WSKIN.rifle]={mira:MIRA.id,camo:(INV.equip&&INV.equip.camo)||''};
+  return {rifle:WSKIN.rifle,knife:WSKIN.knife,cfg};
+}
+const gsModelCfg=(d,id)=>d.cfg[id]||(d.cfg[id]={mira:SDMiras.DEFAULT,camo:''});
+const gsKey=d=>{const c=gsModelCfg(d,d.rifle);return d.rifle+'|'+d.knife+'|'+c.mira+'|'+c.camo;};
+const gsDirty=()=>!!(GS.draft&&GS.saved&&gsKey(GS.draft)!==gsKey(GS.saved));
+// the draft (or the saved state) on the weapon in your hands, without saving anything
+function gsApply(d){
+  const c=gsModelCfg(d,d.rifle);
+  if(WSKIN.rifle!==d.rifle||WS_ST.rifle.cur!==d.rifle){WSKIN.rifle=d.rifle;wskinRifle(d.rifle);}
+  if(WSKIN.knife!==d.knife||WS_ST.knife.cur!==d.knife){WSKIN.knife=d.knife;wskinKnife(d.knife);}
+  if(MIRA.id!==c.mira){MIRA.id=c.mira;miraApply();}
+  const cur=(INV.equip&&INV.equip.camo)||'';if(cur!==c.camo){if(c.camo)INV.equip.camo=c.camo;else delete INV.equip.camo;camoApply();}
+  M2.wsig='';
+}
+function gsEnter(){if(!GS.on)return;GS.saved=gsSavedNow();GS.draft=gsClone(GS.saved);gsSync();}
+function gsLeave(){
+  gsPick(null);
+  if(gsDirty()){GS.draft=gsClone(GS.saved);gsApply(GS.saved);gsMsg('NO GUARDASTE: SE RESTAURÓ TU CONFIGURACIÓN',4000);}
+}
+function gsMsg(t,ms){GS.msg=t;GS.msgT=performance.now()+(ms||2600);gsSync();}
+async function gsSave(){
+  const d=GS.draft;if(!d)return;const c=gsModelCfg(d,d.rifle);
+  // what the game reads when it starts: the model, its optic, the knife (the same keys as always)
+  store.set('wsRifle',d.rifle);store.set('wsKnife',d.knife);store.set('mira',c.mira);
+  GS.cfg.models=gsClone(d.cfg);store.set('gsCfg',GS.cfg);
+  // the camouflage is your account's (the server says what is yours): equipped there
+  const srv=(ACC.acc&&ACC.acc.inv&&ACC.acc.inv.equip&&ACC.acc.inv.equip.camo)||'';
+  if(ACC.acc&&srv!==c.camo)await invEquipSet('camo',c.camo||null);
+  GS.saved=gsSavedNow();GS.draft=gsClone(GS.saved);
+  document.querySelectorAll('#wsRifleGrid .skinCard').forEach(x=>x.setAttribute('aria-pressed',String(x.dataset.ws===d.rifle)));
+  gsMsg('CONFIGURACIÓN GUARDADA');
+}
+function gsReset(){if(!GS.saved)return;GS.draft=gsClone(GS.saved);gsApply(GS.saved);gsPick(null);gsMsg('RESTAURADA LA CONFIGURACIÓN GUARDADA');}
+// ---- the accessories: only what exists. A model's own bipod or grip is part of its 3D model (looks only)
+const GS_BIPOD={ultima:1,sahara:1};
+const gsGun=()=>SD_CONFIG.rifles.halcon;
+const GS_SOON='Por ahora es la única opción. En la fase G3 llegan modelos de este accesorio; cualquier efecto en el juego (sonido, retroceso, estabilidad) necesitará la aprobación del propietario.';
+function gsCamos(){
+  const own=(ACC.acc&&ACC.acc.inv&&ACC.acc.inv.items)||[];
+  return SDItems.ITEMS.filter(it=>it.type==='camo'&&own.includes(it.id));
+}
+function gsAccList(){
+  const d=GS.draft,c=gsModelCfg(d,d.rifle),O=SDMiras.get(c.mira),cam=c.camo&&SDItems.byId(c.camo);
+  return [
+    {k:'mira',name:'MIRA',val:O.name,sub:O.short,opts:()=>SDMiras.ORDER.map(id=>{const o=SDMiras.get(id);return {id,name:o.name,sub:o.short,img:d.rifle==='halcon'?miraImg(id):av('assets/miras/'+d.rifle+'/'+id+'.jpg?v='+BUILD_HASH)};}),
+      cur:c.mira,set:id=>{c.mira=id;},note:'Cada mira tiene un solo aumento (con dos dedos en el móvil). Se ve al momento en el rifle y es la que llevarás en la partida.'},
+    {k:'mag',name:'CARGADOR',val:'ESTÁNDAR',sub:gsGun().mag+' BALAS',one:1,opts:()=>[{id:'std',name:'ESTÁNDAR',sub:gsGun().mag+' balas · recarga '+gsGun().reload.toFixed(2).replace('.',',')+' s'}],cur:'std',note:GS_SOON},
+    {k:'bipod',name:'BÍPODE',val:GS_BIPOD[d.rifle]?'DEL MODELO':'SIN BÍPODE',sub:GS_BIPOD[d.rifle]?'solo aspecto':'—',one:1,
+      opts:()=>[{id:'cur',name:GS_BIPOD[d.rifle]?'DEL MODELO':'SIN BÍPODE',sub:GS_BIPOD[d.rifle]?'parte del modelo 3D':'este modelo no lo trae'}],cur:'cur',note:GS_SOON},
+    {k:'muzzle',name:'SILENCIADOR',val:'NINGUNO',sub:'—',one:1,opts:()=>[{id:'none',name:'NINGUNO',sub:'el cañón del modelo'}],cur:'none',note:GS_SOON},
+    {k:'grip',name:'EMPUÑADURA',val:'DEL MODELO',sub:'—',one:1,opts:()=>[{id:'model',name:'DEL MODELO',sub:'parte del modelo 3D'}],cur:'model',note:GS_SOON},
+    {k:'camo',name:'CAMUFLAJE',val:cam?cam.name:'SIN CAMUFLAJE',sub:cam?SDItems.RARITY[cam.r].name:'acabado del modelo',
+      opts:()=>[{id:'',name:'SIN CAMUFLAJE',sub:'el acabado del modelo'}].concat(gsCamos().map(it=>({id:it.id,name:it.name,sub:SDItems.RARITY[it.r].name,camo:it}))),
+      cur:c.camo,set:id=>{c.camo=id;},
+      note:ACC.acc?'Pinta el modelo que llevas (cada modelo guarda el suyo). Tienes '+gsCamos().length+' de '+SDItems.ITEMS.filter(i=>i.type==='camo').length+' camuflajes: los demás salen en CAJAS.':'Los camuflajes son de tu cuenta: entra en PERFIL › CUENTA para usarlos.'}
+  ];
+}
+function gsPick(k){
+  GS.pick=k;const box=$('#gsPick');
+  document.querySelectorAll('#gsAcc .gsAccB').forEach(b=>b.setAttribute('aria-expanded',String(b.dataset.acc===k)));
+  if(!k){box.hidden=true;return;}
+  const A=gsAccList().find(a=>a.k===k);if(!A){box.hidden=true;return;}
+  $('#gsPickT').textContent=A.name;$('#gsPickN').textContent=A.note||'';const L=$('#gsPickL');L.innerHTML='';
+  for(const o of A.opts()){
+    const b=document.createElement('button');b.type='button';b.className='gsOpt';b.dataset.opt=o.id;b.setAttribute('aria-pressed',String(o.id===A.cur));
+    if(o.img){const im=document.createElement('img');im.alt='';im.loading='lazy';im.src=o.img;b.append(im);}
+    else if(o.camo){b.append(SDCamo.swatch(o.camo,192,108));}
+    else if(k==='camo'){const cv=document.createElement('canvas');cv.width=192;cv.height=108;const g=cv.getContext('2d');g.fillStyle='#16171a';g.fillRect(0,0,192,108);
+      g.fillStyle='#8f949a';g.font='600 13px sans-serif';g.textAlign='center';g.fillText('ACABADO DEL MODELO',96,58);b.append(cv);}
+    const nm=document.createElement('b');nm.textContent=o.name;const sm=document.createElement('small');sm.textContent=o.sub||'';b.append(nm,sm);
+    if(A.set)b.addEventListener('click',()=>{A.set(o.id);gsApply(GS.draft);audioInit();SFX.ui();gsPick(k);gsSync();});
+    else b.disabled=o.id!==A.cur;
+    L.append(b);
+  }
+  box.hidden=false;
+}
+// ---- the numbers: core/gunstats.js (the server's damage and ballistics) over core/config.js
+const gsNum=(v,dp)=>(+v).toFixed(dp||0).replace('.',',');
+function gsStatsHTML(){
+  const e=escapeHtml;
+  if(M2.cat==='knife'){
+    const K=SDGunStats.knifeSheet(SD_CONFIG.knives.tactica);
+    if(GS.tab==='dmg')return '<table class="gsTbl"><tr><th>GOLPE</th><th>DAÑO</th><th>GOLPES PARA ELIMINAR</th></tr><tr><td>De frente</td><td>'+K.front+'</td><td>'+K.hits.front+'</td></tr><tr><td>Por la espalda</td><td>'+K.back+'</td><td>'+K.hits.back+'</td></tr></table>'+
+      '<p class="gsNote">Vida: '+K.hp+'. «Por la espalda» es a menos de 60° de su espalda. Los dos cuchillos (NAVAJA y TÁCTICA) son aspectos: mismas cifras.</p>';
+    const row=(l,v,s,p)=>'<div class="gsRow"><span>'+l+'</span><b>'+v+'</b>'+(p!=null?'<div class="gsBar"><i style="width:'+Math.round(Math.min(1,p)*100)+'%"></i></div>':'')+(s?'<small>'+s+'</small>':'')+'</div>';
+    return row('DAÑO',K.front+' · '+K.back,'de frente · por la espalda (vida '+K.hp+')',K.front/K.hp)+row('GOLPES POR MINUTO',K.rpm,'uno cada '+gsNum(K.interval,2)+' s')+
+      row('ALCANCE',gsNum(K.range,1)+' m','de tu cuerpo al suyo')+row('MOVILIDAD',gsNum(K.walk,2)+' m/s','+'+Math.round((K.moveMul-1)*100)+' % con el cuchillo en la mano · corriendo '+gsNum(K.sprint,1)+' m/s');
+  }
+  const S=SDGunStats.sheet(gsGun()),all=[gsGun(),SD_CONFIG.shotguns.furia,SD_CONFIG.pistols.vibora].map(g=>SDGunStats.sheet(g));
+  const mx=k=>Math.max(...all.map(x=>x[k]));
+  if(GS.tab==='dmg'){
+    let h='<table class="gsTbl"><tr><th>DIST.</th><th>CABEZA</th><th>TORSO</th><th>PIERNAS</th><th>CAÍDA</th><th>VUELO</th></tr>';
+    for(const r of S.table)h+='<tr><td>'+r.d+' m</td><td>'+r.head+' <small>('+r.headShots+')</small></td><td>'+r.torso+' <small>('+r.torsoShots+')</small></td><td>'+r.legs+' <small>('+r.legsShots+')</small></td><td>'+(r.dropCm>0?r.dropCm+' cm':r.dropCm<0?'+'+(-r.dropCm)+' cm':'0')+'</td><td>'+r.ms+' ms</td></tr>';
+    return h+'</table><p class="gsNote">Entre paréntesis, disparos para eliminar (vida '+S.hp+'). El rifle no pierde daño con la distancia. CAÍDA: cuánto cae la bala por debajo de la retícula (puesta a cero a '+S.zero+' m; + es por encima). VUELO: lo que tarda en llegar. Calculado con el mismo código que usa el servidor.</p>';
+  }
+  const row=(l,v,s,p)=>'<div class="gsRow"><span>'+l+'</span><b>'+v+'</b>'+(p!=null?'<div class="gsBar"><i style="width:'+Math.round(Math.min(1,p)*100)+'%"></i></div>':'')+(s?'<small>'+e(s)+'</small>':'')+'</div>';
+  return '<p class="gsNote">Valores del juego (core/config.js), los mismos que usa el servidor. Los 5 modelos son aspectos del HALCÓN R7: comparten todas sus cifras. Las barras comparan con las tres armas del juego (HALCÓN R7, FURIA 12, VÍBORA 9).</p>'+
+    row('DAÑO · CABEZA',S.dmg.head,'elimina de un disparo (vida '+S.hp+')',S.dmg.head/S.hp)+
+    row('DAÑO · TORSO / PIERNAS',S.dmg.torso+' / '+S.dmg.legs,'dos disparos al cuerpo',S.dmg.torso/S.hp)+
+    row('CADENCIA',S.rpm+'/min','un disparo cada '+gsNum(S.bolt,2)+' s (cerrojo)',S.rpm/mx('rpm'))+
+    row('CARGADOR',S.mag,'recarga '+gsNum(S.reload,2)+' s',S.mag/mx('mag'))+
+    row('APUNTAR',gsNum(S.ads,2)+' s','de la cadera a la mira',null)+
+    row('VELOCIDAD DE LA BALA',S.speed+' m/s','gravedad '+gsNum(S.gravity,1)+' m/s²',S.speed/mx('speed'))+
+    row('ALCANCE',S.maxRange+' m','puesta a cero a '+S.zero+' m',S.maxRange/mx('maxRange'))+
+    row('MOVILIDAD',gsNum(S.walk,2)+' m/s','corriendo '+gsNum(S.sprint,1)+' · apuntando '+gsNum(S.adsWalk,2)+' m/s',S.walk/mx('walk'));
+}
+function gsPasHTML(){
+  return '<em>EN DESARROLLO · NO ACTIVA</em><b>BALA DURA</b><small>Atravesar obstáculos finos (madera, paneles ligeros) con menos daño, calculado por el servidor. Primero contra bots; no llegará al online sin aprobación.</small>';
+}
+// ---- what is chosen, on screen
+function gsSync(){
+  if(!GS.on||!GS.draft)return;
+  const d=GS.draft,s=GS.saved,rifle=M2.cat!=='knife';
+  document.querySelectorAll('#gsRifles .gsIt').forEach(b=>{b.setAttribute('aria-pressed',String(rifle&&b.dataset.ws===d.rifle));b.querySelector('em').hidden=b.dataset.ws!==s.rifle;});
+  document.querySelectorAll('#gsKnives .gsIt').forEach(b=>{b.setAttribute('aria-pressed',String(!rifle&&b.dataset.ws===d.knife));b.querySelector('em').hidden=b.dataset.ws!==s.knife;});
+  if(rifle){const w=WSKINS.rifle[d.rifle],c=gsModelCfg(d,d.rifle),O=SDMiras.get(c.mira);
+    setText($('#gsName'),d.rifle==='halcon'?'HALCÓN R7':'HALCÓN R7 · '+w.name);
+    setText($('#gsSub'),'RIFLE DE CERROJO · '+(d.rifle==='halcon'?'MODELO DEL JUEGO':'MODELO DE '+w.by.toUpperCase())+' · '+(O.name.includes(O.short)?O.name:O.name+' '+O.short));}
+  else{const k=WSKINS.knife[d.knife];setText($('#gsName'),k.name);setText($('#gsSub'),'ARMA DE MANO · CUERPO A CUERPO · '+(d.knife==='navaja'?'MODELO DEL JUEGO':'MODELO DE '+k.by.toUpperCase()));}
+  // the accessory slots (the rifle's; a knife has none)
+  const acc=$('#gsAcc');acc.hidden=!rifle;
+  if(rifle){const L=gsAccList();
+    if(acc.children.length!==L.length){acc.innerHTML='';for(const A of L){const b=document.createElement('button');b.type='button';b.className='gsAccB';b.dataset.acc=A.k;b.setAttribute('aria-expanded','false');
+      b.innerHTML='<i></i><b></b><small></small>';b.addEventListener('click',()=>{audioInit();SFX.ui();gsPick(GS.pick===A.k?null:A.k);});acc.append(b);}}
+    L.forEach((A,i)=>{const b=acc.children[i];b.classList.toggle('one',!!A.one);setText(b.querySelector('i'),A.name);setText(b.querySelector('b'),A.val);setText(b.querySelector('small'),A.sub||'');b.title=A.name+': '+A.val;});
+    const h=acc.getBoundingClientRect().height;if(h)$('#gsPick').style.setProperty('--gsAccH',Math.round(h+8)+'px');}
+  else if(GS.pick)gsPick(null);
+  if(GS.pick)gsPick(GS.pick);
+  document.querySelectorAll('#gsTabs button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.gt===GS.tab)));
+  const sh=gsStatsHTML()+'|'+M2.cat+GS.tab;if(GS.statsSig!==sh){GS.statsSig=sh;$('#gsStats').innerHTML=gsStatsHTML();}
+  if(!$('#gsPas').innerHTML)$('#gsPas').innerHTML=gsPasHTML();
+  const dirty=gsDirty(),msg=performance.now()<GS.msgT?GS.msg:dirty?'CAMBIOS SIN GUARDAR':'';
+  setText($('#gsDirty'),msg);$('#gsSave').disabled=!dirty;$('#gsReset').disabled=!dirty;
+}
+function gsInit(){
+  if(!GS.on)return;
+  GS.cfg=gsLoadCfg();
+  const old=document.querySelector('#m2 .m2Pane[data-pane="armas"]:not(.gsPane)'),pane=document.querySelector('#m2 .gsPane');
+  old.dataset.pane='armasOld';old.hidden=true;pane.dataset.pane='armas';
+  const item=(slot,id)=>{const w=WSKINS[slot][id],b=document.createElement('button');b.type='button';b.className='gsIt';b.dataset.ws=id;
+    b.innerHTML='<img alt="" loading="lazy"><span><b></b><small></small><em hidden>EQUIPADO</em></span>';b.querySelector('img').src=wsImg(slot,id);
+    b.querySelector('b').textContent=w.name;b.querySelector('small').textContent=w.by;
+    b.addEventListener('click',()=>{audioInit();SFX.ui();M2.cat=slot;if(slot==='rifle')GS.draft.rifle=id;else GS.draft.knife=id;gsApply(GS.draft);gsPick(null);gsSync();m2Sync();});
+    return b;};
+  for(const id in WSKINS.rifle){if(!ARMAS_ON&&id!=='halcon')continue;$('#gsRifles').append(item('rifle',id));}
+  for(const id in WSKINS.knife){if(!ARMAS_ON&&id!=='navaja')continue;$('#gsKnives').append(item('knife',id));}
+  document.querySelectorAll('#gsTabs button').forEach(b=>b.addEventListener('click',()=>{audioInit();SFX.ui();GS.tab=b.dataset.gt;gsSync();}));
+  $('#gsSave').addEventListener('click',()=>{audioInit();SFX.ui();gsSave();});
+  $('#gsReset').addEventListener('click',()=>{audioInit();SFX.ui();gsReset();});
+  $('#gsPickX').addEventListener('click',()=>{SFX.ui();gsPick(null);});
+  document.addEventListener('pointerdown',e=>{if(GS.pick&&!(e.target.closest&&e.target.closest('#gsPick,#gsAcc')))gsPick(null);});
+  // turn the weapon with one finger or the mouse (sideways and up/down), zoom with the wheel or two fingers
+  const el=$('#gsSlot');
+  el.addEventListener('pointerdown',e=>{GS.ptr.set(e.pointerId,{x:e.clientX,y:e.clientY});try{el.setPointerCapture(e.pointerId);}catch(x){}
+    if(GS.ptr.size===1)M2.drag={id:e.pointerId,x:e.clientX,y:e.clientY,key:'wYaw',t:performance.now()};else{M2.drag=null;const p=[...GS.ptr.values()];GS.pinch=Math.hypot(p[0].x-p[1].x,p[0].y-p[1].y);}});
+  el.addEventListener('pointermove',e=>{const q=GS.ptr.get(e.pointerId);if(!q)return;q.x=e.clientX;q.y=e.clientY;
+    if(GS.ptr.size===2){const p=[...GS.ptr.values()],dd=Math.hypot(p[0].x-p[1].x,p[0].y-p[1].y);if(GS.pinch>0)M2.wZoom=clamp((M2.wZoom||1)*dd/GS.pinch,0.8,2.6);GS.pinch=dd;M2.lastDrag=performance.now();return;}
+    const d=M2.drag;if(!d||d.id!==e.pointerId)return;const dx=e.clientX-d.x,dy=e.clientY-d.y,now=performance.now();d.x=e.clientX;d.y=e.clientY;
+    const a=dx*0.011;M2.wYaw+=a;M2.wYawV=a/Math.max(0.008,(now-d.t)/1000);M2.wPitch=clamp((M2.wPitch||0)+dy*0.008,-0.7,0.7);d.t=now;M2.lastDrag=now;});
+  const up=e=>{GS.ptr.delete(e.pointerId);if(M2.drag&&M2.drag.id===e.pointerId){M2.drag=null;M2.lastDrag=performance.now();}if(GS.ptr.size<2)GS.pinch=0;};
+  el.addEventListener('pointerup',up);el.addEventListener('pointercancel',up);
+  el.addEventListener('wheel',e=>{e.preventDefault();M2.wZoom=clamp((M2.wZoom||1)*Math.exp(-e.deltaY*0.0015),0.8,2.6);M2.lastDrag=performance.now();},{passive:false});
+  el.addEventListener('dblclick',()=>{M2.wZoom=1;M2.wPitch=0;});
+}
+if(M2.on){gsInit();m2Init();}
 
 let last=performance.now();let menuAng=0;let rangeT=0;let simAcc=0;
 // test hook: MANUAL.on stops the clock-driven loop so a recorder can step exact 1/30 s frames (__SD.advance)

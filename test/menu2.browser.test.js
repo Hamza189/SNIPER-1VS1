@@ -35,7 +35,7 @@ const wait = (p, fn, arg, ms) => p.waitForFunction(fn, arg, { timeout: ms || 120
     check('con ?menu=1 no hay nada del menú nuevo y los bloques siguen en su sitio', !d0.m2 && !d0.cls && d0.inner !== 'none' && d0.diff && !d0.room, JSON.stringify(d0));
 
     console.log('\nEL MENÚ NUEVO (?menu=2 lo vuelve a poner tras ?menu=1)');
-    await p.goto(srv.url + '?ktx2=0&menu=2', { timeout: 180000 });
+    await p.goto(srv.url + '?ktx2=0&menu=2&arsenal=0', { timeout: 180000 });   // ARMAS of before (the ARSENAL: test/arsenal.browser.test.js)
     await wait(p, () => window.__SD && __SD.VMA.ready && __SD.M2.room && __SD.M2.held);
     const d1 = await p.evaluate(() => { const S = __SD; S.advance(16); const r = S.renderer.info.render;
       return { m2: !document.getElementById('m2').hidden, inner: getComputedStyle(document.querySelector('#menu .menuInner')).display, tabs: [...document.querySelectorAll('#m2 .m2Nav button')].map(x => x.textContent.trim()).join('|'),
@@ -143,7 +143,7 @@ const wait = (p, fn, arg, ms) => p.waitForFunction(fn, arg, { timeout: ms || 120
     await c2.route(/fonts\.(googleapis|gstatic)\.com/, r => r.abort());
     const q = await c2.newPage(), e2 = [];
     q.on('pageerror', e => e2.push(e.message));
-    await q.goto(srv.url + '?ktx2=0', { timeout: 180000 });   // the plain link: the new menu, nothing in the URL
+    await q.goto(srv.url + '?ktx2=0&arsenal=0', { timeout: 180000 });   // the plain link: the new menu (ARMAS of before: the ARSENAL has its own test)
     await wait(q, () => window.__SD && __SD.M2.room);
     const ph = await q.evaluate(() => { const out = {}; const inView = el => { const r = el.getBoundingClientRect(); return r.width > 0 && r.left >= -1 && r.top >= -1 && r.right <= innerWidth + 1 && r.bottom <= innerHeight + 1; };
       for (const t of ['inicio', 'personaje', 'armas', 'mapas']) { document.querySelector('#m2 .m2Nav [data-tab=' + t + ']').click();

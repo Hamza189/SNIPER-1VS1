@@ -37,6 +37,7 @@ const G = isNode ? require('./geom.js') : root.SDGeom;
 const HB = isNode ? require('./hitbox.js') : root.SDHitbox;
 const PR = isNode ? require('./protocol.js') : root.SDProto;
 const Bots = isNode ? require('./bots.js') : root.SDBots;
+const GS = isNode ? require('./gunstats.js') : root.SDGunStats;   // the damage of a hit: one source for the server, the offline game and the ARSENAL
 
 const RULES = { killsToWin: 10, hp: 100, respawnMs: 3000, countdownMs: 3000, regenDelayMs: 5000, regenPerSec: 22,
   reconnectMs: 60000, lobbySeatMs: 60000, silentMs: 6000, idleRoomMs: 15 * 60000, snapHz: 20, maxShotDev: 0.3, maxOriginDist: 0.9,
@@ -482,12 +483,8 @@ function create(opts) {
     R.bullets = R.bullets.filter(b => !b.done);
   }
   const rank = { legs: 0, torso: 1, head: 2 };
-  // damage of a gun at a distance (the pistol loses punch with range; the rifle does not)
-  function dmgAt(gun, part, dist) {
-    const f = gun.falloff; let k = 1;
-    if (f) k = dist <= f.from ? 1 : dist >= f.to ? f.min : 1 - (1 - f.min) * (dist - f.from) / (f.to - f.from);
-    return Math.round(gun.dmg[part] * k);
-  }
+  // damage of a gun at a distance (the pistol loses punch with range; the rifle does not): core/gunstats.js
+  const dmgAt = GS.dmgAt;
   function damage(att, vic, part, dmg, b, pt, pellets) {
     if (!vic.alive) return;
     vic.hp -= dmg; vic.lastHit = R.now;
