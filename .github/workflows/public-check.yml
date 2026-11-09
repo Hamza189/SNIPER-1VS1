@@ -4,7 +4,7 @@
 name: Prueba pública online
 on:
   workflow_run:
-    workflows: ['pages-build-deployment']
+    workflows: ['pages-build-deployment', 'Publicar página']
     types: [completed]
   workflow_dispatch:
 permissions:

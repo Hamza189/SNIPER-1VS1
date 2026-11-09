@@ -96,6 +96,18 @@ Detalle de cada cambio (antes/después, medidas, cómo revertir): `docs/next-lev
 | Personaje 3D rev. 03 hecho por Claude e integrado tras `?pj=2` (bots y rival online) | 20-10 · directo a `main` |
 | Personajes realistas + elegir personaje (con el SOLDADO de `?pj=2`) y HUD 2 por defecto (aprobado en iPhone y PC) | 28-10 · directo a `main` |
 
+## 09-11-2026 — La página se publica con GitHub Actions (solo lo del juego)
+Pages publicaba la rama entera (505 MB) y GitHub cortaba a los 10 minutos «sincronizando archivos»: falló 6 veces
+seguidas. El propietario eligió «publicar solo lo del juego».
+- **Flujo nuevo** `.github/workflows/pages.yml` («Publicar página»):
+  - Sube los archivos del repositorio sin docs, tools, test, vistas previas, fuentes, `.blend`, `.exr`, `.obj`, `.py`
+    ni `.md`: 380 MB.
+  - Comprueba que existen todos los `assets/` que la página nombra (menos los KTX2, que están en R2).
+  - Tiempo límite de 30 min.
+- **Ajuste del repositorio:** Pages › Source = «GitHub Actions» (cambiado con `gh api`). Para volver atrás: «Deploy
+  from a branch», main, /.
+- La «Prueba pública online» se lanza también al acabar «Publicar página».
+
 ## 09-11-2026 — Tres camuflajes de ambientCG (CC0) y categorías en ARMAS
 El propietario pasó tres enlaces de ambientCG («añadir estas 3 texturas como camuflaje para las armas»):
 - **MÁRMOL NEGRO** (Tiles075, épica), **ÓXIDO** (Metal056C, rara) y **CRISTAL MENTA** (ChristmasTreeOrnament021, legendaria).

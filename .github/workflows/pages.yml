@@ -1,0 +1,49 @@
+# Publishes the game page (GitHub Pages) with only what the game loads (09-11-2026, owner: «publicar solo lo del
+# juego»). Before, Pages published the whole branch (505 MB: previews, sources, .blend and .exr of assets/3d, docs,
+# tools, tests) and GitHub cut it at 10 min while «syncing files» (6 failures in a row on 09-11).
+# Needs Settings › Pages › Source = «GitHub Actions» (to go back: «Deploy from a branch», main, /).
+name: Publicar página
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+concurrency:
+  group: pages
+  cancel-in-progress: false
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Lo que carga el juego
+        run: |
+          mkdir _site
+          git ls-files -z | tar --null -T - -cf - | tar -xf - -C _site
+          cd _site
+          # never loaded by the page: documentation, tools, tests, workflow files, sources and previews
+          rm -rf docs tools test .github build
+          find . \( -path '*/preview/*' -o -path '*/src/*' \) -type f -delete
+          find . -type f \( -name '*.blend' -o -name '*.blend1' -o -name '*.exr' -o -name '*.target' -o -name '*.obj' -o -name '*.max' -o -name '*.mb' -o -name '*.py' -o -name '*.md' \) -delete
+          touch .nojekyll
+          du -sh . ; find . -type f | wc -l
+          # every assets/... path written literally in the page has to be there
+          missing=0
+          for f in $(grep -o "assets/[A-Za-z0-9_./-]*\.\(glb\|jpg\|png\|json\|ktx2\|webp\|mp3\|ogg\)" index.html | grep -v '_ktx2' | sort -u); do   # the KTX2 files live in Cloudflare R2 (docs/R2.md)
+            [ -e "$f" ] || { echo "falta: $f"; missing=1; }
+          done
+          [ $missing -eq 0 ]
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+      - id: deployment
+        uses: actions/deploy-pages@v4
+        with:
+          timeout: 1800000
