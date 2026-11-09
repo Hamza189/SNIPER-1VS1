@@ -95,9 +95,9 @@ const check = (n, c, i) => { (c ? pass++ : fail++); console.log((c ? '  ok   ' :
       // where the weapon is drawn: its centre, projected with the menu camera
       const c = new THREE.Vector3(); new THREE.Box3().setFromObject(__SD.M2.item).getCenter(c); c.project(__SD.M2.cam);
       const y = (1 - c.y) / 2 * innerHeight;
-      return { strip: box.classList.contains('strip') && !box.hidden, n: document.querySelectorAll('#gsPickL .gsOpt').length, oneRow: new Set([...document.querySelectorAll('#gsPickL .gsOpt')].map(o => Math.round(o.getBoundingClientRect().top))).size === 1,
+      return { camos: SDItems.ITEMS.filter(i => i.type === 'camo').length, strip: box.classList.contains('strip') && !box.hidden, n: document.querySelectorAll('#gsPickL .gsOpt').length, oneRow: new Set([...document.querySelectorAll('#gsPickL .gsOpt')].map(o => Math.round(o.getBoundingClientRect().top))).size === 1,
         above: y < pr.top - 20 && y > slot.top, stripH: Math.round(pr.height) }; });
-    check('CAMUFLAJE abre una tira abajo (una fila, los 23) y el arma sube por encima: se ve entera', lv.strip && lv.n === 23 && lv.oneRow && lv.above, JSON.stringify(lv));
+    check('CAMUFLAJE abre una tira abajo (una fila, todos los camuflajes) y el arma sube por encima: se ve entera', lv.strip && lv.n === lv.camos + 1 && lv.oneRow && lv.above, JSON.stringify(lv));
     await p.evaluate(() => document.querySelector('#gsPick [data-opt=camo_oro_rejilla]').click()); await p.waitForTimeout(300);
     const c1 = await p.evaluate(() => ({ open: !document.getElementById('gsPick').hidden, val: document.getElementById('gsCamoV').textContent, dirty: document.getElementById('gsDirty').textContent }));
     const n1 = await painted();

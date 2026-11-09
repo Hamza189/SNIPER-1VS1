@@ -96,6 +96,20 @@ Detalle de cada cambio (antes/después, medidas, cómo revertir): `docs/next-lev
 | Personaje 3D rev. 03 hecho por Claude e integrado tras `?pj=2` (bots y rival online) | 20-10 · directo a `main` |
 | Personajes realistas + elegir personaje (con el SOLDADO de `?pj=2`) y HUD 2 por defecto (aprobado en iPhone y PC) | 28-10 · directo a `main` |
 
+## 09-11-2026 — Tres camuflajes de ambientCG (CC0) y categorías en ARMAS
+El propietario pasó tres enlaces de ambientCG («añadir estas 3 texturas como camuflaje para las armas»):
+- **MÁRMOL NEGRO** (Tiles075, épica), **ÓXIDO** (Metal056C, rara) y **CRISTAL MENTA** (ChristmasTreeOrnament021, legendaria).
+- CC0, a 1024 px en `assets/camo/`.
+- Del adorno solo vale la banda nítida del centro: arriba y abajo estaba borroso (es textura de bola). Se funde para que
+  se repita sin costura.
+- Salen en CAJAS como los demás y se eligen en ARMAS › CAMUFLAJE.
+
+**ARMAS por categorías:** ASALTO, SUBFUSIL y GRANADAS (próximamente); FRANCOTIRADOR; ESCOPETA (FURIA 12) y PISTOLA
+(VÍBORA 9), con sus cifras reales; ARMA DE MANO. Añadir armas a una categoría es añadir datos a `GS_CATS`.
+
+**M16:** las armas de `MATERIAL 09 11` son de TurboSquid (licencia estándar). No se pueden publicar en el juego, ni
+modificadas. La M16 hecha por código no le gustó: buscará él un modelo con licencia libre.
+
 ## 09-11-2026 (noche) — Deslizamiento de verdad, BALA DURA por grosor, MAPA DE PRUEBAS con RAYOS X
 Del propietario:
 - un deslizamiento de verdad para los cuatro operadores, sin tocar la mecánica (eligió «caja nueva»);

@@ -796,6 +796,9 @@ rifle, ahora 8× fijo) sigue siendo la de por defecto.
   | `assets/camo/panal.jpg` | Carbon_fiber_9 (hexágonos) | PANAL DE CARBONO (épica) |
   | `assets/camo/oro_pulido.jpg` | gold_1 | ORO PULIDO (legendaria) |
   | `assets/camo/oro_rejilla.jpg` | gold_9 (09-11: líneas más finas y doradas, a petición del propietario) | REJILLA DE ORO (legendaria) |
+  | `assets/camo/marmol_negro.jpg` | ambientCG Tiles075 (CC0, 09-11) | MÁRMOL NEGRO (épica) |
+  | `assets/camo/oxido.jpg` | ambientCG Metal056C (CC0, 09-11) | ÓXIDO (rara) |
+  | `assets/camo/cristal_menta.jpg` | ambientCG ChristmasTreeOrnament021 (CC0, 09-11): solo la banda nítida del centro, con fundido arriba/abajo para que se repita sin costura | CRISTAL MENTA (legendaria) |
 
   - Mapas: color y relieve a 1024 px, rugosidad a 512 px.
   - Camuflajes: el color a 1024 px, sin costuras.

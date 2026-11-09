@@ -1,13 +1,15 @@
 /* Retratos de los aspectos de arma (?pj=pro): los dibuja el propio juego (mismo motor y materiales) de lado, con luz de
    estudio, y los guarda en assets/armas/<id>/retrato.jpg (560×245). El HALCÓN R7 y la NAVAJA salen de
    assets/viewmodels.glb. Repetir cuando cambie un arma (tools/arma-ext).
-   Run: node tools/arma-retratos.js */
+   Run: node tools/arma-retratos.js      (ONLY=furia12,vibora9 para hacer solo esas) */
 'use strict';
 const fs = require('fs'), path = require('path');
 const { chromium } = require('playwright');
 const ss = require('./static-server.js');
 const ROOT = path.join(__dirname, '..');
-const LIST = [['halcon', 'viewmodels:HALCON'], ['navaja', 'viewmodels:NAVAJA'], ['titan', 'titan'], ['ratio', 'ratio'], ['vector', 'vector'], ['lince', 'lince'], ['tactica', 'tactica']];
+const LIST = [['halcon', 'viewmodels:HALCON'], ['navaja', 'viewmodels:NAVAJA'], ['titan', 'titan'], ['ratio', 'ratio'], ['vector', 'vector'], ['lince', 'lince'], ['tactica', 'tactica'],
+  ['furia12', 'viewmodels:FURIA12'], ['vibora9', 'viewmodels:VIBORA9']]   // 09-11-2026: ESCOPETA y PISTOLA del ARSENAL
+  .filter(([id]) => !process.env.ONLY || process.env.ONLY.split(',').includes(id));   // ONLY=furia12,vibora9: solo esas
 
 (async () => {
   const srv = await ss.start();

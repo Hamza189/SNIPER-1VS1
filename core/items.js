@@ -42,6 +42,10 @@ const ITEMS = [
   { id: 'camo_panal', type: 'camo', r: 'epica', name: 'PANAL DE CARBONO', pat: 'img', img: 'panal', c: ['#2a2b2e', '#111214'], metal: 0.35, rough: 0.3 },
   { id: 'camo_oro_pulido', type: 'camo', r: 'legendaria', name: 'ORO PULIDO', pat: 'img', img: 'oro_pulido', c: ['#e9b949', '#c99a2e'], metal: 1, rough: 0.12 },
   { id: 'camo_oro_rejilla', type: 'camo', r: 'legendaria', name: 'REJILLA DE ORO', pat: 'img', img: 'oro_rejilla', c: ['#e2b23f', '#8a5e22'], metal: 1, rough: 0.22 },
+  // 09-11-2026: three CC0 textures from ambientCG chosen by the owner (Tiles075, Metal056C, ChristmasTreeOrnament021)
+  { id: 'camo_marmol_negro', type: 'camo', r: 'epica', name: 'MÁRMOL NEGRO', pat: 'img', img: 'marmol_negro', c: ['#151516', '#4a4a4c'], metal: 0.15, rough: 0.2 },
+  { id: 'camo_oxido', type: 'camo', r: 'rara', name: 'ÓXIDO', pat: 'img', img: 'oxido', c: ['#8f684d', '#c9c3bd'], metal: 0.45, rough: 0.75 },
+  { id: 'camo_cristal_menta', type: 'camo', r: 'legendaria', name: 'CRISTAL MENTA', pat: 'img', img: 'cristal_menta', c: ['#b6e6cb', '#7fc9b0'], metal: 0.3, rough: 0.15 },
   { id: 'ret_verde', type: 'ret', r: 'comun', name: 'VERDE', c: ['#3dff6a'] },
   { id: 'ret_cian', type: 'ret', r: 'comun', name: 'CIAN', c: ['#2ee6ff'] },
   { id: 'ret_amarillo', type: 'ret', r: 'comun', name: 'AMARILLO', c: ['#ffe02e'] },

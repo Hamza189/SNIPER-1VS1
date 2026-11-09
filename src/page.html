@@ -702,6 +702,7 @@ body.m2 #menu .menuInner{display:none}
 .gsCatH b{font:600 clamp(17px,2.9vh,23px)/1 var(--f-display);letter-spacing:.06em}
 .gsCatH small{font-size:8.5px;letter-spacing:.14em;color:var(--sand)}
 .gsItems{display:grid;gap:5px}
+.gsSoon{padding:7px 10px;border:1px dashed var(--m2line);color:var(--dust);font-size:9px;letter-spacing:.2em}
 .gsIt{display:grid;grid-template-columns:clamp(56px,6vw,82px) minmax(0,1fr);align-items:center;gap:8px;padding:4px;background:#0c0c0d;border:1px solid var(--m2line);cursor:pointer;text-align:left;color:var(--hud);position:relative}
 .gsIt img{width:100%;aspect-ratio:16/9;object-fit:cover;background:#000;display:block}
 .gsIt b{display:block;font:500 clamp(14px,2.3vh,19px)/1 var(--f-display);letter-spacing:.05em;padding-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -3075,7 +3076,7 @@ function setupViewmodels(g){
   SDVM.refine(g.scene,T,ENV,{low:GFX.profile==='bajo'});
   // pristine copies for the third-person weapons (before the first-person ones get their own rigs)
   // (the low-detail TP_ copies when the file has them: a soldier is seen from metres away)
-  VMA.src={};for(const n of ['HALCON','FURIA12','VIBORA9','NAVAJA']){const o=g.scene.getObjectByName('TP_'+n)||g.scene.getObjectByName(n);if(o)VMA.src[n]=o.clone(true);}
+  VMA.src={};VMA.full={};for(const n of ['HALCON','FURIA12','VIBORA9','NAVAJA']){const o=g.scene.getObjectByName('TP_'+n)||g.scene.getObjectByName(n);if(o)VMA.src[n]=o.clone(true);const f=g.scene.getObjectByName(n);if(f)VMA.full[n]=f.clone(true);}
   const rig=SDVM.createArms(g.scene,T);if(!rig)return;
   rig.root.visible=false;wScene.add(rig.root);
   const pis=g.scene.getObjectByName('VIBORA9');if(!pis)return;
@@ -7122,6 +7123,7 @@ function m2Operator(){
 // a weapon skin still on its way: what to say (the first time ÚLTIMA is 139 MB; then the browser keeps it). With its
 // light model already in the hands (S.light) the note is a small one
 function m2SkinWait(slot){
+  if(!WS_ST[slot]||!WSKIN[slot])return '';
   const id=WSKIN[slot],S=WS_ST[slot];if(id==='halcon'||id==='navaja'||S.cur!==id||(S.objs.length&&!S.light))return '';
   const P=KTX2.prog&&KTX2.prog[WSKINS[slot][id].dir||id],pc=P&&P.n?Math.round(P.done/P.n*100):0;
   return (S.light?'ALTA RESOLUCIÓN':'CARGANDO '+WSKINS[slot][id].name)+(pc?' · '+pc+' %':'…');
@@ -7162,7 +7164,8 @@ function m2Weapons(){
   // the weapon on show (ARMAS): turned side-on, its centre at the origin
   if(M2.item&&M2.item.parent)M2.item.parent.remove(M2.item);M2.item=null;
   if(M2.tab!=='armas'||!VMA.ready||(m2SkinWait(M2.cat)&&!WS_ST[M2.cat].light))return;   // nothing of the skin yet: the loader
-  const inner=M2.cat==='knife'?m2KnifeClone():m2GunClone();inner.rotation.y=Math.PI/2;
+  const ci=gsCatItem(M2.cat);if(GS_CATS.some(c=>c.k===M2.cat)&&!(ci&&VMA.full&&VMA.full[ci.src]))return;   // a category with nothing to show yet
+  const inner=M2.cat==='knife'?m2KnifeClone():ci?VMA.full[ci.src].clone(true):m2GunClone();inner.rotation.y=Math.PI/2;
   const it=new T.Group();it.add(inner);it.updateMatrixWorld(true);
   _m2b.setFromObject(inner);_m2b.getSize(_m2s);if(_m2s.y>_m2s.x*1.2){inner.rotation.z=-Math.PI/2;it.updateMatrixWorld(true);_m2b.setFromObject(inner);_m2b.getSize(_m2s);}
   _m2b.getCenter(_m2c);inner.position.sub(_m2c);it.userData.size=_m2s.clone();
@@ -7309,6 +7312,12 @@ async function gsSave(){
 function gsReset(){if(!GS.saved)return;GS.draft=gsClone(GS.saved);gsApply(GS.saved);gsPick(null);gsMsg('RESTAURADA LA CONFIGURACIÓN GUARDADA');}
 // ---- the accessories: only what exists. A model's own bipod or grip is part of its 3D model (looks only)
 const GS_BIPOD={ultima:1,sahara:1};
+// the other categories (at: in front of which built-in one); items: what is shown, or none = PRÓXIMAMENTE
+const GS_CATS=[{k:'assault',name:'ASALTO',sub:'FUSIL AUTOMÁTICO',at:'rifle'},{k:'smg',name:'SUBFUSIL',sub:'CORTA DISTANCIA',at:'rifle'},
+  {k:'shotgun',name:'ESCOPETA',sub:'PRINCIPAL · se elige en JUGAR',at:'knife',items:[{id:'furia12',name:'FURIA 12',by:'Sniper Duel',src:'FURIA12',title:'ESCOPETA DE CORREDERA · MODELO DEL JUEGO · 9 PERDIGONES'}]},
+  {k:'pistol',name:'PISTOLA',sub:'SECUNDARIA · tecla 2',at:'knife',items:[{id:'vibora9',name:'VÍBORA 9',by:'Sniper Duel',src:'VIBORA9',title:'PISTOLA SEMIAUTOMÁTICA · MODELO DEL JUEGO'}]},
+  {k:'grenade',name:'GRANADAS',sub:'LANZABLES',at:null}];
+const gsCatItem=k=>{const C=GS_CATS.find(c=>c.k===k);return C&&C.items?C.items[0]:null;};
 const gsGun=()=>{const d=GS.draft,id=d?d.rifle:WSKIN.rifle,b=rifleCfgFor(id,false),sil=d?gsModelCfg(d,id).muzzle==='sil':silSaved(id);return sil?silCfg(b):b;};
 const GS_SOON='Por ahora es la única opción. Llegan modelos de este accesorio con efecto de verdad, primero contra bots.';
 function gsCamos(){
@@ -7331,7 +7340,7 @@ function gsAccList(){
 }
 // the camouflage of what is on show: the rifle model, or the TÁCTICA (the NAVAJA takes none: null)
 function gsCamoA(){
-  const d=GS.draft;if(!d)return null;const knife=M2.cat==='knife';if(knife&&d.knife==='navaja')return null;
+  const d=GS.draft;if(!d||(M2.cat!=='rifle'&&M2.cat!=='knife'))return null;const knife=M2.cat==='knife';if(knife&&d.knife==='navaja')return null;
   const cur=knife?gsKCamo(d):gsModelCfg(d,d.rifle).camo,cam=cur&&SDItems.byId(cur),n=SDItems.ITEMS.filter(i=>i.type==='camo').length;
   return {k:'camo',name:'CAMUFLAJE',val:cam?cam.name:'SIN CAMUFLAJE',sub:cam?SDItems.RARITY[cam.r].name:'acabado del modelo',camo:cam||null,
     opts:()=>[{id:'',name:'SIN CAMUFLAJE',sub:'el acabado del modelo'}].concat(gsCamos().map(it=>({id:it.id,name:it.name,sub:SDItems.RARITY[it.r].name,camo:it}))),
@@ -7376,6 +7385,16 @@ function gsStatsHTML(){
     return row('DAÑO',K.front+' · '+K.back,'de frente · por la espalda (vida '+K.hp+')',K.front/K.hp)+row('GOLPES POR MINUTO',K.rpm,'uno cada '+gsNum(K.interval,2)+' s')+
       row('ALCANCE',gsNum(K.range,1)+' m','de tu cuerpo al suyo')+row('MOVILIDAD',gsNum(K.walk,2)+' m/s','+'+Math.round((K.moveMul-1)*100)+' % con el cuchillo en la mano · corriendo '+gsNum(K.sprint,1)+' m/s');
   }
+  {const C=GS_CATS.find(c=>c.k===M2.cat);if(C){
+    if(!C.items)return '<p class="gsNote">'+e(C.name)+': todavía no hay armas de esta categoría. Irán llegando aquí, con sus cifras reales.</p>';
+    const G=M2.cat==='shotgun'?SCFG:PCFG,S=SDGunStats.sheet(G),pel=G.pellets>1?' por perdigón ('+G.pellets+' por disparo)':'';
+    if(GS.tab==='dmg'){let h='<table class="gsTbl"><tr><th>DIST.</th><th>CABEZA</th><th>TORSO</th><th>PIERNAS</th><th>VUELO</th></tr>';
+      for(const r of S.table)h+='<tr><td>'+r.d+' m</td><td>'+r.head+'</td><td>'+r.torso+'</td><td>'+r.legs+'</td><td>'+r.ms+' ms</td></tr>';
+      return h+'</table><p class="gsNote">Daño'+e(pel)+' según la distancia (vida '+S.hp+'). Calculado con el mismo código que usa el servidor.</p>';}
+    const row=(l,v,sb)=>'<div class="gsRow"><span>'+l+'</span><b>'+v+'</b>'+(sb?'<small>'+e(sb)+'</small>':'')+'</div>';
+    return '<p class="gsNote">'+e(M2.cat==='shotgun'?'La FURIA 12 se elige como arma principal en JUGAR (en lugar del rifle). Estas son sus cifras reales.':'La VÍBORA 9 la llevas siempre como secundaria (tecla 2). Estas son sus cifras reales.')+'</p>'+
+      row('DAÑO · CABEZA / TORSO / PIERNAS',S.dmg.head+' / '+S.dmg.torso+' / '+S.dmg.legs,'a 10 m'+pel)+row('CADENCIA',S.rpm+'/min')+row('CARGADOR',S.mag+'','balas')+
+      row('RECARGA',gsNum(S.reload,2)+' s')+row('APUNTAR',gsNum(S.ads,2)+' s')+row('VELOCIDAD DE LA BALA',S.speed+' m/s')+row('ALCANCE',S.maxRange+' m')+row('MOVILIDAD',gsNum(S.walk,2)+' m/s','con ella en la mano');}}
   const G=gsGun(),S=SDGunStats.sheet(G),H=SDGunStats.sheet(HALCON),own=G!==HALCON,silTxt=G.silenced?' Con SILENCIADOR: la bala sale un 8 % más lenta (en línea todavía no se usa).':'';
   // the bars compare the 5 rifles (the longest bar is the best of them; for times, sway and recoil, the lowest)
   const pool=(BAL.on?Object.values(SD_CONFIG.rifles):[HALCON]).map(g=>SDGunStats.sheet(g));
@@ -7416,12 +7435,14 @@ function gsPasHTML(){
 // ---- what is chosen, on screen
 function gsSync(){
   if(!GS.on||!GS.draft)return;
-  const d=GS.draft,s=GS.saved,rifle=M2.cat!=='knife';
+  const d=GS.draft,s=GS.saved,rifle=M2.cat==='rifle',ci=gsCatItem(M2.cat),Cc=GS_CATS.find(c=>c.k===M2.cat);
   document.querySelectorAll('#gsRifles .gsIt').forEach(b=>{b.setAttribute('aria-pressed',String(rifle&&b.dataset.ws===d.rifle));b.querySelector('em').hidden=b.dataset.ws!==s.rifle;});
-  document.querySelectorAll('#gsKnives .gsIt').forEach(b=>{b.setAttribute('aria-pressed',String(!rifle&&b.dataset.ws===d.knife));b.querySelector('em').hidden=b.dataset.ws!==s.knife;});
+  document.querySelectorAll('.gsList [data-gc]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.gc===M2.cat)));
+  document.querySelectorAll('#gsKnives .gsIt').forEach(b=>{b.setAttribute('aria-pressed',String(M2.cat==='knife'&&b.dataset.ws===d.knife));b.querySelector('em').hidden=b.dataset.ws!==s.knife;});
   if(rifle){const w=WSKINS.rifle[d.rifle],c=gsModelCfg(d,d.rifle),O=SDMiras.get(c.mira);
     setText($('#gsName'),d.rifle==='halcon'?'HALCÓN R7':BAL.on?w.name:'HALCÓN R7 · '+w.name);
     setText($('#gsSub'),'RIFLE DE CERROJO · '+(d.rifle==='halcon'?'MODELO DEL JUEGO':'MODELO DE '+w.by.toUpperCase())+' · '+(O.name.includes(O.short)?O.name:O.name+' '+O.short));}
+  else if(Cc){setText($('#gsName'),ci?ci.name:Cc.name);setText($('#gsSub'),ci?ci.title:Cc.sub+' · PRÓXIMAMENTE');}
   else{const k=WSKINS.knife[d.knife];setText($('#gsName'),k.name);setText($('#gsSub'),'ARMA DE MANO · CUERPO A CUERPO · '+(d.knife==='navaja'?'MODELO DEL JUEGO':'MODELO DE '+k.by.toUpperCase()));}
   // the accessory slots (the rifle's; a knife has none)
   const acc=$('#gsAcc');acc.hidden=!rifle;
@@ -7438,6 +7459,7 @@ function gsSync(){
   document.querySelectorAll('#gsTabs button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.gt===GS.tab)));
   const sh=gsStatsHTML()+'|'+M2.cat+GS.tab;if(GS.statsSig!==sh){GS.statsSig=sh;$('#gsStats').innerHTML=gsStatsHTML();}
   const pas=gsPasHTML();if(GS.pasSig!==pas){GS.pasSig=pas;$('#gsPas').innerHTML=pas;}
+  $('#gsPas').parentNode.hidden=!rifle;   // BALA DURA is the rifles' passive
   const dirty=gsDirty(),msg=performance.now()<GS.msgT?GS.msg:dirty?'CAMBIOS SIN GUARDAR':'';
   setText($('#gsDirty'),msg);$('#gsSave').disabled=!dirty;$('#gsReset').disabled=!dirty;
 }
@@ -7453,6 +7475,20 @@ function gsInit(){
     return b;};
   for(const id in WSKINS.rifle){if(!ARMAS_ON&&id!=='halcon')continue;$('#gsRifles').append(item('rifle',id));}
   for(const id in WSKINS.knife){if(!ARMAS_ON&&id!=='navaja')continue;$('#gsKnives').append(item('knife',id));}
+  /* CATEGORÍAS (09-11-2026, el propietario: «en la sección de armas añade diferentes apartados tipo asalto, subfusil,
+     francotirador, a mano, granadas… ves añadiendo»): ASALTO, SUBFUSIL, FRANCOTIRADOR, ESCOPETA, PISTOLA, ARMA DE MANO
+     y GRANADAS. Lo que aún no existe sale como PRÓXIMAMENTE; ESCOPETA y PISTOLA enseñan las del juego (FURIA 12 y
+     VÍBORA 9) con sus cifras reales. Cada categoría nueva es una entrada de GS_CATS: añadir armas es añadir datos. */
+  {const list=$('#gsRifles').parentNode,hR=list.querySelector('[data-gcat=rifle]'),hK=list.querySelector('[data-gcat=knife]');
+   for(const C of GS_CATS){const h=document.createElement('div');h.className='gsCatH';h.dataset.gcat=C.k;
+     const hb=document.createElement('b');hb.textContent=C.name;const hs=document.createElement('small');hs.textContent=C.sub;h.append(hb,hs);
+     const box=document.createElement('div');box.className='gsItems';box.dataset.gitems=C.k;
+     if(!C.items){const so=document.createElement('div');so.className='gsSoon';so.textContent='PRÓXIMAMENTE';box.append(so);}
+     else for(const it of C.items){const b=document.createElement('button');b.type='button';b.className='gsIt';b.dataset.ws=it.id;b.dataset.gc=C.k;
+       b.innerHTML='<img alt="" loading="lazy"><span><b></b><small></small></span>';b.querySelector('img').src=av('assets/armas/'+it.id+'/retrato.jpg?v='+BUILD_HASH);
+       b.querySelector('b').textContent=it.name;b.querySelector('small').textContent=it.by;
+       b.addEventListener('click',()=>{audioInit();SFX.ui();M2.cat=C.k;gsPick(null);gsSync();m2Sync();});box.append(b);}
+     const at=C.at==='rifle'?hR:C.at==='knife'?hK:null;list.insertBefore(h,at);list.insertBefore(box,at);}}
   document.querySelectorAll('#gsTabs button').forEach(b=>b.addEventListener('click',()=>{audioInit();SFX.ui();GS.tab=b.dataset.gt;gsSync();}));
   $('#gsSave').addEventListener('click',()=>{audioInit();SFX.ui();gsSave();});
   $('#gsReset').addEventListener('click',()=>{audioInit();SFX.ui();gsReset();});
