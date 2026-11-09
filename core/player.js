@@ -32,7 +32,7 @@ function step(p, cmd, dt, world, moveCfg) {
   const hol = Me.rifleHolstered(L), holP = Me.holstered(L, 'pistol'), holS = Me.holstered(L, 'shotgun');
   const g = activeGun(p);
   const mc = { mx: cmd.mx, mz: cmd.mz, yaw: cmd.yaw, sprint: !!cmd.sprint, crouch: !!cmd.crouch, crouchPressed: !!cmd.crouchPressed,
-    jump: !!cmd.jump, ads: g.ads, reloading: g.state === 'reload', speedMul: Me.speedMul(L) };
+    jump: !!cmd.jump, ads: g.ads, reloading: g.state === 'reload', speedMul: Me.speedMul(L, w.cfg) };
   const mev = M.step(p.ms, mc, dt, world, moveCfg || CFG.move);
   const wev = Wp.tick(w, { fire: !!cmd.fire && L.active === 'rifle', ads: !!cmd.adsHeld, reload: !!cmd.reload }, dt,
     { sprinting: p.ms.sprinting, alive: true, holstered: hol });

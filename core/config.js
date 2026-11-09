@@ -214,5 +214,29 @@ const SD_CONFIG = {
     headshotSlowmo: 0.16  // s; slows only particles and tracers, never the simulation
   }
 };
+/* GUNSMITH (08-11-2026, docs/GUNSMITH.md): the five rifles, each with its own numbers. Owner, provisionally, for tests
+   against bots: «que cada arma tenga personalidad propia y se note al apuntar, moverse, disparar y recargar… el VECTOR
+   rápido, el TITÁN pesado y potente, el HALCÓN equilibrado». The HALCÓN R7 is the rifle of before, unchanged: what every
+   model fired like until now, what the server uses for everybody online (until the owner approves the new balance)
+   and the way back (?balance=0). The head kills with one shot with all of them; the body takes two with all of them.
+   The heavier ones also kick a little more (recoil is only what you see: it never moves the bullet). */
+{
+  const H = SD_CONFIG.rifles.halcon;
+  const rifle = o => Object.assign({}, H, o, { dmg: Object.assign({}, H.dmg, o.dmg), recoil: Object.assign({}, H.recoil, o.recoil || {}) });
+  Object.assign(SD_CONFIG.rifles, {
+    titan: rifle({ name: 'TITÁN', role: 'largo alcance: la bala más rápida, pesado',   // CheyTac M200 (7 rounds)
+      dmg: { head: 250, torso: 90, legs: 60 }, bolt: 1.10, mag: 7, reload: 2.80, adsTime: 0.26, speed: 720, moveMul: 0.93, sway: H.sway * 0.9,
+      recoil: { pitch: H.recoil.pitch * 1.15, pitchHip: H.recoil.pitchHip * 1.15 } }),
+    ultima: rifle({ name: 'ÚLTIMA', role: 'el más potente y el más pesado',              // PGM Ultima Ratio
+      dmg: { head: 250, torso: 95, legs: 70 }, bolt: 1.15, mag: 5, reload: 2.70, adsTime: 0.28, speed: 680, moveMul: 0.88, sway: H.sway * 0.8,
+      recoil: { pitch: H.recoil.pitch * 1.25, pitchHip: H.recoil.pitchHip * 1.25 } }),
+    vector: rifle({ name: 'VECTOR', role: 'rápido: apunta y recarga antes, pega menos',
+      dmg: { head: 220, torso: 75, legs: 50 }, bolt: 0.75, mag: 6, reload: 2.10, adsTime: 0.16, speed: 560, moveMul: 1.05, sway: H.sway * 1.15,
+      recoil: { pitch: H.recoil.pitch * 0.85, pitchHip: H.recoil.pitchHip * 0.85 } }),
+    sahara: rifle({ name: 'SAHARA', role: 'ligero y versátil',
+      dmg: { head: 250, torso: 80, legs: 55 }, bolt: 0.90, mag: 5, reload: 2.20, adsTime: 0.18, speed: 610, moveMul: 1.03, sway: H.sway * 1.05 })
+  });
+  H.role = 'equilibrado';
+}
 if (typeof module !== 'undefined' && module.exports) module.exports = SD_CONFIG; else root.SD_CONFIG = SD_CONFIG;
 })(typeof window !== 'undefined' ? window : globalThis);

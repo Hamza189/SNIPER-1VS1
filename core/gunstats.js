@@ -48,7 +48,8 @@ function sheet(gun) {
     name: gun.name, dmg: { head: gun.dmg.head, torso: gun.dmg.torso, legs: gun.dmg.legs }, pellets: gun.pellets || 1,
     rpm: Math.round(60 / gun.bolt), bolt: gun.bolt, mag: gun.mag, reload: gun.reload, ads: gun.adsTime,
     speed: gun.speed, gravity: gun.gravity, zero: gun.zero, maxRange: gun.maxRange, falloff: gun.falloff || null,
-    hipSpread: gun.hipSpread, moveMul: gun.moveMul || 1,
+    hipSpread: gun.hipSpread, moveMul: gun.moveMul || 1, torsoDmg: gun.dmg.torso,
+    sway: gun.sway || 0, recoil: gun.recoil ? gun.recoil.pitch : 0, role: gun.role || '',
     walk: +(M.walk * (gun.moveMul || 1)).toFixed(2), sprint: +(M.sprint * (gun.moveMul || 1)).toFixed(2), adsWalk: +(M.walk * (gun.moveMul || 1) * M.adsMul).toFixed(2),
     hp: HP, table: table(gun)
   };

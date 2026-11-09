@@ -61,5 +61,20 @@ for (const [d, part, y] of [[24, 'head', 1.63], [24, 'torso', 1.17], [24, 'legs'
   check('a ' + d + ' m, ' + ({ head: 'cabeza', torso: 'torso', legs: 'piernas' })[part] + ': el servidor quita lo que dice el ARSENAL', h && h.part === part && h.dmg === row[part] && h.dmg === GS.dmgAt(R, part, h.dist), h ? h.part + ' ' + h.dmg + ' (ARSENAL: ' + row[part] + ')' : 'sin impacto');
 }
 
+console.log('\nRIFLES DISTINTOS (tabla de prueba del 08-11, solo contra bots)');
+{ const Me = require('../core/melee.js'), Pl = require('../core/player.js');
+  const T = { titan: [250, 90, 60, 1.10, 7, 2.80, 0.26, 720, 0.93], ultima: [250, 95, 70, 1.15, 5, 2.70, 0.28, 680, 0.88], vector: [220, 75, 50, 0.75, 6, 2.10, 0.16, 560, 1.05], sahara: [250, 80, 55, 0.90, 5, 2.20, 0.18, 610, 1.03] };
+  const bad = Object.keys(T).filter(id => { const g = CFG.rifles[id], t = T[id]; return !g || g.dmg.head !== t[0] || g.dmg.torso !== t[1] || g.dmg.legs !== t[2] || g.bolt !== t[3] || g.mag !== t[4] || g.reload !== t[5] || g.adsTime !== t[6] || g.speed !== t[7] || g.moveMul !== t[8]; });
+  check('TITÁN, ÚLTIMA, VECTOR y SAHARA con las cifras aprobadas; el HALCÓN R7 sin cambios', bad.length === 0 && R.dmg.torso === 85 && R.bolt === 0.95 && R.mag === 5 && R.reload === 2.35 && R.adsTime === 0.2 && R.speed === 600 && !R.moveMul, bad.join() || 'ok');
+  const L = Me.createLoadout(CFG.knives.tactica, CFG.loadout, P, SG);
+  check('con el rifle en la mano, la velocidad es la del modelo (HALCÓN × 1; sin config × 1)', Me.speedMul(L, R) === 1 && Me.speedMul(L) === 1 && Me.speedMul(L, CFG.rifles.titan) === 0.93 && Me.speedMul(L, CFG.rifles.vector) === 1.05);
+  const walk = g => { const pl = Pl.create(0, 0, 0, g); for (let i = 0; i < 240; i++) Pl.step(pl, { mz: -1, yaw: 0 }, 1 / 120, { colliders: [], ramps: [] }); return Math.hypot(pl.ms.vx, pl.ms.vz); };
+  const vh = walk(R), vt = walk(CFG.rifles.titan);
+  check('un jugador con el TITÁN anda un 7 % más lento (el mismo tick que usa el servidor)', Math.abs(vt / vh - 0.93) < 0.01, vh.toFixed(2) + ' → ' + vt.toFixed(2) + ' m/s');
+  const room = fs.readFileSync(path.join(__dirname, '..', 'core', 'room.js'), 'utf8');
+  check('el servidor sigue con el HALCÓN R7 para todos (no lee los otros rifles)', /const GUN = CFG\.rifles\.halcon/.test(room) && !/rifles\.(titan|ultima|vector|sahara)/.test(room));
+  const sh = GS.sheet(CFG.rifles.ultima);
+  check('la ficha del ARSENAL lleva también el balanceo, el retroceso y el perfil de cada rifle', sh.sway === CFG.rifles.ultima.sway && sh.recoil === CFG.rifles.ultima.recoil.pitch && sh.role === CFG.rifles.ultima.role && sh.moveMul === 0.88); }
+
 console.log('\n' + pass + ' correctas, ' + fail + ' fallidas');
 process.exit(fail ? 1 : 0);

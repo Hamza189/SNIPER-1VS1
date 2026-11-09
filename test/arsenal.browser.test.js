@@ -77,8 +77,8 @@ const check = (n, c, i) => { (c ? pass++ : fail++); console.log((c ? '  ok   ' :
     console.log('\nCIFRAS');
     const stats = await p.evaluate(() => { const o = {}; o.stats = document.getElementById('gsStats').textContent; document.querySelector('#gsTabs [data-gt=dmg]').click();
       o.rows = [...document.querySelectorAll('#gsStats .gsTbl tr')].slice(1).map(tr => [...tr.children].map(td => td.textContent)); document.querySelector('#gsTabs [data-gt=stats]').click(); return o; });
-    const T = GS.table(CFG.rifles.halcon), r0 = stats.rows[0] || [], rl = stats.rows[stats.rows.length - 1] || [];
-    check('ESTADÍSTICAS: daño 250 · 85 / 55, 63/min, cargador 5, 600 m/s, 450 m (core/config.js)', /250/.test(stats.stats) && /85 \/ 55/.test(stats.stats) && /63\/min/.test(stats.stats) && /600 m\/s/.test(stats.stats) && /450 m/.test(stats.stats));
+    const T = GS.table(CFG.rifles.ultima), r0 = stats.rows[0] || [], rl = stats.rows[stats.rows.length - 1] || [];
+    check('ESTADÍSTICAS de la ÚLTIMA (sus cifras contra bots, con la diferencia con el HALCÓN): 95 / 70, 52/min, 680 m/s, 450 m; y que en línea va el HALCÓN', /95\+10 \/ 70\+15/.test(stats.stats) && /52\/min−11/.test(stats.stats) && /680 m\/s\+80/.test(stats.stats) && /450 m/.test(stats.stats) && /EN LÍNEA: HALCÓN R7/.test(stats.stats), stats.stats.slice(0, 160));
     check('DAÑO: la tabla es la de core/gunstats.js (daño, disparos para eliminar, caída y vuelo)', stats.rows.length === T.length && r0[0] === T[0].d + ' m' && r0[2] === T[0].torso + ' (' + T[0].torsoShots + ')' && rl[4] === T[T.length - 1].dropCm + ' cm' && rl[5] === T[T.length - 1].ms + ' ms', JSON.stringify([r0, rl]));
     const kn = await p.evaluate(async () => { document.querySelector('#gsKnives [data-ws=tactica]').click(); await new Promise(r => setTimeout(r, 200));
       return { acc: document.getElementById('gsAcc').hidden, stats: document.getElementById('gsStats').textContent, name: document.getElementById('gsName').textContent }; });

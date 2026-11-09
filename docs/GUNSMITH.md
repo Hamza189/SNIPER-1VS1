@@ -2,6 +2,8 @@
 
 **Estado:**
 - **G1 y G2:** IMPLEMENTADO · PROBADO EN NAVEGADOR (PC con GPU y móvil en horizontal) · PENDIENTE DE VALIDACIÓN EN IPHONE.
+- **Rifles distintos (09-11):** IMPLEMENTADO · PROBADO EN NAVEGADOR (contra bots) · solo sin conexión: en línea, todos con el
+  HALCÓN R7 hasta que el propietario lo apruebe. `?balance=0` vuelve a las cifras de antes.
 - **G4 y G5:** hechos en parte (ver las tablas de abajo).
 - **G3, G6, G7 y G8:** pendientes (plan y decisiones al final).
 - **El ARMAS de antes:** `?arsenal=0` (se recuerda; `?arsenal=1` vuelve al ARSENAL).
@@ -73,8 +75,8 @@ Medido en el PC con `.work`/auditoría (página real, servidor local):
     - ficha: daño por zona, cadencia, cargador, recarga, apuntar, velocidad, alcance y movilidad;
     - tabla de daño a 10–450 m, con los disparos para eliminar;
     - caída de la bala y tiempo de vuelo, con la misma balística de las balas del servidor (`core/weapon.js`).
-- **Los 5 modelos y los 2 cuchillos son aspectos:** comparten las cifras del HALCÓN R7 y de la NAVAJA, y el panel lo dice.
-- Las barras comparan con las tres armas del juego (HALCÓN R7, FURIA 12, VÍBORA 9).
+- **Los 2 cuchillos son aspectos** (las cifras de la NAVAJA). Los 5 rifles tienen sus cifras desde el 09-11 (abajo).
+- Las barras comparan los 5 rifles.
 - **No cambia ningún número.** La sala del servidor da los mismos resultados (`room.test` 155/155, `pistol` 15/15, `shotgun`
   27/27).
 
@@ -105,7 +107,71 @@ Medido en el PC con `.work`/auditoría (página real, servidor local):
 | **G7** | BALA DURA en el servidor (salas de prueba) y el modelo elegido visible para el rival. | Aprobación antes de activarla en el 1 contra 1 |
 | **G8** | Medir memoria y FPS antes/después en PC e iPhone; versión 2K de los modelos para móvil si hace falta. | Probar en su iPhone |
 
-### BALA DURA: propuesta (sin programar todavía)
+### Decisiones del propietario (08-11-2026, tras ver el ARSENAL publicado)
+Sus palabras: «Sin silenciador que se escuche el tiro dependiendo de la distancia, que es un francotirador; con silenciador que
+no se vea el fogonazo o que no delate la ubicación; diferentes accesorios». Y sobre BALA DURA: «el ÚLTIMA es el más bueno y
+pesado que tengo… ¿en la vida real no atraviesa cajas, madera fina o chapa? Eso ya lo hace. Lo de la BALA DURA es para las
+paredes medio gruesas o gruesas; obviamente que no pase por 2 paredes gruesas».
+- **Sin silenciador:** ya pasa hoy y se queda así.
+  - El tiro del rival se oye más o menos según la distancia, desde su dirección y con el retraso del sonido.
+  - Su posición sale 3 s en tu minimapa.
+  - Los bots del servidor lo oyen hasta 90 m.
+- **Con silenciador** (aprobado):
+  - sin fogonazo;
+  - sin el punto en el minimapa del rival;
+  - un sonido bajo que no dice de dónde viene;
+  - los bots solo lo oyen muy cerca.
+  - El servidor sabe quién lo lleva: lo manda en el evento del disparo, así ningún cliente puede fingirlo.
+- **Penetración de serie:** las balas de francotirador atraviesan lo fino sin ninguna habilidad: cajas, madera fina y chapa.
+- **BALA DURA** cambia de sentido: es para paredes **medio gruesas o gruesas**, una como mucho (nunca dos gruesas).
+- **Sus respuestas:** rifles distintos, con pros y contras; el silenciador con un precio pequeño (bala un 8 % más lenta);
+  BALA DURA como pasiva para cualquier rifle.
+
+## Rifles distintos (09-11-2026): cada modelo con su personalidad
+Del propietario: «Apruebo provisionalmente la tabla de los cinco francotiradores… para pruebas experimentales», «Mantén el
+daño propuesto», «el VECTOR debería sentirse rápido, el TITÁN pesado y potente, y el HALCÓN equilibrado», «Primero implementa
+y prueba contra bots. No actives el nuevo balance… en el multijugador público hasta que yo lo pruebe y lo apruebe» y
+«Conserva las estadísticas anteriores para poder comparar y revertir».
+
+| Rifle | Perfil | Cabeza / torso / piernas | Cerrojo | Cargador | Recarga | Apuntar | Bala | Andar | Balanceo | Retroceso |
+|---|---|---|---|---|---|---|---|---|---|---|
+| HALCÓN R7 | equilibrado (el de antes) | 250 / 85 / 55 | 0,95 s | 5 | 2,35 s | 0,20 s | 600 m/s | × 1 | 4,2 mrad | 100 % |
+| TITÁN | largo alcance, pesado | 250 / 90 / 60 | 1,10 s | 7 | 2,80 s | 0,26 s | 720 m/s | × 0,93 | 3,8 mrad | 115 % |
+| ÚLTIMA | el más potente y pesado | 250 / 95 / 70 | 1,15 s | 5 | 2,70 s | 0,28 s | 680 m/s | × 0,88 | 3,4 mrad | 125 % |
+| VECTOR | rápido, pega menos | 220 / 75 / 50 | 0,75 s | 6 | 2,10 s | 0,16 s | 560 m/s | × 1,05 | 4,8 mrad | 85 % |
+| SAHARA | ligero y versátil | 250 / 80 / 55 | 0,90 s | 5 | 2,20 s | 0,18 s | 610 m/s | × 1,03 | 4,4 mrad | 100 % |
+
+Todos matan de un disparo a la cabeza y de dos al cuerpo (vida 100).
+
+- **Dónde:** `core/config.js` (`rifles.titan`, `ultima`, `vector`, `sahara`; el HALCÓN no cambia).
+- **Cuándo cuenta:** al aparecer, el modelo que llevas decide las cifras (`applyRifleCfg` en la página):
+  - contra bots y en el campo de tiro, las suyas;
+  - en línea, siempre el HALCÓN (el servidor solo conoce `rifles.halcon`);
+  - los bots y el rival en línea llevan el HALCÓN.
+- **Se nota en todo:** cerrojo, recarga, apuntar, cargador (y su HUD), velocidad de la bala, balanceo de la mira, retroceso.
+  - La velocidad al andar con el rifle en la mano va por `core/melee.js` `speedMul(L, rc)`.
+  - El HALCÓN no tiene `moveMul`, así que el servidor anda igual que antes.
+- **El ARSENAL** enseña las cifras del modelo:
+  - en color, la diferencia con el HALCÓN R7 (verde mejor, rojo peor);
+  - el perfil y «EN LÍNEA: HALCÓN R7»;
+  - la tabla de DAÑO del modelo;
+  - el CARGADOR del accesorio, el del modelo.
+- **Comparar y volver atrás:** `?balance=0` (se recuerda) pone las cifras de antes a todos los modelos sin conexión, y el
+  ARSENAL dice «HALCÓN R7 · VECTOR». `?balance=1` lo deshace.
+- **Pruebas:**
+  - `test/rifles.browser.test.js` (27, con la GPU):
+    - las 11 filas de cada modelo;
+    - la personalidad frente al HALCÓN;
+    - medido con el reloj del juego, el VECTOR: cerrojo 0,758 s, recarga 2,108 s, apuntar 0,160 s y 4,25 m/s andando
+      (el tick del juego suma 8 ms);
+    - con `?balance=0`, lo mismo con las cifras del HALCÓN.
+  - `test/gunstats.test.js` (20): la tabla aprobada, la velocidad del TITÁN en el tick compartido y que el servidor no lee
+    otros rifles.
+  - `test/online.browser.test.js` (48): con el VECTOR elegido, en una partida en línea real se juega con el HALCÓN.
+- **Falta su prueba y su aprobación** para llevarlo al online. Eso mandaría el modelo de cada jugador al servidor y
+  cambiaría `core/room.js`.
+
+### BALA DURA: primera propuesta (SUSTITUIDA por las decisiones de arriba)
 - **Solo lo marcado como penetrable:** cajas del mapa con superficie `wood` (madera fina) o paneles de metal ligero, y un grosor
   máximo (por ejemplo 0,12 m de madera, 0,04 m de chapa).
   - El grosor real es el que recorre la bala dentro de la caja, así que un ángulo rasante lo aumenta.

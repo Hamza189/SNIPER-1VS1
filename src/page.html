@@ -754,6 +754,9 @@ body.m2 #menu .menuInner{display:none}
 .gsTbl td{text-align:right;padding:4px;border-bottom:1px solid rgba(244,234,216,.06);color:var(--hud)}
 .gsTbl td small{color:var(--dust);font-size:9px}
 .gsNote{font-size:9px;color:var(--dust);line-height:1.45;letter-spacing:.02em}
+.gsRole{font-size:9.5px;letter-spacing:.12em;color:var(--signal);line-height:1.35}
+.gsD{font:600 10px/1 var(--f-mono);font-style:normal;letter-spacing:0;margin-left:5px;vertical-align:2px}
+.gsD.up{color:#8fd18a}.gsD.dn{color:#ff7262}
 .gsPas{display:grid;gap:5px}
 .gsPas>div{border:1px dashed rgba(244,234,216,.22);padding:7px 9px;display:grid;gap:2px}
 .gsPas b{font:500 clamp(15px,2.4vh,19px)/1 var(--f-display);letter-spacing:.05em}
@@ -833,6 +836,7 @@ body.m2 #menu .menuInner{display:none}
   .gsPickH b{font-size:16px}.gsPickN{font-size:8.5px}
   .gsTabs button{font-size:9px;padding:6px 3px}
   .gsStats{gap:5px}.gsRow>span{font-size:8px;letter-spacing:.08em}.gsRow>b{font-size:13px}.gsRow>small{display:none}
+  .gsRole{font-size:8px;letter-spacing:.06em}.gsD{font-size:8.5px;margin-left:3px}
   .gsTbl{font-size:9.5px}.gsTbl th{font-size:7.5px;padding:2px}.gsTbl td{padding:2px 3px}
   .gsSide{gap:5px}.gsStats>.gsNote:first-child{display:none}.gsPas>.lbl{display:none}
   .gsPas>div{padding:4px 6px}.gsPas b{font-size:12px}.gsPas small{display:none}.gsPas em{font-size:7px}
@@ -3376,6 +3380,16 @@ const MOV_CLASSIC=/[?&]mov=clasico\b/.test(location.search);
 const MOVE_CLASSIC=Object.assign({},MOVE,{walk:4.6,crouch:2.4,backMul:0.85,groundAccel:58,groundDecel:60,overspeedDecel:11});
 const TAC=()=>!MOV_CLASSIC;
 let GUNCFG=SD_CONFIG.rifles.halcon;
+/* GUNSMITH (08-11-2026, docs/GUNSMITH.md): each of the 5 models is its own rifle (core/config.js rifles.*) in the games
+   against bots and in the range; the owner approved the table for tests. Online it is always the server's HALCÓN R7 until
+   he approves it there. ?balance=0 brings back the previous figures (the HALCÓN's for every model) offline too, to compare
+   (remembered; ?balance=1 undoes it). Bots and the online rival always carry the HALCÓN (HALCON). */
+{const q=location.search.match(/[?&]balance=([01])\b/);if(q)store.set('balanceOld',q[1]==='0');}
+const BAL={on:store.get('balanceOld',false)!==true};
+const HALCON=SD_CONFIG.rifles.halcon;
+function rifleCfgFor(model,online){return BAL.on&&!online&&SD_CONFIG.rifles[model]?SD_CONFIG.rifles[model]:HALCON;}
+// takes effect when you (re)spawn: the model you carry (WSKIN.rifle) decides the figures; online, the HALCÓN
+function applyRifleCfg(){const c=rifleCfgFor(WSKIN.rifle,mode==='online');if(c!==GUNCFG){GUNCFG=c;WCORE.cfg=c;if(WCORE.ammo>c.mag)WCORE.ammo=c.mag;}}
 let mode=store.get('mode','duel')==='range'?'range':'duel';
 // simulation state (pure core, fixed tick) ...
 const PM=SDMovement.createState();const PMprev={x:0,y:0,z:0};
@@ -3889,7 +3903,7 @@ class Bot{
     animateSoldier(this.rig,{far:g.position.distanceToSquared(camera.position)>900,vx:this.alive?this.lvx*c-this.lvz*s:0,vz:this.alive?this.lvx*s+this.lvz*c:0,pitch,wpn:this.rig.wpn,aim:this.alive&&(this.state==='aim'||this.aiming)?1:0,
       sprint:Math.hypot(this.lvx,this.lvz)>4.5,crouch:this.trainer&&this.ms&&!this.ms.sliding?clamp((1-SDHitbox.scaleOf(this.ms.eye))/(1-MOVE.eyeCrouch/MOVE.eyeStand),0,1):0,slide:this.trainer&&this.ms&&this.ms.sliding?clamp((MOVE.eyeStand-this.ms.eye)/(MOVE.eyeStand-MOVE.eyeSlide),0,1):0,air:this.trainer&&this.ms&&!this.ms.onGround,dead:this.alive?0:Math.min(1,this.deadT/0.5),
       // GF-2: the shot's kick, then the bolt like the online rival (its next shot is 1.6 s away or more: same timing)
-      fire:this.fireT,bolt:this.alive&&this.fireT<GUNCFG.bolt?this.fireT/GUNCFG.bolt:0,hit:this.hitT,hitPart:this.hitPart,hitX:this.hitX,hitZ:this.hitZ,deathFront:this.deathFront},dt);
+      fire:this.fireT,bolt:this.alive&&this.fireT<HALCON.bolt?this.fireT/HALCON.bolt:0,hit:this.hitT,hitPart:this.hitPart,hitX:this.hitX,hitZ:this.hitZ,deathFront:this.deathFront},dt);
   }
   update0(dt){
     const g=this.g;
@@ -4090,7 +4104,7 @@ function respawnPlayer(){
   P.yaw=mode==='range'?Math.PI:Math.atan2(n.x,n.z);P.pitch=0;P.hp=100;P.alive=true;P.deadT=0;P.roll=0;
   P.breath=1;P.exhausted=0;P.holding=false;
   Object.assign(RECOIL,SDWeapon.createRecoil());
-  SDMelee.setPrimary(LOAD,PRIMARY);SDWeapon.resetForSpawn(WCORE);SDWeapon.resetForSpawn(PCORE);SDWeapon.resetForSpawn(SCORE);SDMelee.resetLoadout(LOAD);if(typeof updateWeaponHud==='function')updateWeaponHud();VM.deadW=0;VM.eye=MOVE.eyeStand;
+  applyRifleCfg();SDMelee.setPrimary(LOAD,PRIMARY);SDWeapon.resetForSpawn(WCORE);SDWeapon.resetForSpawn(PCORE);SDWeapon.resetForSpawn(SCORE);SDMelee.resetLoadout(LOAD);if(typeof updateWeaponHud==='function')updateWeaponHud();VM.deadW=0;VM.eye=MOVE.eyeStand;
   syncFromSim();
   input.scope=false;input.scopeToggle=false;input.scopeHeld=false;input.crouchHeld=false;input.fireAim=false;input.fireAimShot=0;
   $('#death').hidden=true;updateAmmoUI();updateHpUI();SFX.raise();
@@ -5868,7 +5882,7 @@ class RemotePlayer{
     this.boltT=pose.ws==='bolt'?(this.boltT||0)+dt:0;
     this.stabT=wp==='knife'&&pose.ks==='attack'?(this.stabT||0)+dt:0;
     if(this.rig.pump)this.rig.pump.position.z=0.56-(wp==='shotgun'&&this.boltT>0?Math.sin(Math.min(1,this.boltT/SCFG.bolt)*Math.PI)*0.09:0);
-    const relDur=wp==='pistol'?PCFG.reload:GUNCFG.reload,SH=SCFG.shells;
+    const relDur=wp==='pistol'?PCFG.reload:HALCON.reload,SH=SCFG.shells;
     // the shotgun loads one shell at a time: its phase is the current shell's (GF-2: before, an 0.8 s cycle that did not
     // follow the shells and snapped back at the start of each one)
     const relPh=wp==='shotgun'?(this.relT<SH.start?0:((this.relT-SH.start)%SH.each)/SH.each):(this.relT%relDur)/relDur;
@@ -5877,7 +5891,7 @@ class RemotePlayer{
     if(!pose.alive&&this.alive){const K=this.killFrom;this.deathFront=!!(K&&performance.now()-K.t<1500&&(K.x-pose.x)*s+(K.z-pose.z)*c<0);}
     const slide=pose.mode==='slide'?clamp((MOVE.eyeStand-(pose.eye||MOVE.eyeStand))/(MOVE.eyeStand-MOVE.eyeSlide),0,1):0,cr=slide?0:clamp((1-k)/(1-MOVE.eyeCrouch/MOVE.eyeStand),0,1);
     animateSoldier(this.rig,{far:this.g.position.distanceToSquared(camera.position)>900,vx:pose.alive?vx*c-vz*s:0,vz:pose.alive?vx*s+vz*c:0,crouch:cr,slide,air:!pose.g&&pose.alive,sprint:pose.mode==='sprint',aim:pose.ads||0,
-      pitch:pose.pitch,wpn:wp,reload:this.relW,relPh,bolt:wp==='rifle'&&this.boltT>0?Math.min(1,this.boltT/GUNCFG.bolt):0,
+      pitch:pose.pitch,wpn:wp,reload:this.relW,relPh,bolt:wp==='rifle'&&this.boltT>0?Math.min(1,this.boltT/HALCON.bolt):0,
       stab:this.stabT>0?Math.min(1,this.stabT/0.3):0,dead:pose.alive?0:Math.min(1,this.deadT/0.5),
       fire:this.fireT,hit:this.hitT,hitPart:this.hitPart,hitX:this.hitX,hitZ:this.hitZ,deathFront:this.deathFront},dt);
     const sp=Math.hypot(vx,vz);
@@ -6070,7 +6084,7 @@ function netEvent(e){
       if(!netMate(e.by))miniPing(e.o[0],e.o[2]);   // an enemy fired: on the minimap for 3 s (team-mates are always there)
       {const o=new T.Vector3(e.o[0],e.o[1],e.o[2]),d=new T.Vector3(e.d[0],e.d[1],e.d[2]);
        if(e.w==='shotgun'){const shot={id:'r'+e.id,snd:0},vs=o.clone().addScaledVector(d,0.9);for(const v of SDWeapon.pelletDirs(e.d,SCFG,e.ads||0,e.n||0))spawnBullet(o,new T.Vector3(v[0],v[1],v[2]),vs,SCFG,shot);}
-       else spawnBullet(o,d,o.clone().addScaledVector(d,e.w==='pistol'?0.6:1.0),e.w==='pistol'?PCFG:GUNCFG);
+       else spawnBullet(o,d,o.clone().addScaledVector(d,e.w==='pistol'?0.6:1.0),e.w==='pistol'?PCFG:HALCON);
        const dist=o.distanceTo(P.pos);const pan=clamp(Math.sin((bearingDeg(o.x,o.z)-heading())*Math.PI/180),-1,1);
        if(e.w==='pistol')SFX.distantPistol(dist,pan,Math.min(0.25,dist/343));else if(e.w==='shotgun')SFX.distantShotgun(dist,pan,Math.min(0.25,dist/343));else SFX.distant(dist,pan,Math.min(0.25,dist/343));if(netMulti()){if(REMOTES[e.by])REMOTES[e.by].shoot(e.w);}else if(REMOTE)REMOTE.shoot(e.w);
        // the bullet passes close to us: crack
@@ -6137,6 +6151,7 @@ function netStart(m){
   $('#score .goal').textContent='PRIMERO A '+((m.rules&&m.rules.kills)||10);if(!m.resume){$('#clock').hidden=true;MINI.pings.length=0;}
   setWorld(m.map||'pueblo');
   if(mode!=='online'){NET.prevMode=mode;mode='online';}
+  applyRifleCfg();   // online: the server's HALCÓN R7, whatever model you carry
   if(!REMOTE)REMOTE=new RemotePlayer();
   rivalSkin();
   clearPendingInput();audioInit();
@@ -7114,8 +7129,8 @@ async function gsSave(){
 function gsReset(){if(!GS.saved)return;GS.draft=gsClone(GS.saved);gsApply(GS.saved);gsPick(null);gsMsg('RESTAURADA LA CONFIGURACIÓN GUARDADA');}
 // ---- the accessories: only what exists. A model's own bipod or grip is part of its 3D model (looks only)
 const GS_BIPOD={ultima:1,sahara:1};
-const gsGun=()=>SD_CONFIG.rifles.halcon;
-const GS_SOON='Por ahora es la única opción. En la fase G3 llegan modelos de este accesorio; cualquier efecto en el juego (sonido, retroceso, estabilidad) necesitará la aprobación del propietario.';
+const gsGun=()=>rifleCfgFor(GS.draft?GS.draft.rifle:WSKIN.rifle,false);
+const GS_SOON='Por ahora es la única opción. Llegan modelos de este accesorio con efecto de verdad, primero contra bots.';
 function gsCamos(){
   const own=(ACC.acc&&ACC.acc.inv&&ACC.acc.inv.items)||[];
   return SDItems.ITEMS.filter(it=>it.type==='camo'&&own.includes(it.id));
@@ -7167,26 +7182,40 @@ function gsStatsHTML(){
     return row('DAÑO',K.front+' · '+K.back,'de frente · por la espalda (vida '+K.hp+')',K.front/K.hp)+row('GOLPES POR MINUTO',K.rpm,'uno cada '+gsNum(K.interval,2)+' s')+
       row('ALCANCE',gsNum(K.range,1)+' m','de tu cuerpo al suyo')+row('MOVILIDAD',gsNum(K.walk,2)+' m/s','+'+Math.round((K.moveMul-1)*100)+' % con el cuchillo en la mano · corriendo '+gsNum(K.sprint,1)+' m/s');
   }
-  const S=SDGunStats.sheet(gsGun()),all=[gsGun(),SD_CONFIG.shotguns.furia,SD_CONFIG.pistols.vibora].map(g=>SDGunStats.sheet(g));
-  const mx=k=>Math.max(...all.map(x=>x[k]));
+  const G=gsGun(),S=SDGunStats.sheet(G),H=SDGunStats.sheet(HALCON),own=G!==HALCON;
+  // the bars compare the 5 rifles (the longest bar is the best of them; for times, sway and recoil, the lowest)
+  const pool=(BAL.on?Object.values(SD_CONFIG.rifles):[HALCON]).map(g=>SDGunStats.sheet(g));
+  const mx=k=>Math.max(...pool.map(x=>x[k])),mn=k=>Math.min(...pool.map(x=>x[k]));
+  // the difference with the HALCÓN R7: green is better, red is worse (lowGood: less is better)
+  const dl=(v,h,dp,u,lowGood)=>{if(!own||Math.abs(v-h)<1e-9)return '';const d=v-h,ok=lowGood?d<0:d>0;
+    return '<em class="gsD '+(ok?'up':'dn')+'">'+(d>0?'+':'−')+gsNum(Math.abs(d),dp)+(u||'')+'</em>';};
+  const shots=n=>n===1?'un disparo':n+' disparos';
   if(GS.tab==='dmg'){
     let h='<table class="gsTbl"><tr><th>DIST.</th><th>CABEZA</th><th>TORSO</th><th>PIERNAS</th><th>CAÍDA</th><th>VUELO</th></tr>';
     for(const r of S.table)h+='<tr><td>'+r.d+' m</td><td>'+r.head+' <small>('+r.headShots+')</small></td><td>'+r.torso+' <small>('+r.torsoShots+')</small></td><td>'+r.legs+' <small>('+r.legsShots+')</small></td><td>'+(r.dropCm>0?r.dropCm+' cm':r.dropCm<0?'+'+(-r.dropCm)+' cm':'0')+'</td><td>'+r.ms+' ms</td></tr>';
-    return h+'</table><p class="gsNote">Entre paréntesis, disparos para eliminar (vida '+S.hp+'). El rifle no pierde daño con la distancia. CAÍDA: cuánto cae la bala por debajo de la retícula (puesta a cero a '+S.zero+' m; + es por encima). VUELO: lo que tarda en llegar. Calculado con el mismo código que usa el servidor.</p>';
+    return h+'</table><p class="gsNote">'+(own?'Cifras del '+e(S.name)+' contra bots y en el campo de tiro; en línea, las del HALCÓN R7. ':'')+'Entre paréntesis, disparos para eliminar (vida '+S.hp+'). El rifle no pierde daño con la distancia. CAÍDA: cuánto cae la bala por debajo de la retícula (puesta a cero a '+S.zero+' m; + es por encima). VUELO: lo que tarda en llegar. Calculado con el mismo código que usa el servidor.</p>';
   }
   const row=(l,v,s,p)=>'<div class="gsRow"><span>'+l+'</span><b>'+v+'</b>'+(p!=null?'<div class="gsBar"><i style="width:'+Math.round(Math.min(1,p)*100)+'%"></i></div>':'')+(s?'<small>'+e(s)+'</small>':'')+'</div>';
-  return '<p class="gsNote">Valores del juego (core/config.js), los mismos que usa el servidor. Los 5 modelos son aspectos del HALCÓN R7: comparten todas sus cifras. Las barras comparan con las tres armas del juego (HALCÓN R7, FURIA 12, VÍBORA 9).</p>'+
-    row('DAÑO · CABEZA',S.dmg.head,'elimina de un disparo (vida '+S.hp+')',S.dmg.head/S.hp)+
-    row('DAÑO · TORSO / PIERNAS',S.dmg.torso+' / '+S.dmg.legs,'dos disparos al cuerpo',S.dmg.torso/S.hp)+
-    row('CADENCIA',S.rpm+'/min','un disparo cada '+gsNum(S.bolt,2)+' s (cerrojo)',S.rpm/mx('rpm'))+
-    row('CARGADOR',S.mag,'recarga '+gsNum(S.reload,2)+' s',S.mag/mx('mag'))+
-    row('APUNTAR',gsNum(S.ads,2)+' s','de la cadera a la mira',null)+
-    row('VELOCIDAD DE LA BALA',S.speed+' m/s','gravedad '+gsNum(S.gravity,1)+' m/s²',S.speed/mx('speed'))+
+  const tS=SDGunStats.shotsToKill(S.dmg.torso),lS=SDGunStats.shotsToKill(S.dmg.legs),rec=g=>g.recoil?g.recoil.pitch:0;
+  const note=!BAL.on?'Con ?balance=0 los 5 modelos usan las cifras del HALCÓN R7 (las de antes). ?balance=1 vuelve a las de cada modelo.'
+    :own?'El '+S.name+' usa estas cifras contra bots y en el campo de tiro (tabla de prueba del 08-11). En línea todos llevan todavía el HALCÓN R7, hasta que el propietario lo apruebe. En color, la diferencia con el HALCÓN R7 (las cifras de antes): verde mejor, rojo peor. Las barras comparan los 5 rifles.'
+    :'El HALCÓN R7 es el rifle equilibrado y el de las partidas en línea. Los otros 4 modelos tienen sus propias cifras contra bots. Las barras comparan los 5 rifles.';
+  const role=(G.role||'').toUpperCase()+(own?' · EN LÍNEA: HALCÓN R7':'');
+  return '<p class="gsNote">'+e(note)+'</p>'+(role?'<p class="gsRole">'+e(role)+'</p>':'')+
+    row('DAÑO · CABEZA',S.dmg.head+dl(S.dmg.head,H.dmg.head),'elimina de '+shots(SDGunStats.shotsToKill(S.dmg.head))+' (vida '+S.hp+')',S.dmg.head/S.hp)+
+    row('DAÑO · TORSO / PIERNAS',S.dmg.torso+dl(S.dmg.torso,H.dmg.torso)+' / '+S.dmg.legs+dl(S.dmg.legs,H.dmg.legs),tS===lS?shots(tS)+' al cuerpo':shots(tS)+' al torso · '+shots(lS)+' a las piernas',S.dmg.torso/mx('torsoDmg'))+
+    row('CADENCIA',S.rpm+'/min'+dl(S.rpm,H.rpm),'un disparo cada '+gsNum(S.bolt,2)+' s (cerrojo)',S.rpm/mx('rpm'))+
+    row('CARGADOR',S.mag+dl(S.mag,H.mag),'balas por cargador',S.mag/mx('mag'))+
+    row('RECARGA',gsNum(S.reload,2)+' s'+dl(S.reload,H.reload,2,'',true),'cargador vacío a listo',mn('reload')/S.reload)+
+    row('APUNTAR',gsNum(S.ads,2)+' s'+dl(S.ads,H.ads,2,'',true),'de la cadera a la mira',mn('ads')/S.ads)+
+    row('VELOCIDAD DE LA BALA',S.speed+' m/s'+dl(S.speed,H.speed),'menos caída y menos espera a distancia · gravedad '+gsNum(S.gravity,1)+' m/s²',S.speed/mx('speed'))+
     row('ALCANCE',S.maxRange+' m','puesta a cero a '+S.zero+' m',S.maxRange/mx('maxRange'))+
-    row('MOVILIDAD',gsNum(S.walk,2)+' m/s','corriendo '+gsNum(S.sprint,1)+' · apuntando '+gsNum(S.adsWalk,2)+' m/s',S.walk/mx('walk'));
+    row('MOVILIDAD',gsNum(S.walk,2)+' m/s'+dl(S.walk,H.walk,2),'con el rifle en la mano · corriendo '+gsNum(S.sprint,1)+' · apuntando '+gsNum(S.adsWalk,2)+' m/s',S.walk/mx('walk'))+
+    row('BALANCEO DE LA MIRA',gsNum(S.sway*1000,1)+' mrad'+dl(S.sway*1000,H.sway*1000,1,'',true),'lo que se mueve la retícula con el visor: menos es más estable',mn('sway')/S.sway)+
+    row('RETROCESO',Math.round(rec(G)/rec(HALCON)*100)+' %'+dl(Math.round(rec(G)/rec(HALCON)*100),100,0,'',true),'golpe de la cámara al disparar (solo se ve: la bala sale donde apuntas)',mn('recoil')/S.recoil);
 }
 function gsPasHTML(){
-  return '<em>EN DESARROLLO · NO ACTIVA</em><b>BALA DURA</b><small>Atravesar obstáculos finos (madera, paneles ligeros) con menos daño, calculado por el servidor. Primero contra bots; no llegará al online sin aprobación.</small>';
+  return '<em>EN DESARROLLO · NO ACTIVA</em><b>BALA DURA</b><small>Atraviesa una pared media con mucho menos daño (nunca hormigón grueso, muros de carga ni los límites del mapa). Cajas, madera fina y chapa las atraviesa cualquier rifle. Primero contra bots; en línea solo con la aprobación del propietario.</small>';
 }
 // ---- what is chosen, on screen
 function gsSync(){
@@ -7195,7 +7224,7 @@ function gsSync(){
   document.querySelectorAll('#gsRifles .gsIt').forEach(b=>{b.setAttribute('aria-pressed',String(rifle&&b.dataset.ws===d.rifle));b.querySelector('em').hidden=b.dataset.ws!==s.rifle;});
   document.querySelectorAll('#gsKnives .gsIt').forEach(b=>{b.setAttribute('aria-pressed',String(!rifle&&b.dataset.ws===d.knife));b.querySelector('em').hidden=b.dataset.ws!==s.knife;});
   if(rifle){const w=WSKINS.rifle[d.rifle],c=gsModelCfg(d,d.rifle),O=SDMiras.get(c.mira);
-    setText($('#gsName'),d.rifle==='halcon'?'HALCÓN R7':'HALCÓN R7 · '+w.name);
+    setText($('#gsName'),d.rifle==='halcon'?'HALCÓN R7':BAL.on?w.name:'HALCÓN R7 · '+w.name);
     setText($('#gsSub'),'RIFLE DE CERROJO · '+(d.rifle==='halcon'?'MODELO DEL JUEGO':'MODELO DE '+w.by.toUpperCase())+' · '+(O.name.includes(O.short)?O.name:O.name+' '+O.short));}
   else{const k=WSKINS.knife[d.knife];setText($('#gsName'),k.name);setText($('#gsSub'),'ARMA DE MANO · CUERPO A CUERPO · '+(d.knife==='navaja'?'MODELO DEL JUEGO':'MODELO DE '+k.by.toUpperCase()));}
   // the accessory slots (the rifle's; a knife has none)
@@ -7618,6 +7647,6 @@ if(FLORA.on){const gl=new T.GLTFLoader();let n=2;
       if(P3W.kit)later();else{const w=setInterval(()=>{if(P3W.kit){clearInterval(w);later();}},300);}}}}
 function floraFlush(){if(FLORA.go)FLORA.go();}
 
-window.__SD={GSI,gsiDone,gsiRender,M2,m2Tab,m2Sync,m2Sleep,openSettings,closeSettings,MIRA,setMira,miraApply,miraClipGeo,miraRifle,openMiras,closeMiras,updateReticle,ENV,MOVE_CLASSIC,MOV_CLASSIC,VIS,VIS_COL,VIS_HULL,visOn,visFrame,visWho,selfHit,PROF,KTX2,R2_ON,R2_URL,PIC,GYRO,gyroEv,crossApply,btnPress,settingsChanged,perfTexMB(){const t=perfTextures();return {real:SDPerf.textureMB(t),asRGBA:SDPerf.textureMB(t.map(x=>Object.assign({},x,{bytes:0})))};},REMOTES,netScoreHud,shotTargets,MINI,miniLayer,miniPing,clockFrame,setOffTime,get OFF_TIME(){return OFF_TIME;},ACC,accRefresh,INV,invSync,camoApply,openInv,invOpenBox,WSKIN,WS_ST,setWskin,get RIF(){return RIF;},TPV,SELF,get PROFILE(){return PROFILE;},openProfile,endMatch,PJ_MIX,MIX_ORDER,SKINS,get SKIN(){return SKIN;},setSkin,pj2SetPack,rivalSkin,PERF,perfRun,HUD2,get H2(){return HUD2?H2:null;},leanIn:HUD2?leanIn:null,h2Frame:HUD2?h2Frame:null,PJ2,pj2Load,CASA,casaLoad,C2,C2B,C2J,C2S,casa2Load,BAR,barrioLoad,FLORA,RATS,RAT_WORLD,ratsFrame,SHADOW_FADE,setDuelLethal,get DUEL_LETHAL(){return DUEL_LETHAL;},gfxDiagText,get P3ON(){return P3ON;},COBCC,damagePlayer,TEX,sunFollow,setSunSnap(on){SUN_SNAP=!!on;},sun,P0,E10,e10Lod,DIAG,setTrainMove,LIGHT:{sun,hemi,skyMat,LOOK,P3},P3W,freeze(on){SIM_FREEZE=!!on;},SHOT,VMA,makeSoldier,animateSoldier,BOT_MAT,scene,camera,RemotePlayer,PMprev,PIS,PROOT,RIF,WROOT,SHO_:null,MANUAL,advance(ms){frameBody(last+ms);},get LAST_PELLETS(){return LAST_PELLETS;},SCORE,SCFG,SROOT,SHO,setPrimaryChoice,get PRIMARY(){return PRIMARY;},PCORE,PCFG,setWorld,WORLDS,get WORLD_ID(){return WORLD_ID;},renderer,GFX,gfxApply,get NET(){return NET;},get REMOTE(){return REMOTE;},W,get NAV(){return NAV;},setOffMap,get OFFMAP(){return OFFMAP;},TOUCH,EDIT,openEditor,get SETTINGS(){return SETTINGS;},get LAYOUT(){return LAYOUT;},checkOrientation,MAT,LOAD,TRAINERS,get RANGE_BOTS(){return RANGE_BOTS;},TRAIN,setTrain,setLethal,kitNote,GINS,TDIAG,AU,get TOUCH_EVENTS(){return TOUCH_EVENTS;},impactFX,bodyFX,get DECALS(){return DECALS;},surfaceOf,soundDelay,aimSelfTest,P,PM,WS,WCORE,RECOIL,AIM,BOTS,DUMMIES,BULLETS,EVENTS,PARTS,STATS,get state(){return state;},get mode(){return mode;},setMode,input,startMatch,simTick,frame,toMenu,pause,resume};
+window.__SD={get GUNCFG(){return GUNCFG;},HALCON,BAL,rifleCfgFor,applyRifleCfg,gsGun,get gameTime(){return gameTime;},GSI,gsiDone,gsiRender,M2,m2Tab,m2Sync,m2Sleep,openSettings,closeSettings,MIRA,setMira,miraApply,miraClipGeo,miraRifle,openMiras,closeMiras,updateReticle,ENV,MOVE_CLASSIC,MOV_CLASSIC,VIS,VIS_COL,VIS_HULL,visOn,visFrame,visWho,selfHit,PROF,KTX2,R2_ON,R2_URL,PIC,GYRO,gyroEv,crossApply,btnPress,settingsChanged,perfTexMB(){const t=perfTextures();return {real:SDPerf.textureMB(t),asRGBA:SDPerf.textureMB(t.map(x=>Object.assign({},x,{bytes:0})))};},REMOTES,netScoreHud,shotTargets,MINI,miniLayer,miniPing,clockFrame,setOffTime,get OFF_TIME(){return OFF_TIME;},ACC,accRefresh,INV,invSync,camoApply,openInv,invOpenBox,WSKIN,WS_ST,setWskin,get RIF(){return RIF;},TPV,SELF,get PROFILE(){return PROFILE;},openProfile,endMatch,PJ_MIX,MIX_ORDER,SKINS,get SKIN(){return SKIN;},setSkin,pj2SetPack,rivalSkin,PERF,perfRun,HUD2,get H2(){return HUD2?H2:null;},leanIn:HUD2?leanIn:null,h2Frame:HUD2?h2Frame:null,PJ2,pj2Load,CASA,casaLoad,C2,C2B,C2J,C2S,casa2Load,BAR,barrioLoad,FLORA,RATS,RAT_WORLD,ratsFrame,SHADOW_FADE,setDuelLethal,get DUEL_LETHAL(){return DUEL_LETHAL;},gfxDiagText,get P3ON(){return P3ON;},COBCC,damagePlayer,TEX,sunFollow,setSunSnap(on){SUN_SNAP=!!on;},sun,P0,E10,e10Lod,DIAG,setTrainMove,LIGHT:{sun,hemi,skyMat,LOOK,P3},P3W,freeze(on){SIM_FREEZE=!!on;},SHOT,VMA,makeSoldier,animateSoldier,BOT_MAT,scene,camera,RemotePlayer,PMprev,PIS,PROOT,RIF,WROOT,SHO_:null,MANUAL,advance(ms){frameBody(last+ms);},get LAST_PELLETS(){return LAST_PELLETS;},SCORE,SCFG,SROOT,SHO,setPrimaryChoice,get PRIMARY(){return PRIMARY;},PCORE,PCFG,setWorld,WORLDS,get WORLD_ID(){return WORLD_ID;},renderer,GFX,gfxApply,get NET(){return NET;},get REMOTE(){return REMOTE;},W,get NAV(){return NAV;},setOffMap,get OFFMAP(){return OFFMAP;},TOUCH,EDIT,openEditor,get SETTINGS(){return SETTINGS;},get LAYOUT(){return LAYOUT;},checkOrientation,MAT,LOAD,TRAINERS,get RANGE_BOTS(){return RANGE_BOTS;},TRAIN,setTrain,setLethal,kitNote,GINS,TDIAG,AU,get TOUCH_EVENTS(){return TOUCH_EVENTS;},impactFX,bodyFX,get DECALS(){return DECALS;},surfaceOf,soundDelay,aimSelfTest,P,PM,WS,WCORE,RECOIL,AIM,BOTS,DUMMIES,BULLETS,EVENTS,PARTS,STATS,get state(){return state;},get mode(){return mode;},setMode,input,startMatch,simTick,frame,toMenu,pause,resume};
 })();
 </script>

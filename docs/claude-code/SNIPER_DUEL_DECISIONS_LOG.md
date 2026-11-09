@@ -11,6 +11,7 @@ Detalle de cada cambio (antes/después, medidas, cómo revertir): `docs/next-lev
 ### Siguiente prioridad
 | Tarea | Quién la desbloquea | Estado |
 |---|---|---|
+| **RIFLES DISTINTOS** (09-11) — probar contra bots los 5 rifles (TITÁN pesado, VECTOR rápido…) y comparar con `?balance=0`; decir si se llevan al online | Propietario | PUBLICADO SOLO SIN CONEXIÓN · PENDIENTE DE SU PRUEBA |
 | **ARSENAL (GUNSMITH)** (08-11) — probar ARMAS en el iPhone: el rifle grande, girar y acercar, elegir modelo y mira (fotos de cada modelo), GUARDAR y RESTABLECER, ESTADÍSTICAS y DAÑO; decir si el silenciador puede cambiar el sonido (G3) y si apruebas el diseño de BALA DURA (`docs/GUNSMITH.md`) | Propietario | PUBLICADO · PENDIENTE DE VALIDACIÓN EN IPHONE · NECESITA DECISIÓN |
 | **Camuflajes de foto** (05-11) — en CAJAS Y OBJETOS (con la cuenta ADMIN están todos): probar ALUMINIO, los tres CARBONOS y los dos OROS en el iPhone | Propietario | PUBLICADO · PENDIENTE DE VALIDACIÓN EN IPHONE |
 | **BARRIO** (04-11) — probar `https://hamza189.github.io/SNIPER-1VS1/?barrio=1` (menú › BARRIO) en el iPhone, contra bots y online: FPS, aspecto de los garajes y las torres, rutas | Propietario | PUBLICADO TRAS BANDERA · PENDIENTE DE APROBACIÓN |
@@ -91,6 +92,29 @@ Detalle de cada cambio (antes/después, medidas, cómo revertir): `docs/next-lev
 | Encargos para ChatGPT: CASA XL, CASA XL v2 y personaje | 18-10 / 19-10 |
 | Personaje 3D rev. 03 hecho por Claude e integrado tras `?pj=2` (bots y rival online) | 20-10 · directo a `main` |
 | Personajes realistas + elegir personaje (con el SOLDADO de `?pj=2`) y HUD 2 por defecto (aprobado en iPhone y PC) | 28-10 · directo a `main` |
+
+## 09-11-2026 — GUNSMITH: los 5 rifles con sus cifras contra bots (en línea sigue el HALCÓN)
+Del propietario (08-11):
+- «Apruebo provisionalmente la tabla de los cinco francotiradores… para pruebas experimentales»;
+- «el VECTOR debería sentirse rápido, el TITÁN pesado y potente, y el HALCÓN equilibrado»;
+- «No actives el nuevo balance ni BALA DURA en el multijugador público hasta que yo lo pruebe»;
+- silenciador con un precio pequeño (bala un 8 % más lenta);
+- BALA DURA como pasiva de cualquier rifle, solo para una pared media.
+
+Hecho (detalle y tabla en `docs/GUNSMITH.md`):
+- TITÁN, ÚLTIMA, VECTOR y SAHARA con sus cifras en `core/config.js`; el HALCÓN no cambia.
+- Contra bots y en el campo de tiro cuentan las del modelo, al aparecer. En línea, el HALCÓN para todos.
+- La velocidad al andar depende del rifle (`speedMul(L, rc)`); el servidor no cambia.
+- El ARSENAL enseña las cifras del modelo, su diferencia con el HALCÓN y «EN LÍNEA: HALCÓN R7».
+- `?balance=0`: las cifras de antes para comparar.
+- **Pruebas:** rifles.browser 27/27 (medidas con el reloj del juego), gunstats 20/20, online.browser 48/48, arsenal.browser
+  24/24 y core, room, pistol y shotgun sin cambios.
+- **Estado:** PROBADO EN NAVEGADOR (PC con GPU) · PENDIENTE DE QUE EL PROPIETARIO LO PRUEBE CONTRA BOTS (PC, iPhone y Android).
+- También el 09-11: el propietario actualizó CLAUDE.md (Android también para probar, regla 14 de C/C++/C# → WebGPU +
+  TypeScript + C++/WASM en un mes sin abandonar Three.js, y la línea `Authored-By: Hamza` en los commits).
+- **Siguiente:**
+  - accesorios con efecto contra bots (silenciador primero);
+  - penetración de serie y BALA DURA contra bots.
 
 ## 08-11-2026 — GUNSMITH 2.0: G1 (auditoría de skins) y G2 (ARSENAL nuevo); estadísticas de una sola fuente
 Del propietario: el encargo «SNIPER DUEL — GUNSMITH 2.0» (fases G1–G8). Prioridades:

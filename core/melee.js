@@ -68,7 +68,9 @@ function tickLoadout(L, cmd, dt) {
 function rifleHolstered(L) { return !(L.active === 'rifle' && L.phase === 'ready'); }
 // any gun (rifle | pistol): true unless it is the one fully drawn
 function holstered(L, name) { return !(L.active === name && L.phase === 'ready'); }
-function speedMul(L) { if (L.phase === 'holster') return 1; return L.active === 'knife' ? L.kc.moveMul : L.active === 'pistol' && L.pc ? (L.pc.moveMul || 1) : L.active === 'shotgun' && L.sc ? (L.sc.moveMul || 1) : 1; }
+// rc (optional): the rifle's config. A rifle with its own moveMul (the GUNSMITH models, 08-11-2026: TITÁN 0.93,
+// VECTOR 1.05…) changes your speed while it is out; the HALCÓN R7 has none (× 1), so the server is unchanged
+function speedMul(L, rc) { if (L.phase === 'holster') return 1; return L.active === 'knife' ? L.kc.moveMul : L.active === 'pistol' && L.pc ? (L.pc.moveMul || 1) : L.active === 'shotgun' && L.sc ? (L.sc.moveMul || 1) : L.active === 'rifle' && rc ? (rc.moveMul || 1) : 1; }
 
 /* ---------------- melee hit resolution ----------------
    attacker = { x, z, eyeY, fx, fz }           (fx,fz = horizontal facing, unit length)
