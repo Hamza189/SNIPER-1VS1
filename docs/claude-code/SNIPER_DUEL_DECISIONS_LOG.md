@@ -11,6 +11,7 @@ Detalle de cada cambio (antes/después, medidas, cómo revertir): `docs/next-lev
 ### Siguiente prioridad
 | Tarea | Quién la desbloquea | Estado |
 |---|---|---|
+| **PENETRACIÓN y BALA DURA** (09-11) — contra bots: disparar a un bot detrás de una caja (PUEBLO) o de un tabique (CASA ATLAS, con BALA DURA en ARMAS); decir si el 75 % / 50 % de daño te vale y si se lleva al online | Propietario | PUBLICADO SOLO SIN CONEXIÓN · NECESITA SU APROBACIÓN PARA EL ONLINE |
 | **CAMUFLAJE EN VIVO, MAPAS y MILITAR** (09-11) — en el PC y en el móvil: ARMAS › CAMUFLAJE (tira abajo, se ve al momento), la TÁCTICA con camuflaje, la REJILLA DE ORO nueva, el silenciador del TITÁN, MAPAS con BARRIO y las rodillas del MILITAR | Propietario | PUBLICADO · PENDIENTE DE SU PRUEBA |
 | **RIFLES DISTINTOS y SILENCIADOR** (09-11) — probar contra bots los 5 rifles (TITÁN pesado, VECTOR rápido…) y el silenciador (ARMAS › SILENCIADOR), comparar con `?balance=0`; decir si se llevan al online | Propietario | PUBLICADO SOLO SIN CONEXIÓN · PENDIENTE DE SU PRUEBA |
 | **ARSENAL (GUNSMITH)** (08-11) — probar ARMAS en el iPhone: el rifle grande, girar y acercar, elegir modelo y mira (fotos de cada modelo), GUARDAR y RESTABLECER, ESTADÍSTICAS y DAÑO; decir si el silenciador puede cambiar el sonido (G3) y si apruebas el diseño de BALA DURA (`docs/GUNSMITH.md`) | Propietario | PUBLICADO · PENDIENTE DE VALIDACIÓN EN IPHONE · NECESITA DECISIÓN |
@@ -93,6 +94,18 @@ Detalle de cada cambio (antes/después, medidas, cómo revertir): `docs/next-lev
 | Encargos para ChatGPT: CASA XL, CASA XL v2 y personaje | 18-10 / 19-10 |
 | Personaje 3D rev. 03 hecho por Claude e integrado tras `?pj=2` (bots y rival online) | 20-10 · directo a `main` |
 | Personajes realistas + elegir personaje (con el SOLDADO de `?pj=2`) y HUD 2 por defecto (aprobado en iPhone y PC) | 28-10 · directo a `main` |
+
+## 09-11-2026 — PENETRACIÓN de serie y BALA DURA, contra bots
+Lo pidió el propietario el 08-11: de serie, la bala atraviesa cajas, madera fina y chapa; BALA DURA, una pared media
+como mucho. El 09-11 dijo «haz todo esto y luego continúa».
+- **Núcleo:** `core/pen.js` (puro, compartido), con las clases fina, media y nunca, la salida por la caja y un máximo de
+  2 superficies.
+- **Daño:** × 0,75 por cada fina y × 0,5 por la media. **Propuesta: pendiente de su aprobación para el online.**
+- **Contra bots:** la bala de rifle cruza lo que puede. El impacto a través no da marcador.
+- **BALA DURA:** se activa en ARMAS › HABILIDAD PASIVA. `?pen=0` lo apaga todo.
+- **En línea:** nada cambia (el servidor no lo usa).
+- **Pruebas:** pen 18/18 y pen.browser 13/13 (PUEBLO, CASA ATLAS, ARSENAL).
+- **Estado:** PROBADO EN NAVEGADOR (PC con GPU) · PENDIENTE DE QUE EL PROPIETARIO LO PRUEBE.
 
 ## 09-11-2026 — Arreglos tras la prueba del ARSENAL: camuflaje en vivo, MAPAS, TITÁN y MILITAR
 Del propietario, con capturas: la REJILLA DE ORO demasiado negra; el silenciador del TITÁN un poco alto; MAPAS con las

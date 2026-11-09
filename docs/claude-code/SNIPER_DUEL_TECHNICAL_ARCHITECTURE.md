@@ -140,6 +140,7 @@ reconciliación, interpolación del rival 110 ms, ping) · `vmrig.js` (materiale
 | `?barrio=1` / `?barrio=0` | BARRIO (04-11): calle con dos garajes abandonados y torres de fondo (`client/barrio.js`, `docs/BARRIO.md`), en los menús del duelo y online (se recuerda). Mapa `barrio` en el servidor. Pendiente de aprobación |
 | `?arsenal=0` / `?arsenal=1` | ARMAS de antes / el ARSENAL (GUNSMITH, 08-11, por defecto): arma grande, modelos, accesorios, estadísticas reales de `core/gunstats.js`, GUARDAR por modelo (`docs/GUNSMITH.md`). Se recuerda |
 | `?balance=0` / `?balance=1` | Cifras de antes (las del HALCÓN R7 para los 5 modelos) / las de cada rifle (09-11, por defecto, solo sin conexión; en línea siempre el HALCÓN). Se recuerda (`docs/GUNSMITH.md`) |
+| `?pen=0` / `?pen=1` | Penetración de las balas de rifle contra bots (cajas, madera fina, chapa; con BALA DURA, un tabique). `?pen=0` la apaga (se recuerda). 09-11-2026, `docs/GUNSMITH.md` |
 | `&rejas=0` | Sin el desvanecido de las rejas lejanas del kit (para comparar; `docs/PARPADEO.md`, 03-11-2026) |
 | `?menu=1` / `?menu=2` | El menú principal de antes (se recuerda) / el nuevo con la sala 3D, que es el de por defecto desde el 03-11-2026 (`docs/MENU-2.md`) |
 | `&techo=1` | Techo opcional en CASA ATLAS |

@@ -266,3 +266,46 @@ tener que estar cerrando y abriendo; tiene que funcionar en PC y móvil».
     - la TÁCTICA pintada y guardada, también tras recargar; la NAVAJA sin botón;
     - en el móvil en horizontal, que la tira cabe.
   - `test/menu2.browser.test.js`: MAPAS con 5 mapas.
+
+## Penetración y BALA DURA (09-11-2026, contra bots)
+Lo pidió el propietario el 08-11 (sección «Decisiones del propietario»): de serie, la bala atraviesa cajas, madera fina y
+chapa; BALA DURA, una pared media como mucho, nunca dos.
+- **Una sola fuente: `core/pen.js` (`SDPen`)**, pura y compartida (Node y navegador). El servidor todavía no la usa.
+  - `classify(superficie, grosor)`:
+    - **finas:** cajas de madera (de cualquier tamaño), madera de hasta 12 cm y chapa de hasta 10 cm;
+    - **medias:** tabiques de yeso de hasta 20 cm;
+    - **nunca:** hormigón, muros de yeso más gruesos (de carga), tierra, sacos y límites del mapa.
+  - `through(caja, origen, dirección)`: por dónde entra y sale la bala de la caja, con el giro de la caja. Un ángulo rasante
+    alarga el recorrido dentro: un tabique cruzado con más de 45 cm dentro para la bala.
+  - `pass(estado, clase, recorrido, baladura)`:
+    - como mucho 2 superficies, y de ellas una sola media (solo con BALA DURA);
+    - daño × 0,75 por cada fina y × 0,5 por la media.
+- **Cifras propuestas, contra bots:** 75 % y 50 %. **Son de equilibrio:** para llevarlas al online hace falta la aprobación
+  del propietario.
+- **En la página (`updateBullets`):**
+  - La bala de rifle (no la pistola, ni los perdigones, ni en línea) lleva su estado de penetración.
+  - Si choca con una caja del mapa que puede atravesar, deja la marca, sale por el otro lado y sigue en el mismo paso
+    (como mucho 4 tramos por paso).
+  - Se usan siempre las cajas de balas del mapa (`penBox`: cajas rectas o giradas en Y), nunca lo que se ve.
+  - En el PUEBLO las cajas se cambian por modelos, pero `hideOld` recuerda que eran cajas (`penSurf`).
+- **No delata a nadie:** un impacto a través de una pared no da marcador ni el aviso IMPACTO (sí la sangre en el bot y, si
+  muere, la baja).
+- **BALA DURA:**
+  - Se enciende y se apaga en ARMAS › HABILIDAD PASIVA (ACTIVAR / QUITAR), para cualquier rifle, contra bots.
+  - Se guarda en el dispositivo (`sniperduel_balaDura`). En línea, no.
+- **Banderas:** `?pen=0` apaga la penetración (se recuerda); `?pen=1` la vuelve a poner.
+- **Medido en los mapas reales:**
+  - PUEBLO: 31 cajas finas. ARENA: 10.
+  - CASA ATLAS: 53 tabiques medios, 2 maderas y 1 chapa finas.
+  - CASA ATLAS 2.0: 212 tabiques medios, 8 maderas y 4 chapas finas.
+  - Hormigón penetrable: 0.
+- **Pruebas:**
+  - `test/pen.test.js` (18): clases, entrada y salida, rasante, giro, límites.
+  - `test/pen.browser.test.js` (13): con el motor de verdad.
+    - Un bot detrás de una caja del PUEBLO recibe el 75 % y no hay marcador.
+    - Detrás de un tabique de CASA ATLAS: 0 sin BALA DURA, la mitad con ella.
+    - Ni un mueble macizo ni el hormigón dejan pasar la bala.
+    - El interruptor del ARSENAL, y `?pen=0`.
+- **Falta (con su aprobación):** llevarlo al servidor (G7).
+  - `tools/export-map.js` tendría que exportar la superficie de cada triángulo y su caja.
+  - `room.js` usaría `SDPen` igual que la página.
