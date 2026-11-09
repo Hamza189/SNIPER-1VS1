@@ -29,13 +29,13 @@ jobs:
           cd _site
           # never loaded by the page: documentation, tools, tests, workflow files, sources and previews
           rm -rf docs tools test .github build
-          find . \( -path '*/preview/*' -o -path '*/src/*' \) -type f -delete
+          find ./assets/3d \( -path '*/preview/*' -o -path '*/src/*' \) -type f -delete   # only the 3D import packs' previews and sources
           find . -type f \( -name '*.blend' -o -name '*.blend1' -o -name '*.exr' -o -name '*.target' -o -name '*.obj' -o -name '*.max' -o -name '*.mb' -o -name '*.py' -o -name '*.md' \) -delete
           touch .nojekyll
           du -sh . ; find . -type f | wc -l
           # every assets/... path written literally in the page has to be there
           missing=0
-          for f in $(grep -o "assets/[A-Za-z0-9_./-]*\.\(glb\|jpg\|png\|json\|ktx2\|webp\|mp3\|ogg\)" index.html | grep -v '_ktx2' | sort -u); do   # the KTX2 files live in Cloudflare R2 (docs/R2.md)
+          for f in $(grep -o "assets/[A-Za-z0-9_./-]*\.\(glb\|jpg\|png\|json\|ktx2\|webp\|mp3\|ogg\)" index.html | grep -v 'ktx2' | sort -u); do   # the KTX2 files live in Cloudflare R2 (docs/R2.md)
             [ -e "$f" ] || { echo "falta: $f"; missing=1; }
           done
           [ $missing -eq 0 ]
