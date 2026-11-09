@@ -309,3 +309,39 @@ chapa; BALA DURA, una pared media como mucho, nunca dos.
 - **Falta (con su aprobación):** llevarlo al servidor (G7).
   - `tools/export-map.js` tendría que exportar la superficie de cada triángulo y su caja.
   - `room.js` usaría `SDPen` igual que la página.
+
+## BALA DURA por grosor, MAPA DE PRUEBAS y RAYOS X (09-11-2026, noche)
+Del propietario, con una captura de la columna de ARENA: «si la pared es como la mitad, sí puede traspasar la bala, pero si
+es tan grande como la de ARENA la bala no pasa; no sé la relación de daño; hazme un mapa aparte con bots inmóviles detrás de
+paredes… y dame rayos X para saber dónde apunto».
+- **Regla nueva de BALA DURA** (`core/pen.js`):
+  - Pasa una pared de hasta **50 cm** (la mitad de la columna de 1 m de ARENA), del material que sea: yeso, hormigón,
+    madera o chapa.
+  - Nunca pasa: sacos, tierra, edificios macizos, la columna de 1 m, los muros de 60 cm ni los del borde del mapa.
+    Tampoco dos paredes seguidas.
+  - **El daño baja con lo que la bala recorre dentro** (`mulMedium`): × 0,70 con 12 cm, × 0,65 con 18 cm, × 0,56 con
+    30 cm y × 0,40 con 50 cm; nunca menos de × 0,35. Es mi propuesta («no sé la relación de daño»): se ajusta probando
+    en el mapa de pruebas.
+  - Lo fino (cajas, madera de hasta 12 cm, chapa de hasta 10 cm) sigue igual: cualquier rifle, × 0,75.
+- **Superficie de cada caja:** en el PUEBLO las cajas se cambian por modelos; `hideOld` guarda antes lo que eran
+  (`penSurf`). Las demás usan `surfaceOf`.
+- **MAPA DE PRUEBAS** (MAPAS › PRUEBAS, solo contra bots; nunca va al servidor, `local: true`):
+  - Diez paredes con su rótulo: caja de madera, madera de 8 cm, chapa de 6 cm, yeso de 18 cm, hormigón de 30, 50 y
+    60 cm, columna de 1 m, sacos de 80 cm y dos tabiques.
+  - Detrás de cada pared, un bot quieto que ni se mueve ni dispara, en la línea que va desde tu punto de salida, a 18 m.
+  - En ese mapa, un impacto a través de una pared sí dice el daño («A TRAVÉS · YESO −59 (65 % del daño)»).
+- **RAYOS X** (solo en el mapa de pruebas y sin conexión):
+  - Las zonas de impacto de cada bot (las cajas que cuentan para la bala) se ven a través de todo: el cuerpo en naranja
+    y la cabeza en rojo.
+  - `?rayosx=0` las quita.
+- **Medido con el motor del juego** (HALCÓN, 85 al torso; desde tu punto de salida):
+  - Sin BALA DURA: 64 en caja, madera y chapa; 0 en lo demás.
+  - Con BALA DURA: además yeso 55, hormigón de 30 cm 47 y de 50 cm 33. El de 60 cm, la columna, los sacos y el segundo
+    tabique paran la bala.
+- **Pruebas:**
+  - `test/pen.test.js` (20).
+  - `test/pen.browser.test.js`:
+    - el mapa de pruebas entero, sin y con BALA DURA;
+    - los rayos X;
+    - el deslizamiento nuevo;
+    - que en los mapas reales nada de más de 50 cm se atraviese.

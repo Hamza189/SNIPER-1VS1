@@ -1908,7 +1908,7 @@ function townMeshes(data,tag){
 }
 /* Props (GFX-3): crates, sandbags, barrels, cars, poles, the water tower and concrete walls of a map are
    redrawn in detail on top of their old boxes (the boxes stay, invisible, for bullets and the server). */
-function hideOld(m){if(m.material===MAT.crate)m.userData.penSurf='crate';   // PENETRACIÓN: still a wooden crate for bullets
+function hideOld(m){m.userData.penSurf=m.material===MAT.crate?'crate':surfaceOf(m);   // PENETRACIÓN: what it still is for bullets
   m.material=Array.isArray(m.material)?m.material.map(()=>INVIS):INVIS;m.castShadow=false;}
 function dressProps(objs,tag){
   if(!TOWN.on||typeof SDTown==='undefined')return [];
@@ -2252,6 +2252,51 @@ const WORLDS={pueblo:{colliders:W.colliders,ray:W.ray,ramps:W.ramps,objs:scene.c
   WORLDS.arena={colliders:W.colliders,ray:W.ray,ramps:W.ramps,objs:scene.children.slice(from),nav,label:'ARENA DE PRUEBAS'};
   for(const o of WORLDS.arena.objs)o.visible=false;
   W.colliders=WORLDS.pueblo.colliders;W.ray=WORLDS.pueblo.ray;W.ramps=WORLDS.pueblo.ramps;
+}
+/* MAPA DE PRUEBAS (09-11-2026, el propietario: «hazme un mapa aparte con bots inmóviles detrás de paredes medio finas o
+   de diferentes objetos para hacer las pruebas, y dame rayos X para saber dónde apunto»). Solo contra bots: nunca va
+   al servidor (local: tools/export-map.js lo salta). Una fila de 10 paredes de prueba, cada una con un bot quieto
+   detrás (no se mueve ni dispara); tú empiezas a 18 m. Con rayos X ves sus zonas de impacto a través de las paredes
+   y el daño de cada impacto aunque haya atravesado. Rótulo de cada pared: qué es y qué la atraviesa (core/pen.js). */
+const PRUEBAS={slots:[],labels:[]};
+{
+  const prevC=W.colliders,prevR=W.ray,prevP=W.ramps;W.colliders=[];W.ray=[GROUND];W.ramps=[];
+  const from=scene.children.length;
+  const M=(c,r)=>new T.MeshStandardMaterial({color:c,roughness:r||0.9});
+  const wood=M(0x8a6a44,0.8),plaster=M(0xd8d0c2,0.95),metal=new T.MeshStandardMaterial({color:0x7d858c,roughness:0.45,metalness:0.7});
+  // [rótulo, superficie, grosor (m), material, alto, ancho, explicación]
+  const ST=[['CAJA DE MADERA','crate',1.2,MAT.crate,2.4,1.2,'fina · cualquier rifle · 75 %'],
+    ['MADERA 8 cm','wood',0.08,wood,2.4,2.2,'fina · cualquier rifle · 75 %'],
+    ['CHAPA 6 cm','metal',0.06,metal,2.4,2.2,'fina · cualquier rifle · 75 %'],
+    ['YESO 18 cm','plaster',0.18,plaster,2.4,2.2,'BALA DURA · 65 %'],
+    ['HORMIGÓN 30 cm','concrete',0.30,MAT.concrete,2.4,2.2,'BALA DURA · 56 %'],
+    ['HORMIGÓN 50 cm','concrete',0.50,MAT.concrete,2.4,2.2,'BALA DURA · 40 % (el límite)'],
+    ['HORMIGÓN 60 cm','concrete',0.60,MAT.concrete,2.4,2.2,'no pasa'],
+    ['COLUMNA 1 m','concrete',1.0,MAT.concreteDark,3.0,1.0,'no pasa (la de ARENA)'],
+    ['SACOS 80 cm','dirt',0.8,MAT.bag,1.6,2.2,'no pasa'],
+    ['DOS TABIQUES','plaster',0.18,plaster,2.4,2.2,'BALA DURA: pasa uno, el segundo para']];
+  const n=ST.length,gap=4.6,x0=-(n-1)*gap/2,SZ=-18,BZ=2.2;   // you start at (0, SZ); each bot on the line from there through its wall
+  const label=(t1,t2,x,y,z)=>{const cv=document.createElement('canvas');cv.width=512;cv.height=160;const g=cv.getContext('2d');
+    g.fillStyle='rgba(12,12,13,.85)';g.fillRect(0,0,512,160);g.fillStyle='#ff8a2b';g.fillRect(0,0,512,8);
+    g.fillStyle='#f4ead8';g.font='600 54px sans-serif';g.textAlign='center';g.fillText(t1,256,78);g.fillStyle='#c9b48e';g.font='34px sans-serif';g.fillText(t2,256,130);
+    const sp=new T.Sprite(new T.SpriteMaterial({map:new T.CanvasTexture(cv),depthTest:true}));sp.scale.set(2.6,0.81,1);sp.position.set(x,y,z);scene.add(sp);return sp;};
+  ST.forEach(([name,surf,d,mat,h,w,why],i)=>{
+    const x=x0+i*gap,zs=surf==='crate'?[0]:i===n-1?[-0.3,0.3]:[0];
+    for(const z of zs){
+      if(surf==='crate'){for(const cx of [-0.6,0.6])for(let k=0;k<2;k++){const m=new T.Mesh(new T.BoxGeometry(1.2,1.2,1.2),MAT.crate);m.position.set(x+cx,0.6+k*1.2,z);m.castShadow=m.receiveShadow=true;scene.add(m);W.ray.push(m);}addCollider(x-1.2,0,z-0.6,x+1.2,2.4,z+0.6);}
+      else{const m=box(Math.max(w,3),h,d,mat,x,0,z);m.userData.surf=surf;}
+    }
+    label(name,why,x,h+0.75,-0.7);
+    PRUEBAS.slots.push({x:x*(BZ-SZ)/(0-SZ),z:BZ});
+  });
+  // the back wall (1 m of concrete: nothing goes through) and a mark on the floor where you start
+  box(n*gap+6,4,1,MAT.concreteDark,0,0,6.5);
+  {const l=new T.Mesh(new T.PlaneGeometry(3,0.15),new T.MeshBasicMaterial({color:0xff8a2b}));l.rotation.x=-Math.PI/2;l.position.set(0,0.02,-18);scene.add(l);}
+  const nav=[];for(let x=-20;x<=20;x+=2)for(let z=-22;z<=-4;z+=2)nav.push({x,z,n:[]});
+  WORLDS.pruebas={colliders:W.colliders,ray:W.ray,ramps:W.ramps,objs:scene.children.slice(from),nav,label:'PRUEBAS',local:true,
+    spawns:[{team:'A',x:0,z:-18,yaw:Math.PI},{team:'B',x:0,z:-18,yaw:Math.PI}]};
+  for(const o of WORLDS.pruebas.objs)o.visible=false;
+  W.colliders=prevC;W.ray=prevR;W.ramps=prevP;
 }
 /* =================== CASA ATLAS 1V1 (experimental map, 18-10-2026) ===================
    An 18 × 14 m one-floor flat by ChatGPT (assets/maps/casa_atlas/, originals in assets/3d/imports/2026-10-18_casa_atlas/).
@@ -3869,7 +3914,7 @@ const BOT_WALK=3.4,BOT_ACCEL=9;   // duel bots (PUEBLO / ARENA): walking speed m
 class Bot{
   constructor(i,slot,opts){
     opts=opts||{};this.trainer=!!opts.trainer;
-    this.id=i;this.slot=slot||null;this.mode=(slot||this.trainer)?'range':'duel';this.name=this.trainer?'BOT-E'+(i+1):slot?'DIANA-'+(i+1):'BOT-'+(i+1);
+    this.id=i;this.slot=slot||null;this.slot0=this.slot;this.mode=(slot||this.trainer)?'range':'duel';this.name=this.trainer?'BOT-E'+(i+1):slot?'DIANA-'+(i+1):'BOT-'+(i+1);
     const BM=this.trainer?TRAIN_MAT:BOT_MAT;this.g=new T.Group();this.g.rotation.order='YXZ';this.hit=[];
     // the hit zones keep their old shapes (invisible); what you see is the jointed soldier (makeSoldier)
     this.hitG=new T.Group();this.g.add(this.hitG);   // hit zones in their own group (squashed with the body when it slides)
@@ -3898,6 +3943,7 @@ class Bot{
   spawn(){
     this.reset();this.hp=100;this.alive=true;this.g.visible=true;this.g.rotation.x=0;this.g.rotation.z=0;
     this.g.scale.set(1,1,1);
+    if(!this.trainer)this.slot=WORLD_ID==='pruebas'&&!this.slot0&&PRUEBAS.slots.length?PRUEBAS.slots[this.id%PRUEBAS.slots.length]:this.slot0;   // MAPA DE PRUEBAS
     if(this.slot){this.g.position.set(this.slot.x,0,this.slot.z);this.yaw=Math.PI;this.g.rotation.y=this.yaw;this.state='dummy';this.phase=Math.random()*6.28;return;}
     if(this.trainer){
       const A=SD_CONFIG.training.area;let x=0,z=0;
@@ -3944,7 +3990,7 @@ class Bot{
     animateSoldier(this.rig,{far:g.position.distanceToSquared(camera.position)>900,vx:this.alive?this.lvx*c-this.lvz*s:0,vz:this.alive?this.lvx*s+this.lvz*c:0,pitch,wpn:this.rig.wpn,aim:this.alive&&(this.state==='aim'||this.aiming)?1:0,
       sprint:Math.hypot(this.lvx,this.lvz)>4.5,crouch:this.trainer&&this.ms&&!this.ms.sliding?clamp((1-SDHitbox.scaleOf(this.ms.eye))/(1-MOVE.eyeCrouch/MOVE.eyeStand),0,1):0,slide:this.trainer&&this.ms&&this.ms.sliding?clamp((MOVE.eyeStand-this.ms.eye)/(MOVE.eyeStand-MOVE.eyeSlide),0,1):0,air:this.trainer&&this.ms&&!this.ms.onGround,dead:this.alive?0:Math.min(1,this.deadT/0.5),
       // GF-2: the shot's kick, then the bolt like the online rival (its next shot is 1.6 s away or more: same timing)
-      fire:this.fireT,bolt:this.alive&&this.fireT<HALCON.bolt?this.fireT/HALCON.bolt:0,hit:this.hitT,hitPart:this.hitPart,hitX:this.hitX,hitZ:this.hitZ,deathFront:this.deathFront},dt);
+      fire:this.fireT,bolt:this.alive&&this.fireT<HALCON.bolt?this.fireT/HALCON.bolt:0,hit:this.hitT,hitPart:this.hitPart,hitX:this.hitX,hitZ:this.hitZ,deathFront:this.deathFront,slide2:SLIDE2.on},dt);   // the training bots slide like you (offline)
   }
   update0(dt){
     const g=this.g;
@@ -4140,7 +4186,7 @@ function pickPlayerSpawn(){
 }
 function respawnPlayer(){
   clearPendingInput();
-  const n=mode==='range'?RANGE.spawn:(WORLD_ID==='casa'||C2S[WORLD_ID]||WORLD_ID==='barrio')&&STATS.deaths===0&&STATS.kills===0&&mode!=='online'?WORLDS[WORLD_ID].spawns[0]:pickPlayerSpawn();
+  const n=mode==='range'?RANGE.spawn:WORLD_ID==='pruebas'?WORLDS.pruebas.spawns[0]:(WORLD_ID==='casa'||C2S[WORLD_ID]||WORLD_ID==='barrio')&&STATS.deaths===0&&STATS.kills===0&&mode!=='online'?WORLDS[WORLD_ID].spawns[0]:pickPlayerSpawn();
   Object.assign(PM,SDMovement.createState(n.x,0,n.z));PMprev.x=n.x;PMprev.y=0;PMprev.z=n.z;
   P.yaw=mode==='range'?Math.PI:Math.atan2(n.x,n.z);P.pitch=0;P.hp=100;P.alive=true;P.deadT=0;P.roll=0;
   P.breath=1;P.exhausted=0;P.holding=false;
@@ -4450,7 +4496,7 @@ function penBox(m){
   I=null;const g=m.geometry,p=g&&g.parameters;
   if(g&&g.type==='BoxGeometry'&&p){
     m.updateMatrixWorld(true);m.matrixWorld.decompose(_pc,_pq,_ps);_pe.setFromQuaternion(_pq,'YXZ');
-    const hx=p.width*_ps.x/2,hy=p.height*_ps.y/2,hz=p.depth*_ps.z/2,surf=m.material===MAT.crate||m.userData.penSurf==='crate'?'crate':(m.userData.surf||'');
+    const hx=p.width*_ps.x/2,hy=p.height*_ps.y/2,hz=p.depth*_ps.z/2,surf=m.material===MAT.crate?'crate':(m.userData.penSurf||m.userData.surf||surfaceOf(m));
     const cls=Math.abs(_pe.x)<1e-3&&Math.abs(_pe.z)<1e-3?SDPen.classify(surf,2*Math.min(hx,hy,hz)):null;
     if(cls)I={cls,surf,box:{cx:_pc.x,cy:_pc.y,cz:_pc.z,hx,hy,hz,yaw:_pe.y}};
   }
@@ -4501,6 +4547,18 @@ function flushPellets(){
   }
   PELLET_HITS.clear();updateRangeHud();
 }
+/* RAYOS X (09-11-2026, solo en el MAPA DE PRUEBAS y sin conexión): las zonas de impacto de cada bot (las cajas que
+   cuentan para la bala) se ven a través de las paredes, en rojo la cabeza y en naranja el cuerpo. ?rayosx=0 las quita. */
+{const q=location.search.match(/[?&]rayosx=([01])\b/);if(q)store.set('rayosxOff',q[1]==='0');}
+const XRAY={on:store.get('rayosxOff',false)!==true,head:new T.MeshBasicMaterial({color:0xff3b2f,transparent:true,opacity:0.45,depthTest:false,depthWrite:false}),
+  body:new T.MeshBasicMaterial({color:0xff9a2b,transparent:true,opacity:0.32,depthTest:false,depthWrite:false})};
+function xrayFrame(){
+  const on=XRAY.on&&WORLD_ID==='pruebas'&&mode!=='online';
+  for(const b of BOTS){
+    if(!b.xr){if(!on)continue;b.xr=new T.Group();for(const h of b.hit){const m=new T.Mesh(h.geometry,h.userData.part==='head'?XRAY.head:XRAY.body);m.position.copy(h.position);m.rotation.copy(h.rotation);m.scale.copy(h.scale);m.renderOrder=999;m.frustumCulled=false;b.xr.add(m);}b.hitG.add(b.xr);}
+    b.xr.visible=on&&b.alive&&b.g.visible;
+  }
+}
 function bulletHit(h,b){
   const ud=h.object.userData;const dist=b.dist;
   if(ud.remote)return; // online: a predicted hit is not a confirmed one (the server sends the hit)
@@ -4521,6 +4579,7 @@ function bulletHit(h,b){
     SFX.thwack(soundDelay(dist));
     if(killed)onKill(bot,part==='head',dist);
     else if(!through){hitmarker('body');SFX.hitTick();callout('IMPACTO','−'+dmg+' · '+Math.round(dist)+' m',false,true);}
+    else if(WORLD_ID==='pruebas'){hitmarker('body');callout('A TRAVÉS · '+(STATS.lastPen?STATS.lastPen.surf.toUpperCase():''),'−'+dmg+' ('+Math.round(b.pen.mul*100)+' % del daño) · '+part,false,true);}
   }else impactFX(h,b.shot&&(b.shot.snd=(b.shot.snd||0)+1)>2?undefined:dist,b.shot?0.6:(b.cfg===PCFG?0.8:1));   // pellets: only the first two make a sound
   updateRangeHud();
 }
@@ -5164,7 +5223,7 @@ function checkOrientation(){
 function setDiff(d){diff=d;store.set('diff',d);document.querySelectorAll('#diffSeg button').forEach(b=>b.setAttribute('aria-pressed',String(+b.dataset.d===d)));}
 document.querySelectorAll('#diffSeg button').forEach(b=>b.addEventListener('click',()=>{setDiff(+b.dataset.d);audioInit();SFX.ui();}));
 setDiff(diff);
-const MODE_SUB={duel:'Pueblo abandonado. Tú contra bots francotiradores. Gana el primero que llegue a 10 bajas. Fíjate en el destello de sus miras: es lo único que te avisa antes del disparo.',
+const MODE_SUB={duelPruebas:'PRUEBAS: 10 paredes de prueba (caja, madera, chapa, yeso, hormigón de 30, 50 y 60 cm, columna de 1 m, sacos y dos tabiques) con un bot quieto detrás de cada una. Con rayos X ves dónde está y el daño de cada impacto. Activa BALA DURA en ARMAS para comparar.',duel:'Pueblo abandonado. Tú contra bots francotiradores. Gana el primero que llegue a 10 bajas. Fíjate en el destello de sus miras: es lo único que te avisa antes del disparo.',
   duelCasa:'CASA ATLAS (EXPERIMENTAL): un piso de 18 × 14 m con salón, cocina, dormitorio, baño, estudio, comedor y balcón. Combate a corta distancia contra 1 bot (2 en ÉLITE). Gana el primero que llegue a 10 bajas. El cristal no para las balas.',
   duelCasa2:'CASA ATLAS 2.0: cuatro pisos de CASA ATLAS unidos por un callejón, un patio central y dos pasillos laterales, en 42 × 33 m. Rutas por dentro, por el patio y por los flancos, y líneas de tiro de hasta 40 m. Contra 2 bots (3 en ÉLITE); también online.',
   duelCasa2b:'CASA ATLAS 2.0 (nueva): los cuatro pisos espalda con espalda en dos casas grandes unidas por dentro (comedores y cocinas), un patio despejado de casa a casa con una pérgola y 5 coberturas, y pasillos por los flancos. Contra 2 bots (3 en ÉLITE).',
@@ -5180,7 +5239,7 @@ if(C2B.exp)document.querySelectorAll('#mapSeg [data-map=casa2],#mpMapSeg [data-m
 if(C2J.exp)document.querySelectorAll('#mapSeg [data-map=casa2],#mpMapSeg [data-map=casa2]').forEach(b=>{b.dataset.map='casa2c';b.textContent='CASA ATLAS 2.0 · JARDÍN';});
 if(C2.exp)document.querySelectorAll('#mapSeg [data-map^=casa2],#mpMapSeg [data-map^=casa2]').forEach(b=>b.hidden=false);
 if(BAR.exp)document.querySelectorAll('#mapSeg [data-map=barrio],#mpMapSeg [data-map=barrio]').forEach(b=>b.hidden=false);
-const subKey=(m,id)=>m==='duel'&&id==='arena'?'duelArena':m==='duel'&&id==='casa'?'duelCasa':m==='duel'&&id==='casa2'?'duelCasa2':m==='duel'&&id==='casa2b'?'duelCasa2b':m==='duel'&&id==='casa2c'?'duelCasa2c':m==='duel'&&id==='barrio'?'duelBarrio':m;
+const subKey=(m,id)=>m==='duel'&&id==='pruebas'?'duelPruebas':m==='duel'&&id==='arena'?'duelArena':m==='duel'&&id==='casa'?'duelCasa':m==='duel'&&id==='casa2'?'duelCasa2':m==='duel'&&id==='casa2b'?'duelCasa2b':m==='duel'&&id==='casa2c'?'duelCasa2c':m==='duel'&&id==='barrio'?'duelBarrio':m;
 const offWorld=()=>mode==='range'?'pueblo':OFFMAP;
 function setOffMap(id){OFFMAP=id;store.set('offMap',id);document.querySelectorAll('#mapSeg button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.map===id)));if(mode!=='online')$('#modeSub').textContent=MODE_SUB[subKey(mode,id)];if(state==='menu')setWorld(offWorld());}
 function setMode(m){mode=m;store.set('mode',m);$('#rangeBlock').hidden=m!=='range';$('#mapBlock').hidden=m==='range';document.querySelectorAll('#modeSeg button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.m===m)));$('#modeSub').textContent=MODE_SUB[subKey(m,OFFMAP)];$('#diffBlock').hidden=m==='range';if(state==='menu')setWorld(offWorld());}
@@ -5234,7 +5293,7 @@ function startMatch(){
   {const S=C2S[WORLD_ID];if(S&&!S.ready&&!S.failed){$('#modeSub').textContent='Cargando CASA ATLAS 2.0…';if(!S.wait.includes(startMatch))S.wait.push(startMatch);casa2Load(S.id);return;}}
   if(WORLD_ID==='casa'&&!CASA.ready&&!CASA.failed){$('#modeSub').textContent='Cargando CASA ATLAS…';if(!CASA.wait.includes(startMatch))CASA.wait.push(startMatch);casaLoad();return;}
   // the arena is small: fewer bots (2, or 3 on ÉLITE); CASA ATLAS is a 1v1 flat: 1 bot (2 on ÉLITE)
-  let nBots=WORLD_ID==='arena'||C2S[WORLD_ID]||WORLD_ID==='barrio'?Math.min(df.bots,diff===2?3:2):WORLD_ID==='casa'?Math.min(df.bots,diff===2?2:1):df.bots;
+  let nBots=WORLD_ID==='pruebas'?PRUEBAS.slots.length:WORLD_ID==='arena'||C2S[WORLD_ID]||WORLD_ID==='barrio'?Math.min(df.bots,diff===2?3:2):WORLD_ID==='casa'?Math.min(df.bots,diff===2?2:1):df.bots;
   if(PJ_MIX&&WORLD_ID!=='casa')nBots=Math.max(nBots,MIX_ORDER.length);   // ?pj=mix: los 4 tipos de personaje a la vez
   while(BOTS.length<nBots)BOTS.push(new Bot(BOTS.length));
   while(DUMMIES.length<RANGE_SLOTS.length)DUMMIES.push(new Bot(DUMMIES.length,RANGE_SLOTS[DUMMIES.length]));
@@ -5291,6 +5350,11 @@ window.addEventListener('blur',()=>{if(isTouch)pause();});window.addEventListene
 
 /* =================== SIMULATION TICK (fixed 120 Hz) =================== */
 let slowmo=0;
+/* DESLIZAMIENTO DE VERDAD (09-11-2026, client/soldier2.js slidePose): en tu 3ª persona sin conexión el operador se
+   desliza con las piernas por delante. En línea, todavía el de siempre (el rival se ve como su caja de impacto, la del
+   servidor, hasta que el propietario apruebe la caja nueva: core/hitbox.js SLIDE). ?desliz=0 vuelve al de antes. */
+{const q=location.search.match(/[?&]desliz=([01])/);if(q)store.set('deslizOld',q[1]==='0');}
+const SLIDE2={on:store.get('deslizOld',false)!==true};
 const VM={sprintW:0,sprintPose:0,slideW:0,airW:0,crouchW:0,deadW:0,land:0,landV:0,eye:MOVE.eyeStand};
 function syncFromSim(){
   P.pos.set(PM.x,PM.y,PM.z);P.vel.set(PM.vx,PM.vy,PM.vz);P.onGround=PM.onGround;P.crouch=PM.crouch;
@@ -5548,7 +5612,7 @@ function selfFrame(dt,px,py,pz){
   SELF.relW+=((G.state==='reload'?1:0)-SELF.relW)*Math.min(1,dt*8);
   const relDur=wp==='pistol'?PCFG.reload:GUNCFG.reload,SH=SCFG.shells;
   const relPh=G.state!=='reload'?0:wp==='shotgun'?(G.t<SH.start?0:((G.t-SH.start)%SH.each)/SH.each):clamp(G.t/relDur,0,1);
-  animateSoldier(R,{far:false,vx:vx*c-vz*s,vz:vx*s+vz*c,crouch:cr,slide,air:!PM.onGround&&P.alive,sprint:!!PM.sprinting,aim:G.ads||0,
+  animateSoldier(R,{far:false,vx:vx*c-vz*s,vz:vx*s+vz*c,crouch:cr,slide,slide2:SLIDE2.on&&mode!=='online',air:!PM.onGround&&P.alive,sprint:!!PM.sprinting,aim:G.ads||0,
     pitch:P.pitch,wpn:wp,reload:SELF.relW,relPh,bolt:wp==='rifle'&&WCORE.state==='bolt'?clamp(WCORE.t/GUNCFG.bolt,0,1):0,
     stab:0,dead:P.alive?0:Math.min(1,SELF.deadT/0.5),fire:SELF.fireT,hit:SELF.hitT,hitPart:SELF.hitPart,hitX:SELF.hitX,hitZ:SELF.hitZ,deathFront:SELF.deathFront},dt);
   SELF.g.rotation.x=R.v2||P.alive?0:-ss((SELF.deadT-0.12)/0.5)*Math.PI/2*0.95;
@@ -6939,9 +7003,10 @@ const M2={on:store.get('menuOld',false)!==true&&typeof SDMenu2!=='undefined',tab
   room:null,cam:null,pivot:null,R:null,held:null,show:null,spin:null,item:null,showLight:null,
   n:0,yaw:0,yawV:0,wYaw:0,wYawV:0,drag:null,lastDrag:0,t:0,sig:'',wsig:'',held0:null,frame:{dist:5,ox:0,oy:0},cur:null,propose:false};
 const m2MapImg=id=>av('assets/menu/mapa_'+(/^casa2/.test(id)?'casa2':id)+'.jpg?v='+BUILD_HASH);
+const M2_PRUEBAS={id:'pruebas',name:'PRUEBAS',sub:'Paredes de prueba con bots quietos detrás · rayos X · BALA DURA',online:false};
 const M2_BARRIO={id:'barrio',name:'BARRIO',sub:'Calle entre dos filas de edificios · garajes abandonados y torres de fondo · 56 × 40 m',online:true};
 const M2_MAPS=typeof SDMenu2!=='undefined'?SDMenu2.MAPS.filter(m=>m.id==='arena'||m.id==='pueblo'||(m.id==='casa'&&CASA.exp)||(m.id==='casa2'&&C2.exp)).map(m=>m.id==='casa2'&&C2B.exp?Object.assign({},m,{id:'casa2b',name:'CASA ATLAS 2.0 · NUEVA',sub:'Dos casas grandes unidas por dentro · patio despejado y pérgola · 40 × 33 m'}):
-  m.id==='casa2'&&C2J.exp?Object.assign({},m,{id:'casa2c',name:'CASA ATLAS 2.0 · JARDÍN',sub:'Las dos casas desplazadas, con tejados, porches y césped · 44 × 33 m'}):m).concat(BAR.exp?[M2_BARRIO]:[]):[];
+  m.id==='casa2'&&C2J.exp?Object.assign({},m,{id:'casa2c',name:'CASA ATLAS 2.0 · JARDÍN',sub:'Las dos casas desplazadas, con tejados, porches y césped · 44 × 33 m'}):m).concat(BAR.exp?[M2_BARRIO]:[]).concat([M2_PRUEBAS]):[];
 const M2_DIFF=['RECLUTA','VETERANO','ÉLITE'],M2_TRAIN={off:'Dianas fijas y móviles',easy:'Bots de entrenamiento · FÁCIL',normal:'Bots de entrenamiento · NORMAL',hard:'Bots de entrenamiento · DIFÍCIL'};
 const m2MapName=id=>{const m=SDMenu2.MAPS.find(x=>x.id===id);return m?m.name:String(id).toUpperCase();};
 function m2Btn(cls,img,name,small,on){const c=document.createElement('button');c.type='button';c.className=cls;
@@ -7345,7 +7410,7 @@ function gsStatsHTML(){
 }
 function gsPasHTML(){
   const on=PEN.hard;
-  return '<em>'+(on?'ACTIVA · CONTRA BOTS':'CONTRA BOTS · EN LÍNEA TODAVÍA NO')+'</em><b>BALA DURA</b><small>Atraviesa un tabique (yeso de hasta 20 cm) con la mitad del daño; nunca hormigón, muros de carga ni los límites del mapa, ni dos paredes. Sin ella, cualquier rifle ya atraviesa cajas, madera fina y chapa (75 % del daño). Un impacto a través de una pared no da marcador.</small>'+
+  return '<em>'+(on?'ACTIVA · CONTRA BOTS':'CONTRA BOTS · EN LÍNEA TODAVÍA NO')+'</em><b>BALA DURA</b><small>Atraviesa una pared de hasta 50 cm (la mitad de la columna de ARENA), del material que sea: del 70 % del daño con una fina al 40 % con una de 50 cm. Nunca dos paredes, sacos, edificios macizos ni el borde del mapa. Sin ella, cualquier rifle ya atraviesa cajas, madera fina y chapa (75 % del daño). Un impacto a través de una pared no da marcador.</small>'+
     '<button type="button" class="gsPasT" data-pas="dura" aria-pressed="'+on+'">'+(on?'QUITAR':'ACTIVAR')+'</button>';
 }
 // ---- what is chosen, on screen
@@ -7441,6 +7506,7 @@ function frameBody(now){
     if(pf)PROF.c.ticks=(PROF.c.ticks||0)+n;
     pmark('sim');
     for(const b of activeBots())if(b.animFrame)b.animFrame();
+    xrayFrame();
     pmark('botsAnim');
     updateCamera(rdt,clamp(simAcc/TICK_DT,0,1));
     pmark('camara');
@@ -7787,6 +7853,6 @@ if(FLORA.on){const gl=new T.GLTFLoader();let n=2;
       if(P3W.kit)later();else{const w=setInterval(()=>{if(P3W.kit){clearInterval(w);later();}},300);}}}}
 function floraFlush(){if(FLORA.go)FLORA.go();}
 
-window.__SD={get GUNCFG(){return GUNCFG;},PEN,penBox,spawnBullet,updateBullets,HALCON,BAL,rifleCfgFor,applyRifleCfg,gsGun,SIL,silCfg,silSaved,SFX,GUN,camLight,get gameTime(){return gameTime;},GSI,gsiDone,gsiRender,M2,m2Tab,m2Sync,m2Sleep,openSettings,closeSettings,MIRA,setMira,miraApply,miraClipGeo,miraRifle,openMiras,closeMiras,updateReticle,ENV,MOVE_CLASSIC,MOV_CLASSIC,VIS,VIS_COL,VIS_HULL,visOn,visFrame,visWho,selfHit,PROF,KTX2,R2_ON,R2_URL,PIC,GYRO,gyroEv,crossApply,btnPress,settingsChanged,perfTexMB(){const t=perfTextures();return {real:SDPerf.textureMB(t),asRGBA:SDPerf.textureMB(t.map(x=>Object.assign({},x,{bytes:0})))};},REMOTES,netScoreHud,shotTargets,MINI,miniLayer,miniPing,clockFrame,setOffTime,get OFF_TIME(){return OFF_TIME;},ACC,accRefresh,INV,invSync,camoApply,openInv,invOpenBox,WSKIN,WS_ST,setWskin,get RIF(){return RIF;},TPV,SELF,get PROFILE(){return PROFILE;},openProfile,endMatch,PJ_MIX,MIX_ORDER,SKINS,get SKIN(){return SKIN;},setSkin,pj2SetPack,rivalSkin,PERF,perfRun,HUD2,get H2(){return HUD2?H2:null;},leanIn:HUD2?leanIn:null,h2Frame:HUD2?h2Frame:null,PJ2,pj2Load,CASA,casaLoad,C2,C2B,C2J,C2S,casa2Load,BAR,barrioLoad,FLORA,RATS,RAT_WORLD,ratsFrame,SHADOW_FADE,setDuelLethal,get DUEL_LETHAL(){return DUEL_LETHAL;},gfxDiagText,get P3ON(){return P3ON;},COBCC,damagePlayer,TEX,sunFollow,setSunSnap(on){SUN_SNAP=!!on;},sun,P0,E10,e10Lod,DIAG,setTrainMove,LIGHT:{sun,hemi,skyMat,LOOK,P3},P3W,freeze(on){SIM_FREEZE=!!on;},SHOT,VMA,makeSoldier,animateSoldier,BOT_MAT,scene,camera,RemotePlayer,PMprev,PIS,PROOT,RIF,WROOT,SHO_:null,MANUAL,advance(ms){frameBody(last+ms);},get LAST_PELLETS(){return LAST_PELLETS;},SCORE,SCFG,SROOT,SHO,setPrimaryChoice,get PRIMARY(){return PRIMARY;},PCORE,PCFG,setWorld,WORLDS,get WORLD_ID(){return WORLD_ID;},renderer,GFX,gfxApply,get NET(){return NET;},get REMOTE(){return REMOTE;},W,get NAV(){return NAV;},setOffMap,get OFFMAP(){return OFFMAP;},TOUCH,EDIT,openEditor,get SETTINGS(){return SETTINGS;},get LAYOUT(){return LAYOUT;},checkOrientation,MAT,LOAD,TRAINERS,get RANGE_BOTS(){return RANGE_BOTS;},TRAIN,setTrain,setLethal,kitNote,GINS,TDIAG,AU,get TOUCH_EVENTS(){return TOUCH_EVENTS;},impactFX,bodyFX,get DECALS(){return DECALS;},surfaceOf,soundDelay,aimSelfTest,P,PM,WS,WCORE,RECOIL,AIM,BOTS,DUMMIES,BULLETS,EVENTS,PARTS,STATS,get state(){return state;},get mode(){return mode;},setMode,input,startMatch,simTick,frame,toMenu,pause,resume};
+window.__SD={get GUNCFG(){return GUNCFG;},PRUEBAS,XRAY,xrayFrame,SLIDE2,PEN,penBox,spawnBullet,updateBullets,HALCON,BAL,rifleCfgFor,applyRifleCfg,gsGun,SIL,silCfg,silSaved,SFX,GUN,camLight,get gameTime(){return gameTime;},GSI,gsiDone,gsiRender,M2,m2Tab,m2Sync,m2Sleep,openSettings,closeSettings,MIRA,setMira,miraApply,miraClipGeo,miraRifle,openMiras,closeMiras,updateReticle,ENV,MOVE_CLASSIC,MOV_CLASSIC,VIS,VIS_COL,VIS_HULL,visOn,visFrame,visWho,selfHit,PROF,KTX2,R2_ON,R2_URL,PIC,GYRO,gyroEv,crossApply,btnPress,settingsChanged,perfTexMB(){const t=perfTextures();return {real:SDPerf.textureMB(t),asRGBA:SDPerf.textureMB(t.map(x=>Object.assign({},x,{bytes:0})))};},REMOTES,netScoreHud,shotTargets,MINI,miniLayer,miniPing,clockFrame,setOffTime,get OFF_TIME(){return OFF_TIME;},ACC,accRefresh,INV,invSync,camoApply,openInv,invOpenBox,WSKIN,WS_ST,setWskin,get RIF(){return RIF;},TPV,SELF,get PROFILE(){return PROFILE;},openProfile,endMatch,PJ_MIX,MIX_ORDER,SKINS,get SKIN(){return SKIN;},setSkin,pj2SetPack,rivalSkin,PERF,perfRun,HUD2,get H2(){return HUD2?H2:null;},leanIn:HUD2?leanIn:null,h2Frame:HUD2?h2Frame:null,PJ2,pj2Load,CASA,casaLoad,C2,C2B,C2J,C2S,casa2Load,BAR,barrioLoad,FLORA,RATS,RAT_WORLD,ratsFrame,SHADOW_FADE,setDuelLethal,get DUEL_LETHAL(){return DUEL_LETHAL;},gfxDiagText,get P3ON(){return P3ON;},COBCC,damagePlayer,TEX,sunFollow,setSunSnap(on){SUN_SNAP=!!on;},sun,P0,E10,e10Lod,DIAG,setTrainMove,LIGHT:{sun,hemi,skyMat,LOOK,P3},P3W,freeze(on){SIM_FREEZE=!!on;},SHOT,VMA,makeSoldier,animateSoldier,BOT_MAT,scene,camera,RemotePlayer,PMprev,PIS,PROOT,RIF,WROOT,SHO_:null,MANUAL,advance(ms){frameBody(last+ms);},get LAST_PELLETS(){return LAST_PELLETS;},SCORE,SCFG,SROOT,SHO,setPrimaryChoice,get PRIMARY(){return PRIMARY;},PCORE,PCFG,setWorld,WORLDS,get WORLD_ID(){return WORLD_ID;},renderer,GFX,gfxApply,get NET(){return NET;},get REMOTE(){return REMOTE;},W,get NAV(){return NAV;},setOffMap,get OFFMAP(){return OFFMAP;},TOUCH,EDIT,openEditor,get SETTINGS(){return SETTINGS;},get LAYOUT(){return LAYOUT;},checkOrientation,MAT,LOAD,TRAINERS,get RANGE_BOTS(){return RANGE_BOTS;},TRAIN,setTrain,setLethal,kitNote,GINS,TDIAG,AU,get TOUCH_EVENTS(){return TOUCH_EVENTS;},impactFX,bodyFX,get DECALS(){return DECALS;},surfaceOf,soundDelay,aimSelfTest,P,PM,WS,WCORE,RECOIL,AIM,BOTS,DUMMIES,BULLETS,EVENTS,PARTS,STATS,get state(){return state;},get mode(){return mode;},setMode,input,startMatch,simTick,frame,toMenu,pause,resume};
 })();
 </script>

@@ -11,6 +11,7 @@ Detalle de cada cambio (antes/después, medidas, cómo revertir): `docs/next-lev
 ### Siguiente prioridad
 | Tarea | Quién la desbloquea | Estado |
 |---|---|---|
+| **DESLIZAMIENTO, MAPA DE PRUEBAS y RAYOS X** (09-11) — contra bots: deslizarte en 3ª persona (tecla V) con cada operador; MAPAS › PRUEBAS con y sin BALA DURA; decir si te valen los daños (75 % fino, 70→40 % BALA DURA) y si la caja nueva del deslizamiento va al online | Propietario | PUBLICADO SOLO SIN CONEXIÓN · NECESITA SU APROBACIÓN PARA EL ONLINE |
 | **PENETRACIÓN y BALA DURA** (09-11) — contra bots: disparar a un bot detrás de una caja (PUEBLO) o de un tabique (CASA ATLAS, con BALA DURA en ARMAS); decir si el 75 % / 50 % de daño te vale y si se lleva al online | Propietario | PUBLICADO SOLO SIN CONEXIÓN · NECESITA SU APROBACIÓN PARA EL ONLINE |
 | **CAMUFLAJE EN VIVO, MAPAS y MILITAR** (09-11) — en el PC y en el móvil: ARMAS › CAMUFLAJE (tira abajo, se ve al momento), la TÁCTICA con camuflaje, la REJILLA DE ORO nueva, el silenciador del TITÁN, MAPAS con BARRIO y las rodillas del MILITAR | Propietario | PUBLICADO · PENDIENTE DE SU PRUEBA |
 | **RIFLES DISTINTOS y SILENCIADOR** (09-11) — probar contra bots los 5 rifles (TITÁN pesado, VECTOR rápido…) y el silenciador (ARMAS › SILENCIADOR), comparar con `?balance=0`; decir si se llevan al online | Propietario | PUBLICADO SOLO SIN CONEXIÓN · PENDIENTE DE SU PRUEBA |
@@ -94,6 +95,25 @@ Detalle de cada cambio (antes/después, medidas, cómo revertir): `docs/next-lev
 | Encargos para ChatGPT: CASA XL, CASA XL v2 y personaje | 18-10 / 19-10 |
 | Personaje 3D rev. 03 hecho por Claude e integrado tras `?pj=2` (bots y rival online) | 20-10 · directo a `main` |
 | Personajes realistas + elegir personaje (con el SOLDADO de `?pj=2`) y HUD 2 por defecto (aprobado en iPhone y PC) | 28-10 · directo a `main` |
+
+## 09-11-2026 (noche) — Deslizamiento de verdad, BALA DURA por grosor, MAPA DE PRUEBAS con RAYOS X
+Del propietario:
+- un deslizamiento de verdad para los cuatro operadores, sin tocar la mecánica (eligió «caja nueva»);
+- la espalda al correr en 3ª persona;
+- BALA DURA con la columna de ARENA como referencia («la mitad, sí; toda, no»);
+- un mapa de pruebas con bots quietos tras paredes, y rayos X.
+
+Hecho:
+- **Deslizamiento:** postura calculada para los 4 operadores, solo sin conexión.
+  - Caja de impacto nueva en `core/hitbox.js`, sin usar por el servidor. **Necesita su OK para el online.**
+- **BALA DURA:** paredes de hasta 50 cm de cualquier material, con el daño según el grosor (70 % → 40 %).
+  **Cifras propuestas.**
+- **MAPAS › PRUEBAS:** 10 paredes con rótulo y un bot quieto detrás de cada una. Rayos X y el daño de cada impacto.
+- **Espalda del MILITAR: causa encontrada (un panel del chaleco atado a la cadera), SIN ARREGLAR.** Cinco intentos
+  devueltos a lo publicado.
+- **Estado:** PROBADO EN NAVEGADOR (PC con GPU) · PENDIENTE DE SU PRUEBA.
+- **Siguiente (pedido el 09-11):** categorías en ARMAS (asalto, subfusil, francotirador, de mano, granadas…) y la M16,
+  con el material de `COSAS DEL JUEGO/MATERIAL 09 11`. Antes de usar cada modelo hay que comprobar su licencia.
 
 ## 09-11-2026 — PENETRACIÓN de serie y BALA DURA, contra bots
 Lo pidió el propietario el 08-11: de serie, la bala atraviesa cajas, madera fina y chapa; BALA DURA, una pared media

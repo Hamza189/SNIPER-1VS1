@@ -285,9 +285,59 @@ const SDSoldier2 = (() => {
     return { pitch: pitch * a, yaw: yaw * a, head: head * a };
   }
 
+  /* DESLIZAMIENTO DE VERDAD (09-11-2026, el propietario: «hazme animaciones de deslizamiento para SOLDADO, SWAT, FSB y
+     MILITAR»): el clip 'slide' de los GLB solo encoge el cuerpo (su morph cabe en la caja de impacto de siempre). Con
+     st.slide2 la postura se calcula aquí, sobre el esqueleto de 26 huesos que comparten los cuatro: cadera baja y
+     echada atrás, pierna derecha estirada por delante, la izquierda doblada debajo, el pecho algo atrás con el arma y la
+     cabeza mirando al frente; los pies, a ras de suelo. Direcciones en el marco del personaje (+z delante, +x izquierda).
+     Solo aspecto: la caja de impacto que le corresponde es core/hitbox.js SLIDE (el servidor no la usa todavía). */
+  const SLIDE = { hipsY: 0.36, hips: 0.38, chest: 0.16, head: 0.30, foot: 0.06,
+    R: [[0, -0.28, 0.96], [0, -0.30, 0.95], [0, 0.55, 0.83]],
+    L: [[0.42, -0.40, 0.81], [-0.12, -0.32, -0.94], [-0.05, -0.15, -0.99]] };
+  let _s1, _s2, _s3, _sq1, _sq2, _sq3;
+  function slideBones(I) {
+    if (I.sb !== undefined) return I.sb;
+    const g = n => I.root.getObjectByName(n), b = { spine1: g('Spine1'), spine2: g('Spine2'), neck: g('Neck'), head: g('Head') };
+    for (const sd of ['Left', 'Right']) for (const pt of ['UpLeg', 'Leg', 'Foot', 'ToeBase']) b[sd + pt] = g(sd + pt);
+    return (I.sb = I.hips && Object.values(b).every(Boolean) ? b : null);
+  }
+  // turn bone b so that the line to its child c points along dir (character frame), by w (0..1)
+  function aimBone(I, b, c, dir, w) {
+    b.updateWorldMatrix(true, true);
+    b.getWorldPosition(_s1); c.getWorldPosition(_s2); _s2.sub(_s1);
+    if (_s2.lengthSq() < 1e-10) return;
+    _s2.normalize(); I.root.getWorldQuaternion(_sq3); _s3.set(dir[0], dir[1], dir[2]).normalize().applyQuaternion(_sq3);
+    _sq1.setFromUnitVectors(_s2, _s3); _sq2.identity().slerp(_sq1, w);
+    b.getWorldQuaternion(_sq3); _sq3.premultiply(_sq2);
+    b.parent.getWorldQuaternion(_sq1); b.quaternion.copy(_sq1.invert().multiply(_sq3));
+  }
+  function hipsTo(I, y, w) {   // the hips' height above the feet of the character (its own frame), by w
+    I.hips.parent.updateWorldMatrix(true, false); I.hips.getWorldPosition(_s1); I.root.worldToLocal(_s1);
+    _s1.y += (y - _s1.y) * w; I.root.localToWorld(_s1); I.hips.parent.worldToLocal(_s1); I.hips.position.copy(_s1);
+  }
+  function slidePose(I, w) {
+    const b = slideBones(I); if (!b || w <= 1e-3) return;
+    const T = I.T; if (!_s1) { _s1 = new T.Vector3(); _s2 = new T.Vector3(); _s3 = new T.Vector3(); _sq1 = new T.Quaternion(); _sq2 = new T.Quaternion(); _sq3 = new T.Quaternion(); }
+    hipsTo(I, SLIDE.hipsY, w);
+    turnBone(I, I.hips, _X, -SLIDE.hips * w);                // the pelvis back
+    turnBone(I, b.spine2, _X, SLIDE.chest * w);              // the chest comes up a little (the weapon looks ahead)
+    turnBone(I, b.neck, _X, SLIDE.head * w);                 // and the head looks ahead
+    for (const [sd, D] of [['Right', SLIDE.R], ['Left', SLIDE.L]]) {
+      aimBone(I, b[sd + 'UpLeg'], b[sd + 'Leg'], D[0], w); aimBone(I, b[sd + 'Leg'], b[sd + 'Foot'], D[1], w); aimBone(I, b[sd + 'Foot'], b[sd + 'ToeBase'], D[2], w);
+    }
+    // the lowest foot on the ground (each character's legs are a little different)
+    let lo = Infinity;
+    for (const k of ['LeftFoot', 'RightFoot', 'LeftToeBase', 'RightToeBase']) { b[k].updateWorldMatrix(true, false); b[k].getWorldPosition(_s1); I.root.worldToLocal(_s1); lo = Math.min(lo, _s1.y); }
+    if (isFinite(lo)) { I.hips.getWorldPosition(_s1); I.root.worldToLocal(_s1); hipsTo(I, _s1.y + clamp(SLIDE.foot - lo, -0.15, 0.15), w); }
+  }
+
   function update(I, st, dt) {
     const B = blend(I.bl || (I.bl = {}), st, dt), q = blended(B, st);
     const P = plan(q), clips = I.tpl.clips, used = new Set();
+    // st.slide2: the shrinking 'slide' clip gives way to the standing poses, and slidePose() does the rest
+    const s2 = st.slide2 && P.full.slide ? P.full.slide : 0;
+    if (s2) { delete P.full.slide; P.lower.idle_rifle = (P.lower.idle_rifle || 0) + s2;
+      const u = st.wpn === 'pistol' ? 'idle_pistol' : st.wpn === 'knife' ? 'idle_knife' : 'idle_rifle'; P.upper[u] = (P.upper[u] || 0) + s2; }
     const crouchT = P.crouch > 0.5, spr = (P.full.sprint || 0) > 0.5;
     // piernas: qué clip de marcha y cuánto giran (suavizado: ~0,1 s al cambiar de dirección)
     const DIRS = ['fwd', 'back', 'left', 'right'];
@@ -343,10 +393,11 @@ const SDSoldier2 = (() => {
     const K = recoil(q);
     if (I.spine2) { if (Math.abs(K.pitch) > 1e-4) turnBone(I, I.spine2, _X, -K.pitch); if (Math.abs(K.yaw) > 1e-4) turnBone(I, I.spine2, _Y, K.yaw); }
     if (I.head && K.head > 1e-4) turnBone(I, I.head, _X, -K.head);
-    P.blend = B; P.recoil = K;
+    if (s2) slidePose(I, s2);
+    P.blend = B; P.recoil = K; P.slide2 = s2;
     return P;
   }
 
-  return { plan, blend, blended, recoil, sprintOk, shellT, gait, legPlan, template, create, update, setLod, cloneSkinned, yawBone, AIM_OFFSET, LOWER_BONES, BLEND, KICK };
+  return { plan, blend, blended, recoil, sprintOk, shellT, gait, legPlan, template, create, update, setLod, cloneSkinned, yawBone, AIM_OFFSET, LOWER_BONES, BLEND, KICK, SLIDE };
 })();
 if (typeof module !== 'undefined' && module.exports) module.exports = SDSoldier2;

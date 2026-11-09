@@ -115,7 +115,7 @@ const wait = (p, fn, arg, ms) => p.waitForFunction(fn, arg, { timeout: ms || 120
       const out = { ids: cards.map(c => c.dataset.map).join(), imgs: cards.every(c => c.querySelector('img').naturalWidth >= 640) };
       document.querySelector('#m2Maps [data-map=pueblo]').click(); out.off = __SD.OFFMAP; out.world = __SD.WORLD_ID; out.pressed = document.querySelector('#m2Maps [aria-pressed=true]').dataset.map;
       out.sub = document.getElementById('m2SubDuel').textContent; document.querySelector('#m2Maps [data-map=arena]').click(); return out; });
-    check('las tarjetas de los mapas del juego, con su vista real', maps.ids === 'arena,pueblo,casa,casa2' && maps.imgs, JSON.stringify(maps));
+    check('las tarjetas de los mapas del juego, con su vista real', maps.ids === 'arena,pueblo,casa,casa2,pruebas' && maps.imgs, JSON.stringify(maps));
     check('elegir un mapa es el mapa de VS BOTS', maps.off === 'pueblo' && maps.world === 'pueblo' && maps.pressed === 'pueblo' && /PUEBLO/.test(maps.sub));
     // 09-11-2026: with more than 4 maps (BARRIO) the cards overlapped (the owner's screenshot)
     await p.goto(srv.url + '?barrio=1'); await p.waitForFunction(() => window.__SD && __SD.M2 && __SD.M2.room, null, { timeout: 180000 });
@@ -123,7 +123,7 @@ const wait = (p, fn, arg, ms) => p.waitForFunction(fn, arg, { timeout: ms || 120
       const cs = [...g.querySelectorAll('.m2Map')].map(c => c.getBoundingClientRect()); let ov = 0;
       for (let i = 0; i < cs.length; i++) for (let j = i + 1; j < cs.length; j++) { const a = cs[i], b = cs[j]; if (a.left < b.right - 1 && b.left < a.right - 1 && a.top < b.bottom - 1 && b.top < a.bottom - 1) ov++; }
       return { n: cs.length, many: g.classList.contains('many'), ov, ratio: +(cs[0].width / cs[0].height).toFixed(2), top: cs.every(r => r.top >= gr.top - 1) }; });
-    check('con 5 mapas (BARRIO): 3 por fila, ninguna tarjeta encima de otra y ninguna cortada por arriba', many.n === 5 && many.many && many.ov === 0 && Math.abs(many.ratio - 1.6) < 0.05 && many.top, JSON.stringify(many));
+    check('con 6 mapas (BARRIO y PRUEBAS): 3 por fila, ninguna tarjeta encima de otra y ninguna cortada por arriba', many.n === 6 && many.many && many.ov === 0 && Math.abs(many.ratio - 1.6) < 0.05 && many.top, JSON.stringify(many));
     await p.goto(srv.url + '?barrio=0'); await p.waitForFunction(() => window.__SD && __SD.M2 && __SD.M2.room, null, { timeout: 180000 });
 
     console.log('\nAJUSTES');

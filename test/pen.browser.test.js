@@ -47,10 +47,10 @@ const check = (n, c, i) => { (c ? pass++ : fail++); console.log((c ? '  ok   ' :
     console.log('\nQUÉ ATRAVIESA LA BALA EN LOS MAPAS');
     const kinds = await p.evaluate(() => { const S = __SD, out = {};
       for (const w of ['pueblo', 'arena', 'casa']) { S.setWorld(w); const c = {}; for (const m of S.W.ray) { const I = S.penBox(m); if (I) c[I.cls + ':' + I.surf] = (c[I.cls + ':' + I.surf] || 0) + 1; }
-        c.concrete = S.W.ray.filter(m => m.userData.surf === 'concrete').map(m => !!S.penBox(m)).filter(Boolean).length; out[w] = c; }
+        c.thick = S.W.ray.filter(m => { const I = S.penBox(m); return I && I.cls === 'medium' && 2 * Math.min(I.box.hx, I.box.hy, I.box.hz) > 0.5 + 1e-6; }).length; out[w] = c; }
       S.setWorld('pueblo'); return out; });
-    check('PUEBLO y ARENA: las cajas de madera son finas; nada más', kinds.pueblo['thin:crate'] > 20 && Object.keys(kinds.pueblo).length === 2 && kinds.arena['thin:crate'] > 5, JSON.stringify([kinds.pueblo, kinds.arena]));
-    check('CASA ATLAS: tabiques de yeso (medios), madera y chapa finas; el hormigón nunca', kinds.casa['medium:plaster'] > 40 && kinds.casa['thin:wood'] > 0 && kinds.casa['thin:metal'] > 0 && kinds.casa.concrete === 0, JSON.stringify(kinds.casa));
+    check('PUEBLO y ARENA: las cajas de madera son finas; nada de más de 50 cm (la columna de 1 m, los muros de 60 cm) es atravesable', kinds.pueblo['thin:crate'] > 20 && kinds.arena['thin:crate'] > 5 && kinds.pueblo.thick === 0 && kinds.arena.thick === 0, JSON.stringify([kinds.pueblo, kinds.arena]));
+    check('CASA ATLAS: tabiques de yeso (medios), madera y chapa finas; nada de más de 50 cm', kinds.casa['medium:plaster'] > 40 && kinds.casa['thin:wood'] > 0 && kinds.casa['thin:metal'] > 0 && kinds.casa.thick === 0, JSON.stringify(kinds.casa));
 
     console.log('\nUNA CAJA DEL PUEBLO');
     const torso = await setup('pueblo');
@@ -63,11 +63,42 @@ const check = (n, c, i) => { (c ? pass++ : fail++); console.log((c ? '  ok   ' :
     await setup('casa');
     const wl = await p.evaluate(() => { const S = __SD; for (const m of S.W.ray) { const I = S.penBox(m); if (!I || I.surf !== 'plaster') continue; const a = penShot(m, false), b = penShot(m, true); if (b.n === 1 && b.dmg > 0) return { a, b }; } return null; });
     check('sin BALA DURA el tabique para la bala', wl && wl.a.dmg === 0 && wl.a.n === 0, JSON.stringify(wl && wl.a));
-    check('con BALA DURA lo atraviesa con la mitad del daño', wl && wl.b.dmg === Math.round(wl.b.torso * 0.5), JSON.stringify(wl && wl.b));
-    const never = await p.evaluate(() => { const S = __SD, wood = S.W.ray.find(m => m.userData.surf === 'wood' && !S.penBox(m)), con = S.W.ray.filter(m => m.userData.surf === 'concrete');
-      return { wood: !!wood, woodPen: wood ? !!S.penBox(wood) : null, concrete: con.length, concretePen: con.some(m => !!S.penBox(m)) }; });
-    check('un mueble macizo (madera de más de 12 cm) y el hormigón: nunca, ni con BALA DURA', never.wood && never.woodPen === false && never.concrete > 0 && !never.concretePen, JSON.stringify(never));
+    check('con BALA DURA lo atraviesa: 18 cm dejan el 65 % del daño', wl && wl.b.dmg === Math.round(wl.b.torso * 0.652), JSON.stringify(wl && wl.b));
+    const never = await p.evaluate(() => { const S = __SD, wood = S.W.ray.find(m => m.userData.surf === 'wood' && !S.penBox(m));
+      const big = S.W.ray.filter(m => m.geometry && m.geometry.type === 'BoxGeometry' && m.geometry.parameters && Math.min(m.geometry.parameters.width, m.geometry.parameters.height, m.geometry.parameters.depth) > 0.5);
+      return { wood: !!wood, big: big.length, bigPen: big.filter(m => !!S.penBox(m)).length }; });
+    check('un mueble macizo de 70 cm y cualquier muro de más de 50 cm: nunca, ni con BALA DURA', never.wood && never.big > 0 && never.bigPen === 0, JSON.stringify(never));
     await p.evaluate(() => { __SD.freeze(false); __SD.toMenu(); });
+
+    console.log('\nEL MAPA DE PRUEBAS');
+    await boot(); await setup('pruebas');   // a fresh page (the CASA ATLAS checks above move and kill bots)
+    const pr = await p.evaluate(() => { const S = __SD, V = THREE.Vector3, out = {};
+      out.bots = S.BOTS.filter(b => b.alive && b.state === 'dummy').length; out.slots = S.PRUEBAS.slots.length; out.start = [S.P.pos.x, S.P.pos.z];
+      const run = hard => S.BOTS.map(b => { if (!b.alive) b.spawn(); b.hp = 100; b.g.updateMatrixWorld(true);
+        const tor = b.hit.find(h => h.userData.part === 'torso'), T = new V(); new THREE.Box3().setFromObject(tor).getCenter(T);
+        const O = new V(0, T.y, -18), d = T.clone().sub(O).normalize(); S.PEN.hard = hard; S.BULLETS.length = 0; S.spawnBullet(O, d, O.clone(), S.GUNCFG);   // from where you start
+        let k = 0; while (S.BULLETS.length && k < 240) { S.updateBullets(1 / 120); k++; } return 100 - b.hp; });
+      out.sin = run(false); out.con = run(true); out.torso = S.GUNCFG.dmg.torso; S.PEN.hard = false; out.dbg = { pen: S.PEN.on, b0: S.BOTS[0].g.position.toArray().map(v => +v.toFixed(2)), alive: S.BOTS.map(b => b.alive).join(), world: S.WORLD_ID, mode: S.mode, state: S.state };
+      S.xrayFrame(); out.xray = S.BOTS.filter(b => b.xr && b.xr.visible).length; out.xrayMat = !!(S.BOTS[0].xr && S.BOTS[0].xr.children[0].material.depthTest === false);
+      return out; });
+    const t = pr.torso, f = k => Math.round(t * k);
+    check('10 paredes, un bot quieto detrás de cada una, y tú a 18 m', pr.bots === 10 && pr.slots === 10 && pr.start[0] === 0 && pr.start[1] === -18, JSON.stringify(pr));
+    check('sin BALA DURA: caja, madera y chapa (75 %); lo demás, nada', JSON.stringify(pr.sin) === JSON.stringify([f(0.75), f(0.75), f(0.75), 0, 0, 0, 0, 0, 0, 0]), JSON.stringify(pr.sin) + ' ' + JSON.stringify(pr.dbg));
+    check('con BALA DURA: yeso 18 cm 65 %, hormigón 30 cm 56 %, 50 cm 40 %; 60 cm, columna de 1 m, sacos y dos tabiques no', (c => c[0] === f(0.75) && c[1] === f(0.75) && c[2] === f(0.75) && c[3] >= f(0.62) && c[3] <= f(0.652) && c[4] >= f(0.52) && c[4] <= f(0.556) && c[5] >= f(0.35) && c[5] <= f(0.396) && c.slice(6).every(v => v === 0))(pr.con), JSON.stringify(pr.con) + ' (desde la salida la bala cruza algo en diagonal: un poco menos que de frente)');
+    check('RAYOS X: las zonas de impacto de los 10 bots se ven a través de las paredes', pr.xray === 10 && pr.xrayMat, pr.xray + ' bots');
+    await p.evaluate(() => { __SD.freeze(false); __SD.toMenu(); });
+
+    console.log('\nDESLIZAMIENTO DE VERDAD');
+    await p.evaluate(() => __SD.pj2Load('assets/personaje/pro/op4/')); await p.waitForFunction(() => __SD.PJ2.tpls['assets/personaje/pro/op4/'], null, { timeout: 300000 });
+    const sl = await p.evaluate(() => { const S = __SD, T = THREE, out = {};
+      for (const k of ['new', 'old']) { const R = S.makeSoldier(S.BOT_MAT, { variant: 'B' }), g = new T.Group(); S.pj2SetPack(R, 'op4'); g.add(R.root); S.scene.add(g);
+        for (let t = 0; t < 0.8; t += 1 / 60) S.animateSoldier(R, { wpn: 'rifle', slide: 1, slide2: k === 'new', aim: 0, vz: 6 }, 1 / 60);
+        g.updateMatrixWorld(true); const I = R.v2; if (!I) { out[k] = null; S.scene.remove(g); continue; }
+        const w = n => { const o = I.root.getObjectByName(n), v = new T.Vector3(); o.getWorldPosition(v); return v; };
+        out[k] = { hips: +w('Hips').y.toFixed(2), footR: +w('RightFoot').z.toFixed(2), head: +w('Head').y.toFixed(2) }; S.scene.remove(g); }
+      out.slide2 = S.SLIDE2.on; out.box = !!SDHitbox.SLIDE; return out; });
+    check('el operador se desliza con la cadera baja y la pierna derecha por delante (antes solo se encogía)', sl.new && sl.new.hips < 0.5 && sl.new.footR > 0.6 && sl.old && sl.old.footR < 0.3 && sl.slide2, JSON.stringify(sl));
+    check('core/hitbox.js tiene la caja del deslizamiento nuevo (el servidor aún no la usa)', sl.box);
 
     console.log('\nEL ARSENAL');
     const ar = await p.evaluate(async () => { localStorage.removeItem('sniperduel_balaDura'); __SD.PEN.hard = false; document.querySelector('#m2 .m2Nav [data-tab=armas]').click();

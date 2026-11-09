@@ -141,3 +141,43 @@ El propietario: «el personaje MILITAR le faltan rodillas».
   - `check-character-hitbox.js` pasa en los 3 LOD (en reposo, 0,4 cm fuera como mucho).
 - Regenerado con `python tools/personaje-ext/make.py op4` y `python3 tools/ktx2/make.py op4`. El KTX2 se sube a R2 con
   `node tools/r2-subir.js`.
+
+## Deslizamiento de verdad (09-11-2026)
+El propietario: «hazme animaciones de deslizamiento para SOLDADO, SWAT, FSB y MILITAR; no modifiques la mecánica». Eligió
+«caja nueva»: animación de verdad y zona de impacto que la siga.
+- **Antes:** el clip `slide` de los GLB solo encogía el cuerpo (su morph cabía en la caja de pie aplastada).
+- **Ahora** (`client/soldier2.js` `slidePose`): la postura se calcula en el momento sobre el esqueleto de 26 huesos que
+  comparten los cuatro, sin regenerar los modelos.
+  - Cadera a 36 cm del suelo y echada atrás.
+  - Pierna derecha estirada por delante; la izquierda doblada debajo.
+  - Pecho algo atrás con el arma al frente, y la cabeza mirando al frente.
+  - El pie más bajo, a ras de suelo.
+  - La mecánica no cambia: misma velocidad, mismo tiempo y misma cámara en 1ª persona.
+  ![antes y ahora, con las cajas de impacto en verde](img/personaje/deslizamiento.jpg)
+- **Dónde se ve:** tu 3ª persona sin conexión y los bots de entrenamiento.
+  - En línea, el rival se sigue viendo como antes: su zona de impacto en el servidor es todavía la de siempre.
+  - `?desliz=0` vuelve al de antes.
+- **Caja de impacto nueva** (`core/hitbox.js` `SLIDE`): baja y alargada.
+  - Cabeza a 0,90 m y 30 cm atrás; torso de 0,34 a 0,82 m; piernas hasta 88 cm por delante.
+  - Solo la usa quien pasa `pl.slide = true`. **El servidor no la usa todavía:** llevarla al online cambia dónde se le da
+    a alguien que se desliza, y necesita su aprobación.
+- **Pruebas y hoja:**
+  - `test/slidebox.test.js` (6).
+  - `test/pen.browser.test.js`: cadera baja y pie delante.
+  - `node tools/slide-sheet.js SALIDA.png`: los cuatro, antes y nuevo, de lado, de frente y de espaldas, con las cajas.
+
+## La espalda del MILITAR al correr (09-11-2026, SIN ARREGLAR todavía)
+El propietario: «al correr en 3ª persona con el arma se ve la parte de atrás como mal».
+- **La causa, medida:** un panel plano en la espalda del chaleco (z = −14,2 cm, a 1,03–1,16 m de alto).
+  - Sus vértices de abajo van atados sobre todo a la cadera (65 %) y los de arriba a la columna.
+  - Al esprintar, la cadera gira ±8° con cada zancada y la columna −10° al revés: el panel se cizalla y se ve como una
+    franja gris.
+  - Lo confirmé con un rayo desde la cámara: no es el rifle, ni el brazo, ni una cara interior.
+- **Probado, sin éxito:**
+  - pesos de brazos al pecho;
+  - el panel entero al pecho (saca la espalda 4–5 cm de su zona de impacto al apuntar);
+  - meter la espalda 4 cm (crea otro pliegue arriba);
+  - menos giro del pecho, el codo hacia fuera, menos giro de cadera.
+  - Todo devuelto a como estaba publicado.
+- **Siguiente paso propuesto:** volver a pesar ese panel en Blender a mano (de la cadera a la columna, de forma
+  progresiva) o recortarlo, comprobando la zona de impacto en los 3 LOD.

@@ -12,7 +12,8 @@ const VIEWS = {
   arena: ['arena', -23, 6, -15, -2.2, -0.3],
   pueblo: ['pueblo', 8, 9, -12, 2.83, -0.25],
   casa: ['casa', -4.3, 0, 4.6, -0.8, -0.03],
-  casa2: ['casa2', 0, 9, 21, 0, -0.42]
+  casa2: ['casa2', 0, 9, 21, 0, -0.42],
+  pruebas: ['pruebas', -6, 2.6, -9, Math.PI - 0.35, -0.12]
 };
 const ONLY = process.env.ONLY ? process.env.ONLY.split(',') : null;
 (async () => {
