@@ -217,3 +217,52 @@ bala un 8 % más lenta).
   - `test/online.browser.test.js`: con el VECTOR y su silenciador guardados, en línea se juega con el HALCÓN sin silenciador.
 - **Capturas:** `node tools/capture-silenciador.js CARPETA` (ARSENAL y en la mano, sin y con, al disparar).
 - **Falta:** el silenciador en el arma en tercera persona (vista 3ª y rival), con G7.
+
+## Arreglos tras la prueba del propietario (09-11-2026, tarde)
+Del propietario, con capturas: «el camuflaje de rejilla de oro no me gusta, las líneas negras son demasiado gruesas»,
+«en TITÁN falta ajustar un poco hacia abajo el silenciador», «en la pantalla MAPAS no cargan bien los mapas», «a la arma
+de mano también añade los camuflajes (a la navaja de SNIPER DUEL no hace falta)», «en PERSONAJE… si quieres añade botón
+pero no vamos a añadir camuflajes de personajes ahora», «el personaje MILITAR le faltan rodillas», «en ARMAS cambia de
+sitio el botón de camuflaje», «si elijo algún camuflaje que pueda verlo en tiempo real y si no me gusta elegir otro, sin
+tener que estar cerrando y abriendo; tiene que funcionar en PC y móvil».
+
+- **CAMUFLAJE, en vivo:**
+  - Sale de la fila de accesorios (ahora 5 ranuras) a su propio botón, junto al nombre del arma.
+  - Abre una tira de una fila abajo (con el dedo, o con la rueda en el PC, se desplaza de lado). El arma sube por
+    encima de la tira y se ve entera.
+  - Tocar un camuflaje lo pinta al momento y la tira sigue abierta. Para probar otro, se toca otro.
+  - Girar el arma o cambiar de modelo no la cierra; la cierran ✕ o su botón.
+  - GUARDAR lo deja puesto, igual que antes.
+  - En el móvil en horizontal la tira es una sola fila de fotos, con ✕ a la izquierda y sin título ni rareza. Mide 76 px
+    y deja 125 px para el arma (medido a 844 × 390).
+
+  ![la tira en el PC](img/gunsmith/camo-tira.jpg)
+  ![la tira en el móvil](img/gunsmith/camo-tira-movil.jpg)
+- **La TÁCTICA lleva camuflaje** (hoja y mango), con los mismos camuflajes de la cuenta.
+  - El dibujo se repite cada ~7 cm (`KCAMO_SCALE` = 15; el rifle, cada 20 cm). Si no, en una hoja de 20 cm solo se veía
+    una mancha. `SDCamo.patch` acepta ya la escala.
+  - Se guarda en el dispositivo, por cuchillo (`sniperduel_gsCfg.knives`).
+  - Se ve en la mano, en partida (`kcamoApply`). La NAVAJA no lleva: con ella el botón no sale.
+- **PERSONAJE:** botón «CAMUFLAJE DEL OPERADOR · PRÓXIMAMENTE», desactivado.
+  ![la TÁCTICA con DRAGÓN](img/gunsmith/tactica-camo.jpg)
+- **REJILLA DE ORO** (`assets/camo/oro_rejilla.jpg`):
+  - Las líneas pasan de unos 10 px negros a unos 4 px de dorado oscuro, y el oro queda debajo.
+  - La foto de antes está en git, y en `.work/camo-antes/` en el PC.
+
+  ![antes](img/gunsmith/rejilla-antes.jpg)
+  ![después](img/gunsmith/rejilla-despues.jpg)
+- **Capturas:** `node tools/capture-camo.js CARPETA [rejilla_de_antes.jpg]`.
+- **Silenciador del TITÁN (y del VECTOR):**
+  - La boca del cañón (`muzzle` de `assets/armas/<id>/info.json`) estaba a la altura del cerrojo, no en el centro del
+    cañón. Medido sobre la malla: el TITÁN 1,4 cm por encima, el VECTOR 0,8 cm.
+  - Ahora es el centro medido: TITÁN y = 0,0132, VECTOR y = 0,0237. Mueve el silenciador y el fogonazo; la bala no.
+  - ÚLTIMA (0,6 cm) y SAHARA (0,1 cm) se quedan como estaban: el propietario las dio por buenas.
+  - Ojo: `tools/arma-ext/arma.py` pone la boca a la altura del cerrojo. Si se regeneran el TITÁN o el VECTOR, hay que
+    volver a medir.
+- **Pruebas:**
+  - `test/arsenal.browser.test.js`:
+    - la tira, de una fila, con el arma por encima;
+    - pintar al momento sin cerrar; girar sin cerrar; SIN CAMUFLAJE;
+    - la TÁCTICA pintada y guardada, también tras recargar; la NAVAJA sin botón;
+    - en el móvil en horizontal, que la tira cabe.
+  - `test/menu2.browser.test.js`: MAPAS con 5 mapas.

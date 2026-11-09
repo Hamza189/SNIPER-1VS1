@@ -795,7 +795,7 @@ rifle, ahora 8× fijo) sigue siendo la de por defecto.
   | `assets/camo/carbono_azul.jpg` | Carbon_fiber_8 | CARBONO AZUL (épica) |
   | `assets/camo/panal.jpg` | Carbon_fiber_9 (hexágonos) | PANAL DE CARBONO (épica) |
   | `assets/camo/oro_pulido.jpg` | gold_1 | ORO PULIDO (legendaria) |
-  | `assets/camo/oro_rejilla.jpg` | gold_9 | REJILLA DE ORO (legendaria) |
+  | `assets/camo/oro_rejilla.jpg` | gold_9 (09-11: líneas más finas y doradas, a petición del propietario) | REJILLA DE ORO (legendaria) |
 
   - Mapas: color y relieve a 1024 px, rugosidad a 512 px.
   - Camuflajes: el color a 1024 px, sin costuras.

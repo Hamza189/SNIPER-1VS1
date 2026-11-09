@@ -11,6 +11,7 @@ Detalle de cada cambio (antes/después, medidas, cómo revertir): `docs/next-lev
 ### Siguiente prioridad
 | Tarea | Quién la desbloquea | Estado |
 |---|---|---|
+| **CAMUFLAJE EN VIVO, MAPAS y MILITAR** (09-11) — en el PC y en el móvil: ARMAS › CAMUFLAJE (tira abajo, se ve al momento), la TÁCTICA con camuflaje, la REJILLA DE ORO nueva, el silenciador del TITÁN, MAPAS con BARRIO y las rodillas del MILITAR | Propietario | PUBLICADO · PENDIENTE DE SU PRUEBA |
 | **RIFLES DISTINTOS y SILENCIADOR** (09-11) — probar contra bots los 5 rifles (TITÁN pesado, VECTOR rápido…) y el silenciador (ARMAS › SILENCIADOR), comparar con `?balance=0`; decir si se llevan al online | Propietario | PUBLICADO SOLO SIN CONEXIÓN · PENDIENTE DE SU PRUEBA |
 | **ARSENAL (GUNSMITH)** (08-11) — probar ARMAS en el iPhone: el rifle grande, girar y acercar, elegir modelo y mira (fotos de cada modelo), GUARDAR y RESTABLECER, ESTADÍSTICAS y DAÑO; decir si el silenciador puede cambiar el sonido (G3) y si apruebas el diseño de BALA DURA (`docs/GUNSMITH.md`) | Propietario | PUBLICADO · PENDIENTE DE VALIDACIÓN EN IPHONE · NECESITA DECISIÓN |
 | **Camuflajes de foto** (05-11) — en CAJAS Y OBJETOS (con la cuenta ADMIN están todos): probar ALUMINIO, los tres CARBONOS y los dos OROS en el iPhone | Propietario | PUBLICADO · PENDIENTE DE VALIDACIÓN EN IPHONE |
@@ -92,6 +93,23 @@ Detalle de cada cambio (antes/después, medidas, cómo revertir): `docs/next-lev
 | Encargos para ChatGPT: CASA XL, CASA XL v2 y personaje | 18-10 / 19-10 |
 | Personaje 3D rev. 03 hecho por Claude e integrado tras `?pj=2` (bots y rival online) | 20-10 · directo a `main` |
 | Personajes realistas + elegir personaje (con el SOLDADO de `?pj=2`) y HUD 2 por defecto (aprobado en iPhone y PC) | 28-10 · directo a `main` |
+
+## 09-11-2026 — Arreglos tras la prueba del ARSENAL: camuflaje en vivo, MAPAS, TITÁN y MILITAR
+Del propietario, con capturas: la REJILLA DE ORO demasiado negra; el silenciador del TITÁN un poco alto; MAPAS con las
+tarjetas montadas; camuflajes para el arma de mano (no para la NAVAJA); un botón de camuflaje en PERSONAJE (sin
+camuflajes todavía); el MILITAR sin rodillas; el botón de camuflaje en otro sitio y que se vea en tiempo real, en PC y
+en el móvil. Dijo que en ÚLTIMA y SAHARA el silenciador está perfecto.
+- **CAMUFLAJE:** botón propio junto al nombre del arma y una tira abajo que pinta al momento y no se cierra. El arma sube
+  por encima de la tira.
+- **TÁCTICA con camuflaje** (se guarda por cuchillo en el dispositivo). La NAVAJA no lleva.
+- **PERSONAJE:** botón «CAMUFLAJE DEL OPERADOR · PRÓXIMAMENTE», desactivado.
+- **REJILLA DE ORO:** líneas finas y doradas.
+- **Boca del cañón:** TITÁN −1,4 cm y VECTOR −0,8 cm, al centro medido del cañón.
+- **MAPAS:**
+  - Con más de 4 mapas (BARRIO, CASA ATLAS 2.0 · JARDÍN) las filas se encogían y las tarjetas se montaban.
+  - Ahora van 3 por fila y su alto sale de su ancho.
+- **MILITAR:** las rodilleras ya no se cruzan con el pantalón (`fitMarginZones`); las zonas de impacto, igual.
+- **Estado:** PROBADO EN NAVEGADOR (PC con GPU) · PENDIENTE DE VALIDACIÓN EN IPHONE Y ANDROID.
 
 ## 09-11-2026 — GUNSMITH: el SILENCIADOR contra bots
 Del propietario: «Sí, silenciador» (con el precio que eligió el 08-11: la bala un 8 % más lenta).

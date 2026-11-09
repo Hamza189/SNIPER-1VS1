@@ -129,3 +129,15 @@ El propietario (vídeo): «que no se vean transparentes de lado… que los 3 se 
 - **LOD**: tras simplificar cada LOD, el cuerpo vuelve a su caja con el mismo margen que el LOD0 (el S.W.A.T. salía
   4,2 cm en el LOD2). Los tres pasan las zonas de impacto en los 3 LOD con 0,4 cm en reposo.
 - Retratos rehechos (`node tools/skin-portraits.js`).
+
+## Rodillas del MILITAR (09-11-2026)
+El propietario: «el personaje MILITAR le faltan rodillas».
+- **La causa:** el ajuste a las zonas de impacto mete lo que sobresale de la caja de piernas en una capa de 4 mm
+  (`fitMargin`). Las rodilleras de este modelo sobresalen unos 4 cm. Rodillera y pantalón acababan en la misma capa y se
+  cruzaban: la rodillera se veía rota.
+- **El arreglo:** `fitMarginZones` en `packs.json` (op4) da a la parte delantera de las rodillas (alto 0,36–0,62 m) una
+  capa de 2,5 cm. Así la rodillera queda por fuera del pantalón.
+  - Las zonas de impacto del servidor no se tocan.
+  - `check-character-hitbox.js` pasa en los 3 LOD (en reposo, 0,4 cm fuera como mucho).
+- Regenerado con `python tools/personaje-ext/make.py op4` y `python3 tools/ktx2/make.py op4`. El KTX2 se sube a R2 con
+  `node tools/r2-subir.js`.

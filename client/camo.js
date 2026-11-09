@@ -130,9 +130,10 @@ function detail(m) {
     return avg > 0.002 ? 1 / avg : 0;
   } catch (e) { return 0; }
 }
-// copia del material con el camuflaje (time: { value } compartido para que lata; det: detail(m) o 0 = color liso)
-function patch(T, m, it, tex, time, det) {
-  const u = { uCamo: { value: tex }, uCamoScale: { value: SCALE }, uCamoDetail: { value: det || 0 }, uCamoMetal: { value: it.metal == null ? -1 : it.metal },
+// copia del material con el camuflaje (time: { value } compartido para que lata; det: detail(m) o 0 = color liso;
+// scale: repeticiones por metro, SCALE si no se da; el cuchillo, de 20 cm, usa más para que se vea el dibujo)
+function patch(T, m, it, tex, time, det, scale) {
+  const u = { uCamo: { value: tex }, uCamoScale: { value: scale || SCALE }, uCamoDetail: { value: det || 0 }, uCamoMetal: { value: it.metal == null ? -1 : it.metal },
     uCamoRough: { value: it.rough == null ? -1 : it.rough }, uCamoGlow: { value: it.glow || 0 }, uCamoTime: time };
   const n = m.clone(); n.name = m.name;
   if (it.metal != null && it.metal > 0.5) n.envMapIntensity = Math.max(n.envMapIntensity || 0, 1.2);   // metal: it has to reflect

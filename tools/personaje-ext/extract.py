@@ -533,8 +533,17 @@ if FM_ > 0:
             m_ = (q[sel][:, 1] >= ins['y'][0]) & (q[sel][:, 1] <= ins['y'][1]) & (np.sign(d[:, ax]) == ins.get('side', -1))
             hh[m_, ax] -= ins.get('inset', 0.01)
         h = hh
+        # 09-11-2026: zonas con más fondo (rodilleras del MILITAR): con 4 mm la rodillera y el pantalón de debajo
+        # acababan en la misma capa y se cruzaban (el propietario: «le faltan rodillas»)
+        fm = np.full((len(d), 1), FM_)
+        for zn in CFG.get('fitMarginZones', []):
+            if zn.get('box', 'legs') != ('torso', 'legs')[bi]:
+                continue
+            ax = 'xyz'.index(zn.get('axis', 'z'))
+            m_ = (q[sel][:, 1] >= zn['y'][0]) & (q[sel][:, 1] <= zn['y'][1]) & (np.sign(d[:, ax]) == zn.get('side', 1))
+            fm[m_, 0] = zn['margin']
         e = np.maximum(0, np.abs(d) - h)
-        es = FM_ * (1 - np.exp(-e / FM_))
+        es = fm * (1 - np.exp(-e / fm))
         nd = np.where(e > 0, np.sign(d) * (h + es), d)
         moved += int((e > 0).any(1).sum())
         q[sel] = c + nd
