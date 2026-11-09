@@ -3,7 +3,8 @@
    - contra bots, lo que dice el ARSENAL es lo que pasa en el juego: cargador, cerrojo, recarga, apuntar y velocidad al
      andar, medidos con el reloj del propio juego
    - ?balance=0 vuelve a las cifras de antes (las del HALCÓN para todos los modelos) y ?balance=1 lo deshace
-   - en línea siempre el HALCÓN R7: lo comprueba test/online.browser.test.js con el servidor de verdad
+   - el SILENCIADOR: se monta y se guarda por modelo; sin fogonazo, sonido bajo, los bots solo lo oyen cerca, bala −8 %
+   - en línea siempre el HALCÓN R7 sin silenciador: lo comprueba test/online.browser.test.js con el servidor de verdad
    Run: node test/rifles.browser.test.js      env GPU=0: WebGL por software */
 'use strict';
 let chromium;
@@ -113,6 +114,42 @@ const FEEL = {
     check('se recuerda (sniperduel_balanceOld)', await p.evaluate(() => localStorage.getItem('sniperduel_balanceOld') === 'true' && !__SD.BAL.on));
     await boot('?balance=1');
     check('?balance=1 vuelve a las cifras de cada modelo', await p.evaluate(() => localStorage.getItem('sniperduel_balanceOld') === 'false' && __SD.BAL.on && __SD.rifleCfgFor('vector', false) === SD_CONFIG.rifles.vector && __SD.rifleCfgFor('vector', true) === __SD.HALCON));
+
+    console.log('\nEL SILENCIADOR (contra bots)');
+    await arsenal();
+    const sv = await p.evaluate(() => { document.querySelector('#gsRifles [data-ws=halcon]').click(); document.querySelector('#gsAcc [data-acc=muzzle]').click();
+      const opts = [...document.querySelectorAll('#gsPickL .gsOpt')].map(b => b.dataset.opt).join(); document.querySelector('#gsPick [data-opt=sil]').click(); return opts; });
+    await p.waitForTimeout(300);
+    const sm = await p.evaluate(() => { let inMenu = false; __SD.M2.item && __SD.M2.item.traverse(o => { if (o.name === 'silenciador' && o.visible) inMenu = true; });
+      const v = [...document.querySelectorAll('#gsStats .gsRow')].find(r => r.querySelector('span').textContent === 'VELOCIDAD DE LA BALA');
+      return { inMenu, inHands: !!(__SD.SIL.mesh && __SD.SIL.mesh.visible && __SD.SIL.mesh.parent === __SD.GUN), speed: v && v.querySelector('b').textContent, role: (document.querySelector('#gsStats .gsRole') || {}).textContent,
+        slot: document.querySelector('#gsAcc [data-acc=muzzle] b').textContent, dirty: !document.getElementById('gsSave').disabled }; });
+    check('SILENCIADOR: dos opciones (NINGUNO y SILENCIADOR); se monta en el arma al momento, sin guardarse', sv === 'none,sil' && sm.inMenu && sm.inHands && sm.slot === 'PUESTO' && sm.dirty, JSON.stringify(sm));
+    check('y el ARSENAL dice su precio: la bala del HALCÓN a 552 m/s (−48, un 8 % menos)', sm.speed === '552 m/s−48' && /SILENCIADOR/.test(sm.role), sm.speed + ' · ' + sm.role);
+    await p.evaluate(() => { document.querySelector('#gsPickX').click(); document.getElementById('gsSave').click(); });
+    await p.waitForTimeout(300);
+    check('GUARDAR lo guarda en ese modelo', await p.evaluate(() => { const c = JSON.parse(localStorage.getItem('sniperduel_gsCfg')); return c.models.halcon.muzzle === 'sil'; }));
+    await boot(); await arsenal();
+    check('tras recargar la página sigue montado', await p.evaluate(() => { let n = false; __SD.M2.item && __SD.M2.item.traverse(o => { if (o.name === 'silenciador' && o.visible) n = true; }); return n && __SD.SIL.want; }));
+    await p.evaluate(() => document.querySelector('#m2 .m2Nav [data-tab=inicio]').click());
+    await play();
+    // one bot alive 40 m away: it hears the shot without the silencer (85 m) and not with it (20 m)
+    const shoot = () => p.evaluate(async () => {
+      const S = __SD, fr = () => new Promise(r => requestAnimationFrame(() => r())), o = {};
+      const until = async f => { const t = performance.now(); while (!f()) { if (performance.now() - t > 20000) return false; await fr(); } return true; };
+      await until(() => S.state === 'playing' && S.WCORE.state === 'ready');
+      const b = S.BOTS[0]; b.alive = true; b.g.visible = true; b.g.position.set(S.PM.x + 40, S.PM.y, S.PM.z); b.alertT = 0; b.spot = 0;
+      let sup = 0, open = 0; const s1 = S.SFX.shotSup, s2 = S.SFX.shot; S.SFX.shotSup = () => { sup++; }; S.SFX.shot = () => { open++; };
+      const n0 = S.STATS.shots; S.input.firePressed = true; await until(() => S.STATS.shots > n0);
+      o.flash = S.STATS.lastFlash; o.light = S.STATS.lastLight; o.alert = b.alertT; o.hear = S.STATS.lastHear; o.sup = sup; o.open = open;
+      o.speed = S.GUNCFG.speed; o.sil = !!S.GUNCFG.silenced; o.mesh = !!(S.SIL.mesh && S.SIL.mesh.visible);
+      S.SFX.shotSup = s1; S.SFX.shot = s2; b.alive = false; b.g.visible = false; return o; });
+    const a = await shoot();
+    check('con SILENCIADOR: sin fogonazo ni destello de luz, el sonido bajo, y la bala a 552 m/s', a.sil && a.mesh && a.flash === 0 && a.light === 0 && a.sup === 1 && a.open === 0 && a.speed === 552, JSON.stringify(a));
+    check('un bot a 40 m no lo oye (solo a menos de 20 m)', a.hear === 20 && a.alert <= 0, 'alerta ' + a.alert.toFixed(2));
+    await p.evaluate(() => { const c = JSON.parse(localStorage.getItem('sniperduel_gsCfg')); c.models.halcon.muzzle = 'none'; localStorage.setItem('sniperduel_gsCfg', JSON.stringify(c)); __SD.applyRifleCfg(); });
+    const z = await shoot();
+    check('sin él: fogonazo, el tiro de siempre, 600 m/s y el bot a 40 m lo oye (hasta 85 m)', !z.sil && !z.mesh && z.flash > 0 && z.light > 0 && z.open === 1 && z.sup === 0 && z.speed === 600 && z.hear === 85 && z.alert > 0, JSON.stringify(z));
     check('sin errores en la página', errs.length === 0, errs.slice(0, 3).join(' | ') || 'ninguno');
     // back to the defaults for the next tests on this browser
     await p.evaluate(() => { localStorage.removeItem('sniperduel_gsCfg'); localStorage.removeItem('sniperduel_balanceOld'); localStorage.setItem('sniperduel_wsRifle', '"halcon"'); });

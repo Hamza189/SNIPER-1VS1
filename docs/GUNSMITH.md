@@ -4,6 +4,7 @@
 - **G1 y G2:** IMPLEMENTADO · PROBADO EN NAVEGADOR (PC con GPU y móvil en horizontal) · PENDIENTE DE VALIDACIÓN EN IPHONE.
 - **Rifles distintos (09-11):** IMPLEMENTADO · PROBADO EN NAVEGADOR (contra bots) · solo sin conexión: en línea, todos con el
   HALCÓN R7 hasta que el propietario lo apruebe. `?balance=0` vuelve a las cifras de antes.
+- **Silenciador (09-11):** IMPLEMENTADO · PROBADO EN NAVEGADOR (contra bots) · solo sin conexión.
 - **G4 y G5:** hechos en parte (ver las tablas de abajo).
 - **G3, G6, G7 y G8:** pendientes (plan y decisiones al final).
 - **El ARMAS de antes:** `?arsenal=0` (se recuerda; `?arsenal=1` vuelve al ARSENAL).
@@ -188,3 +189,31 @@ Todos matan de un disparo a la cabeza y de dos al cuerpo (vida 100).
   - primero contra bots;
   - luego en salas de prueba;
   - en el 1 contra 1 público, solo con aprobación del propietario.
+
+## El SILENCIADOR (09-11-2026, contra bots)
+Del propietario: «con silenciador que no se vea el fogonazo o que no delate la ubicación», con «un precio pequeño» (eligió la
+bala un 8 % más lenta).
+
+![silenciador en el ARSENAL](img/gunsmith/silenciador-vector.jpg)
+
+- **En el ARSENAL:** la ranura SILENCIADOR tiene dos opciones, NINGUNO y SILENCIADOR.
+  - Se ve al momento en el arma y se guarda por modelo con GUARDAR (`sniperduel_gsCfg`, `muzzle: 'sil'`).
+  - Las cifras lo reflejan: la bala del HALCÓN pasa de 600 a 552 m/s, y la pestaña DAÑO da más caída y más tiempo de vuelo.
+- **El modelo:** un tubo mate hecho por código (`silBuild`, 6 piezas, sin texturas) en la boca del cañón de cada modelo, en el
+  mismo punto que el fogonazo (`RIF.flash`).
+- **Con él, contra bots y en el campo de tiro:**
+  - sin fogonazo, sin el destello de luz y sin el destello del visor; casi sin humo;
+  - un tiro seco y bajo (`SFX.shotSup`) en lugar del estampido;
+  - los bots solo lo oyen a menos de 20 m (sin él, hasta 85 m);
+  - el precio: la bala sale un 8 % más lenta.
+  - Ya está hecho el sonido lejano bajo y sin dirección para el rival (`SFX.distantSup`), para cuando llegue al online.
+- **En línea, todavía no:** ni se monta ni cuenta, igual que los rifles nuevos.
+  - Llevarlo al online es G7: el servidor sabría quién lo lleva y lo mandaría en el evento del disparo, sin punto en el
+    minimapa del rival y con el sonido bajo. Necesita su aprobación.
+- **Pruebas:**
+  - `test/rifles.browser.test.js`: se monta, se guarda, sigue tras recargar. Disparando con un bot vivo a 40 m: con
+    silenciador no hay fogonazo ni luz, suena el tiro bajo, la bala va a 552 m/s y el bot no se entera; sin él, todo lo
+    contrario.
+  - `test/online.browser.test.js`: con el VECTOR y su silenciador guardados, en línea se juega con el HALCÓN sin silenciador.
+- **Capturas:** `node tools/capture-silenciador.js CARPETA` (ARSENAL y en la mano, sin y con, al disparar).
+- **Falta:** el silenciador en el arma en tercera persona (vista 3ª y rival), con G7.

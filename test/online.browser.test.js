@@ -34,8 +34,9 @@ async function until(page, fn, arg, ms) { try { await page.waitForFunction(fn, a
     console.log('\nPARTIDA 1v1 EN DOS NAVEGADORES REALES (servidor local)');
     const A = await open('');
     // GUNSMITH (08-11): A carries the VECTOR model; online it must still be the server's HALCÓN R7 (the new rifles are only against bots)
-    const offV = await A.evaluate(() => { __SD.WSKIN.rifle = 'vector'; __SD.applyRifleCfg(); return __SD.GUNCFG.name; });   // as after a game against bots
-    check('antes, sin conexión, A lleva las cifras del VECTOR', offV === 'VECTOR', offV);
+    const offV = await A.evaluate(() => { __SD.WSKIN.rifle = 'vector'; localStorage.setItem('sniperduel_gsCfg', JSON.stringify({ v: 1, models: { vector: { mira: 'sniper', camo: '', muzzle: 'sil' } } }));
+      __SD.applyRifleCfg(); return __SD.GUNCFG.name + (__SD.GUNCFG.silenced ? ' con silenciador ' + __SD.GUNCFG.speed : ''); });   // as after a game against bots
+    check('antes, sin conexión, A lleva las cifras del VECTOR con su silenciador', offV === 'VECTOR con silenciador 515', offV);
     await A.click('#m2 .m2Mode[data-sel=online]'); await A.click('#m2Play'); await A.fill('#mpName', 'Hamza'); await A.click('#mpCreate');
     if (process.env.SHOTS) { await sleep(300); await A.screenshot({ path: process.env.SHOTS + '/lobby-movil.png' }); }
     check('A crea la sala y ve el código', await until(A, () => /^[A-Z0-9]{6}$/.test(document.getElementById('mpCodeBig').textContent)));
@@ -58,7 +59,7 @@ async function until(page, fn, arg, ms) { try { await page.waitForFunction(fn, a
     check('cuenta atrás en los dos', await until(A, () => !document.getElementById('countdown').hidden) && await until(B, () => __SD.NET.N.phase === 'countdown' || __SD.NET.N.phase === 'playing'));
     check('los dos juegan en la ARENA (mapa del servidor = mapa dibujado)', await until(A, () => __SD.WORLD_ID === 'arena', null, 9000) && await until(B, () => __SD.WORLD_ID === 'arena', null, 9000) && srv.rooms.get(code).debug.mapId === 'arena');
     check('empieza la partida en los dos', await until(A, () => __SD.NET.N.phase === 'playing' && __SD.state === 'playing', null, 9000) && await until(B, () => __SD.NET.N.phase === 'playing', null, 9000));
-    check('en línea, A lleva el HALCÓN R7 aunque haya elegido el VECTOR (cifras del servidor)', await A.evaluate(() => __SD.mode === 'online' && __SD.WSKIN.rifle === 'vector' && __SD.GUNCFG === __SD.HALCON && __SD.WCORE.cfg === __SD.HALCON && __SD.WCORE.cfg.mag === 5 && /^HALCÓN R7/.test(document.getElementById('wname').textContent)));
+    check('en línea, A lleva el HALCÓN R7 sin silenciador aunque haya elegido el VECTOR con él (cifras del servidor)', await A.evaluate(() => __SD.mode === 'online' && __SD.WSKIN.rifle === 'vector' && __SD.GUNCFG === __SD.HALCON && __SD.WCORE.cfg === __SD.HALCON && __SD.WCORE.cfg.mag === 5 && !__SD.GUNCFG.silenced && !(__SD.SIL.mesh && __SD.SIL.mesh.visible) && /^HALCÓN R7/.test(document.getElementById('wname').textContent)));
     check('el marcador muestra el nombre del rival', (await A.textContent('#kBotsLbl')) === 'NOVIA' && (await B.textContent('#kBotsLbl')) === 'HAMZA');
     if (pj3) {
       const loaded = pg => until(pg, () => __SD.PJ2.assetRoot.endsWith('/v4/') && !!(__SD.REMOTE && __SD.REMOTE.rig.v2), null, 120000);
