@@ -6,20 +6,12 @@ Cada entrada dice qué se decidió o cambió, quién lo decidió, y el estado re
 Las decisiones anteriores al 18-10-2026 están resumidas en `SNIPER_DUEL_MASTER_CONTEXT.md` §4.
 Detalle de cada cambio (antes/después, medidas, cómo revertir): `docs/next-level/NEXT_LEVEL_CHANGELOG.md`.
 
-## 10-11-2026 — BALA DURA y penetración EN LÍNEA (G7)
-Del propietario: «sí, está bien» (aprueba los daños: × 0,75 fina; BALA DURA × 0,7 → × 0,4 según el grosor, una pared
-media como mucho). Ahora lo decide el servidor (`core/room.js`) con las cajas atravesables que exporta la página
-(`core/mapdata.js` `pen`); el comando lleva el bit `hard` y el impacto a través de algo no da marcador al que dispara.
-Detalle en `docs/GUNSMITH.md` «Penetración y BALA DURA en línea».
-- Estado: IMPLEMENTADO · PROBADO (penroom 6, room 191, core 74, pen 20, net 13, pistol 15, shotgun 27, browser 61,
-  pen.browser 19, casa.online 12; online 47/48: la comprobación de tiempos de animación falla igual sin estos cambios
-  con el PC cargado) · PUBLICADO · PENDIENTE DE VALIDACIÓN entre dos dispositivos reales.
-
 ## Tareas (resumen vivo, actualizado el 04-11-2026)
 
 ### Siguiente prioridad
 | Tarea | Quién la desbloquea | Estado |
 |---|---|---|
+| **SALA 1V1** (10-11) — probar `?lobby=2` en el PC y en el iPhone (horizontal), con alguien en otro dispositivo: INICIO › MULTIJUGADOR 1V1 → CREAR SALA PRIVADA → INVITAR (copiar enlace o WhatsApp) → el otro entra y aparece en el hangar → elegir mapa → LISTO los dos → INICIAR PARTIDA. Decir si gusta, los FPS del hangar y si pasa a ser la de siempre (`?lobby=1` = la de antes; `docs/SALA-1V1.md`) | Propietario | SERVIDOR PUBLICADO · PÁGINA SIN PUBLICAR · PENDIENTE DE VALIDACIÓN EN IPHONE Y ANDROID |
 | **CAJA NUEVA** (10-11) — CAJAS › ABRIR CAJA en el PC y en el iPhone: ver la ATLAS DROP temblar, abrirse y encenderse con el color de la rareza; decir si gusta o si se cambia algo (`?caja=0` = la de antes) | Propietario | PUBLICADO · PENDIENTE DE VALIDACIÓN |
 | **ORDENADORES FLOJOS** (10-11) — en el portátil HP de su novia: recargar la página, mirar AJUSTES › GRÁFICOS (debe poner AUTO → BAJO y el nombre de la gráfica en el diagnóstico), jugar y saltar; decir los FPS | Propietario | PUBLICADO · PENDIENTE DE VALIDACIÓN EN EL HP |
 | **DESLIZAMIENTO, MAPA DE PRUEBAS y RAYOS X** (09-11) — contra bots: deslizarte en 3ª persona (tecla V) con cada operador; MAPAS › PRUEBAS con y sin BALA DURA; decir si te valen los daños (75 % fino, 70→40 % BALA DURA) y si la caja nueva del deslizamiento va al online | Propietario | PUBLICADO SOLO SIN CONEXIÓN · NECESITA SU APROBACIÓN PARA EL ONLINE |
@@ -106,6 +98,37 @@ Detalle en `docs/GUNSMITH.md` «Penetración y BALA DURA en línea».
 | Encargos para ChatGPT: CASA XL, CASA XL v2 y personaje | 18-10 / 19-10 |
 | Personaje 3D rev. 03 hecho por Claude e integrado tras `?pj=2` (bots y rival online) | 20-10 · directo a `main` |
 | Personajes realistas + elegir personaje (con el SOLDADO de `?pj=2`) y HUD 2 por defecto (aprobado en iPhone y PC) | 28-10 · directo a `main` |
+
+## 10-11-2026 — BALA DURA y penetración EN LÍNEA (G7)
+Del propietario: «sí, está bien» (aprueba los daños: × 0,75 fina; BALA DURA × 0,7 → × 0,4 según el grosor, una pared
+media como mucho). Ahora lo decide el servidor (`core/room.js`) con las cajas atravesables que exporta la página
+(`core/mapdata.js` `pen`); el comando lleva el bit `hard` y el impacto a través de algo no da marcador al que dispara.
+Detalle en `docs/GUNSMITH.md` «Penetración y BALA DURA en línea».
+- Estado: IMPLEMENTADO · PROBADO (penroom 6, room 191, core 74, pen 20, net 13, pistol 15, shotgun 27, browser 61,
+  pen.browser 19, casa.online 12; online 47/48: la comprobación de tiempos de animación falla igual sin estos cambios
+  con el PC cargado) · PUBLICADO · PENDIENTE DE VALIDACIÓN entre dos dispositivos reales.
+
+## 10-11-2026 — SALA 1V1: sala de espera multijugador nueva (`?lobby=2`)
+
+Pedido del propietario: «una sala de espera MULTIJUGADOR 1V1, al estilo de los lobbies de PUBG o COD pero con diseño
+original», con una imagen de referencia («no tiene que ser igual, pero sí parecido»). Detalle: `docs/SALA-1V1.md`.
+- **Qué hay:** INICIO › MULTIJUGADOR 1V1 abre una pantalla propia (CREAR SALA PRIVADA / UNIRSE con código) sobre un hangar
+  táctico en 3D (`client/lobby1v1.js`): tu operador a la izquierda y el rival a la derecha, que aparece en tiempo real al
+  entrar, con su personaje del juego, su arma y la animación de reposo; nombre, corona del anfitrión y LISTO encima;
+  INVITAR (copiar código, copiar enlace, WhatsApp, menú nativo del móvil); mapas con capturas reales (elige el anfitrión,
+  el servidor lo sincroniza); abajo SALIR, INVITAR, LISTO e INICIAR PARTIDA (naranja). Tras la partida, REVANCHA.
+- **Servidor (mismo protocolo y misma infraestructura):** `hello.hs` (mi página tiene el botón INICIAR) y `go` (el
+  anfitrión inicia con 2/2 y los dos LISTOS; una sola partida). Con `hs`, cambiar de mapa pone los LISTO a NO. El
+  anfitrión es quien lleva más tiempo en la sala. Las páginas de siempre siguen igual (empieza sola). Commits 4c147ec y
+  c6f49ae (arreglo: la bandera se llamaba como el contador de tiros a la cabeza; lo encontró TypeScript en otra sesión),
+  **publicados** por la otra sesión el 10-11.
+- **Pruebas:** `test/room.test.js` (36 de la sala nueva, 191 en total), `test/sala1v1.test.js` (26, sin navegador) y
+  `test/sala1v1.browser.test.js` (38, dos navegadores reales, PC y móvil apaisado, contra el servidor local: crear,
+  invitar, entrar, operadores juntos, mapa, LISTO, cambio de mapa, iniciar, mismo mapa, caídas y reconexión, salir y
+  volver, revancha, `?lobby=1`). Bien también con la GPU (ANGLE d3d11). Capturas en `docs/sala1v1/`.
+- **Estado:** IMPLEMENTADO · PROBADO EN NAVEGADOR · servidor PUBLICADO · página SIN PUBLICAR (se publica cuando lo decida
+  el propietario) · PENDIENTE DE VALIDACIÓN EN IPHONE Y ANDROID. El hangar: 125 mallas, ~1 400 triángulos, sin sombras
+  (medido por software: sirve para contar, no para FPS).
 
 ## 10-11-2026 — ENGINE NEXT GENERATION, primera fase: T0, T1, auditoría y prueba WebGPU
 Del propietario: «Continúa» con el plan de motor (TECHNOLOGY_EVOLUTION §11, regla 14).

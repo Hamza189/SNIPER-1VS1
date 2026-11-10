@@ -147,6 +147,7 @@ reconciliación, interpolación del rival 110 ms, ping) · `vmrig.js` (materiale
 | `?rayosx=0` / `?rayosx=1` | Rayos X del MAPA DE PRUEBAS (zonas de impacto de los bots a través de las paredes). 09-11-2026, `docs/GUNSMITH.md` |
 | `&rejas=0` | Sin el desvanecido de las rejas lejanas del kit (para comparar; `docs/PARPADEO.md`, 03-11-2026) |
 | `?menu=1` / `?menu=2` | El menú principal de antes (se recuerda) / el nuevo con la sala 3D, que es el de por defecto desde el 03-11-2026 (`docs/MENU-2.md`) |
+| `?lobby=2` / `?lobby=1` | SALA 1V1 (10-11, experimental): la sala de espera multijugador nueva sobre un hangar 3D, con INICIAR PARTIDA del anfitrión (`hello.hs`, `go`) / la pantalla de salas de siempre (`#mp`, por defecto). Se recuerda; el enlace de invitación lleva `&lobby=2` (`docs/SALA-1V1.md`) |
 | `&techo=1` | Techo opcional en CASA ATLAS |
 | `?pj=2` | Personaje 3D (rev. 03, `client/soldier2.js`, `assets/personaje/`) en bots y rival online en vez de la figura de cajas; solo aspecto. Sus transiciones (GF-2, 31-10) se miden con `node tools/anim-sheet.js [op4\|op2\|op3\|v2]` |
 | (28-10) por defecto | Sin bandera = `?pj=pro` + `?hud=2`; personaje SOLDADO (el de `?pj=2`) elegible y el de por defecto. Volver a lo anterior: `?pj=0` (cajas) y `?hud=1` (HUD anterior) |
