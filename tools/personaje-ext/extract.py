@@ -511,8 +511,40 @@ if SYN_SPINE2:
 # lo que aún sobresale de las cajas (bolsillos, bolsas del chaleco) se acerca a ellas con una curva suave: nunca más
 # de 'fitMargin' fuera en reposo, sin escalones (exceso e → m·(1 − e^(−e/m)))
 FM_ = CFG.get('fitMargin', 0.025)
+# material of each vertex (every corner is its own vertex here): zones can treat one material apart (rodilleras)
+VMAT = np.full(len(P), -1, np.int64); VMAT[F.reshape(-1)] = np.repeat(FM, 3)
+def mat_mask(vm, zn):
+    ok = np.ones(len(vm), bool)
+    if zn.get('mat'):
+        r_ = re.compile(zn['mat'], re.I); ok &= np.array([bool(r_.search(MATNAMES[i])) if i >= 0 else False for i in range(-1, len(MATNAMES))])[vm + 1]
+    if zn.get('notMat'):
+        r_ = re.compile(zn['notMat'], re.I); ok &= ~np.array([bool(r_.search(MATNAMES[i])) if i >= 0 else False for i in range(-1, len(MATNAMES))])[vm + 1]
+    return ok
+# piezas rígidas que sobresalen (rodilleras del MILITAR, 10-11-2026): se mueven ENTERAS hacia atrás hasta 'limit', sin
+# aplastarlas (aplastadas, la tapa, el borde y el relleno se cruzaban). 'fade': de qué z (sobre el centro) a qué z el
+# movimiento pasa de 0 a completo, para que las correas de detrás no se rompan. Una pieza por lado (x < 0 / x > 0).
+for zn in CFG.get('shiftZones', []):
+    ax = 'xyz'.index(zn.get('axis', 'z')); sd = zn.get('side', 1)
+    # 'yFull': franja donde se mueve entero; hasta 'y' baja suave a 0 (la rodilla se endereza sin escalón con el muslo
+    # y la espinilla). 'measureMat': el material que marca cuánto hay que mover (la rodillera); el resto le sigue.
+    base = mat_mask(VMAT, zn) & zb & (P[:, 1] >= zn['y'][0]) & (P[:, 1] <= zn['y'][1])
+    meas = mat_mask(VMAT, {'mat': zn['measureMat']}) if zn.get('measureMat') else np.ones(len(P), bool)
+    f0, f1 = zn.get('fade', [-9, -8.99])
+    yf = zn.get('yFull', zn['y'])
+    for lx in (-1, 1):
+        m_ = base & (np.sign(P[:, 0]) == lx)
+        if not m_.any():
+            continue
+        dd = P[m_, ax] * sd; yy = P[m_, 1]
+        w = np.clip((dd - f0) / (f1 - f0), 0, 1)
+        wy = np.minimum(np.clip((yy - zn['y'][0]) / max(1e-6, yf[0] - zn['y'][0]), 0, 1), np.clip((zn['y'][1] - yy) / max(1e-6, zn['y'][1] - yf[1]), 0, 1))
+        w = w * wy; w = w * w * (3 - 2 * w)
+        mm = meas[m_] & (w > 0.99)
+        sh = max(0.0, float(dd[mm].max() if mm.any() else dd.max()) - zn['limit'])
+        P[np.where(m_)[0], ax] -= sd * sh * w
+        log('pieza rígida', zn.get('mat'), 'lado', lx, 'atrás', round(sh * 100, 1), 'cm,', int((w > 0).sum()), 'vértices')
 if FM_ > 0:
-    q = P[zb]
+    q = P[zb]; vmb = VMAT[zb]
     BOX = [(1.17, .245, .31, .16), (.43, .19, .43, .11)]
     ex = []
     for (y, hx, hy, hz) in BOX:
@@ -535,13 +567,21 @@ if FM_ > 0:
         h = hh
         # 09-11-2026: zonas con más fondo (rodilleras del MILITAR): con 4 mm la rodillera y el pantalón de debajo
         # acababan en la misma capa y se cruzaban (el propietario: «le faltan rodillas»)
+        # 10-11-2026: aquello no bastaba (las rodilleras seguían aplastadas contra el pantalón, que en esa franja ya
+        # tenía 2,3 cm de fitInset): una zona puede limitarse a unos materiales ('mat' / 'notMat', regex) y fijar su
+        # propio fondo ('inset', desde el borde de la caja, en lugar del de fitInset). Así el pantalón de la rodilla se
+        # mete más y la rodillera queda delante de él, todo dentro de la caja.
         fm = np.full((len(d), 1), FM_)
         for zn in CFG.get('fitMarginZones', []):
             if zn.get('box', 'legs') != ('torso', 'legs')[bi]:
                 continue
             ax = 'xyz'.index(zn.get('axis', 'z'))
-            m_ = (q[sel][:, 1] >= zn['y'][0]) & (q[sel][:, 1] <= zn['y'][1]) & (np.sign(d[:, ax]) == zn.get('side', 1))
-            fm[m_, 0] = zn['margin']
+            m_ = (q[sel][:, 1] >= zn['y'][0]) & (q[sel][:, 1] <= zn['y'][1]) & (np.sign(d[:, ax]) == zn.get('side', 1)) & mat_mask(vmb[sel], zn)
+            if 'margin' in zn:
+                fm[m_, 0] = zn['margin']
+            if 'inset' in zn:
+                h[m_, ax] = (hx, hy, hz)[ax] - zn['inset']
+            log('zona', zn.get('mat') or ('no ' + zn['notMat'] if zn.get('notMat') else 'todo'), int(m_.sum()), 'vértices')
         e = np.maximum(0, np.abs(d) - h)
         es = fm * (1 - np.exp(-e / fm))
         nd = np.where(e > 0, np.sign(d) * (h + es), d)

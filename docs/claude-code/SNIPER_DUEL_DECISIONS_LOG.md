@@ -98,6 +98,15 @@ Detalle de cada cambio (antes/después, medidas, cómo revertir): `docs/next-lev
 | Personaje 3D rev. 03 hecho por Claude e integrado tras `?pj=2` (bots y rival online) | 20-10 · directo a `main` |
 | Personajes realistas + elegir personaje (con el SOLDADO de `?pj=2`) y HUD 2 por defecto (aprobado en iPhone y PC) | 28-10 · directo a `main` |
 
+## 10-11-2026 — Rodillas del MILITAR, de verdad
+Del propietario (captura del menú): «se sigue viendo que le faltan las rodillas». Lo del 09-11 no bastaba: las
+rodilleras seguían aplastadas contra el pantalón. Ahora la rodilla se endereza entera hacia atrás, sin deformar la
+rodillera (`shiftZones`), y el pantalón de la rodilla se mete detrás (detalle en `docs/PERSONAJES-PRO.md`). Zonas de
+impacto sin cambios (comprobación en los 3 LOD, también andando).
+- Estado: IMPLEMENTADO · PROBADO EN NAVEGADOR · commit local SIN PUBLICAR (el propietario: «solo prueba, no hace falta
+  publicar cosas pequeñas»). Al publicar: regenerar KTX2 (`python3 tools/ktx2/make.py op4`) y subirlo a R2
+  (`node tools/r2-subir.js`), o el PC seguirá viendo el modelo de antes.
+
 ## 10-11-2026 — Caja nueva en CAJAS: la ATLAS DROP en 3D
 Del propietario: «cambia la caja que hay en el juego para las skins, es un cuadrado, te he pasado un modelo de caja,
 mejóralo, quita lo que sale dentro» (CAJA_ATLAS_DROP.zip).

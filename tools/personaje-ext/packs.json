@@ -294,16 +294,10 @@
     ]
    },
    "fitMarginZones": [
-    {
-     "box": "legs",
-     "axis": "z",
-     "side": 1,
-     "y": [
-      0.36,
-      0.62
-     ],
-     "margin": 0.025
-    }
+    {"box": "legs", "axis": "z", "side": 1, "y": [0.28, 0.68], "notMat": "Pads", "inset": 0.045, "margin": 0.004}
+   ],
+   "shiftZones": [
+    {"measureMat": "Pads", "axis": "z", "side": 1, "y": [0.18, 0.8], "yFull": [0.34, 0.62], "fade": [-0.1, 0.02], "limit": 0.1}
    ]
   }
  }

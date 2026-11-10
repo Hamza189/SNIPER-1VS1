@@ -142,6 +142,24 @@ El propietario: «el personaje MILITAR le faltan rodillas».
 - Regenerado con `python tools/personaje-ext/make.py op4` y `python3 tools/ktx2/make.py op4`. El KTX2 se sube a R2 con
   `node tools/r2-subir.js`.
 
+### Rodillas del MILITAR, segunda vez (10-11-2026)
+El propietario, con una captura del menú: «se sigue viendo que le faltan las rodillas». Tenía razón: lo del 09-11 apenas
+cambiaba nada.
+- **Por qué no bastó:** en esa franja ya había dos `fitInset` delanteros (1,5 + 0,8 cm, para el deslizamiento), que se
+  comían los 2,5 cm de margen. La rodillera seguía aplastada contra el pantalón. Y la causa de fondo es otra: en el
+  modelo original la rodilla está unos 8 cm por delante de la caja (pierna algo doblada). El «ajuste suave» aplasta
+  cada punto por separado, y tapa, borde, relleno de la rodillera y pantalón acababan en el mismo centímetro, cruzados.
+  Se veían manchas oscuras con rayas, como un agujero.
+- **El arreglo** (`tools/personaje-ext/extract.py`, `packs.json` op4):
+  - `shiftZones` endereza la rodilla: mueve hacia atrás, sin deformarla, toda la zona de la rodilla. Va entera entre
+    0,34 y 0,62 m de alto y suaviza hasta 0,18 / 0,80 m para enlazar con muslo y espinilla. Por detrás de la pierna se
+    mueve menos (`fade`), y lo que se mueve lo marca la rodillera (`measureMat: Pads`, frente a 10 cm del centro).
+  - `fitMarginZones` admite `mat` / `notMat` e `inset` propio: el pantalón de la rodilla se mete más
+    (`notMat: Pads`, 4,5 cm) y la rodillera queda delante.
+- **Zonas de impacto sin cambios:** `check-character-hitbox` pasa en los 3 LOD (0,4 cm fuera como mucho en reposo; al
+  andar, dentro del límite de 4 cm). Probé un tope de 9 cm sin `fade`, y al andar salía 4,1 cm por detrás: descartado.
+- Antes / después: `docs/img/personaje/rodillas_militar_antes.jpg` y `rodillas_militar_despues.jpg`.
+
 ## Deslizamiento de verdad (09-11-2026)
 El propietario: «hazme animaciones de deslizamiento para SOLDADO, SWAT, FSB y MILITAR; no modifiques la mecánica». Eligió
 «caja nueva»: animación de verdad y zona de impacto que la siga.
