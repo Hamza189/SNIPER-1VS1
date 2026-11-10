@@ -25,7 +25,10 @@ function create(opts) {
     lastEvQ: 0, hp: 100, alive: true, score: { A: 0, B: 0 }, startIn: 0, startedAt: 0, events: [], lastShot: null, lastReject: null, seenShots: new Set()
   };
   function out(obj) { N.send(JSON.stringify(obj)); }
-  N.hello = (name, token) => out({ t: 'hello', v: PR.VERSION, name, token: token || undefined });
+  // hs: this page starts the match with its own button (SALA 1V1, ?lobby=2): see 'go' in core/protocol.js
+  N.hello = (name, token, hs) => out({ t: 'hello', v: PR.VERSION, name, token: token || undefined, hs: hs ? true : undefined });
+  N.go = () => out({ t: 'go' });
+  N.hs = 0;   // 1 = in this room the host starts the match (lobby 'hs')
   N.ready = on => out({ t: 'ready', on: !!on });
   N.rematch = () => out({ t: 'rematch' });
   N.chooseMap = id => out({ t: 'map', id });
@@ -112,7 +115,7 @@ function create(opts) {
       // a welcome opens a new socket: the server only numbers events from here on, and a restarted
       // server object (every deploy) numbers them again from 1, so the old count must not filter them
       case 'welcome': N.you = m.you; N.token = m.token; N.code = m.code; N.phase = m.phase; N.players = m.players; N.match = m.match; N.lastEvQ = 0; if (m.cfg) N.cfg = m.cfg; if (m.host !== undefined) N.host = m.host; ev.push({ k: 'welcome', m }); break;
-      case 'lobby': N.phase = m.phase; N.players = m.players; if (m.map) N.map = m.map; if (m.maps) N.maps = m.maps; if (m.cfg) N.cfg = m.cfg; if (m.host !== undefined) N.host = m.host; if (m.tsc) N.tsc = m.tsc; ev.push({ k: 'lobby', m }); break;
+      case 'lobby': N.phase = m.phase; N.players = m.players; if (m.map) N.map = m.map; if (m.maps) N.maps = m.maps; if (m.cfg) N.cfg = m.cfg; if (m.host !== undefined) N.host = m.host; if (m.tsc) N.tsc = m.tsc; N.hs = m.hs ? 1 : 0; ev.push({ k: 'lobby', m }); break;
       case 'start':
         N.match = m.m; if (m.map) N.map = m.map; N.names = m.names || {}; N.phase = 'countdown'; N.startIn = m.in; N.startedAt = N.now();
         N.rules = m.rules || {}; N.timeLeft = N.rules.timeMs || null; N.mode = N.rules.mode || 'duelo'; N.teams = m.teams || null;

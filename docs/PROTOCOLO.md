@@ -27,7 +27,7 @@ JSON sobre WebSocket. Lo validan `core/protocol.js` (en el cliente y en el servi
 
 | t | Campos | Cuándo | Validación |
 |---|---|---|---|
-| `hello` | `v:1, name, token?` | primer mensaje | versión exacta; nombre limpio de 16 caracteres como máximo; token `[A-Za-z0-9_-]{16,64}` |
+| `hello` | `v:1, name, token?, hs?` | primer mensaje | versión exacta; nombre limpio de 16 caracteres como máximo; token `[A-Za-z0-9_-]{16,64}`; `hs` (solo `true`/`1`): mi página tiene el botón INICIAR PARTIDA (SALA 1V1, `?lobby=2`) |
 | `ready` | `on` | en el lobby | solo en fase `lobby` |
 | `map` | `id` (`arena`, `pueblo`) | en el lobby o al terminar | solo la plaza `A` |
 | `kit` | `id` (`rifle` = HALCÓN R7, `shotgun` = FURIA 12) | en cualquier momento | se usa desde la siguiente aparición del jugador; nunca cambia el arma que lleva en la mano |
@@ -37,6 +37,7 @@ JSON sobre WebSocket. Lo validan `core/protocol.js` (en el cliente y en el servi
 | `acct` | `tok` (sesión de la cuenta, `SD-XXXX-XXXX.<ficha>`) | tras `welcome`, si el jugador tiene cuenta (opcional) | el servidor la comprueba con la cuenta (`server/accounts.js` → `roomAccount`); entonces el lobby enseña su título (`players[i].title`, leído de la cuenta) y al terminar la partida se dan puntos de caja (`matchReward`). Una ficha falsa se ignora. No cambia nada de la partida (`docs/INVENTARIO-Y-CAJAS.md`) |
 | `in` | `m, s, c:[cmd…]` | cada 3 ticks (≈40/s) o al disparar | de 1 a 24 comandos; `s` es la secuencia del primero |
 | `rematch` | – | tras el final | – |
+| `go` | – | sala, solo el anfitrión con `hs` (10-11-2026) | 2/2 personas, todas LISTAS y conectadas; si no, `error {code:'cant_start', why:'host'|'auto'|'players'|'ready'|'phase'}`; una sola partida aunque llegue dos veces |
 | `ping` | `c` (reloj del cliente), `r` (ping medido, ms; opcional) | cada 1,5 s | – |
 | `leave` | – | al salir | – |
 
@@ -70,7 +71,7 @@ Los bits son estos:
 | t | Contenido |
 |---|---|
 | `welcome` | `you`, `token`, `code`, `phase`, `match`, `players`, `rules` |
-| `lobby` | `phase`, `players[{id,name,connected,ready,kills,kit}]`, `map`, `maps`, `winner`, `rematch` |
+| `lobby` | `phase`, `players[{id,name,connected,ready,kills,kit}]`, `map`, `maps`, `winner`, `rematch`, `host`, `hs` (1 = el anfitrión inicia con su botón; con `hs`, cambiar de mapa pone los LISTO a NO) |
 | `start` | `m`, `in` (ms de cuenta atrás), `you`, `spawn{x,z,yaw}`, `rules`, `names`; con `resume:true, lastSeq` si es una vuelta a una partida en curso |
 | `snap` | 20/s: `m`, `k` (tick), `ph`, `ack` (último comando aplicado), `me` (estado completo de movimiento, arma y navaja), `hp`, `alive`, `op` (rival: posición, velocidad, `yaw`/`pitch`, ojo, modo, arma, ADS, estado, vida), `sc`, `now` |
 | `ev` | `m`, `q`, `e:[…]` con `go`, `shot{id,by,w,o,d,corrected}` (escopeta: también `ads` y `n`), `hit{by,to,part,dmg,hp,pt,dist,weapon}` (escopeta: también `pellets`), `kill{by,to,part,dist,weapon,sc}`, `respawn{id,x,z,yaw}`, `pause{who}`, `resume`, `rejected{what,why}`, `over{winner,why,sc,stats}` |

@@ -640,6 +640,113 @@ for (const lat of [20, 80]) {
   check('ping ' + lat * 2 + ' ms: la vida se regenera a 22 por segundo, como contra bots', Math.abs(rate - 22) < 1, rate.toFixed(1) + '/s');
 }
 
+
+console.log('\nSALA 1V1 (?lobby=2): EL ANFITRIÓN INICIA, MAPA Y LISTO, SALIDAS Y RECONEXIONES');
+{ // a room with every map of the server (like server/node.js), and plain sockets that write down what they receive
+  const MD = require('../core/mapdata.js');
+  const mk = () => { const inbox = {}; let t = 1000;
+    const r = SDRoom.create({ code: 'SALA1V', maps: MD.maps, defaultMap: 'arena', now: t, send: (c, x) => (inbox[c] = inbox[c] || []).push(JSON.parse(x)), close: () => {} });
+    const P = { r, inbox, at: () => t, adv: ms => { for (let k = 0; k < ms; k += 50) { t += 50; r.tick(t); } } };
+    P.join = (conn, name, hs, token) => { r.connect(conn, t); r.message(conn, JSON.stringify({ t: 'hello', v: 1, name, token, hs }), t); return P.last(conn, 'welcome'); };
+    P.say = (conn, obj) => r.message(conn, JSON.stringify(obj), t);
+    P.last = (conn, k) => (inbox[conn] || []).filter(m => m.t === k).pop();
+    P.all = (conn, k) => (inbox[conn] || []).filter(m => m.t === k);
+    P.err = conn => { const e = P.last(conn, 'error'); return e ? e.why || e.code : null; };
+    // the sockets of these tests do not ping: keep them alive as a real page does
+    P.ping = (...cs) => { for (const c of cs) P.say(c, { t: 'ping', c: 1 }); };
+    return P; };
+  { const P = mk(), r = P.r;
+    const wa = P.join(1, 'Hamza', true);
+    check('el anfitrión entra con el botón: es A y la sala espera su INICIAR (hs 1)', wa.you === 'A' && P.last(1, 'lobby').hs === 1 && P.last(1, 'lobby').host === 'A');
+    P.say(1, { t: 'go' });
+    check('INICIAR solo, sin rival: no empieza (faltan jugadores)', r.phase === 'lobby' && P.err(1) === 'players');
+    const wb = P.join(2, 'Faisal', true);
+    check('el invitado entra como B y los dos lo ven al momento (2/2)', wb.you === 'B' && P.last(1, 'lobby').players.filter(Boolean).length === 2 && P.last(2, 'lobby').players.filter(Boolean).length === 2);
+    P.say(1, { t: 'ready', on: true }); P.say(2, { t: 'ready', on: true });
+    check('los dos LISTOS: no empieza sola, espera al anfitrión', r.phase === 'lobby' && P.last(2, 'lobby').players.every(p => p && p.ready));
+    P.say(2, { t: 'go' });
+    check('el invitado no puede iniciar', r.phase === 'lobby' && P.err(2) === 'host');
+    // the map: only the host, only real maps; a new map puts both LISTO back to NO
+    P.say(2, { t: 'map', id: 'pueblo' });
+    check('el invitado no puede cambiar el mapa', P.last(1, 'lobby').map === 'arena');
+    P.say(1, { t: 'map', id: 'montana' }); P.say(1, { t: 'map', id: 'pruebas' });
+    check('un mapa que el servidor no tiene se ignora (MONTAÑA, PRUEBAS)', P.last(2, 'lobby').map === 'arena');
+    P.say(1, { t: 'map', id: 'pueblo' });
+    const lb = P.last(2, 'lobby');
+    check('el anfitrión cambia a PUEBLO: el invitado lo recibe y los dos LISTO vuelven a NO', lb.map === 'pueblo' && lb.players.filter(Boolean).every(p => !p.ready));
+    P.say(2, { t: 'ready', on: true }); P.say(1, { t: 'map', id: 'pueblo' });
+    check('elegir el mismo mapa otra vez no quita el LISTO', P.last(1, 'lobby').players[1].ready === true);
+    P.say(1, { t: 'go' });
+    check('INICIAR con el anfitrión sin LISTO: no empieza', r.phase === 'lobby' && P.err(1) === 'ready');
+    P.say(1, { t: 'ready', on: true }); P.say(1, { t: 'go' }); P.say(1, { t: 'go' }); P.say(1, { t: 'ready', on: true });
+    const sA = P.all(1, 'start'), sB = P.all(2, 'start');
+    check('INICIAR (pulsado dos veces): una sola partida, la 1, en PUEBLO para los dos', r.phase === 'countdown' && r.match === 1 && sA.length === 1 && sB.length === 1 && sA[0].map === 'pueblo' && sB[0].map === 'pueblo');
+    const nl = P.all(2, 'lobby').length; P.say(1, { t: 'map', id: 'arena' });
+    check('con la partida en marcha el mapa ya no cambia', P.all(2, 'lobby').length === nl);
+    // disconnect and reconnect in the middle: same seat with the token, the match goes on
+    for (let i = 0; i < 8; i++) { P.ping(1, 2); P.adv(500); }
+    r.disconnect(2, P.at());
+    check('el invitado se desconecta jugando: pausa (RECONECTANDO)', r.phase === 'paused');
+    for (let i = 0; i < 10; i++) { P.ping(1); P.adv(500); }
+    const wb2 = P.join(3, 'Faisal', true, wb.token);
+    check('vuelve con su ficha: mismo asiento B y la partida sigue', wb2 && wb2.you === 'B' && r.phase === 'playing' && P.last(3, 'start').resume === true);
+    // the end and the rematch
+    r.disconnect(3, P.at());
+    for (let i = 0; i < 125; i++) { P.ping(1); P.adv(500); }
+    check('si no vuelve en 60 s gana el que se quedó', r.phase === 'over' && r.winner === 'A');
+    const wb3 = P.join(4, 'Faisal', true, wb.token);
+    check('vuelve después: entra en la pantalla final de su sala', wb3 && wb3.you === 'B' && wb3.phase === 'over');
+    P.say(1, { t: 'rematch' }); P.say(4, { t: 'rematch' });
+    check('REVANCHA los dos: partida 2 en el mismo mapa', r.match === 2 && r.phase === 'countdown' && P.last(4, 'start').map === 'pueblo' && P.last(1, 'start').m === 2);
+  }
+  { // in the lobby: drop, reconnect, the host leaving, a newcomer
+    const P = mk(), r = P.r;
+    P.join(1, 'Hamza', true); const wb = P.join(2, 'Faisal', true);
+    P.say(1, { t: 'ready', on: true }); P.say(2, { t: 'ready', on: true });
+    r.disconnect(2, P.at());
+    const l1 = P.last(1, 'lobby');
+    check('el invitado se cae en la sala: sale DESCONECTADO y sin LISTO, su plaza se guarda', l1.players[1] && l1.players[1].connected === false && l1.players[1].ready === false);
+    P.say(1, { t: 'go' });
+    check('INICIAR con el rival desconectado: no empieza', r.phase === 'lobby' && P.err(1) === 'ready');
+    for (let i = 0; i < 40; i++) { P.ping(1); P.adv(500); }
+    const back = P.join(3, 'Faisal', true, wb.token);
+    check('vuelve a los 20 s con su ficha: misma plaza B', back.you === 'B' && P.last(1, 'lobby').players[1].connected === true);
+    P.say(3, { t: 'ready', on: true }); P.say(1, { t: 'leave' });
+    const l3 = P.last(3, 'lobby');
+    check('el anfitrión se va: el invitado pasa a ser el anfitrión (B) y sin LISTO', r.phase === 'lobby' && l3.host === 'B' && !l3.players[0] && l3.players[1].ready === false && l3.hs === 1);
+    const wc = P.join(5, 'Nuevo', true);
+    check('entra otro: ocupa la plaza A pero el anfitrión sigue siendo B (el que se quedó)', wc.you === 'A' && P.last(5, 'lobby').host === 'B');
+    P.say(5, { t: 'map', id: 'casa' }); P.say(3, { t: 'map', id: 'casa2' });
+    check('solo B cambia el mapa', P.last(5, 'lobby').map === 'casa2');
+    P.say(5, { t: 'ready', on: true }); P.say(3, { t: 'ready', on: true }); P.say(3, { t: 'go' });
+    check('B inicia: los dos en CASA ATLAS 2.0', r.phase === 'countdown' && P.last(5, 'start').map === 'casa2' && P.last(3, 'start').map === 'casa2');
+    P.join(6, 'Tercero', true);
+    check('un tercero no entra (solo 2 plazas)', !!P.last(6, 'error') && !P.last(6, 'welcome'));
+  }
+  { // old pages (no button) keep the old way; mixed rooms
+    const P = mk(), r = P.r;
+    P.join(1, 'Viejo', false); P.join(2, 'Nuevo', true);
+    check('anfitrión con la página de antes: hs 0', P.last(2, 'lobby').hs === 0);
+    P.say(2, { t: 'go' });
+    check('el invitado nuevo no puede iniciar', P.err(2) === 'host' && r.phase === 'lobby');
+    P.say(1, { t: 'ready', on: true }); P.say(1, { t: 'map', id: 'pueblo' });
+    check('con la página de antes cambiar el mapa no quita el LISTO (como siempre)', P.last(2, 'lobby').players[0].ready === true);
+    P.say(2, { t: 'ready', on: true });
+    check('los dos LISTOS: empieza sola, como siempre', r.phase === 'countdown' && P.all(1, 'start').length === 1);
+    const Q = mk();
+    Q.join(1, 'Nuevo', true); Q.join(2, 'Viejo', false);
+    Q.say(1, { t: 'ready', on: true }); Q.say(2, { t: 'ready', on: true });
+    check('anfitrión nuevo con invitado de antes: espera al INICIAR', Q.r.phase === 'lobby');
+    Q.say(1, { t: 'go' });
+    check('y el INICIAR del anfitrión le llega también al de antes', Q.r.phase === 'countdown' && Q.all(2, 'start').length === 1);
+    const Z = mk();
+    Z.join(1, 'Nuevo', true); Z.join(2, 'Viejo', false); Z.say(1, { t: 'leave' });
+    check('si se va el anfitrión nuevo y queda uno de antes: hs 0 (empezará sola)', Z.last(2, 'lobby').hs === 0 && Z.last(2, 'lobby').host === 'B');
+    const parsed = PR.parse(JSON.stringify({ t: 'hello', v: 1, name: 'x', hs: 'si' }));
+    check('protocolo: hs solo vale true/1; go sin más campos', parsed.msg.hs === false && PR.parse('{"t":"go","x":1}').msg.t === 'go' && PR.parse(JSON.stringify({ t: 'hello', v: 1, name: 'x', hs: true })).msg.hs === true);
+  }
+}
+
 (async () => {   // the account check is asynchronous (the server asks the account): the test lets it finish
 const settle = () => new Promise(r => setImmediate(r));
 console.log('\nCUENTAS EN LA SALA (título y puntos de caja: opts.account / opts.onOver)');

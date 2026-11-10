@@ -2,8 +2,11 @@
    Full description: docs/PROTOCOLO.md. Every message received is checked here before use.
 
    Client → server
-     hello   { t, v, name, token? }          first message; token = reconnect to my seat
+     hello   { t, v, name, token?, hs? }     first message; token = reconnect to my seat; hs = my page starts the match
+                                             with a button (SALA 1V1, ?lobby=2): if I am the host, both ready is not
+                                             enough, the match starts when I send 'go' (pages without it: as always)
      ready   { t, on }                       lobby: I am ready / not ready
+     go      { t }                           lobby, host with hs only: start now (2/2 people, everyone ready)
      map     { t, id }                       lobby, creator only: choose the map ('pueblo', 'arena', 'casa', 'casa2')
      kit     { t, id }                       my primary: 'rifle' (HALCÓN R7) or 'shotgun' (FURIA 12), used from my next spawn
      skin    { t, id }                       my character (looks only): 'soldado', 'clasico', 'swat', 'fsb' or 'militar'
@@ -88,7 +91,7 @@ function parse(text) {
     case 'hello':
       if (m.v !== VERSION) return { error: 'version' };
       if (m.token !== undefined && (typeof m.token !== 'string' || !/^[A-Za-z0-9_-]{16,64}$/.test(m.token))) return { error: 'token' };
-      return { msg: { t: 'hello', name: cleanName(m.name), token: m.token || null } };
+      return { msg: { t: 'hello', name: cleanName(m.name), token: m.token || null, hs: m.hs === true || m.hs === 1 } };
     case 'ready': return { msg: { t: 'ready', on: !!m.on } };
     case 'in': {
       if (!Number.isInteger(m.m) || m.m < 0 || !Number.isInteger(m.s) || m.s < 0 || m.s > 1e12 || !Array.isArray(m.c)) return { error: 'shape' };
@@ -109,6 +112,7 @@ function parse(text) {
     case 'team': return m.id === 'rojo' || m.id === 'azul' ? { msg: { t: 'team', id: m.id } } : { error: 'shape' };
     case 'map': return typeof m.id === 'string' && /^[a-z][a-z0-9]{1,15}$/.test(m.id) ? { msg: { t: 'map', id: m.id } } : { error: 'shape' };
     case 'rematch': return { msg: { t: 'rematch' } };
+    case 'go': return { msg: { t: 'go' } };
     case 'ping': return num(m.c, 0, 1e15) && (m.r === undefined || num(m.r, 0, 1e5)) ? { msg: { t: 'ping', c: m.c, r: m.r === undefined ? undefined : Math.min(600, m.r) } } : { error: 'shape' };
     case 'leave': return { msg: { t: 'leave' } };
     default: return { error: 'type' };
