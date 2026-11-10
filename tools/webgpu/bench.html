@@ -1,0 +1,57 @@
+<!doctype html>
+<!-- ENGINE NEXT GENERATION, paso 8 (10-11-2026): la misma escena del PUEBLO dibujada con Three.js r186 en WebGL o en
+     WebGPU, para compararla con el juego (r128). Prueba aislada: el juego no la usa. ?r=gl | ?r=gpu · ?n=240 fotogramas.
+     Necesita: .work/webgpu/pueblo.glb (node .work/exp/export.js) y .work/webgpu/three/ (Three.js r186 de npm).
+     Lo mide tools/webgpu/medir.js. -->
+<html><head><meta charset="utf-8"><style>html,body{margin:0;background:#000;overflow:hidden}canvas{display:block}</style>
+<script type="importmap">{"imports":{"three":"../../.work/webgpu/three/three.webgpu.js","three/webgl":"../../.work/webgpu/three/three.module.js"}}</script>
+</head><body><script type="module">
+const q = new URLSearchParams(location.search), MODE = q.get('r') || 'gpu', N = +(q.get('n') || 240);
+const T = await import(MODE === 'gpu' ? 'three' : 'three/webgl');
+const { GLTFLoader } = await import('../../.work/webgpu/three/loaders/GLTFLoader.js');
+window.OUT = null;
+try {
+  const W = innerWidth, H = innerHeight, dpr = devicePixelRatio;
+  const R = MODE === 'gpu' ? new T.WebGPURenderer({ antialias: true }) : new T.WebGLRenderer({ antialias: true });
+  R.setPixelRatio(dpr); R.setSize(W, H); R.shadowMap.enabled = true; R.shadowMap.type = T.PCFShadowMap;
+  document.body.appendChild(R.domElement);
+  if (R.init) await R.init();
+  const backend = MODE === 'gpu' ? (R.backend && R.backend.isWebGPUBackend ? 'WebGPU' : 'WebGL2 (vuelta atrás)') : 'WebGL2';
+  const S = new T.Scene(); S.background = new T.Color(0xb9c8d6); S.fog = new T.Fog(0xb9c8d6, 45, 175);
+  S.add(new T.HemisphereLight(0xdfe8f0, 0x6b5a44, 1.1));
+  const sun = new T.DirectionalLight(0xfff1dc, 2.2); sun.position.set(-30, 45, 25); sun.castShadow = true;
+  sun.shadow.mapSize.set(2048, 2048); Object.assign(sun.shadow.camera, { left: -62, right: 62, top: 62, bottom: -62, near: 1, far: 160 });
+  sun.shadow.bias = -0.0005; sun.shadow.normalBias = 0.04; S.add(sun); S.add(sun.target);
+  const L = new GLTFLoader(), load = u => new Promise((res, rej) => L.load(u, g => res(g.scene), undefined, rej));
+  const PJ = '../../assets/personaje/v4/personaje_1k.glb';
+  const [town, gun, ...pjs] = await Promise.all([load('../../.work/webgpu/pueblo.glb'), load('../../assets/armas/lince/arma.glb'), load(PJ), load(PJ), load(PJ), load(PJ)]);
+  town.traverse(o => { if (o.isMesh) { o.castShadow = true; o.receiveShadow = true; } }); S.add(town);
+  // four soldiers round the plaza (static: the skinning cost is the same in both renderers' CPU side)
+  for (const [k, [x, z]] of [[6, 4], [-7, 3], [4, -8], [-5, -6]].entries()) { const c = pjs[k];   // each one loaded on its own: a clone() of a skinned model breaks its skeleton in r186
+    c.position.set(x, 0, z); c.traverse(o => { if (o.isMesh) o.castShadow = true; }); S.add(c); }
+  const cam = new T.PerspectiveCamera(70, W / H, 0.05, 400); S.add(cam);
+  gun.scale.setScalar(1); gun.position.set(0.18, -0.2, -0.45); gun.rotation.y = Math.PI; cam.add(gun);
+  // warm up (compiles every pipeline / program)
+  cam.position.set(0, 1.62, 0);
+  if (R.compileAsync) await R.compileAsync(S, cam);
+  // warm-up: a full turn, twice (every pipeline / program and the shadow pass compiled before timing)
+  for (let k = 0; k < 120; k++) { cam.rotation.y = k / 60 * Math.PI * 2; R.render(S, cam); if (k % 20 === 19) await new Promise(r => setTimeout(r, 30)); }
+  const dev = MODE === 'gpu' && R.backend && R.backend.device, gl = MODE === 'gl' ? R.getContext() : null;
+  const sync = async () => { if (dev) await dev.queue.onSubmittedWorkDone(); else if (gl) { gl.finish(); } };
+  await sync();
+  const ms = [], cpu = []; let calls = 0, tris = 0;
+  for (let i = 0; i < N; i++) {
+    cam.rotation.y = i / N * Math.PI * 2;
+    R.info.autoReset = false; R.info.reset();
+    const t0 = performance.now(); R.render(S, cam); const t1 = performance.now(); await sync(); const t2 = performance.now();
+    cpu.push(t1 - t0); ms.push(t2 - t0);
+    const inf = R.info.render; calls += inf.drawCalls != null ? inf.drawCalls : inf.calls; tris += inf.triangles;
+  }
+  // throughput: free-running frames for 4 s (vsync and the frame cap are off in tools/webgpu/medir.js), the same for every renderer
+  R.info.autoReset = true; let frames = 0; const tA = performance.now();
+  await new Promise(res => { const step = () => { cam.rotation.y = (performance.now() - tA) / 4000 * Math.PI * 2; R.render(S, cam); frames++; if (performance.now() - tA < 4000) requestAnimationFrame(step); else res(); }; requestAnimationFrame(step); });
+  const fps = +(frames / ((performance.now() - tA) / 1000)).toFixed(1);
+  const st = a => { const s = a.slice().sort((x, y) => x - y); return { p50: +s[Math.floor(s.length * 0.5)].toFixed(2), p95: +s[Math.floor(s.length * 0.95)].toFixed(2), media: +(a.reduce((x, y) => x + y, 0) / a.length).toFixed(2) }; };
+  window.OUT = { renderer: 'three r' + T.REVISION, backend, px: [Math.round(W * dpr), Math.round(H * dpr)], fps, fotograma: st(ms), cpuRender: st(cpu), llamadas: Math.round(calls / N), triangulos: Math.round(tris / N) };
+} catch (e) { window.OUT = { error: String(e && e.stack || e) }; }
+</script></body></html>

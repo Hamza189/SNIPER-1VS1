@@ -98,6 +98,32 @@ Detalle de cada cambio (antes/después, medidas, cómo revertir): `docs/next-lev
 | Personaje 3D rev. 03 hecho por Claude e integrado tras `?pj=2` (bots y rival online) | 20-10 · directo a `main` |
 | Personajes realistas + elegir personaje (con el SOLDADO de `?pj=2`) y HUD 2 por defecto (aprobado en iPhone y PC) | 28-10 · directo a `main` |
 
+## 10-11-2026 — ENGINE NEXT GENERATION, primera fase: T0, T1, auditoría y prueba WebGPU
+Del propietario: «Continúa» con el plan de motor (TECHNOLOGY_EVOLUTION §11, regla 14).
+- **T0 y T1** (`ab6dfca`):
+  - dependencias fijas y `package-lock.json`;
+  - `tools/py.js`;
+  - `.gitattributes`;
+  - `tsc --noEmit` sobre `core/`.
+
+  T1 encontró un fallo real en la sala 1v1 (`hs` doble en `core/room.js`), avisado a su sesión.
+- **Prueba aislada** (`tools/webgpu/`): la misma escena del PUEBLO.
+
+  | Motor | FPS sin límite en el PC |
+  |---|---|
+  | r128 WebGL (el juego) | 261–289 |
+  | r186 WebGL | 275–337 |
+  | r186 WebGPU | 176–236, con fachadas mal pintadas |
+
+- **Conclusiones:**
+  - A: actualizar a Three.js actual en WebGL, por fases.
+  - B: WebGPU no aporta hoy; hay que medirlo en el iPhone y en el Samsung.
+  - C: la primera pieza de C++/WASM sería construir la red de los bots (122–329 ms al cargar); hace falta instalar
+    LLVM/clang, gratis.
+
+  Detalle en `ENGINE_NEXT_GEN_INFORME.md`.
+- **Estado:** IMPLEMENTADO (herramientas) · MEDIDO EN PC · nada publicado ni cambiado en el juego.
+
 ## 10-11-2026 — Rodillas del MILITAR, de verdad
 Del propietario (captura del menú): «se sigue viendo que le faltan las rodillas». Lo del 09-11 no bastaba: las
 rodilleras seguían aplastadas contra el pantalón. Ahora la rodilla se endereza entera hacia atrás, sin deformar la

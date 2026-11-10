@@ -236,3 +236,6 @@ en cálculos pequeños se come la ventaja). C# no (solo tendría sentido con Uni
 
 Nota de Claude: el paso de r128 a un Three.js con `WebGPURenderer` (r16x+) cambia la gestión de color, las luces
 (unidades físicas) y quita `examples/js`; es la parte cara y hay que presupuestarla antes (ver §4 y §10).
+
+**Estado (10-11-2026):** empezado a petición del propietario («Continúa»). Hechos T0 y T1 (sin el paso de `npm test`), la
+auditoría y la prueba aislada de WebGPU. Informe con las conclusiones A, B y C en `ENGINE_NEXT_GEN_INFORME.md`.
