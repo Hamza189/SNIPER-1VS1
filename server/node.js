@@ -10,7 +10,7 @@
 'use strict';
 const http = require('http'), crypto = require('crypto');
 let WebSocketServer;
-try { ({ WebSocketServer } = require('ws')); } catch (e) { ({ WebSocketServer } = require('/opt/npm-tools/node_modules/ws')); }
+({ WebSocketServer } = require('ws'));   // devDependency (package.json)
 const SDRoom = require('../core/room.js'), PR = require('../core/protocol.js'), MAP = require('../core/mapdata.js'), G = require('../core/geom.js');
 const SDAccounts = require('./accounts.js');
 // in-memory store with the Durable Object storage shape ({get, put, delete}, async; values copied like structured clone)

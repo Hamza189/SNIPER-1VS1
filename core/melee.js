@@ -90,7 +90,7 @@ function resolve(att, targets, kc, losFn) {
       if (cosA < Math.cos(cone)) continue;
     }
     if (losFn && !losFn(t)) continue;                                        // walls block the blade
-    if (!best || d < best.dist) best = { target: t, dist: d };
+    if (!best || d < best.dist) best = { target: t, dist: d, back: false, damage: 0 };
   }
   if (!best) return null;
   const t = best.target;

@@ -1,0 +1,16 @@
+# Binarios: git no debe tocar sus fines de línea ni intentar mostrar diferencias de texto (T0, 10-11-2026).
+# El texto sigue como hasta ahora (core.autocrlf del equipo de cada uno); no se renormaliza nada.
+*.glb binary
+*.ktx2 binary
+*.wasm binary
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.webp binary
+*.mp4 binary
+*.mp3 binary
+*.ogg binary
+*.wav binary
+*.hdr binary
+*.zip binary
+*.rar binary

@@ -1,0 +1,18 @@
+{
+  "//": "T1 (docs/claude-code/SNIPER_DUEL_TECHNOLOGY_EVOLUTION.md): TypeScript solo COMPRUEBA el JavaScript (JSDoc); no genera nada. npm run typecheck",
+  "compilerOptions": {
+    "allowJs": true,
+    "checkJs": true,
+    "noEmit": true,
+    "target": "ES2020",
+    "lib": ["ES2020", "DOM"],
+    "module": "commonjs",
+    "moduleResolution": "node",
+    "strict": false,
+    "noImplicitAny": false,
+    "skipLibCheck": true,
+    "types": ["node"]
+  },
+  "include": ["core/*.js", "types/*.d.ts"],
+  "exclude": ["core/mapdata.js"]
+}
