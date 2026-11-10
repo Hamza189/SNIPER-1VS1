@@ -20,6 +20,13 @@ Las pruebas del PC usan WebGL por software: sirven para contar llamadas y trián
 - Durante la prueba la resolución automática se congela (si no, AUTO escondería el coste); al acabar todo vuelve a como
   estaba y el informe queda guardado en el dispositivo.
 
+## Ordenadores flojos (10-11-2026)
+AUTO ya no es ALTO en todos los ordenadores: mira el nombre de la gráfica (`client/quality.js` `gpuHint`). WebGL por
+software o Intel pequeña → BAJO; otra Intel integrada → MEDIO; tarjeta de verdad → ALTO. Si en partida va por debajo del
+60 % del objetivo con la resolución al mínimo ~6 s, baja un perfil y lo recuerda. `?gpuauto=0` = AUTO de antes. Caso
+real: portátil HP con Pentium a 1,6 GHz a 15 FPS. Además, el hundimiento de la cámara al aterrizar se volvía inestable
+por debajo de ~20 FPS (la cámara salía volando al saltar); ahora va en pasos de 1/120 s.
+
 ## Resultados
 
 ### iPhone Pro Max (14–16), calidad ALTO — 28-10-2026, 22:13

@@ -280,6 +280,7 @@ h1 span{display:block;color:var(--sand)}
 #boxOv[hidden]{display:none}
 .boxStage{display:grid;justify-items:center;gap:18px;padding:24px 16px;text-align:center}
 .crate{width:min(44vw,170px);aspect-ratio:1;position:relative}
+.box3{width:min(88vw,600px,92vh);aspect-ratio:4/3;display:block}.box3[hidden]{display:none}
 .crate .cb{position:absolute;inset:22% 0 0 0;background:linear-gradient(180deg,#666b43,#3b3e26);border:3px solid #202217;box-shadow:inset 0 0 0 6px rgba(0,0,0,.2),0 18px 40px rgba(0,0,0,.6)}
 .crate .cb::before{content:'';position:absolute;left:0;right:0;top:36%;height:15%;background:#2a2c1d}
 .crate .cb::after{content:'SD';position:absolute;inset:0;display:grid;place-items:center;font:500 48px/1 var(--f-display);color:rgba(240,230,200,.5);letter-spacing:.12em}
@@ -1498,7 +1499,17 @@ const PERF_LOW=/[?&]perf=low\b/.test(location.search);
 // graphics profile (Ajustes → Gráficos): read before the renderer exists, antialiasing can only be chosen now
 const GFX_SET=SDSettings.load(store,isTouch);
 const GFX={choice:GFX_SET.quality,profile:'medio',adapt:null,frame:0,lastRaf:0,lastDraw:0,hz:0,aa:false};
-GFX.profile=PERF_LOW?'bajo':SDQuality.resolve(GFX.choice,isTouch);
+/* AUTO on weak computers (10-11-2026: an old HP, Pentium 1.6 GHz with Intel graphics, ran at 15 FPS because AUTO is ALTO on
+   every computer). The GPU's name is read once on a throwaway canvas before the renderer exists (antialiasing depends on
+   the profile); client/quality.js gpuHint turns it into the most AUTO may use. A match that stays far under the target at
+   the lowest resolution lowers it one more step and remembers it (store 'gfxCap'); choosing AUTO again forgets that.
+   BAJO / MEDIO / ALTO chosen by hand are never touched. ?gpuauto=0: the old AUTO (ALTO on computers, MEDIO on phones). */
+const GPU_AUTO=!/[?&]gpuauto=0\b/.test(location.search);
+const GPU_NAME=(()=>{try{const c=document.createElement('canvas'),g=c.getContext('webgl');if(!g)return '';const e=g.getExtension('WEBGL_debug_renderer_info');
+  const n=String((e?g.getParameter(e.UNMASKED_RENDERER_WEBGL):g.getParameter(g.RENDERER))||'');const l=g.getExtension('WEBGL_lose_context');if(l)l.loseContext();return n;}catch(e){return '';}})();
+GFX.hint=GPU_AUTO?SDQuality.gpuHint(GPU_NAME,isTouch?0:navigator.hardwareConcurrency):null;   // threads only on computers (phones may report few)
+GFX.cap=GPU_AUTO?SDQuality.lower(GFX.hint,store.get('gfxCap',null)):null;
+GFX.profile=PERF_LOW?'bajo':SDQuality.resolve(GFX.choice,isTouch,GFX.cap);
 /* Antialiasing (MSAA 4×). Until 31-10-2026 only ALTO on screens under 2× had it, so the iPhone (3×, drawn at 2×) never did:
    window bars, railings and shutters of the far façades flickered at every tiny turn (owner's video). Measured with
    tools/flicker.js (docs/PARPADEO.md): about a third to a half less flicker. Now MEDIO and ALTO on every device; BAJO
@@ -5145,7 +5156,7 @@ const SET_SEG=[['#visSeg','vis','enemyVis'],['#gyroSeg','g','gyro'],['#xStyleSeg
 function setExtraToUI(){
   for(const [sel,a,k] of SET_SEG)document.querySelectorAll(sel+' button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset[a]===SETTINGS[k])));
   for(const box of document.querySelectorAll('.swatches'))for(const b of box.children)b.setAttribute('aria-pressed',String(b.dataset.c===SETTINGS[box.dataset.key]));
-  $('#lookReloadRow').hidden=SETTINGS.look===PIC.look&&SETTINGS.cvd===PIC.cvd&&(PERF_LOW||!!AA_Q||aaWanted(SDQuality.resolve(SETTINGS.quality,isTouch),SETTINGS)===GFX.aa);
+  $('#lookReloadRow').hidden=SETTINGS.look===PIC.look&&SETTINGS.cvd===PIC.cvd&&(PERF_LOW||!!AA_Q||aaWanted(SDQuality.resolve(SETTINGS.quality,isTouch,GFX.cap),SETTINGS)===GFX.aa);
   $('#gyroBox').hidden=!isTouch;$('#vibRow').hidden=!('vibrate' in navigator);
 }
 /* crosshair, scope reticle and hit marker from AJUSTES › MIRA (the crosshair's gap still follows the real spread) */
@@ -5169,7 +5180,7 @@ function settingsChanged(){SETTINGS=SDSettings.sanitize(SETTINGS,isTouch);SDSett
 function gfxApply(){
   renderer.toneMappingExposure=TONE.exposure*(SETTINGS.bright||1);   // AJUSTES › GRÁFICOS › Brillo
   if(PERF_LOW)return;
-  const prof=SDQuality.resolve(SETTINGS.quality,isTouch),P0=SDQuality.PROFILES[prof];
+  const prof=SDQuality.resolve(SETTINGS.quality,isTouch,GFX.cap),P0=SDQuality.PROFILES[prof];
   const changed=prof!==GFX.profile;GFX.profile=prof;GFX.choice=SETTINGS.quality;
   if(!GFX.adapt||changed||GFX.adapt.target!==SETTINGS.fpsCap)GFX.adapt=SDQuality.createAdaptive(SETTINGS.fpsCap,SETTINGS.quality==='auto');
   GFX.adapt.enabled=SETTINGS.quality==='auto';if(!GFX.adapt.enabled)GFX.adapt.scale=1;
@@ -5178,12 +5189,12 @@ function gfxApply(){
   if(P0.shadowMap&&sun.shadow.mapSize.x!==P0.shadowMap){sun.shadow.mapSize.set(P0.shadowMap,P0.shadowMap);sunBiasFor(P0.shadowMap);if(sun.shadow.map){sun.shadow.map.dispose();sun.shadow.map=null;}}
   $('#fpsBox').hidden=!SETTINGS.showFps;
 }
-function gfxNote(){const n=$('#qNote');if(!n)return;const prof=SDQuality.resolve(SETTINGS.quality,isTouch);
-  n.textContent=(SETTINGS.quality==='auto'?'AUTO → '+SDQuality.PROFILES[prof].label+', la resolución se ajusta sola a los FPS reales. ':'')+'Resolución interna '+Math.round(renderer.getPixelRatio()*100)/100+'×'+(GFX.adapt&&GFX.adapt.fps?' · '+Math.round(GFX.adapt.fps)+' FPS':'')+' · suavizado de bordes '+(GFX.aa?'4×':'no')+' (cambia al recargar la página).';}
+function gfxNote(){const n=$('#qNote');if(!n)return;const prof=SDQuality.resolve(SETTINGS.quality,isTouch,GFX.cap);
+  n.textContent=(SETTINGS.quality==='auto'?'AUTO → '+SDQuality.PROFILES[prof].label+(GFX.cap&&prof===GFX.cap&&prof!==(isTouch?'medio':'alto')?' (tu gráfica va justa)':'')+', la resolución se ajusta sola a los FPS reales. ':'')+'Resolución interna '+Math.round(renderer.getPixelRatio()*100)/100+'×'+(GFX.adapt&&GFX.adapt.fps?' · '+Math.round(GFX.adapt.fps)+' FPS':'')+' · suavizado de bordes '+(GFX.aa?'4×':'no')+' (cambia al recargar la página).';}
 for(const [id,k] of SET_UI)$('#'+id).addEventListener('input',()=>{SETTINGS[k]=+$('#'+id).value;settingsChanged();});
 for(const [id,k] of SET_CHK)$('#'+id).addEventListener('change',()=>{SETTINGS[k]=$('#'+id).checked;settingsChanged();});
 $('#sFps30').addEventListener('change',()=>{SETTINGS.fpsCap=$('#sFps30').checked?30:60;settingsChanged();});
-document.querySelectorAll('#qSeg button').forEach(b=>b.addEventListener('click',()=>{SETTINGS.quality=b.dataset.q;settingsChanged();SFX.ui();}));
+document.querySelectorAll('#qSeg button').forEach(b=>b.addEventListener('click',()=>{if(b.dataset.q==='auto'&&GPU_AUTO){store.set('gfxCap',null);GFX.cap=GFX.hint;}SETTINGS.quality=b.dataset.q;settingsChanged();SFX.ui();}));
 document.querySelectorAll('#adsSeg button').forEach(b=>b.addEventListener('click',()=>{SETTINGS.adsMode=b.dataset.a;settingsChanged();SFX.ui();}));
 document.querySelectorAll('#crouchSeg button').forEach(b=>b.addEventListener('click',()=>{SETTINGS.crouchMode=b.dataset.c;input.crouchHeld=false;settingsChanged();SFX.ui();}));
 document.querySelectorAll('#viewSeg button').forEach(b=>b.addEventListener('click',()=>{SETTINGS.view=b.dataset.v;settingsChanged();SFX.ui();}));
@@ -5269,7 +5280,7 @@ setDuelLethal(DUEL_LETHAL);
 function setP3Pref(on){store.set('p3',!!on);if(!!on===!!P3ON)return;const u=new URL(location.href);['pueblo','adoquin','suelo'].forEach(k=>u.searchParams.delete(k));location.replace(u.toString());}
 document.querySelectorAll('#p3Seg button').forEach(b=>{b.setAttribute('aria-pressed',String((b.dataset.p3==='1')===!!P3ON));b.addEventListener('click',()=>{SFX.ui();setP3Pref(b.dataset.p3==='1');});});
 function gfxDiagText(){let gpu='?',gl2=false;try{const g=renderer.getContext();gl2=typeof WebGL2RenderingContext!=='undefined'&&g instanceof WebGL2RenderingContext;const e=g.getExtension('WEBGL_debug_renderer_info');gpu=e?g.getParameter(e.UNMASKED_RENDERER_WEBGL):g.getParameter(g.RENDERER);}catch(e){}
-  return 'Pueblo 3.0: '+(P3ON?'SÍ':'NO')+(P3ON?' · suelo nuevo: '+(P0.on?'SÍ':'NO')+' · adoquín: '+(COBCC?'Poly Haven':'anterior')+' · kit: '+(P3W.kit?'cargado':'NO cargado'):'')+' · calidad: '+String(GFX.profile).toUpperCase()+
+  return 'Pueblo 3.0: '+(P3ON?'SÍ':'NO')+(P3ON?' · suelo nuevo: '+(P0.on?'SÍ':'NO')+' · adoquín: '+(COBCC?'Poly Haven':'anterior')+' · kit: '+(P3W.kit?'cargado':'NO cargado'):'')+' · calidad: '+String(GFX.profile).toUpperCase()+(GFX.cap?' (tope AUTO '+String(GFX.cap).toUpperCase()+')':'')+
     ' · sombras: '+(renderer.shadowMap.enabled?sun.shadow.mapSize.x:'NO')+(DIAG_ON()?' · DIAGNÓSTICO: '+DIAG_ON():'')+' · píxeles ×'+renderer.getPixelRatio().toFixed(2)+' · WebGL '+(gl2?'2':'1')+' · GPU: '+String(gpu).slice(0,60)+' · texturas: '+(TEX.ok||0)+'/'+(TEX.asked||0)+' cargadas'+(TEX.fail?' · FALLAN '+TEX.fail+': '+TEX.failed.slice(0,4).join(', '):'');}
 $('#infAmmo').addEventListener('change',()=>{TRAIN.infAmmo=$('#infAmmo').checked;store.set('infAmmo',TRAIN.infAmmo);});
 function updateRangeHud(){if(mode!=='range')return;$('#rK').textContent=STATS.kills;$('#rD').textContent=Math.round(STATS.damage);$('#rN').textContent=STATS.meleeHits+'/'+(STATS.meleeSwings||0);$('#rT').textContent=STATS.kills>=2?((STATS.lastKill-STATS.firstKill)/(STATS.kills-1)).toFixed(2):'–';$('#rS').textContent=STATS.shots;$('#rH').textContent=STATS.hits;$('#rC').textContent=STATS.rangeHs;$('#rA').textContent=(STATS.shots?Math.round(STATS.hits/STATS.shots*100):0)+'%';}
@@ -5628,7 +5639,9 @@ function updateCamera(dt,alpha){
   VM.airW=damp(VM.airW,PM.onGround?0:1,8,dt);
   VM.deadW=damp(VM.deadW,P.alive?0:1,4,dt);
   VM.eye=damp(VM.eye,P.alive?PM.eye:0.35,P.alive?18:4,dt);
-  VM.landV+=(-220*VM.land-24*VM.landV)*dt;VM.land+=VM.landV*dt;
+  /* landing dip: a spring stepped at 1/120 s. Until 10-11-2026 it was one step per frame, which is unstable under ~20 FPS:
+     at 15 FPS every landing swung wider and wider, and at 10 FPS the camera flew off («al saltar se le va todo»). */
+  for(let h=dt;h>1e-6;h-=1/120){const s=Math.min(h,1/120);VM.landV+=(-220*VM.land-24*VM.landV)*s;VM.land+=VM.landV*s;}
   P.shake=damp(P.shake,0,9,dt);P.fovPunch=damp(P.fovPunch,0,8,dt);
   if(FEEL2){   // spring (k 420, c 26 → ζ≈0.63): back into the shoulder at once, a little past rest, settles in ~0.25 s
     for(let h=dt;h>1e-6;h-=1/120){const s=Math.min(h,1/120);WS.kickV+=(-420*WS.kick-26*WS.kickV)*s;WS.kick+=WS.kickV*s;}
@@ -6823,7 +6836,7 @@ function invUI(){
   $('#invHelp').textContent='Cómo se ganan: una caja de bienvenida y una cada día. Online (los dos con cuenta, más de 1 min jugado): ganar +'+P.onlineWin+', empatar +'+P.onlineDraw+', perder +'+P.onlineLoss+', si el rival abandona +'+P.abandonWin
     +'. Contra bots que disparan: ganar +'+P.botWin+', perder +'+P.botLoss+' (hasta '+P.botsDay+' al día). '+P.box+' puntos = 1 caja. Probabilidades: '+pr+'. Nunca sale algo que ya tienes. Las cajas no se compran: solo se ganan jugando. Solo cambian el aspecto: ni daño, ni cadencia, ni zonas de impacto.';
 }
-function openInv(){invMsg('');invUI();$('#invOv').hidden=false;$('#invOv').scrollTop=0;for(const id of ['menu','profOv'])$('#'+id).classList.add('under');if(ACC.token)accRefresh();}
+function openInv(){box3Load();invMsg('');invUI();$('#invOv').hidden=false;$('#invOv').scrollTop=0;for(const id of ['menu','profOv'])$('#'+id).classList.add('under');if(ACC.token)accRefresh();}
 function closeInv(){$('#invOv').hidden=true;for(const id of ['menu','profOv'])$('#'+id).classList.remove('under');}
 async function invEquipSet(slot,id){
   if(!ACC.acc||INV.busy)return;const prev=Object.assign({},INV.equip);
@@ -6836,17 +6849,21 @@ async function invDaily(){try{const j=await accApi('/cuenta/caja/diaria');ACC.ac
 async function invOpenBox(){
   if(INV.busy||!ACC.acc||!ACC.acc.inv||!ACC.acc.inv.boxes)return;INV.busy=true;
   const ov=$('#boxOv'),cr=$('#crate'),rv=$('#reveal'),fl=$('#boxFlash');
-  ov.hidden=false;rv.hidden=true;rv.innerHTML='';cr.hidden=false;cr.className='crate shake';fl.classList.remove('on');
+  ov.hidden=false;rv.hidden=true;rv.innerHTML='';fl.classList.remove('on');
+  const b3=box3Ready();   // the 3D box when it is loaded; until then (first time, slow network) the old one
+  cr.hidden=b3;cr.className='crate shake';if(b3)box3Show('shake');
   const t0=performance.now(),tick=setInterval(()=>SFX.click(0,1300+Math.random()*900,0.22),170);let j=null,err=null;
   try{j=await accApi('/cuenta/caja/abrir');}catch(e){err=e;}
   await new Promise(r=>setTimeout(r,Math.max(0,1100-(performance.now()-t0))));
   clearInterval(tick);INV.busy=false;
-  if(err){ov.hidden=true;cr.className='crate';invMsg(accErrText(err));return;}
+  if(err){ov.hidden=true;cr.className='crate';box3Show('off');invMsg(accErrText(err));return;}
   ACC.acc=j.account;invSync();
   const it=j.item&&SDItems.byId(j.item),rc=it?RAR[it.r].color:'#ffd25e';
-  ov.style.setProperty('--rc',rc);cr.className='crate open';void fl.offsetWidth;fl.classList.add('on');SFX.boxOpen(it?it.r:'comun');vibrate(it&&it.r==='legendaria'?[40,60,90]:30);
+  ov.style.setProperty('--rc',rc);cr.className='crate open';SFX.boxOpen(it?it.r:'comun');vibrate(it&&it.r==='legendaria'?[40,60,90]:30);
+  if(b3)box3Show('open',rc);else{void fl.offsetWidth;fl.classList.add('on');}
   setTimeout(()=>{
-    cr.hidden=true;const left=ACC.acc.inv.boxes;
+    if(b3){void fl.offsetWidth;fl.classList.add('on');}   // the flash when the lid is up and the inside lights up
+    cr.hidden=true;box3Show('off');const left=ACC.acc.inv.boxes;
     const card=document.createElement('div');card.className='rvCard';card.append(it?invPreview(it.type,it,true):invPreview('titulo',null,true));
     const r=document.createElement('div');r.className='rvR';r.textContent=it?RAR[it.r].name+' · '+SDItems.SLOTS[it.type]:'¡LO TIENES TODO!';
     const h=document.createElement('h3');h.textContent=it?it.name:'+'+j.frag+' FRAGMENTOS';
@@ -6855,9 +6872,64 @@ async function invOpenBox(){
     const first=it?btn('EQUIPAR','equipar',true):null;if(left)btn('ABRIR OTRA ('+left+')','otra',!it);btn('SEGUIR','seguir',!it&&!left);
     rv.append(r,h,card,row);if(!it){const p=document.createElement('p');p.className='setHelp';p.style.margin='0';p.textContent='Servirán para los objetos que lleguen.';rv.append(p);}
     rv.hidden=false;(first||row.querySelector('button')).focus();
-  },380);
+  },b3?1150:380);
 }
-function boxClose(){$('#boxOv').hidden=true;$('#crate').className='crate';$('#reveal').hidden=true;}
+function boxClose(){$('#boxOv').hidden=true;$('#crate').className='crate';$('#reveal').hidden=true;box3Show('off');}
+/* CAJA 3D (10-11-2026, el propietario: «cambia la caja que hay en el juego para las skins, es un cuadrado, te he pasado un
+   modelo de caja, mejóralo, quita lo que sale dentro»). La ATLAS DROP (assets/caja/atlas_drop.glb; fuente y cambios en
+   tools/caja/modelo.js) en su propio lienzo pequeño, que solo dibuja mientras se abre una caja: tiembla mientras el servidor
+   sortea el objeto, suelta los cierres y levanta la tapa, y el fondo y las tiras de dentro se encienden con el color de
+   la rareza; luego, la tarjeta del objeto como siempre. Solo aspecto: el sorteo es el del servidor. Se carga la primera vez
+   que abres CAJAS. ?caja=0: la caja de antes (la cuadrada). */
+const BOX3={on:!/[?&]caja=0\b/.test(location.search),r:null,sc:null,cam:null,root:null,mx:null,clip:null,ok:false,loading:false,
+  mode:'off',t:0,last:0,raf:0,rare:null,ion:null,glow:null,col:new T.Color()};
+function box3Load(){
+  if(!BOX3.on||BOX3.ok||BOX3.loading)return;BOX3.loading=true;
+  const cv=document.createElement('canvas');cv.className='box3';cv.id='box3';cv.hidden=true;cv.setAttribute('aria-hidden','true');
+  try{BOX3.r=new T.WebGLRenderer({canvas:cv,antialias:true,alpha:true});}catch(e){BOX3.on=false;return;}
+  const r=BOX3.r;r.outputEncoding=T.sRGBEncoding;r.toneMapping=T.ACESFilmicToneMapping;r.toneMappingExposure=0.95;r.setClearColor(0,0);
+  $('#crate').before(cv);
+  const sc=BOX3.sc=new T.Scene();BOX3.cam=new T.PerspectiveCamera(30,4/3,0.05,30);BOX3.cam.position.set(3.0,2.35,3.9);BOX3.cam.lookAt(0,0.82,0);
+  sc.add(new T.HemisphereLight(0xaccfe8,0x364251,0.75));
+  for(const [p,c,i] of [[[2,4,3],0xe6f4ff,1.4],[[-3,2,-2],0x1d9dff,0.8],[[2,1,-2],0xffa24a,0.8]]){const l=new T.DirectionalLight(c,i);l.position.set(...p);sc.add(l);}
+  BOX3.glow=new T.PointLight(0xffffff,0,3.2,2);BOX3.glow.position.set(0,0.55,0.1);sc.add(BOX3.glow);   // the inside lighting up the lid
+  new T.GLTFLoader().load(av('assets/caja/atlas_drop.glb?v='+BUILD_HASH),g=>{
+    BOX3.root=g.scene;sc.add(g.scene);
+    g.scene.traverse(o=>{if(!o.isMesh)return;const m=o.material;if(m.name==='Luz_rareza')BOX3.rare=m;else if(m.name==='Luz_ionica')BOX3.ion=m;});
+    BOX3.mx=new T.AnimationMixer(g.scene);BOX3.clip=T.AnimationClip.findByName(g.animations,'Abrir');
+    BOX3.ok=!!(BOX3.clip&&BOX3.rare);if(!BOX3.ok)BOX3.on=false;
+  },undefined,()=>{BOX3.on=false;});
+}
+const box3Ready=()=>BOX3.on&&BOX3.ok;
+function box3Show(mode,color){
+  if(!BOX3.ok){BOX3.mode='off';return;}
+  const cv=$('#box3');BOX3.mode=mode;
+  if(mode==='off'){cv.hidden=true;cancelAnimationFrame(BOX3.raf);BOX3.raf=0;return;}
+  cv.hidden=false;BOX3.t=0;BOX3.last=performance.now();
+  const w=cv.clientWidth||400,h=cv.clientHeight||300;BOX3.r.setPixelRatio(Math.min(2,window.devicePixelRatio||1));BOX3.r.setSize(w,h,false);BOX3.cam.aspect=w/h;BOX3.cam.updateProjectionMatrix();
+  const ac=BOX3.mx.clipAction(BOX3.clip);
+  if(mode==='shake'){BOX3.mx.stopAllAction();ac.reset();ac.play();ac.paused=true;ac.time=0;BOX3.mx.update(0);   // closed
+    BOX3.col.set(0x2a9fd0);BOX3.rare.emissive.copy(BOX3.col);BOX3.rare.emissiveIntensity=0.25;BOX3.glow.intensity=0;}
+  else{BOX3.col.set(color||'#ffd25e');BOX3.rare.emissive.copy(BOX3.col);BOX3.rare.color.copy(BOX3.col);BOX3.glow.color.copy(BOX3.col);
+    ac.reset();ac.setLoop(T.LoopOnce,1);ac.clampWhenFinished=true;ac.timeScale=1.9;ac.paused=false;ac.play();}
+  if(!BOX3.raf)BOX3.raf=requestAnimationFrame(box3Frame);
+}
+function box3Frame(now){
+  BOX3.raf=0;if(BOX3.mode==='off')return;
+  const dt=Math.max(0,Math.min(0.05,(now-BOX3.last)/1000));BOX3.last=Math.max(BOX3.last,now);   /* the first rAF time can be older than box3Show's */BOX3.t+=dt;const t=BOX3.t,R=BOX3.root;
+  if(BOX3.mode==='shake'){   // waiting for the server: it rattles, harder and harder, the outside lights pulse
+    const k=reduceMotion?0:Math.min(1,0.35+t*0.6);
+    R.rotation.set(0,Math.sin(t*9)*0.05*k,Math.sin(t*31)*0.035*k);R.position.set(Math.sin(t*23)*0.02*k,Math.abs(Math.sin(t*17))*0.05*k,0);
+    if(BOX3.ion)BOX3.ion.emissiveIntensity=1.4+Math.sin(t*14)*0.6;
+  }else{
+    R.rotation.set(0,0,0);R.position.set(0,0,0);if(BOX3.ion)BOX3.ion.emissiveIntensity=1.4;
+    const u=Math.min(1,Math.max(0,(t-0.3)/0.6));   // the inside lights up as the lid lifts
+    BOX3.rare.emissiveIntensity=0.25+u*2.6;BOX3.glow.intensity=u*3;
+    BOX3.mx.update(dt);
+  }
+  BOX3.r.render(BOX3.sc,BOX3.cam);
+  BOX3.raf=requestAnimationFrame(box3Frame);
+}
 document.addEventListener('click',ev=>{
   const t=ev.target.closest&&ev.target.closest('#invOv [data-inv],#boxOv [data-inv],#invGrid .invCard,#invTabs button');if(!t)return;SFX.ui();
   if(t.matches('#invTabs button')){INV.tab=t.dataset.tab;invUI();return;}
@@ -7575,6 +7647,8 @@ function frameBody(now){
   if(!SDQuality.shouldDraw(SETTINGS.fpsCap,GFX.frame,GFX.hz))return;
   const drawDt=(now-GFX.lastDraw)/1000;GFX.lastDraw=now;
   if(!PERF_LOW&&GFX.adapt){if(SDQuality.feed(GFX.adapt,drawDt))renderer.setPixelRatio(SDQuality.pixelRatio(GFX.profile,window.devicePixelRatio,GFX.adapt.scale));
+    // AUTO still far under the target at the lowest resolution during a match: one profile down, remembered (see GPU_AUTO)
+    if(GPU_AUTO&&state==='playing'&&SETTINGS.quality==='auto'&&GFX.profile!=='bajo'&&SDQuality.wantsLower(GFX.adapt)){GFX.cap=SDQuality.LOWER[GFX.profile];store.set('gfxCap',GFX.cap);gfxApply();}
     if(SETTINGS.showFps&&GFX.adapt.frames===0)$('#fpsBox').textContent=Math.round(GFX.adapt.fps)+' FPS · '+Math.round(renderer.getPixelRatio()*100)/100+'×';}
   if(GFX.frame%10===1){csFix(scene);csFix(wScene);}
   if(PERF.rec)renderer.info.reset();
@@ -7889,6 +7963,6 @@ if(FLORA.on){const gl=new T.GLTFLoader();let n=2;
       if(P3W.kit)later();else{const w=setInterval(()=>{if(P3W.kit){clearInterval(w);later();}},300);}}}}
 function floraFlush(){if(FLORA.go)FLORA.go();}
 
-window.__SD={get GUNCFG(){return GUNCFG;},PRUEBAS,XRAY,xrayFrame,SLIDE2,PEN,penBox,spawnBullet,updateBullets,HALCON,BAL,rifleCfgFor,applyRifleCfg,gsGun,SIL,silCfg,silSaved,SFX,GUN,camLight,get gameTime(){return gameTime;},GSI,gsiDone,gsiRender,M2,m2Tab,m2Sync,m2Sleep,openSettings,closeSettings,MIRA,setMira,miraApply,miraClipGeo,miraRifle,openMiras,closeMiras,updateReticle,ENV,MOVE_CLASSIC,MOV_CLASSIC,VIS,VIS_COL,VIS_HULL,visOn,visFrame,visWho,selfHit,PROF,KTX2,R2_ON,R2_URL,PIC,GYRO,gyroEv,crossApply,btnPress,settingsChanged,perfTexMB(){const t=perfTextures();return {real:SDPerf.textureMB(t),asRGBA:SDPerf.textureMB(t.map(x=>Object.assign({},x,{bytes:0})))};},REMOTES,netScoreHud,shotTargets,MINI,miniLayer,miniPing,clockFrame,setOffTime,get OFF_TIME(){return OFF_TIME;},ACC,accRefresh,INV,invSync,camoApply,openInv,invOpenBox,WSKIN,WS_ST,setWskin,get RIF(){return RIF;},TPV,SELF,get PROFILE(){return PROFILE;},openProfile,endMatch,PJ_MIX,MIX_ORDER,SKINS,get SKIN(){return SKIN;},setSkin,pj2SetPack,rivalSkin,PERF,perfRun,HUD2,get H2(){return HUD2?H2:null;},leanIn:HUD2?leanIn:null,h2Frame:HUD2?h2Frame:null,PJ2,pj2Load,CASA,casaLoad,C2,C2B,C2J,C2S,casa2Load,BAR,barrioLoad,FLORA,RATS,RAT_WORLD,ratsFrame,SHADOW_FADE,setDuelLethal,get DUEL_LETHAL(){return DUEL_LETHAL;},gfxDiagText,get P3ON(){return P3ON;},COBCC,damagePlayer,TEX,sunFollow,setSunSnap(on){SUN_SNAP=!!on;},sun,P0,E10,e10Lod,DIAG,setTrainMove,LIGHT:{sun,hemi,skyMat,LOOK,P3},P3W,freeze(on){SIM_FREEZE=!!on;},SHOT,VMA,makeSoldier,animateSoldier,BOT_MAT,scene,camera,RemotePlayer,PMprev,PIS,PROOT,RIF,WROOT,SHO_:null,MANUAL,advance(ms){frameBody(last+ms);},get LAST_PELLETS(){return LAST_PELLETS;},SCORE,SCFG,SROOT,SHO,setPrimaryChoice,get PRIMARY(){return PRIMARY;},PCORE,PCFG,setWorld,WORLDS,get WORLD_ID(){return WORLD_ID;},renderer,GFX,gfxApply,get NET(){return NET;},get REMOTE(){return REMOTE;},W,get NAV(){return NAV;},setOffMap,get OFFMAP(){return OFFMAP;},TOUCH,EDIT,openEditor,get SETTINGS(){return SETTINGS;},get LAYOUT(){return LAYOUT;},checkOrientation,MAT,LOAD,TRAINERS,get RANGE_BOTS(){return RANGE_BOTS;},TRAIN,setTrain,setLethal,kitNote,GINS,TDIAG,AU,get TOUCH_EVENTS(){return TOUCH_EVENTS;},impactFX,bodyFX,get DECALS(){return DECALS;},surfaceOf,soundDelay,aimSelfTest,P,PM,WS,WCORE,RECOIL,AIM,BOTS,DUMMIES,BULLETS,EVENTS,PARTS,STATS,get state(){return state;},get mode(){return mode;},setMode,input,startMatch,simTick,frame,toMenu,pause,resume};
+window.__SD={get GFX(){return GFX;},get BOX3(){return BOX3;},get GUNCFG(){return GUNCFG;},PRUEBAS,XRAY,xrayFrame,SLIDE2,PEN,penBox,spawnBullet,updateBullets,HALCON,BAL,rifleCfgFor,applyRifleCfg,gsGun,SIL,silCfg,silSaved,SFX,GUN,camLight,get gameTime(){return gameTime;},GSI,gsiDone,gsiRender,M2,m2Tab,m2Sync,m2Sleep,openSettings,closeSettings,MIRA,setMira,miraApply,miraClipGeo,miraRifle,openMiras,closeMiras,updateReticle,ENV,MOVE_CLASSIC,MOV_CLASSIC,VIS,VIS_COL,VIS_HULL,visOn,visFrame,visWho,selfHit,PROF,KTX2,R2_ON,R2_URL,PIC,GYRO,gyroEv,crossApply,btnPress,settingsChanged,perfTexMB(){const t=perfTextures();return {real:SDPerf.textureMB(t),asRGBA:SDPerf.textureMB(t.map(x=>Object.assign({},x,{bytes:0})))};},REMOTES,netScoreHud,shotTargets,MINI,miniLayer,miniPing,clockFrame,setOffTime,get OFF_TIME(){return OFF_TIME;},ACC,accRefresh,INV,invSync,camoApply,openInv,invOpenBox,WSKIN,WS_ST,setWskin,get RIF(){return RIF;},TPV,SELF,get PROFILE(){return PROFILE;},openProfile,endMatch,PJ_MIX,MIX_ORDER,SKINS,get SKIN(){return SKIN;},setSkin,pj2SetPack,rivalSkin,PERF,perfRun,HUD2,get H2(){return HUD2?H2:null;},leanIn:HUD2?leanIn:null,h2Frame:HUD2?h2Frame:null,PJ2,pj2Load,CASA,casaLoad,C2,C2B,C2J,C2S,casa2Load,BAR,barrioLoad,FLORA,RATS,RAT_WORLD,ratsFrame,SHADOW_FADE,setDuelLethal,get DUEL_LETHAL(){return DUEL_LETHAL;},gfxDiagText,get P3ON(){return P3ON;},COBCC,damagePlayer,TEX,sunFollow,setSunSnap(on){SUN_SNAP=!!on;},sun,P0,E10,e10Lod,DIAG,setTrainMove,LIGHT:{sun,hemi,skyMat,LOOK,P3},P3W,freeze(on){SIM_FREEZE=!!on;},SHOT,VMA,makeSoldier,animateSoldier,BOT_MAT,scene,camera,RemotePlayer,PMprev,PIS,PROOT,RIF,WROOT,SHO_:null,MANUAL,advance(ms){frameBody(last+ms);},get LAST_PELLETS(){return LAST_PELLETS;},SCORE,SCFG,SROOT,SHO,setPrimaryChoice,get PRIMARY(){return PRIMARY;},PCORE,PCFG,setWorld,WORLDS,get WORLD_ID(){return WORLD_ID;},renderer,GFX,gfxApply,get NET(){return NET;},get REMOTE(){return REMOTE;},W,get NAV(){return NAV;},setOffMap,get OFFMAP(){return OFFMAP;},TOUCH,EDIT,openEditor,get SETTINGS(){return SETTINGS;},get LAYOUT(){return LAYOUT;},checkOrientation,MAT,LOAD,TRAINERS,get RANGE_BOTS(){return RANGE_BOTS;},TRAIN,setTrain,setLethal,kitNote,GINS,TDIAG,AU,get TOUCH_EVENTS(){return TOUCH_EVENTS;},impactFX,bodyFX,get DECALS(){return DECALS;},surfaceOf,soundDelay,aimSelfTest,P,PM,WS,WCORE,RECOIL,AIM,BOTS,DUMMIES,BULLETS,EVENTS,PARTS,STATS,get state(){return state;},get mode(){return mode;},setMode,input,startMatch,simTick,frame,toMenu,pause,resume};
 })();
 </script>

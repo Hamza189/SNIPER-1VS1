@@ -8,6 +8,16 @@ Reparto del trabajo:
 
 Ningún modelo entra en el juego sin pasar antes por `tools/validate-glb.js`.
 
+## Caja ATLAS DROP (CAJAS Y OBJETOS, 10-11-2026)
+- `assets/caja/atlas_drop.glb` (546 KB, 23 mallas, 5 300 triángulos, animaciones `Abrir` y `Cerrar`). Fuente:
+  `tools/caja/modelo.js` (geometría por código), exportada con `node tools/caja/exportar.js` (Three.js r128 del juego y
+  su GLTFExporter MIT).
+- Diseño original encargado por el propietario (entrega CAJA_ATLAS_DROP, también hecha por código):
+  `docs/img/caja/original_*.png`. Cambios del juego: fuera el cristal de premio y su animación (lo pidió él), interior
+  forrado con placa de luz (`Luz_rareza`, toma el color de la rareza al abrir) y cantos con dos segmentos de bisel.
+- Comparativa: `docs/img/caja/antes_cuadrada.png` (la de antes, CSS) frente a `juego_pc_abriendo.png` y
+  `juego_movil_abriendo.png`. `?caja=0` vuelve a la cuadrada.
+
 ## 1. Carpetas
 
 | Carpeta | Contenido | ¿Lo carga el juego? |

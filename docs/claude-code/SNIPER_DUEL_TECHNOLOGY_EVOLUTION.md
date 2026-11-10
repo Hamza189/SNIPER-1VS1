@@ -210,3 +210,29 @@ GitHub Pages y Cloudflare Workers siguen sirviendo exactamente lo mismo en todas
 
 Recomendación: empezar por **T0 y T1** (riesgo casi nulo, beneficio inmediato) y, en paralelo, que el propietario
 decida si quiere la prueba **T3**, porque es la que más puede mejorar el iPhone y la única que requiere sus dispositivos.
+
+## 11. ENGINE NEXT GENERATION — encargo guardado del propietario (10-11-2026)
+El propietario pegó este plan (redactado con ChatGPT) para **cuando empiece la fase** (regla 14 de CLAUDE.md: hacia
+diciembre de 2026). No se ha empezado; está guardado aquí para no perderlo.
+
+**Idea:** no cambiar de motor ni reescribir; evolucionar el actual. WebGL 2 sigue siendo el motor estable y se prueba
+WebGPU aparte (Three.js `WebGPURenderer`, que vuelve a WebGL 2 si no hay WebGPU). TypeScript para ordenar el código
+poco a poco. C++/WebAssembly solo donde una medida demuestre un cuello de botella de CPU (comunicar JS↔WASM tiene coste:
+en cálculos pequeños se come la ventaja). C# no (solo tendría sentido con Unity/.NET). Shaders en GLSL/WGSL/TSL.
+
+**Encargo, tal cual lo pide:**
+1. Auditar la versión de Three.js (hoy r128) y la arquitectura actual.
+2. WebGPU: migración experimental con `WebGPURenderer`, con vuelta a WebGL y compatibilidad móvil; revisar los shaders
+   propios, sombras, materiales y efectos que no sean compatibles. En una rama experimental.
+3. TypeScript: migrar por partes los módulos que más ganen en seguridad y mantenimiento.
+4. C++ + WASM: solo con cuellos de botella confirmados.
+5. Medir FPS, tiempos de fotograma, llamadas de dibujo, CPU, GPU, memoria y carga; mismas escenas en WebGL y WebGPU;
+   probar en PC, iPhone y Android.
+6. Intactos: controles, balística, hitboxes y servidor autoritativo. Nada competitivo sin aprobación.
+7. Informe con tres conclusiones: **A.** qué se puede mejorar ya en Three.js/WebGL; **B.** qué aporta de verdad
+   WebGPU; **C.** qué subsistemas ganarían con C++/WASM.
+8. Después, una prueba de WebGPU en una escena representativa del PUEBLO (personajes, sombras, texturas PBR y armas).
+   No migrar nada más antes de comparar resultados.
+
+Nota de Claude: el paso de r128 a un Three.js con `WebGPURenderer` (r16x+) cambia la gestión de color, las luces
+(unidades físicas) y quita `examples/js`; es la parte cara y hay que presupuestarla antes (ver §4 y §10).

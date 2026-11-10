@@ -11,6 +11,8 @@ Detalle de cada cambio (antes/después, medidas, cómo revertir): `docs/next-lev
 ### Siguiente prioridad
 | Tarea | Quién la desbloquea | Estado |
 |---|---|---|
+| **CAJA NUEVA** (10-11) — CAJAS › ABRIR CAJA en el PC y en el iPhone: ver la ATLAS DROP temblar, abrirse y encenderse con el color de la rareza; decir si gusta o si se cambia algo (`?caja=0` = la de antes) | Propietario | PUBLICADO · PENDIENTE DE VALIDACIÓN |
+| **ORDENADORES FLOJOS** (10-11) — en el portátil HP de su novia: recargar la página, mirar AJUSTES › GRÁFICOS (debe poner AUTO → BAJO y el nombre de la gráfica en el diagnóstico), jugar y saltar; decir los FPS | Propietario | PUBLICADO · PENDIENTE DE VALIDACIÓN EN EL HP |
 | **DESLIZAMIENTO, MAPA DE PRUEBAS y RAYOS X** (09-11) — contra bots: deslizarte en 3ª persona (tecla V) con cada operador; MAPAS › PRUEBAS con y sin BALA DURA; decir si te valen los daños (75 % fino, 70→40 % BALA DURA) y si la caja nueva del deslizamiento va al online | Propietario | PUBLICADO SOLO SIN CONEXIÓN · NECESITA SU APROBACIÓN PARA EL ONLINE |
 | **PENETRACIÓN y BALA DURA** (09-11) — contra bots: disparar a un bot detrás de una caja (PUEBLO) o de un tabique (CASA ATLAS, con BALA DURA en ARMAS); decir si el 75 % / 50 % de daño te vale y si se lleva al online | Propietario | PUBLICADO SOLO SIN CONEXIÓN · NECESITA SU APROBACIÓN PARA EL ONLINE |
 | **CAMUFLAJE EN VIVO, MAPAS y MILITAR** (09-11) — en el PC y en el móvil: ARMAS › CAMUFLAJE (tira abajo, se ve al momento), la TÁCTICA con camuflaje, la REJILLA DE ORO nueva, el silenciador del TITÁN, MAPAS con BARRIO y las rodillas del MILITAR | Propietario | PUBLICADO · PENDIENTE DE SU PRUEBA |
@@ -95,6 +97,33 @@ Detalle de cada cambio (antes/después, medidas, cómo revertir): `docs/next-lev
 | Encargos para ChatGPT: CASA XL, CASA XL v2 y personaje | 18-10 / 19-10 |
 | Personaje 3D rev. 03 hecho por Claude e integrado tras `?pj=2` (bots y rival online) | 20-10 · directo a `main` |
 | Personajes realistas + elegir personaje (con el SOLDADO de `?pj=2`) y HUD 2 por defecto (aprobado en iPhone y PC) | 28-10 · directo a `main` |
+
+## 10-11-2026 — Caja nueva en CAJAS: la ATLAS DROP en 3D
+Del propietario: «cambia la caja que hay en el juego para las skins, es un cuadrado, te he pasado un modelo de caja,
+mejóralo, quita lo que sale dentro» (CAJA_ATLAS_DROP.zip).
+- La caja cuadrada (CSS) pasa a ser la ATLAS DROP en 3D, en su propio lienzo que solo dibuja mientras abres una caja:
+  tiembla mientras el servidor sortea, suelta los cierres, levanta la tapa y el interior se enciende con el color de
+  la rareza; después, la tarjeta del objeto como siempre. El sorteo sigue siendo del servidor.
+- Mejoras sobre el modelo entregado: sin el cristal ni su animación, interior forrado con placa de luz, biseles más
+  suaves. Fuente `tools/caja/modelo.js`, GLB `assets/caja/atlas_drop.glb` (detalle en `docs/ASSETS-3D.md`).
+- Se carga la primera vez que abres CAJAS; si falla o aún no ha llegado, sale la de antes. `?caja=0` = la cuadrada.
+- Estado: IMPLEMENTADO · PROBADO EN NAVEGADOR (PC y móvil con el servidor local) · PENDIENTE DE VALIDACIÓN EN IPHONE.
+
+## 10-11-2026 — Ordenadores flojos: AUTO mira la gráfica y el aterrizaje ya no se dispara a pocos FPS
+Del propietario: el portátil de su novia (HP antiguo, Pentium a 1,6 GHz, 8 GB, disco duro, Edge y Opera) va a 15–17 FPS
+y «al saltar se le va todo».
+- **Causa 1 (FPS):** AUTO era ALTO en todos los ordenadores (sombras 2048, suavizado 4×, personajes 4K). Ahora AUTO lee
+  el nombre de la gráfica antes de crear el dibujo (`client/quality.js` `gpuHint`): WebGL por software o Intel pequeña
+  (HD 400–505, UHD 600/605, HD sin número) → BAJO; otra Intel integrada → MEDIO; NVIDIA/AMD/Arc/iPhone → como antes.
+  Ordenadores con 2 hilos o menos → BAJO. Si en partida sigue por debajo del 60 % del objetivo con la resolución ya en
+  el mínimo durante ~6 s, baja un perfil y lo recuerda (`gfxCap`); pulsar AUTO otra vez lo olvida. BAJO/MEDIO/ALTO
+  elegidos a mano no cambian. `?gpuauto=0` = el AUTO de antes. AJUSTES › GRÁFICOS pone «(tu gráfica va justa)».
+- **Causa 2 (salto):** el muelle que hunde la cámara al aterrizar se calculaba con un paso por fotograma: inestable por
+  debajo de ~20 FPS (a 15 FPS cada aterrizaje oscilaba más; a 10 FPS la cámara salía volando, medido). Ahora va en pasos
+  de 1/120 s: igual a 60 FPS, estable a 8. Solo cámara: el movimiento y el servidor no cambian.
+- Medido en Chromium: SwiftShader → BAJO; con `?gpuauto=0` → ALTO; GTX 1050 Ti → ALTO (sin cambio). Pruebas nuevas en
+  `test/mobile.test.js` (nombres de gráficas, tope, bajada en partida, aterrizaje a 15/10/8 FPS).
+- Estado: IMPLEMENTADO · PROBADO EN NAVEGADOR · PENDIENTE DE VALIDACIÓN en el portátil HP (no se ha probado en él).
 
 ## 09-11-2026 — La página se publica con GitHub Actions (solo lo del juego)
 Pages publicaba la rama entera (505 MB) y GitHub cortaba a los 10 minutos «sincronizando archivos»: falló 6 veces

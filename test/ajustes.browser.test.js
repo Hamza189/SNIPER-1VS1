@@ -22,7 +22,9 @@ function check(name, cond, info) { if (cond) { pass++; console.log('  ok   ' + n
     const p = await ctx.newPage(), errs = [];
     p.on('pageerror', e => errs.push(e.message));
     p.on('console', m => { if (m.type() === 'error' && /shader|WebGLProgram|GLSL/i.test(m.text())) errs.push(m.text().slice(0, 200)); });
-    await p.goto(srv.url + '?pj=0', { timeout: 180000 });
+    // the phone runs on SwiftShader here, which AUTO (10-11-2026) rightly treats as a weak GPU → BAJO; a real phone has an
+    // Apple / Adreno / Mali GPU, so the phone checks use the AUTO that ignores the GPU name (gpuauto=0). The PC page keeps it.
+    await p.goto(srv.url + '?pj=0' + (phone ? '&gpuauto=0' : ''), { timeout: 180000 });
     await p.waitForFunction(() => window.__SD && __SD.WORLDS, null, { timeout: 180000 });
     return { ctx, p, errs };
   };
@@ -31,6 +33,8 @@ function check(name, cond, info) { if (cond) { pass++; console.log('  ok   ' + n
   try {
     console.log('\nPC · MIRA Y EFECTOS');
     const A = await open(false);
+    check('AUTO en un ordenador sin gráfica (SwiftShader): BAJO, sin suavizado, y AJUSTES lo dice', await A.p.evaluate(() => {
+      const G = __SD.GFX; return G.hint === 'bajo' && G.profile === 'bajo' && G.aa === false; }));
     await A.p.evaluate(() => document.getElementById('openSettings').click());
     await A.p.click('.setTabs button[data-tab="mira"]');
     check('la pestaña MIRA existe y muestra los 9 colores en cada paleta', await A.p.evaluate(() => !document.querySelector('[data-pane="mira"]').hidden && [...document.querySelectorAll('.swatches')].every(s => s.children.length === 9)));
@@ -82,7 +86,8 @@ function check(name, cond, info) { if (cond) { pass++; console.log('  ok   ' + n
       __SD.btnPress('scope', true); await w(60); __SD.btnPress('scope', false); o.tap2 = i.scopeToggle;
       __SD.btnPress('scope', true); o.held = i.scopeHeld; await w(450); __SD.btnPress('scope', false); o.long = i.scopeToggle || i.scopeHeld; return o; });
     check('MIRA MIXTO: un toque la fija, otro la quita, y mantener apunta solo mientras mantienes', mix.tap === true && mix.tap2 === false && mix.held === true && mix.long === false, JSON.stringify(mix));
-    await M.p.waitForTimeout(400);
+    // the scope has to come down first (slow software frames at MEDIO: wait for it, up to 5 s, instead of a fixed 400 ms)
+    await M.p.waitForFunction(() => document.getElementById('tbFire2').hidden, null, { timeout: 5000 }).catch(() => {});
     const lf0 = await M.p.evaluate(() => document.getElementById('tbFire2').hidden);
     await M.p.evaluate(() => { __SD.input.scopeToggle = true; });
     await M.p.waitForTimeout(900);

@@ -167,6 +167,36 @@ console.log('\nGRÁFICOS (etapa C)');
   const m = Q.createAdaptive(60, false); for (let i = 0; i < 300; i++) Q.feed(m, 1 / 30);
   check('con calidad fija (no AUTO) la resolución no cambia sola', m.scale === 1);
   check('un salto grande (pausa, segundo plano) no cuenta como FPS bajos', (() => { const b = Q.createAdaptive(60, true); Q.feed(b, 3); return b.frames === 0; })());
+  { // AUTO en ordenadores flojos (10-11-2026): el nombre de la gráfica pone un tope; las elecciones a mano no se tocan
+    const ang = g => 'ANGLE (Intel, Intel(R) ' + g + ' Direct3D11 vs_5_0 ps_5_0, D3D11)';
+    check('gráfica floja: Intel HD 405 / UHD 605 / sin número, software o Basic Render → tope BAJO',
+      ['HD Graphics 405', 'UHD Graphics 605', 'HD Graphics'].every(g => Q.gpuHint(ang(g), 4) === 'bajo') &&
+      Q.gpuHint('ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero)), SwiftShader driver)', 8) === 'bajo' &&
+      Q.gpuHint('ANGLE (Microsoft, Microsoft Basic Render Driver Direct3D11 vs_5_0 ps_5_0, D3D11)', 8) === 'bajo');
+    check('Intel integrada normal (UHD 630, HD 620, Iris Xe) → tope MEDIO',
+      ['UHD Graphics 630', 'HD Graphics 620', 'Iris(R) Xe Graphics'].every(g => Q.gpuHint(ang(g), 8) === 'medio'));
+    check('tarjeta de verdad (GTX 1050 Ti, Arc), iPhone o nombre desconocido → sin tope (AUTO de siempre)',
+      Q.gpuHint('ANGLE (NVIDIA, NVIDIA GeForce GTX 1050 Ti with Max-Q Design Direct3D11 vs_5_0 ps_5_0, D3D11)', 12) === null &&
+      Q.gpuHint(ang('Arc(TM) A770 Graphics'), 8) === null && Q.gpuHint('Apple GPU', 0) === null && Q.gpuHint('', 0) === null);
+    check('2 hilos de CPU o menos → tope BAJO', Q.gpuHint('Apple GPU', 2) === 'bajo');
+    check('el tope solo baja AUTO: AUTO+BAJO = BAJO, ALTO a mano sigue ALTO, móvil con tope ALTO sigue MEDIO',
+      Q.resolve('auto', false, 'bajo') === 'bajo' && Q.resolve('alto', false, 'bajo') === 'alto' && Q.resolve('auto', true, 'alto') === 'medio' && Q.resolve('auto', false, null) === 'alto');
+    const w = Q.createAdaptive(60, true); for (let i = 0; i < 20 * 4; i++) Q.feed(w, 1 / 20);   // 4 s a 20 FPS
+    const early = Q.wantsLower(w); for (let i = 0; i < 20 * 10; i++) Q.feed(w, 1 / 20);   // unos 12 s en total
+    check('a 20 FPS con la resolución en el mínimo, en unos 12 s pide bajar un perfil', !early && Q.wantsLower(w), 'escala ' + w.scale + ', ' + w.stuck.toFixed(1) + ' s');
+    const ok = Q.createAdaptive(60, true); for (let i = 0; i < 45 * 30; i++) Q.feed(ok, 1 / 45);
+    const fixed = Q.createAdaptive(60, false); for (let i = 0; i < 20 * 30; i++) Q.feed(fixed, 1 / 20);
+    check('a 45 FPS no pide bajar, y con calidad fija nunca', !Q.wantsLower(ok) && !Q.wantsLower(fixed));
+  }
+  { // el hundimiento de la cámara al aterrizar (src/page.html): estable a cualquier FPS (antes a 10 FPS la cámara salía volando)
+    const src = require('fs').readFileSync(require('path').join(__dirname, '..', 'src', 'page.html'), 'utf8');
+    const line = src.split('\n').find(l => l.includes('VM.landV+=(-220*VM.land'));
+    const run = fps => { const VM = { land: 0, landV: -1.3 }; const f = new Function('VM', 'dt', line); let mx = 0;
+      for (let i = 0; i < fps * 2; i++) { f(VM, 1 / fps); mx = Math.max(mx, Math.abs(VM.land)); } return { mx, end: Math.abs(VM.land) }; };
+    const r60 = run(60), r15 = run(15), r10 = run(10), r8 = run(8);
+    check('aterrizaje a 15, 10 y 8 FPS: la cámara baja lo mismo que a 60 y vuelve a su sitio',
+      [r15, r10, r8].every(r => r.mx < r60.mx * 1.1 && r.end < 1e-3), [r60, r15, r10, r8].map(r => r.mx.toFixed(3)).join(' / '));
+  }
   const drawn = (cap, hz, n) => { let d = 0; for (let i = 0; i < n; i++) if (Q.shouldDraw(cap, i, hz)) d++; return d; };
   check('límite 30 FPS: pantalla de 60 Hz dibuja 30 por segundo, de 120 Hz también 30', drawn(30, 60, 60) === 30 && drawn(30, 120, 120) === 30);
   check('sin límite (60): dibuja todos los fotogramas de la pantalla (144 Hz sigue a 144)', drawn(60, 144, 144) === 144 && drawn(60, 60, 60) === 60);
