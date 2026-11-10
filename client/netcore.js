@@ -115,7 +115,7 @@ function create(opts) {
       // a welcome opens a new socket: the server only numbers events from here on, and a restarted
       // server object (every deploy) numbers them again from 1, so the old count must not filter them
       case 'welcome': N.you = m.you; N.token = m.token; N.code = m.code; N.phase = m.phase; N.players = m.players; N.match = m.match; N.lastEvQ = 0; if (m.cfg) N.cfg = m.cfg; if (m.host !== undefined) N.host = m.host; ev.push({ k: 'welcome', m }); break;
-      case 'lobby': N.phase = m.phase; N.players = m.players; if (m.map) N.map = m.map; if (m.maps) N.maps = m.maps; if (m.cfg) N.cfg = m.cfg; if (m.host !== undefined) N.host = m.host; if (m.tsc) N.tsc = m.tsc; N.hs = m.hs ? 1 : 0; ev.push({ k: 'lobby', m }); break;
+      case 'lobby': N.phase = m.phase; N.players = m.players; if (m.map) N.map = m.map; if (m.maps) N.maps = m.maps; if (m.cfg) N.cfg = m.cfg; if (m.host !== undefined) N.host = m.host; if (m.tsc) N.tsc = m.tsc; N.hs = m.hs ? 1 : 0; N.rematchOf = m.rematch || {}; ev.push({ k: 'lobby', m }); break;
       case 'start':
         N.match = m.m; if (m.map) N.map = m.map; N.names = m.names || {}; N.phase = 'countdown'; N.startIn = m.in; N.startedAt = N.now();
         N.rules = m.rules || {}; N.timeLeft = N.rules.timeMs || null; N.mode = N.rules.mode || 'duelo'; N.teams = m.teams || null;

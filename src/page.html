@@ -881,6 +881,137 @@ body.m2 #menu .menuInner{display:none}
 }
 .m2SheetIn>.row{position:sticky;bottom:-1px;background:inherit;padding-top:4px}
 @media (max-width:760px){.m2Me b{max-width:16vw}.m2Me small{display:none}}
+/* ---------- SALA 1V1 (?lobby=2, 10-11-2026, client/lobby1v1.js, docs/SALA-1V1.md) ----------
+   The private 1 v 1 waiting room over its own 3D hangar (drawn by the game's canvas behind). Graphite glass, warm white,
+   orange for what matters (your pad, LISTO, INICIAR PARTIDA). No backdrop blur (a full-screen pass every frame on a phone). */
+#lb{position:fixed;inset:0;z-index:20;display:grid;grid-template-rows:auto minmax(0,1fr) auto;touch-action:none;--lbtop:clamp(44px,8vh,64px);--lbbar:clamp(52px,10vh,78px);--lbpad:max(14px,env(safe-area-inset-left,0px));--lbpadR:max(14px,env(safe-area-inset-right,0px));--lbglass:rgba(14,15,17,.78);--lbline:rgba(244,234,216,.13);color:var(--hud)}
+#lb[hidden]{display:none}
+#lb::before{content:"";position:absolute;inset:0;pointer-events:none;background:radial-gradient(ellipse 70% 75% at 50% 48%,transparent 50%,rgba(0,0,0,.5) 100%),linear-gradient(180deg,rgba(6,7,8,.55) 0,rgba(6,7,8,0) 18%,rgba(6,7,8,0) 62%,rgba(6,7,8,.7) 100%)}
+#lb>*{position:relative}
+#lb button{cursor:pointer}
+#lb button:focus-visible,#lb input:focus-visible{outline:2px solid var(--hud);outline-offset:2px}
+.lbTop{display:flex;align-items:center;gap:clamp(8px,2vw,22px);height:var(--lbtop);padding:env(safe-area-inset-top,0px) var(--lbpadR) 0 var(--lbpad);background:linear-gradient(180deg,rgba(7,8,9,.92),rgba(7,8,9,.55));border-bottom:1px solid var(--lbline)}
+.lbBack{display:flex;align-items:center;gap:8px;background:none;border:0;padding:6px 8px 4px 0;font:500 clamp(17px,3vh,23px)/1 var(--f-display);letter-spacing:.08em;color:var(--hud)}
+.lbBack svg{width:22px;height:22px}
+.lbTitle{position:absolute;left:50%;top:env(safe-area-inset-top,0px);bottom:0;transform:translateX(-50%);display:flex;align-items:center;gap:10px;font:600 clamp(21px,4vh,34px)/1 var(--f-display);letter-spacing:.07em;white-space:nowrap;padding:0 clamp(10px,3vw,40px);border-bottom:2px solid var(--signal)}
+.lbTitle svg{width:clamp(22px,4vh,30px);height:auto}
+.lbTitle span{padding-top:.12em}
+.lbTopR{margin-left:auto;display:flex;align-items:center;gap:clamp(8px,1.6vw,18px)}
+.lbCode{display:flex;align-items:center;gap:8px;height:clamp(30px,5.5vh,40px);padding:0 10px;background:var(--lbglass);border:1px solid var(--lbline);font:500 clamp(16px,2.8vh,22px)/1 var(--f-display);letter-spacing:.08em;color:var(--sand)}
+.lbCode b{color:var(--hud);font-weight:600;letter-spacing:.12em}
+.lbCode svg{width:16px;height:16px;opacity:.8}
+.lbPing{display:flex;align-items:center;gap:6px;font:500 clamp(15px,2.6vh,20px)/1 var(--f-display);letter-spacing:.06em;color:#7fd88a}
+.lbPing svg{width:18px;height:18px}
+.lbPing.warn{color:var(--gold)}.lbPing.bad{color:var(--blood)}
+.lbMain{min-height:0}
+/* the first screen: two choices */
+.lbHome{position:absolute;right:var(--lbpadR);top:50%;transform:translateY(-50%);width:min(440px,46vw);display:grid;gap:clamp(8px,1.8vh,14px)}
+.lbHome[hidden]{display:none}
+.lbName{display:grid;gap:5px}
+.lbName input,.lbJoinRow input{height:clamp(36px,6.4vh,46px);padding:0 12px;background:rgba(8,9,10,.85);border:1px solid var(--lbline);color:var(--hud);font:500 clamp(19px,3.4vh,26px)/1 var(--f-display);letter-spacing:.08em;min-width:0;border-radius:0}
+.lbChoice{position:relative;display:grid;grid-template-columns:auto minmax(0,1fr);grid-template-rows:auto auto;column-gap:14px;align-items:center;text-align:left;padding:clamp(10px,2.2vh,18px) 16px;background:var(--lbglass);border:1px solid var(--lbline);color:var(--hud)}
+.lbChoice>svg{grid-row:1/3;width:clamp(28px,5.4vh,40px);height:auto;color:var(--signal)}
+.lbChoice b{font:600 clamp(22px,4.4vh,34px)/1 var(--f-display);letter-spacing:.06em;padding-top:.1em}
+.lbChoice small{font-size:clamp(9.5px,1.7vh,11.5px);letter-spacing:.06em;color:var(--sand);line-height:1.35}
+button.lbChoice{border-left:3px solid var(--signal)}
+button.lbChoice:hover{background:rgba(26,27,30,.88)}
+button.lbChoice:disabled{opacity:.55;cursor:default}
+.lbJoinRow{grid-column:1/-1;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;margin-top:10px}
+.lbJoinRow input{text-transform:uppercase;letter-spacing:.3em}
+.lbBtn{display:flex;align-items:center;justify-content:center;gap:10px;height:clamp(40px,7.4vh,58px);padding:0 clamp(12px,2vw,26px);background:rgba(20,21,24,.9);border:1px solid rgba(244,234,216,.28);color:var(--hud);font:600 clamp(19px,3.6vh,28px)/1 var(--f-display);letter-spacing:.07em;white-space:nowrap}
+.lbBtn svg{width:.8em;height:.8em;flex:none}
+.lbBtn span{padding-top:.12em}
+.lbBtn:hover{background:rgba(32,33,37,.95)}
+.lbBtn.ghost{background:rgba(10,11,12,.6);border-color:var(--lbline);color:var(--sand)}
+.lbBtn.on{border-color:var(--signal);color:var(--signal);background:rgba(255,138,43,.1)}
+.lbBtn.go{background:linear-gradient(180deg,#ffa24b,var(--signal) 55%,#e97416);border:0;color:#140d06;box-shadow:0 6px 26px rgba(255,138,43,.2),inset 0 1px 0 rgba(255,255,255,.35);clip-path:polygon(0 0,100% 0,100% calc(100% - 10px),calc(100% - 10px) 100%,0 100%)}
+.lbBtn.go:hover{filter:brightness(1.08)}
+.lbBtn:disabled{opacity:.42;cursor:default;filter:grayscale(.6)}
+.lbBtn.go:disabled{box-shadow:none}
+.lbMsg{margin:0;min-height:1.3em;font-size:clamp(10px,1.8vh,12px);letter-spacing:.06em;color:var(--sand);line-height:1.4}
+.lbMsg.err{color:#ff8b7e}
+/* the room */
+.lbRoom{position:absolute;inset:0}
+.lbRoom[hidden]{display:none}
+.lbPanel{background:var(--lbglass);border:1px solid var(--lbline);box-sizing:border-box}
+.lbPanel h4{margin:0;display:flex;align-items:center;gap:10px;font:600 clamp(18px,3.2vh,26px)/1 var(--f-display);letter-spacing:.07em;padding-top:.12em}
+.lbPanel h4 svg{width:1.1em;height:1.1em}
+.lbPlayers{position:absolute;right:var(--lbpadR);top:clamp(6px,1.6vh,14px);width:clamp(220px,23vw,330px);padding:clamp(8px,1.6vh,14px)}
+.lbPlayers ul{list-style:none;margin:clamp(6px,1.2vh,10px) 0 0;padding:0;display:grid;gap:clamp(4px,.8vh,8px)}
+.lbPlayers li{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:10px;align-items:center;padding:4px 0}
+.lbPlayers li+li{border-top:1px solid var(--lbline);padding-top:clamp(5px,1vh,9px)}
+.lbPlayers li img{width:clamp(30px,6vh,44px);aspect-ratio:1;object-fit:cover;object-position:50% 18%;background:#000;border:1px solid var(--lbline)}
+.lbPlayers li.empty img{opacity:.25}
+.lbPlayers li b{display:flex;align-items:center;gap:6px;font:500 clamp(17px,3vh,23px)/1 var(--f-display);letter-spacing:.05em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-top:.12em}
+.lbPlayers li small{display:block;font-size:clamp(8.5px,1.5vh,10px);letter-spacing:.12em;color:var(--sand);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lbPlayers li small.host{color:var(--signal)}
+.lbCrown{width:15px;height:15px;color:var(--gold);flex:none}
+.lbSt{font:600 clamp(13px,2.4vh,17px)/1 var(--f-display);letter-spacing:.08em;padding:4px 7px 2px;border:1px solid var(--lbline);color:var(--sand);white-space:nowrap}
+.lbSt.ok{border-color:var(--signal);color:#140d06;background:var(--signal)}
+.lbSt.off{border-color:rgba(229,72,58,.6);color:#ff8b7e}
+.lbInvite{position:absolute;left:var(--lbpad);top:50%;transform:translateY(-58%);width:clamp(230px,22vw,320px);padding:clamp(10px,1.8vh,16px);display:grid;gap:clamp(5px,1vh,8px)}
+.lbInvite[hidden]{display:none}
+.lbInvCode{font-size:clamp(10px,1.8vh,12px);letter-spacing:.08em;color:var(--sand);display:flex;align-items:baseline;gap:8px;margin:2px 0 4px}
+.lbInvCode b{font:600 clamp(24px,4.6vh,34px)/1 var(--f-display);letter-spacing:.16em;color:var(--hud)}
+.lbInvBtn{display:flex;align-items:center;gap:10px;height:clamp(32px,5.6vh,40px);padding:0 10px;background:rgba(6,7,8,.6);border:1px solid var(--lbline);color:var(--hud);font-size:clamp(10.5px,1.9vh,12.5px);letter-spacing:.05em;text-align:left}
+.lbInvBtn svg{width:17px;height:17px;flex:none;color:var(--sand)}
+.lbInvBtn.wa svg{color:#3ccf6e}
+.lbInvBtn:hover{background:rgba(30,31,34,.9)}
+.lbX{position:absolute;right:6px;top:6px;width:30px;height:30px;background:none;border:0;color:var(--sand);font-size:20px;line-height:1}
+.lbInvNote{font-size:clamp(8.5px,1.5vh,10px);letter-spacing:.05em;color:var(--dust);line-height:1.4;margin:0}
+/* the operators' name tags (placed every frame over their heads) */
+.lbTag{position:absolute;left:0;top:0;transform:translate(-50%,-100%);display:grid;justify-items:center;gap:3px;pointer-events:none;text-align:center;text-shadow:0 1px 6px #000;will-change:transform}
+.lbTag[hidden]{display:none}
+.lbTag b{display:flex;align-items:center;gap:6px;font:600 clamp(19px,3.6vh,28px)/1 var(--f-display);letter-spacing:.05em;white-space:nowrap;padding-top:.12em}
+.lbTag small{font-size:clamp(8.5px,1.5vh,10px);letter-spacing:.14em;color:var(--signal)}
+.lbTag small:empty{display:none}
+.lbTag.wait b{color:var(--sand);font-weight:500}
+.lbTag.wait small{color:var(--dust)}
+/* maps */
+.lbMapsWrap{position:absolute;left:var(--lbpad);right:var(--lbpadR);bottom:clamp(6px,1.4vh,12px);display:grid;grid-template-columns:minmax(0,1fr) clamp(200px,20vw,300px);gap:clamp(8px,1vw,14px);align-items:end}
+.lbMaps{padding:clamp(6px,1.2vh,10px) clamp(8px,1vw,12px);display:grid;gap:clamp(4px,.8vh,8px);min-width:0}
+.lbMapsHead{display:flex;align-items:center;gap:8px;font:600 clamp(15px,2.8vh,21px)/1 var(--f-display);letter-spacing:.08em;padding-top:.1em}
+.lbMapsHead svg{width:16px;height:16px;color:var(--signal)}
+.lbMapsHead small{font:400 clamp(8.5px,1.5vh,10px)/1 var(--f-mono);letter-spacing:.1em;color:var(--sand)}
+.lbMapRow{display:flex;gap:clamp(6px,.8vw,10px);overflow-x:auto;scrollbar-width:none;touch-action:pan-x}
+.lbMapRow::-webkit-scrollbar{display:none}
+.lbMap{position:relative;flex:0 0 clamp(120px,13vw,200px);aspect-ratio:16/8.6;padding:0;border:1px solid var(--lbline);background:#111 center/cover no-repeat;overflow:hidden;color:var(--hud)}
+.lbMap img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:.8}
+.lbMap::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,0) 40%,rgba(0,0,0,.85))}
+.lbMap b{position:absolute;left:0;right:0;bottom:6px;z-index:1;font:600 clamp(15px,2.8vh,22px)/1 var(--f-display);letter-spacing:.06em;text-align:center}
+.lbMap[aria-pressed="true"]{border:2px solid var(--signal);box-shadow:0 0 0 1px rgba(255,138,43,.35),0 0 18px rgba(255,138,43,.25)}
+.lbMap[aria-pressed="true"] img{opacity:1}
+.lbMap[aria-pressed="true"]::before{content:"✓";position:absolute;right:0;top:0;z-index:2;width:clamp(18px,3.6vh,26px);height:clamp(18px,3.6vh,26px);display:grid;place-items:center;background:var(--signal);color:#140d06;font:700 clamp(12px,2.4vh,16px)/1 var(--f-mono)}
+.lbMap:disabled{cursor:default}
+.lbMap:not([aria-pressed="true"]):disabled img{opacity:.55}
+.lbMapInfo{display:grid;grid-template-rows:auto auto auto;overflow:hidden}
+.lbMapInfo img{width:100%;aspect-ratio:16/8;object-fit:cover;display:block}
+.lbMapInfo b{font:600 clamp(20px,3.8vh,30px)/1 var(--f-display);letter-spacing:.06em;padding:clamp(5px,1vh,9px) 12px 0}
+.lbMapInfo small{font-size:clamp(8.5px,1.5vh,10.5px);letter-spacing:.04em;color:var(--sand);line-height:1.4;padding:2px 12px clamp(6px,1.2vh,10px)}
+/* the bar at the bottom */
+.lbBar{display:flex;align-items:center;gap:clamp(6px,1vw,14px);height:var(--lbbar);padding:0 var(--lbpadR) env(safe-area-inset-bottom,0px) var(--lbpad);background:rgba(8,9,10,.92);border-top:1px solid var(--lbline)}
+.lbBar[hidden]{display:none}
+.lbStatus{flex:1;min-width:0;display:flex;align-items:center;justify-content:center;gap:10px;font-size:clamp(9.5px,1.7vh,12px);letter-spacing:.1em;color:var(--sand);text-align:center;line-height:1.35}
+.lbStatus b{font:600 clamp(17px,3vh,23px)/1 var(--f-display);color:var(--hud);letter-spacing:.06em;white-space:nowrap;padding-top:.12em}
+.lbStatus svg{width:18px;height:18px;flex:none}
+#lbStart{min-width:clamp(150px,22vw,320px)}
+#lbReady{min-width:clamp(110px,15vw,220px)}
+/* phones in landscape (and short windows): smaller everything, the map's description card goes */
+@media (max-height:520px){
+  #lb{--lbtop:42px;--lbbar:50px}
+  .lbTitle{font-size:21px}
+  .lbMapsWrap{grid-template-columns:minmax(0,1fr)}
+  .lbMapInfo{display:none}
+  .lbMap{flex-basis:clamp(96px,15vw,150px)}
+  .lbPlayers{width:clamp(190px,26vw,260px)}
+  .lbInvite{transform:translateY(-62%)}
+  .lbStatus{font-size:9px}
+  .lbHome{width:min(400px,50vw)}
+  .lbTag b{font-size:18px}.lbTag .lbSt{font-size:12px;padding:3px 5px 1px}
+}
+@media (max-width:760px){.lbBack span{display:none}.lbTitle{font-size:19px}.lbTitle svg{display:none}.lbPing svg{display:none}}
+@media (max-width:700px) and (max-height:400px){.lbStatus{display:none}}
+.lbStatus.err #lbStatusTxt{color:#ff8b7e}
 </style>
 
 <canvas id="c"></canvas>
@@ -1440,6 +1571,53 @@ body.m2 #menu .menuInner{display:none}
       <div class="row"><button class="btn" id="mpReady" type="button">LISTO</button><button class="btn ghost" id="mpLeave" type="button" style="font-size:20px">SALIR</button></div>
     </div>
   </div>
+</div>
+<!-- SALA 1V1 (?lobby=2, 10-11-2026, client/lobby1v1.js, docs/SALA-1V1.md): the private 1 v 1 waiting room over a 3D hangar.
+     Same room, server and messages as #mp (create, join with the code, LISTO, the host's map); ?lobby=1 brings #mp back. -->
+<div id="lb" hidden>
+  <header class="lbTop">
+    <button type="button" class="lbBack" id="lbBack"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 12H5M11 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg><span>VOLVER</span></button>
+    <div class="lbTitle"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="8" cy="8" r="3.2" fill="none" stroke="currentColor" stroke-width="1.7"/><circle cx="16.5" cy="8" r="3.2" fill="none" stroke="currentColor" stroke-width="1.7"/><path d="M2.5 19c.6-3.4 2.8-5.2 5.5-5.2s4.9 1.8 5.5 5.2M11 14.3c1.2-.9 2.5-1.5 5.5-1.5 2.7 0 4.9 1.8 5.5 5.2" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg><span>MULTIJUGADOR 1V1</span></div>
+    <div class="lbTopR">
+      <button type="button" class="lbCode" id="lbCodeTop" hidden aria-label="Copiar el código de la sala">SALA: <b id="lbCodeTopTxt">------</b><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="8" y="8" width="12" height="12" rx="1.5" fill="none" stroke="currentColor" stroke-width="1.7"/><path d="M16 8V5.5A1.5 1.5 0 0 0 14.5 4h-9A1.5 1.5 0 0 0 4 5.5v9A1.5 1.5 0 0 0 5.5 16H8" fill="none" stroke="currentColor" stroke-width="1.7"/></svg></button>
+      <span class="lbPing" id="lbPing" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 9a15 15 0 0 1 20 0M5.5 12.5a10 10 0 0 1 13 0M9 16a5 5 0 0 1 6 0" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="12" cy="19.3" r="1.5" fill="currentColor"/></svg><b id="lbPingTxt">– ms</b></span>
+    </div>
+  </header>
+  <main class="lbMain">
+    <section class="lbHome" id="lbHome">
+      <div class="lbName"><span class="lbl">Tu nombre</span><input type="text" id="lbName" maxlength="16" autocomplete="off" spellcheck="false" placeholder="Tu nombre"></div>
+      <button type="button" class="lbChoice" id="lbCreate"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.7"/><path d="M12 7.5v9M7.5 12h9" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg><b>CREAR SALA PRIVADA</b><small>Eres el anfitrión: eliges el mapa e inicias la partida cuando los dos estéis listos.</small></button>
+      <div class="lbChoice"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="8" cy="12" r="4.2" fill="none" stroke="currentColor" stroke-width="1.7"/><path d="M12.2 12H21M17.5 12v3.4M20.5 12v2.4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg><b>UNIRSE CON CÓDIGO</b><small>Escribe el código de 6 letras que te ha pasado tu rival.</small>
+        <div class="lbJoinRow"><input type="text" id="lbCode" maxlength="6" autocomplete="off" spellcheck="false" autocapitalize="characters" placeholder="ABC234" aria-label="Código de sala"><button type="button" class="lbBtn" id="lbJoin"><span>UNIRSE</span></button></div></div>
+      <p class="lbMsg" id="lbMsg" aria-live="polite"></p>
+    </section>
+    <section class="lbRoom" id="lbRoom" hidden>
+      <div class="lbTag" id="lbTagMe"><small class="lbRole"></small><b><svg class="lbCrown" viewBox="0 0 24 24" aria-hidden="true" hidden><path d="M3 18 4.5 7l5 4.5L12 5l2.5 6.5 5-4.5L21 18z" fill="currentColor"/></svg><span class="lbNm"></span></b><span class="lbSt"></span></div>
+      <div class="lbTag" id="lbTagOp"><small class="lbRole"></small><b><svg class="lbCrown" viewBox="0 0 24 24" aria-hidden="true" hidden><path d="M3 18 4.5 7l5 4.5L12 5l2.5 6.5 5-4.5L21 18z" fill="currentColor"/></svg><span class="lbNm"></span></b><span class="lbSt"></span></div>
+      <aside class="lbPanel lbPlayers" aria-label="Jugadores"><h4>JUGADORES (<span id="lbCount">1/2</span>)</h4><ul id="lbList"></ul></aside>
+      <aside class="lbPanel lbInvite" id="lbInvite" hidden aria-label="Invitar">
+        <h4><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8" r="3.4" fill="none" stroke="currentColor" stroke-width="1.7"/><path d="M2.5 19.5c.6-3.6 3-5.5 6.5-5.5s5.9 1.9 6.5 5.5M19 8v6M16 11h6" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>INVITAR AL RIVAL</h4>
+        <button type="button" class="lbX" id="lbInvClose" aria-label="Cerrar">×</button>
+        <div class="lbInvCode">Código de sala <b id="lbInvCodeTxt">------</b></div>
+        <button type="button" class="lbInvBtn" id="lbCopyCode"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="8" y="8" width="12" height="12" rx="1.5" fill="none" stroke="currentColor" stroke-width="1.7"/><path d="M16 8V5.5A1.5 1.5 0 0 0 14.5 4h-9A1.5 1.5 0 0 0 4 5.5v9A1.5 1.5 0 0 0 5.5 16H8" fill="none" stroke="currentColor" stroke-width="1.7"/></svg>Copiar código</button>
+        <button type="button" class="lbInvBtn" id="lbCopyLink"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 14a4.5 4.5 0 0 0 6.4 0l3-3a4.5 4.5 0 0 0-6.4-6.4l-1.2 1.2M14 10a4.5 4.5 0 0 0-6.4 0l-3 3a4.5 4.5 0 0 0 6.4 6.4l1.2-1.2" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>Copiar enlace</button>
+        <button type="button" class="lbInvBtn wa" id="lbWhats"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20l1.2-3.7A8 8 0 1 1 8 19z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="M9 8.5c0 3 2.6 6.4 6 6.6l1-1.6-2-1-1 .9c-1-.4-2.3-1.7-2.7-2.8l.9-1-1-2z" fill="currentColor"/></svg>Compartir por WhatsApp</button>
+        <button type="button" class="lbInvBtn" id="lbShare" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="18" cy="5.5" r="2.5" fill="none" stroke="currentColor" stroke-width="1.7"/><circle cx="6" cy="12" r="2.5" fill="none" stroke="currentColor" stroke-width="1.7"/><circle cx="18" cy="18.5" r="2.5" fill="none" stroke="currentColor" stroke-width="1.7"/><path d="M8.2 10.8l7.6-4M8.2 13.2l7.6 4" stroke="currentColor" stroke-width="1.7"/></svg>Compartir…</button>
+        <p class="lbInvNote">Solo dos plazas: tú y tu rival. Con el enlace entra directamente a esta sala.</p>
+      </aside>
+      <div class="lbMapsWrap">
+        <div class="lbPanel lbMaps"><div class="lbMapsHead"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-6.5-6.2-6.5-11a6.5 6.5 0 0 1 13 0c0 4.8-6.5 11-6.5 11z" fill="none" stroke="currentColor" stroke-width="1.8"/><circle cx="12" cy="10" r="2.3" fill="currentColor"/></svg>MAPA <small id="lbMapWho"></small></div><div class="lbMapRow" id="lbMapRow" role="group" aria-label="Mapa"></div></div>
+        <div class="lbPanel lbMapInfo"><img id="lbMapImg" alt=""><b id="lbMapName"></b><small id="lbMapSub"></small></div>
+      </div>
+    </section>
+  </main>
+  <footer class="lbBar" id="lbBar" hidden>
+    <button type="button" class="lbBtn ghost" id="lbLeave"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 4h5v16h-5M10 8l-4 4 4 4M6 12h10" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg><span>SALIR</span></button>
+    <button type="button" class="lbBtn ghost" id="lbInvBtn"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8" r="3.4" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M2.5 19.5c.6-3.6 3-5.5 6.5-5.5s5.9 1.9 6.5 5.5M19 8v6M16 11h6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg><span>INVITAR</span></button>
+    <span class="lbStatus" id="lbStatus" aria-live="polite"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="8" cy="8" r="3.2" fill="none" stroke="currentColor" stroke-width="1.7"/><circle cx="16.5" cy="8" r="3.2" fill="none" stroke="currentColor" stroke-width="1.7"/><path d="M2.5 19c.6-3.4 2.8-5.2 5.5-5.2s4.9 1.8 5.5 5.2M11 14.3c1.2-.9 2.5-1.5 5.5-1.5 2.7 0 4.9 1.8 5.5 5.2" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg><b id="lbCount2">1/2</b><span id="lbStatusTxt"></span></span>
+    <button type="button" class="lbBtn" id="lbReady"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg><span>LISTO</span></button>
+    <button type="button" class="lbBtn go" id="lbStart"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4.5v15l12.5-7.5z" fill="currentColor"/></svg><span>INICIAR PARTIDA</span></button>
+  </footer>
 </div>
 <div id="countdown" hidden>3</div>
 <div id="netBanner" hidden></div>
@@ -6110,10 +6288,10 @@ async function netServerUrl(){
   try{const r=await fetch('server.json?v='+Date.now(),{cache:'no-store'});if(r.ok){const j=await r.json();if(j&&j.url){NET.url=String(j.url).replace(/\/$/,'');return NET.url;}}}catch(e){}
   return null;
 }
-function mpShow(view){NET.view=view;$('#mp').hidden=false;$('#menu').hidden=true;$('#mpHome').hidden=view!=='home';$('#mpLobby').hidden=view!=='lobby';}
-function mpMsg(t,err){const m=$('#mpMsg');m.textContent=t||'';m.classList.toggle('err',!!err);}
+function mpShow(view){if(LB.on){lbShow(view);return;}NET.view=view;$('#mp').hidden=false;$('#menu').hidden=true;$('#mpHome').hidden=view!=='home';$('#mpLobby').hidden=view!=='lobby';}
+function mpMsg(t,err){const m=$('#mpMsg');m.textContent=t||'';m.classList.toggle('err',!!err);if(LB.on)lbMsg(t,err);}
 function mpName(){const n=SDProto.cleanName($('#mpName').value)||'JUGADOR';store.set('mpName',n);if(n!=='JUGADOR'&&PROFILE.name!==n){PROFILE.name=n;SDProfile.save(LS,PROFILE);}return n;}
-function inviteLink(code){return location.origin+location.pathname+'?sala='+code;}
+function inviteLink(code){return location.origin+location.pathname+'?sala='+code+(LB.on?'&lobby=2':'');}   // SALA 1V1: the guest gets it too
 async function netCreate(){
   audioInit();SFX.ui();mpName();mpMsg('Creando sala…');
   const url=await netServerUrl();if(!url){mpMsg('SERVIDOR NO DISPONIBLE. Puedes seguir jugando offline.',true);return;}
@@ -6138,7 +6316,7 @@ function netConnect(code){
   NET.status='connecting';mpMsg('Conectando…');
   let ws;try{ws=new WebSocket(NET.url.replace(/^http/,'ws')+'/room/'+code);}catch(e){netErr('ws '+e.message);netRetry();return;}
   NET.ws=ws;
-  ws.onopen=()=>{NET.status='online';NET.retries=0;NET.lastMsgAt=performance.now();const tok=store.get('tok_'+code,null);NET.N.hello(mpName(),tok);NET.N.ping();};
+  ws.onopen=()=>{NET.status='online';NET.retries=0;NET.lastMsgAt=performance.now();const tok=store.get('tok_'+code,null);NET.N.hello(mpName(),tok,LB.on);NET.N.ping();};
   ws.onmessage=e=>{if(NET.ws!==ws)return;   // a late frame from a socket already replaced is never applied
     NET.lastMsgAt=performance.now();NET.bytesIn+=e.data.length||0;for(const ev of NET.N.onMessage(e.data))netEvent(ev);};
   ws.onerror=()=>{netErr('socket error');};
@@ -6167,7 +6345,7 @@ function netLeave(toMainMenu){
   if(NET.code)store.set('tok_'+NET.code,null);
   NET.want=false;if(NET.ws){try{NET.ws.close(4000);}catch(e){}}NET.ws=null;NET.status='off';NET.N=null;NET.code=null;
   netBanner(null);netEndOnline();
-  if(toMainMenu){$('#mp').hidden=true;toMenu();}else mpShow('home');
+  if(toMainMenu){$('#mp').hidden=true;if(LB.on)lbHide();toMenu();}else mpShow('home');
   history.replaceState(null,'',location.pathname);
 }
 function netEndOnline(){
@@ -6202,6 +6380,7 @@ function renderLobby(){
   document.querySelectorAll('#mpSizeSeg button').forEach(b=>{b.setAttribute('aria-pressed',String(+b.dataset.s===C.size));b.disabled=!host;});
   document.querySelectorAll('#mpDiffSeg button').forEach(b=>{b.setAttribute('aria-pressed',String(+b.dataset.d===C.diff));b.disabled=!host;});
   document.querySelectorAll('#mpTeamSeg button').forEach(b=>b.setAttribute('aria-pressed',String(!!me&&b.dataset.team===me.team)));
+  if(LB.on)lbRender();
   if(N.map==='casa'){casaLoad();const cb=$('#mpMapSeg [data-map=casa]');if(cb)cb.hidden=false;}   // a guest without ?casa=1 still sees (and loads) the room's map
   if(N.map==='barrio'&&BAR.on){barrioLoad();const cb=$('#mpMapSeg [data-map=barrio]');if(cb)cb.hidden=false;}
   if(C2S[N.map]&&C2.on){casa2Load(N.map);const cb=$('#mpMapSeg [data-map='+N.map+']');if(cb)cb.hidden=false;}
@@ -6298,6 +6477,7 @@ function netEvent(e){
       const msg={full:'ESA SALA ESTÁ LLENA.',no_room:'ESA SALA NO EXISTE (o ha caducado).',in_progress:'ESA PARTIDA YA HA EMPEZADO.',idle:'SALA CERRADA POR INACTIVIDAD. Crea otra cuando queráis jugar.'}[e.code];
       netErr('error '+e.code+(e.why?' '+e.why:''));
       if(msg){NET.want=false;netEndOnline();mpShow('home');mpMsg(msg,true);store.set('tok_'+NET.code,null);}
+      else if(e.code==='cant_start'&&LB.on)lbMsg({players:'FALTA TU RIVAL',ready:'LOS DOS TENÉIS QUE ESTAR LISTOS',host:'SOLO EL ANFITRIÓN INICIA LA PARTIDA',auto:'EMPIEZA SOLA CUANDO LOS DOS ESTÉIS LISTOS',phase:'LA PARTIDA YA HA EMPEZADO'}[e.why]||'AÚN NO SE PUEDE INICIAR',true);
       break;}
   }
 }
@@ -6330,7 +6510,7 @@ function netStart(m){
   if(md!=='duelo'&&REMOTE)REMOTE.update(null,0);
   netScoreHud();
   updateHpUI();updateAmmoUI();updateWeaponHud();
-  $('#mp').hidden=true;$('#menu').hidden=true;$('#over').hidden=true;$('#pause').hidden=true;$('#death').hidden=true;$('#hud').hidden=false;$('#netStat').hidden=false;
+  $('#mp').hidden=true;if(LB.on)lbHide();$('#menu').hidden=true;$('#over').hidden=true;$('#pause').hidden=true;$('#death').hidden=true;$('#hud').hidden=false;$('#netStat').hidden=false;
   $('#touch').hidden=!isTouch;
   if(m.in>0){$('#countdown').hidden=false;}
   state='playing';
@@ -7325,6 +7505,189 @@ function m2Frame(rdt){
   m2Layout(rdt);
   WROOT.visible=false;KROOT.visible=false;PROOT.visible=false;SROOT.visible=false;
 }
+/* =================== SALA 1V1 (?lobby=2, 10-11-2026, client/lobby1v1.js, docs/SALA-1V1.md) ===================
+   Owner: «una sala de espera MULTIJUGADOR 1V1, al estilo de los lobbies de PUBG o COD pero con diseño original». INICIO ›
+   MULTIJUGADOR 1V1 opens its own screen: CREAR SALA PRIVADA or UNIRSE con código, then a dark tactical hangar with your
+   operator on the left pad and your rival on the right one (he appears the moment he joins), names and LISTO over their
+   heads, INVITAR (code, link, WhatsApp, the phone's own share), the map cards (the host chooses, the server tells the
+   guest) and LISTO / INICIAR PARTIDA at the bottom. The room is the same as always (core/room.js, the same messages and
+   the same server); the only new thing the server sees is that this page starts the match with a button (hello hs, 'go').
+   Experimental: ?lobby=2 turns it on (remembered on the device), ?lobby=1 brings back the room screen of always (#mp). */
+{const q=location.search.match(/[?&]lobby=([12])\b/);if(q)store.set('lobby2',q[1]==='2');}
+const LB={on:M2.on&&typeof SDLobby!=='undefined'&&store.get('lobby2',false)===true,vis:false,view:'home',room:null,cam:null,rigs:null,pv:null,
+  t:0,n:0,F:{dist:7,ox:0,oy:0},C:null,opIn:1,opSeen:null,heldSig:'',held:null,inv:null,note:null,lastMap:null,lastHost:null,lastRival:null,mapSig:'',listSig:'',busy:false,goT:0};
+const LB_YAW=[0.3,-0.3],LB_PITCH=-0.55,_lbv=new T.Vector3(),_lbcp=new T.Vector3();
+const lbMapName=id=>{const m=M2_MAPS.find(x=>x.id===id)||(id==='barrio'?M2_BARRIO:null);return m?m.name:/^casa2/.test(id)?'CASA ATLAS 2.0':m2MapName(id);};
+const lbMapSub=id=>{const m=M2_MAPS.find(x=>x.id===id)||(id==='barrio'?M2_BARRIO:null)||SDMenu2.MAPS.find(x=>x.id===id);return m?m.sub:'';};
+function lbShow(view){
+  NET.view=view;LB.view=view;LB.vis=true;$('#lb').hidden=false;$('#mp').hidden=true;$('#menu').hidden=true;
+  setHidden($('#lbHome'),view!=='home');setHidden($('#lbRoom'),view!=='lobby');setHidden($('#lbBar'),view!=='lobby');
+  if(view==='home'){$('#lbName').value=$('#mpName').value;if($('#mpCode').value)$('#lbCode').value=$('#mpCode').value;}
+  if(view==='lobby'&&LB.inv===null)LB.inv=window.innerWidth>=1100;   // PC: the invitation open while you wait
+  LB.C=null;lbRender();
+}
+// a player's state in a word or two (tags and list): after a match, whether he wants the rematch
+const lbStText=(p,V,N)=>p.connected===false?'DESCONECTADO':V.over?((N.rematchOf||{})[p.id]?'✓ REVANCHA':'FIN'):p.ready?'✓ LISTO':'NO LISTO';
+function lbHide(){LB.vis=false;$('#lb').hidden=true;}
+// a message: on the first screen under the buttons; in the room in the bar for a few seconds
+function lbMsg(t,err){
+  const m=$('#lbMsg');m.textContent=t||'';m.classList.toggle('err',!!err);
+  if(!err&&/^(Conectando|Creando)/.test(t||''))return;   // the room's own line says that better
+  LB.note=t?{t:String(t).toUpperCase(),err:!!err,until:performance.now()+4500}:null;if(LB.view==='lobby')lbStatus();
+}
+function lbStatus(){
+  const V=LB.V;if(!V)return;const n=LB.note&&performance.now()<LB.note.until?LB.note:null;
+  setText($('#lbStatusTxt'),n?n.t:V.status);$('#lbStatus').classList.toggle('err',!!(n&&n.err));
+}
+// what the server says → the screen (called on every lobby message and when the screen opens)
+function lbRender(){
+  if(!LB.on)return;const N=NET.N,inRoom=!!(N&&NET.code&&LB.view==='lobby'&&N.you);
+  setHidden($('#lbCodeTop'),!inRoom);setHidden($('#lbPing'),!inRoom);
+  if(!inRoom){LB.V=null;return;}
+  const V=LB.V=SDLobby.view(N);
+  setText($('#lbCodeTopTxt'),NET.code);setText($('#lbInvCodeTxt'),NET.code);
+  // what changed since the last message, said once
+  const rid=V.rival?V.rival.id+V.rival.name:null;
+  if(LB.room0!==NET.code){LB.room0=NET.code;LB.lastRival=rid;LB.lastHost=V.hostId;LB.lastMap=N.map;}   // a new room: nothing to announce yet
+  if(rid&&rid!==LB.lastRival){lbMsg(V.rival.name+' HA ENTRADO EN LA SALA');if(LB.inv&&window.innerWidth<1100)LB.inv=false;}
+  else if(!rid&&LB.lastRival)lbMsg('TU RIVAL HA SALIDO DE LA SALA');
+  if(LB.lastHost&&LB.lastHost!==V.hostId&&V.isHost)lbMsg('AHORA ERES EL ANFITRIÓN: ELIGES EL MAPA E INICIAS');
+  if(LB.lastMap&&N.map!==LB.lastMap&&!V.isHost)lbMsg('EL ANFITRIÓN HA ELEGIDO '+lbMapName(N.map)+(V.hs?' · PULSA LISTO OTRA VEZ':''));
+  LB.lastRival=rid;LB.lastHost=V.hostId;LB.lastMap=N.map;
+  // players: you and the rival (or the empty place)
+  const cnt=V.count+'/2';setText($('#lbCount'),cnt);setText($('#lbCount2'),cnt);
+  const sig=JSON.stringify([V.me,V.rival].map(p=>p&&[p.id,p.name,p.ready,p.connected,p.skin,p.kit,p.title]))+V.hostId;
+  if(sig!==LB.listSig){LB.listSig=sig;const ul=$('#lbList');ul.innerHTML='';
+    for(const p of [V.me,V.rival]){const li=document.createElement('li'),im=document.createElement('img'),d=document.createElement('div'),b=document.createElement('b'),sm=document.createElement('small'),st=document.createElement('span');
+      im.alt='';const sk=p&&SKINS[p.skin]?p.skin:'soldado';im.src=skinImg(sk);
+      if(!p){li.className='empty';b.textContent='ESPERANDO…';sm.textContent='Comparte el código para invitar';st.className='lbSt';st.textContent='LIBRE';}
+      else{const nm=document.createElement('span');nm.textContent=p.name+(p.id===N.you?' (tú)':'');b.append(nm);
+        if(p.id===V.hostId){b.insertAdjacentHTML('beforeend','<svg class="lbCrown" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 18 4.5 7l5 4.5L12 5l2.5 6.5 5-4.5L21 18z" fill="currentColor"/></svg>');sm.className='host';}
+        sm.textContent=(p.id===V.hostId?'ANFITRIÓN · ':'')+(SKINS[p.skin]?SKINS[p.skin].name:'SOLDADO')+' · '+(p.kit==='shotgun'?'FURIA 12':'HALCÓN R7')+(p.title?' · «'+p.title+'»':'');
+        st.className='lbSt'+(p.connected===false?' off':p.ready||(V.over&&(N.rematchOf||{})[p.id])?' ok':'');st.textContent=lbStText(p,V,N);}
+      d.append(b,sm);li.append(im,d,st);ul.append(li);}}
+  // the name tags over the operators (placed every frame by lbFrame)
+  const tag=(el,p,k)=>{el.classList.toggle('wait',!p);setText(el.querySelector('.lbNm'),p?p.name:'ESPERANDO RIVAL');
+    setText(el.querySelector('.lbRole'),p&&p.id===V.hostId?'ANFITRIÓN':!p?'':k?'RIVAL':'TÚ');el.querySelector('.lbCrown').hidden=!(p&&p.id===V.hostId);
+    const s=el.querySelector('.lbSt'),rq=V.over&&p&&(N.rematchOf||{})[p.id];s.hidden=!p;if(p){s.className='lbSt'+(p.connected===false?' off':p.ready||rq?' ok':'');setText(s,lbStText(p,V,N));}};
+  tag($('#lbTagMe'),V.me,0);tag($('#lbTagOp'),V.rival,1);
+  // the buttons: LISTO is yours; INICIAR PARTIDA only works for the host with both ready (the server checks it again)
+  const rb=$('#lbReady'),on=V.over?V.again:V.ready;rb.setAttribute('aria-pressed',String(on));rb.classList.toggle('on',on);
+  setText(rb.querySelector('span'),V.over?(!V.rival?'NUEVO RIVAL':'REVANCHA'):'LISTO');   // pressed = orange (the check is the icon)
+  rb.disabled=N.phase!=='lobby'&&N.phase!=='over';
+  const sb=$('#lbStart');setHidden(sb,!V.hs||V.over);sb.disabled=!V.canStart||performance.now()<LB.goT;
+  setText(sb.querySelector('span'),V.isHost?'INICIAR PARTIDA':'INICIA EL ANFITRIÓN');
+  setHidden($('#lbInvite'),!LB.inv);$('#lbInvBtn').classList.toggle('on',!!LB.inv);
+  // maps: the cards of the maps this page plays online that the server has; the host chooses
+  const cards=SDLobby.mapCards(M2_MAPS.filter(m=>m.online).concat(BAR.exp&&!M2_MAPS.some(m=>m.id==='barrio')?[M2_BARRIO]:[]),N.maps,N.map,lbMapName);
+  const msig=cards.map(c=>c.id).join()+'|'+V.isHost;
+  if(msig!==LB.mapSig){LB.mapSig=msig;const row=$('#lbMapRow');row.innerHTML='';
+    for(const c of cards){const b=document.createElement('button');b.type='button';b.className='lbMap';b.dataset.map=c.id;b.disabled=!V.isHost;b.title=c.sub||c.name;
+      const im=document.createElement('img');im.alt='';im.loading='lazy';im.src=m2MapImg(c.id);const nb=document.createElement('b');nb.textContent=c.name;b.append(im,nb);
+      b.addEventListener('click',()=>{const N=NET.N;if(!N||!LB.V||!LB.V.isHost||N.map===c.id)return;N.chooseMap(c.id);audioInit();SFX.ui();});row.append(b);}}
+  document.querySelectorAll('#lbMapRow .lbMap').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.map===N.map)));
+  setText($('#lbMapWho'),V.isHost?'· eliges tú':'· lo elige el anfitrión');
+  const mi=$('#lbMapImg'),msrc=m2MapImg(N.map||'arena');if(mi.getAttribute('src')!==msrc)mi.src=msrc;
+  setText($('#lbMapName'),lbMapName(N.map||'arena'));setText($('#lbMapSub'),lbMapSub(N.map||'arena'));
+  lbStatus();LB.C=null;
+}
+// ---- the hangar in 3D ----
+function lbRig(){let R;if(SKIN_ON){const on=PJ2.on;PJ2.on=false;R=makeSoldier(RIVAL_MAT,{variant:'B'});PJ2.on=on;if(on){R.pj2v='B';PJ2.list.push(R);}}else R=makeSoldier(RIVAL_MAT,{variant:'B'});return R;}
+function lbWake(){
+  if(LB.room)return;
+  LB.room=SDLobby.buildHangar(T,{tex:(n,nm)=>texLoad(n,nm,true),low:GFX.profile==='bajo'});
+  if(!LB.cam)LB.cam=new T.PerspectiveCamera(32,1,0.05,80);
+  if(!LB.rigs){LB.rigs=[lbRig(),lbRig()];LB.pv=LB.rigs.map(R=>{const g=new T.Group();g.add(R.root);return g;});}
+  LB.room.pads.forEach((p,k)=>p.stand.add(LB.pv[k]));
+  LB.heldSig='';LB.C=null;
+}
+function lbSleep(){
+  if(!LB.room)return;
+  if(LB.held&&LB.held.parent)LB.held.parent.remove(LB.held);LB.held=null;LB.heldSig='';
+  LB.pv.forEach(g=>{if(g.parent)g.parent.remove(g);});LB.room.dispose();LB.room=null;
+}
+// the character a rig wears: the chosen one as soon as it is there (the one before stays until then, never the box figure)
+function lbOperator(R,want){
+  if(!SKIN_ON||want===undefined||R.skinPack===want)return;const root=want?packRoot(want):null;
+  if(m2PackOk(want)||(root&&PJ2.prev[root]))pj2SetPack(R,want);else if(want)pj2Load(root);
+}
+const lbShown=R=>!PJ2.on||!SKIN_ON?true:R.skinPack===undefined?false:(R.skinPack===null||!!R.v2||!!PJ2.failedRoots[packRoot(R.skinPack)]);
+// the free part of the screen: between the panels, under the bar, over the map strip (home: left of the two choices)
+function lbRect(vw,vh){
+  const top=$('#lb .lbTop').getBoundingClientRect().bottom;
+  if(LB.view!=='lobby'){const h=$('#lbHome').getBoundingClientRect();return {left:0,top,width:Math.max(80,h.left-12),height:vh-top-8};}
+  const pl=$('#lb .lbPlayers').getBoundingClientRect(),mw=$('#lb .lbMapsWrap').getBoundingClientRect(),iv=$('#lbInvite');
+  const left=iv.hidden?0:iv.getBoundingClientRect().right,right=pl.left;
+  // the tags need ~70 px over the heads
+  const tg=vh<520?44:64;return {left,top:top+tg,width:Math.max(80,right-left),height:Math.max(80,mw.top-top-tg)};
+}
+function lbFrame(rdt){
+  if(!LB.room)lbWake();
+  LB.t+=rdt;LB.n++;const dt=Math.min(rdt,0.1),now=performance.now();
+  scene.updateMatrixWorld();m2Warm(now);   // the map behind keeps getting ready for the match (as in MENÚ 2)
+  const N=NET.N,V=LB.view==='lobby'&&N&&N.you?LB.V:null,me=V&&V.me,rv=V&&V.rival,[RM,RO]=LB.rigs;
+  lbOperator(RM,SKIN_ON?SKINS[SKIN].pack:undefined);
+  if(rv)lbOperator(RO,SKIN_ON?(SKINS[rv.skin]||SKINS.soldado).pack:undefined);
+  if(rv&&LB.opSeen!==rv.id){LB.opSeen=rv.id;LB.opIn=0;SFX.ui();}if(!rv)LB.opSeen=null;
+  LB.opIn=Math.min(1,LB.opIn+dt/0.7);const A=SDLobby.appear(LB.opIn);
+  const show=[lbShown(RM),!!rv&&lbShown(RO)];
+  // your rifle in your hands as it is now (skin, optic, camouflage): the menu's own copy
+  const hs=[VMA.ready,!!RM.tp,WS_ST.rifle.cur,WS_ST.rifle.objs.length,MIRA.id,!!MIRA.model,(INV.equip&&INV.equip.camo)||'',SIL.want,WS_ST.rifle.light].join('|');
+  if(hs!==LB.heldSig&&RM.tp&&RM.tp.rifle&&VMA.R){LB.heldSig=hs;if(LB.held&&LB.held.parent)LB.held.parent.remove(LB.held);RM.tp.rifle.visible=false;LB.held=m2GunClone();RM.tp.rifle.parent.add(LB.held);}
+  for(let k=0;k<2;k++){const g=LB.pv[k],s=SDLobby.sway(LB.t,k),R=LB.rigs[k];
+    g.visible=show[k];g.rotation.set(0,LB_YAW[k]+s.yaw,s.lean);
+    g.position.y=s.bob+(k?A.y:0);g.scale.setScalar(k?A.s:1);
+    if(!show[k])continue;
+    if(LB.n%10===k+1)csFix(g);
+    const wpn=k?(rv&&rv.kit==='shotgun'?'shotgun':'rifle'):(PRIMARY==='shotgun'?'shotgun':'rifle');
+    _lbcp.copy(camera.position);camera.position.copy(LB.cam.position);animateSoldier(R,{wpn,vx:0,vz:0,pitch:LB_PITCH,aim:0,crouch:0},dt);camera.position.copy(_lbcp);}
+  LB.room.frame(LB.t,[{on:show[0],ready:!!(me&&me.ready)},{on:show[1],ready:!!(rv&&rv.ready&&rv.connected!==false),flash:A.flash}]);
+  // the camera: both pads in the free part of the screen, drifting a little like a hand-held shot
+  const vw=window.innerWidth||1,vh=window.innerHeight||1,cam=LB.cam;
+  if(cam.aspect!==vw/vh)cam.aspect=vw/vh;
+  if(!LB.C||LB.n%20===0){LB.C=SDLobby.fitCamera(lbRect(vw,vh),vw,vh,cam.fov);if(LB.view!=='lobby')LB.C.dist*=1.3;}   // the first screen: a wider shot, the two pads whole
+  const F=LB.F,C=LB.C,kk=rdt>0.2||LB.n<3?100:6;
+  F.dist=SDMenu2.damp(F.dist,C.dist,kk,dt);F.ox=SDMenu2.damp(F.ox,C.ox,kk,dt);F.oy=SDMenu2.damp(F.oy,C.oy,kk,dt);
+  const yaw=Math.sin(LB.t*0.19)*0.025,el=0.06+Math.sin(LB.t*0.15+1)*0.01,tgY=1.05;
+  cam.position.set(Math.sin(yaw)*Math.cos(el)*F.dist,tgY+Math.sin(el)*F.dist,Math.cos(yaw)*Math.cos(el)*F.dist);cam.lookAt(0,tgY,0);
+  cam.setViewOffset(vw,vh,-F.ox,-F.oy,vw,vh);cam.updateMatrixWorld();
+  // the name tags over their heads
+  if(LB.view==='lobby')for(let k=0;k<2;k++){const el=k?$('#lbTagOp'):$('#lbTagMe');
+    _lbv.set((k?1:-1)*SDLobby.PAD_X,2.12+(k?A.y:0),0).project(cam);
+    const x=Math.round((_lbv.x+1)/2*vw),y=Math.round((1-_lbv.y)/2*vh-$('#lb .lbTop').offsetHeight-6),t='translate('+x+'px,'+y+'px) translate(-50%,-100%)';
+    if(el.style.transform!==t)el.style.transform=t;}
+  if(LB.n%15===0&&N){const s=$('#lbPing'),r=Math.round(N.rtt||0);s.className='lbPing'+(NET.status!=='online'?' bad':r>150?' warn':'');
+    setText($('#lbPingTxt'),NET.status==='online'?(r?r+' ms':'– ms'):NET.status==='reconnecting'?'RECONECTANDO':'SIN CONEXIÓN');
+    if(LB.note&&now>LB.note.until){LB.note=null;lbStatus();}
+    const sb=$('#lbStart');if(V&&sb.disabled!==(!V.canStart||now<LB.goT))sb.disabled=!V.canStart||now<LB.goT;}
+  WROOT.visible=false;KROOT.visible=false;PROOT.visible=false;SROOT.visible=false;
+}
+function lbInviteText(){return '¡Te reto a un duelo 1 contra 1 en Sniper Duel! Sala '+NET.code+': '+inviteLink(NET.code);}
+async function lbCopy(text,ok){try{await navigator.clipboard.writeText(text);lbMsg(ok);}catch(e){lbMsg('COPIA ESTO: '+text,true);}}
+if(LB.on){
+  // INICIO › MULTIJUGADOR 1V1 opens the room screen at once (no need to press JUGAR)
+  document.querySelectorAll('#m2 .m2Mode[data-sel=online]').forEach(b=>b.addEventListener('click',()=>{if(!LB.on)return;netServerUrl();mpShow(NET.N&&NET.code?'lobby':'home');mpMsg('');}));
+  $('#lbName').value=$('#mpName').value;
+  $('#lbName').addEventListener('input',()=>{$('#mpName').value=$('#lbName').value;});
+  $('#lbBack').addEventListener('click',()=>{SFX.ui();if(LB.view==='lobby'){netLeave(false);return;}lbHide();$('#menu').hidden=false;});
+  // one room at a time: a second tap while it is being created does nothing (no duplicated rooms)
+  $('#lbCreate').addEventListener('click',async()=>{if(LB.busy||(NET.want&&NET.code))return;LB.busy=true;$('#lbCreate').disabled=true;$('#mpName').value=$('#lbName').value;
+    try{await netCreate();}finally{LB.busy=false;$('#lbCreate').disabled=false;}});
+  const join=()=>{const c=$('#lbCode').value;$('#mpName').value=$('#lbName').value;$('#mpCode').value=c;if(NET.want&&NET.code===c.toUpperCase())return;netJoin(c);};
+  $('#lbJoin').addEventListener('click',join);
+  $('#lbCode').addEventListener('keydown',e=>{if(e.key==='Enter')join();});
+  $('#lbLeave').addEventListener('click',()=>{SFX.ui();netLeave(false);});
+  $('#lbInvBtn').addEventListener('click',()=>{SFX.ui();LB.inv=!LB.inv;lbRender();});
+  $('#lbInvClose').addEventListener('click',()=>{SFX.ui();LB.inv=false;lbRender();});
+  $('#lbCopyCode').addEventListener('click',()=>lbCopy(NET.code,'CÓDIGO COPIADO: '+NET.code));
+  $('#lbCodeTop').addEventListener('click',()=>lbCopy(NET.code,'CÓDIGO COPIADO: '+NET.code));
+  $('#lbCopyLink').addEventListener('click',()=>lbCopy(inviteLink(NET.code),'ENLACE COPIADO'));
+  $('#lbWhats').addEventListener('click',()=>{window.open('https://wa.me/?text='+encodeURIComponent(lbInviteText()),'_blank','noopener');});
+  if(navigator.share){$('#lbShare').hidden=false;$('#lbShare').addEventListener('click',async()=>{try{await navigator.share({title:'Sniper Duel',text:lbInviteText(),url:inviteLink(NET.code)});}catch(e){}});}
+  $('#lbReady').addEventListener('click',()=>{const N=NET.N;if(!N||!LB.V||!LB.V.me)return;LB.note=null;if(N.phase==='over'){if(!LB.V.again)N.rematch();}else N.ready(!LB.V.me.ready);audioInit();SFX.ui();});
+  $('#lbStart').addEventListener('click',()=>{const N=NET.N;if(!N||!LB.V||!LB.V.canStart)return;LB.goT=performance.now()+1500;$('#lbStart').disabled=true;N.go();audioInit();SFX.ui();});
+  window.addEventListener('resize',()=>{LB.C=null;});
+}
 /* =================== ARMAS · GUNSMITH (08-11-2026, docs/GUNSMITH.md) ===================
    Owner: «un sistema GUNSMITH profesional… que todo lo que el jugador seleccione tenga un resultado real y verificable».
    The ARMAS section: the weapon big in the middle (the one in your hands: model, optic, camouflage; turn it, zoom it),
@@ -7602,7 +7965,8 @@ function frameBody(now){
   const pmark=k=>{if(!pf)return;const t=performance.now();PROF.t[k]=(PROF.t[k]||0)+t-pt;pt=t;};
   const rdt=Math.min(PERF_LOW?0.34:0.1,(now-last)/1000);last=now; // test mode: very low FPS still simulates in real time
   if(slowmo>0)slowmo-=rdt;
-  if(M2.room&&state!=='menu')m2Sleep();   // MENÚ 2: its room leaves while you play
+  if(M2.room&&(state!=='menu'||LB.vis))m2Sleep();
+  if(LB.room&&(state!=='menu'||!LB.vis))lbSleep();   // SALA 1V1: its hangar too   // MENÚ 2: its room leaves while you play
   const fxdt=rdt*(slowmo>0?0.35:1); // slow motion touches only particles and tracers
   if(calloutTimer>0)calloutTimer-=rdt;
   if(state==='playing'||state==='dead'||(mode==='online'&&state==='paused')){
@@ -7628,7 +7992,7 @@ function frameBody(now){
   }else if(state==='menu'){
     // MENÚ 2 draws its own room, but the game camera still circles the map as with the old menu: the map's level of
     // detail, its shadows and what it has on the GPU stay exactly as they were (the servers' map checks count on it)
-    if(M2.on)m2Frame(rdt);
+    if(LB.vis)lbFrame(rdt);else if(M2.on)m2Frame(rdt);
     menuAng+=rdt*0.04;
     camera.position.set(Math.cos(menuAng)*44,13+Math.sin(menuAng*2)*2,Math.sin(menuAng)*44);
     camera.lookAt(0,3,0);
@@ -7661,7 +8025,8 @@ function frameBody(now){
   if(RATS.ready)ratsFrame(drawDt);
   if(FLORA.ready)FLORA.time.value=now/1000%1000;
   pmark('mundo');
-  if(M2.room&&state==='menu'){const ex=renderer.toneMappingExposure;renderer.toneMappingExposure=M2.room.exposure*(SETTINGS.bright||1);renderer.render(M2.room.scene,M2.cam);renderer.toneMappingExposure=ex;}
+  if(LB.room&&LB.vis&&state==='menu'){const ex=renderer.toneMappingExposure;renderer.toneMappingExposure=LB.room.exposure*(SETTINGS.bright||1);renderer.render(LB.room.scene,LB.cam);renderer.toneMappingExposure=ex;}
+  else if(M2.room&&state==='menu'){const ex=renderer.toneMappingExposure;renderer.toneMappingExposure=M2.room.exposure*(SETTINGS.bright||1);renderer.render(M2.room.scene,M2.cam);renderer.toneMappingExposure=ex;}
   else renderer.render(scene,camera);
   pmark('dibujo');
   if(!SHOT.noVM&&!TPV.on&&(WROOT.visible||KROOT.visible||PROOT.visible||SROOT.visible)&&(state==='playing'||state==='dead')){renderer.clearDepth();renderer.render(wScene,wCam);}
@@ -7965,6 +8330,6 @@ if(FLORA.on){const gl=new T.GLTFLoader();let n=2;
       if(P3W.kit)later();else{const w=setInterval(()=>{if(P3W.kit){clearInterval(w);later();}},300);}}}}
 function floraFlush(){if(FLORA.go)FLORA.go();}
 
-window.__SD={get GFX(){return GFX;},get BOX3(){return BOX3;},get GUNCFG(){return GUNCFG;},PRUEBAS,XRAY,xrayFrame,SLIDE2,PEN,penBox,spawnBullet,updateBullets,HALCON,BAL,rifleCfgFor,applyRifleCfg,gsGun,SIL,silCfg,silSaved,SFX,GUN,camLight,get gameTime(){return gameTime;},GSI,gsiDone,gsiRender,M2,m2Tab,m2Sync,m2Sleep,openSettings,closeSettings,MIRA,setMira,miraApply,miraClipGeo,miraRifle,openMiras,closeMiras,updateReticle,ENV,MOVE_CLASSIC,MOV_CLASSIC,VIS,VIS_COL,VIS_HULL,visOn,visFrame,visWho,selfHit,PROF,KTX2,R2_ON,R2_URL,PIC,GYRO,gyroEv,crossApply,btnPress,settingsChanged,perfTexMB(){const t=perfTextures();return {real:SDPerf.textureMB(t),asRGBA:SDPerf.textureMB(t.map(x=>Object.assign({},x,{bytes:0})))};},REMOTES,netScoreHud,shotTargets,MINI,miniLayer,miniPing,clockFrame,setOffTime,get OFF_TIME(){return OFF_TIME;},ACC,accRefresh,INV,invSync,camoApply,openInv,invOpenBox,WSKIN,WS_ST,setWskin,get RIF(){return RIF;},TPV,SELF,get PROFILE(){return PROFILE;},openProfile,endMatch,PJ_MIX,MIX_ORDER,SKINS,get SKIN(){return SKIN;},setSkin,pj2SetPack,rivalSkin,PERF,perfRun,HUD2,get H2(){return HUD2?H2:null;},leanIn:HUD2?leanIn:null,h2Frame:HUD2?h2Frame:null,PJ2,pj2Load,CASA,casaLoad,C2,C2B,C2J,C2S,casa2Load,BAR,barrioLoad,FLORA,RATS,RAT_WORLD,ratsFrame,SHADOW_FADE,setDuelLethal,get DUEL_LETHAL(){return DUEL_LETHAL;},gfxDiagText,get P3ON(){return P3ON;},COBCC,damagePlayer,TEX,sunFollow,setSunSnap(on){SUN_SNAP=!!on;},sun,P0,E10,e10Lod,DIAG,setTrainMove,LIGHT:{sun,hemi,skyMat,LOOK,P3},P3W,freeze(on){SIM_FREEZE=!!on;},SHOT,VMA,makeSoldier,animateSoldier,BOT_MAT,scene,camera,RemotePlayer,PMprev,PIS,PROOT,RIF,WROOT,SHO_:null,MANUAL,advance(ms){frameBody(last+ms);},get LAST_PELLETS(){return LAST_PELLETS;},SCORE,SCFG,SROOT,SHO,setPrimaryChoice,get PRIMARY(){return PRIMARY;},PCORE,PCFG,setWorld,WORLDS,get WORLD_ID(){return WORLD_ID;},renderer,GFX,gfxApply,get NET(){return NET;},get REMOTE(){return REMOTE;},W,get NAV(){return NAV;},setOffMap,get OFFMAP(){return OFFMAP;},TOUCH,EDIT,openEditor,get SETTINGS(){return SETTINGS;},get LAYOUT(){return LAYOUT;},checkOrientation,MAT,LOAD,TRAINERS,get RANGE_BOTS(){return RANGE_BOTS;},TRAIN,setTrain,setLethal,kitNote,GINS,TDIAG,AU,get TOUCH_EVENTS(){return TOUCH_EVENTS;},impactFX,bodyFX,get DECALS(){return DECALS;},surfaceOf,soundDelay,aimSelfTest,P,PM,WS,WCORE,RECOIL,AIM,BOTS,DUMMIES,BULLETS,EVENTS,PARTS,STATS,get state(){return state;},get mode(){return mode;},setMode,input,startMatch,simTick,frame,toMenu,pause,resume};
+window.__SD={get GFX(){return GFX;},get BOX3(){return BOX3;},get GUNCFG(){return GUNCFG;},PRUEBAS,XRAY,xrayFrame,SLIDE2,PEN,penBox,spawnBullet,updateBullets,HALCON,BAL,rifleCfgFor,applyRifleCfg,gsGun,SIL,silCfg,silSaved,SFX,GUN,camLight,get gameTime(){return gameTime;},GSI,gsiDone,gsiRender,M2,m2Tab,m2Sync,m2Sleep,LB,lbRender,lbFrame,openSettings,closeSettings,MIRA,setMira,miraApply,miraClipGeo,miraRifle,openMiras,closeMiras,updateReticle,ENV,MOVE_CLASSIC,MOV_CLASSIC,VIS,VIS_COL,VIS_HULL,visOn,visFrame,visWho,selfHit,PROF,KTX2,R2_ON,R2_URL,PIC,GYRO,gyroEv,crossApply,btnPress,settingsChanged,perfTexMB(){const t=perfTextures();return {real:SDPerf.textureMB(t),asRGBA:SDPerf.textureMB(t.map(x=>Object.assign({},x,{bytes:0})))};},REMOTES,netScoreHud,shotTargets,MINI,miniLayer,miniPing,clockFrame,setOffTime,get OFF_TIME(){return OFF_TIME;},ACC,accRefresh,INV,invSync,camoApply,openInv,invOpenBox,WSKIN,WS_ST,setWskin,get RIF(){return RIF;},TPV,SELF,get PROFILE(){return PROFILE;},openProfile,endMatch,PJ_MIX,MIX_ORDER,SKINS,get SKIN(){return SKIN;},setSkin,pj2SetPack,rivalSkin,PERF,perfRun,HUD2,get H2(){return HUD2?H2:null;},leanIn:HUD2?leanIn:null,h2Frame:HUD2?h2Frame:null,PJ2,pj2Load,CASA,casaLoad,C2,C2B,C2J,C2S,casa2Load,BAR,barrioLoad,FLORA,RATS,RAT_WORLD,ratsFrame,SHADOW_FADE,setDuelLethal,get DUEL_LETHAL(){return DUEL_LETHAL;},gfxDiagText,get P3ON(){return P3ON;},COBCC,damagePlayer,TEX,sunFollow,setSunSnap(on){SUN_SNAP=!!on;},sun,P0,E10,e10Lod,DIAG,setTrainMove,LIGHT:{sun,hemi,skyMat,LOOK,P3},P3W,freeze(on){SIM_FREEZE=!!on;},SHOT,VMA,makeSoldier,animateSoldier,BOT_MAT,scene,camera,RemotePlayer,PMprev,PIS,PROOT,RIF,WROOT,SHO_:null,MANUAL,advance(ms){frameBody(last+ms);},get LAST_PELLETS(){return LAST_PELLETS;},SCORE,SCFG,SROOT,SHO,setPrimaryChoice,get PRIMARY(){return PRIMARY;},PCORE,PCFG,setWorld,WORLDS,get WORLD_ID(){return WORLD_ID;},renderer,GFX,gfxApply,get NET(){return NET;},get REMOTE(){return REMOTE;},W,get NAV(){return NAV;},setOffMap,get OFFMAP(){return OFFMAP;},TOUCH,EDIT,openEditor,get SETTINGS(){return SETTINGS;},get LAYOUT(){return LAYOUT;},checkOrientation,MAT,LOAD,TRAINERS,get RANGE_BOTS(){return RANGE_BOTS;},TRAIN,setTrain,setLethal,kitNote,GINS,TDIAG,AU,get TOUCH_EVENTS(){return TOUCH_EVENTS;},impactFX,bodyFX,get DECALS(){return DECALS;},surfaceOf,soundDelay,aimSelfTest,P,PM,WS,WCORE,RECOIL,AIM,BOTS,DUMMIES,BULLETS,EVENTS,PARTS,STATS,get state(){return state;},get mode(){return mode;},setMode,input,startMatch,simTick,frame,toMenu,pause,resume};
 })();
 </script>
