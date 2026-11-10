@@ -892,6 +892,137 @@ body.m2 #menu .menuInner{display:none}
 }
 .m2SheetIn>.row{position:sticky;bottom:-1px;background:inherit;padding-top:4px}
 @media (max-width:760px){.m2Me b{max-width:16vw}.m2Me small{display:none}}
+/* ---------- SALA 1V1 (?lobby=2, 10-11-2026, client/lobby1v1.js, docs/SALA-1V1.md) ----------
+   The private 1 v 1 waiting room over its own 3D hangar (drawn by the game's canvas behind). Graphite glass, warm white,
+   orange for what matters (your pad, LISTO, INICIAR PARTIDA). No backdrop blur (a full-screen pass every frame on a phone). */
+#lb{position:fixed;inset:0;z-index:20;display:grid;grid-template-rows:auto minmax(0,1fr) auto;touch-action:none;--lbtop:clamp(44px,8vh,64px);--lbbar:clamp(52px,10vh,78px);--lbpad:max(14px,env(safe-area-inset-left,0px));--lbpadR:max(14px,env(safe-area-inset-right,0px));--lbglass:rgba(14,15,17,.78);--lbline:rgba(244,234,216,.13);color:var(--hud)}
+#lb[hidden]{display:none}
+#lb::before{content:"";position:absolute;inset:0;pointer-events:none;background:radial-gradient(ellipse 70% 75% at 50% 48%,transparent 50%,rgba(0,0,0,.5) 100%),linear-gradient(180deg,rgba(6,7,8,.55) 0,rgba(6,7,8,0) 18%,rgba(6,7,8,0) 62%,rgba(6,7,8,.7) 100%)}
+#lb>*{position:relative}
+#lb button{cursor:pointer}
+#lb button:focus-visible,#lb input:focus-visible{outline:2px solid var(--hud);outline-offset:2px}
+.lbTop{display:flex;align-items:center;gap:clamp(8px,2vw,22px);height:var(--lbtop);padding:env(safe-area-inset-top,0px) var(--lbpadR) 0 var(--lbpad);background:linear-gradient(180deg,rgba(7,8,9,.92),rgba(7,8,9,.55));border-bottom:1px solid var(--lbline)}
+.lbBack{display:flex;align-items:center;gap:8px;background:none;border:0;padding:6px 8px 4px 0;font:500 clamp(17px,3vh,23px)/1 var(--f-display);letter-spacing:.08em;color:var(--hud)}
+.lbBack svg{width:22px;height:22px}
+.lbTitle{position:absolute;left:50%;top:env(safe-area-inset-top,0px);bottom:0;transform:translateX(-50%);display:flex;align-items:center;gap:10px;font:600 clamp(21px,4vh,34px)/1 var(--f-display);letter-spacing:.07em;white-space:nowrap;padding:0 clamp(10px,3vw,40px);border-bottom:2px solid var(--signal)}
+.lbTitle svg{width:clamp(22px,4vh,30px);height:auto}
+.lbTitle span{padding-top:.12em}
+.lbTopR{margin-left:auto;display:flex;align-items:center;gap:clamp(8px,1.6vw,18px)}
+.lbCode{display:flex;align-items:center;gap:8px;height:clamp(30px,5.5vh,40px);padding:0 10px;background:var(--lbglass);border:1px solid var(--lbline);font:500 clamp(16px,2.8vh,22px)/1 var(--f-display);letter-spacing:.08em;color:var(--sand)}
+.lbCode b{color:var(--hud);font-weight:600;letter-spacing:.12em}
+.lbCode svg{width:16px;height:16px;opacity:.8}
+.lbPing{display:flex;align-items:center;gap:6px;font:500 clamp(15px,2.6vh,20px)/1 var(--f-display);letter-spacing:.06em;color:#7fd88a}
+.lbPing svg{width:18px;height:18px}
+.lbPing.warn{color:var(--gold)}.lbPing.bad{color:var(--blood)}
+.lbMain{min-height:0}
+/* the first screen: two choices */
+.lbHome{position:absolute;right:var(--lbpadR);top:50%;transform:translateY(-50%);width:min(440px,46vw);display:grid;gap:clamp(8px,1.8vh,14px)}
+.lbHome[hidden]{display:none}
+.lbName{display:grid;gap:5px}
+.lbName input,.lbJoinRow input{height:clamp(36px,6.4vh,46px);padding:0 12px;background:rgba(8,9,10,.85);border:1px solid var(--lbline);color:var(--hud);font:500 clamp(19px,3.4vh,26px)/1 var(--f-display);letter-spacing:.08em;min-width:0;border-radius:0}
+.lbChoice{position:relative;display:grid;grid-template-columns:auto minmax(0,1fr);grid-template-rows:auto auto;column-gap:14px;align-items:center;text-align:left;padding:clamp(10px,2.2vh,18px) 16px;background:var(--lbglass);border:1px solid var(--lbline);color:var(--hud)}
+.lbChoice>svg{grid-row:1/3;width:clamp(28px,5.4vh,40px);height:auto;color:var(--signal)}
+.lbChoice b{font:600 clamp(22px,4.4vh,34px)/1 var(--f-display);letter-spacing:.06em;padding-top:.1em}
+.lbChoice small{font-size:clamp(9.5px,1.7vh,11.5px);letter-spacing:.06em;color:var(--sand);line-height:1.35}
+button.lbChoice{border-left:3px solid var(--signal)}
+button.lbChoice:hover{background:rgba(26,27,30,.88)}
+button.lbChoice:disabled{opacity:.55;cursor:default}
+.lbJoinRow{grid-column:1/-1;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;margin-top:10px}
+.lbJoinRow input{text-transform:uppercase;letter-spacing:.3em}
+.lbBtn{display:flex;align-items:center;justify-content:center;gap:10px;height:clamp(40px,7.4vh,58px);padding:0 clamp(12px,2vw,26px);background:rgba(20,21,24,.9);border:1px solid rgba(244,234,216,.28);color:var(--hud);font:600 clamp(19px,3.6vh,28px)/1 var(--f-display);letter-spacing:.07em;white-space:nowrap}
+.lbBtn svg{width:.8em;height:.8em;flex:none}
+.lbBtn span{padding-top:.12em}
+.lbBtn:hover{background:rgba(32,33,37,.95)}
+.lbBtn.ghost{background:rgba(10,11,12,.6);border-color:var(--lbline);color:var(--sand)}
+.lbBtn.on{border-color:var(--signal);color:var(--signal);background:rgba(255,138,43,.1)}
+.lbBtn.go{background:linear-gradient(180deg,#ffa24b,var(--signal) 55%,#e97416);border:0;color:#140d06;box-shadow:0 6px 26px rgba(255,138,43,.2),inset 0 1px 0 rgba(255,255,255,.35);clip-path:polygon(0 0,100% 0,100% calc(100% - 10px),calc(100% - 10px) 100%,0 100%)}
+.lbBtn.go:hover{filter:brightness(1.08)}
+.lbBtn:disabled{opacity:.42;cursor:default;filter:grayscale(.6)}
+.lbBtn.go:disabled{box-shadow:none}
+.lbMsg{margin:0;min-height:1.3em;font-size:clamp(10px,1.8vh,12px);letter-spacing:.06em;color:var(--sand);line-height:1.4}
+.lbMsg.err{color:#ff8b7e}
+/* the room */
+.lbRoom{position:absolute;inset:0}
+.lbRoom[hidden]{display:none}
+.lbPanel{background:var(--lbglass);border:1px solid var(--lbline);box-sizing:border-box}
+.lbPanel h4{margin:0;display:flex;align-items:center;gap:10px;font:600 clamp(18px,3.2vh,26px)/1 var(--f-display);letter-spacing:.07em;padding-top:.12em}
+.lbPanel h4 svg{width:1.1em;height:1.1em}
+.lbPlayers{position:absolute;right:var(--lbpadR);top:clamp(6px,1.6vh,14px);width:clamp(220px,23vw,330px);padding:clamp(8px,1.6vh,14px)}
+.lbPlayers ul{list-style:none;margin:clamp(6px,1.2vh,10px) 0 0;padding:0;display:grid;gap:clamp(4px,.8vh,8px)}
+.lbPlayers li{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:10px;align-items:center;padding:4px 0}
+.lbPlayers li+li{border-top:1px solid var(--lbline);padding-top:clamp(5px,1vh,9px)}
+.lbPlayers li img{width:clamp(30px,6vh,44px);aspect-ratio:1;object-fit:cover;object-position:50% 18%;background:#000;border:1px solid var(--lbline)}
+.lbPlayers li.empty img{opacity:.25}
+.lbPlayers li b{display:flex;align-items:center;gap:6px;font:500 clamp(17px,3vh,23px)/1 var(--f-display);letter-spacing:.05em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-top:.12em}
+.lbPlayers li small{display:block;font-size:clamp(8.5px,1.5vh,10px);letter-spacing:.12em;color:var(--sand);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lbPlayers li small.host{color:var(--signal)}
+.lbCrown{width:15px;height:15px;color:var(--gold);flex:none}
+.lbSt{font:600 clamp(13px,2.4vh,17px)/1 var(--f-display);letter-spacing:.08em;padding:4px 7px 2px;border:1px solid var(--lbline);color:var(--sand);white-space:nowrap}
+.lbSt.ok{border-color:var(--signal);color:#140d06;background:var(--signal)}
+.lbSt.off{border-color:rgba(229,72,58,.6);color:#ff8b7e}
+.lbInvite{position:absolute;left:var(--lbpad);top:50%;transform:translateY(-58%);width:clamp(230px,22vw,320px);padding:clamp(10px,1.8vh,16px);display:grid;gap:clamp(5px,1vh,8px)}
+.lbInvite[hidden]{display:none}
+.lbInvCode{font-size:clamp(10px,1.8vh,12px);letter-spacing:.08em;color:var(--sand);display:flex;align-items:baseline;gap:8px;margin:2px 0 4px}
+.lbInvCode b{font:600 clamp(24px,4.6vh,34px)/1 var(--f-display);letter-spacing:.16em;color:var(--hud)}
+.lbInvBtn{display:flex;align-items:center;gap:10px;height:clamp(32px,5.6vh,40px);padding:0 10px;background:rgba(6,7,8,.6);border:1px solid var(--lbline);color:var(--hud);font-size:clamp(10.5px,1.9vh,12.5px);letter-spacing:.05em;text-align:left}
+.lbInvBtn svg{width:17px;height:17px;flex:none;color:var(--sand)}
+.lbInvBtn.wa svg{color:#3ccf6e}
+.lbInvBtn:hover{background:rgba(30,31,34,.9)}
+.lbX{position:absolute;right:6px;top:6px;width:30px;height:30px;background:none;border:0;color:var(--sand);font-size:20px;line-height:1}
+.lbInvNote{font-size:clamp(8.5px,1.5vh,10px);letter-spacing:.05em;color:var(--dust);line-height:1.4;margin:0}
+/* the operators' name tags (placed every frame over their heads) */
+.lbTag{position:absolute;left:0;top:0;transform:translate(-50%,-100%);display:grid;justify-items:center;gap:3px;pointer-events:none;text-align:center;text-shadow:0 1px 6px #000;will-change:transform}
+.lbTag[hidden]{display:none}
+.lbTag b{display:flex;align-items:center;gap:6px;font:600 clamp(19px,3.6vh,28px)/1 var(--f-display);letter-spacing:.05em;white-space:nowrap;padding-top:.12em}
+.lbTag small{font-size:clamp(8.5px,1.5vh,10px);letter-spacing:.14em;color:var(--signal)}
+.lbTag small:empty{display:none}
+.lbTag.wait b{color:var(--sand);font-weight:500}
+.lbTag.wait small{color:var(--dust)}
+/* maps */
+.lbMapsWrap{position:absolute;left:var(--lbpad);right:var(--lbpadR);bottom:clamp(6px,1.4vh,12px);display:grid;grid-template-columns:minmax(0,1fr) clamp(200px,20vw,300px);gap:clamp(8px,1vw,14px);align-items:end}
+.lbMaps{padding:clamp(6px,1.2vh,10px) clamp(8px,1vw,12px);display:grid;gap:clamp(4px,.8vh,8px);min-width:0}
+.lbMapsHead{display:flex;align-items:center;gap:8px;font:600 clamp(15px,2.8vh,21px)/1 var(--f-display);letter-spacing:.08em;padding-top:.1em}
+.lbMapsHead svg{width:16px;height:16px;color:var(--signal)}
+.lbMapsHead small{font:400 clamp(8.5px,1.5vh,10px)/1 var(--f-mono);letter-spacing:.1em;color:var(--sand)}
+.lbMapRow{display:flex;gap:clamp(6px,.8vw,10px);overflow-x:auto;scrollbar-width:none;touch-action:pan-x}
+.lbMapRow::-webkit-scrollbar{display:none}
+.lbMap{position:relative;flex:0 0 clamp(120px,13vw,200px);aspect-ratio:16/8.6;padding:0;border:1px solid var(--lbline);background:#111 center/cover no-repeat;overflow:hidden;color:var(--hud)}
+.lbMap img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:.8}
+.lbMap::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,0) 40%,rgba(0,0,0,.85))}
+.lbMap b{position:absolute;left:0;right:0;bottom:6px;z-index:1;font:600 clamp(15px,2.8vh,22px)/1 var(--f-display);letter-spacing:.06em;text-align:center}
+.lbMap[aria-pressed="true"]{border:2px solid var(--signal);box-shadow:0 0 0 1px rgba(255,138,43,.35),0 0 18px rgba(255,138,43,.25)}
+.lbMap[aria-pressed="true"] img{opacity:1}
+.lbMap[aria-pressed="true"]::before{content:"✓";position:absolute;right:0;top:0;z-index:2;width:clamp(18px,3.6vh,26px);height:clamp(18px,3.6vh,26px);display:grid;place-items:center;background:var(--signal);color:#140d06;font:700 clamp(12px,2.4vh,16px)/1 var(--f-mono)}
+.lbMap:disabled{cursor:default}
+.lbMap:not([aria-pressed="true"]):disabled img{opacity:.55}
+.lbMapInfo{display:grid;grid-template-rows:auto auto auto;overflow:hidden}
+.lbMapInfo img{width:100%;aspect-ratio:16/8;object-fit:cover;display:block}
+.lbMapInfo b{font:600 clamp(20px,3.8vh,30px)/1 var(--f-display);letter-spacing:.06em;padding:clamp(5px,1vh,9px) 12px 0}
+.lbMapInfo small{font-size:clamp(8.5px,1.5vh,10.5px);letter-spacing:.04em;color:var(--sand);line-height:1.4;padding:2px 12px clamp(6px,1.2vh,10px)}
+/* the bar at the bottom */
+.lbBar{display:flex;align-items:center;gap:clamp(6px,1vw,14px);height:var(--lbbar);padding:0 var(--lbpadR) env(safe-area-inset-bottom,0px) var(--lbpad);background:rgba(8,9,10,.92);border-top:1px solid var(--lbline)}
+.lbBar[hidden]{display:none}
+.lbStatus{flex:1;min-width:0;display:flex;align-items:center;justify-content:center;gap:10px;font-size:clamp(9.5px,1.7vh,12px);letter-spacing:.1em;color:var(--sand);text-align:center;line-height:1.35}
+.lbStatus b{font:600 clamp(17px,3vh,23px)/1 var(--f-display);color:var(--hud);letter-spacing:.06em;white-space:nowrap;padding-top:.12em}
+.lbStatus svg{width:18px;height:18px;flex:none}
+#lbStart{min-width:clamp(150px,22vw,320px)}
+#lbReady{min-width:clamp(110px,15vw,220px)}
+/* phones in landscape (and short windows): smaller everything, the map's description card goes */
+@media (max-height:520px){
+  #lb{--lbtop:42px;--lbbar:50px}
+  .lbTitle{font-size:21px}
+  .lbMapsWrap{grid-template-columns:minmax(0,1fr)}
+  .lbMapInfo{display:none}
+  .lbMap{flex-basis:clamp(96px,15vw,150px)}
+  .lbPlayers{width:clamp(190px,26vw,260px)}
+  .lbInvite{transform:translateY(-62%)}
+  .lbStatus{font-size:9px}
+  .lbHome{width:min(400px,50vw)}
+  .lbTag b{font-size:18px}.lbTag .lbSt{font-size:12px;padding:3px 5px 1px}
+}
+@media (max-width:760px){.lbBack span{display:none}.lbTitle{font-size:19px}.lbTitle svg{display:none}.lbPing svg{display:none}}
+@media (max-width:700px) and (max-height:400px){.lbStatus{display:none}}
+.lbStatus.err #lbStatusTxt{color:#ff8b7e}
 </style>
 </head>
 <body>
@@ -1454,6 +1585,53 @@ body.m2 #menu .menuInner{display:none}
       <div class="row"><button class="btn" id="mpReady" type="button">LISTO</button><button class="btn ghost" id="mpLeave" type="button" style="font-size:20px">SALIR</button></div>
     </div>
   </div>
+</div>
+<!-- SALA 1V1 (?lobby=2, 10-11-2026, client/lobby1v1.js, docs/SALA-1V1.md): the private 1 v 1 waiting room over a 3D hangar.
+     Same room, server and messages as #mp (create, join with the code, LISTO, the host's map); ?lobby=1 brings #mp back. -->
+<div id="lb" hidden>
+  <header class="lbTop">
+    <button type="button" class="lbBack" id="lbBack"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 12H5M11 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg><span>VOLVER</span></button>
+    <div class="lbTitle"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="8" cy="8" r="3.2" fill="none" stroke="currentColor" stroke-width="1.7"/><circle cx="16.5" cy="8" r="3.2" fill="none" stroke="currentColor" stroke-width="1.7"/><path d="M2.5 19c.6-3.4 2.8-5.2 5.5-5.2s4.9 1.8 5.5 5.2M11 14.3c1.2-.9 2.5-1.5 5.5-1.5 2.7 0 4.9 1.8 5.5 5.2" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg><span>MULTIJUGADOR 1V1</span></div>
+    <div class="lbTopR">
+      <button type="button" class="lbCode" id="lbCodeTop" hidden aria-label="Copiar el código de la sala">SALA: <b id="lbCodeTopTxt">------</b><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="8" y="8" width="12" height="12" rx="1.5" fill="none" stroke="currentColor" stroke-width="1.7"/><path d="M16 8V5.5A1.5 1.5 0 0 0 14.5 4h-9A1.5 1.5 0 0 0 4 5.5v9A1.5 1.5 0 0 0 5.5 16H8" fill="none" stroke="currentColor" stroke-width="1.7"/></svg></button>
+      <span class="lbPing" id="lbPing" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 9a15 15 0 0 1 20 0M5.5 12.5a10 10 0 0 1 13 0M9 16a5 5 0 0 1 6 0" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="12" cy="19.3" r="1.5" fill="currentColor"/></svg><b id="lbPingTxt">– ms</b></span>
+    </div>
+  </header>
+  <main class="lbMain">
+    <section class="lbHome" id="lbHome">
+      <div class="lbName"><span class="lbl">Tu nombre</span><input type="text" id="lbName" maxlength="16" autocomplete="off" spellcheck="false" placeholder="Tu nombre"></div>
+      <button type="button" class="lbChoice" id="lbCreate"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.7"/><path d="M12 7.5v9M7.5 12h9" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg><b>CREAR SALA PRIVADA</b><small>Eres el anfitrión: eliges el mapa e inicias la partida cuando los dos estéis listos.</small></button>
+      <div class="lbChoice"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="8" cy="12" r="4.2" fill="none" stroke="currentColor" stroke-width="1.7"/><path d="M12.2 12H21M17.5 12v3.4M20.5 12v2.4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg><b>UNIRSE CON CÓDIGO</b><small>Escribe el código de 6 letras que te ha pasado tu rival.</small>
+        <div class="lbJoinRow"><input type="text" id="lbCode" maxlength="6" autocomplete="off" spellcheck="false" autocapitalize="characters" placeholder="ABC234" aria-label="Código de sala"><button type="button" class="lbBtn" id="lbJoin"><span>UNIRSE</span></button></div></div>
+      <p class="lbMsg" id="lbMsg" aria-live="polite"></p>
+    </section>
+    <section class="lbRoom" id="lbRoom" hidden>
+      <div class="lbTag" id="lbTagMe"><small class="lbRole"></small><b><svg class="lbCrown" viewBox="0 0 24 24" aria-hidden="true" hidden><path d="M3 18 4.5 7l5 4.5L12 5l2.5 6.5 5-4.5L21 18z" fill="currentColor"/></svg><span class="lbNm"></span></b><span class="lbSt"></span></div>
+      <div class="lbTag" id="lbTagOp"><small class="lbRole"></small><b><svg class="lbCrown" viewBox="0 0 24 24" aria-hidden="true" hidden><path d="M3 18 4.5 7l5 4.5L12 5l2.5 6.5 5-4.5L21 18z" fill="currentColor"/></svg><span class="lbNm"></span></b><span class="lbSt"></span></div>
+      <aside class="lbPanel lbPlayers" aria-label="Jugadores"><h4>JUGADORES (<span id="lbCount">1/2</span>)</h4><ul id="lbList"></ul></aside>
+      <aside class="lbPanel lbInvite" id="lbInvite" hidden aria-label="Invitar">
+        <h4><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8" r="3.4" fill="none" stroke="currentColor" stroke-width="1.7"/><path d="M2.5 19.5c.6-3.6 3-5.5 6.5-5.5s5.9 1.9 6.5 5.5M19 8v6M16 11h6" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>INVITAR AL RIVAL</h4>
+        <button type="button" class="lbX" id="lbInvClose" aria-label="Cerrar">×</button>
+        <div class="lbInvCode">Código de sala <b id="lbInvCodeTxt">------</b></div>
+        <button type="button" class="lbInvBtn" id="lbCopyCode"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="8" y="8" width="12" height="12" rx="1.5" fill="none" stroke="currentColor" stroke-width="1.7"/><path d="M16 8V5.5A1.5 1.5 0 0 0 14.5 4h-9A1.5 1.5 0 0 0 4 5.5v9A1.5 1.5 0 0 0 5.5 16H8" fill="none" stroke="currentColor" stroke-width="1.7"/></svg>Copiar código</button>
+        <button type="button" class="lbInvBtn" id="lbCopyLink"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 14a4.5 4.5 0 0 0 6.4 0l3-3a4.5 4.5 0 0 0-6.4-6.4l-1.2 1.2M14 10a4.5 4.5 0 0 0-6.4 0l-3 3a4.5 4.5 0 0 0 6.4 6.4l1.2-1.2" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>Copiar enlace</button>
+        <button type="button" class="lbInvBtn wa" id="lbWhats"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20l1.2-3.7A8 8 0 1 1 8 19z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="M9 8.5c0 3 2.6 6.4 6 6.6l1-1.6-2-1-1 .9c-1-.4-2.3-1.7-2.7-2.8l.9-1-1-2z" fill="currentColor"/></svg>Compartir por WhatsApp</button>
+        <button type="button" class="lbInvBtn" id="lbShare" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="18" cy="5.5" r="2.5" fill="none" stroke="currentColor" stroke-width="1.7"/><circle cx="6" cy="12" r="2.5" fill="none" stroke="currentColor" stroke-width="1.7"/><circle cx="18" cy="18.5" r="2.5" fill="none" stroke="currentColor" stroke-width="1.7"/><path d="M8.2 10.8l7.6-4M8.2 13.2l7.6 4" stroke="currentColor" stroke-width="1.7"/></svg>Compartir…</button>
+        <p class="lbInvNote">Solo dos plazas: tú y tu rival. Con el enlace entra directamente a esta sala.</p>
+      </aside>
+      <div class="lbMapsWrap">
+        <div class="lbPanel lbMaps"><div class="lbMapsHead"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-6.5-6.2-6.5-11a6.5 6.5 0 0 1 13 0c0 4.8-6.5 11-6.5 11z" fill="none" stroke="currentColor" stroke-width="1.8"/><circle cx="12" cy="10" r="2.3" fill="currentColor"/></svg>MAPA <small id="lbMapWho"></small></div><div class="lbMapRow" id="lbMapRow" role="group" aria-label="Mapa"></div></div>
+        <div class="lbPanel lbMapInfo"><img id="lbMapImg" alt=""><b id="lbMapName"></b><small id="lbMapSub"></small></div>
+      </div>
+    </section>
+  </main>
+  <footer class="lbBar" id="lbBar" hidden>
+    <button type="button" class="lbBtn ghost" id="lbLeave"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 4h5v16h-5M10 8l-4 4 4 4M6 12h10" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg><span>SALIR</span></button>
+    <button type="button" class="lbBtn ghost" id="lbInvBtn"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8" r="3.4" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M2.5 19.5c.6-3.6 3-5.5 6.5-5.5s5.9 1.9 6.5 5.5M19 8v6M16 11h6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg><span>INVITAR</span></button>
+    <span class="lbStatus" id="lbStatus" aria-live="polite"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="8" cy="8" r="3.2" fill="none" stroke="currentColor" stroke-width="1.7"/><circle cx="16.5" cy="8" r="3.2" fill="none" stroke="currentColor" stroke-width="1.7"/><path d="M2.5 19c.6-3.4 2.8-5.2 5.5-5.2s4.9 1.8 5.5 5.2M11 14.3c1.2-.9 2.5-1.5 5.5-1.5 2.7 0 4.9 1.8 5.5 5.2" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg><b id="lbCount2">1/2</b><span id="lbStatusTxt"></span></span>
+    <button type="button" class="lbBtn" id="lbReady"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg><span>LISTO</span></button>
+    <button type="button" class="lbBtn go" id="lbStart"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4.5v15l12.5-7.5z" fill="currentColor"/></svg><span>INICIAR PARTIDA</span></button>
+  </footer>
 </div>
 <div id="countdown" hidden>3</div>
 <div id="netBanner" hidden></div>
@@ -3700,7 +3878,7 @@ function create(opts) {
       // a welcome opens a new socket: the server only numbers events from here on, and a restarted
       // server object (every deploy) numbers them again from 1, so the old count must not filter them
       case 'welcome': N.you = m.you; N.token = m.token; N.code = m.code; N.phase = m.phase; N.players = m.players; N.match = m.match; N.lastEvQ = 0; if (m.cfg) N.cfg = m.cfg; if (m.host !== undefined) N.host = m.host; ev.push({ k: 'welcome', m }); break;
-      case 'lobby': N.phase = m.phase; N.players = m.players; if (m.map) N.map = m.map; if (m.maps) N.maps = m.maps; if (m.cfg) N.cfg = m.cfg; if (m.host !== undefined) N.host = m.host; if (m.tsc) N.tsc = m.tsc; N.hs = m.hs ? 1 : 0; ev.push({ k: 'lobby', m }); break;
+      case 'lobby': N.phase = m.phase; N.players = m.players; if (m.map) N.map = m.map; if (m.maps) N.maps = m.maps; if (m.cfg) N.cfg = m.cfg; if (m.host !== undefined) N.host = m.host; if (m.tsc) N.tsc = m.tsc; N.hs = m.hs ? 1 : 0; N.rematchOf = m.rematch || {}; ev.push({ k: 'lobby', m }); break;
       case 'start':
         N.match = m.m; if (m.map) N.map = m.map; N.names = m.names || {}; N.phase = 'countdown'; N.startIn = m.in; N.startedAt = N.now();
         N.rules = m.rules || {}; N.timeLeft = N.rules.timeMs || null; N.mode = N.rules.mode || 'duelo'; N.teams = m.teams || null;
@@ -7317,7 +7495,226 @@ const SDMenu2 = { TABS, MAPS, clamp, damp, dampAngle, frameDist, stageFrame, slo
 if (typeof module !== 'undefined' && module.exports) module.exports = SDMenu2; else root.SDMenu2 = SDMenu2;
 })(typeof window !== 'undefined' ? window : globalThis);
 
-const BUILD_ID="41f64a9";const BUILD_HASH="50a09758b3";const ASSET_V={"assets/3d/fauna/rat.glb":"3815b14d","assets/3d/flora/dandelion.glb":"6dd99727","assets/3d/flora/grass_cards.json":"e348ecb0","assets/3d/imports/2026-10-12_p0_ground_pack_v2/manifest.json":"2be78cf2","assets/3d/imports/2026-10-12_p0_ground_pack_v2/models/sd_ground_curb_kit_01.glb":"3ad12c80","assets/3d/imports/2026-10-12_p0_ground_pack_v2/previews/p0_v2_materials.jpg":"c8d1d1d1","assets/3d/imports/2026-10-12_p0_ground_pack_v2/QA_report.json":"bc519d03","assets/3d/imports/2026-10-12_p0_ground_pack_v2/textures/sd_ground_cobble_01_basecolor.png":"1e428fe1","assets/3d/imports/2026-10-12_p0_ground_pack_v2/textures/sd_ground_cobble_01_normal.png":"dae7377c","assets/3d/imports/2026-10-12_p0_ground_pack_v2/textures/sd_ground_cobble_01_roughness.png":"7e078571","assets/3d/imports/2026-10-12_p0_ground_pack_v2/textures/sd_ground_curb_01_basecolor.png":"f2b087b9","assets/3d/imports/2026-10-12_p0_ground_pack_v2/textures/sd_ground_decal_atlas_01.png":"b5241b83","assets/3d/imports/2026-10-12_p0_ground_pack_v2/textures/sd_ground_patch_01_basecolor.png":"7e3a5286","assets/3d/imports/2026-10-12_p0_ground_pack_v2/textures/sd_ground_patch_01_normal.png":"84ceec46","assets/3d/imports/2026-10-12_p0_ground_pack_v2/textures/sd_ground_patch_01_roughness.png":"cefa4637","assets/3d/imports/2026-10-12_p0_ground_pack_v2/textures/sd_ground_plaza_01_basecolor.png":"0feccfcc","assets/3d/imports/2026-10-12_p0_ground_pack_v2/textures/sd_ground_plaza_01_normal.png":"0f146c3d","assets/3d/imports/2026-10-12_p0_ground_pack_v2/textures/sd_ground_plaza_01_roughness.png":"a8a994c5","assets/3d/imports/2026-10-12_p0_ground_pack_v2/textures/sd_ground_sand_01_basecolor.png":"5e24f61c","assets/3d/imports/2026-10-12_p0_ground_pack_v2/textures/sd_ground_sand_01_normal.png":"84fbc800","assets/3d/imports/2026-10-12_p0_ground_pack_v2/textures/sd_ground_sand_01_roughness.png":"84a99570","assets/3d/imports/2026-10-12_p0_ground_pack_v2/textures/sd_ground_sidewalk_01_basecolor.png":"9fdd8439","assets/3d/imports/2026-10-12_p0_ground_pack_v2/textures/sd_ground_sidewalk_01_normal.png":"559c440d","assets/3d/imports/2026-10-12_p0_ground_pack_v2/textures/sd_ground_sidewalk_01_roughness.png":"28d41d9b","assets/3d/imports/2026-10-12_p0_ground_pack_v2/textures/sd_ground_transition_sand_stone_01.png":"57f4e0d7","assets/3d/imports/2026-10-18_casa_atlas/collision_map.json":"0f4972b9","assets/3d/imports/2026-10-18_casa_atlas/geometry_stats.json":"c4bec501","assets/3d/imports/2026-10-18_casa_atlas/models/sd_casa_atlas_1v1.glb":"8b28363b","assets/3d/imports/2026-10-18_casa_atlas/models/sd_casa_atlas_roof_optional.glb":"e9c8d7af","assets/3d/imports/2026-10-18_casa_atlas/web/apartmentMap.js":"afdd251e","assets/3d/models/sd_e10_casa_oliva.glb":"e822baa2","assets/3d/weapons_classic/bolt_action_rifle_7_62.glb":"b0a819bf","assets/3d/weapons_classic/fish_knife.glb":"95b6d064","assets/3d/weapons_classic/service_pistol.glb":"a6b01ff8","assets/app/icono-180.png":"0939aeeb","assets/app/icono-192.png":"5869b606","assets/app/icono-512.png":"e4571be3","assets/armas/furia12/retrato.jpg":"c2fb38a3","assets/armas/halcon/retrato.jpg":"f27d58e7","assets/armas/lince/arma.glb":"46315c89","assets/armas/lince/arma_tp.glb":"b53e1cc1","assets/armas/lince/info.json":"d95fa2cb","assets/armas/lince/retrato.jpg":"e1fc68dc","assets/armas/navaja/retrato.jpg":"0dd33756","assets/armas/ratio/arma.glb":"dccc5bb3","assets/armas/ratio/arma_tp.glb":"5f9f132e","assets/armas/ratio/info.json":"abdb4ed6","assets/armas/ratio/retrato.jpg":"8bb0aa6b","assets/armas/tactica/arma.glb":"6a73ea28","assets/armas/tactica/arma_tp.glb":"b0dac4eb","assets/armas/tactica/info.json":"30d8234f","assets/armas/tactica/retrato.jpg":"fa1a3f96","assets/armas/titan/arma.glb":"7f4111c0","assets/armas/titan/arma_tp.glb":"c47a5cb2","assets/armas/titan/info.json":"e77d0d36","assets/armas/titan/retrato.jpg":"a7cab333","assets/armas/vector/arma.glb":"bfcfb17c","assets/armas/vector/arma_tp.glb":"d8fa379c","assets/armas/vector/info.json":"66b63b4c","assets/armas/vector/retrato.jpg":"946f277c","assets/armas/vibora9/retrato.jpg":"7b80040d","assets/caja/atlas_drop.glb":"00be117f","assets/camo/aluminio.jpg":"21d87093","assets/camo/carbono_azul.jpg":"1502c1af","assets/camo/carbono_rojo.jpg":"98284b46","assets/camo/cristal_menta.jpg":"3ce25400","assets/camo/marmol_negro.jpg":"d39b38a0","assets/camo/oro_pulido.jpg":"6aa79083","assets/camo/oro_rejilla.jpg":"492d72cb","assets/camo/oxido.jpg":"6116425c","assets/camo/panal.jpg":"5d7d6793","assets/hud/hud_icons.json":"4a9390c5","assets/hud/icons/aim_ads.svg":"835d5395","assets/hud/icons/aim_ads_active.svg":"37b4a6e6","assets/hud/icons/aim_ads_pressed.svg":"462e3bed","assets/hud/icons/crouch.svg":"4ea13b3f","assets/hud/icons/crouch_active.svg":"0eaa5e35","assets/hud/icons/crouch_pressed.svg":"df3222bd","assets/hud/icons/fire_left.svg":"7dae6bbe","assets/hud/icons/fire_left_pressed.svg":"de9ca107","assets/hud/icons/fire_main.svg":"7e02f260","assets/hud/icons/fire_main_pressed.svg":"17b67b29","assets/hud/icons/hold_breath.svg":"070bccf4","assets/hud/icons/hold_breath_active.svg":"aea2ca56","assets/hud/icons/hold_breath_pressed.svg":"47f6c086","assets/hud/icons/inspect.svg":"eab252dd","assets/hud/icons/inspect_pressed.svg":"09e8343c","assets/hud/icons/inventory.svg":"97e94b0c","assets/hud/icons/inventory_active.svg":"2d081bb5","assets/hud/icons/inventory_pressed.svg":"aa911cfa","assets/hud/icons/jump.svg":"0a605e63","assets/hud/icons/jump_pressed.svg":"930d86c0","assets/hud/icons/knife.svg":"fd6f9b2c","assets/hud/icons/knife_pressed.svg":"61927200","assets/hud/icons/pause.svg":"c811194a","assets/hud/icons/pause_pressed.svg":"37763bb7","assets/hud/icons/peak_left.svg":"e0dbcf9e","assets/hud/icons/peak_left_active.svg":"812cd999","assets/hud/icons/peak_left_pressed.svg":"4badb9ef","assets/hud/icons/peak_right.svg":"753b7902","assets/hud/icons/peak_right_active.svg":"333205c0","assets/hud/icons/peak_right_pressed.svg":"372b0eff","assets/hud/icons/reload.svg":"a69cfb1a","assets/hud/icons/reload_alert.svg":"092cdd4a","assets/hud/icons/reload_pressed.svg":"ae70872b","assets/hud/icons/sprint.svg":"4cdb2610","assets/hud/icons/sprint_active.svg":"fb1bd489","assets/hud/icons/sprint_pressed.svg":"53d9067d","assets/hud/icons/variants/hold_breath_a.svg":"070bccf4","assets/hud/icons/variants/hold_breath_b.svg":"1da7bba1","assets/hud/icons/variants/inspect_a.svg":"eab252dd","assets/hud/icons/variants/inspect_b.svg":"b4534737","assets/hud/icons/variants/peak_left_a.svg":"e0dbcf9e","assets/hud/icons/variants/peak_left_b.svg":"12ddc308","assets/hud/icons/variants/peak_left_c.svg":"a2e34733","assets/hud/icons/variants/peak_right_a.svg":"753b7902","assets/hud/icons/variants/peak_right_b.svg":"665cb2f7","assets/hud/icons/variants/peak_right_c.svg":"2333bd6d","assets/hud/icons/weapon_swap.svg":"a5b6f67b","assets/hud/icons/weapon_swap_pressed.svg":"023ee3c4","assets/hud/icons/weapons/weapon_knife.svg":"6b622cb4","assets/hud/icons/weapons/weapon_pistol.svg":"4a62e252","assets/hud/icons/weapons/weapon_rifle.svg":"767de7cb","assets/hud/icons/weapons/weapon_shotgun.svg":"6572ad33","assets/hud/png/128/aim_ads.png":"0198149f","assets/hud/png/128/aim_ads_active.png":"7818426d","assets/hud/png/128/aim_ads_pressed.png":"eab3eece","assets/hud/png/128/crouch.png":"53d52298","assets/hud/png/128/crouch_active.png":"23333f44","assets/hud/png/128/crouch_pressed.png":"8c00a7c1","assets/hud/png/128/fire_left.png":"55f05aca","assets/hud/png/128/fire_left_pressed.png":"5d0669b7","assets/hud/png/128/fire_main.png":"e6a31f09","assets/hud/png/128/fire_main_pressed.png":"4adc697a","assets/hud/png/128/hold_breath.png":"0442dca0","assets/hud/png/128/hold_breath_active.png":"e1cda9c2","assets/hud/png/128/hold_breath_pressed.png":"a636ec54","assets/hud/png/128/inspect.png":"4cb08264","assets/hud/png/128/inspect_pressed.png":"07f8f761","assets/hud/png/128/inventory.png":"c0d45409","assets/hud/png/128/inventory_active.png":"dac115f6","assets/hud/png/128/inventory_pressed.png":"c4a8a2f7","assets/hud/png/128/jump.png":"fafdcc9c","assets/hud/png/128/jump_pressed.png":"a670d6a5","assets/hud/png/128/knife.png":"21011536","assets/hud/png/128/knife_pressed.png":"d1f1aa11","assets/hud/png/128/pause.png":"6be8d985","assets/hud/png/128/pause_pressed.png":"4cb9add7","assets/hud/png/128/peak_left.png":"61c163ec","assets/hud/png/128/peak_left_active.png":"f084e4ce","assets/hud/png/128/peak_left_pressed.png":"7804512a","assets/hud/png/128/peak_right.png":"83feefbc","assets/hud/png/128/peak_right_active.png":"5614735b","assets/hud/png/128/peak_right_pressed.png":"3781a7d7","assets/hud/png/128/reload.png":"21d981ba","assets/hud/png/128/reload_alert.png":"599ef7e0","assets/hud/png/128/reload_pressed.png":"def5decc","assets/hud/png/128/sprint.png":"3ed654cf","assets/hud/png/128/sprint_active.png":"05744830","assets/hud/png/128/sprint_pressed.png":"a8c068d5","assets/hud/png/128/variants/hold_breath_a.png":"0442dca0","assets/hud/png/128/variants/hold_breath_b.png":"cc651177","assets/hud/png/128/variants/inspect_a.png":"4cb08264","assets/hud/png/128/variants/inspect_b.png":"9ebe5f2c","assets/hud/png/128/variants/peak_left_a.png":"61c163ec","assets/hud/png/128/variants/peak_left_b.png":"bf23666b","assets/hud/png/128/variants/peak_left_c.png":"bff2c254","assets/hud/png/128/variants/peak_right_a.png":"83feefbc","assets/hud/png/128/variants/peak_right_b.png":"59cd3aeb","assets/hud/png/128/variants/peak_right_c.png":"7c353985","assets/hud/png/128/weapon_swap.png":"b5896f80","assets/hud/png/128/weapon_swap_pressed.png":"11ea8443","assets/hud/png/128/weapons/weapon_knife.png":"0d43fae5","assets/hud/png/128/weapons/weapon_pistol.png":"fe8d20d8","assets/hud/png/128/weapons/weapon_rifle.png":"b9a42ec0","assets/hud/png/128/weapons/weapon_shotgun.png":"045dbbda","assets/hud/png/256/aim_ads.png":"61851152","assets/hud/png/256/aim_ads_active.png":"936a3d6e","assets/hud/png/256/aim_ads_pressed.png":"cf3db481","assets/hud/png/256/crouch.png":"d0fd1d3c","assets/hud/png/256/crouch_active.png":"2497bfdf","assets/hud/png/256/crouch_pressed.png":"86068e2f","assets/hud/png/256/fire_left.png":"1334239d","assets/hud/png/256/fire_left_pressed.png":"0d3a57f7","assets/hud/png/256/fire_main.png":"a8485883","assets/hud/png/256/fire_main_pressed.png":"66b99350","assets/hud/png/256/hold_breath.png":"db1cc835","assets/hud/png/256/hold_breath_active.png":"59f2da2b","assets/hud/png/256/hold_breath_pressed.png":"59217936","assets/hud/png/256/inspect.png":"7bdd9240","assets/hud/png/256/inspect_pressed.png":"55b7bfcc","assets/hud/png/256/inventory.png":"034ccb6f","assets/hud/png/256/inventory_active.png":"3899b65a","assets/hud/png/256/inventory_pressed.png":"c709f2f4","assets/hud/png/256/jump.png":"e49615d1","assets/hud/png/256/jump_pressed.png":"af230e9a","assets/hud/png/256/knife.png":"a277b873","assets/hud/png/256/knife_pressed.png":"8e5e5658","assets/hud/png/256/pause.png":"a9897d58","assets/hud/png/256/pause_pressed.png":"079f4357","assets/hud/png/256/peak_left.png":"0f0188a9","assets/hud/png/256/peak_left_active.png":"dd61cb0a","assets/hud/png/256/peak_left_pressed.png":"13ef672a","assets/hud/png/256/peak_right.png":"925cf4da","assets/hud/png/256/peak_right_active.png":"bc0173fb","assets/hud/png/256/peak_right_pressed.png":"c5cada00","assets/hud/png/256/reload.png":"46dff5aa","assets/hud/png/256/reload_alert.png":"42e2c50a","assets/hud/png/256/reload_pressed.png":"9acec025","assets/hud/png/256/sprint.png":"500cd27d","assets/hud/png/256/sprint_active.png":"6a122d98","assets/hud/png/256/sprint_pressed.png":"1c3b21b2","assets/hud/png/256/variants/hold_breath_a.png":"db1cc835","assets/hud/png/256/variants/hold_breath_b.png":"d05261e8","assets/hud/png/256/variants/inspect_a.png":"7bdd9240","assets/hud/png/256/variants/inspect_b.png":"0b89c953","assets/hud/png/256/variants/peak_left_a.png":"0f0188a9","assets/hud/png/256/variants/peak_left_b.png":"038da697","assets/hud/png/256/variants/peak_left_c.png":"8af8191a","assets/hud/png/256/variants/peak_right_a.png":"925cf4da","assets/hud/png/256/variants/peak_right_b.png":"8f952fb7","assets/hud/png/256/variants/peak_right_c.png":"10773f78","assets/hud/png/256/weapon_swap.png":"d18bef18","assets/hud/png/256/weapon_swap_pressed.png":"799bb135","assets/hud/png/256/weapons/weapon_knife.png":"afa1f4c8","assets/hud/png/256/weapons/weapon_pistol.png":"f4a6904f","assets/hud/png/256/weapons/weapon_rifle.png":"915e6739","assets/hud/png/256/weapons/weapon_shotgun.png":"0306c985","assets/hud/png/64/aim_ads.png":"46122a99","assets/hud/png/64/aim_ads_active.png":"cdf75973","assets/hud/png/64/aim_ads_pressed.png":"d593e149","assets/hud/png/64/crouch.png":"4d7d7d51","assets/hud/png/64/crouch_active.png":"a75ca948","assets/hud/png/64/crouch_pressed.png":"453b52ff","assets/hud/png/64/fire_left.png":"551f6bac","assets/hud/png/64/fire_left_pressed.png":"de03cf84","assets/hud/png/64/fire_main.png":"995826ab","assets/hud/png/64/fire_main_pressed.png":"eec3a3b0","assets/hud/png/64/hold_breath.png":"39d881ce","assets/hud/png/64/hold_breath_active.png":"293e9c1b","assets/hud/png/64/hold_breath_pressed.png":"a5b83280","assets/hud/png/64/inspect.png":"2fd60dcf","assets/hud/png/64/inspect_pressed.png":"12d0c763","assets/hud/png/64/inventory.png":"8100005d","assets/hud/png/64/inventory_active.png":"0f22158c","assets/hud/png/64/inventory_pressed.png":"f222cf8a","assets/hud/png/64/jump.png":"502d89d8","assets/hud/png/64/jump_pressed.png":"39dc672b","assets/hud/png/64/knife.png":"41f91708","assets/hud/png/64/knife_pressed.png":"0d3d344b","assets/hud/png/64/pause.png":"306d58e5","assets/hud/png/64/pause_pressed.png":"5a5e845a","assets/hud/png/64/peak_left.png":"e313b7a4","assets/hud/png/64/peak_left_active.png":"de63b2b9","assets/hud/png/64/peak_left_pressed.png":"e1fff4bf","assets/hud/png/64/peak_right.png":"fa781401","assets/hud/png/64/peak_right_active.png":"20ea4dbc","assets/hud/png/64/peak_right_pressed.png":"c35019ff","assets/hud/png/64/reload.png":"a6774bea","assets/hud/png/64/reload_alert.png":"3f3323c0","assets/hud/png/64/reload_pressed.png":"d626d1b3","assets/hud/png/64/sprint.png":"87de7b82","assets/hud/png/64/sprint_active.png":"c24106e0","assets/hud/png/64/sprint_pressed.png":"97006148","assets/hud/png/64/variants/hold_breath_a.png":"39d881ce","assets/hud/png/64/variants/hold_breath_b.png":"acd4f8df","assets/hud/png/64/variants/inspect_a.png":"2fd60dcf","assets/hud/png/64/variants/inspect_b.png":"03f41118","assets/hud/png/64/variants/peak_left_a.png":"e313b7a4","assets/hud/png/64/variants/peak_left_b.png":"575386d9","assets/hud/png/64/variants/peak_left_c.png":"81ce0fcb","assets/hud/png/64/variants/peak_right_a.png":"fa781401","assets/hud/png/64/variants/peak_right_b.png":"68ed4b71","assets/hud/png/64/variants/peak_right_c.png":"665d2b6b","assets/hud/png/64/weapon_swap.png":"5e4e7547","assets/hud/png/64/weapon_swap_pressed.png":"c4772e24","assets/hud/png/64/weapons/weapon_knife.png":"d436a648","assets/hud/png/64/weapons/weapon_pistol.png":"b107a26c","assets/hud/png/64/weapons/weapon_rifle.png":"9cf412f8","assets/hud/png/64/weapons/weapon_shotgun.png":"a378b073","assets/hud/png/96/aim_ads.png":"535e2fb7","assets/hud/png/96/aim_ads_active.png":"c1811330","assets/hud/png/96/aim_ads_pressed.png":"f5be9666","assets/hud/png/96/crouch.png":"136ef824","assets/hud/png/96/crouch_active.png":"08643197","assets/hud/png/96/crouch_pressed.png":"16e1c5bf","assets/hud/png/96/fire_left.png":"192834d7","assets/hud/png/96/fire_left_pressed.png":"5fa2f353","assets/hud/png/96/fire_main.png":"e10705e8","assets/hud/png/96/fire_main_pressed.png":"92616f36","assets/hud/png/96/hold_breath.png":"3da67a03","assets/hud/png/96/hold_breath_active.png":"ef25fa76","assets/hud/png/96/hold_breath_pressed.png":"5d12b81a","assets/hud/png/96/inspect.png":"2680fb8a","assets/hud/png/96/inspect_pressed.png":"8d0741aa","assets/hud/png/96/inventory.png":"cec9c13d","assets/hud/png/96/inventory_active.png":"863f092d","assets/hud/png/96/inventory_pressed.png":"d10c8550","assets/hud/png/96/jump.png":"2bbbf5f0","assets/hud/png/96/jump_pressed.png":"5b016c77","assets/hud/png/96/knife.png":"8b215367","assets/hud/png/96/knife_pressed.png":"a4f2db59","assets/hud/png/96/pause.png":"6bd462e0","assets/hud/png/96/pause_pressed.png":"72dadf5c","assets/hud/png/96/peak_left.png":"563f55cc","assets/hud/png/96/peak_left_active.png":"c9abe0b9","assets/hud/png/96/peak_left_pressed.png":"0a400022","assets/hud/png/96/peak_right.png":"10c20356","assets/hud/png/96/peak_right_active.png":"df18f419","assets/hud/png/96/peak_right_pressed.png":"00c6aee8","assets/hud/png/96/reload.png":"54546278","assets/hud/png/96/reload_alert.png":"948dcfbb","assets/hud/png/96/reload_pressed.png":"6391edf6","assets/hud/png/96/sprint.png":"8c2c4673","assets/hud/png/96/sprint_active.png":"94be56e5","assets/hud/png/96/sprint_pressed.png":"a9391146","assets/hud/png/96/variants/hold_breath_a.png":"3da67a03","assets/hud/png/96/variants/hold_breath_b.png":"2bf5e93a","assets/hud/png/96/variants/inspect_a.png":"2680fb8a","assets/hud/png/96/variants/inspect_b.png":"0b4e9d94","assets/hud/png/96/variants/peak_left_a.png":"563f55cc","assets/hud/png/96/variants/peak_left_b.png":"f3ca37ed","assets/hud/png/96/variants/peak_left_c.png":"b7f0e32f","assets/hud/png/96/variants/peak_right_a.png":"10c20356","assets/hud/png/96/variants/peak_right_b.png":"e504fd19","assets/hud/png/96/variants/peak_right_c.png":"7db73a1b","assets/hud/png/96/weapon_swap.png":"396bb02a","assets/hud/png/96/weapon_swap_pressed.png":"6c7bfc3f","assets/hud/png/96/weapons/weapon_knife.png":"3c511e1d","assets/hud/png/96/weapons/weapon_pistol.png":"51eae8e1","assets/hud/png/96/weapons/weapon_rifle.png":"06ed5f58","assets/hud/png/96/weapons/weapon_shotgun.png":"656c82f5","assets/hud/preview/preview_dark.png":"8299758c","assets/hud/preview/preview_light.png":"75bf5f20","assets/hud/preview/variants.png":"23f2b0a4","assets/hud/sprites/hud_icons_128.json":"8a533b8f","assets/hud/sprites/hud_icons_128.png":"b4f53d6d","assets/kit.glb":"137a3c32","assets/maps/barrio/garaje.glb":"309785ad","assets/maps/barrio/torres.glb":"9b3ecbea","assets/maps/casa_atlas/casa_atlas.glb":"3b40cc83","assets/maps/casa_atlas/casa_atlas_techo.glb":"ce3d05bf","assets/maps/casa_atlas/collision_fixes.json":"f7c8a7d8","assets/maps/casa_atlas/collision_map.json":"0f4972b9","assets/maps/casa_atlas_jardin/casa_atlas_jardin.glb":"2b7d99f3","assets/menu/mapa_arena.jpg":"9daa7aba","assets/menu/mapa_barrio.jpg":"94cf3b47","assets/menu/mapa_casa.jpg":"cb05ea52","assets/menu/mapa_casa2.jpg":"d2f171c7","assets/menu/mapa_pruebas.jpg":"9eb04773","assets/menu/mapa_pueblo.jpg":"2d9b1f32","assets/miras/holo.jpg":"01a2026a","assets/miras/largo.jpg":"f4e5c30e","assets/miras/punto.jpg":"f047d744","assets/miras/sahara/holo.jpg":"7bd60e6c","assets/miras/sahara/largo.jpg":"09ebebf1","assets/miras/sahara/punto.jpg":"e2af6123","assets/miras/sahara/sniper.jpg":"15f1aaa0","assets/miras/sahara/tactica.jpg":"5bced45b","assets/miras/sahara/x2.jpg":"44c618b4","assets/miras/sahara/x4.jpg":"65bd09de","assets/miras/sahara/x6.jpg":"7879b871","assets/miras/sniper.jpg":"f9afe6ef","assets/miras/tactica.jpg":"adc0d697","assets/miras/titan/holo.jpg":"f46a3af4","assets/miras/titan/largo.jpg":"5de4a677","assets/miras/titan/punto.jpg":"279c2655","assets/miras/titan/sniper.jpg":"71ce133e","assets/miras/titan/tactica.jpg":"ddb052e4","assets/miras/titan/x2.jpg":"b8bcd07f","assets/miras/titan/x4.jpg":"c05efd36","assets/miras/titan/x6.jpg":"207c666a","assets/miras/ultima/holo.jpg":"f6182ce4","assets/miras/ultima/largo.jpg":"3af1dec5","assets/miras/ultima/punto.jpg":"60f4848f","assets/miras/ultima/sniper.jpg":"3cb73ec5","assets/miras/ultima/tactica.jpg":"ee75828b","assets/miras/ultima/x2.jpg":"f6e7583c","assets/miras/ultima/x4.jpg":"ca411be7","assets/miras/ultima/x6.jpg":"fcf7738d","assets/miras/vector/holo.jpg":"c5ba6ed0","assets/miras/vector/largo.jpg":"fb8afbd3","assets/miras/vector/punto.jpg":"87601f10","assets/miras/vector/sniper.jpg":"899977fa","assets/miras/vector/tactica.jpg":"a3c9609b","assets/miras/vector/x2.jpg":"a2180a57","assets/miras/vector/x4.jpg":"7bc8377c","assets/miras/vector/x6.jpg":"2738f4af","assets/miras/x2.jpg":"5e98192c","assets/miras/x4.jpg":"94240b55","assets/miras/x6.jpg":"8b00567c","assets/personaje/color_A.jpg":"d122ac65","assets/personaje/color_A_1k.jpg":"be58a9b2","assets/personaje/color_bots.jpg":"46bbfd09","assets/personaje/color_bots_1k.jpg":"5810bb99","assets/personaje/personaje.glb":"13fada8c","assets/personaje/personaje_1k.glb":"129c1bef","assets/personaje/pro/op2/color_A.jpg":"bef575c1","assets/personaje/pro/op2/color_A_1k.jpg":"ed1f37c8","assets/personaje/pro/op2/color_A_2k.jpg":"8a885ded","assets/personaje/pro/op2/color_B.jpg":"bef575c1","assets/personaje/pro/op2/color_B_1k.jpg":"ed1f37c8","assets/personaje/pro/op2/color_B_2k.jpg":"8a885ded","assets/personaje/pro/op2/color_bots.jpg":"bef575c1","assets/personaje/pro/op2/color_bots_1k.jpg":"ed1f37c8","assets/personaje/pro/op2/color_bots_2k.jpg":"8a885ded","assets/personaje/pro/op2/personaje.glb":"a9d11415","assets/personaje/pro/op2/personaje_1k.glb":"06ed1687","assets/personaje/pro/op2/personaje_2k.glb":"d9c85eff","assets/personaje/pro/op3/color_A.jpg":"f23f8d02","assets/personaje/pro/op3/color_A_1k.jpg":"17af165c","assets/personaje/pro/op3/color_A_2k.jpg":"2352550b","assets/personaje/pro/op3/color_B.jpg":"b1bdc774","assets/personaje/pro/op3/color_B_1k.jpg":"d1f4d761","assets/personaje/pro/op3/color_B_2k.jpg":"7ee2b8b8","assets/personaje/pro/op3/color_bots.jpg":"c2f8cf22","assets/personaje/pro/op3/color_bots_1k.jpg":"f52253fe","assets/personaje/pro/op3/color_bots_2k.jpg":"58e0863f","assets/personaje/pro/op3/personaje.glb":"5368ed41","assets/personaje/pro/op3/personaje_1k.glb":"55863f1a","assets/personaje/pro/op3/personaje_2k.glb":"4bc1cc29","assets/personaje/pro/op4/color_A.jpg":"26dbbd3d","assets/personaje/pro/op4/color_A_1k.jpg":"f754f532","assets/personaje/pro/op4/color_B.jpg":"ceef52f9","assets/personaje/pro/op4/color_B_1k.jpg":"9bc2e67c","assets/personaje/pro/op4/color_bots.jpg":"a7d7385e","assets/personaje/pro/op4/color_bots_1k.jpg":"6269d84f","assets/personaje/pro/op4/personaje.glb":"d8c950da","assets/personaje/pro/op4/personaje_1k.glb":"3e671723","assets/personaje/retratos/clasico.jpg":"9089d991","assets/personaje/retratos/fsb.jpg":"a437ba7e","assets/personaje/retratos/militar.jpg":"cc7bb82e","assets/personaje/retratos/soldado.jpg":"ea597e39","assets/personaje/retratos/swat.jpg":"59863f61","assets/personaje/v4/color_A.jpg":"ec6173ce","assets/personaje/v4/color_A_1k.jpg":"b9fcf76e","assets/personaje/v4/color_bots.jpg":"555188eb","assets/personaje/v4/color_bots_1k.jpg":"e84476a0","assets/personaje/v4/personaje.glb":"7f56f4cd","assets/personaje/v4/personaje_1k.glb":"52efbd17","assets/tex/asphalt_c.jpg":"77fd9abe","assets/tex/asphalt_n.jpg":"d0ffcf83","assets/tex/asphalt_r.jpg":"04b10e5b","assets/tex/azulejo_c.jpg":"4146d6e0","assets/tex/azulejo_n.jpg":"f90aadf8","assets/tex/azulejo_r.jpg":"3b205f10","assets/tex/br_blocks_c.jpg":"c66233d2","assets/tex/br_blocks_n.jpg":"bf3deb4d","assets/tex/br_blocks_r.jpg":"ba5337c9","assets/tex/br_brick_c.jpg":"abfd403f","assets/tex/br_brick_n.jpg":"c94321ec","assets/tex/br_brick_r.jpg":"56acd6cd","assets/tex/br_pavers_c.jpg":"997b5428","assets/tex/br_pavers_n.jpg":"b9e9d68b","assets/tex/br_pavers_r.jpg":"e1765522","assets/tex/brick_c.jpg":"447fd785","assets/tex/brick_n.jpg":"ff87c7f1","assets/tex/c2_patio_c.jpg":"12e88a35","assets/tex/c2_patio_n.jpg":"19efaad1","assets/tex/c2_patio_r.jpg":"813662a9","assets/tex/c2_tiles_c.jpg":"50e0a4d9","assets/tex/c2_tiles_n.jpg":"8d46f206","assets/tex/c2_tiles_r.jpg":"a46a2bfa","assets/tex/c2_wood_c.jpg":"5877d738","assets/tex/c2_wood_n.jpg":"15338e57","assets/tex/c2_wood_r.jpg":"87011503","assets/tex/cobble_c.jpg":"6be66585","assets/tex/cobble_n.jpg":"f7e3ba2a","assets/tex/concrete_c.jpg":"d08a832c","assets/tex/concrete_n.jpg":"457ab210","assets/tex/earth_c.jpg":"e6a9f902","assets/tex/earth_n.jpg":"06bb00de","assets/tex/flora_dandelion_1024.png":"9a0db91e","assets/tex/flora_dandelion_512.png":"dc42d215","assets/tex/flora_grasscards_1024.png":"52d6a551","assets/tex/flora_grasscards_512.png":"dfa1cda3","assets/tex/herring_c.jpg":"32fd218f","assets/tex/herring_n.jpg":"5a3477cc","assets/tex/metal_c.jpg":"8b6d8e26","assets/tex/metal_n.jpg":"53673af2","assets/tex/p0_cobble_c.jpg":"ba3785bf","assets/tex/p0_cobble_n.jpg":"c57bfc05","assets/tex/p0_cobble_r.jpg":"53832a82","assets/tex/p0_covers.png":"33fc76ef","assets/tex/p0_decals.png":"c1db49d5","assets/tex/p0_patch_c.jpg":"764000c4","assets/tex/p0_patch_n.jpg":"11d825d8","assets/tex/p0_patch_r.jpg":"d1184e18","assets/tex/p0_plaza_c.jpg":"8ed7bb08","assets/tex/p0_plaza_n.jpg":"71ec9b9f","assets/tex/p0_plaza_r.jpg":"2635a161","assets/tex/p0_sand_c.jpg":"ec00f2db","assets/tex/p0_sidewalk_c.jpg":"f57d5ec0","assets/tex/p0_sidewalk_n.jpg":"f2f12e33","assets/tex/p0_sidewalk_r.jpg":"8d420df6","assets/tex/p0_transition.png":"2d8a53a4","assets/tex/p0b_cobble_c.jpg":"c9abc843","assets/tex/p0b_covers.png":"295dc5b7","assets/tex/p0b_decals.png":"4189d6d6","assets/tex/p0b_patch_c.jpg":"6993c987","assets/tex/p0b_plaza_c.jpg":"3b8d3198","assets/tex/p0b_sand_c.jpg":"cd0c4def","assets/tex/p0b_sidewalk_c.jpg":"a2bc532a","assets/tex/p0cc_cobble_c.jpg":"4ae894f2","assets/tex/p0cc_cobble_n.jpg":"bf85a45a","assets/tex/p0cc_cobble_r.jpg":"8fd0c14b","assets/tex/p0ccb_cobble_c.jpg":"16ee23a2","assets/tex/p0ccm_cobble_c.jpg":"7eb6a4cc","assets/tex/p0ccm_cobble_n.jpg":"a4e4647f","assets/tex/p0ccm_cobble_r.jpg":"1006bac9","assets/tex/p0m_cobble_c.jpg":"ba3785bf","assets/tex/p0m_cobble_n.jpg":"e4efdd1f","assets/tex/p0m_cobble_r.jpg":"53832a82","assets/tex/p0m_plaza_c.jpg":"8ed7bb08","assets/tex/p0m_plaza_n.jpg":"2b7bb548","assets/tex/p0m_plaza_r.jpg":"2635a161","assets/tex/p0v3_cobble_c.jpg":"d1a7a842","assets/tex/p0v3_cobble_n.jpg":"7f59ef40","assets/tex/p0v3_cobble_r.jpg":"327df272","assets/tex/p0v3_plaza_c.jpg":"95d16848","assets/tex/p0v3_plaza_n.jpg":"0c1bce0a","assets/tex/p0v3_plaza_r.jpg":"7187b7c8","assets/tex/p0v3b_cobble_c.jpg":"a672484f","assets/tex/p0v3b_plaza_c.jpg":"04ae070f","assets/tex/p0v3m_cobble_c.jpg":"d1a7a842","assets/tex/p0v3m_cobble_n.jpg":"1945f886","assets/tex/p0v3m_cobble_r.jpg":"327df272","assets/tex/p0v3m_plaza_c.jpg":"95d16848","assets/tex/p0v3m_plaza_n.jpg":"9dff174d","assets/tex/p0v3m_plaza_r.jpg":"7187b7c8","assets/tex/p1_door_c.jpg":"add4ad19","assets/tex/p1_door_n.jpg":"12a1bb22","assets/tex/p1_door_r.jpg":"2e6a5d99","assets/tex/p1_rooftiles_c.jpg":"429c4813","assets/tex/p1_rooftiles_n.jpg":"0da1a4aa","assets/tex/p1_rooftiles_r.jpg":"50ae143b","assets/tex/p1_stone_c.jpg":"08b8e5f9","assets/tex/p1_stone_n.jpg":"53244400","assets/tex/p1_stone_r.jpg":"4713d6de","assets/tex/p1_stucco_c.jpg":"23513034","assets/tex/p1_stucco_n.jpg":"58365463","assets/tex/p1_stucco_r.jpg":"2476e5e4","assets/tex/p1_wood_c.jpg":"aacb2ac1","assets/tex/p1_wood_n.jpg":"8de0c779","assets/tex/p1_wood_r.jpg":"34a31c4b","assets/tex/p1b_door_c.jpg":"e061bfd3","assets/tex/p1b_rooftiles_c.jpg":"8c4284b3","assets/tex/p1b_stone_c.jpg":"2e766301","assets/tex/p1b_stucco_c.jpg":"e6ed13f6","assets/tex/p1b_wood_c.jpg":"ec02ebfe","assets/tex/p1m_door_c.jpg":"add4ad19","assets/tex/p1m_door_n.jpg":"18c73624","assets/tex/p1m_door_r.jpg":"2e6a5d99","assets/tex/p1m_rooftiles_c.jpg":"429c4813","assets/tex/p1m_rooftiles_n.jpg":"018ae078","assets/tex/p1m_rooftiles_r.jpg":"50ae143b","assets/tex/p1m_stone_c.jpg":"08b8e5f9","assets/tex/p1m_stone_n.jpg":"db2a4db3","assets/tex/p1m_stone_r.jpg":"4713d6de","assets/tex/p1m_stucco_c.jpg":"23513034","assets/tex/p1m_stucco_n.jpg":"b54e4e5c","assets/tex/p1m_stucco_r.jpg":"2476e5e4","assets/tex/p1m_wood_c.jpg":"aacb2ac1","assets/tex/p1m_wood_n.jpg":"73da7b12","assets/tex/p1m_wood_r.jpg":"34a31c4b","assets/tex/paving_c.jpg":"de729c21","assets/tex/paving_n.jpg":"e7ce1b5e","assets/tex/pebbles_c.jpg":"92f3a761","assets/tex/pebbles_n.jpg":"04797193","assets/tex/plaster_c.jpg":"b9baf0d3","assets/tex/plaster_n.jpg":"57ab2216","assets/tex/rat_c.jpg":"18f0d109","assets/tex/rat_n.jpg":"5cda8929","assets/tex/rat_r.jpg":"cd628297","assets/tex/roof_c.jpg":"4e3265a6","assets/tex/roof_n.jpg":"7eec2601","assets/tex/rooftiles_c.jpg":"f52e8938","assets/tex/rooftiles_n.jpg":"7dd55eb0","assets/tex/rubble_c.jpg":"c980bdcd","assets/tex/rubble_n.jpg":"93400d41","assets/tex/sand_c.jpg":"44e227fe","assets/tex/sand_n.jpg":"d259a3b8","assets/tex/sandbag_c.jpg":"da97fddc","assets/tex/sandbag_n.jpg":"737ae913","assets/tex/setts_c.jpg":"0807efce","assets/tex/setts_n.jpg":"ae5af8cf","assets/tex/setts_r.jpg":"a09459c8","assets/tex/slabs_c.jpg":"2038cef4","assets/tex/slabs_n.jpg":"ec0bcab9","assets/tex/slabs_r.jpg":"74281b0b","assets/tex/stone_c.jpg":"2fffcb0b","assets/tex/stone_n.jpg":"b8445cb7","assets/tex/stucco_c.jpg":"17d897f3","assets/tex/stucco_n.jpg":"246827a0","assets/tex/wood_c.jpg":"ccb5489b","assets/tex/wood_n.jpg":"86830c96","assets/viewmodels.glb":"5825c8a7","vendor/basis/basis_transcoder.js":"55a40071","vendor/basis/basis_transcoder.wasm":"0969f9ba","vendor/GLTFLoader.js":"fb4d39e3","vendor/KTX2Loader.js":"de12a429","vendor/three.min.js":"05c8df80"};
+/* SNIPER DUEL — SALA 1V1 (?lobby=2, 10-11-2026, docs/SALA-1V1.md): the waiting room of a private 1 v 1, like the lobbies of
+   the big shooters but our own: a dark tactical hangar where your operator stands on the left pad and your rival appears on
+   the right one the moment he joins, each with his weapon and the game's idle animation. Owner: «una sala de espera
+   MULTIJUGADOR 1V1 … diseño original … negro grafito, paneles translúcidos, blanco y naranja».
+
+   Nothing here decides anything: the room (core/room.js) is the authority for seats, host, map, LISTO and the start. This
+   file only turns what the server says into what the screen shows (view, mapCards), frames the two operators in the free
+   part of the screen (fitCamera) and builds the hangar (buildHangar, the only part that needs THREE, passed in).
+
+   Hangar space: metres, the pads at x = ∓PAD_X (you on the left, the rival on the right), z = 0, both looking at +z (the
+   camera); the hangar door is the back wall at z -13. */
+(function (root) {
+'use strict';
+const PAD_X = 0.95;
+const clamp = (v, a, b) => v < a ? a : v > b ? b : v;
+
+/* what the screen shows, from the room's last lobby message (players, host, hs) and who I am. Rules are the server's
+   (core/room.js); this only says them in words so the page and the tests agree:
+   - the host (the one longest in the room) chooses the map and, when the room has hs (his page has the button), starts
+   - start: 2 people, both connected and LISTO
+   - with hs 0 (a host with the page of before) the match starts by itself when both are LISTO */
+function view(N) {
+  const P = (N && N.players || []).filter(p => p && !p.bot);
+  const me = P.find(p => p.id === N.you) || null, rival = P.find(p => p.id !== N.you) || null;
+  const hostId = N && N.host != null ? N.host : (P[0] ? P[0].id : null);
+  const isHost = !!me && me.id === hostId, hs = !!(N && N.hs);
+  const both = !!me && !!rival && rival.connected !== false && me.connected !== false;
+  const allReady = both && me.ready && rival.ready;
+  const why = !rival ? 'players' : !both ? 'rival_off' : !allReady ? 'ready' : null;
+  let status;
+  if (!rival) status = 'ESPERANDO AL RIVAL · INVÍTALO CON EL CÓDIGO';
+  else if (rival.connected === false) status = 'TU RIVAL SE HA DESCONECTADO · LE GUARDAMOS LA PLAZA';
+  else if (!me.ready && !rival.ready) status = 'PULSAD LISTO LOS DOS';
+  else if (!me.ready) status = 'TU RIVAL ESTÁ LISTO · PULSA LISTO';
+  else if (!rival.ready) status = 'ESPERANDO A QUE TU RIVAL ESTÉ LISTO';
+  else status = hs ? (isHost ? 'TODO LISTO · INICIA LA PARTIDA' : 'TODO LISTO · ESPERANDO AL ANFITRIÓN') : 'TODO LISTO · EMPIEZA YA';
+  // after a match (phase over): REVANCHA, both (the server starts it when both have asked)
+  const over = !!N && N.phase === 'over', rm = (N && N.rematchOf) || {}, again = !!(me && rm[me.id]);
+  if (over) status = !rival ? 'TU RIVAL HA SALIDO · PULSA NUEVO RIVAL PARA ESPERAR A OTRO' : again ? 'ESPERANDO LA REVANCHA DE TU RIVAL' : rm[rival.id] ? 'TU RIVAL QUIERE LA REVANCHA' : 'FIN DE LA PARTIDA · PULSAD REVANCHA LOS DOS';
+  return { me, rival, hostId, isHost, hs, count: P.length, canStart: isHost && hs && !why && (N.phase === 'lobby'), why, status, ready: !!(me && me.ready), over, again };
+}
+/* the map cards: the maps this page offers online (MENÚ 2 › MAPAS: they have a real picture in assets/menu/), only those the
+   room's server really has; the room's current map always has its card (a host with another page may have chosen one this
+   page does not offer: it is shown, never changed by us). offered: [{id,name,sub}], server: ids, current: id. */
+function mapCards(offered, server, current, nameOf) {
+  const sv = Array.isArray(server) && server.length ? server : null;
+  const L = offered.filter(m => !sv || sv.includes(m.id)).map(m => ({ id: m.id, name: m.name, sub: m.sub || '' }));
+  if (current && !L.some(m => m.id === current) && (!sv || sv.includes(current))) L.push({ id: current, name: nameOf ? nameOf(current) : String(current).toUpperCase(), sub: '' });
+  return L;
+}
+/* the camera: both operators (3.3 m wide with their rifles, 2.25 m tall) fill the free part of the screen (rect, CSS px:
+   between the panels, above the map strip) and their centre lands in its centre. fov: vertical, degrees.
+   Returns {dist, ox, oy} like SDMenu2.stageFrame (ox, oy: how far the camera's picture moves, for setViewOffset). */
+function fitCamera(rect, vw, vh, fov) {
+  const r = rect && rect.width > 40 && rect.height > 40 ? rect : { left: 0, top: 0, width: vw, height: vh };
+  const t = Math.tan(fov * Math.PI / 360);
+  const fh = clamp(r.height / vh, 0.3, 1) * 0.9, fw = clamp(r.width / vw, 0.3, 1) * 0.94;
+  const dh = 2.25 / (fh * 2 * t), dw = 3.3 / (fw * 2 * t * vw / vh);
+  return { dist: Math.max(dh, dw), ox: r.left + r.width / 2 - vw / 2, oy: r.top + r.height / 2 - vh / 2 };
+}
+// a gentle breathing and weight shift, different for each pad (k = 0 / 1) so the two never move as one
+function sway(t, k) {
+  const p = k ? 1.7 : 0;
+  return { yaw: Math.sin(t * 0.33 + p) * 0.03, lean: Math.sin(t * 0.27 + 1.1 + p) * 0.012, bob: Math.sin(t * 1.5 + p) * 0.004 };
+}
+// the rival stepping onto his pad (0 → 1 in 0.7 s): rises from the floor and his pad's light flashes
+function appear(a) { const e = 1 - Math.pow(1 - clamp(a, 0, 1), 3); return { y: -0.35 * (1 - e), s: 0.92 + 0.08 * e, flash: Math.max(0, 1 - Math.abs(a - 0.45) * 2.2) }; }
+
+function buildHangar(T, opt) {
+  opt = opt || {};
+  const tex = opt.tex || (() => null), low = !!opt.low;
+  const scene = new T.Scene();
+  scene.background = new T.Color(0x07080a);
+  scene.fog = new T.Fog(0x07080a, 9, 30);
+  const add = (geo, mat, x, y, z, ry, par) => { const m = new T.Mesh(geo, mat); m.position.set(x, y, z); if (ry) m.rotation.y = ry; m.matrixAutoUpdate = false; m.updateMatrix(); (par || scene).add(m); return m; };
+  const rep = (t, u, v) => { if (t) t.repeat.set(u, v); return t; };
+  const canvas = (w, h, draw) => {
+    if (typeof document === 'undefined') return null;
+    const c = document.createElement('canvas'); c.width = w; c.height = h; const g = c.getContext('2d'); if (!g) return null;
+    draw(g, w, h); const t = new T.CanvasTexture(c); return t;
+  };
+  // materials: the game's concrete (floor, almost black, a little glossy like a sealed hangar floor) and metal
+  const floorMat = new T.MeshStandardMaterial({ color: 0x24262a, roughness: 0.42, metalness: 0.18, map: rep(tex('concrete'), 8, 8), normalMap: low ? null : rep(tex('concrete', true), 8, 8) });
+  if (floorMat.normalMap) floorMat.normalScale.set(0.5, 0.5);
+  const wallMat = new T.MeshStandardMaterial({ color: 0x15171a, roughness: 0.9, map: rep(tex('concrete'), 6, 2) });
+  const steel = new T.MeshStandardMaterial({ color: 0x1b1d21, roughness: 0.5, metalness: 0.6, map: rep(tex('metal'), 1, 4) });
+  const doorMat = new T.MeshStandardMaterial({ color: 0x1d2024, roughness: 0.6, metalness: 0.5, map: rep(tex('metal'), 3, 1) });
+  const crateMat = new T.MeshStandardMaterial({ color: 0x272a26, roughness: 0.6, metalness: 0.4, map: rep(tex('metal'), 1, 1) });
+  const crateDark = new T.MeshStandardMaterial({ color: 0x17181b, roughness: 0.55, metalness: 0.5, map: rep(tex('metal'), 1, 1) });
+  const trim = new T.MeshStandardMaterial({ color: 0x0e0f11, roughness: 0.4, metalness: 0.7 });
+  const lampMat = new T.MeshBasicMaterial({ color: 0xe8f0ff });
+  const orange = new T.MeshBasicMaterial({ color: 0xff8a2b });
+  const winMat = new T.MeshBasicMaterial({ color: 0x5d7598, fog: true });
+  // floor, back wall with the big hangar door, side walls
+  add(new T.PlaneGeometry(40, 40).rotateX(-Math.PI / 2), floorMat, 0, 0, -6);
+  add(new T.BoxGeometry(30, 10, 0.4), wallMat, 0, 5, -13.2);
+  add(new T.BoxGeometry(0.4, 10, 24), wallMat, -10.5, 5, -2);
+  add(new T.BoxGeometry(0.4, 10, 24), wallMat, 10.5, 5, -2);
+  // the door: a frame and horizontal slats; its upper windows let a cold light in (the only light from outside)
+  add(new T.BoxGeometry(11, 0.5, 0.5), steel, 0, 7.4, -12.8);
+  for (const x of [-5.5, 5.5]) add(new T.BoxGeometry(0.5, 7.6, 0.5), steel, x, 3.8, -12.8);
+  const slat = new T.BoxGeometry(10.6, 0.36, 0.12);
+  for (let y = 0.25; y < 5.2; y += 0.42) add(slat, doorMat, 0, y, -12.95);
+  const win = new T.PlaneGeometry(1.7, 1.1);
+  for (let i = 0; i < 5; i++) add(win, winMat, -4.2 + i * 2.1, 6.1, -12.88);
+  // columns and roof trusses (I-beams every 4 m) — the depth of a hangar with a few boxes
+  const col = new T.BoxGeometry(0.35, 9, 0.35), beam = new T.BoxGeometry(21, 0.3, 0.3), tie = new T.BoxGeometry(0.12, 0.12, 24);
+  for (const z of [-11, -7, -3, 1]) { for (const x of [-9.8, 9.8]) add(col, steel, x, 4.5, z); add(beam, steel, 0, 8.6, z); }
+  for (const x of [-6, -2, 2, 6]) add(tie, steel, x, 8.45, -5);
+  // ceiling lamps: rows of panels with a soft glow (what lights the hangar from above)
+  const glowTex = canvas(64, 64, (g) => { const gr = g.createRadialGradient(32, 32, 0, 32, 32, 32); gr.addColorStop(0, 'rgba(255,255,255,1)'); gr.addColorStop(0.35, 'rgba(255,255,255,.35)'); gr.addColorStop(1, 'rgba(255,255,255,0)'); g.fillStyle = gr; g.fillRect(0, 0, 64, 64); });
+  const glowMat = new T.MeshBasicMaterial({ color: 0xbccbe6, map: glowTex, transparent: true, opacity: 0.32, depthWrite: false, blending: T.AdditiveBlending, fog: false });
+  const lamps = new T.Group(); scene.add(lamps);
+  const panel = new T.BoxGeometry(1.5, 0.06, 0.5), panelGlow = new T.PlaneGeometry(2.6, 1.3).rotateX(Math.PI / 2);
+  for (const z of [-10, -6.5, -3, 0.5]) for (const x of [-6, -2, 2, 6]) {
+    add(panel, lampMat, x, 7.8, z, 0, lamps); const gl = add(panelGlow, glowMat, x, 7.74, z, 0, lamps); gl.renderOrder = 2;
+  }
+  // haze under the two lamps over the pads (light through dust)
+  const haze = new T.MeshBasicMaterial({ color: 0x7f93b4, transparent: true, opacity: low ? 0.01 : 0.016, depthWrite: false, blending: T.AdditiveBlending, side: T.DoubleSide, fog: false });
+  for (const x of [-2, 2]) add(new T.CylinderGeometry(0.5, 2.4, 7.8, 20, 1, true), haze, x * 0.7, 3.9, 0.5);
+  // crates and gun cases on both sides (mid-ground), a pallet of ammo boxes behind
+  const crate = (w, h, d, x, z, y0, ry, mat) => {
+    const g = new T.Group(); g.position.set(x, (y0 || 0) + h / 2, z); g.rotation.y = ry || 0; scene.add(g);
+    g.add(new T.Mesh(new T.BoxGeometry(w, h, d), mat || crateMat));
+    const lid = new T.Mesh(new T.BoxGeometry(w + 0.04, 0.06, d + 0.04), trim); lid.position.y = h / 2 - 0.12; g.add(lid);
+    for (const sx of [-1, 1]) { const e = new T.Mesh(new T.BoxGeometry(0.05, h + 0.01, 0.05), trim); e.position.set(sx * (w / 2), 0, d / 2); g.add(e); }
+    return g;
+  };
+  crate(1.6, 1.0, 1.1, -4.6, -3.2, 0, 0.3, crateMat); crate(1.2, 0.7, 0.9, -4.5, -3.3, 1.0, 0.15, crateDark); crate(1.3, 1.1, 1.1, -6.2, -5.8, 0, -0.2, crateDark);
+  crate(1.7, 1.0, 1.1, 4.8, -3.6, 0, -0.35, crateDark); crate(1.1, 0.75, 0.9, 4.9, -3.7, 1.0, -0.2, crateMat); crate(2.6, 0.55, 0.7, 6.0, -6.4, 0, 0.1, crateMat);
+  crate(2.8, 0.5, 0.65, 0.6, -8.2, 0, 0, crateDark); crate(1.2, 0.9, 1.0, -1.8, -9.5, 0, 0.2, crateMat);
+  // two screens on stands at the left (dark blue, a few lines of a map and a list) and one at the right
+  const screenTex = canvas(256, 160, (g, w, h) => {
+    g.fillStyle = '#081324'; g.fillRect(0, 0, w, h); g.strokeStyle = 'rgba(120,170,230,.55)'; g.lineWidth = 2;
+    for (let i = 0; i < 6; i++) { g.beginPath(); g.moveTo(14, 26 + i * 20); g.lineTo(14 + 60 + (i * 37) % 90, 26 + i * 20); g.stroke(); }
+    g.strokeRect(150, 18, 92, 120); g.fillStyle = 'rgba(255,138,43,.85)'; g.fillRect(186, 66, 10, 10); g.strokeStyle = 'rgba(120,170,230,.35)';
+    for (let x = 150; x < 242; x += 18) { g.beginPath(); g.moveTo(x, 18); g.lineTo(x, 138); g.stroke(); }
+  });
+  const scrMat = new T.MeshBasicMaterial({ color: 0x9fb8dc, map: screenTex });
+  const screen = (x, z, ry, s) => { const g = new T.Group(); g.position.set(x, 0, z); g.rotation.y = ry; scene.add(g);
+    const st = new T.Mesh(new T.BoxGeometry(0.08, 1.2 * s, 0.08), trim); st.position.y = 0.6 * s; g.add(st);
+    const fr = new T.Mesh(new T.BoxGeometry(1.25 * s, 0.8 * s, 0.06), trim); fr.position.y = 1.55 * s; g.add(fr);
+    const sc = new T.Mesh(new T.PlaneGeometry(1.15 * s, 0.7 * s), scrMat); sc.position.set(0, 1.55 * s, 0.035); g.add(sc); };
+  screen(-3.4, -1.6, 0.55, 1); screen(-3.9, -2.7, 0.45, 0.9); screen(3.7, -2.2, -0.5, 1);
+  // the banner on the left wall: the game's own sign (scope and SNIPER DUEL), in dark cloth
+  const bannerTex = canvas(256, 512, (g, w, h) => {
+    g.fillStyle = '#16171a'; g.fillRect(0, 0, w, h);
+    g.strokeStyle = '#d9d2c4'; g.lineWidth = 9; g.beginPath(); g.arc(128, 150, 66, 0, Math.PI * 2); g.stroke();
+    g.beginPath(); g.moveTo(128, 50); g.lineTo(128, 110); g.moveTo(128, 190); g.lineTo(128, 250); g.moveTo(28, 150); g.lineTo(88, 150); g.moveTo(168, 150); g.lineTo(228, 150); g.stroke();
+    g.fillStyle = '#ff8a2b'; g.beginPath(); g.arc(128, 150, 13, 0, Math.PI * 2); g.fill();
+    g.textAlign = 'center'; g.font = 'bold 64px Impact, Arial Narrow, sans-serif'; g.fillStyle = '#d9d2c4'; g.fillText('SNIPER', 128, 340); g.fillStyle = '#ff8a2b'; g.fillText('DUEL', 128, 410);
+  });
+  const banner = new T.Mesh(new T.PlaneGeometry(2.4, 4.8), new T.MeshStandardMaterial({ color: 0x9a948a, roughness: 0.95, map: bannerTex }));
+  banner.position.set(-10.25, 4.6, -6.5); banner.rotation.y = Math.PI / 2; scene.add(banner);
+  // an orange LED line low on the back wall and along the floor in front of the door (the only colour, like MENÚ 2)
+  add(new T.BoxGeometry(10.6, 0.03, 0.03), orange, 0, 0.06, -12.4);
+  add(new T.BoxGeometry(0.03, 0.03, 6), orange, -9.9, 0.06, -6); add(new T.BoxGeometry(0.03, 0.03, 6), orange, 9.9, 0.06, -6);
+
+  // the two pads: a dark steel hexagon with an orange ring of light; an empty pad shows a faint beam (waiting)
+  const shadowTex = canvas(64, 64, (g) => { const gr = g.createRadialGradient(32, 32, 2, 32, 32, 32); gr.addColorStop(0, 'rgba(0,0,0,.85)'); gr.addColorStop(1, 'rgba(0,0,0,0)'); g.fillStyle = gr; g.fillRect(0, 0, 64, 64); });
+  const padGeo = new T.CylinderGeometry(0.78, 0.84, 0.07, 6), ringGeo = new T.RingGeometry(0.8, 0.86, 6).rotateX(-Math.PI / 2);
+  const beamGeo = new T.CylinderGeometry(0.62, 0.7, 2.3, 24, 1, true);
+  const pads = [-PAD_X, PAD_X].map((x, k) => {
+    const g = new T.Group(); g.position.set(x, 0, 0); scene.add(g);
+    const base = new T.Mesh(padGeo, steel); base.position.y = 0.035; base.rotation.y = Math.PI / 6; g.add(base);
+    const ringMat = new T.MeshBasicMaterial({ color: 0xff8a2b, transparent: true, opacity: 0.9, fog: false });
+    const ring = new T.Mesh(ringGeo, ringMat); ring.position.y = 0.075; ring.rotation.y = Math.PI / 6; g.add(ring);
+    const beamMat = new T.MeshBasicMaterial({ color: 0xff8a2b, transparent: true, opacity: 0, depthWrite: false, blending: T.AdditiveBlending, side: T.DoubleSide, fog: false });
+    const beam = new T.Mesh(beamGeo, beamMat); beam.position.y = 1.2; beam.visible = false; g.add(beam);
+    if (shadowTex) { const sh = new T.Mesh(new T.PlaneGeometry(1.3, 1.0).rotateX(-Math.PI / 2), new T.MeshBasicMaterial({ map: shadowTex, transparent: true, depthWrite: false })); sh.position.y = 0.072; g.add(sh); }
+    const stand = new T.Group(); stand.position.y = 0.07; g.add(stand);   // the operator goes here
+    const light = new T.PointLight(0xff8a2b, 0.0, 2.6, 1.6); light.position.set(0, 0.25, 0.6); g.add(light);
+    return { g, stand, ring, ringMat, beam, beamMat, light, x, k };
+  });
+  // lights: a warm key from the front on each pad, cold rims from behind, a faint fill and the door's cold glow
+  const lights = {};
+  lights.hemi = new T.HemisphereLight(0x8d98aa, 0x0c0b0a, 0.16); scene.add(lights.hemi);
+  for (const p of pads) {
+    const key = new T.SpotLight(0xffefdc, 2.8, 14, 0.36, 0.75, 1.1); key.position.set(p.x * 1.8 - 0.6, 4.6, 4.2); key.target.position.set(p.x, 1.0, 0); scene.add(key, key.target);
+    const rim = new T.SpotLight(0xb8cdf2, 3.2, 12, 0.34, 0.6, 1.2); rim.position.set(p.x * 2.6, 3.8, -3.4); rim.target.position.set(p.x, 1.3, 0); scene.add(rim, rim.target);
+  }
+  lights.fill = new T.DirectionalLight(0xdde4ee, 0.12); lights.fill.position.set(0, 2, 6); scene.add(lights.fill);
+  lights.door = new T.PointLight(0x6d86ad, 1.4, 16, 1.5); lights.door.position.set(0, 5, -10.5); scene.add(lights.door);
+  // dust in the light
+  const N = low ? 120 : 300, pos = new Float32Array(N * 3), seed = [];
+  for (let i = 0; i < N; i++) { const s = [Math.random() * 9 - 4.5, Math.random() * 5, Math.random() * 8 - 6, Math.random() * Math.PI * 2]; seed.push(s); pos.set(s.slice(0, 3), i * 3); }
+  const pg = new T.BufferGeometry(); pg.setAttribute('position', new T.BufferAttribute(pos, 3));
+  const dust = new T.Points(pg, new T.PointsMaterial({ color: 0xc9d4e6, size: 0.014, transparent: true, opacity: 0.5, depthWrite: false, blending: T.AdditiveBlending, map: glowTex }));
+  dust.frustumCulled = false; scene.add(dust);
+  /* every frame: t in s; st = [{on, ready, flash}] for the two pads (on: someone stands there; ready: LISTO) */
+  function frame(t, st) {
+    const a = pg.attributes.position.array;
+    for (let i = 0; i < N; i++) { const s = seed[i]; a[i * 3] = s[0] + Math.sin(t * 0.07 + s[3]) * 0.35; a[i * 3 + 1] = (s[1] + t * 0.025 * (0.5 + (i % 7) / 7)) % 5; a[i * 3 + 2] = s[2] + Math.cos(t * 0.05 + s[3]) * 0.3; }
+    pg.attributes.position.needsUpdate = true;
+    for (const p of pads) {
+      const q = (st && st[p.k]) || {}, pulse = 0.5 + 0.5 * Math.sin(t * 2.4 + p.k);
+      // ring: steady and bright when LISTO, breathing when someone is there, faint and pulsing when the pad is empty
+      p.ringMat.opacity = q.on ? (q.ready ? 1 : 0.55 + 0.25 * pulse) : 0.18 + 0.3 * pulse;
+      p.ringMat.color.setHex(q.on && !q.ready ? 0xffb27a : 0xff8a2b);
+      p.beam.visible = !q.on || (q.flash || 0) > 0.01;
+      p.beamMat.opacity = q.on ? 0.22 * (q.flash || 0) : 0.035 + 0.03 * pulse;
+      p.light.intensity = (q.on && q.ready ? 0.9 : 0.35) + 2.2 * (q.flash || 0);
+    }
+  }
+  // everything this hangar made, for when it is no longer needed (freed while you play)
+  function dispose() {
+    const seen = new Set();
+    scene.traverse(o => {
+      if (o.geometry && !seen.has(o.geometry)) { seen.add(o.geometry); o.geometry.dispose(); }
+      for (const m of [].concat(o.material || [])) { if (!m || seen.has(m)) continue; seen.add(m); for (const k of ['map', 'normalMap']) if (m[k] && !seen.has(m[k])) { seen.add(m[k]); m[k].dispose(); } m.dispose(); }
+    });
+  }
+  return { scene, pads, lights, lamps, frame, dispose, exposure: 0.85 };
+}
+
+const SDLobby = { PAD_X, view, mapCards, fitCamera, sway, appear, buildHangar };
+if (typeof module !== 'undefined' && module.exports) module.exports = SDLobby; else root.SDLobby = SDLobby;
+})(typeof window !== 'undefined' ? window : globalThis);
+
+const BUILD_ID="91e9662";const BUILD_HASH="b56d7d7242";const ASSET_V={"assets/3d/fauna/rat.glb":"3815b14d","assets/3d/flora/dandelion.glb":"6dd99727","assets/3d/flora/grass_cards.json":"e348ecb0","assets/3d/imports/2026-10-12_p0_ground_pack_v2/manifest.json":"2be78cf2","assets/3d/imports/2026-10-12_p0_ground_pack_v2/models/sd_ground_curb_kit_01.glb":"3ad12c80","assets/3d/imports/2026-10-12_p0_ground_pack_v2/previews/p0_v2_materials.jpg":"c8d1d1d1","assets/3d/imports/2026-10-12_p0_ground_pack_v2/QA_report.json":"bc519d03","assets/3d/imports/2026-10-12_p0_ground_pack_v2/textures/sd_ground_cobble_01_basecolor.png":"1e428fe1","assets/3d/imports/2026-10-12_p0_ground_pack_v2/textures/sd_ground_cobble_01_normal.png":"dae7377c","assets/3d/imports/2026-10-12_p0_ground_pack_v2/textures/sd_ground_cobble_01_roughness.png":"7e078571","assets/3d/imports/2026-10-12_p0_ground_pack_v2/textures/sd_ground_curb_01_basecolor.png":"f2b087b9","assets/3d/imports/2026-10-12_p0_ground_pack_v2/textures/sd_ground_decal_atlas_01.png":"b5241b83","assets/3d/imports/2026-10-12_p0_ground_pack_v2/textures/sd_ground_patch_01_basecolor.png":"7e3a5286","assets/3d/imports/2026-10-12_p0_ground_pack_v2/textures/sd_ground_patch_01_normal.png":"84ceec46","assets/3d/imports/2026-10-12_p0_ground_pack_v2/textures/sd_ground_patch_01_roughness.png":"cefa4637","assets/3d/imports/2026-10-12_p0_ground_pack_v2/textures/sd_ground_plaza_01_basecolor.png":"0feccfcc","assets/3d/imports/2026-10-12_p0_ground_pack_v2/textures/sd_ground_plaza_01_normal.png":"0f146c3d","assets/3d/imports/2026-10-12_p0_ground_pack_v2/textures/sd_ground_plaza_01_roughness.png":"a8a994c5","assets/3d/imports/2026-10-12_p0_ground_pack_v2/textures/sd_ground_sand_01_basecolor.png":"5e24f61c","assets/3d/imports/2026-10-12_p0_ground_pack_v2/textures/sd_ground_sand_01_normal.png":"84fbc800","assets/3d/imports/2026-10-12_p0_ground_pack_v2/textures/sd_ground_sand_01_roughness.png":"84a99570","assets/3d/imports/2026-10-12_p0_ground_pack_v2/textures/sd_ground_sidewalk_01_basecolor.png":"9fdd8439","assets/3d/imports/2026-10-12_p0_ground_pack_v2/textures/sd_ground_sidewalk_01_normal.png":"559c440d","assets/3d/imports/2026-10-12_p0_ground_pack_v2/textures/sd_ground_sidewalk_01_roughness.png":"28d41d9b","assets/3d/imports/2026-10-12_p0_ground_pack_v2/textures/sd_ground_transition_sand_stone_01.png":"57f4e0d7","assets/3d/imports/2026-10-18_casa_atlas/collision_map.json":"0f4972b9","assets/3d/imports/2026-10-18_casa_atlas/geometry_stats.json":"c4bec501","assets/3d/imports/2026-10-18_casa_atlas/models/sd_casa_atlas_1v1.glb":"8b28363b","assets/3d/imports/2026-10-18_casa_atlas/models/sd_casa_atlas_roof_optional.glb":"e9c8d7af","assets/3d/imports/2026-10-18_casa_atlas/web/apartmentMap.js":"afdd251e","assets/3d/models/sd_e10_casa_oliva.glb":"e822baa2","assets/3d/weapons_classic/bolt_action_rifle_7_62.glb":"b0a819bf","assets/3d/weapons_classic/fish_knife.glb":"95b6d064","assets/3d/weapons_classic/service_pistol.glb":"a6b01ff8","assets/app/icono-180.png":"0939aeeb","assets/app/icono-192.png":"5869b606","assets/app/icono-512.png":"e4571be3","assets/armas/furia12/retrato.jpg":"c2fb38a3","assets/armas/halcon/retrato.jpg":"f27d58e7","assets/armas/lince/arma.glb":"46315c89","assets/armas/lince/arma_ktx2.glb":"ffcbd16e","assets/armas/lince/arma_tp.glb":"b53e1cc1","assets/armas/lince/info.json":"d95fa2cb","assets/armas/lince/ktx2/Barrel_baseColor.fc3a700c.ktx2":"fc3a700c","assets/armas/lince/ktx2/Barrel_metallicRoughness.f5c79c97.ktx2":"f5c79c97","assets/armas/lince/ktx2/Barrel_normal.b95d2dd1.ktx2":"b95d2dd1","assets/armas/lince/ktx2/Base_baseColor.e97f85d1.ktx2":"e97f85d1","assets/armas/lince/ktx2/Base_metallicRoughness.60ddd486.ktx2":"60ddd486","assets/armas/lince/ktx2/Base_normal.079a9822.ktx2":"079a9822","assets/armas/lince/ktx2/Butt_baseColor.e9c7f18b.ktx2":"e9c7f18b","assets/armas/lince/ktx2/Butt_metallicRoughness.c0534a91.ktx2":"c0534a91","assets/armas/lince/ktx2/Butt_normal.1f21187e.ktx2":"1f21187e","assets/armas/lince/ktx2/Handle_Spusk_baseColor.288d0085.ktx2":"288d0085","assets/armas/lince/ktx2/Handle_Spusk_metallicRoughness.28b78c41.ktx2":"28b78c41","assets/armas/lince/ktx2/Handle_Spusk_normal.08554cab.ktx2":"08554cab","assets/armas/lince/ktx2/Soshki_baseColor.8b2f6a3b.ktx2":"8b2f6a3b","assets/armas/lince/ktx2/Soshki_metallicRoughness.8013a9b6.ktx2":"8013a9b6","assets/armas/lince/ktx2/Soshki_normal.20974fdf.ktx2":"20974fdf","assets/armas/lince/ktx2/Zoom_baseColor.8fa2dd0a.ktx2":"8fa2dd0a","assets/armas/lince/ktx2/Zoom_metallicRoughness.d8ba14b6.ktx2":"d8ba14b6","assets/armas/lince/ktx2/Zoom_normal.461677cd.ktx2":"461677cd","assets/armas/lince/retrato.jpg":"e1fc68dc","assets/armas/navaja/retrato.jpg":"0dd33756","assets/armas/ratio/arma.glb":"dccc5bb3","assets/armas/ratio/arma_ktx2.glb":"e859d050","assets/armas/ratio/arma_tp.glb":"5f9f132e","assets/armas/ratio/info.json":"abdb4ed6","assets/armas/ratio/ktx2/01_GripMagazine_low_4k_001_baseColor.9a8db3af.ktx2":"9a8db3af","assets/armas/ratio/ktx2/01_GripMagazine_low_4k_001_metallicRoughness.c79b0d21.ktx2":"c79b0d21","assets/armas/ratio/ktx2/01_GripMagazine_low_4k_001_normal.f92b1eb9.ktx2":"f92b1eb9","assets/armas/ratio/ktx2/02_MainBody_low_4k_001_baseColor.40ac3190.ktx2":"40ac3190","assets/armas/ratio/ktx2/02_MainBody_low_4k_001_metallicRoughness.17d29c34.ktx2":"17d29c34","assets/armas/ratio/ktx2/02_MainBody_low_4k_001_normal.2f5db7f0.ktx2":"2f5db7f0","assets/armas/ratio/ktx2/03_BackParts_low_4k_001_baseColor.61ee1dbf.ktx2":"61ee1dbf","assets/armas/ratio/ktx2/03_BackParts_low_4k_001_metallicRoughness.2fe06f2b.ktx2":"2fe06f2b","assets/armas/ratio/ktx2/03_BackParts_low_4k_001_normal.6609425d.ktx2":"6609425d","assets/armas/ratio/ktx2/04_BarrelRail_low_4k_002_baseColor.7e06f145.ktx2":"7e06f145","assets/armas/ratio/ktx2/04_BarrelRail_low_4k_002_metallicRoughness.ab84682e.ktx2":"ab84682e","assets/armas/ratio/ktx2/04_BarrelRail_low_4k_002_normal.32514676.ktx2":"32514676","assets/armas/ratio/ktx2/05_Scope_low_4K_001_baseColor.4b39cbc8.ktx2":"4b39cbc8","assets/armas/ratio/ktx2/05_Scope_low_4K_001_metallicRoughness.e65f9801.ktx2":"e65f9801","assets/armas/ratio/ktx2/05_Scope_low_4K_001_normal.6948d6f5.ktx2":"6948d6f5","assets/armas/ratio/ktx2/06_SmallParts_low_2k_003_baseColor.b4462b7c.ktx2":"b4462b7c","assets/armas/ratio/ktx2/06_SmallParts_low_2k_003_metallicRoughness.b9fbbecf.ktx2":"b9fbbecf","assets/armas/ratio/retrato.jpg":"8bb0aa6b","assets/armas/tactica/arma.glb":"6a73ea28","assets/armas/tactica/arma_ktx2.glb":"83c29cb0","assets/armas/tactica/arma_tp.glb":"b0dac4eb","assets/armas/tactica/info.json":"30d8234f","assets/armas/tactica/ktx2/blade_low_txt_baseColor.12e0033e.ktx2":"12e0033e","assets/armas/tactica/ktx2/blade_low_txt_metallicRoughness.491d3748.ktx2":"491d3748","assets/armas/tactica/ktx2/blade_low_txt_normal.536d9445.ktx2":"536d9445","assets/armas/tactica/ktx2/handle_low_txt_baseColor.e3f08c64.ktx2":"e3f08c64","assets/armas/tactica/ktx2/handle_low_txt_metallicRoughness.c074c9be.ktx2":"c074c9be","assets/armas/tactica/ktx2/handle_low_txt_normal.aca2695c.ktx2":"aca2695c","assets/armas/tactica/retrato.jpg":"fa1a3f96","assets/armas/titan/arma.glb":"7f4111c0","assets/armas/titan/arma_ktx2.glb":"a432d454","assets/armas/titan/arma_tp.glb":"c47a5cb2","assets/armas/titan/info.json":"e77d0d36","assets/armas/titan/ktx2/material_baseColor.7c15dc64.ktx2":"7c15dc64","assets/armas/titan/ktx2/material_metallicRoughness.849f8e59.ktx2":"849f8e59","assets/armas/titan/ktx2/material_normal.92228de1.ktx2":"92228de1","assets/armas/titan/ktx2/Optical_baseColor.3e0ce754.ktx2":"3e0ce754","assets/armas/titan/ktx2/Optical_metallicRoughness.5ecda68e.ktx2":"5ecda68e","assets/armas/titan/ktx2/Optical_normal.2ee94b2f.ktx2":"2ee94b2f","assets/armas/titan/ktx2/Rifle_magazine_baseColor.1863ed24.ktx2":"1863ed24","assets/armas/titan/ktx2/Rifle_magazine_metallicRoughness.a8bb265b.ktx2":"a8bb265b","assets/armas/titan/ktx2/Rifle_magazine_normal.8994a92c.ktx2":"8994a92c","assets/armas/titan/retrato.jpg":"a7cab333","assets/armas/vector/arma.glb":"bfcfb17c","assets/armas/vector/arma_ktx2.glb":"70ff8ce2","assets/armas/vector/arma_tp.glb":"d8fa379c","assets/armas/vector/info.json":"66b63b4c","assets/armas/vector/ktx2/Mat1_baseColor.c1a0b48e.ktx2":"c1a0b48e","assets/armas/vector/ktx2/Mat1_metallicRoughness.824af6ea.ktx2":"824af6ea","assets/armas/vector/ktx2/Mat1_normal.d7569241.ktx2":"d7569241","assets/armas/vector/ktx2/Mat2_baseColor.5d59156b.ktx2":"5d59156b","assets/armas/vector/ktx2/Mat2_metallicRoughness.76bb846f.ktx2":"76bb846f","assets/armas/vector/ktx2/Mat2_normal.45c02862.ktx2":"45c02862","assets/armas/vector/retrato.jpg":"946f277c","assets/armas/vibora9/retrato.jpg":"7b80040d","assets/caja/atlas_drop.glb":"00be117f","assets/camo/aluminio.jpg":"21d87093","assets/camo/carbono_azul.jpg":"1502c1af","assets/camo/carbono_rojo.jpg":"98284b46","assets/camo/cristal_menta.jpg":"3ce25400","assets/camo/marmol_negro.jpg":"d39b38a0","assets/camo/oro_pulido.jpg":"6aa79083","assets/camo/oro_rejilla.jpg":"492d72cb","assets/camo/oxido.jpg":"6116425c","assets/camo/panal.jpg":"5d7d6793","assets/hud/hud_icons.json":"4a9390c5","assets/hud/icons/aim_ads.svg":"835d5395","assets/hud/icons/aim_ads_active.svg":"37b4a6e6","assets/hud/icons/aim_ads_pressed.svg":"462e3bed","assets/hud/icons/crouch.svg":"4ea13b3f","assets/hud/icons/crouch_active.svg":"0eaa5e35","assets/hud/icons/crouch_pressed.svg":"df3222bd","assets/hud/icons/fire_left.svg":"7dae6bbe","assets/hud/icons/fire_left_pressed.svg":"de9ca107","assets/hud/icons/fire_main.svg":"7e02f260","assets/hud/icons/fire_main_pressed.svg":"17b67b29","assets/hud/icons/hold_breath.svg":"070bccf4","assets/hud/icons/hold_breath_active.svg":"aea2ca56","assets/hud/icons/hold_breath_pressed.svg":"47f6c086","assets/hud/icons/inspect.svg":"eab252dd","assets/hud/icons/inspect_pressed.svg":"09e8343c","assets/hud/icons/inventory.svg":"97e94b0c","assets/hud/icons/inventory_active.svg":"2d081bb5","assets/hud/icons/inventory_pressed.svg":"aa911cfa","assets/hud/icons/jump.svg":"0a605e63","assets/hud/icons/jump_pressed.svg":"930d86c0","assets/hud/icons/knife.svg":"fd6f9b2c","assets/hud/icons/knife_pressed.svg":"61927200","assets/hud/icons/pause.svg":"c811194a","assets/hud/icons/pause_pressed.svg":"37763bb7","assets/hud/icons/peak_left.svg":"e0dbcf9e","assets/hud/icons/peak_left_active.svg":"812cd999","assets/hud/icons/peak_left_pressed.svg":"4badb9ef","assets/hud/icons/peak_right.svg":"753b7902","assets/hud/icons/peak_right_active.svg":"333205c0","assets/hud/icons/peak_right_pressed.svg":"372b0eff","assets/hud/icons/reload.svg":"a69cfb1a","assets/hud/icons/reload_alert.svg":"092cdd4a","assets/hud/icons/reload_pressed.svg":"ae70872b","assets/hud/icons/sprint.svg":"4cdb2610","assets/hud/icons/sprint_active.svg":"fb1bd489","assets/hud/icons/sprint_pressed.svg":"53d9067d","assets/hud/icons/variants/hold_breath_a.svg":"070bccf4","assets/hud/icons/variants/hold_breath_b.svg":"1da7bba1","assets/hud/icons/variants/inspect_a.svg":"eab252dd","assets/hud/icons/variants/inspect_b.svg":"b4534737","assets/hud/icons/variants/peak_left_a.svg":"e0dbcf9e","assets/hud/icons/variants/peak_left_b.svg":"12ddc308","assets/hud/icons/variants/peak_left_c.svg":"a2e34733","assets/hud/icons/variants/peak_right_a.svg":"753b7902","assets/hud/icons/variants/peak_right_b.svg":"665cb2f7","assets/hud/icons/variants/peak_right_c.svg":"2333bd6d","assets/hud/icons/weapon_swap.svg":"a5b6f67b","assets/hud/icons/weapon_swap_pressed.svg":"023ee3c4","assets/hud/icons/weapons/weapon_knife.svg":"6b622cb4","assets/hud/icons/weapons/weapon_pistol.svg":"4a62e252","assets/hud/icons/weapons/weapon_rifle.svg":"767de7cb","assets/hud/icons/weapons/weapon_shotgun.svg":"6572ad33","assets/hud/png/128/aim_ads.png":"0198149f","assets/hud/png/128/aim_ads_active.png":"7818426d","assets/hud/png/128/aim_ads_pressed.png":"eab3eece","assets/hud/png/128/crouch.png":"53d52298","assets/hud/png/128/crouch_active.png":"23333f44","assets/hud/png/128/crouch_pressed.png":"8c00a7c1","assets/hud/png/128/fire_left.png":"55f05aca","assets/hud/png/128/fire_left_pressed.png":"5d0669b7","assets/hud/png/128/fire_main.png":"e6a31f09","assets/hud/png/128/fire_main_pressed.png":"4adc697a","assets/hud/png/128/hold_breath.png":"0442dca0","assets/hud/png/128/hold_breath_active.png":"e1cda9c2","assets/hud/png/128/hold_breath_pressed.png":"a636ec54","assets/hud/png/128/inspect.png":"4cb08264","assets/hud/png/128/inspect_pressed.png":"07f8f761","assets/hud/png/128/inventory.png":"c0d45409","assets/hud/png/128/inventory_active.png":"dac115f6","assets/hud/png/128/inventory_pressed.png":"c4a8a2f7","assets/hud/png/128/jump.png":"fafdcc9c","assets/hud/png/128/jump_pressed.png":"a670d6a5","assets/hud/png/128/knife.png":"21011536","assets/hud/png/128/knife_pressed.png":"d1f1aa11","assets/hud/png/128/pause.png":"6be8d985","assets/hud/png/128/pause_pressed.png":"4cb9add7","assets/hud/png/128/peak_left.png":"61c163ec","assets/hud/png/128/peak_left_active.png":"f084e4ce","assets/hud/png/128/peak_left_pressed.png":"7804512a","assets/hud/png/128/peak_right.png":"83feefbc","assets/hud/png/128/peak_right_active.png":"5614735b","assets/hud/png/128/peak_right_pressed.png":"3781a7d7","assets/hud/png/128/reload.png":"21d981ba","assets/hud/png/128/reload_alert.png":"599ef7e0","assets/hud/png/128/reload_pressed.png":"def5decc","assets/hud/png/128/sprint.png":"3ed654cf","assets/hud/png/128/sprint_active.png":"05744830","assets/hud/png/128/sprint_pressed.png":"a8c068d5","assets/hud/png/128/variants/hold_breath_a.png":"0442dca0","assets/hud/png/128/variants/hold_breath_b.png":"cc651177","assets/hud/png/128/variants/inspect_a.png":"4cb08264","assets/hud/png/128/variants/inspect_b.png":"9ebe5f2c","assets/hud/png/128/variants/peak_left_a.png":"61c163ec","assets/hud/png/128/variants/peak_left_b.png":"bf23666b","assets/hud/png/128/variants/peak_left_c.png":"bff2c254","assets/hud/png/128/variants/peak_right_a.png":"83feefbc","assets/hud/png/128/variants/peak_right_b.png":"59cd3aeb","assets/hud/png/128/variants/peak_right_c.png":"7c353985","assets/hud/png/128/weapon_swap.png":"b5896f80","assets/hud/png/128/weapon_swap_pressed.png":"11ea8443","assets/hud/png/128/weapons/weapon_knife.png":"0d43fae5","assets/hud/png/128/weapons/weapon_pistol.png":"fe8d20d8","assets/hud/png/128/weapons/weapon_rifle.png":"b9a42ec0","assets/hud/png/128/weapons/weapon_shotgun.png":"045dbbda","assets/hud/png/256/aim_ads.png":"61851152","assets/hud/png/256/aim_ads_active.png":"936a3d6e","assets/hud/png/256/aim_ads_pressed.png":"cf3db481","assets/hud/png/256/crouch.png":"d0fd1d3c","assets/hud/png/256/crouch_active.png":"2497bfdf","assets/hud/png/256/crouch_pressed.png":"86068e2f","assets/hud/png/256/fire_left.png":"1334239d","assets/hud/png/256/fire_left_pressed.png":"0d3a57f7","assets/hud/png/256/fire_main.png":"a8485883","assets/hud/png/256/fire_main_pressed.png":"66b99350","assets/hud/png/256/hold_breath.png":"db1cc835","assets/hud/png/256/hold_breath_active.png":"59f2da2b","assets/hud/png/256/hold_breath_pressed.png":"59217936","assets/hud/png/256/inspect.png":"7bdd9240","assets/hud/png/256/inspect_pressed.png":"55b7bfcc","assets/hud/png/256/inventory.png":"034ccb6f","assets/hud/png/256/inventory_active.png":"3899b65a","assets/hud/png/256/inventory_pressed.png":"c709f2f4","assets/hud/png/256/jump.png":"e49615d1","assets/hud/png/256/jump_pressed.png":"af230e9a","assets/hud/png/256/knife.png":"a277b873","assets/hud/png/256/knife_pressed.png":"8e5e5658","assets/hud/png/256/pause.png":"a9897d58","assets/hud/png/256/pause_pressed.png":"079f4357","assets/hud/png/256/peak_left.png":"0f0188a9","assets/hud/png/256/peak_left_active.png":"dd61cb0a","assets/hud/png/256/peak_left_pressed.png":"13ef672a","assets/hud/png/256/peak_right.png":"925cf4da","assets/hud/png/256/peak_right_active.png":"bc0173fb","assets/hud/png/256/peak_right_pressed.png":"c5cada00","assets/hud/png/256/reload.png":"46dff5aa","assets/hud/png/256/reload_alert.png":"42e2c50a","assets/hud/png/256/reload_pressed.png":"9acec025","assets/hud/png/256/sprint.png":"500cd27d","assets/hud/png/256/sprint_active.png":"6a122d98","assets/hud/png/256/sprint_pressed.png":"1c3b21b2","assets/hud/png/256/variants/hold_breath_a.png":"db1cc835","assets/hud/png/256/variants/hold_breath_b.png":"d05261e8","assets/hud/png/256/variants/inspect_a.png":"7bdd9240","assets/hud/png/256/variants/inspect_b.png":"0b89c953","assets/hud/png/256/variants/peak_left_a.png":"0f0188a9","assets/hud/png/256/variants/peak_left_b.png":"038da697","assets/hud/png/256/variants/peak_left_c.png":"8af8191a","assets/hud/png/256/variants/peak_right_a.png":"925cf4da","assets/hud/png/256/variants/peak_right_b.png":"8f952fb7","assets/hud/png/256/variants/peak_right_c.png":"10773f78","assets/hud/png/256/weapon_swap.png":"d18bef18","assets/hud/png/256/weapon_swap_pressed.png":"799bb135","assets/hud/png/256/weapons/weapon_knife.png":"afa1f4c8","assets/hud/png/256/weapons/weapon_pistol.png":"f4a6904f","assets/hud/png/256/weapons/weapon_rifle.png":"915e6739","assets/hud/png/256/weapons/weapon_shotgun.png":"0306c985","assets/hud/png/64/aim_ads.png":"46122a99","assets/hud/png/64/aim_ads_active.png":"cdf75973","assets/hud/png/64/aim_ads_pressed.png":"d593e149","assets/hud/png/64/crouch.png":"4d7d7d51","assets/hud/png/64/crouch_active.png":"a75ca948","assets/hud/png/64/crouch_pressed.png":"453b52ff","assets/hud/png/64/fire_left.png":"551f6bac","assets/hud/png/64/fire_left_pressed.png":"de03cf84","assets/hud/png/64/fire_main.png":"995826ab","assets/hud/png/64/fire_main_pressed.png":"eec3a3b0","assets/hud/png/64/hold_breath.png":"39d881ce","assets/hud/png/64/hold_breath_active.png":"293e9c1b","assets/hud/png/64/hold_breath_pressed.png":"a5b83280","assets/hud/png/64/inspect.png":"2fd60dcf","assets/hud/png/64/inspect_pressed.png":"12d0c763","assets/hud/png/64/inventory.png":"8100005d","assets/hud/png/64/inventory_active.png":"0f22158c","assets/hud/png/64/inventory_pressed.png":"f222cf8a","assets/hud/png/64/jump.png":"502d89d8","assets/hud/png/64/jump_pressed.png":"39dc672b","assets/hud/png/64/knife.png":"41f91708","assets/hud/png/64/knife_pressed.png":"0d3d344b","assets/hud/png/64/pause.png":"306d58e5","assets/hud/png/64/pause_pressed.png":"5a5e845a","assets/hud/png/64/peak_left.png":"e313b7a4","assets/hud/png/64/peak_left_active.png":"de63b2b9","assets/hud/png/64/peak_left_pressed.png":"e1fff4bf","assets/hud/png/64/peak_right.png":"fa781401","assets/hud/png/64/peak_right_active.png":"20ea4dbc","assets/hud/png/64/peak_right_pressed.png":"c35019ff","assets/hud/png/64/reload.png":"a6774bea","assets/hud/png/64/reload_alert.png":"3f3323c0","assets/hud/png/64/reload_pressed.png":"d626d1b3","assets/hud/png/64/sprint.png":"87de7b82","assets/hud/png/64/sprint_active.png":"c24106e0","assets/hud/png/64/sprint_pressed.png":"97006148","assets/hud/png/64/variants/hold_breath_a.png":"39d881ce","assets/hud/png/64/variants/hold_breath_b.png":"acd4f8df","assets/hud/png/64/variants/inspect_a.png":"2fd60dcf","assets/hud/png/64/variants/inspect_b.png":"03f41118","assets/hud/png/64/variants/peak_left_a.png":"e313b7a4","assets/hud/png/64/variants/peak_left_b.png":"575386d9","assets/hud/png/64/variants/peak_left_c.png":"81ce0fcb","assets/hud/png/64/variants/peak_right_a.png":"fa781401","assets/hud/png/64/variants/peak_right_b.png":"68ed4b71","assets/hud/png/64/variants/peak_right_c.png":"665d2b6b","assets/hud/png/64/weapon_swap.png":"5e4e7547","assets/hud/png/64/weapon_swap_pressed.png":"c4772e24","assets/hud/png/64/weapons/weapon_knife.png":"d436a648","assets/hud/png/64/weapons/weapon_pistol.png":"b107a26c","assets/hud/png/64/weapons/weapon_rifle.png":"9cf412f8","assets/hud/png/64/weapons/weapon_shotgun.png":"a378b073","assets/hud/png/96/aim_ads.png":"535e2fb7","assets/hud/png/96/aim_ads_active.png":"c1811330","assets/hud/png/96/aim_ads_pressed.png":"f5be9666","assets/hud/png/96/crouch.png":"136ef824","assets/hud/png/96/crouch_active.png":"08643197","assets/hud/png/96/crouch_pressed.png":"16e1c5bf","assets/hud/png/96/fire_left.png":"192834d7","assets/hud/png/96/fire_left_pressed.png":"5fa2f353","assets/hud/png/96/fire_main.png":"e10705e8","assets/hud/png/96/fire_main_pressed.png":"92616f36","assets/hud/png/96/hold_breath.png":"3da67a03","assets/hud/png/96/hold_breath_active.png":"ef25fa76","assets/hud/png/96/hold_breath_pressed.png":"5d12b81a","assets/hud/png/96/inspect.png":"2680fb8a","assets/hud/png/96/inspect_pressed.png":"8d0741aa","assets/hud/png/96/inventory.png":"cec9c13d","assets/hud/png/96/inventory_active.png":"863f092d","assets/hud/png/96/inventory_pressed.png":"d10c8550","assets/hud/png/96/jump.png":"2bbbf5f0","assets/hud/png/96/jump_pressed.png":"5b016c77","assets/hud/png/96/knife.png":"8b215367","assets/hud/png/96/knife_pressed.png":"a4f2db59","assets/hud/png/96/pause.png":"6bd462e0","assets/hud/png/96/pause_pressed.png":"72dadf5c","assets/hud/png/96/peak_left.png":"563f55cc","assets/hud/png/96/peak_left_active.png":"c9abe0b9","assets/hud/png/96/peak_left_pressed.png":"0a400022","assets/hud/png/96/peak_right.png":"10c20356","assets/hud/png/96/peak_right_active.png":"df18f419","assets/hud/png/96/peak_right_pressed.png":"00c6aee8","assets/hud/png/96/reload.png":"54546278","assets/hud/png/96/reload_alert.png":"948dcfbb","assets/hud/png/96/reload_pressed.png":"6391edf6","assets/hud/png/96/sprint.png":"8c2c4673","assets/hud/png/96/sprint_active.png":"94be56e5","assets/hud/png/96/sprint_pressed.png":"a9391146","assets/hud/png/96/variants/hold_breath_a.png":"3da67a03","assets/hud/png/96/variants/hold_breath_b.png":"2bf5e93a","assets/hud/png/96/variants/inspect_a.png":"2680fb8a","assets/hud/png/96/variants/inspect_b.png":"0b4e9d94","assets/hud/png/96/variants/peak_left_a.png":"563f55cc","assets/hud/png/96/variants/peak_left_b.png":"f3ca37ed","assets/hud/png/96/variants/peak_left_c.png":"b7f0e32f","assets/hud/png/96/variants/peak_right_a.png":"10c20356","assets/hud/png/96/variants/peak_right_b.png":"e504fd19","assets/hud/png/96/variants/peak_right_c.png":"7db73a1b","assets/hud/png/96/weapon_swap.png":"396bb02a","assets/hud/png/96/weapon_swap_pressed.png":"6c7bfc3f","assets/hud/png/96/weapons/weapon_knife.png":"3c511e1d","assets/hud/png/96/weapons/weapon_pistol.png":"51eae8e1","assets/hud/png/96/weapons/weapon_rifle.png":"06ed5f58","assets/hud/png/96/weapons/weapon_shotgun.png":"656c82f5","assets/hud/preview/preview_dark.png":"8299758c","assets/hud/preview/preview_light.png":"75bf5f20","assets/hud/preview/variants.png":"23f2b0a4","assets/hud/sprites/hud_icons_128.json":"8a533b8f","assets/hud/sprites/hud_icons_128.png":"b4f53d6d","assets/kit.glb":"137a3c32","assets/maps/barrio/garaje.glb":"309785ad","assets/maps/barrio/torres.glb":"9b3ecbea","assets/maps/casa_atlas/casa_atlas.glb":"3b40cc83","assets/maps/casa_atlas/casa_atlas_techo.glb":"ce3d05bf","assets/maps/casa_atlas/collision_fixes.json":"f7c8a7d8","assets/maps/casa_atlas/collision_map.json":"0f4972b9","assets/maps/casa_atlas_jardin/casa_atlas_jardin.glb":"2b7d99f3","assets/menu/mapa_arena.jpg":"9daa7aba","assets/menu/mapa_barrio.jpg":"94cf3b47","assets/menu/mapa_casa.jpg":"cb05ea52","assets/menu/mapa_casa2.jpg":"d2f171c7","assets/menu/mapa_pruebas.jpg":"9eb04773","assets/menu/mapa_pueblo.jpg":"2d9b1f32","assets/miras/holo.jpg":"01a2026a","assets/miras/largo.jpg":"f4e5c30e","assets/miras/punto.jpg":"f047d744","assets/miras/sahara/holo.jpg":"7bd60e6c","assets/miras/sahara/largo.jpg":"09ebebf1","assets/miras/sahara/punto.jpg":"e2af6123","assets/miras/sahara/sniper.jpg":"15f1aaa0","assets/miras/sahara/tactica.jpg":"5bced45b","assets/miras/sahara/x2.jpg":"44c618b4","assets/miras/sahara/x4.jpg":"65bd09de","assets/miras/sahara/x6.jpg":"7879b871","assets/miras/sniper.jpg":"f9afe6ef","assets/miras/tactica.jpg":"adc0d697","assets/miras/titan/holo.jpg":"f46a3af4","assets/miras/titan/largo.jpg":"5de4a677","assets/miras/titan/punto.jpg":"279c2655","assets/miras/titan/sniper.jpg":"71ce133e","assets/miras/titan/tactica.jpg":"ddb052e4","assets/miras/titan/x2.jpg":"b8bcd07f","assets/miras/titan/x4.jpg":"c05efd36","assets/miras/titan/x6.jpg":"207c666a","assets/miras/ultima/holo.jpg":"f6182ce4","assets/miras/ultima/largo.jpg":"3af1dec5","assets/miras/ultima/punto.jpg":"60f4848f","assets/miras/ultima/sniper.jpg":"3cb73ec5","assets/miras/ultima/tactica.jpg":"ee75828b","assets/miras/ultima/x2.jpg":"f6e7583c","assets/miras/ultima/x4.jpg":"ca411be7","assets/miras/ultima/x6.jpg":"fcf7738d","assets/miras/vector/holo.jpg":"c5ba6ed0","assets/miras/vector/largo.jpg":"fb8afbd3","assets/miras/vector/punto.jpg":"87601f10","assets/miras/vector/sniper.jpg":"899977fa","assets/miras/vector/tactica.jpg":"a3c9609b","assets/miras/vector/x2.jpg":"a2180a57","assets/miras/vector/x4.jpg":"7bc8377c","assets/miras/vector/x6.jpg":"2738f4af","assets/miras/x2.jpg":"5e98192c","assets/miras/x4.jpg":"94240b55","assets/miras/x6.jpg":"8b00567c","assets/personaje/color_A.jpg":"d122ac65","assets/personaje/color_A_1k.jpg":"be58a9b2","assets/personaje/color_A_ktx2.ktx2":"55390d5b","assets/personaje/color_bots.jpg":"46bbfd09","assets/personaje/color_bots_1k.jpg":"5810bb99","assets/personaje/color_bots_ktx2.ktx2":"ba69cb60","assets/personaje/personaje.glb":"13fada8c","assets/personaje/personaje_1k.glb":"129c1bef","assets/personaje/personaje_ktx2.glb":"d86d9499","assets/personaje/pro/op2/color_A.jpg":"bef575c1","assets/personaje/pro/op2/color_A_1k.jpg":"ed1f37c8","assets/personaje/pro/op2/color_A_2k.jpg":"8a885ded","assets/personaje/pro/op2/color_A_ktx2.ktx2":"8a4be407","assets/personaje/pro/op2/color_B.jpg":"bef575c1","assets/personaje/pro/op2/color_B_1k.jpg":"ed1f37c8","assets/personaje/pro/op2/color_B_2k.jpg":"8a885ded","assets/personaje/pro/op2/color_B_ktx2.ktx2":"8a4be407","assets/personaje/pro/op2/color_bots.jpg":"bef575c1","assets/personaje/pro/op2/color_bots_1k.jpg":"ed1f37c8","assets/personaje/pro/op2/color_bots_2k.jpg":"8a885ded","assets/personaje/pro/op2/color_bots_ktx2.ktx2":"8a4be407","assets/personaje/pro/op2/personaje.glb":"a9d11415","assets/personaje/pro/op2/personaje_1k.glb":"06ed1687","assets/personaje/pro/op2/personaje_2k.glb":"d9c85eff","assets/personaje/pro/op2/personaje_ktx2.glb":"a6bb9ff5","assets/personaje/pro/op3/color_A.jpg":"f23f8d02","assets/personaje/pro/op3/color_A_1k.jpg":"17af165c","assets/personaje/pro/op3/color_A_2k.jpg":"2352550b","assets/personaje/pro/op3/color_A_ktx2.ktx2":"099f3cc9","assets/personaje/pro/op3/color_B.jpg":"b1bdc774","assets/personaje/pro/op3/color_B_1k.jpg":"d1f4d761","assets/personaje/pro/op3/color_B_2k.jpg":"7ee2b8b8","assets/personaje/pro/op3/color_B_ktx2.ktx2":"727840db","assets/personaje/pro/op3/color_bots.jpg":"c2f8cf22","assets/personaje/pro/op3/color_bots_1k.jpg":"f52253fe","assets/personaje/pro/op3/color_bots_2k.jpg":"58e0863f","assets/personaje/pro/op3/color_bots_ktx2.ktx2":"63c6ebc3","assets/personaje/pro/op3/personaje.glb":"5368ed41","assets/personaje/pro/op3/personaje_1k.glb":"55863f1a","assets/personaje/pro/op3/personaje_2k.glb":"4bc1cc29","assets/personaje/pro/op3/personaje_ktx2.glb":"a2936ff4","assets/personaje/pro/op4/color_A.jpg":"26dbbd3d","assets/personaje/pro/op4/color_A_1k.jpg":"f754f532","assets/personaje/pro/op4/color_A_ktx2.ktx2":"00257a61","assets/personaje/pro/op4/color_B.jpg":"ceef52f9","assets/personaje/pro/op4/color_B_1k.jpg":"9bc2e67c","assets/personaje/pro/op4/color_B_ktx2.ktx2":"3489c9ca","assets/personaje/pro/op4/color_bots.jpg":"a7d7385e","assets/personaje/pro/op4/color_bots_1k.jpg":"6269d84f","assets/personaje/pro/op4/color_bots_ktx2.ktx2":"2ba10f2b","assets/personaje/pro/op4/personaje.glb":"d8c950da","assets/personaje/pro/op4/personaje_1k.glb":"3e671723","assets/personaje/pro/op4/personaje_ktx2.glb":"71c1de47","assets/personaje/retratos/clasico.jpg":"9089d991","assets/personaje/retratos/fsb.jpg":"a437ba7e","assets/personaje/retratos/militar.jpg":"cc7bb82e","assets/personaje/retratos/soldado.jpg":"ea597e39","assets/personaje/retratos/swat.jpg":"59863f61","assets/personaje/v4/color_A.jpg":"ec6173ce","assets/personaje/v4/color_A_1k.jpg":"b9fcf76e","assets/personaje/v4/color_bots.jpg":"555188eb","assets/personaje/v4/color_bots_1k.jpg":"e84476a0","assets/personaje/v4/personaje.glb":"7f56f4cd","assets/personaje/v4/personaje_1k.glb":"52efbd17","assets/tex/asphalt_c.jpg":"77fd9abe","assets/tex/asphalt_n.jpg":"d0ffcf83","assets/tex/asphalt_r.jpg":"04b10e5b","assets/tex/azulejo_c.jpg":"4146d6e0","assets/tex/azulejo_n.jpg":"f90aadf8","assets/tex/azulejo_r.jpg":"3b205f10","assets/tex/br_blocks_c.jpg":"c66233d2","assets/tex/br_blocks_n.jpg":"bf3deb4d","assets/tex/br_blocks_r.jpg":"ba5337c9","assets/tex/br_brick_c.jpg":"abfd403f","assets/tex/br_brick_n.jpg":"c94321ec","assets/tex/br_brick_r.jpg":"56acd6cd","assets/tex/br_pavers_c.jpg":"997b5428","assets/tex/br_pavers_n.jpg":"b9e9d68b","assets/tex/br_pavers_r.jpg":"e1765522","assets/tex/brick_c.jpg":"447fd785","assets/tex/brick_n.jpg":"ff87c7f1","assets/tex/c2_patio_c.jpg":"12e88a35","assets/tex/c2_patio_n.jpg":"19efaad1","assets/tex/c2_patio_r.jpg":"813662a9","assets/tex/c2_tiles_c.jpg":"50e0a4d9","assets/tex/c2_tiles_n.jpg":"8d46f206","assets/tex/c2_tiles_r.jpg":"a46a2bfa","assets/tex/c2_wood_c.jpg":"5877d738","assets/tex/c2_wood_n.jpg":"15338e57","assets/tex/c2_wood_r.jpg":"87011503","assets/tex/cobble_c.jpg":"6be66585","assets/tex/cobble_n.jpg":"f7e3ba2a","assets/tex/concrete_c.jpg":"d08a832c","assets/tex/concrete_n.jpg":"457ab210","assets/tex/earth_c.jpg":"e6a9f902","assets/tex/earth_n.jpg":"06bb00de","assets/tex/flora_dandelion_1024.png":"9a0db91e","assets/tex/flora_dandelion_512.png":"dc42d215","assets/tex/flora_grasscards_1024.png":"52d6a551","assets/tex/flora_grasscards_512.png":"dfa1cda3","assets/tex/herring_c.jpg":"32fd218f","assets/tex/herring_n.jpg":"5a3477cc","assets/tex/metal_c.jpg":"8b6d8e26","assets/tex/metal_n.jpg":"53673af2","assets/tex/p0_cobble_c.jpg":"ba3785bf","assets/tex/p0_cobble_n.jpg":"c57bfc05","assets/tex/p0_cobble_r.jpg":"53832a82","assets/tex/p0_covers.png":"33fc76ef","assets/tex/p0_decals.png":"c1db49d5","assets/tex/p0_patch_c.jpg":"764000c4","assets/tex/p0_patch_n.jpg":"11d825d8","assets/tex/p0_patch_r.jpg":"d1184e18","assets/tex/p0_plaza_c.jpg":"8ed7bb08","assets/tex/p0_plaza_n.jpg":"71ec9b9f","assets/tex/p0_plaza_r.jpg":"2635a161","assets/tex/p0_sand_c.jpg":"ec00f2db","assets/tex/p0_sidewalk_c.jpg":"f57d5ec0","assets/tex/p0_sidewalk_n.jpg":"f2f12e33","assets/tex/p0_sidewalk_r.jpg":"8d420df6","assets/tex/p0_transition.png":"2d8a53a4","assets/tex/p0b_cobble_c.jpg":"c9abc843","assets/tex/p0b_covers.png":"295dc5b7","assets/tex/p0b_decals.png":"4189d6d6","assets/tex/p0b_patch_c.jpg":"6993c987","assets/tex/p0b_plaza_c.jpg":"3b8d3198","assets/tex/p0b_sand_c.jpg":"cd0c4def","assets/tex/p0b_sidewalk_c.jpg":"a2bc532a","assets/tex/p0cc_cobble_c.jpg":"4ae894f2","assets/tex/p0cc_cobble_n.jpg":"bf85a45a","assets/tex/p0cc_cobble_r.jpg":"8fd0c14b","assets/tex/p0ccb_cobble_c.jpg":"16ee23a2","assets/tex/p0ccm_cobble_c.jpg":"7eb6a4cc","assets/tex/p0ccm_cobble_n.jpg":"a4e4647f","assets/tex/p0ccm_cobble_r.jpg":"1006bac9","assets/tex/p0m_cobble_c.jpg":"ba3785bf","assets/tex/p0m_cobble_n.jpg":"e4efdd1f","assets/tex/p0m_cobble_r.jpg":"53832a82","assets/tex/p0m_plaza_c.jpg":"8ed7bb08","assets/tex/p0m_plaza_n.jpg":"2b7bb548","assets/tex/p0m_plaza_r.jpg":"2635a161","assets/tex/p0v3_cobble_c.jpg":"d1a7a842","assets/tex/p0v3_cobble_n.jpg":"7f59ef40","assets/tex/p0v3_cobble_r.jpg":"327df272","assets/tex/p0v3_plaza_c.jpg":"95d16848","assets/tex/p0v3_plaza_n.jpg":"0c1bce0a","assets/tex/p0v3_plaza_r.jpg":"7187b7c8","assets/tex/p0v3b_cobble_c.jpg":"a672484f","assets/tex/p0v3b_plaza_c.jpg":"04ae070f","assets/tex/p0v3m_cobble_c.jpg":"d1a7a842","assets/tex/p0v3m_cobble_n.jpg":"1945f886","assets/tex/p0v3m_cobble_r.jpg":"327df272","assets/tex/p0v3m_plaza_c.jpg":"95d16848","assets/tex/p0v3m_plaza_n.jpg":"9dff174d","assets/tex/p0v3m_plaza_r.jpg":"7187b7c8","assets/tex/p1_door_c.jpg":"add4ad19","assets/tex/p1_door_n.jpg":"12a1bb22","assets/tex/p1_door_r.jpg":"2e6a5d99","assets/tex/p1_rooftiles_c.jpg":"429c4813","assets/tex/p1_rooftiles_n.jpg":"0da1a4aa","assets/tex/p1_rooftiles_r.jpg":"50ae143b","assets/tex/p1_stone_c.jpg":"08b8e5f9","assets/tex/p1_stone_n.jpg":"53244400","assets/tex/p1_stone_r.jpg":"4713d6de","assets/tex/p1_stucco_c.jpg":"23513034","assets/tex/p1_stucco_n.jpg":"58365463","assets/tex/p1_stucco_r.jpg":"2476e5e4","assets/tex/p1_wood_c.jpg":"aacb2ac1","assets/tex/p1_wood_n.jpg":"8de0c779","assets/tex/p1_wood_r.jpg":"34a31c4b","assets/tex/p1b_door_c.jpg":"e061bfd3","assets/tex/p1b_rooftiles_c.jpg":"8c4284b3","assets/tex/p1b_stone_c.jpg":"2e766301","assets/tex/p1b_stucco_c.jpg":"e6ed13f6","assets/tex/p1b_wood_c.jpg":"ec02ebfe","assets/tex/p1m_door_c.jpg":"add4ad19","assets/tex/p1m_door_n.jpg":"18c73624","assets/tex/p1m_door_r.jpg":"2e6a5d99","assets/tex/p1m_rooftiles_c.jpg":"429c4813","assets/tex/p1m_rooftiles_n.jpg":"018ae078","assets/tex/p1m_rooftiles_r.jpg":"50ae143b","assets/tex/p1m_stone_c.jpg":"08b8e5f9","assets/tex/p1m_stone_n.jpg":"db2a4db3","assets/tex/p1m_stone_r.jpg":"4713d6de","assets/tex/p1m_stucco_c.jpg":"23513034","assets/tex/p1m_stucco_n.jpg":"b54e4e5c","assets/tex/p1m_stucco_r.jpg":"2476e5e4","assets/tex/p1m_wood_c.jpg":"aacb2ac1","assets/tex/p1m_wood_n.jpg":"73da7b12","assets/tex/p1m_wood_r.jpg":"34a31c4b","assets/tex/paving_c.jpg":"de729c21","assets/tex/paving_n.jpg":"e7ce1b5e","assets/tex/pebbles_c.jpg":"92f3a761","assets/tex/pebbles_n.jpg":"04797193","assets/tex/plaster_c.jpg":"b9baf0d3","assets/tex/plaster_n.jpg":"57ab2216","assets/tex/rat_c.jpg":"18f0d109","assets/tex/rat_n.jpg":"5cda8929","assets/tex/rat_r.jpg":"cd628297","assets/tex/roof_c.jpg":"4e3265a6","assets/tex/roof_n.jpg":"7eec2601","assets/tex/rooftiles_c.jpg":"f52e8938","assets/tex/rooftiles_n.jpg":"7dd55eb0","assets/tex/rubble_c.jpg":"c980bdcd","assets/tex/rubble_n.jpg":"93400d41","assets/tex/sand_c.jpg":"44e227fe","assets/tex/sand_n.jpg":"d259a3b8","assets/tex/sandbag_c.jpg":"da97fddc","assets/tex/sandbag_n.jpg":"737ae913","assets/tex/setts_c.jpg":"0807efce","assets/tex/setts_n.jpg":"ae5af8cf","assets/tex/setts_r.jpg":"a09459c8","assets/tex/slabs_c.jpg":"2038cef4","assets/tex/slabs_n.jpg":"ec0bcab9","assets/tex/slabs_r.jpg":"74281b0b","assets/tex/stone_c.jpg":"2fffcb0b","assets/tex/stone_n.jpg":"b8445cb7","assets/tex/stucco_c.jpg":"17d897f3","assets/tex/stucco_n.jpg":"246827a0","assets/tex/wood_c.jpg":"ccb5489b","assets/tex/wood_n.jpg":"86830c96","assets/viewmodels.glb":"5825c8a7","vendor/basis/basis_transcoder.js":"55a40071","vendor/basis/basis_transcoder.wasm":"0969f9ba","vendor/GLTFLoader.js":"fb4d39e3","vendor/KTX2Loader.js":"de12a429","vendor/three.min.js":"05c8df80"};
 </script>
 <script>
 (function(){
@@ -11976,10 +12373,10 @@ async function netServerUrl(){
   try{const r=await fetch('server.json?v='+Date.now(),{cache:'no-store'});if(r.ok){const j=await r.json();if(j&&j.url){NET.url=String(j.url).replace(/\/$/,'');return NET.url;}}}catch(e){}
   return null;
 }
-function mpShow(view){NET.view=view;$('#mp').hidden=false;$('#menu').hidden=true;$('#mpHome').hidden=view!=='home';$('#mpLobby').hidden=view!=='lobby';}
-function mpMsg(t,err){const m=$('#mpMsg');m.textContent=t||'';m.classList.toggle('err',!!err);}
+function mpShow(view){if(LB.on){lbShow(view);return;}NET.view=view;$('#mp').hidden=false;$('#menu').hidden=true;$('#mpHome').hidden=view!=='home';$('#mpLobby').hidden=view!=='lobby';}
+function mpMsg(t,err){const m=$('#mpMsg');m.textContent=t||'';m.classList.toggle('err',!!err);if(LB.on)lbMsg(t,err);}
 function mpName(){const n=SDProto.cleanName($('#mpName').value)||'JUGADOR';store.set('mpName',n);if(n!=='JUGADOR'&&PROFILE.name!==n){PROFILE.name=n;SDProfile.save(LS,PROFILE);}return n;}
-function inviteLink(code){return location.origin+location.pathname+'?sala='+code;}
+function inviteLink(code){return location.origin+location.pathname+'?sala='+code+(LB.on?'&lobby=2':'');}   // SALA 1V1: the guest gets it too
 async function netCreate(){
   audioInit();SFX.ui();mpName();mpMsg('Creando sala…');
   const url=await netServerUrl();if(!url){mpMsg('SERVIDOR NO DISPONIBLE. Puedes seguir jugando offline.',true);return;}
@@ -12004,7 +12401,7 @@ function netConnect(code){
   NET.status='connecting';mpMsg('Conectando…');
   let ws;try{ws=new WebSocket(NET.url.replace(/^http/,'ws')+'/room/'+code);}catch(e){netErr('ws '+e.message);netRetry();return;}
   NET.ws=ws;
-  ws.onopen=()=>{NET.status='online';NET.retries=0;NET.lastMsgAt=performance.now();const tok=store.get('tok_'+code,null);NET.N.hello(mpName(),tok);NET.N.ping();};
+  ws.onopen=()=>{NET.status='online';NET.retries=0;NET.lastMsgAt=performance.now();const tok=store.get('tok_'+code,null);NET.N.hello(mpName(),tok,LB.on);NET.N.ping();};
   ws.onmessage=e=>{if(NET.ws!==ws)return;   // a late frame from a socket already replaced is never applied
     NET.lastMsgAt=performance.now();NET.bytesIn+=e.data.length||0;for(const ev of NET.N.onMessage(e.data))netEvent(ev);};
   ws.onerror=()=>{netErr('socket error');};
@@ -12033,7 +12430,7 @@ function netLeave(toMainMenu){
   if(NET.code)store.set('tok_'+NET.code,null);
   NET.want=false;if(NET.ws){try{NET.ws.close(4000);}catch(e){}}NET.ws=null;NET.status='off';NET.N=null;NET.code=null;
   netBanner(null);netEndOnline();
-  if(toMainMenu){$('#mp').hidden=true;toMenu();}else mpShow('home');
+  if(toMainMenu){$('#mp').hidden=true;if(LB.on)lbHide();toMenu();}else mpShow('home');
   history.replaceState(null,'',location.pathname);
 }
 function netEndOnline(){
@@ -12068,6 +12465,7 @@ function renderLobby(){
   document.querySelectorAll('#mpSizeSeg button').forEach(b=>{b.setAttribute('aria-pressed',String(+b.dataset.s===C.size));b.disabled=!host;});
   document.querySelectorAll('#mpDiffSeg button').forEach(b=>{b.setAttribute('aria-pressed',String(+b.dataset.d===C.diff));b.disabled=!host;});
   document.querySelectorAll('#mpTeamSeg button').forEach(b=>b.setAttribute('aria-pressed',String(!!me&&b.dataset.team===me.team)));
+  if(LB.on)lbRender();
   if(N.map==='casa'){casaLoad();const cb=$('#mpMapSeg [data-map=casa]');if(cb)cb.hidden=false;}   // a guest without ?casa=1 still sees (and loads) the room's map
   if(N.map==='barrio'&&BAR.on){barrioLoad();const cb=$('#mpMapSeg [data-map=barrio]');if(cb)cb.hidden=false;}
   if(C2S[N.map]&&C2.on){casa2Load(N.map);const cb=$('#mpMapSeg [data-map='+N.map+']');if(cb)cb.hidden=false;}
@@ -12164,6 +12562,7 @@ function netEvent(e){
       const msg={full:'ESA SALA ESTÁ LLENA.',no_room:'ESA SALA NO EXISTE (o ha caducado).',in_progress:'ESA PARTIDA YA HA EMPEZADO.',idle:'SALA CERRADA POR INACTIVIDAD. Crea otra cuando queráis jugar.'}[e.code];
       netErr('error '+e.code+(e.why?' '+e.why:''));
       if(msg){NET.want=false;netEndOnline();mpShow('home');mpMsg(msg,true);store.set('tok_'+NET.code,null);}
+      else if(e.code==='cant_start'&&LB.on)lbMsg({players:'FALTA TU RIVAL',ready:'LOS DOS TENÉIS QUE ESTAR LISTOS',host:'SOLO EL ANFITRIÓN INICIA LA PARTIDA',auto:'EMPIEZA SOLA CUANDO LOS DOS ESTÉIS LISTOS',phase:'LA PARTIDA YA HA EMPEZADO'}[e.why]||'AÚN NO SE PUEDE INICIAR',true);
       break;}
   }
 }
@@ -12196,7 +12595,7 @@ function netStart(m){
   if(md!=='duelo'&&REMOTE)REMOTE.update(null,0);
   netScoreHud();
   updateHpUI();updateAmmoUI();updateWeaponHud();
-  $('#mp').hidden=true;$('#menu').hidden=true;$('#over').hidden=true;$('#pause').hidden=true;$('#death').hidden=true;$('#hud').hidden=false;$('#netStat').hidden=false;
+  $('#mp').hidden=true;if(LB.on)lbHide();$('#menu').hidden=true;$('#over').hidden=true;$('#pause').hidden=true;$('#death').hidden=true;$('#hud').hidden=false;$('#netStat').hidden=false;
   $('#touch').hidden=!isTouch;
   if(m.in>0){$('#countdown').hidden=false;}
   state='playing';
@@ -13191,6 +13590,189 @@ function m2Frame(rdt){
   m2Layout(rdt);
   WROOT.visible=false;KROOT.visible=false;PROOT.visible=false;SROOT.visible=false;
 }
+/* =================== SALA 1V1 (?lobby=2, 10-11-2026, client/lobby1v1.js, docs/SALA-1V1.md) ===================
+   Owner: «una sala de espera MULTIJUGADOR 1V1, al estilo de los lobbies de PUBG o COD pero con diseño original». INICIO ›
+   MULTIJUGADOR 1V1 opens its own screen: CREAR SALA PRIVADA or UNIRSE con código, then a dark tactical hangar with your
+   operator on the left pad and your rival on the right one (he appears the moment he joins), names and LISTO over their
+   heads, INVITAR (code, link, WhatsApp, the phone's own share), the map cards (the host chooses, the server tells the
+   guest) and LISTO / INICIAR PARTIDA at the bottom. The room is the same as always (core/room.js, the same messages and
+   the same server); the only new thing the server sees is that this page starts the match with a button (hello hs, 'go').
+   Experimental: ?lobby=2 turns it on (remembered on the device), ?lobby=1 brings back the room screen of always (#mp). */
+{const q=location.search.match(/[?&]lobby=([12])\b/);if(q)store.set('lobby2',q[1]==='2');}
+const LB={on:M2.on&&typeof SDLobby!=='undefined'&&store.get('lobby2',false)===true,vis:false,view:'home',room:null,cam:null,rigs:null,pv:null,
+  t:0,n:0,F:{dist:7,ox:0,oy:0},C:null,opIn:1,opSeen:null,heldSig:'',held:null,inv:null,note:null,lastMap:null,lastHost:null,lastRival:null,mapSig:'',listSig:'',busy:false,goT:0};
+const LB_YAW=[0.3,-0.3],LB_PITCH=-0.55,_lbv=new T.Vector3(),_lbcp=new T.Vector3();
+const lbMapName=id=>{const m=M2_MAPS.find(x=>x.id===id)||(id==='barrio'?M2_BARRIO:null);return m?m.name:/^casa2/.test(id)?'CASA ATLAS 2.0':m2MapName(id);};
+const lbMapSub=id=>{const m=M2_MAPS.find(x=>x.id===id)||(id==='barrio'?M2_BARRIO:null)||SDMenu2.MAPS.find(x=>x.id===id);return m?m.sub:'';};
+function lbShow(view){
+  NET.view=view;LB.view=view;LB.vis=true;$('#lb').hidden=false;$('#mp').hidden=true;$('#menu').hidden=true;
+  setHidden($('#lbHome'),view!=='home');setHidden($('#lbRoom'),view!=='lobby');setHidden($('#lbBar'),view!=='lobby');
+  if(view==='home'){$('#lbName').value=$('#mpName').value;if($('#mpCode').value)$('#lbCode').value=$('#mpCode').value;}
+  if(view==='lobby'&&LB.inv===null)LB.inv=window.innerWidth>=1100;   // PC: the invitation open while you wait
+  LB.C=null;lbRender();
+}
+// a player's state in a word or two (tags and list): after a match, whether he wants the rematch
+const lbStText=(p,V,N)=>p.connected===false?'DESCONECTADO':V.over?((N.rematchOf||{})[p.id]?'✓ REVANCHA':'FIN'):p.ready?'✓ LISTO':'NO LISTO';
+function lbHide(){LB.vis=false;$('#lb').hidden=true;}
+// a message: on the first screen under the buttons; in the room in the bar for a few seconds
+function lbMsg(t,err){
+  const m=$('#lbMsg');m.textContent=t||'';m.classList.toggle('err',!!err);
+  if(!err&&/^(Conectando|Creando)/.test(t||''))return;   // the room's own line says that better
+  LB.note=t?{t:String(t).toUpperCase(),err:!!err,until:performance.now()+4500}:null;if(LB.view==='lobby')lbStatus();
+}
+function lbStatus(){
+  const V=LB.V;if(!V)return;const n=LB.note&&performance.now()<LB.note.until?LB.note:null;
+  setText($('#lbStatusTxt'),n?n.t:V.status);$('#lbStatus').classList.toggle('err',!!(n&&n.err));
+}
+// what the server says → the screen (called on every lobby message and when the screen opens)
+function lbRender(){
+  if(!LB.on)return;const N=NET.N,inRoom=!!(N&&NET.code&&LB.view==='lobby'&&N.you);
+  setHidden($('#lbCodeTop'),!inRoom);setHidden($('#lbPing'),!inRoom);
+  if(!inRoom){LB.V=null;return;}
+  const V=LB.V=SDLobby.view(N);
+  setText($('#lbCodeTopTxt'),NET.code);setText($('#lbInvCodeTxt'),NET.code);
+  // what changed since the last message, said once
+  const rid=V.rival?V.rival.id+V.rival.name:null;
+  if(LB.room0!==NET.code){LB.room0=NET.code;LB.lastRival=rid;LB.lastHost=V.hostId;LB.lastMap=N.map;}   // a new room: nothing to announce yet
+  if(rid&&rid!==LB.lastRival){lbMsg(V.rival.name+' HA ENTRADO EN LA SALA');if(LB.inv&&window.innerWidth<1100)LB.inv=false;}
+  else if(!rid&&LB.lastRival)lbMsg('TU RIVAL HA SALIDO DE LA SALA');
+  if(LB.lastHost&&LB.lastHost!==V.hostId&&V.isHost)lbMsg('AHORA ERES EL ANFITRIÓN: ELIGES EL MAPA E INICIAS');
+  if(LB.lastMap&&N.map!==LB.lastMap&&!V.isHost)lbMsg('EL ANFITRIÓN HA ELEGIDO '+lbMapName(N.map)+(V.hs?' · PULSA LISTO OTRA VEZ':''));
+  LB.lastRival=rid;LB.lastHost=V.hostId;LB.lastMap=N.map;
+  // players: you and the rival (or the empty place)
+  const cnt=V.count+'/2';setText($('#lbCount'),cnt);setText($('#lbCount2'),cnt);
+  const sig=JSON.stringify([V.me,V.rival].map(p=>p&&[p.id,p.name,p.ready,p.connected,p.skin,p.kit,p.title]))+V.hostId;
+  if(sig!==LB.listSig){LB.listSig=sig;const ul=$('#lbList');ul.innerHTML='';
+    for(const p of [V.me,V.rival]){const li=document.createElement('li'),im=document.createElement('img'),d=document.createElement('div'),b=document.createElement('b'),sm=document.createElement('small'),st=document.createElement('span');
+      im.alt='';const sk=p&&SKINS[p.skin]?p.skin:'soldado';im.src=skinImg(sk);
+      if(!p){li.className='empty';b.textContent='ESPERANDO…';sm.textContent='Comparte el código para invitar';st.className='lbSt';st.textContent='LIBRE';}
+      else{const nm=document.createElement('span');nm.textContent=p.name+(p.id===N.you?' (tú)':'');b.append(nm);
+        if(p.id===V.hostId){b.insertAdjacentHTML('beforeend','<svg class="lbCrown" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 18 4.5 7l5 4.5L12 5l2.5 6.5 5-4.5L21 18z" fill="currentColor"/></svg>');sm.className='host';}
+        sm.textContent=(p.id===V.hostId?'ANFITRIÓN · ':'')+(SKINS[p.skin]?SKINS[p.skin].name:'SOLDADO')+' · '+(p.kit==='shotgun'?'FURIA 12':'HALCÓN R7')+(p.title?' · «'+p.title+'»':'');
+        st.className='lbSt'+(p.connected===false?' off':p.ready||(V.over&&(N.rematchOf||{})[p.id])?' ok':'');st.textContent=lbStText(p,V,N);}
+      d.append(b,sm);li.append(im,d,st);ul.append(li);}}
+  // the name tags over the operators (placed every frame by lbFrame)
+  const tag=(el,p,k)=>{el.classList.toggle('wait',!p);setText(el.querySelector('.lbNm'),p?p.name:'ESPERANDO RIVAL');
+    setText(el.querySelector('.lbRole'),p&&p.id===V.hostId?'ANFITRIÓN':!p?'':k?'RIVAL':'TÚ');el.querySelector('.lbCrown').hidden=!(p&&p.id===V.hostId);
+    const s=el.querySelector('.lbSt'),rq=V.over&&p&&(N.rematchOf||{})[p.id];s.hidden=!p;if(p){s.className='lbSt'+(p.connected===false?' off':p.ready||rq?' ok':'');setText(s,lbStText(p,V,N));}};
+  tag($('#lbTagMe'),V.me,0);tag($('#lbTagOp'),V.rival,1);
+  // the buttons: LISTO is yours; INICIAR PARTIDA only works for the host with both ready (the server checks it again)
+  const rb=$('#lbReady'),on=V.over?V.again:V.ready;rb.setAttribute('aria-pressed',String(on));rb.classList.toggle('on',on);
+  setText(rb.querySelector('span'),V.over?(!V.rival?'NUEVO RIVAL':'REVANCHA'):'LISTO');   // pressed = orange (the check is the icon)
+  rb.disabled=N.phase!=='lobby'&&N.phase!=='over';
+  const sb=$('#lbStart');setHidden(sb,!V.hs||V.over);sb.disabled=!V.canStart||performance.now()<LB.goT;
+  setText(sb.querySelector('span'),V.isHost?'INICIAR PARTIDA':'INICIA EL ANFITRIÓN');
+  setHidden($('#lbInvite'),!LB.inv);$('#lbInvBtn').classList.toggle('on',!!LB.inv);
+  // maps: the cards of the maps this page plays online that the server has; the host chooses
+  const cards=SDLobby.mapCards(M2_MAPS.filter(m=>m.online).concat(BAR.exp&&!M2_MAPS.some(m=>m.id==='barrio')?[M2_BARRIO]:[]),N.maps,N.map,lbMapName);
+  const msig=cards.map(c=>c.id).join()+'|'+V.isHost;
+  if(msig!==LB.mapSig){LB.mapSig=msig;const row=$('#lbMapRow');row.innerHTML='';
+    for(const c of cards){const b=document.createElement('button');b.type='button';b.className='lbMap';b.dataset.map=c.id;b.disabled=!V.isHost;b.title=c.sub||c.name;
+      const im=document.createElement('img');im.alt='';im.loading='lazy';im.src=m2MapImg(c.id);const nb=document.createElement('b');nb.textContent=c.name;b.append(im,nb);
+      b.addEventListener('click',()=>{const N=NET.N;if(!N||!LB.V||!LB.V.isHost||N.map===c.id)return;N.chooseMap(c.id);audioInit();SFX.ui();});row.append(b);}}
+  document.querySelectorAll('#lbMapRow .lbMap').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.map===N.map)));
+  setText($('#lbMapWho'),V.isHost?'· eliges tú':'· lo elige el anfitrión');
+  const mi=$('#lbMapImg'),msrc=m2MapImg(N.map||'arena');if(mi.getAttribute('src')!==msrc)mi.src=msrc;
+  setText($('#lbMapName'),lbMapName(N.map||'arena'));setText($('#lbMapSub'),lbMapSub(N.map||'arena'));
+  lbStatus();LB.C=null;
+}
+// ---- the hangar in 3D ----
+function lbRig(){let R;if(SKIN_ON){const on=PJ2.on;PJ2.on=false;R=makeSoldier(RIVAL_MAT,{variant:'B'});PJ2.on=on;if(on){R.pj2v='B';PJ2.list.push(R);}}else R=makeSoldier(RIVAL_MAT,{variant:'B'});return R;}
+function lbWake(){
+  if(LB.room)return;
+  LB.room=SDLobby.buildHangar(T,{tex:(n,nm)=>texLoad(n,nm,true),low:GFX.profile==='bajo'});
+  if(!LB.cam)LB.cam=new T.PerspectiveCamera(32,1,0.05,80);
+  if(!LB.rigs){LB.rigs=[lbRig(),lbRig()];LB.pv=LB.rigs.map(R=>{const g=new T.Group();g.add(R.root);return g;});}
+  LB.room.pads.forEach((p,k)=>p.stand.add(LB.pv[k]));
+  LB.heldSig='';LB.C=null;
+}
+function lbSleep(){
+  if(!LB.room)return;
+  if(LB.held&&LB.held.parent)LB.held.parent.remove(LB.held);LB.held=null;LB.heldSig='';
+  LB.pv.forEach(g=>{if(g.parent)g.parent.remove(g);});LB.room.dispose();LB.room=null;
+}
+// the character a rig wears: the chosen one as soon as it is there (the one before stays until then, never the box figure)
+function lbOperator(R,want){
+  if(!SKIN_ON||want===undefined||R.skinPack===want)return;const root=want?packRoot(want):null;
+  if(m2PackOk(want)||(root&&PJ2.prev[root]))pj2SetPack(R,want);else if(want)pj2Load(root);
+}
+const lbShown=R=>!PJ2.on||!SKIN_ON?true:R.skinPack===undefined?false:(R.skinPack===null||!!R.v2||!!PJ2.failedRoots[packRoot(R.skinPack)]);
+// the free part of the screen: between the panels, under the bar, over the map strip (home: left of the two choices)
+function lbRect(vw,vh){
+  const top=$('#lb .lbTop').getBoundingClientRect().bottom;
+  if(LB.view!=='lobby'){const h=$('#lbHome').getBoundingClientRect();return {left:0,top,width:Math.max(80,h.left-12),height:vh-top-8};}
+  const pl=$('#lb .lbPlayers').getBoundingClientRect(),mw=$('#lb .lbMapsWrap').getBoundingClientRect(),iv=$('#lbInvite');
+  const left=iv.hidden?0:iv.getBoundingClientRect().right,right=pl.left;
+  // the tags need ~70 px over the heads
+  const tg=vh<520?44:64;return {left,top:top+tg,width:Math.max(80,right-left),height:Math.max(80,mw.top-top-tg)};
+}
+function lbFrame(rdt){
+  if(!LB.room)lbWake();
+  LB.t+=rdt;LB.n++;const dt=Math.min(rdt,0.1),now=performance.now();
+  scene.updateMatrixWorld();m2Warm(now);   // the map behind keeps getting ready for the match (as in MENÚ 2)
+  const N=NET.N,V=LB.view==='lobby'&&N&&N.you?LB.V:null,me=V&&V.me,rv=V&&V.rival,[RM,RO]=LB.rigs;
+  lbOperator(RM,SKIN_ON?SKINS[SKIN].pack:undefined);
+  if(rv)lbOperator(RO,SKIN_ON?(SKINS[rv.skin]||SKINS.soldado).pack:undefined);
+  if(rv&&LB.opSeen!==rv.id){LB.opSeen=rv.id;LB.opIn=0;SFX.ui();}if(!rv)LB.opSeen=null;
+  LB.opIn=Math.min(1,LB.opIn+dt/0.7);const A=SDLobby.appear(LB.opIn);
+  const show=[lbShown(RM),!!rv&&lbShown(RO)];
+  // your rifle in your hands as it is now (skin, optic, camouflage): the menu's own copy
+  const hs=[VMA.ready,!!RM.tp,WS_ST.rifle.cur,WS_ST.rifle.objs.length,MIRA.id,!!MIRA.model,(INV.equip&&INV.equip.camo)||'',SIL.want,WS_ST.rifle.light].join('|');
+  if(hs!==LB.heldSig&&RM.tp&&RM.tp.rifle&&VMA.R){LB.heldSig=hs;if(LB.held&&LB.held.parent)LB.held.parent.remove(LB.held);RM.tp.rifle.visible=false;LB.held=m2GunClone();RM.tp.rifle.parent.add(LB.held);}
+  for(let k=0;k<2;k++){const g=LB.pv[k],s=SDLobby.sway(LB.t,k),R=LB.rigs[k];
+    g.visible=show[k];g.rotation.set(0,LB_YAW[k]+s.yaw,s.lean);
+    g.position.y=s.bob+(k?A.y:0);g.scale.setScalar(k?A.s:1);
+    if(!show[k])continue;
+    if(LB.n%10===k+1)csFix(g);
+    const wpn=k?(rv&&rv.kit==='shotgun'?'shotgun':'rifle'):(PRIMARY==='shotgun'?'shotgun':'rifle');
+    _lbcp.copy(camera.position);camera.position.copy(LB.cam.position);animateSoldier(R,{wpn,vx:0,vz:0,pitch:LB_PITCH,aim:0,crouch:0},dt);camera.position.copy(_lbcp);}
+  LB.room.frame(LB.t,[{on:show[0],ready:!!(me&&me.ready)},{on:show[1],ready:!!(rv&&rv.ready&&rv.connected!==false),flash:A.flash}]);
+  // the camera: both pads in the free part of the screen, drifting a little like a hand-held shot
+  const vw=window.innerWidth||1,vh=window.innerHeight||1,cam=LB.cam;
+  if(cam.aspect!==vw/vh)cam.aspect=vw/vh;
+  if(!LB.C||LB.n%20===0){LB.C=SDLobby.fitCamera(lbRect(vw,vh),vw,vh,cam.fov);if(LB.view!=='lobby')LB.C.dist*=1.3;}   // the first screen: a wider shot, the two pads whole
+  const F=LB.F,C=LB.C,kk=rdt>0.2||LB.n<3?100:6;
+  F.dist=SDMenu2.damp(F.dist,C.dist,kk,dt);F.ox=SDMenu2.damp(F.ox,C.ox,kk,dt);F.oy=SDMenu2.damp(F.oy,C.oy,kk,dt);
+  const yaw=Math.sin(LB.t*0.19)*0.025,el=0.06+Math.sin(LB.t*0.15+1)*0.01,tgY=1.05;
+  cam.position.set(Math.sin(yaw)*Math.cos(el)*F.dist,tgY+Math.sin(el)*F.dist,Math.cos(yaw)*Math.cos(el)*F.dist);cam.lookAt(0,tgY,0);
+  cam.setViewOffset(vw,vh,-F.ox,-F.oy,vw,vh);cam.updateMatrixWorld();
+  // the name tags over their heads
+  if(LB.view==='lobby')for(let k=0;k<2;k++){const el=k?$('#lbTagOp'):$('#lbTagMe');
+    _lbv.set((k?1:-1)*SDLobby.PAD_X,2.12+(k?A.y:0),0).project(cam);
+    const x=Math.round((_lbv.x+1)/2*vw),y=Math.round((1-_lbv.y)/2*vh-$('#lb .lbTop').offsetHeight-6),t='translate('+x+'px,'+y+'px) translate(-50%,-100%)';
+    if(el.style.transform!==t)el.style.transform=t;}
+  if(LB.n%15===0&&N){const s=$('#lbPing'),r=Math.round(N.rtt||0);s.className='lbPing'+(NET.status!=='online'?' bad':r>150?' warn':'');
+    setText($('#lbPingTxt'),NET.status==='online'?(r?r+' ms':'– ms'):NET.status==='reconnecting'?'RECONECTANDO':'SIN CONEXIÓN');
+    if(LB.note&&now>LB.note.until){LB.note=null;lbStatus();}
+    const sb=$('#lbStart');if(V&&sb.disabled!==(!V.canStart||now<LB.goT))sb.disabled=!V.canStart||now<LB.goT;}
+  WROOT.visible=false;KROOT.visible=false;PROOT.visible=false;SROOT.visible=false;
+}
+function lbInviteText(){return '¡Te reto a un duelo 1 contra 1 en Sniper Duel! Sala '+NET.code+': '+inviteLink(NET.code);}
+async function lbCopy(text,ok){try{await navigator.clipboard.writeText(text);lbMsg(ok);}catch(e){lbMsg('COPIA ESTO: '+text,true);}}
+if(LB.on){
+  // INICIO › MULTIJUGADOR 1V1 opens the room screen at once (no need to press JUGAR)
+  document.querySelectorAll('#m2 .m2Mode[data-sel=online]').forEach(b=>b.addEventListener('click',()=>{if(!LB.on)return;netServerUrl();mpShow(NET.N&&NET.code?'lobby':'home');mpMsg('');}));
+  $('#lbName').value=$('#mpName').value;
+  $('#lbName').addEventListener('input',()=>{$('#mpName').value=$('#lbName').value;});
+  $('#lbBack').addEventListener('click',()=>{SFX.ui();if(LB.view==='lobby'){netLeave(false);return;}lbHide();$('#menu').hidden=false;});
+  // one room at a time: a second tap while it is being created does nothing (no duplicated rooms)
+  $('#lbCreate').addEventListener('click',async()=>{if(LB.busy||(NET.want&&NET.code))return;LB.busy=true;$('#lbCreate').disabled=true;$('#mpName').value=$('#lbName').value;
+    try{await netCreate();}finally{LB.busy=false;$('#lbCreate').disabled=false;}});
+  const join=()=>{const c=$('#lbCode').value;$('#mpName').value=$('#lbName').value;$('#mpCode').value=c;if(NET.want&&NET.code===c.toUpperCase())return;netJoin(c);};
+  $('#lbJoin').addEventListener('click',join);
+  $('#lbCode').addEventListener('keydown',e=>{if(e.key==='Enter')join();});
+  $('#lbLeave').addEventListener('click',()=>{SFX.ui();netLeave(false);});
+  $('#lbInvBtn').addEventListener('click',()=>{SFX.ui();LB.inv=!LB.inv;lbRender();});
+  $('#lbInvClose').addEventListener('click',()=>{SFX.ui();LB.inv=false;lbRender();});
+  $('#lbCopyCode').addEventListener('click',()=>lbCopy(NET.code,'CÓDIGO COPIADO: '+NET.code));
+  $('#lbCodeTop').addEventListener('click',()=>lbCopy(NET.code,'CÓDIGO COPIADO: '+NET.code));
+  $('#lbCopyLink').addEventListener('click',()=>lbCopy(inviteLink(NET.code),'ENLACE COPIADO'));
+  $('#lbWhats').addEventListener('click',()=>{window.open('https://wa.me/?text='+encodeURIComponent(lbInviteText()),'_blank','noopener');});
+  if(navigator.share){$('#lbShare').hidden=false;$('#lbShare').addEventListener('click',async()=>{try{await navigator.share({title:'Sniper Duel',text:lbInviteText(),url:inviteLink(NET.code)});}catch(e){}});}
+  $('#lbReady').addEventListener('click',()=>{const N=NET.N;if(!N||!LB.V||!LB.V.me)return;LB.note=null;if(N.phase==='over'){if(!LB.V.again)N.rematch();}else N.ready(!LB.V.me.ready);audioInit();SFX.ui();});
+  $('#lbStart').addEventListener('click',()=>{const N=NET.N;if(!N||!LB.V||!LB.V.canStart)return;LB.goT=performance.now()+1500;$('#lbStart').disabled=true;N.go();audioInit();SFX.ui();});
+  window.addEventListener('resize',()=>{LB.C=null;});
+}
 /* =================== ARMAS · GUNSMITH (08-11-2026, docs/GUNSMITH.md) ===================
    Owner: «un sistema GUNSMITH profesional… que todo lo que el jugador seleccione tenga un resultado real y verificable».
    The ARMAS section: the weapon big in the middle (the one in your hands: model, optic, camouflage; turn it, zoom it),
@@ -13468,7 +14050,8 @@ function frameBody(now){
   const pmark=k=>{if(!pf)return;const t=performance.now();PROF.t[k]=(PROF.t[k]||0)+t-pt;pt=t;};
   const rdt=Math.min(PERF_LOW?0.34:0.1,(now-last)/1000);last=now; // test mode: very low FPS still simulates in real time
   if(slowmo>0)slowmo-=rdt;
-  if(M2.room&&state!=='menu')m2Sleep();   // MENÚ 2: its room leaves while you play
+  if(M2.room&&(state!=='menu'||LB.vis))m2Sleep();
+  if(LB.room&&(state!=='menu'||!LB.vis))lbSleep();   // SALA 1V1: its hangar too   // MENÚ 2: its room leaves while you play
   const fxdt=rdt*(slowmo>0?0.35:1); // slow motion touches only particles and tracers
   if(calloutTimer>0)calloutTimer-=rdt;
   if(state==='playing'||state==='dead'||(mode==='online'&&state==='paused')){
@@ -13494,7 +14077,7 @@ function frameBody(now){
   }else if(state==='menu'){
     // MENÚ 2 draws its own room, but the game camera still circles the map as with the old menu: the map's level of
     // detail, its shadows and what it has on the GPU stay exactly as they were (the servers' map checks count on it)
-    if(M2.on)m2Frame(rdt);
+    if(LB.vis)lbFrame(rdt);else if(M2.on)m2Frame(rdt);
     menuAng+=rdt*0.04;
     camera.position.set(Math.cos(menuAng)*44,13+Math.sin(menuAng*2)*2,Math.sin(menuAng)*44);
     camera.lookAt(0,3,0);
@@ -13527,7 +14110,8 @@ function frameBody(now){
   if(RATS.ready)ratsFrame(drawDt);
   if(FLORA.ready)FLORA.time.value=now/1000%1000;
   pmark('mundo');
-  if(M2.room&&state==='menu'){const ex=renderer.toneMappingExposure;renderer.toneMappingExposure=M2.room.exposure*(SETTINGS.bright||1);renderer.render(M2.room.scene,M2.cam);renderer.toneMappingExposure=ex;}
+  if(LB.room&&LB.vis&&state==='menu'){const ex=renderer.toneMappingExposure;renderer.toneMappingExposure=LB.room.exposure*(SETTINGS.bright||1);renderer.render(LB.room.scene,LB.cam);renderer.toneMappingExposure=ex;}
+  else if(M2.room&&state==='menu'){const ex=renderer.toneMappingExposure;renderer.toneMappingExposure=M2.room.exposure*(SETTINGS.bright||1);renderer.render(M2.room.scene,M2.cam);renderer.toneMappingExposure=ex;}
   else renderer.render(scene,camera);
   pmark('dibujo');
   if(!SHOT.noVM&&!TPV.on&&(WROOT.visible||KROOT.visible||PROOT.visible||SROOT.visible)&&(state==='playing'||state==='dead')){renderer.clearDepth();renderer.render(wScene,wCam);}
@@ -13831,7 +14415,7 @@ if(FLORA.on){const gl=new T.GLTFLoader();let n=2;
       if(P3W.kit)later();else{const w=setInterval(()=>{if(P3W.kit){clearInterval(w);later();}},300);}}}}
 function floraFlush(){if(FLORA.go)FLORA.go();}
 
-window.__SD={get GFX(){return GFX;},get BOX3(){return BOX3;},get GUNCFG(){return GUNCFG;},PRUEBAS,XRAY,xrayFrame,SLIDE2,PEN,penBox,spawnBullet,updateBullets,HALCON,BAL,rifleCfgFor,applyRifleCfg,gsGun,SIL,silCfg,silSaved,SFX,GUN,camLight,get gameTime(){return gameTime;},GSI,gsiDone,gsiRender,M2,m2Tab,m2Sync,m2Sleep,openSettings,closeSettings,MIRA,setMira,miraApply,miraClipGeo,miraRifle,openMiras,closeMiras,updateReticle,ENV,MOVE_CLASSIC,MOV_CLASSIC,VIS,VIS_COL,VIS_HULL,visOn,visFrame,visWho,selfHit,PROF,KTX2,R2_ON,R2_URL,PIC,GYRO,gyroEv,crossApply,btnPress,settingsChanged,perfTexMB(){const t=perfTextures();return {real:SDPerf.textureMB(t),asRGBA:SDPerf.textureMB(t.map(x=>Object.assign({},x,{bytes:0})))};},REMOTES,netScoreHud,shotTargets,MINI,miniLayer,miniPing,clockFrame,setOffTime,get OFF_TIME(){return OFF_TIME;},ACC,accRefresh,INV,invSync,camoApply,openInv,invOpenBox,WSKIN,WS_ST,setWskin,get RIF(){return RIF;},TPV,SELF,get PROFILE(){return PROFILE;},openProfile,endMatch,PJ_MIX,MIX_ORDER,SKINS,get SKIN(){return SKIN;},setSkin,pj2SetPack,rivalSkin,PERF,perfRun,HUD2,get H2(){return HUD2?H2:null;},leanIn:HUD2?leanIn:null,h2Frame:HUD2?h2Frame:null,PJ2,pj2Load,CASA,casaLoad,C2,C2B,C2J,C2S,casa2Load,BAR,barrioLoad,FLORA,RATS,RAT_WORLD,ratsFrame,SHADOW_FADE,setDuelLethal,get DUEL_LETHAL(){return DUEL_LETHAL;},gfxDiagText,get P3ON(){return P3ON;},COBCC,damagePlayer,TEX,sunFollow,setSunSnap(on){SUN_SNAP=!!on;},sun,P0,E10,e10Lod,DIAG,setTrainMove,LIGHT:{sun,hemi,skyMat,LOOK,P3},P3W,freeze(on){SIM_FREEZE=!!on;},SHOT,VMA,makeSoldier,animateSoldier,BOT_MAT,scene,camera,RemotePlayer,PMprev,PIS,PROOT,RIF,WROOT,SHO_:null,MANUAL,advance(ms){frameBody(last+ms);},get LAST_PELLETS(){return LAST_PELLETS;},SCORE,SCFG,SROOT,SHO,setPrimaryChoice,get PRIMARY(){return PRIMARY;},PCORE,PCFG,setWorld,WORLDS,get WORLD_ID(){return WORLD_ID;},renderer,GFX,gfxApply,get NET(){return NET;},get REMOTE(){return REMOTE;},W,get NAV(){return NAV;},setOffMap,get OFFMAP(){return OFFMAP;},TOUCH,EDIT,openEditor,get SETTINGS(){return SETTINGS;},get LAYOUT(){return LAYOUT;},checkOrientation,MAT,LOAD,TRAINERS,get RANGE_BOTS(){return RANGE_BOTS;},TRAIN,setTrain,setLethal,kitNote,GINS,TDIAG,AU,get TOUCH_EVENTS(){return TOUCH_EVENTS;},impactFX,bodyFX,get DECALS(){return DECALS;},surfaceOf,soundDelay,aimSelfTest,P,PM,WS,WCORE,RECOIL,AIM,BOTS,DUMMIES,BULLETS,EVENTS,PARTS,STATS,get state(){return state;},get mode(){return mode;},setMode,input,startMatch,simTick,frame,toMenu,pause,resume};
+window.__SD={get GFX(){return GFX;},get BOX3(){return BOX3;},get GUNCFG(){return GUNCFG;},PRUEBAS,XRAY,xrayFrame,SLIDE2,PEN,penBox,spawnBullet,updateBullets,HALCON,BAL,rifleCfgFor,applyRifleCfg,gsGun,SIL,silCfg,silSaved,SFX,GUN,camLight,get gameTime(){return gameTime;},GSI,gsiDone,gsiRender,M2,m2Tab,m2Sync,m2Sleep,LB,lbRender,lbFrame,openSettings,closeSettings,MIRA,setMira,miraApply,miraClipGeo,miraRifle,openMiras,closeMiras,updateReticle,ENV,MOVE_CLASSIC,MOV_CLASSIC,VIS,VIS_COL,VIS_HULL,visOn,visFrame,visWho,selfHit,PROF,KTX2,R2_ON,R2_URL,PIC,GYRO,gyroEv,crossApply,btnPress,settingsChanged,perfTexMB(){const t=perfTextures();return {real:SDPerf.textureMB(t),asRGBA:SDPerf.textureMB(t.map(x=>Object.assign({},x,{bytes:0})))};},REMOTES,netScoreHud,shotTargets,MINI,miniLayer,miniPing,clockFrame,setOffTime,get OFF_TIME(){return OFF_TIME;},ACC,accRefresh,INV,invSync,camoApply,openInv,invOpenBox,WSKIN,WS_ST,setWskin,get RIF(){return RIF;},TPV,SELF,get PROFILE(){return PROFILE;},openProfile,endMatch,PJ_MIX,MIX_ORDER,SKINS,get SKIN(){return SKIN;},setSkin,pj2SetPack,rivalSkin,PERF,perfRun,HUD2,get H2(){return HUD2?H2:null;},leanIn:HUD2?leanIn:null,h2Frame:HUD2?h2Frame:null,PJ2,pj2Load,CASA,casaLoad,C2,C2B,C2J,C2S,casa2Load,BAR,barrioLoad,FLORA,RATS,RAT_WORLD,ratsFrame,SHADOW_FADE,setDuelLethal,get DUEL_LETHAL(){return DUEL_LETHAL;},gfxDiagText,get P3ON(){return P3ON;},COBCC,damagePlayer,TEX,sunFollow,setSunSnap(on){SUN_SNAP=!!on;},sun,P0,E10,e10Lod,DIAG,setTrainMove,LIGHT:{sun,hemi,skyMat,LOOK,P3},P3W,freeze(on){SIM_FREEZE=!!on;},SHOT,VMA,makeSoldier,animateSoldier,BOT_MAT,scene,camera,RemotePlayer,PMprev,PIS,PROOT,RIF,WROOT,SHO_:null,MANUAL,advance(ms){frameBody(last+ms);},get LAST_PELLETS(){return LAST_PELLETS;},SCORE,SCFG,SROOT,SHO,setPrimaryChoice,get PRIMARY(){return PRIMARY;},PCORE,PCFG,setWorld,WORLDS,get WORLD_ID(){return WORLD_ID;},renderer,GFX,gfxApply,get NET(){return NET;},get REMOTE(){return REMOTE;},W,get NAV(){return NAV;},setOffMap,get OFFMAP(){return OFFMAP;},TOUCH,EDIT,openEditor,get SETTINGS(){return SETTINGS;},get LAYOUT(){return LAYOUT;},checkOrientation,MAT,LOAD,TRAINERS,get RANGE_BOTS(){return RANGE_BOTS;},TRAIN,setTrain,setLethal,kitNote,GINS,TDIAG,AU,get TOUCH_EVENTS(){return TOUCH_EVENTS;},impactFX,bodyFX,get DECALS(){return DECALS;},surfaceOf,soundDelay,aimSelfTest,P,PM,WS,WCORE,RECOIL,AIM,BOTS,DUMMIES,BULLETS,EVENTS,PARTS,STATS,get state(){return state;},get mode(){return mode;},setMode,input,startMatch,simTick,frame,toMenu,pause,resume};
 })();
 </script>
 
