@@ -83,7 +83,7 @@ function create(opts) {
   // SALA 1V1 (?lobby=2, 10-11-2026, docs/SALA-1V1.md): a host whose page has the INICIAR PARTIDA button (hello hs) starts the
   // match itself ('go'); with any other host the match starts when everyone is ready, as always. It goes with the person:
   // if the host leaves, the next one's page decides
-  const hostStarts = () => { const h = host(); return !!(h && h.hs); };
+  const hostStarts = () => { const h = host(); return !!(h && h.hostBtn); };
   const teamMode = () => R.cfg.mode === 'equipos';
   const isMate = (a, b) => teamMode() && !!a.team && a.team === b.team;
   const enemiesOf = s => all().filter(o => o !== s && !isMate(o, s));
@@ -108,7 +108,7 @@ function create(opts) {
       seats: humans().sort((a, b) => a.order - b.order).map(s => ({ id: s.id, name: s.name, token: s.token, kills: s.kills, deaths: s.deaths, kit: s.kit, skin: s.skin, team: s.team || undefined })) });
   }
   function newSeat(id, name, token) {
-    return { id, name: name || ('JUGADOR ' + (SEATS.indexOf(id) + 1)), token, conn: null, ready: false, leftAt: 0, kit: 'rifle', skin: null, team: null, bot: null, away: false, hs: false,
+    return { id, name: name || ('JUGADOR ' + (SEATS.indexOf(id) + 1)), token, conn: null, ready: false, leftAt: 0, kit: 'rifle', skin: null, team: null, bot: null, away: false, hostBtn: false,
       p: SDP.create(0, 0, 0), hp: RULES.hp, alive: false, diedAt: 0, lastHit: -1e9, kills: 0, deaths: 0,
       lastSeq: -1, budget: PR.LIMITS.cmdBurst, budgetAt: R.now, yaw: 0, pitch: 0, shots: 0, hits: 0, hs: 0 };
   }
@@ -257,7 +257,7 @@ function create(opts) {
         if (s.token === m.token) {
           const id = s.id;
           if (s.conn != null && s.conn !== conn) { R.close(s.conn, 4001, 'replaced'); const oc = R.conns.get(s.conn); if (oc) oc.seat = null; }
-          s.conn = conn; c.seat = id; if (m.name) s.name = m.name; s.hs = !!m.hs;
+          s.conn = conn; c.seat = id; if (m.name) s.name = m.name; s.hostBtn = !!m.hs;
           if (s.away) { s.away = false; s.diedAt = R.now - RULES.respawnMs + 500; }   // back on the field in half a second
           log('back ' + id);
           welcome(s);
@@ -272,7 +272,7 @@ function create(opts) {
     let id = null;
     if (humans().length < capacity(R.cfg)) id = shownIds().find(k => !R.seats[k] || R.seats[k].bot) || null;
     if (!id || !open) { R.send(conn, JSON.stringify({ t: 'error', code: id ? 'in_progress' : 'full' })); R.close(conn, 4003, 'full'); return; }
-    const s = newSeat(id, m.name, token()); R.seats[id] = s; s.conn = conn; c.seat = id; R.accOf[id] = null; s.hs = !!m.hs; s.order = ++R.joinSeq;
+    const s = newSeat(id, m.name, token()); R.seats[id] = s; s.conn = conn; c.seat = id; R.accOf[id] = null; s.hostBtn = !!m.hs; s.order = ++R.joinSeq;
     if (teamMode()) pickTeam(s);
     log('join ' + id); welcome(s); sendAll(lobbyMsg()); save();
   }
@@ -351,7 +351,7 @@ function create(opts) {
       case 'ready': R.lastPlay = now; if (R.phase === 'lobby') { s.ready = m.on; sendAll(lobbyMsg()); maybeStart(); } break;
       case 'go': {  // SALA 1V1: the host presses INICIAR PARTIDA; one match only, however many times it arrives
         R.lastPlay = now;
-        const why = s !== host() ? 'host' : !s.hs ? 'auto' : cantStart();
+        const why = s !== host() ? 'host' : !s.hostBtn ? 'auto' : cantStart();
         if (why) { sendTo(s, { t: 'error', code: 'cant_start', why }); break; }
         startMatch(); break;
       }

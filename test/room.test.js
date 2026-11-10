@@ -742,6 +742,15 @@ console.log('\nSALA 1V1 (?lobby=2): EL ANFITRIÓN INICIA, MAPA Y LISTO, SALIDAS 
     const Z = mk();
     Z.join(1, 'Nuevo', true); Z.join(2, 'Viejo', false); Z.say(1, { t: 'leave' });
     check('si se va el anfitrión nuevo y queda uno de antes: hs 0 (empezará sola)', Z.last(2, 'lobby').hs === 0 && Z.last(2, 'lobby').host === 'B');
+    // 10-11-2026 (found by tsc in another session): the seat's headshot counter was also called hs; the button flag is hostBtn
+    const H = mk(); H.join(1, 'Viejo', false); H.join(2, 'Otro', false);
+    H.r.seats.A.hs = 3; H.say(1, { t: 'ready', on: true }); H.say(2, { t: 'ready', on: true });
+    check('anfitrión de antes con 3 tiros a la cabeza: la sala sigue empezando sola (el contador no es la bandera)', H.r.phase === 'countdown' && H.last(2, 'lobby').hs === 0);
+    const K = mk(); K.join(1, 'Nuevo', true); K.join(2, 'Rival', true); K.say(1, { t: 'ready', on: true }); K.say(2, { t: 'ready', on: true }); K.say(1, { t: 'go' });
+    K.say(2, { t: 'leave' }); K.say(1, { t: 'rematch' }); K.join(3, 'Otro', true); K.say(1, { t: 'ready', on: true }); K.say(3, { t: 'ready', on: true });
+    check('tras una partida, el anfitrión con botón sigue iniciándola él (no empieza sola)', K.r.phase === 'lobby' && K.last(3, 'lobby').hs === 1 && K.r.seats.A.hostBtn === true && K.r.seats.A.hs === 0);
+    K.say(1, { t: 'go' });
+    check('y su INICIAR arranca la partida 2', K.r.phase === 'countdown' && K.r.match === 2);
     const parsed = PR.parse(JSON.stringify({ t: 'hello', v: 1, name: 'x', hs: 'si' }));
     check('protocolo: hs solo vale true/1; go sin más campos', parsed.msg.hs === false && PR.parse('{"t":"go","x":1}').msg.t === 'go' && PR.parse(JSON.stringify({ t: 'hello', v: 1, name: 'x', hs: true })).msg.hs === true);
   }
