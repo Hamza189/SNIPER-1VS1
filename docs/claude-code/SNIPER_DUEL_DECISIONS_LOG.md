@@ -6,6 +6,15 @@ Cada entrada dice qué se decidió o cambió, quién lo decidió, y el estado re
 Las decisiones anteriores al 18-10-2026 están resumidas en `SNIPER_DUEL_MASTER_CONTEXT.md` §4.
 Detalle de cada cambio (antes/después, medidas, cómo revertir): `docs/next-level/NEXT_LEVEL_CHANGELOG.md`.
 
+## 10-11-2026 — BALA DURA y penetración EN LÍNEA (G7)
+Del propietario: «sí, está bien» (aprueba los daños: × 0,75 fina; BALA DURA × 0,7 → × 0,4 según el grosor, una pared
+media como mucho). Ahora lo decide el servidor (`core/room.js`) con las cajas atravesables que exporta la página
+(`core/mapdata.js` `pen`); el comando lleva el bit `hard` y el impacto a través de algo no da marcador al que dispara.
+Detalle en `docs/GUNSMITH.md` «Penetración y BALA DURA en línea».
+- Estado: IMPLEMENTADO · PROBADO (penroom 6, room 191, core 74, pen 20, net 13, pistol 15, shotgun 27, browser 61,
+  pen.browser 19, casa.online 12; online 47/48: la comprobación de tiempos de animación falla igual sin estos cambios
+  con el PC cargado) · PUBLICADO · PENDIENTE DE VALIDACIÓN entre dos dispositivos reales.
+
 ## Tareas (resumen vivo, actualizado el 04-11-2026)
 
 ### Siguiente prioridad

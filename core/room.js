@@ -37,7 +37,8 @@ const G = isNode ? require('./geom.js') : root.SDGeom;
 const HB = isNode ? require('./hitbox.js') : root.SDHitbox;
 const PR = isNode ? require('./protocol.js') : root.SDProto;
 const Bots = isNode ? require('./bots.js') : root.SDBots;
-const GS = isNode ? require('./gunstats.js') : root.SDGunStats;   // the damage of a hit: one source for the server, the offline game and the ARSENAL
+const GS = isNode ? require('./gunstats.js') : root.SDGunStats;
+const PEN = isNode ? require('./pen.js') : root.SDPen;   // PENETRACIÓN y BALA DURA (10-11-2026, aprobado por el propietario)   // the damage of a hit: one source for the server, the offline game and the ARSENAL
 
 const RULES = { killsToWin: 10, hp: 100, respawnMs: 3000, countdownMs: 3000, regenDelayMs: 5000, regenPerSec: 22,
   reconnectMs: 60000, lobbySeatMs: 60000, silentMs: 6000, idleRoomMs: 15 * 60000, snapHz: 20, maxShotDev: 0.3, maxOriginDist: 0.9,
@@ -466,6 +467,8 @@ function create(opts) {
       const b = Wp.createBullet(o[0], o[1], o[2], v[0], v[1], v[2], gun);
       b.cfg = gun; b.kind = kind; if (pel) b.shot = shot;
       b.id = ++R.bulletId; b.by = s.id; b.team = s.team; b.ox = o[0]; b.oy = o[1]; b.oz = o[2]; b.rewind = rewind;
+      // rifle bullets go through thin surfaces; with BALA DURA (cmd.hard) also through one medium wall (core/pen.js)
+      if (kind === 'rifle' && !pel) b.pen = Object.assign(PEN.createState(), { hard: !!cmd.hard });
       if (!first) first = b.id;
       R.bullets.push(b);
     }
@@ -480,23 +483,35 @@ function create(opts) {
       if (b.done) continue;
       const gun = b.cfg || GUN;
       const sg = Wp.stepBullet(b, dt, gun);
-      const mh = G.segMap(ix, sg.x0, sg.y0, sg.z0, sg.dx, sg.dy, sg.dz, sg.len);
-      let lim = mh ? mh.t : sg.len, hitP = null, tgt = null;
-      // the nearest body on this piece of the flight (never the shooter, never a team-mate)
-      for (const o of all()) {
-        if (o.id === b.by || !o.alive || (teamMode() && b.team && o.team === b.team)) continue;
-        const pose = poseAt(o, (at === undefined ? R.now : at) - (b.rewind || 0));
-        const h = HB.segPlayer(G, pose, sg.x0, sg.y0, sg.z0, sg.dx, sg.dy, sg.dz, lim);
-        if (h) { hitP = h; tgt = o; lim = h.t; }
+      // this tick's flight, in up to 4 pieces: a map box the bullet may cross (b.pen, core/pen.js) ends one piece and
+      // the next starts just past its far side, with less damage
+      let ox = sg.x0, oy = sg.y0, oz = sg.z0, left = sg.len, off = 0, mh = null, hitP = null, tgt = null;
+      for (let k = 0; k < 4 && left > 1e-4; k++) {
+        mh = G.segMap(ix, ox, oy, oz, sg.dx, sg.dy, sg.dz, left);
+        let lim = mh ? mh.t : left;
+        hitP = null; tgt = null;
+        // the nearest body on this piece of the flight (never the shooter, never a team-mate)
+        for (const o of all()) {
+          if (o.id === b.by || !o.alive || (teamMode() && b.team && o.team === b.team)) continue;
+          const pose = poseAt(o, (at === undefined ? R.now : at) - (b.rewind || 0));
+          const h = HB.segPlayer(G, pose, ox, oy, oz, sg.dx, sg.dy, sg.dz, lim);
+          if (h) { hitP = h; tgt = o; lim = h.t; }
+        }
+        if (hitP || !mh || !b.pen) break;
+        const pb = penBoxAt(mh, ox, oy, oz, sg.dx, sg.dy, sg.dz);
+        if (!pb || !PEN.pass(b.pen, pb.cls, pb.tr.along, b.pen.hard)) break;
+        const go = pb.tr.t1 + 0.005;
+        ox += sg.dx * go; oy += sg.dy * go; oz += sg.dz * go; off += go; left -= go; mh = null;
       }
+      const thru = b.pen && b.pen.n ? b.pen.mul : 1;
       if (hitP && b.shot) {
         b.done = true;
-        const dm = dmgAt(gun, hitP.part, b.dist + hitP.t), pt = [sg.x0 + sg.dx * hitP.t, sg.y0 + sg.dy * hitP.t, sg.z0 + sg.dz * hitP.t];
+        const dm = dmgAt(gun, hitP.part, b.dist + off + hitP.t), pt = [ox + sg.dx * hitP.t, oy + sg.dy * hitP.t, oz + sg.dz * hitP.t];
         const key = b.shot + ':' + tgt.id, q = pend.get(key);
         if (!q) pend.set(key, { b, tgt, dmg: dm, part: hitP.part, pt, n: 1 });
         else { q.dmg += dm; q.n++; if (rank[hitP.part] > rank[q.part]) { q.part = hitP.part; q.pt = pt; } }
       }
-      else if (hitP) { b.done = true; damage(R.seats[b.by], tgt, hitP.part, dmgAt(gun, hitP.part, b.dist + hitP.t), b, [sg.x0 + sg.dx * hitP.t, sg.y0 + sg.dy * hitP.t, sg.z0 + sg.dz * hitP.t]); }
+      else if (hitP) { b.done = true; damage(R.seats[b.by], tgt, hitP.part, (thru < 1 ? Math.round(dmgAt(gun, hitP.part, b.dist + off + hitP.t) * thru) : dmgAt(gun, hitP.part, b.dist + off + hitP.t)), b, [ox + sg.dx * hitP.t, oy + sg.dy * hitP.t, oz + sg.dz * hitP.t]); }
       else if (mh) { b.done = true; }
       else { b.dist += sg.len; if (b.dist > gun.maxRange || b.y < -5) b.done = true; }
       if (R.phase !== 'playing') return;
@@ -505,6 +520,18 @@ function create(opts) {
     R.bullets = R.bullets.filter(b => !b.done);
   }
   const rank = { legs: 0, torso: 1, head: 2 };
+  // the map box a bullet that hit the map at mh may go through: the penetrable boxes the page exported for this map
+  // (core/mapdata.js 'pen': { cx, cy, cz, hx, hy, hz, yaw, cls }); the one whose near side is where the bullet hit
+  function penBoxAt(mh, ox, oy, oz, dx, dy, dz) {
+    const L = MAP && MAP.pen; if (!L || !L.length) return null;
+    let best = null;
+    for (const pb of L) {
+      if (Math.abs(pb.cx - mh.x) > pb.hx + pb.hz + 0.05 || Math.abs(pb.cz - mh.z) > pb.hx + pb.hz + 0.05 || Math.abs(pb.cy - mh.y) > pb.hy + 0.05) continue;
+      const tr = PEN.through(pb, ox, oy, oz, dx, dy, dz);
+      if (tr && Math.abs(tr.t0 - mh.t) < 0.03 && (!best || tr.t0 < best.tr.t0)) best = { cls: pb.cls, tr };
+    }
+    return best;
+  }
   // damage of a gun at a distance (the pistol loses punch with range; the rifle does not): core/gunstats.js
   const dmgAt = GS.dmgAt;
   function damage(att, vic, part, dmg, b, pt, pellets) {
@@ -515,6 +542,7 @@ function create(opts) {
     const dist = b ? Math.hypot(pt[0] - b.ox, pt[2] - b.oz) : 0;
     const e = [{ k: 'hit', by: att ? att.id : null, to: vic.id, part, dmg, hp: Math.max(0, Math.round(vic.hp)), pt: pt.map(v => Math.round(v * 100) / 100), dist: Math.round(dist), weapon: b ? (b.kind || 'rifle') : 'knife' }];
     if (pellets) e[0].pellets = pellets;
+    if (b && b.pen && b.pen.n) e[0].thru = b.pen.n;   // it went through the map first (the shooter's page shows no hitmarker)
     if (vic.hp <= 0) {
       vic.hp = 0; vic.alive = false; vic.diedAt = R.now; vic.deaths++;
       if (att) { att.kills++; if (teamMode() && att.team) R.teamSc[att.team]++; }

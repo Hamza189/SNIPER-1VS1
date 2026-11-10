@@ -105,7 +105,7 @@ const check = (n, c, i) => { (c ? pass++ : fail++); console.log((c ? '  ok   ' :
       await new Promise(r => setTimeout(r, 300)); const t0 = document.getElementById('gsPas').textContent;
       document.querySelector('#gsPas [data-pas=dura]').click(); await new Promise(r => setTimeout(r, 200));
       return { off: /CONTRA BOTS/.test(t0) && /ACTIVAR/.test(t0), on: __SD.PEN.hard, saved: localStorage.getItem('sniperduel_balaDura'), txt: document.getElementById('gsPas').textContent }; });
-    check('BALA DURA se activa en el ARSENAL (contra bots) y se recuerda', ar.off && ar.on && ar.saved === 'true' && /ACTIVA · CONTRA BOTS/.test(ar.txt) && /QUITAR/.test(ar.txt), JSON.stringify(ar));
+    check('BALA DURA se activa en el ARSENAL (contra bots y en línea) y se recuerda', ar.off && ar.on && ar.saved === 'true' && /ACTIVA · TAMBIÉN EN LÍNEA/.test(ar.txt) && /QUITAR/.test(ar.txt), JSON.stringify(ar));
     await boot();
     check('tras recargar sigue activa', await p.evaluate(() => __SD.PEN.hard === true));
     await p.evaluate(() => { document.querySelector('#m2 .m2Nav [data-tab=armas]').click(); document.querySelector('#gsPas [data-pas=dura]').click(); });

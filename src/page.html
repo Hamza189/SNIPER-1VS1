@@ -4488,7 +4488,7 @@ function spawnBullet(origin,dir,visStart,cfg,shot){
   const m=BTR[btrIdx];btrIdx=(btrIdx+1)%BTR.length;
   for(let i=BULLETS.length-1;i>=0;i--)if(BULLETS[i].m===m)BULLETS.splice(i,1);
   const b=SDWeapon.createBullet(origin.x,origin.y,origin.z,dir.x,dir.y,dir.z,cfg);b.cfg=cfg;b.shot=shot||null;
-  b.pen=PEN.on&&mode!=='online'&&!shot&&cfg!==PCFG&&cfg!==SCFG?Object.assign(SDPen.createState(),{hard:PEN.hard}):null;
+  b.pen=(PEN.on||mode==='online')&&!shot&&cfg!==PCFG&&cfg!==SCFG?Object.assign(SDPen.createState(),{hard:PEN.hard}):null;
   b.m=m;b.off=visStart.clone().sub(origin);b.dx=dir.x;b.dy=dir.y;b.dz=dir.z;
   BULLETS.push(b);
   return b;
@@ -4496,9 +4496,11 @@ function spawnBullet(origin,dir,visStart,cfg,shot){
 const _bo=new T.Vector3(),_bd=new T.Vector3(),_bv=new T.Vector3(),_bt=new T.Vector3();
 /* PENETRACIÓN (09-11-2026, core/pen.js, docs/GUNSMITH.md): contra bots y en el campo de tiro la bala de francotirador
    atraviesa cajas, madera fina y chapa (cualquier rifle) y, con BALA DURA, un tabique de yeso; como mucho 2 superficies
-   y con menos daño cada vez. Nunca hormigón, muros de carga, tierra ni los límites del mapa. En línea, todavía no (el
-   servidor no lo hace): la bala se para como siempre. Un impacto tras atravesar no da marcador ni aviso (no delata a
-   nadie). ?pen=0 lo apaga (se recuerda); ?pen=1 lo vuelve a poner. */
+   y con menos daño cada vez. Nunca hormigón, muros de carga, tierra ni los límites del mapa. En línea también desde el
+   10-11-2026 (aprobado por el propietario): lo decide el servidor (core/room.js, con las cajas que exporta
+   tools/export-map.js); la página le dice si llevas BALA DURA (cmd.hard) y dibuja la trazadora atravesando. Un impacto
+   tras atravesar no da marcador ni aviso (no delata a nadie). ?pen=0 lo apaga sin conexión (se recuerda); ?pen=1 lo
+   vuelve a poner. */
 {const q=location.search.match(/[?&]pen=([01])\b/);if(q)store.set('penOff',q[1]==='0');}
 const PEN={on:store.get('penOff',false)!==true,hard:store.get('balaDura',false)===true};
 const _pq=new T.Quaternion(),_ps=new T.Vector3(),_pc=new T.Vector3(),_pe=new T.Euler();
@@ -5493,7 +5495,7 @@ function simTick(dt){
   const canAct=!SIM_FREEZE&&(online?(NET.N&&NET.N.phase==='playing'&&NET.N.alive&&P.alive&&(state==='playing'||state==='paused')):(P.alive&&state==='playing'));
   if(canAct){
     const cmd=buildCmd();
-    if(online){cmd.pitch=P.pitch;if(state==='paused'){cmd.mx=cmd.mz=0;cmd.fire=cmd.jump=cmd.reload=cmd.sprint=cmd.crouchPressed=false;cmd.adsHeld=false;}SDProto.quantize(cmd);NET.fire=null;}
+    if(online){cmd.pitch=P.pitch;cmd.hard=PEN.hard;if(state==='paused'){cmd.mx=cmd.mz=0;cmd.fire=cmd.jump=cmd.reload=cmd.sprint=cmd.crouchPressed=false;cmd.adsHeld=false;}SDProto.quantize(cmd);NET.fire=null;}
     PMprev.x=PM.x;PMprev.y=PM.y;PMprev.z=PM.z;
     cmd.select=input.select;cmd.inspect=input.inspect;input.select=null;input.inspect=false;
     gunInspectInput(cmd);
@@ -6249,7 +6251,7 @@ function netEvent(e){
         STATS.hits++;if(e.part==='head')STATS.hs++;
         const pt=new T.Vector3(e.pt[0],e.pt[1],e.pt[2]);
         bodyFX(pt,pt.clone().sub(camera.position).normalize(),e.part==='head',pt.distanceTo(camera.position));
-        if(e.hp>0){hitmarker(e.part==='head'?'hs':'body');SFX.hitTick();callout(e.weapon==='knife'?'NAVAJA':e.part==='head'?'CABEZA':e.part==='torso'?'TORSO':'PIERNAS','−'+e.dmg+(e.pellets?' · '+e.pellets+(e.pellets===1?' perdigón':' perdigones'):''),e.part==='head',true);}
+        if(e.hp>0&&!e.thru){hitmarker(e.part==='head'?'hs':'body');SFX.hitTick();callout(e.weapon==='knife'?'NAVAJA':e.part==='head'?'CABEZA':e.part==='torso'?'TORSO':'PIERNAS','−'+e.dmg+(e.pellets?' · '+e.pellets+(e.pellets===1?' perdigón':' perdigones'):''),e.part==='head',true);}
       }else if(e.to===N.you){
         P.hp=e.hp;P.lastHit=gameTime;P.shake=Math.max(P.shake,0.9);SFX.hurt();vibrate(e.part==='head'?120:60);
         const fr=$('#flashRed');fr.classList.remove('on');void fr.offsetWidth;fr.classList.add('on');
@@ -7501,7 +7503,7 @@ function gsStatsHTML(){
 }
 function gsPasHTML(){
   const on=PEN.hard;
-  return '<em>'+(on?'ACTIVA · CONTRA BOTS':'CONTRA BOTS · EN LÍNEA TODAVÍA NO')+'</em><b>BALA DURA</b><small>Atraviesa una pared de hasta 50 cm (la mitad de la columna de ARENA), del material que sea: del 70 % del daño con una fina al 40 % con una de 50 cm. Nunca dos paredes, sacos, edificios macizos ni el borde del mapa. Sin ella, cualquier rifle ya atraviesa cajas, madera fina y chapa (75 % del daño). Un impacto a través de una pared no da marcador.</small>'+
+  return '<em>'+(on?'ACTIVA · TAMBIÉN EN LÍNEA':'PASIVA · CONTRA BOTS Y EN LÍNEA')+'</em><b>BALA DURA</b><small>Atraviesa una pared de hasta 50 cm (la mitad de la columna de ARENA), del material que sea: del 70 % del daño con una fina al 40 % con una de 50 cm. Nunca dos paredes, sacos, edificios macizos ni el borde del mapa. Sin ella, cualquier rifle ya atraviesa cajas, madera fina y chapa (75 % del daño). Un impacto a través de una pared no da marcador.</small>'+
     '<button type="button" class="gsPasT" data-pas="dura" aria-pressed="'+on+'">'+(on?'QUITAR':'ACTIVAR')+'</button>';
 }
 // ---- what is chosen, on screen
@@ -7567,7 +7569,7 @@ function gsInit(){
   $('#gsPickX').addEventListener('click',()=>{SFX.ui();gsPick(null);});
   // BALA DURA: on or off at once, for every rifle, against bots only (kept on this device)
   $('#gsPas').addEventListener('click',e=>{const b=e.target.closest&&e.target.closest('[data-pas=dura]');if(!b)return;audioInit();SFX.ui();PEN.hard=!PEN.hard;store.set('balaDura',PEN.hard);
-    gsMsg(PEN.hard?'BALA DURA ACTIVA CONTRA BOTS':'BALA DURA QUITADA');});
+    gsMsg(PEN.hard?'BALA DURA ACTIVA (TAMBIÉN EN LÍNEA)':'BALA DURA QUITADA');});
   $('#gsCamoB').addEventListener('click',()=>{audioInit();SFX.ui();gsPick(GS.pick==='camo'?null:'camo');});
   // the camouflage strip stays open while you turn the weapon or change model: ✕ or its button closes it
   document.addEventListener('pointerdown',e=>{if(GS.pick&&!(e.target.closest&&e.target.closest(GS.pick==='camo'?'#gsPick,#gsAcc,#gsCamoB,#gsSlot,.gsList':'#gsPick,#gsAcc')))gsPick(null);});

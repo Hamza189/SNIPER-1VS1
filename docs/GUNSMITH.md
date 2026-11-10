@@ -6,7 +6,9 @@
   HALCÓN R7 hasta que el propietario lo apruebe. `?balance=0` vuelve a las cifras de antes.
 - **Silenciador (09-11):** IMPLEMENTADO · PROBADO EN NAVEGADOR (contra bots) · solo sin conexión.
 - **G4 y G5:** hechos en parte (ver las tablas de abajo).
-- **G3, G6, G7 y G8:** pendientes (plan y decisiones al final).
+- **G6 y G7 (BALA DURA):** IMPLEMENTADO · PROBADO (servidor con red simulada y 1v1 en el navegador). En línea desde el
+  10-11-2026, con los daños aprobados por el propietario («sí, está bien»): ver «Penetración y BALA DURA en línea».
+- **G3 y G8:** pendientes (plan y decisiones al final).
 - **El ARMAS de antes:** `?arsenal=0` (se recuerda; `?arsenal=1` vuelve al ARSENAL).
 
 Encargo del propietario (08-11): «un sistema GUNSMITH profesional… que todo lo que el jugador seleccione tenga un resultado
@@ -345,3 +347,20 @@ paredes… y dame rayos X para saber dónde apunto».
     - los rayos X;
     - el deslizamiento nuevo;
     - que en los mapas reales nada de más de 50 cm se atraviese.
+
+## Penetración y BALA DURA en línea (G7, 10-11-2026)
+El propietario aprobó los daños («sí, está bien»): × 0,75 por superficie fina; con BALA DURA, una pared de hasta 50 cm
+de × 0,7 (12 cm) a × 0,4 (50 cm); como mucho 2 superficies y una sola media.
+- **Servidor** (`core/room.js`): la bala del rifle (no la escopeta ni la pistola) lleva `b.pen`. Al dar en el mapa
+  busca la caja atravesable cuya cara está en ese punto (`penBoxAt`), `core/pen.js` decide si pasa, y la bala sigue
+  desde la otra cara con menos daño (hasta 4 tramos por tick). El evento `hit` lleva `thru` si atravesó algo.
+- **Mapa del servidor** (`core/mapdata.js` `pen`): `tools/export-map.js` exporta lo que dice `penBox()` de la página
+  para cada malla de balas (PUEBLO 57 cajas, ARENA 11, CASA 67, CASA 2.0 260–276, BARRIO 22). El resto del mapa no
+  cambia (comprobado triángulo a triángulo).
+- **Protocolo** (`core/protocol.js`): un bit nuevo en el comando, `hard` (4096), «este tiro lleva BALA DURA». Basta con
+  que el cliente lo diga: es una pasiva que cualquiera puede elegir en el ARSENAL, como un arma.
+- **Página:** manda `cmd.hard`, dibuja la trazadora atravesando también en línea y, si el impacto llega a través de
+  algo (`thru`), no da marcador ni aviso al que dispara (igual que contra bots). El que recibe el tiro lo nota como
+  siempre.
+- **Pruebas:** `test/penroom.test.js` (servidor con dos clientes: caja fina del PUEBLO al 75 %; pared media de CASA
+  sin BALA DURA se para, con ella pasa con × 0,65 con 18 cm), más `room`, `core`, `pen`, `pen.browser` y `online`.

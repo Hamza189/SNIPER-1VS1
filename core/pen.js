@@ -12,8 +12,8 @@
      'medium' (y solo con BALA DURA). Cada una multiplica el daño: × 0,75 la fina; la media según lo que recorre la
      bala dentro (mulMedium: × 0,7 con 12 cm, × 0,4 con 50 cm, nunca menos de × 0,35).
    Lo que se ve nunca decide: son siempre las cajas de balas del mapa (las mismas que exporta tools/export-map.js).
-   Puro (Node y navegador). Hoy solo lo usan las partidas sin conexión; el servidor no lo usa hasta que el propietario
-   lo apruebe. */
+   Puro (Node y navegador). Lo usan las partidas sin conexión y, desde el 10-11-2026 (aprobado por el propietario:
+   «sí, está bien»), el servidor (core/room.js) con las cajas atravesables que exporta tools/export-map.js. */
 (function (root) {
 'use strict';
 // how much of the damage is left after each kind of surface (proposal pending the owner's approval for online)
