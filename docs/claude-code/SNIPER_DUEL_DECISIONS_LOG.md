@@ -23,7 +23,7 @@ Detalle de cada cambio (antes/después, medidas, cómo revertir): `docs/next-lev
 ### Siguiente prioridad
 | Tarea | Quién la desbloquea | Estado |
 |---|---|---|
-| **CASAS HABITABLES** (14-11) — en la rama `casas-habitables` (sin publicar): integrar en `main` cuando el propietario lo diga, probar `?pueblo=3&casas=1` en el iPhone y el PC (entrar, ventanas, escaleras, balcones), medir FPS dentro y fuera, y decidir si va al online (servidor) (`docs/CASAS-HABITABLES.md`) | Propietario | IMPLEMENTADO EN RAMA · PRUEBAS EN VERDE · PENDIENTE DE VALIDACIÓN EN IPHONE |
+| **PUEBLO 3.1** (14-11, noche) — rama local `pueblo-mejoras` entregada en zip (sin push): pueblo entero en 3.0, 8 casas habitables EN EL MAPA DEL SERVIDOR, fuente nueva, carteles arreglados. Claude Code: aplicar, pasar pruebas, enseñárselo al propietario, MEDIR RENDIMIENTO en el iPhone, y solo con su OK publicar (cambia `core/mapdata.js` → despliega el servidor) (`docs/PUEBLO-31.md`, `docs/claude-code/PUEBLO31_PARA_CLAUDE_CODE.md`) | Propietario | IMPLEMENTADO · PRUEBAS EN VERDE · SIN PUBLICAR · PENDIENTE DE VALIDACIÓN EN IPHONE |
 | **SALA 1V1** (10-11) — probar `?lobby=2` en el PC y en el iPhone (horizontal), con alguien en otro dispositivo: INICIO › MULTIJUGADOR 1V1 → CREAR SALA PRIVADA → INVITAR (copiar enlace o WhatsApp) → el otro entra y aparece en el hangar → elegir mapa → LISTO los dos → INICIAR PARTIDA. Decir si gusta, los FPS del hangar y si pasa a ser la de siempre (`?lobby=1` = la de antes; `docs/SALA-1V1.md`) | Propietario | SERVIDOR PUBLICADO · PÁGINA SIN PUBLICAR · PENDIENTE DE VALIDACIÓN EN IPHONE Y ANDROID |
 | **CAJA NUEVA** (10-11) — CAJAS › ABRIR CAJA en el PC y en el iPhone: ver la ATLAS DROP temblar, abrirse y encenderse con el color de la rareza; decir si gusta o si se cambia algo (`?caja=0` = la de antes) | Propietario | PUBLICADO · PENDIENTE DE VALIDACIÓN |
 | **ORDENADORES FLOJOS** (10-11) — en el portátil HP de su novia: recargar la página, mirar AJUSTES › GRÁFICOS (debe poner AUTO → BAJO y el nombre de la gráfica en el diagnóstico), jugar y saltar; decir los FPS | Propietario | PUBLICADO · PENDIENTE DE VALIDACIÓN EN EL HP |
@@ -162,6 +162,21 @@ Del propietario: «Sí, instálalo» (el compilador de C++).
 - `npm run typecheck` y la prueba de navwasm entran en `npm test`. `.github/workflows/pages.yml` publica `assets/wasm` y
   no `wasm/` (el código fuente).
 - **Estado:** PROBADO EN NAVEGADOR (PC) · PENDIENTE DE VALIDACIÓN EN IPHONE Y ANDROID.
+
+## 14-11-2026 (noche) — PUEBLO 3.1: pueblo entero en 3.0, 8 casas habitables, fuente nueva
+- Pedido: «mejora el mapa PUEBLO 3.0 mucho más (texturas, edificios, rayas, fluidez), integra estas casas y pásame un .glb,
+  haz más edificios habitables», y después «mejórame la fuente del medio, el agua parece del Minecraft». «Al final un
+  archivo descargable para Claude Code, nada de git push, no tocar nada de main.»
+- Hecho, en la rama local `pueblo-mejoras` (no subida): ver `docs/PUEBLO-31.md`, `docs/CASAS-HABITABLES.md`, `docs/FUENTE.md`.
+- Decisiones de Claude, a confirmar por el propietario:
+  - Las casas pasan al mapa del servidor (`core/mapdata.js` regenerado). «Intégralas» se tomó como que también vayan en
+    línea, para que el 1v1 sea igual que sin conexión.
+  - Los bots del servidor siguen con su cuadrícula de 3 m: no entran en las casas. Los de sin conexión, sí.
+  - Lo visual nuevo va por defecto, con banderas para comparar con lo de antes (`?sur=0`, `?casas=0`, `?fuente=0`). Antes
+    de publicar, Claude Code se lo enseña al propietario (reglas 7 y 8).
+  - Las texturas no se suben de resolución, por la memoria del iPhone.
+- Medido (pueblo-dibujo, ALTO, pantalla de iPhone): `main` 210 llamadas / 335 mil triángulos → 264 / 372 mil.
+- Estado: IMPLEMENTADO · PRUEBAS EN VERDE · SIN PUBLICAR · PENDIENTE DE VALIDACIÓN EN IPHONE.
 
 ## 14-11-2026 — CASAS HABITABLES (petición del propietario del 13-11, desde fuera de casa)
 - Pedido: las tres casas de sus capturas de PUEBLO 3.0 «habitables»: entrar, salir, asomarse por la ventana, cubrirse y

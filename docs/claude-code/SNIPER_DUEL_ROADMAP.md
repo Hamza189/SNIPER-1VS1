@@ -21,6 +21,9 @@ sugerencia de Claude está marcado como **PROPUESTA (sin aprobar)**.
 
 ## 2. Pendiente, por prioridad (orden del propietario cuando lo ha dado)
 ### Prioridad inmediata: validar en dispositivos reales
+0. **PUEBLO 3.1** (14-11, rama local `pueblo-mejoras`, entregada en zip): el pueblo entero en 3.0, 8 casas habitables (también
+   en el servidor), la fuente nueva. Aplicar, enseñar, MEDIR RENDIMIENTO en el iPhone y publicar con su OK
+   (`docs/claude-code/PUEBLO31_PARA_CLAUDE_CODE.md`).
 1. Rayas en paredes en el PC del propietario (necesita su captura y diagnóstico; ver MASTER_CONTEXT §5).
 2. CASA ATLAS: recorrido, bots y 1v1 online real entre dos dispositivos (el propietario: «primero entrar, recorrerlo y
    jugar contra bots; después probaremos el 1v1 online»); aprobación visual; decidir techo sí/no.
@@ -42,7 +45,7 @@ sugerencia de Claude está marcado como **PROPUESTA (sin aprobar)**.
   partículas) · GFX-10 optimización final.
 - **Plan de ajustes** (10-10): A4/A5 sensibilidad por arma, joystick fijo/flotante, bloquear editor de HUD, ver zonas
   táctiles · A6 gráficos personalizados · A8 retícula cosmética · A9–A11 migraciones, pruebas, docs.
-- **PUEBLO 3.0**: extender a la mitad sur (P3-5) cuando se apruebe el estilo; sustituir los edificios restantes con un
+- **PUEBLO 3.0**: extender a la mitad sur (P3-5) — HECHO en PUEBLO 3.1 (14-11, sin publicar); sustituir los edificios restantes con un
   juego de texturas compartido (E10 usa 15,4 MB él solo).
 - **Precisión** (`docs/PRECISION.md`, pendientes de aprobación): aguantar el aire automático en táctil; que el disparo
   espere al visor (≤ 170 ms).

@@ -18,6 +18,7 @@ function check(name, cond, info) { if (cond) { pass++; console.log('  ok   ' + n
   await p.waitForFunction(() => window.__SD && __SD.P3W && __SD.P3W.kit, null, { timeout: 120000 }); await p.waitForTimeout(2500);
   const r = await p.evaluate(() => { const S = __SD, T = THREE, R = S.renderer; S.setWorld('pueblo'); S.MANUAL.on = true;
     for (const b of S.RANGE_BOTS.concat(S.BOTS)) b.g.visible = false;
+    if (S.FUENTE && S.FUENTE.f) S.FUENTE.f.group.visible = false;   // the fountain's jets (14-11-2026) stand right in front of the 8× view from the plaza centre: this measures shadows
     const W = 480, H = 270, rt = new T.WebGLRenderTarget(W, H), buf = [new Uint8Array(W * H * 4), new Uint8Array(W * H * 4)], cam = new T.PerspectiveCamera(75, W / H, 0.05, 600);
     const views = [[-8, -8, -2.356, -0.06, 1], [0, 0, 0.0, 0.02, 8]], out = {};
     for (const snap of [false, true]) { S.setSunSnap(snap); let tot = 0, n = 0;

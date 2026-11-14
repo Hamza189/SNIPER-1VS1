@@ -1,15 +1,16 @@
-/* CASAS HABITABLES (?casas=1, 14-11-2026) en la página, con PUEBLO 3.0:
-   - sin la bandera nada cambia (las tres cajas macizas siguen en el mundo); con ella, las casas nuevas: cajas, proxies de
-     bala, rampas, mallas y puntos de navegación unidos a la red por las puertas; sin errores ni texturas que falten
+/* CASAS HABITABLES (14-11-2026, parte del mapa) en la página, con PUEBLO 3.0:
+   - ?casas=0 (sin conexión, para comparar): las 8 cajas macizas de antes; por defecto, las casas: cajas, proxies de bala,
+     rampas, mallas y puntos de navegación unidos a la red por las puertas; sin errores ni texturas que falten
    - con el movimiento del juego y el mundo vivo (W) se entra por una puerta de cada casa y se sube a la planta alta
    - una bala real (spawnBullet) disparada por una ventana sale; contra el muro, choca
-   - online: casasSolid(true) vuelve a las cajas del servidor y casasSolid(false) a las casas
+   - casasSolid(true) / casasSolid(false): ida y vuelta entre las cajas de antes y las casas
    - un duelo de 25 s con 2 bots en PUEBLO sin errores
    Run: node test/casas.browser.test.js   (WebGL por software) */
 'use strict';
 let chromium;
 try { ({ chromium } = require('playwright')); } catch (e) { console.log('\nCASAS: playwright no está instalado, se omite'); process.exit(0); }
-const ss = require('../tools/static-server.js'), C = require('../client/casas.js');
+const ss = require('../tools/static-server.js'), C = require('../client/casas.js'), NH = C.HOUSES.length;
+const OLD = C.HOUSES.map(H => [H.x - H.w / 2, H.x + H.w / 2, H.z - H.d / 2]);
 let pass = 0, fail = 0;
 function check(name, cond, info) { if (cond) { pass++; console.log('  ok   ' + name + (info !== undefined ? '  (' + info + ')' : '')); } else { fail++; console.log('  FAIL ' + name + (info !== undefined ? '  (' + info + ')' : '')); } }
 (async () => {
@@ -24,17 +25,17 @@ function check(name, cond, info) { if (cond) { pass++; console.log('  ok   ' + n
       await p.goto(srv.url + '?vm=0&pueblo=3' + q); await p.waitForFunction(() => window.__SD && __SD.WORLDS && __SD.W, null, { timeout: 180000 }); return { p, errs, bad }; };
     // without the flag
     { const { p, errs } = await open('&casas=0');
-      const r = await p.evaluate(() => ({ on: __SD.CASAS.on, n: __SD.WORLDS.pueblo.colliders.filter(c => (c.minY === 0 && c.minX === 7 && c.maxX === 15 && c.minZ === 28) || (c.minY === 0 && c.minX === 23 && c.maxX === 37 && c.minZ === 12) || (c.minY === 0 && c.minX === -38 && c.maxX === -24 && c.minZ === -37)).length }));
-      check('sin la bandera: casas apagadas y las tres cajas macizas en el mundo', !r.on && r.n === 3, JSON.stringify(r));
-      check('sin la bandera: sin errores', errs.length === 0, errs.join(' | ') || 'ninguno'); await p.close(); }
-    const { p, errs, bad } = await open('&casas=1');
+      const r = await p.evaluate(OLD => ({ solid: __SD.CASAS.isSolid, n: __SD.WORLDS.pueblo.colliders.filter(c => OLD.some(o => c.minY === 0 && c.minX === o[0] && c.maxX === o[1] && c.minZ === o[2])).length }), OLD);
+      check('?casas=0: las ' + NH + ' cajas macizas de antes en el mundo', r.solid && r.n === NH, JSON.stringify(r));
+      check('?casas=0: sin errores', errs.length === 0, errs.join(' | ') || 'ninguno'); await p.close(); }
+    const { p, errs, bad } = await open('');
     await p.evaluate(() => __SD.setWorld('pueblo'));
     const st = await p.evaluate(() => { const S = __SD, W = S.WORLDS.pueblo; return { on: S.CASAS.on, houses: S.CASAS.houses.length, cols: S.CASAS.cols.every(c => W.colliders.includes(c)), rays: S.CASAS.rays.length, ramps: W.ramps.filter(r => S.CASAS.ramps.includes(r)).length,
       calls: S.CASAS.calls, tris: S.CASAS.tris, nav: W.nav.filter(n => n.casa).length, linked: W.nav.filter(n => n.casa && n.n.some(j => !W.nav[j].casa)).length,
-      old: W.colliders.filter(c => (c.minY === 0 && c.minX === 7 && c.maxX === 15 && c.minZ === 28)).length }; });
-    check('con ?casas=1: las 3 casas, sus cajas en el mundo, proxies de bala y 2 escaleras', st.on && st.houses === 3 && st.cols && st.rays > 100 && st.ramps === 2 && st.old === 0, JSON.stringify(st));
-    check('dibujo: ≤ 12 llamadas y < 20 000 triángulos para las tres', st.calls <= 12 && st.tris < 20000, st.calls + ' llamadas · ' + st.tris + ' triángulos');
-    check('navegación: puntos interiores unidos a la red por las 6 puertas', st.nav > 200 && st.linked >= 6, st.nav + ' puntos · ' + st.linked + ' enlaces');
+      old: W.colliders.filter(c => (c.minY === 0 && c.minX === 7 && c.maxX === 15 && c.minZ === 28)).length, kit: S.CASAS.kit.length, shadow: !!S.CASAS.shadow }; });
+    check('por defecto: las ' + NH + ' casas, sus cajas en el mundo, proxies de bala y 4 escaleras', st.on && st.houses === NH && st.cols && st.rays > 300 && st.ramps === 4 && st.old === 0, JSON.stringify(st));
+    check('dibujo: ≤ 40 llamadas (por material y cuarto del pueblo, para que la cámara descarte lo de detrás) y < 30 000 triángulos (más las piezas del kit y una malla de sombras)', st.calls <= 40 && st.tris < 30000 && st.kit > 100 && st.shadow, st.calls + ' llamadas · ' + st.tris + ' triángulos · ' + st.kit + ' piezas');
+    check('navegación: puntos interiores unidos a la red por las ' + C.HOUSES.reduce((n, H) => n + H.doors.length, 0) + ' puertas', st.nav > 400 && st.linked >= C.HOUSES.reduce((n, H) => n + H.doors.length, 0), st.nav + ' puntos · ' + st.linked + ' enlaces');
     check('sin errores ni texturas que falten', errs.length === 0 && bad.length === 0, errs.concat(bad).join(' | ') || 'ninguno');
     // walk with the game's own movement and the live world
     const walks = await p.evaluate(HS => { const S = __SD, out = [];
@@ -51,8 +52,8 @@ function check(name, cond, info) { if (cond) { pass++; console.log('  ok   ' + n
         s.x = ax === 'x' ? (hiMin ? r.maxX - 0.3 : r.minX + 0.3) : (r.minX + r.maxX) / 2; s.z = ax === 'z' ? (hiMin ? r.maxZ - 0.3 : r.minZ + 0.3) : (r.minZ + r.maxZ) / 2;
         const dx = ax === 'x' ? (hiMin ? -1 : 1) : 0, dz = ax === 'z' ? (hiMin ? -1 : 1) : 0, yaw = Math.atan2(-dx, -dz);
         for (let i = 0; i < 180; i++) SDMovement.step(s, { mx: 0, mz: -1, yaw }, 1 / 60, S.W, SD_CONFIG.move);
-        out.push(+s.y.toFixed(2)); } return out; });
-    check('las dos escaleras llevan a 3,5 m', up.length === 2 && up.every(y => Math.abs(y - 3.5) < 0.05), up.join(' · '));
+        out.push(+(s.y - r.hHigh).toFixed(2)); } return out; });
+    check('las 4 escaleras llevan a la planta alta', up.length === 4 && up.every(d => Math.abs(d) < 0.05), up.join(' · '));
     // bullets through the live ray list: out of a window, into a wall (encalada, west window at u -1.4)
     const sh = await p.evaluate(() => { const S = __SD, rc = new THREE.Raycaster(), o = new THREE.Vector3(), d = new THREE.Vector3(-1, 0, 0);
       const first = (z, y) => { o.set(10, y, z); rc.set(o, d); rc.far = 6; const h = rc.intersectObjects(S.W.ray, false)[0]; return h ? h.object.name + '@' + h.distance.toFixed(2) : 'nada'; };
@@ -64,8 +65,8 @@ function check(name, cond, info) { if (cond) { pass++; console.log('  ok   ' + n
       S.casasSolid(true); const a = { solid: has(), cols: S.CASAS.cols.some(c => W.colliders.includes(c)), ramps: W.ramps.filter(r => S.CASAS.ramps.includes(r)).length, vis: S.CASAS.meshes.some(m => m.visible) };
       S.casasSolid(false); const b = { solid: has(), cols: S.CASAS.cols.every(c => W.colliders.includes(c)), ramps: W.ramps.filter(r => S.CASAS.ramps.includes(r)).length, vis: S.CASAS.meshes.every(m => m.visible) };
       return { a, b }; });
-    check('online: vuelven las cajas macizas del servidor (y se ocultan las casas)', fb.a.solid === 1 && !fb.a.cols && fb.a.ramps === 0 && !fb.a.vis, JSON.stringify(fb.a));
-    check('al salir del online vuelven las casas', fb.b.solid === 0 && fb.b.cols && fb.b.ramps === 2 && fb.b.vis, JSON.stringify(fb.b));
+    check('casasSolid(true): vuelven las cajas de antes (y se ocultan las casas)', fb.a.solid === 1 && !fb.a.cols && fb.a.ramps === 0 && !fb.a.vis, JSON.stringify(fb.a));
+    check('casasSolid(false): vuelven las casas', fb.b.solid === 0 && fb.b.cols && fb.b.ramps === 4 && fb.b.vis, JSON.stringify(fb.b));
     // a short duel in PUEBLO
     await p.evaluate(() => { const b = document.querySelector('#mapSeg [data-map=pueblo]'); if (b) b.click(); __SD.setMode('duel'); __SD.setDuelLethal(false); __SD.startMatch(); });
     await p.waitForFunction(() => __SD.state === 'playing', null, { timeout: 120000 });

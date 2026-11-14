@@ -31,7 +31,12 @@ async function audit(page, url, p3, canary) {
     for (const o of W.ray) { if (o.geometry && o.geometry.type === 'PlaneGeometry') continue; bb.setFromObject(o); if (bb.max.x - bb.min.x > 150) continue; solids.push([bb.min.x, bb.min.y, bb.min.z, bb.max.x, bb.max.y, bb.max.z]); }
     const hd = (x, y, z, minTop) => { let best = 1e9; for (const s of solids) { if (s[4] < minTop || s[1] > y + 0.05) continue; const dx = Math.max(0, s[0] - x, x - s[3]), dz = Math.max(0, s[2] - z, z - s[5]); const d = Math.hypot(dx, dz); if (d < best) best = d; } return best; };
     const inSolid = (x, y, z) => solids.some(s => x >= s[0] - 0.05 && x <= s[3] + 0.05 && z >= s[2] - 0.05 && z <= s[5] + 0.05 && y >= s[1] - 0.05 && y <= s[4] + 0.05);
-    const overRoof = (x, y, z) => !inSolid(x, y, z) && solids.some(s => x > s[0] + 0.02 && x < s[3] - 0.02 && z > s[2] + 0.02 && z < s[5] - 0.02 && y > s[4] + 0.05 && y < s[4] + 6);
+    // a roof: a solid box at least 2.6 m high (14-11-2026: a car or a crate under a shop's awning is not a roof), and not the
+    // floor of a balcony of the CASAS HABITABLES (its railing stands on it: see-through iron bars, the bullets go through)
+    const balc = []; for (const o of W.ray) if (/^casas_.*_balcon_/.test(o.name)) { bb.setFromObject(o); balc.push([bb.min.x, bb.min.z, bb.max.x, bb.max.z, bb.max.y]); }
+    const isBalc = s => balc.some(q => Math.abs(q[0] - s[0]) < 0.01 && Math.abs(q[1] - s[2]) < 0.01 && Math.abs(q[2] - s[3]) < 0.01 && Math.abs(q[3] - s[5]) < 0.01 && Math.abs(q[4] - s[4]) < 0.01);
+    const roofs = solids.filter(s => s[4] >= 2.6 && !isBalc(s));
+    const overRoof = (x, y, z) => !inSolid(x, y, z) && roofs.some(s => x > s[0] + 0.02 && x < s[3] - 0.02 && z > s[2] + 0.02 && z < s[5] - 0.02 && y > s[4] + 0.05 && y < s[4] + 6);
     const THIN = /@(lamp_post|street_pole)$|_woodraw(_cast)?@orange_tree$/, CROWN = /@(orange_tree|lamp_post|street_pole)$/;
     const AXES = (S.P3W && S.P3W.axes) || [];
     const out = { body: 0, over: 0, roof: 0, verts: 0, ex: [], rx: [], roofBy: {}, meshes: 0, e10: { on: !!(S.E10 && S.E10.on), ready: !!(S.E10 && S.E10.ready), failed: !!(S.E10 && S.E10.failed), lods: {} } };
@@ -43,6 +48,7 @@ async function audit(page, url, p3, canary) {
         const mats = Array.isArray(m.material) ? m.material : [m.material];
         if (mats.every(mt => !mt || mt.visible === false || mt.colorWrite === false)) return;
         if (/^p3_(hills|backdrop|ground)|^streets_|^town_(cobble|paving)/.test(m.name)) return;
+        if (/^fuente_/.test(m.name)) return;   // the fountain's water (14-11-2026): see-through water and jets, inside the basin's boxes; nobody takes it for cover
         // vegetation (client/flora.js): see-through low decoration that stops nothing — allowed anywhere, but it must stay
         // ≤ 0.66 m (the low-decoration limit, below the legs' hit zone): only its height is measured
         const flora = /^flora_/.test(m.name);

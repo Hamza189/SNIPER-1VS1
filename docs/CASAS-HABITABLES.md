@@ -1,64 +1,87 @@
-# CASAS HABITABLES del PUEBLO (`?casas=1`) — 14-11-2026
+# CASAS HABITABLES del PUEBLO (13/14-11-2026)
 
-Petición del propietario (13-11, con 7 capturas de PUEBLO 3.0): que tres casas sean «habitables»: entrar, salir,
-asomarse por la ventana, cubrirse y disparar. Entregado en la rama `casas-habitables` (no en `main`) para que Claude Code
-lo revise e integre cuando el propietario esté en casa.
+El propietario (13-11, con 7 capturas de PUEBLO 3.0) pidió que tres casas fueran «habitables»: entrar, salir, asomarse
+por la ventana, cubrirse y disparar. El 14-11 pidió integrarlas y hacer más edificios así. Ahora son **8 casas** y
+forman parte del mapa, en cliente y servidor.
 
-Estado: **IMPLEMENTADO · PRUEBAS SIN NAVEGADOR EN VERDE · CAPTURAS EN SOFTWARE · PENDIENTE DE VALIDACIÓN EN IPHONE/PC/ANDROID**.
-No está publicado. El servidor no cambia.
+Estado: **IMPLEMENTADO · PRUEBAS SIN NAVEGADOR Y EN NAVEGADOR EN VERDE · MAPA DEL SERVIDOR EXPORTADO · SIN PUBLICAR ·
+PENDIENTE DE VALIDACIÓN EN IPHONE/PC/ANDROID**. Para comparar, `?casas=0` vuelve a las cajas macizas, pero solo sin
+conexión: en línea siempre se usan las casas, porque son las del servidor.
 
-## Las tres casas
-| Casa | `BUILDINGS` | Plantas | Puertas | Qué tiene dentro |
+## Las casas
+| Casa | `BUILDINGS` | Plantas | Puertas | Dentro |
 |---|---|---|---|---|
-| ENCALADA (blanca, zócalo amarillo, contraventanas verdes) | `[11,31,8,6,4,5]` | 1 | oeste (calle) y este | tabique con paso, 2 cajas, 6 ventanas |
-| TERRACOTA (naranja de esquina, balcones) | `[30,17,14,10,7,1]` | 2 | oeste y norte | escalera junto al muro este, 2 tabiques abajo y 1 arriba, 7 balcones transitables, 2 cajas |
-| ARENISCA (2.0, contraventanas verdes, puerta roja, junto al depósito) | `[-31,-31,14,12,7,0]` | 2 | este y sur | escalera junto al muro norte, 2 tabiques abajo y 1 arriba, 1 balcón, 2 cajas |
+| ENCALADA (blanca, zócalo amarillo) | `[11,31]` | 1 | oeste (calle), este | tabique con paso, 2 cajas |
+| TERRACOTA (naranja, balcones) | `[30,17]` | 2 | oeste, norte | escalera, 2 tabiques abajo y 1 arriba, 7 balcones |
+| ARENISCA (junto al depósito) | `[-31,-31]` | 2 | este, sur | escalera, 2 tabiques abajo y 1 arriba, 1 balcón |
+| PIEDRA (mampostería y ocre) | `[-31,37]` | 2 (forjado a 2,9 m) | norte, este | escalera, 2 tabiques abajo y 1 arriba, 2 cajas |
+| COLMADO (tienda con escaparate y toldo) | `[-12,27]` | 1 alta | este (calle norte), oeste | mostrador de 1,05 m (agachado te cubre), caja |
+| TALLER (portón) | `[3,43]` | 1 | portón de 2,8 m y puerta, al norte | banco de trabajo, caja, ventanas altas |
+| BODEGA | `[33,-8]` | 1 alta | sur (calle transversal), oeste | tabique largo con paso, 2 cajas |
+| CASONA (señorial, balcones) | `[31,-33]` | 2 (forjado a 3,5 m) | sur, oeste | escalera, 3 balcones, tabiques, 2 cajas |
 
-Medidas (pensadas para el jugador de `core/config.js`: radio 0,35, escalón 0,45, salto ≈ 1,0, ojos 1,62 de pie / 1,0
+Medidas, para el jugador de `core/config.js` (radio 0,35, escalón 0,45, salto ≈ 1,0, ojos a 1,62 de pie y a 1,0
 agachado):
-- muros de 0,30 m (yeso → penetración «media»: solo BALA DURA los atraviesa), forjado de hormigón de 0,20 a 3,3–3,5 m;
-- puertas de 1,30 × 2,35 m; ventanas de 1,20 m con alféizar a **1,10 m** y dintel a 2,30 m: de pie asomas la cabeza y
-  disparas; agachado quedas cubierto; no se puede saltar por ellas (solo se entra por las puertas);
-- escalera = rampa de 1,1 m de ancho (0 → 3,5 m en 5,2–6 m), con baranda en la mitad baja del hueco;
-- balcones de 0,9 m de fondo con baranda de 1,05 m (solo movimiento: las balas pasan por encima y por debajo);
-- tejado y pretil a la misma altura que la caja antigua (h y h + 0,35): desde fuera la silueta y el tejado no cambian.
+- Muros de yeso de 0,30 m: penetración «media», así que solo la BALA DURA los atraviesa. Forjados de hormigón de 0,20 m.
+- Puertas de 1,30 × 2,35 m. Junto a cada una hay una hoja de madera abierta 90° que es sólida (para pies y balas, como la
+  de verdad).
+- Ventanas de 1,20 m con el alféizar a 1,10 m: de pie te asomas y disparas, agachado quedas cubierto. Por la ventana no se
+  sale; solo por las puertas. El escaparate del COLMADO es de 2,40 m. Las ventanas altas del TALLER tienen el alféizar a
+  1,30 m.
+- Escaleras: una rampa de 1,1 m de ancho y una baranda en la mitad baja del hueco. Los peldaños paran las balas («solo
+  balas», `s: 2`) y no estorban al subir.
+- Balcones de 0,9 m de fondo con baranda de 1,05 m. La baranda es solo para el movimiento: las balas pasan.
+- Tejado y pretil a la misma altura que la caja de antes, así que la silueta y la azotea no cambian.
 
 ## Cómo está hecho
-- `client/casas.js` (`SDCasas`, puro, Node y navegador): genera para cada casa las **cajas** (movimiento y balas, mismo
-  formato que `client/casa.js`), las **rampas**, los **puntos de navegación** de la planta baja y la **geometría visible**
-  por material (cajas con UV en metros y color por vértice).
-- `src/page.html`, solo con la bandera:
-  - en el bucle de `BUILDINGS` la caja maciza de esas tres casas se guarda aparte (invisible, fuera del mundo);
-  - PUEBLO 2.0 (`SDTown.build`) y PUEBLO 3.0 (`SDTown3.build`) no dibujan esas casas; del 3.0 se siguen usando sus huellas
-    y frentes para el suelo;
-  - bloque «CASAS HABITABLES» antes de la red de navegación: cajas → `W.colliders`, cajas sólidas → proxies invisibles en
-    `W.ray` con `userData.surf` (impactos y penetración), rampas → `W.ramps`, y 11 mallas (una por material);
-  - red de navegación: los puntos interiores de cada casa se añaden a `NAV` y cada puerta se une a la cuadrícula
-    comprobando solo lo que estorba a un cuerpo que anda (los forjados y balcones encima de la puerta no cuentan);
-  - **online**: el servidor sigue teniendo las cajas macizas, así que `netStart` llama a `casasSolid(true)` (vuelven las
-    cajas y su aspecto antiguo, se ocultan las casas nuevas) y `netEndOnline` a `casasSolid(false)`. Cliente y servidor
-    nunca discrepan.
-- Sin la bandera el juego es idéntico (mismo `core/mapdata.js`; `tools/export-map.js` no se ve afectado).
+- `client/casas.js` (`SDCasas`, sin dependencias: funciona en Node y en el navegador). Por cada casa genera:
+  - las cajas: movimiento, balas y «solo balas»;
+  - las rampas;
+  - la navegación de la planta baja;
+  - la geometría visible por material, con los mismos materiales y texturas de PUEBLO 3.0, así que no se carga ninguna
+    textura nueva;
+  - las piezas del kit de PUEBLO 3.0: contraventanas abiertas, balcones con forja, faroles, macetas, toldo, buganvilla y
+    trepadora.
+  - Las paredes por dentro van pintadas de claro con el color por cara, sin una «piel» pegada a la pared que pudiera
+    hacer rayas. El zócalo sobresale 2,5 cm y hay rodapié dentro.
+- `src/page.html`:
+  - En el bucle de `BUILDINGS`, la caja maciza de esas casas se guarda aparte, invisible.
+  - PUEBLO 2.0 y PUEBLO 3.0 no dibujan esas casas. PUEBLO 3.0 sigue usando sus huellas para el suelo, que ahora es un
+    anillo alrededor y no una losa debajo.
+  - El bloque «CASAS HABITABLES» mete las cajas en `W.colliders` y los proxies de bala en `W.ray`, con `userData.surf`;
+    las rampas en `W.ramps`; y las mallas (unas 19 llamadas en total, por material y lado del pueblo).
+  - Las sombras salen de una caja por casa, 0,45 m más pequeña, dibujada solo en el mapa de sombras. Las paredes no
+    proyectan sobre su propio plano, así que no aparecen las rayas de sombra de las GPU reales. Dentro de las casas hay
+    sombra.
+  - Navegación: los puntos de dentro se añaden a `NAV`, y cada puerta se une a la cuadrícula.
+  - La flora (dientes de león y hierba) y los hierbajos del suelo no salen dentro de las casas.
+  - `casasSolid(on)` cambia entre las casas y las cajas de antes. Solo lo usan `?casas=0` y su prueba; `netStart` fuerza
+    las casas.
+- Servidor: `core/mapdata.js` regenerado con `node tools/export-map.js`. Incluye las cajas, los triángulos de bala (con los
+  peldaños), las 4 rampas y la navegación de las casas. Los bots del servidor entran por las puertas (andan en 2D, no suben
+  escaleras).
 
 ## Pruebas
-- `node test/casas.test.js` (106 comprobaciones, movimiento real): entrar y salir por cada puerta, no colarse por las
-  ventanas, ojos de pie en el hueco y agachado tras el muro, balas por el hueco sí y por el muro no, subir cada escalera
-  hasta 3,5 m, andar por la planta alta, salir a cada balcón y no caerse ni saltando, tabiques y cajas paran balas,
-  navegación interior conectada con las dos puertas.
-- `node test/casas.browser.test.js` (15/15, la página real): sin la bandera nada cambia; con ella 3 casas, 189 proxies de
-  bala, 2 escaleras, 11 llamadas de dibujo y 15 420 triángulos, 252 puntos de navegación unidos por las 6 puertas, entrar
-  por cada puerta y subir cada escalera con el mundo vivo, rayos por la ventana y contra el muro, ida y vuelta del modo
-  online, y un duelo de 25 s con 3 bots que entran en las casas sin quedarse en ningún muro.
-- `core`, `room`, `pen` en verde. `casa.test.js` tiene 1 fallo **que ya estaba en `main`** («el televisor de pie para la
-  bala»), no relacionado.
-- Capturas en `docs/capturas/casas/` (SwiftShader: sirven para el aspecto, no para FPS). Escena completa vista desde
-  fuera de cada casa: 137–172 llamadas y 224 000–296 000 triángulos (perfil ALTO, todo PUEBLO 3.0 incluido).
+- `node test/casas.test.js` (278 comprobaciones, con el movimiento real):
+  - entrar y salir por cada puerta;
+  - no colarse por las ventanas;
+  - de pie se ven los ojos por la ventana y agachado quedas tras el muro;
+  - las balas salen por el hueco y el muro las para;
+  - subir las 4 escaleras y andar por la planta alta;
+  - salir a cada balcón sin caerse, ni saltando;
+  - tabiques, mostrador, banco y cajas paran balas;
+  - hojas de puerta sólidas;
+  - peldaños que paran balas sin estorbar;
+  - las piezas del kit van pegadas a la fachada y no hay nada a la altura del cuerpo salvo las contraventanas;
+  - la navegación interior llega a las puertas.
+- `node test/casas.browser.test.js`: la página real, con `?casas=0` y por defecto. Comprueba las cajas, las 4 escaleras,
+  el dibujo, la navegación, que se entra por las puertas con el mundo vivo, los rayos por la ventana y contra el muro, el
+  cambio de ida y vuelta, y un duelo de 25 s con bots que entran en las casas sin quedarse en un muro.
+- `test/browser.test.js` comprueba que el mapa del servidor coincide con el del juego.
+- `test/cover.browser.test.js` busca coberturas falsas.
+- `room`, `core`, `pistol`, `shotgun` y `pen` también pasan.
 
-## Lo que falta antes de pasarlo a `main`
-1. Que el propietario lo vea en su iPhone y en el PC (`?pueblo=3&casas=1`) y lo apruebe visualmente.
-2. Medir FPS en iPhone/Android dentro y fuera de las casas (≈ 11 llamadas de dibujo y ≈ 12 000 triángulos más).
-3. Si se aprueba y se quiere online: exportar el mapa con las casas (`tools/export-map.js` con la bandera puesta) para que
-   el servidor tenga las mismas cajas, pasar `room`, `core`, `browser` y desplegar el servidor (cambio de reglas del mapa
-   competitivo → necesita su aprobación).
-4. Ideas para después: subir a los tejados (escalera de mano), puertas que se abren y cierran, cristales rompibles,
-   muebles con el kit 3D.
+## Pendiente
+1. Que el propietario las recorra en el iPhone y en el PC, y diga cuántos FPS tiene dentro y fuera (MEDIR RENDIMIENTO).
+2. 1v1 en línea real entre dos dispositivos dentro de las casas, después de desplegar el servidor.
+3. Ideas: subir a las azoteas con una escalera de mano, puertas que se abran y cierren, y muebles del kit.

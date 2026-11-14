@@ -319,7 +319,7 @@ function building(B, b, fam, opt, place, signs) {
         F.kit(kits, 'shopfront', u, v0);
         const aw = R.pick(F0.awning);
         F.kit(kits, 'awning', u, v1 + 0.32, 0, { c: aw });
-        const name = SHOP_NAMES[(signs.length + Math.floor(bx * 3 + bz)) % SHOP_NAMES.length];
+        const name = SHOP_NAMES[(((signs.length + Math.floor(bx * 3 + bz)) % SHOP_NAMES.length) + SHOP_NAMES.length) % SHOP_NAMES.length];   // (negative positions gave «undefined», 14-11-2026)
         signs.push({ text: name, p: F.p(u, v1 + 0.42, 0), ry: F.ry, c: aw });
         if (F0.extras.includes('pots')) F.kit(kits, 'pot_big', u1 + 0.42, 0, 0.32);
         continue;
@@ -406,7 +406,7 @@ function building(B, b, fam, opt, place, signs) {
 const KERB = 0.2;
 function ground(opt) {
   const B = createBuilder();
-  const S = opt.slice || { x0: -49.5, x1: 49.5, z0: -11, z1: 49.5 };
+  const S = opt.slice || { x0: -49.5, x1: 49.5, z0: opt.south ? -49.5 : -11, z1: 49.5 };
   const foot = opt.footprints || [];
   // opt.p0: the P0 ground pack's materials (plaza, cobbles, pavements, worn patches) instead of the old ones; same layout
   // (the zone tints stay as they were: measured in the game, the pack's textures burn to white under this sun
@@ -420,6 +420,11 @@ function ground(opt) {
   flat(B, M_SET, -4.5, 3.5 + KERB, -0.22, S.z1, 0.012, C_SET);
   flat(B, M_SET, 0.22, 3.5 + KERB, 4.5, S.z1, 0.012, C_SET);
   for (let z = 3.5 + KERB; z < S.z1; z += 1.2) flat(B, 'slabs', -0.22, z, 0.22, Math.min(S.z1, z + 1.18), 0.006, hex(0xbdb3a3));
+  if (opt.south) {   // south street: the same cobbles and gutter, from the plaza to the south wall
+    flat(B, M_SET, -4.5, S.z0, -0.22, -11 - KERB, 0.012, C_SET);
+    flat(B, M_SET, 0.22, S.z0, 4.5, -11 - KERB, 0.012, C_SET);
+    for (let z = -11 - KERB; z > S.z0; z -= 1.2) flat(B, 'slabs', -0.22, Math.max(S.z0, z - 1.18), 0.22, z, 0.006, hex(0xbdb3a3));
+  }
   // the cross street: old asphalt, repaired; a painted crossing at the plaza
   flat(B, 'asphalt', S.x0, -3.5, -11 - KERB, 3.5, 0.012, [1, 1, 1]);
   flat(B, 'asphalt', 11 + KERB, -3.5, S.x1, 3.5, 0.012, [1, 1, 1]);
@@ -443,17 +448,19 @@ function ground(opt) {
   // kerbs (9 cm, like PUEBLO 2.0: no step for the feet) along the north street and the cross street
   const kz = (a, b2, x) => { if (b2 - a > 0.1) box(B, 'stone', x - KERB / 2, 0, a, x + KERB / 2, 0.09, b2, hex(0xd9cfbd), '-y'); };
   const kx = (a, b2, z) => { if (b2 - a > 0.1) box(B, 'stone', a, 0, z - KERB / 2, b2, 0.09, z + KERB / 2, hex(0xd9cfbd), '-y'); };
-  for (const x of [-4.5 - KERB / 2, 4.5 + KERB / 2]) kz(P + KERB, S.z1, x);
+  for (const x of [-4.5 - KERB / 2, 4.5 + KERB / 2]) { kz(P + KERB, S.z1, x); if (opt.south) kz(S.z0, -P - KERB, x); }
   for (const z of [-3.5 - KERB / 2, 3.5 + KERB / 2]) { kx(S.x0, -P - KERB, z); kx(P + KERB, S.x1, z); }
   kx(-P - KERB, -4.5 - KERB, P + KERB / 2); kx(4.5 + KERB, P + KERB, P + KERB / 2);
   kz(-P, -3.5 - KERB, -P - KERB / 2); kz(3.5 + KERB, P, -P - KERB / 2); kz(-P, -3.5 - KERB, P + KERB / 2); kz(3.5 + KERB, P, P + KERB / 2);
   // drains: grates every 12 m by the kerbs, a manhole on the cross street
-  for (let z = 16; z < S.z1; z += 12) for (const x of [-4.1, 4.1]) { flat(B, 'dark', x - 0.2, z - 0.35, x + 0.2, z + 0.35, 0.02, hex(0x2a2622)); for (let k = 0; k < 6; k++) flat(B, 'concrete', x - 0.2, z - 0.33 + k * 0.12, x + 0.2, z - 0.29 + k * 0.12, 0.024, hex(0x5a554e)); }
+  for (const z of [16, 28, 40].concat(opt.south ? [-16, -28, -40] : [])) for (const x of [-4.1, 4.1]) { flat(B, 'dark', x - 0.2, z - 0.35, x + 0.2, z + 0.35, 0.02, hex(0x2a2622)); for (let k = 0; k < 6; k++) flat(B, 'concrete', x - 0.2, z - 0.33 + k * 0.12, x + 0.2, z - 0.29 + k * 0.12, 0.024, hex(0x5a554e)); }
   for (const x of [-24, 30]) { const c = [x, 0]; for (let k = 0; k < 10; k++) { const a0 = k * Math.PI / 5, a1 = (k + 1) * Math.PI / 5; quad(B, 'concrete', [[c[0], 0.02, c[1]], [c[0] + 0.4 * Math.cos(a0), 0.02, c[1] + 0.4 * Math.sin(a0)], [c[0] + 0.4 * Math.cos(a1), 0.02, c[1] + 0.4 * Math.sin(a1)], [c[0], 0.02, c[1]]], [0, 1, 0], hex(0x6a645a)); } }
   // pavements round the buildings: slabs with a kerb edge
   for (const [x0, x1, z0, z1] of foot) {
     const p = 1.5;
-    flat(B, M_SIDE, x0 - p, z0 - p, x1 + p, z1 + p, 0.022, hex(0xcdc2ae));
+    // a ring round the building, not a slab under it (14-11-2026: nothing drawn inside the walls; the houses you can enter
+    // have their own floor)
+    for (const [a0, b0, a1, b1] of [[x0 - p, z0 - p, x1 + p, z0], [x0 - p, z1, x1 + p, z1 + p], [x0 - p, z0, x0, z1], [x1, z0, x1 + p, z1]]) flat(B, M_SIDE, a0, b0, a1, b1, 0.022, hex(0xcdc2ae));
     kx(x0 - p, x1 + p, z0 - p); kx(x0 - p, x1 + p, z1 + p); kz(z0 - p + KERB / 2, z1 + p - KERB / 2, x0 - p); kz(z0 - p + KERB / 2, z1 + p - KERB / 2, x1 + p);
   }
   // forecourts in front of the buildings that face open ground: herringbone brick or a pebble rosette
@@ -481,13 +488,13 @@ function ground(opt) {
   }
   // the rest of the slice: compacted earth with slow patches (a grid with baked colour variation)
   const cell = 2;
-  const inRoad = (x, z) => (Math.abs(x) <= 4.5 && z > 0) || (Math.abs(z) <= 3.5) || (Math.abs(x) <= P && Math.abs(z) <= P);
-  for (let x = S.x0; x < S.x1 - 0.01; x += cell) for (let z = Math.max(S.z0, 0); z < S.z1 - 0.01; z += cell) {
+  const inRoad = (x, z) => (Math.abs(x) <= 4.5 && (z > 0 || opt.south)) || (Math.abs(z) <= 3.5) || (Math.abs(x) <= P && Math.abs(z) <= P);
+  for (let x = S.x0; x < S.x1 - 0.01; x += cell) for (let z = opt.south ? S.z0 : Math.max(S.z0, 0); z < S.z1 - 0.01; z += cell) {
     const xa = x, xb = Math.min(S.x1, x + cell), za = z, zb = Math.min(S.z1, z + cell);
     if (inRoad((xa + xb) / 2, (za + zb) / 2)) continue;
     const c = (px, pz) => { const n = vnoise(px * 0.08, pz * 0.08, 3), n2 = vnoise(px * 0.3, pz * 0.3, 5); const k = 0.86 + n * 0.22 + (n2 - 0.5) * 0.08; return mix([k, k * 0.98, k * 0.95], [0.78, 0.8, 0.62], Math.max(0, n2 - 0.72) * 1.6); };
     quad(B, 'earth', [[xa, 0.008, za], [xa, 0.008, zb], [xb, 0.008, zb], [xb, 0.008, za]], [0, 1, 0], [c(xa, za), c(xa, zb), c(xb, zb), c(xb, za)]);
-    if (opt.place && vnoise(xa * 0.21, za * 0.21, 9) > 0.62) opt.place.push({ k: 'weeds', x: xa + 1, y: 0, z: za + 1, ry: xa * 1.3 + za, s: [1.4, 1, 1.4] });
+    if (opt.place && vnoise(xa * 0.21, za * 0.21, 9) > 0.62 && !foot.some(f => xa + 1 > f[0] - 0.3 && xa + 1 < f[1] + 0.3 && za + 1 > f[2] - 0.3 && za + 1 < f[3] + 0.3)) opt.place.push({ k: 'weeds', x: xa + 1, y: 0, z: za + 1, ry: xa * 1.3 + za, s: [1.4, 1, 1.4] });
   }
   return pack(B);
 }
@@ -542,7 +549,12 @@ function backdrop(opt, place) {
       const valid = holes.filter(h => h[0] > 0.3 && h[1] < wdt - 0.3);
       wallFace(B, Ff, valid, [[0, H, 'stucco', wall]], u * 0.7 + sd.L, true);
       const LO = { win_std: 'win_lo', win_std_cur: 'win_lo', win_tall: 'win_tall_lo', shutter: 'shutter_lo', shutter_tall: 'shutter_tall_lo', balcony: 'balcony_lo' };
-      for (const [k, uu, vv, ex] of kits) if (uu > 0.6 && uu < wdt - 0.6) Ff.kit(place, vv > 3.5 && LO[k] ? LO[k] : k, uu, vv, 0, ex);
+      // opt.lite (the south side, 14-11-2026): the light pieces at every height, simpler doors, no window boxes or grilles
+      const LITE = { door_arch: 'door_panel', planter: null, reja: null, persiana: null };
+      for (const [k, uu, vv, ex] of kits) if (uu > 0.6 && uu < wdt - 0.6) {
+        const kk = opt.lite ? (LITE[k] === null ? null : LITE[k] || LO[k] || k) : vv > 3.5 && LO[k] ? LO[k] : k;
+        if (kk) Ff.kit(place, kk, uu, vv, 0, ex);
+      }
       if (R() < 0.25 && H > 9) Ff.kit(place, 'laundry', wdt / 2, fh * 2 + 2.6);
       // eave along the front, a tiled roof sloping back, gable walls on the sides
       const n = Math.max(1, Math.round(wdt)), sx = wdt / n;
@@ -567,11 +579,11 @@ function backdrop(opt, place) {
   }
   // landmarks and trees behind the rows
   place.push({ k: 'bell_tower', x: -30, y: 0, z: 61, ry: 0, c: 0xf2ece0 });
-  for (let k = 0; k < 16; k++) {
+  if (opt.trees !== false) for (let k = 0; k < 16; k++) {
     const x = R.uni(-58, 58), z = R.uni(62, 80), t = R();
     place.push({ k: t < 0.45 ? 'cypress' : t < 0.75 ? 'olive' : 'palm', x, y: 0, z, ry: R.uni(0, 6.28), s: t < 0.45 ? [1, R.uni(0.8, 1.25), 1] : [1, 1, 1] });
   }
-  for (let k = 0; k < 10; k++) {
+  if (opt.trees !== false) for (let k = 0; k < 10; k++) {
     const side = R() < 0.5 ? -1 : 1, x = side * R.uni(60, 74), z = R.uni(4, 55), t = R();
     place.push({ k: t < 0.5 ? 'cypress' : 'olive', x, y: 0, z, ry: R.uni(0, 6.28) });
   }
@@ -579,6 +591,19 @@ function backdrop(opt, place) {
 }
 
 /* ----------------------------------------------------------------- distant hills (instead of the buttes) */
+// the town outside the south wall (P3-5): the south wall and the south halves of the side walls, with its own trees
+const SOUTH_SIDES = [
+  { O: [50, 0, -50], R: [-1, 0, 0], N: [0, 0, 1], L: 100 },     // south wall, inner face z = -50
+  { O: [-50, 0, -50], R: [0, 0, 1], N: [1, 0, 0], L: 50 },       // west wall (south half)
+  { O: [50, 0, 0], R: [0, 0, -1], N: [-1, 0, 0], L: 50 },        // east wall (south half)
+];
+function backdropSouth(opt, place) {
+  const d = backdrop(Object.assign({ lite: true }, opt, { sides: SOUTH_SIDES, trees: false, seed: (opt && opt.seed) || 4021 }), place), R = rng(913);
+  for (let k = 0; k < 16; k++) { const x = R.uni(-58, 58), z = -R.uni(62, 80), t = R();
+    place.push({ k: t < 0.45 ? 'cypress' : t < 0.75 ? 'olive' : 'palm', x, y: 0, z, ry: R.uni(0, 6.28), s: t < 0.45 ? [1, R.uni(0.8, 1.25), 1] : [1, 1, 1] }); }
+  for (let k = 0; k < 10; k++) { const side = R() < 0.5 ? -1 : 1, x = side * R.uni(60, 74), z = -R.uni(4, 55), t = R(); place.push({ k: t < 0.5 ? 'cypress' : 'olive', x, y: 0, z, ry: R.uni(0, 6.28) }); }
+  return d;
+}
 function hills(opt) {
   const B = createBuilder();
   const R = rng(91);
@@ -597,19 +622,22 @@ function hills(opt) {
 
 // the slice: buildings in the north half get a family each (P3-5 would extend this to the whole town)
 const SLICE_FAMILIES = { '-12,27': 'comercio', '11,31': 'encalada', '3,43': 'taller', '-32,16': 'senorial', '30,17': 'terracota', '-31,37': 'piedra', '33,38': 'senorial' };
+// PUEBLO 3.0 in the south half (P3-5, 14-11-2026): the buildings the habitable houses and E10 leave
+const SOUTH_FAMILIES = { '-31,-9': 'comercio', '-9,-31': 'taller', '-2,-43': 'encalada', '-31,-31': 'senorial', '31,-33': 'senorial', '33,-8': 'encalada' };
 function build(buildings, opt) {
   const B = createBuilder(), place = [], signs = [], foot = [], fronts = [];
   for (const b of buildings) {
     const fam = (opt.families || SLICE_FAMILIES)[b[0] + ',' + b[1]];
     if (!fam) continue;
-    // the north street buildings front onto the street (x = 0), the others onto the plaza
-    const frontDir = Math.abs(b[0]) < 20 && b[1] > 12 ? (b[1] > 40 ? [0, 0, -1] : [-Math.sign(b[0]), 0, 0]) : null;
+    // the north and south street buildings front onto the street (x = 0), the others onto the plaza
+    const frontDir = Math.abs(b[0]) < 20 && b[1] > 12 ? (b[1] > 40 ? [0, 0, -1] : [-Math.sign(b[0]), 0, 0])
+      : Math.abs(b[0]) < 20 && b[1] < -12 ? (b[1] < -40 ? [0, 0, 1] : [-Math.sign(b[0]), 0, 0]) : null;
     foot.push(building(B, b, fam, Object.assign({}, opt, { frontDir, fronts }), place, signs));
   }
   const r = pack(B);
   return { geo: r.geo, tris: r.tris, place, signs, footprints: foot, fronts };
 }
 
-const SDTown3 = { REVEAL, MATS, OPEN, FAMILIES, SLICE_FAMILIES, SHOP_NAMES, build, ground, backdrop, hills, vnoise };
+const SDTown3 = { REVEAL, MATS, OPEN, FAMILIES, SLICE_FAMILIES, SOUTH_FAMILIES, SHOP_NAMES, build, ground, backdrop, backdropSouth, SOUTH_SIDES, hills, vnoise };
 if (typeof module !== 'undefined' && module.exports) module.exports = SDTown3; else root.SDTown3 = SDTown3;
 })(typeof window !== 'undefined' ? window : globalThis);

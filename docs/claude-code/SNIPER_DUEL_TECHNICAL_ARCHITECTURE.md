@@ -132,6 +132,9 @@ reconciliación, interpolación del rival 110 ms, ping) · `vmrig.js` (materiale
 | `&fachada=cc0` | Fachadas P1 con escaneos de Poly Haven (opción) |
 | `&e10=0` | Sin Casa Oliva (edificio anterior) |
 | `&ratas=0`, `&flora=0` | Sin ratas / sin vegetación |
+| `&sur=0` | PUEBLO 3.0 solo en la mitad norte, como antes del 14-11 (`docs/PUEBLO-31.md`) |
+| `?casas=0` | Sin conexión: las cajas macizas de antes en lugar de las 8 casas habitables (en línea siempre las casas: son las del servidor) (`docs/CASAS-HABITABLES.md`) |
+| `?fuente=0` | El agua plana de antes en la fuente de la plaza (`docs/FUENTE.md`) |
 | `&sombra=libre`, `&sombrafade=0`, `&sombras=0` | Sombra sin ajuste a texels / sin fundido / sin sombras (diagnóstico) |
 | `?casa=1` / `?casa=0` | Muestra / oculta CASA ATLAS en los menús (se recuerda) |
 | `?casa2=0` / `?casa2=1` | Oculta / muestra CASA ATLAS 2.0 en los menús (se recuerda; por defecto se muestra). Aprobada el 02-11: duelo y online (`client/casa2.js`, `docs/CASA-ATLAS-2.md`). La CASA ATLAS XL (`?xlv`, `?xltex`) se retiró el 03-11 |
