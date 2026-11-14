@@ -42,5 +42,7 @@ su aprobación visual (regla 7/8).
   «agachado tras el muro» dejará de cumplirse: ajustarla).
 - Penetración (`core/pen.js`): muros de 0,30 m, tabiques de 0,12 m y forjados = «media» (solo BALA DURA); cajas = «fina».
 - `casa.test.js` tiene 1 fallo que **ya estaba en `main`** («el televisor de pie para la bala»): no es de esto.
+- `browser.test.js` da 57/58 en el entorno de la nube, con la rama y con `main` igual (`page.setViewportSize` tras la
+  prueba de pantalla completa: fallo del entorno). Las dos de «el mapa del servidor coincide» salen en verde.
 - Rendimiento: ~11 llamadas de dibujo y ~15 400 triángulos más para las tres casas (las barandillas son barrotes).
   Medido en SwiftShader: no vale para FPS. Hay que medir en el iPhone 15 Pro Max, el MSI y el Android.
