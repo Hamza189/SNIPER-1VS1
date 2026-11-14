@@ -11,6 +11,7 @@ Detalle de cada cambio (antes/después, medidas, cómo revertir): `docs/next-lev
 ### Siguiente prioridad
 | Tarea | Quién la desbloquea | Estado |
 |---|---|---|
+| **CASAS HABITABLES** (14-11) — en la rama `casas-habitables` (sin publicar): integrar en `main` cuando el propietario lo diga, probar `?pueblo=3&casas=1` en el iPhone y el PC (entrar, ventanas, escaleras, balcones), medir FPS dentro y fuera, y decidir si va al online (servidor) (`docs/CASAS-HABITABLES.md`) | Propietario | IMPLEMENTADO EN RAMA · PRUEBAS EN VERDE · PENDIENTE DE VALIDACIÓN EN IPHONE |
 | **SALA 1V1** (10-11) — probar `?lobby=2` en el PC y en el iPhone (horizontal), con alguien en otro dispositivo: INICIO › MULTIJUGADOR 1V1 → CREAR SALA PRIVADA → INVITAR (copiar enlace o WhatsApp) → el otro entra y aparece en el hangar → elegir mapa → LISTO los dos → INICIAR PARTIDA. Decir si gusta, los FPS del hangar y si pasa a ser la de siempre (`?lobby=1` = la de antes; `docs/SALA-1V1.md`) | Propietario | SERVIDOR PUBLICADO · PÁGINA SIN PUBLICAR · PENDIENTE DE VALIDACIÓN EN IPHONE Y ANDROID |
 | **CAJA NUEVA** (10-11) — CAJAS › ABRIR CAJA en el PC y en el iPhone: ver la ATLAS DROP temblar, abrirse y encenderse con el color de la rareza; decir si gusta o si se cambia algo (`?caja=0` = la de antes) | Propietario | PUBLICADO · PENDIENTE DE VALIDACIÓN |
 | **ORDENADORES FLOJOS** (10-11) — en el portátil HP de su novia: recargar la página, mirar AJUSTES › GRÁFICOS (debe poner AUTO → BAJO y el nombre de la gráfica en el diagnóstico), jugar y saltar; decir los FPS | Propietario | PUBLICADO · PENDIENTE DE VALIDACIÓN EN EL HP |
@@ -98,6 +99,15 @@ Detalle de cada cambio (antes/después, medidas, cómo revertir): `docs/next-lev
 | Encargos para ChatGPT: CASA XL, CASA XL v2 y personaje | 18-10 / 19-10 |
 | Personaje 3D rev. 03 hecho por Claude e integrado tras `?pj=2` (bots y rival online) | 20-10 · directo a `main` |
 | Personajes realistas + elegir personaje (con el SOLDADO de `?pj=2`) y HUD 2 por defecto (aprobado en iPhone y PC) | 28-10 · directo a `main` |
+
+## 14-11-2026 — CASAS HABITABLES (petición del propietario del 13-11, desde fuera de casa)
+- Pedido: las tres casas de sus capturas de PUEBLO 3.0 «habitables»: entrar, salir, asomarse por la ventana, cubrirse y
+  disparar. «No modifiques directamente los archivos, crea copia nueva y pásamela»: se hizo en la rama `casas-habitables`
+  (no en `main`) y además en un zip con los archivos nuevos y el parche.
+- Hecho: `client/casas.js` (cajas, rampas, navegación y aspecto de ENCALADA 11,31 · TERRACOTA 30,17 · ARENISCA -31,-31),
+  la página tras `?casas=1`, `test/casas.test.js` (106/106) y `test/casas.browser.test.js`. Online: vuelven las cajas
+  macizas del servidor (`casasSolid`), el servidor no cambia. Detalle: `docs/CASAS-HABITABLES.md`.
+- Estado: IMPLEMENTADO EN RAMA · PRUEBAS EN VERDE · SIN PUBLICAR · PENDIENTE DE VALIDACIÓN EN IPHONE.
 
 ## 10-11-2026 — BALA DURA y penetración EN LÍNEA (G7)
 Del propietario: «sí, está bien» (aprueba los daños: × 0,75 fina; BALA DURA × 0,7 → × 0,4 según el grosor, una pared

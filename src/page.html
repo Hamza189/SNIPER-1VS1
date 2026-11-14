@@ -1969,8 +1969,16 @@ let GROUND=null;const TOWN_FROM=scene.children.length;
 // perimeter walls
 box(102,4,1,MAT.concrete,0,0,-50.5);box(102,4,1,MAT.concrete,0,0,50.5);box(1,4,100,MAT.concrete,-50.5,0,0);box(1,4,100,MAT.concrete,50.5,0,0);
 // buildings [x,z,w,d,h,tint]
+/* CASAS HABITABLES (14-11-2026, client/casas.js, docs/CASAS-HABITABLES.md): three PUEBLO houses with doors, windows, rooms,
+   stairs and balconies instead of a solid box (encalada 11,31 · terracota 30,17 · arenisca -31,-31). Behind ?casas=1
+   (remembered; ?casas=0 turns it off) until the owner approves it. The server still has the solid boxes: online on PUEBLO the
+   three houses go back to solid (casasSolid), so client and server always agree. */
+const CASAS={on:false,houses:[],cols:[],rays:[],ramps:[],solid:[],meshes:[],isSolid:false,tris:0,calls:0};
+{const q=location.search.match(/[?&]casas=([01])\b/);if(q)store.set('casasExp',q[1]==='1');CASAS.on=typeof SDCasas!=='undefined'&&store.get('casasExp',false)===true;}
+const isHab=b=>CASAS.on&&!!SDCasas.byKey[b[0]+','+b[1]];
 const OLD_TOWN={bodies:[],caps:[],roads:[]};   // PUEBLO 1 visuals PUEBLO 2.0 replaces (the boxes stay for bullets)
 const BUILDINGS=[[-31,-31,14,12,7,0],[-31,-9,12,10,5,1],[-32,16,12,12,9,2],[-31,37,14,10,6,3],[31,-33,12,10,8,4],[33,-8,10,12,5,5],[30,17,14,10,7,1],[33,38,10,10,10,2],[-9,-31,8,8,4,3],[13,-25,6,10,6,4],[-12,27,10,6,5,0],[11,31,8,6,4,5],[-2,-43,10,5,3.5,2],[3,43,12,5,4,3]];
+const INVIS_EARLY=new T.MeshBasicMaterial({visible:false});
 for(const [x,z,w,d,h,ti] of BUILDINGS){
   const tint=PLASTER_TINTS[ti];
   const fb=plasterTex.clone();fb.needsUpdate=true;fb.repeat.set(Math.max(1,Math.round(w/4)),Math.max(1,Math.round(h/3)));
@@ -1978,7 +1986,10 @@ for(const [x,z,w,d,h,ti] of BUILDINGS){
   const mf=new T.MeshStandardMaterial({map:fb,color:tint,roughness:.95});
   const ms=new T.MeshStandardMaterial({map:sd,color:tint,roughness:.95});
   const m=new T.Mesh(new T.BoxGeometry(w,h,d),[ms,ms,MAT.roof,MAT.roof,mf,mf]);
-  m.position.set(x,h/2,z);m.castShadow=true;m.receiveShadow=true;scene.add(m);W.ray.push(m);OLD_TOWN.bodies.push(m);
+  m.position.set(x,h/2,z);m.castShadow=true;m.receiveShadow=true;scene.add(m);
+  if(isHab([x,z])){   // CASAS HABITABLES: the solid box is kept aside (online fallback), hidden and out of the world
+    m.userData.surf='plaster';CASAS.solid.push({m,mat:m.material,col:{minX:x-w/2,minY:0,minZ:z-d/2,maxX:x+w/2,maxY:h+0.35,maxZ:z+d/2}});m.material=INVIS_EARLY;m.castShadow=false;continue;}
+  W.ray.push(m);OLD_TOWN.bodies.push(m);
   addCollider(x-w/2,0,z-d/2,x+w/2,h+0.35,z+d/2);
   OLD_TOWN.caps.push(box(w+0.4,0.35,d+0.4,MAT.concreteDark,x,h,z,{collide:false}));
 }
@@ -2175,7 +2186,7 @@ if(TOWN.on&&typeof SDTown!=='undefined'){
   // in four quarters (plus the streets) so the camera only draws the part of town in view
   const TOPT={tints:PLASTER_TINTS,reachable:[[-9,-31]]};
   TOWN.meshes=[];TOWN.tris=0;
-  for(const [sx,sz] of [[-1,-1],[1,-1],[-1,1],[1,1]]){const q=BUILDINGS.filter(b=>Math.sign(b[0]||1)===sx&&Math.sign(b[1]||1)===sz&&!inSlice3(b)&&!isE10(b));if(!q.length)continue;
+  for(const [sx,sz] of [[-1,-1],[1,-1],[-1,1],[1,1]]){const q=BUILDINGS.filter(b=>Math.sign(b[0]||1)===sx&&Math.sign(b[1]||1)===sz&&!inSlice3(b)&&!isE10(b)&&!isHab(b));if(!q.length)continue;
     const d=SDTown.build(q,Object.assign({part:'buildings'},TOPT));TOWN.tris+=d.tris;TOWN.meshes=TOWN.meshes.concat(townMeshes(d,'town'));}
   {const d=SDTown.build(BUILDINGS.filter(b=>!inSlice3(b)),Object.assign({part:'streets',clipZ:P3ON?-11:undefined},TOPT));TOWN.tris+=d.tris;TOWN.meshes=TOWN.meshes.concat(townMeshes(d,'streets'));}
   if(E10.on){const d=SDTown.build(BUILDINGS.filter(isE10),Object.assign({part:'buildings'},TOPT));TOWN.tris+=d.tris;E10.old=townMeshes(d,'e10old');TOWN.meshes=TOWN.meshes.concat(E10.old);}
@@ -2287,8 +2298,9 @@ if(P3ON){
   };
   // buildings: one build per side of the street (culling), then the ground and the town outside
   const foot=[],fronts=[];
-  for(const sx of [-1,1]){const q=BUILDINGS.filter(b=>inSlice3(b)&&Math.sign(b[0])===sx);const d=SDTown3.build(q,{});p3mesh(d.geo,'town'+sx,P3W.ctx);
+  for(const sx of [-1,1]){const q=BUILDINGS.filter(b=>inSlice3(b)&&!isHab(b)&&Math.sign(b[0])===sx);const d=SDTown3.build(q,{});p3mesh(d.geo,'town'+sx,P3W.ctx);
     P3W.place.push(...d.place);P3W.signs.push(...d.signs);foot.push(...d.footprints);fronts.push(...d.fronts);}
+  {const q=BUILDINGS.filter(b=>inSlice3(b)&&isHab(b));if(q.length){const d=SDTown3.build(q,{});foot.push(...d.footprints);fronts.push(...d.fronts);}}   // CASAS: only their ground
   if(P0.on){   // the pack's materials, one texture size per profile (see tools/p0/make_p0_textures.py)
     const pf=GFX.profile,v3=P0.set==='v3'&&(n=>n==='plaza'||n==='cobble'),
       pre=n=>COBCC&&n==='cobble'?(pf==='bajo'?'p0ccb_':pf==='medio'?'p0ccm_':'p0cc_')+n:v3&&v3(n)?(pf==='bajo'?'p0v3b_':pf==='medio'?'p0v3m_':'p0v3_')+n:pf==='bajo'?'p0b_'+n:pf==='medio'&&(n==='plaza'||n==='cobble')?'p0m_'+n:'p0_'+n;
@@ -2357,12 +2369,62 @@ const RANGE_SLOTS=[
   {x:-5,z:RANGE.line+98.4,note:'tras cobertura'},{x:7,z:RANGE.line+100},{x:2,z:RANGE.line+102,move:{amp:11,speed:3.4}}
 ];
 
+/* =================== CASAS HABITABLES (?casas=1) =================== */
+if(CASAS.on){
+  CASAS.houses=SDCasas.HOUSES.filter(H=>BUILDINGS.some(b=>b[0]===H.x&&b[1]===H.z));
+  const pm={},mk=f=>pm[f]||(pm[f]=new T.MeshBasicMaterial({visible:false}));
+  for(const H of CASAS.houses){
+    for(const b of SDCasas.boxes(H)){const [x0,y0,z0]=b.a,[x1,y1,z1]=b.b,c={minX:x0,minY:y0,minZ:z0,maxX:x1,maxY:y1,maxZ:z1};W.colliders.push(c);CASAS.cols.push(c);
+      if(!b.s)continue;
+      const m=new T.Mesh(new T.BoxGeometry(x1-x0,y1-y0,z1-z0),mk(b.f));m.position.set((x0+x1)/2,(y0+y1)/2,(z0+z1)/2);
+      m.userData.surf=b.f;m.name='casas_'+b.n;scene.add(m);m.updateMatrixWorld(true);W.ray.push(m);CASAS.rays.push(m);}
+    for(const r of SDCasas.ramps(H)){W.ramps.push(r);CASAS.ramps.push(r);}
+  }
+  // what you see: one mesh per material for the three houses (UVs in metres, the tint in the vertex colour)
+  const prof=GFX.profile,V={};
+  for(const H of CASAS.houses){const v=SDCasas.visual(H);for(const k in v){const key=k==='plinth'?'plinth_'+H.plinth.mat:k;(V[key]||(V[key]=[])).push(...v[k]);}}
+  const mat=(tex,tile,o)=>{o=o||{};const m=new T.MeshStandardMaterial({color:o.col!=null?o.col:0xffffff,roughness:o.r!=null?o.r:0.92,metalness:o.m||0,vertexColors:o.vc!==false,side:o.side||T.FrontSide});
+    if(tex){m.map=texLoad(tex,false,true);if(prof!=='bajo')m.normalMap=texLoad(tex,true,true);for(const t of [m.map,m.normalMap])if(t)t.repeat.set(1/tile,1/tile);if(m.normalMap)m.normalScale.set(o.n||0.6,o.n||0.6);}
+    return m;};
+  const MATS={wall:mat('stucco',2.4),inner:mat('plaster',2.4),plinth_stucco:mat('stucco',2.0),plinth_stone:mat('stone',1.6,{n:0.8}),trim:mat('stone',1.6),
+    wood:mat('wood',1.2,{r:0.8}),iron:mat('metal',1.5,{col:0x2b2a28,r:0.55,m:0.5,vc:false}),floor:mat('herring',1.6,{r:0.8,vc:false}),ceil:mat('plaster',2.4),
+    roof:mat('rooftiles',2.0,{vc:false,col:0xb0a090}),crate:MAT.crate};
+  for(const k in V){const g=SDCasas.mesh(V[k]),geo=new T.BufferGeometry();
+    geo.setAttribute('position',new T.BufferAttribute(g.pos,3));geo.setAttribute('normal',new T.BufferAttribute(g.nrm,3));geo.setAttribute('uv',new T.BufferAttribute(g.uv,2));
+    const col=g.col;for(let i=0;i<col.length;i++)col[i]=col[i]<=0.04045?col[i]/12.92:Math.pow((col[i]+0.055)/1.055,2.4);geo.setAttribute('color',new T.BufferAttribute(col,3));
+    geo.setIndex(new T.BufferAttribute(g.idx,1));geo.computeBoundingSphere();
+    const m=new T.Mesh(geo,MATS[k]||MATS.wall);m.name='casas_vis_'+k;m.castShadow=prof!=='bajo'&&/^(wall|trim|roof|wood|plinth)/.test(k);m.receiveShadow=true;
+    m.matrixAutoUpdate=false;m.updateMatrix();scene.add(m);CASAS.meshes.push(m);CASAS.calls++;CASAS.tris+=g.idx.length/3;}
+}
+// online on PUEBLO: the server has the solid boxes, so the client goes back to them (and back again offline)
+function casasSolid(on){
+  if(!CASAS.on||CASAS.isSolid===on)return;CASAS.isSolid=on;const w=WORLDS.pueblo,drop=(arr,xs)=>{for(const x of xs){const i=arr.indexOf(x);if(i>=0)arr.splice(i,1);}};
+  if(on){drop(w.colliders,CASAS.cols);drop(w.ray,CASAS.rays);drop(w.ramps,CASAS.ramps);for(const s of CASAS.solid){w.colliders.push(s.col);w.ray.push(s.m);s.m.material=s.mat;s.m.castShadow=true;}}
+  else{for(const s of CASAS.solid){drop(w.colliders,[s.col]);drop(w.ray,[s.m]);s.m.material=INVIS_EARLY;s.m.castShadow=false;}w.colliders.push(...CASAS.cols);w.ray.push(...CASAS.rays);w.ramps.push(...CASAS.ramps);}
+  for(const m of CASAS.meshes)m.visible=!on&&WORLD_ID==='pueblo';
+  for(const s of CASAS.solid)s.m.visible=WORLD_ID==='pueblo';
+  if(on)console.info('casas: online → casas macizas (el servidor aún no tiene las casas habitables)');
+}
+
 /* =================== NAV GRID =================== */
 let NAV=[];const NAVMAP=new Map();
 function blockedPt(x,z,inf){for(const c of W.colliders){if(x>c.minX-inf&&x<c.maxX+inf&&z>c.minZ-inf&&z<c.maxZ+inf)return true;}for(const c of (W.ramps||[])){if(x>c.minX-inf&&x<c.maxX+inf&&z>c.minZ-inf&&z<c.maxZ+inf)return true;}return false;}
 function segClear(ax,az,bx,bz,inf){const d=Math.hypot(bx-ax,bz-az);const n=Math.ceil(d/0.3);for(let i=1;i<n;i++){const t=i/n;if(blockedPt(lerp(ax,bx,t),lerp(az,bz,t),inf))return false;}return true;}
 {const S=3;for(let gx=-46;gx<=46;gx+=S)for(let gz=-46;gz<=46;gz+=S){if(!blockedPt(gx,gz,1.0)){NAVMAP.set(gx+','+gz,NAV.length);NAV.push({x:gx,z:gz,n:[]});}}
  for(const nd of NAV){for(const [dx,dz] of [[S,0],[-S,0],[0,S],[0,-S],[S,S],[S,-S],[-S,S],[-S,-S]]){const j=NAVMAP.get((nd.x+dx)+','+(nd.z+dz));if(j!==undefined&&segClear(nd.x,nd.z,nd.x+dx,nd.z+dz,0.55))nd.n.push(j);}}}
+// CASAS: the ground floor of each house (its own points, linked inside) joined to the grid at each door; only what stands
+// in the way of a walking body counts (the upper floors and balconies are over the door, blockedPt would close it)
+if(CASAS.on){
+  const low=(x,z,inf)=>{for(const c of W.colliders){if(c.maxY<=0.45||c.minY>=1.8)continue;if(x>c.minX-inf&&x<c.maxX+inf&&z>c.minZ-inf&&z<c.maxZ+inf)return true;}return false;};
+  const lowClear=(ax,az,bx,bz,inf)=>{const d=Math.hypot(bx-ax,bz-az),n=Math.ceil(d/0.3);for(let i=1;i<n;i++){const t=i/n;if(low(lerp(ax,bx,t),lerp(az,bz,t),inf))return false;}return true;};
+  for(const H of CASAS.houses){const N=SDCasas.nav(H,SDCasas.boxes(H)),base=NAV.length,grid=base;
+    for(const p of N.pts)NAV.push({x:p.x,z:p.z,n:p.n.map(j=>j+base),casa:H.id});
+    for(const io of N.doorsOut){const o=NAV[base+io];let k=0;
+      const near=[];for(let i=0;i<grid;i++){if(NAV[i].casa)continue;const d=Math.hypot(NAV[i].x-o.x,NAV[i].z-o.z);if(d<4.6)near.push([i,d]);}near.sort((a,b)=>a[1]-b[1]);
+      for(const [i] of near){if(k>=3)break;if(lowClear(o.x,o.z,NAV[i].x,NAV[i].z,0.45)){o.n.push(i);NAV[i].n.push(base+io);k++;}}
+      if(!k)console.warn('casas: puerta sin enlace a la red',H.id,o.x,o.z);}
+  }
+}
 function nearestNode(x,z){let best=0,bd=1e9;for(let i=0;i<NAV.length;i++){const d=(NAV[i].x-x)**2+(NAV[i].z-z)**2;if(d<bd){bd=d;best=i;}}return best;}
 // walkable points cut off from the rest (CASA ATLAS: a 13-point pocket between the kitchen island and the oven, a lone
 // point) are marked .off: bots neither appear on them nor walk to them (they could never leave). The list itself is not
@@ -2725,6 +2787,7 @@ function setWorld(id){
   if(!WORLDS[id]||id===WORLD_ID)return;
   for(const o of WORLDS[WORLD_ID].objs)o.visible=false;
   const w=WORLDS[id];for(const o of w.objs)o.visible=true;
+  if(id==='pueblo'&&CASAS.isSolid)for(const m of CASAS.meshes)m.visible=false;
   W.colliders=w.colliders;W.ray=w.ray;W.ramps=w.ramps;NAV=w.nav;WORLD_ID=id;
   if(typeof clearDecals==='function')clearDecals();
   // CASA ATLAS: the town ground sinks 4 cm under the flat's floors (no z-fighting; outside the windows it is still there),
@@ -6354,7 +6417,7 @@ function netEndOnline(){
   $('#netStat').hidden=true;$('#countdown').hidden=true;
   if(state!=='menu'){state='menu';$('#pause').hidden=true;$('#lockHint').hidden=true;$('#over').hidden=true;$('#hud').hidden=true;$('#scope').hidden=true;$('#death').hidden=true;$('#touch').hidden=true;if(document.exitPointerLock&&pointerLocked)document.exitPointerLock();}
   $('#kBotsLbl')&&($('#kBotsLbl').textContent='BOTS');$('#score .you span').textContent='TÚ';
-  setWorld(offWorld());
+  casasSolid(false);setWorld(offWorld());
 }
 function renderLobby(){
   const N=NET.N;if(!N)return;m2LobbyMap();
@@ -6485,7 +6548,7 @@ function escapeHtml(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':
 function netStart(m){
   const N=NET.N;
   $('#score .goal').textContent='PRIMERO A '+((m.rules&&m.rules.kills)||10);if(!m.resume){$('#clock').hidden=true;MINI.pings.length=0;}
-  setWorld(m.map||'pueblo');
+  casasSolid(true);setWorld(m.map||'pueblo');
   if(mode!=='online'){NET.prevMode=mode;mode='online';}
   applyRifleCfg();   // online: the server's HALCÓN R7, whatever model you carry
   if(!REMOTE)REMOTE=new RemotePlayer();
@@ -8266,7 +8329,7 @@ function floraSetup(){
   const pf=GFX.profile,big=pf==='alto'?1024:512,LOD='LOD3',CARDS=FLORA.cards;
   const list=SDFlora.scatter({colliders:W.colliders,region:[-30,30,-14,50],profile:pf,seed:0x5d17,drains:RATS.homes,
     kerbs:[['z',-4.5,3.8,49,1],['z',4.5,3.8,49,-1],['x',-3.5,11.2,30,1],['x',3.5,11.2,30,-1],['x',-3.5,-30,-11.2,1],['x',3.5,-30,-11.2,-1]],
-    avoid:(x,z)=>Math.hypot(x,z)<4.5});   // not inside the fountain
+    avoid:(x,z)=>Math.hypot(x,z)<4.5||(CASAS.on&&!!SDCasas.inside(x,z,0.1))});   // not inside the fountain (nor in the CASAS)
   // ground height under each plant (pavements are higher than the street): one ray down onto the town's ground
   const ground=P3W.meshes.filter(m=>/^p3_ground/.test(m.name)),ray=new T.Raycaster(),down=new T.Vector3(0,-1,0),o=new T.Vector3();
   const tl=new T.TextureLoader(),tex=(n,flip)=>{const t=tl.load('assets/tex/'+n+'_'+big+'.png?v='+BUILD_HASH);t.flipY=!!flip;t.encoding=T.sRGBEncoding;
@@ -8330,6 +8393,6 @@ if(FLORA.on){const gl=new T.GLTFLoader();let n=2;
       if(P3W.kit)later();else{const w=setInterval(()=>{if(P3W.kit){clearInterval(w);later();}},300);}}}}
 function floraFlush(){if(FLORA.go)FLORA.go();}
 
-window.__SD={get GFX(){return GFX;},get BOX3(){return BOX3;},get GUNCFG(){return GUNCFG;},PRUEBAS,XRAY,xrayFrame,SLIDE2,PEN,penBox,spawnBullet,updateBullets,HALCON,BAL,rifleCfgFor,applyRifleCfg,gsGun,SIL,silCfg,silSaved,SFX,GUN,camLight,get gameTime(){return gameTime;},GSI,gsiDone,gsiRender,M2,m2Tab,m2Sync,m2Sleep,LB,lbRender,lbFrame,openSettings,closeSettings,MIRA,setMira,miraApply,miraClipGeo,miraRifle,openMiras,closeMiras,updateReticle,ENV,MOVE_CLASSIC,MOV_CLASSIC,VIS,VIS_COL,VIS_HULL,visOn,visFrame,visWho,selfHit,PROF,KTX2,R2_ON,R2_URL,PIC,GYRO,gyroEv,crossApply,btnPress,settingsChanged,perfTexMB(){const t=perfTextures();return {real:SDPerf.textureMB(t),asRGBA:SDPerf.textureMB(t.map(x=>Object.assign({},x,{bytes:0})))};},REMOTES,netScoreHud,shotTargets,MINI,miniLayer,miniPing,clockFrame,setOffTime,get OFF_TIME(){return OFF_TIME;},ACC,accRefresh,INV,invSync,camoApply,openInv,invOpenBox,WSKIN,WS_ST,setWskin,get RIF(){return RIF;},TPV,SELF,get PROFILE(){return PROFILE;},openProfile,endMatch,PJ_MIX,MIX_ORDER,SKINS,get SKIN(){return SKIN;},setSkin,pj2SetPack,rivalSkin,PERF,perfRun,HUD2,get H2(){return HUD2?H2:null;},leanIn:HUD2?leanIn:null,h2Frame:HUD2?h2Frame:null,PJ2,pj2Load,CASA,casaLoad,C2,C2B,C2J,C2S,casa2Load,BAR,barrioLoad,FLORA,RATS,RAT_WORLD,ratsFrame,SHADOW_FADE,setDuelLethal,get DUEL_LETHAL(){return DUEL_LETHAL;},gfxDiagText,get P3ON(){return P3ON;},COBCC,damagePlayer,TEX,sunFollow,setSunSnap(on){SUN_SNAP=!!on;},sun,P0,E10,e10Lod,DIAG,setTrainMove,LIGHT:{sun,hemi,skyMat,LOOK,P3},P3W,freeze(on){SIM_FREEZE=!!on;},SHOT,VMA,makeSoldier,animateSoldier,BOT_MAT,scene,camera,RemotePlayer,PMprev,PIS,PROOT,RIF,WROOT,SHO_:null,MANUAL,advance(ms){frameBody(last+ms);},get LAST_PELLETS(){return LAST_PELLETS;},SCORE,SCFG,SROOT,SHO,setPrimaryChoice,get PRIMARY(){return PRIMARY;},PCORE,PCFG,setWorld,WORLDS,get WORLD_ID(){return WORLD_ID;},renderer,GFX,gfxApply,get NET(){return NET;},get REMOTE(){return REMOTE;},W,get NAV(){return NAV;},setOffMap,get OFFMAP(){return OFFMAP;},TOUCH,EDIT,openEditor,get SETTINGS(){return SETTINGS;},get LAYOUT(){return LAYOUT;},checkOrientation,MAT,LOAD,TRAINERS,get RANGE_BOTS(){return RANGE_BOTS;},TRAIN,setTrain,setLethal,kitNote,GINS,TDIAG,AU,get TOUCH_EVENTS(){return TOUCH_EVENTS;},impactFX,bodyFX,get DECALS(){return DECALS;},surfaceOf,soundDelay,aimSelfTest,P,PM,WS,WCORE,RECOIL,AIM,BOTS,DUMMIES,BULLETS,EVENTS,PARTS,STATS,get state(){return state;},get mode(){return mode;},setMode,input,startMatch,simTick,frame,toMenu,pause,resume};
+window.__SD={get GFX(){return GFX;},get BOX3(){return BOX3;},get GUNCFG(){return GUNCFG;},PRUEBAS,XRAY,xrayFrame,SLIDE2,PEN,penBox,spawnBullet,updateBullets,HALCON,BAL,rifleCfgFor,applyRifleCfg,gsGun,SIL,silCfg,silSaved,SFX,GUN,camLight,get gameTime(){return gameTime;},GSI,gsiDone,gsiRender,M2,m2Tab,m2Sync,m2Sleep,LB,lbRender,lbFrame,openSettings,closeSettings,MIRA,setMira,miraApply,miraClipGeo,miraRifle,openMiras,closeMiras,updateReticle,ENV,MOVE_CLASSIC,MOV_CLASSIC,VIS,VIS_COL,VIS_HULL,visOn,visFrame,visWho,selfHit,PROF,KTX2,R2_ON,R2_URL,PIC,GYRO,gyroEv,crossApply,btnPress,settingsChanged,perfTexMB(){const t=perfTextures();return {real:SDPerf.textureMB(t),asRGBA:SDPerf.textureMB(t.map(x=>Object.assign({},x,{bytes:0})))};},REMOTES,netScoreHud,shotTargets,MINI,miniLayer,miniPing,clockFrame,setOffTime,get OFF_TIME(){return OFF_TIME;},ACC,accRefresh,INV,invSync,camoApply,openInv,invOpenBox,WSKIN,WS_ST,setWskin,get RIF(){return RIF;},TPV,SELF,get PROFILE(){return PROFILE;},openProfile,endMatch,PJ_MIX,MIX_ORDER,SKINS,get SKIN(){return SKIN;},setSkin,pj2SetPack,rivalSkin,PERF,perfRun,HUD2,get H2(){return HUD2?H2:null;},leanIn:HUD2?leanIn:null,h2Frame:HUD2?h2Frame:null,PJ2,pj2Load,CASA,casaLoad,C2,C2B,C2J,C2S,casa2Load,BAR,barrioLoad,CASAS,casasSolid,FLORA,RATS,RAT_WORLD,ratsFrame,SHADOW_FADE,setDuelLethal,get DUEL_LETHAL(){return DUEL_LETHAL;},gfxDiagText,get P3ON(){return P3ON;},COBCC,damagePlayer,TEX,sunFollow,setSunSnap(on){SUN_SNAP=!!on;},sun,P0,E10,e10Lod,DIAG,setTrainMove,LIGHT:{sun,hemi,skyMat,LOOK,P3},P3W,freeze(on){SIM_FREEZE=!!on;},SHOT,VMA,makeSoldier,animateSoldier,BOT_MAT,scene,camera,RemotePlayer,PMprev,PIS,PROOT,RIF,WROOT,SHO_:null,MANUAL,advance(ms){frameBody(last+ms);},get LAST_PELLETS(){return LAST_PELLETS;},SCORE,SCFG,SROOT,SHO,setPrimaryChoice,get PRIMARY(){return PRIMARY;},PCORE,PCFG,setWorld,WORLDS,get WORLD_ID(){return WORLD_ID;},renderer,GFX,gfxApply,get NET(){return NET;},get REMOTE(){return REMOTE;},W,get NAV(){return NAV;},setOffMap,get OFFMAP(){return OFFMAP;},TOUCH,EDIT,openEditor,get SETTINGS(){return SETTINGS;},get LAYOUT(){return LAYOUT;},checkOrientation,MAT,LOAD,TRAINERS,get RANGE_BOTS(){return RANGE_BOTS;},TRAIN,setTrain,setLethal,kitNote,GINS,TDIAG,AU,get TOUCH_EVENTS(){return TOUCH_EVENTS;},impactFX,bodyFX,get DECALS(){return DECALS;},surfaceOf,soundDelay,aimSelfTest,P,PM,WS,WCORE,RECOIL,AIM,BOTS,DUMMIES,BULLETS,EVENTS,PARTS,STATS,get state(){return state;},get mode(){return mode;},setMode,input,startMatch,simTick,frame,toMenu,pause,resume};
 })();
 </script>
