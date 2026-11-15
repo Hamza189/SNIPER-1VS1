@@ -17,7 +17,7 @@ const FRAMES = +(process.env.FRAMES || 16);
   const b = await chromium.launch({ args: ['--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist'] });
   const ctx = await b.newContext({ viewport: { width: 932, height: 430 }, deviceScaleFactor: 2 });
   await ctx.route(/fonts\.(googleapis|gstatic)\.com/, r => r.abort());
-  await ctx.addInitScript(() => { try { localStorage.setItem('sniperduel_settings', JSON.stringify({ quality: 'alto', v: 3 })); localStorage.setItem('sniperduel_menuOld', 'true'); } catch (e) {} });
+  await ctx.addInitScript((q) => { try { localStorage.setItem('sniperduel_settings', JSON.stringify({ quality: q, v: 3 })); localStorage.setItem('sniperduel_menuOld', 'true'); } catch (e) {} }, process.env.QUAL || 'alto');   // QUAL=medio|bajo to measure the other profiles
   const p = await ctx.newPage(); p.on('pageerror', e => console.log('ERR', e.message));
   await p.goto(base + '?vm=1' + EXTRA, { timeout: 180000 });
   await p.waitForFunction(() => window.__SD && __SD.VMA && __SD.VMA.ready && __SD.P3W && (__SD.P3W.kit || !__SD.P3ON) && (!__SD.E10.on || __SD.E10.ready || __SD.E10.failed) && (!__SD.FLORA || !__SD.FLORA.on || __SD.FLORA.ready || __SD.FLORA.failed), null, { timeout: 240000 });

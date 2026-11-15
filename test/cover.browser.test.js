@@ -49,6 +49,7 @@ async function audit(page, url, p3, canary) {
         if (mats.every(mt => !mt || mt.visible === false || mt.colorWrite === false)) return;
         if (/^p3_(hills|backdrop|ground)|^streets_|^town_(cobble|paving)/.test(m.name)) return;
         if (/^fuente_/.test(m.name)) return;   // the fountain's water (14-11-2026): see-through water and jets, inside the basin's boxes; nobody takes it for cover
+        if (m.name === 'p4_cables') return;   // PUEBLO 4.0 (15-11-2026): overhead wires, 1.2 cm thick and above 4.5 m: they hide nobody
         // vegetation (client/flora.js): see-through low decoration that stops nothing — allowed anywhere, but it must stay
         // ≤ 0.66 m (the low-decoration limit, below the legs' hit zone): only its height is measured
         const flora = /^flora_/.test(m.name);
@@ -74,6 +75,8 @@ async function audit(page, url, p3, canary) {
               out.body++; if (out.ex.length < 8) out.ex.push(m.name + ' ' + x.toFixed(2) + ',' + y.toFixed(2) + ',' + z.toFixed(2) + ' a ' + d.toFixed(2) + ' m');
             } else if (y < 6.5) {
               if (hd(x, y, z, 0) <= 1.2 || CROWN.test(m.name)) { if (!CROWN.test(m.name) && !THIN.test(m.name) && overRoof(x, y, z)) { out.roof++; out.roofBy[m.name] = (out.roofBy[m.name] || 0) + 1; if (/^p3_|^kit_|^e10_/.test(m.name) && out.rx.length < 6) out.rx.push(m.name + ' ' + x.toFixed(2) + ',' + y.toFixed(2) + ',' + z.toFixed(2)); } continue; }
+              // PUEBLO 4.0 (15-11-2026): a lamp hanging from a ceiling that is a solid box (≤ 0.45 m under it) is not loose
+              if (solids.some(sb => x > sb[0] && x < sb[3] && z > sb[2] && z < sb[5] && sb[1] - y >= -0.01 && sb[1] - y <= 0.45)) continue;
               out.over++; if (out.ex.length < 6) out.ex.push('arriba ' + m.name + ' ' + x.toFixed(2) + ',' + y.toFixed(2) + ',' + z.toFixed(2));
             } else if (!CROWN.test(m.name) && !THIN.test(m.name) && overRoof(x, y, z)) { out.roof++; out.roofBy[m.name] = (out.roofBy[m.name] || 0) + 1; if (/^p3_|^kit_|^e10_/.test(m.name) && out.rx.length < 6) out.rx.push(m.name + ' ' + x.toFixed(2) + ',' + y.toFixed(2) + ',' + z.toFixed(2)); }
           }

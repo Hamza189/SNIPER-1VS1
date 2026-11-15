@@ -3,7 +3,8 @@
      fuente.glb           — la fuente de la plaza con su agua (el agua animada se exporta quieta: el GLB no lleva shaders)
      pueblo3.glb          — el PUEBLO 3.0 entero, tal como se ve (sin los proxies invisibles de las balas)
    Las piezas del kit van «instanciadas» en el juego (una malla, muchas copias); aquí se convierten en mallas normales.
-   Uso: node tools/exportar-glb.js CARPETA_DE_SALIDA      (necesita playwright; tarda unos minutos con WebGL por software) */
+     pueblo4-ligero.glb   — el mismo pueblo en una malla por material y texturas de 512 px (referencia/arte, PUEBLO 4.0)
+   Uso: node tools/exportar-glb.js CARPETA_DE_SALIDA [casas,fuente,pueblo,pueblo-ligero]     (necesita playwright; tarda unos minutos con WebGL por software) */
 'use strict';
 const { chromium } = require('playwright'), path = require('path'), fs = require('fs'), ss = require('./static-server.js');
 const OUT = process.argv[2] || path.join(__dirname, '..', '.work', 'glb');
@@ -64,13 +65,38 @@ const OUT = process.argv[2] || path.join(__dirname, '..', '.work', 'glb');
         o.traverse(m => { if (m.isPoints || m.isSprite || m.isLine || !m.isMesh || !m.visible) return; const mats = [].concat(m.material); if (mats.every(x => !x || x.visible === false || x.colorWrite === false)) return;
           if (m.isInstancedMesh) { const u = unInstance(m); root.add(u); return; }
           const c = plain(m); c.name = m.name; root.add(c); }); }
+      if (what === 'pueblo-ligero') {   // PUEBLO 4.0: one mesh per material (world space), for reference/art; the game never loads it
+        const by = new Map(); root.traverse(m => { if (m.isMesh && !Array.isArray(m.material)) { const k = m.material; (by.get(k) || by.set(k, []).get(k)).push(m); } });
+        const lite = new T.Group(); lite.name = 'PUEBLO_4_LIGERO';
+        for (const [mat, list] of by) {
+          let nv = 0, ni = 0; const hasC = list.some(m => m.geometry.attributes.color), hasUV = list.some(m => m.geometry.attributes.uv);
+          for (const m of list) { const g = m.geometry; m.updateMatrixWorld(true); nv += g.attributes.position.count; ni += g.index ? g.index.count : g.attributes.position.count; }
+          if (!nv) continue;
+          const P = new Float32Array(nv * 3), N = new Float32Array(nv * 3), U = hasUV ? new Float32Array(nv * 2) : null, Cc = hasC ? new Float32Array(nv * 3).fill(1) : null, I = new Uint32Array(ni);
+          let v = 0, i = 0; const nm = new T.Matrix3(), vv = new T.Vector3();
+          for (const m of list) { const g = m.geometry, A = g.attributes, n = A.position.count; nm.getNormalMatrix(m.matrixWorld);
+            for (let q = 0; q < n; q++) { vv.fromBufferAttribute(A.position, q).applyMatrix4(m.matrixWorld); P.set([vv.x, vv.y, vv.z], (v + q) * 3);
+              if (A.normal) { vv.fromBufferAttribute(A.normal, q).applyMatrix3(nm).normalize(); N.set([vv.x, vv.y, vv.z], (v + q) * 3); }
+              if (U && A.uv) U.set([A.uv.getX(q), A.uv.getY(q)], (v + q) * 2); if (Cc && A.color) Cc.set([A.color.getX(q), A.color.getY(q), A.color.getZ(q)], (v + q) * 3); }
+            if (g.index) for (let q = 0; q < g.index.count; q++) I[i++] = g.index.getX(q) + v; else for (let q = 0; q < n; q++) I[i++] = q + v;
+            v += n; }
+          const g = new T.BufferGeometry(); g.setAttribute('position', new T.BufferAttribute(P, 3)); g.setAttribute('normal', new T.BufferAttribute(N, 3));
+          // lighter: no vertex colour if it is all white, no UV if the material has no texture, 16-bit indices when they fit
+          const white = Cc && Cc.every(x => x > 0.996), texd = mat.map || mat.normalMap || mat.roughnessMap || mat.aoMap;
+          if (U && texd) g.setAttribute('uv', new T.BufferAttribute(U, 2)); if (Cc && !white) g.setAttribute('color', new T.BufferAttribute(Cc, 3));
+          g.setIndex(new T.BufferAttribute(nv < 65536 ? Uint16Array.from(I) : I, 1));
+          const mm = new T.Mesh(g, mat); mm.name = (mat.name || 'mat') + '_todo'; lite.add(mm); }
+        root.clear(); root.add(lite); root.name = 'PUEBLO_4';
+      }
     }
     let tris = 0; root.traverse(o => { if (o.isMesh) tris += (o.geometry.index ? o.geometry.index.count : o.geometry.attributes.position.count) / 3; });
-    const glb = await new Promise(res => new T.GLTFExporter().parse(root, res, { binary: true, maxTextureSize: 1024, embedImages: true }));
+    const glb = await new Promise(res => new T.GLTFExporter().parse(root, res, { binary: true, maxTextureSize: what === 'pueblo-ligero' ? 512 : 1024, embedImages: true }));
     const u8 = new Uint8Array(glb); let s = ''; for (let i = 0; i < u8.length; i += 32768) s += String.fromCharCode.apply(null, u8.subarray(i, i + 32768));
     return { b64: btoa(s), tris: Math.round(tris), n: root.children.length };
   }, what);
-  for (const [what, file] of [['casas', 'casas-habitables.glb'], ['fuente', 'fuente.glb'], ['pueblo', 'pueblo3.glb']]) {
+  const LIST = { casas: 'casas-habitables.glb', fuente: 'fuente.glb', pueblo: 'pueblo3.glb', 'pueblo-ligero': 'pueblo4-ligero.glb' };
+  const want = (process.argv[3] || 'casas,fuente,pueblo-ligero').split(',');
+  for (const [what, file] of Object.entries(LIST).filter(([w]) => want.includes(w))) {
     const r = await run(what), f = path.join(OUT, file); fs.writeFileSync(f, Buffer.from(r.b64, 'base64'));
     console.log(file + ': ' + r.n + ' grupos · ' + r.tris + ' triángulos · ' + (fs.statSync(f).size / 1048576).toFixed(1) + ' MB');
   }

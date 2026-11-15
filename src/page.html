@@ -1823,7 +1823,9 @@ const PIC=(()=>{let o={};try{o=store.get('settings',null)||{};}catch(e){}
 /* PUEBLO 3.0 (vertical slice, ?pueblo=3): new light and town; without the flag the game looks exactly as before */
 // …or chosen in AJUSTES › GRÁFICOS and remembered on the device (a shared link often loses its ?…, 17-10-2026); ?pueblo=0 forces the old one
 const P3=/[?&]pueblo=3\b/.test(location.search)||(!/[?&]pueblo=0\b/.test(location.search)&&store.get('p3',false)===true);
-const LOOK=P3?{exp:0.95,fog:0xdcd6c8,sun:0xfff0d8,sunI:3.0,sunPos:[-45,60,-30],hemiSky:0xc4d8f0,hemiGround:0xc9a684,hemiI:1.0,
+/* PUEBLO 4.0 (15-11-2026, client/pueblo4.js, docs/PUEBLO-4.md): on top of PUEBLO 3.1, only what you see. ?pueblo4=0 = 3.1 */
+const P4ON=!!P3&&!/[?&]pueblo4=0\b/.test(location.search)&&typeof SDPueblo4!=='undefined';
+const LOOK=P3?{exp:0.95,fog:P4ON?0xd8dad6:0xdcd6c8,sun:0xfff0d8,sunI:P4ON?3.2:3.0,sunPos:[-45,60,-30],hemiSky:0xc4d8f0,hemiGround:0xc9a684,hemiI:P4ON?0.92:1.0,
     sky:{top:0x5b8fcb,mid:0x9ec2e2,hor:0xe9e4d6,glow:0xfff2d6}}
   :{exp:0.82,fog:0xe2b894,sun:0xffe0b5,sunI:2.7,sunPos:[-45,60,-30],hemiSky:0xb8cdee,hemiGround:0x9a7656,hemiI:0.6,
     sky:{top:0x41557a,mid:0xc99b86,hor:0xf0b47e,glow:0xffd2a0}};
@@ -2340,6 +2342,7 @@ if(P3ON){
   // shadows from the kit: ALTO everything big (eaves, doors…), MEDIO only balconies, awnings and cornices
   const CAST_MEDIO=new Set(['balcony','balcony_long','awning','cornice','fountain','orange_tree']);
   P3W.ctx={texLoad,low,cache:{},shared:true,env:null,shadows:(k,m)=>GFX.profile!=='bajo'&&(GFX.profile==='alto'?CAST:CAST_MEDIO).has(k)&&!['iron','glass','lamp','dark','water'].includes(m)};
+  if(P4ON&&GFX.profile!=='bajo')P3W.ctx.decorate=(m,k)=>SDPueblo4.weather(m,k);   // PUEBLO 4.0: wear and dirt in the shared materials
   const gctx={texLoad,low,cache:{},shared:true};   // ground: its own materials, drawn just above the sand
   const p3mesh=(data,tag,cx,ground)=>{
     for(const k of SDTown3.MATS){const g=data[k];if(!g)continue;
@@ -2369,7 +2372,7 @@ if(P3ON){
       p0side:{tex:pre('sidewalk'),tile:1.5,r:0.8,n:1,rough:true,col:0xffffff},
       p0patch:{tex:pre('patch'),tile:2,r:0.9,n:1,rough:true,col:0xffffff}});
   }
-  p3mesh(SDTown3.ground({footprints:foot,fronts,place:P3W.place,p0:P0.on?P0.use:null,south:P31}).geo,'ground',gctx,true);
+  p3mesh(SDTown3.ground({footprints:foot,fronts,place:P3W.place,p0:P0.on?P0.use:null,south:P31,p4:P4ON}).geo,'ground',gctx,true);
   if(P0.on)try{p0Details(foot);}catch(e){console.warn('p0',e);}
   // the town outside: its facades stand exactly on the plane of the old 4 m concrete perimeter wall (x, z = ±50), so the
   // lower half of every facade at the end of a street fought that wall for each pixel: a grey mix when standing still,
@@ -2377,6 +2380,7 @@ if(P3ON){
   // materials (same shared textures) with the ground's depth offset, so the facade always wins
   {const bctx=Object.assign({},P3W.ctx,{cache:{}});p3mesh(SDTown3.backdrop({},P3W.place).geo,'backdrop',bctx,true);
    if(P31&&GFX.profile!=='bajo')p3mesh(SDTown3.backdropSouth({},P3W.place).geo,'backdropS',bctx,true);}
+  if(P4ON)P3W.place.push(...SDPueblo4.dress(P3W.place.filter(p=>Math.abs(p.x)<49&&Math.abs(p.z)<49)));   // PUEBLO 4.0: washing, window boxes, air conditioners, door plaques, meter boxes
   // the slice's sandbag walls become stone planters (same boxes), with orange trees on the long ones
   for(const o of P3W.skip)hideOld(o);
   for(const o of P3W.skip){const gp=k=>o.geometry.parameters[k],p=o.position,w=gp('width'),h=gp('height'),d=gp('depth');
@@ -2447,9 +2451,9 @@ if(CASAS.on){
   const ctx=kit?P3W.ctx:{texLoad,low:prof==='bajo',cache:{},shared:true};
   const matOf=k=>k==='crate'?MAT.crate:typeof KIT3D!=='undefined'?KIT3D.material(T,k,ctx):new T.MeshStandardMaterial({vertexColors:true,roughness:0.85});
   const V={};
-  for(const H of CASAS.houses){const side=(H.x<0?'w':'e')+(H.z<0?'s':'n'),v=SDCasas.visual(H,{kit});for(const k in v)(V[k+'@'+side]||(V[k+'@'+side]=[])).push(...v[k]);
+  for(const H of CASAS.houses){const side=(H.x<0?'w':'e')+(H.z<0?'s':'n'),v=SDCasas.visual(H,{kit,deco:P4ON});for(const k in v)(V[k+'@'+side]||(V[k+'@'+side]=[])).push(...v[k]);
     if(kit){const pl=SDCasas.kitPieces(H);CASAS.kit.push(...pl);P3W.place.push(...pl);}}
-  for(const key in V){const k=key.split('@')[0],g=SDCasas.mesh(V[key]),geo=new T.BufferGeometry(),tile=k==='crate'?1:(LK[k]&&LK[k].tile)||1;
+  for(const key in V){const k=key.split('@')[0],g=SDCasas.mesh(V[key],{boost:P4ON?1.3:1}),geo=new T.BufferGeometry(),tile=k==='crate'?1:(LK[k]&&LK[k].tile)||1;
     if(tile!==1)for(let i=0;i<g.uv.length;i++)g.uv[i]/=tile;   // metres → texture repeats (shared textures)
     geo.setAttribute('position',new T.BufferAttribute(g.pos,3));geo.setAttribute('normal',new T.BufferAttribute(g.nrm,3));geo.setAttribute('uv',new T.BufferAttribute(g.uv,2));
     const col=g.col;for(let i=0;i<col.length;i++)col[i]=col[i]<=0.04045?col[i]/12.92:Math.pow((col[i]+0.055)/1.055,2.4);geo.setAttribute('color',new T.BufferAttribute(col,3));
@@ -2464,6 +2468,10 @@ if(CASAS.on){
     const geo=new T.BufferGeometry();geo.setAttribute('position',new T.BufferAttribute(pos,3));geo.computeBoundingSphere();
     const px=new T.Mesh(geo,SHADOW_PROXY);px.name='casas_sombras';px.castShadow=true;px.receiveShadow=false;px.renderOrder=-1;scene.add(px);CASAS.shadow=px;}
 }
+// PUEBLO 4.0: overhead cables across the streets (above 5 m; what you see only)
+if(P4ON){const c=SDPueblo4.cables(),g=new T.BufferGeometry();g.setAttribute('position',new T.BufferAttribute(c.pos,3));g.setAttribute('normal',new T.BufferAttribute(c.nrm,3));
+  g.setIndex(new T.BufferAttribute(c.idx,1));g.computeBoundingSphere();const m=new T.Mesh(g,new T.MeshStandardMaterial({color:0x1d1b19,roughness:0.75,metalness:0.1}));m.material.userData.cs=1;
+  m.name='p4_cables';m.matrixAutoUpdate=false;m.updateMatrix();scene.add(m);}
 /* =================== LA FUENTE (client/fuente.js, docs/FUENTE.md): water that moves; ?fuente=0 = the old flat water =================== */
 const FUENTE={on:typeof SDFuente!=='undefined'&&!/[?&]fuente=0\b/.test(location.search),f:null};
 if(FUENTE.on){

@@ -135,6 +135,19 @@ for (const H of C.HOUSES) {
   check(H.id + ': a la altura del cuerpo solo contraventanas', low.length === 0, low.map(k => k.k + '@' + k.y).join(' '));
 }
 
+console.log('\nPUEBLO 4.0: LO QUE HAY DENTRO (solo se ve)');
+for (const H of C.HOUSES) {
+  const D = C.deco(H), all = [].concat(...Object.values(D)), ix0 = H.x - H.w / 2 + C.T_WALL, ix1 = H.x + H.w / 2 - C.T_WALL, iz0 = H.z - H.d / 2 + C.T_WALL, iz1 = H.z + H.d / 2 - C.T_WALL;
+  const ceilOf = y => H.floors === 2 && y < C.upY(H) - 0.1 ? H.fl : H.h - C.SLAB;
+  const bad = all.filter(b => { const flat = b.b[1] - b.a[1] < 0.02, wall = Math.min(b.a[0] - ix0, ix1 - b.b[0], b.a[2] - iz0, iz1 - b.b[2]) < -0.001 ? 'fuera' : null;
+    if (wall) return true; if (flat) return false;
+    const deep = Math.min(Math.max(b.b[0] - ix0, 0), Math.max(ix1 - b.a[0], 0), Math.max(b.b[2] - iz0, 0), Math.max(iz1 - b.a[2], 0));
+    return !(deep <= 0.33 || b.a[1] >= ceilOf(b.a[1]) - 0.42); });
+  check(H.id + ' (' + C.TYPE[H.id] + '): ' + all.length + ' piezas, todas dentro, contra una pared (≤ 0,33 m), planas o bajo el techo', bad.length === 0, bad.length + ' mal');
+  const st = C.ramps(H)[0], onStair = st ? all.filter(b => b.b[1] - b.a[1] > 0.02 && b.a[0] < st.maxX && b.b[0] > st.minX && b.a[2] < st.maxZ && b.b[2] > st.minZ && b.a[1] < st.hHigh) : [];
+  check(H.id + ': nada encima de la escalera', onStair.length === 0, onStair.length);
+}
+
 console.log('\nNAVEGACIÓN INTERIOR');
 for (const H of C.HOUSES) {
   const N = C.nav(H, C.boxes(H)), pts = N.pts, seen = new Uint8Array(pts.length), q = [N.doorsOut[0]]; seen[q[0]] = 1;

@@ -21,6 +21,8 @@ sugerencia de Claude está marcado como **PROPUESTA (sin aprobar)**.
 
 ## 2. Pendiente, por prioridad (orden del propietario cuando lo ha dado)
 ### Prioridad inmediata: validar en dispositivos reales
+0. **PUEBLO 4.0 F0–F5** (15-11, rama local `pueblo4`, en zip): solo visual; aplicar, enseñar, MEDIR RENDIMIENTO y decidir la
+   F6 (jugabilidad con colisiones, servidor) (`docs/claude-code/PUEBLO4_PARA_CLAUDE_CODE.md`).
 0. **PUEBLO 3.1** (14-11, rama local `pueblo-mejoras`, entregada en zip): el pueblo entero en 3.0, 8 casas habitables (también
    en el servidor), la fuente nueva. Aplicar, enseñar, MEDIR RENDIMIENTO en el iPhone y publicar con su OK
    (`docs/claude-code/PUEBLO31_PARA_CLAUDE_CODE.md`).

@@ -72,6 +72,7 @@ function material(T, name, ctx) {
   const m = new T.MeshStandardMaterial(o);
   m.color.convertSRGBToLinear(); if (m.emissive) m.emissive.convertSRGBToLinear();
   m.userData.cs = 1; m.name = 'kit_' + name;
+  if (ctx.decorate) ctx.decorate(m, name);   // PUEBLO 4.0: wear and dirt in the shader (client/pueblo4.js)
   cache[name] = m;
   return m;
 }

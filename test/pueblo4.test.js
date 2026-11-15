@@ -1,0 +1,28 @@
+/* PUEBLO 4.0 (15-11-2026, client/pueblo4.js) sin navegador: lo nuevo es solo lo que se ve y respeta las reglas de
+   cobertura de PUEBLO 3.0: piezas de fachada pegadas a la fachada; a la altura del cuerpo solo cosas planas o bajas;
+   cables por encima de 5 m; el desgaste solo en materiales del pueblo y sin texturas nuevas.   node test/pueblo4.test.js */
+'use strict';
+const P4 = require('../client/pueblo4.js'), T3 = require('../client/town3.js'), C = require('../client/casas.js');
+let pass = 0, fail = 0;
+const check = (n, c, i) => { (c ? pass++ : fail++); console.log((c ? '  ok   ' : '  FAIL ') + n + (i !== undefined ? '  (' + i + ')' : '')); };
+const B = [[-31,-31,14,12,7,0],[-31,-9,12,10,5,1],[-32,16,12,12,9,2],[-31,37,14,10,6,3],[31,-33,12,10,8,4],[33,-8,10,12,5,5],[30,17,14,10,7,1],[33,38,10,10,10,2],[-9,-31,8,8,4,3],[13,-25,6,10,6,4],[-12,27,10,6,5,0],[11,31,8,6,4,5],[-2,-43,10,5,3.5,2],[3,43,12,5,4,3]];
+const fam = Object.assign({}, T3.SLICE_FAMILIES, T3.SOUTH_FAMILIES), q = B.filter(b => fam[b[0] + ',' + b[1]] && !C.byKey[b[0] + ',' + b[1]]);
+const d = T3.build(q, { families: fam }), extra = P4.dress(d.place);
+const cnt = {}; for (const p of extra) cnt[p.k] = (cnt[p.k] || 0) + 1;
+check('piezas de vida en las fachadas: ' + JSON.stringify(cnt), extra.length > 25 && cnt.laundry > 5 && cnt.plaque > 5 && cnt.ac_unit > 0, extra.length);
+// distance from a piece to the nearest building outline
+const near = p => Math.min(...q.map(b => { const dx = Math.max(0, Math.abs(p.x - b[0]) - b[2] / 2), dz = Math.max(0, Math.abs(p.z - b[1]) - b[3] / 2); return Math.hypot(dx, dz); }));
+const far = extra.filter(p => near(p) > 0.45);
+check('todas pegadas a una fachada (≤ 0,45 m)', far.length === 0, far.map(p => p.k + '@' + p.x + ',' + p.z).slice(0, 4).join(' '));
+const body = extra.filter(p => p.y > 0.12 && p.y < 2.0 && !/^(plaque|meter_box)$/.test(p.k));
+check('a la altura del cuerpo solo placas y contadores (planos)', body.length === 0, body.map(p => p.k + '@' + p.y).join(' '));
+const hi = extra.filter(p => /^(laundry|planter|ac_unit)$/.test(p.k));
+check('ropa, jardineras y aparatos por encima de 2 m', hi.every(p => p.y > 2.0), Math.min(...hi.map(p => p.y)).toFixed(2));
+check('el mismo resultado cada vez (sin azar suelto)', JSON.stringify(P4.dress(d.place)) === JSON.stringify(extra));
+const cb = P4.cables(); let ymin = 1e9; for (let i = 1; i < cb.pos.length; i += 3) ymin = Math.min(ymin, cb.pos[i]);
+check('cables: ' + cb.spans + ' tramos, todos por encima de 4,5 m', ymin > 4.5, ymin.toFixed(2));
+check('cables: pocos triángulos (' + cb.idx.length / 3 + ')', cb.idx.length / 3 < 3000);
+const m = { onBeforeCompile: null, constructor: { prototype: {} }, userData: {} };
+check('desgaste: se aplica a estuco y adoquín, no al vidrio ni a la pintura de carteles', P4.weather(Object.assign({}, m, { userData: {} }), 'stucco') && P4.weather(Object.assign({}, m, { userData: {} }), 'setts') && !P4.weather(Object.assign({}, m, { userData: {} }), 'glass') && !P4.weather(Object.assign({}, m, { userData: {} }), 'sign'));
+console.log('\n' + pass + ' ok, ' + fail + ' fallos');
+process.exit(fail ? 1 : 0);

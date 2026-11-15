@@ -256,6 +256,7 @@ function nav(H, bxs) {
 //      A box may carry cin = [axis, sign, colour]: the face pointing that way (the inside of a wall) takes that colour.
 function visual(H, opt) {
   opt = opt || {};
+  if (opt.deco) { const v = visual(H, Object.assign({}, opt, { deco: false })), d = deco(H); for (const k in d) (v[k] || (v[k] = [])).push(...d[k]); return v; }
   const V = {}, add = (k, a, b, col, extra) => (V[k] || (V[k] = [])).push(Object.assign({ a: a.map(r3), b: b.map(r3), col: col == null ? null : col }, extra || {}));
   const O = openings(H), top = H.h, hx = H.w / 2, hz = H.d / 2, X0 = H.x - hx, X1 = H.x + hx, Z0 = H.z - hz, Z1 = H.z + hz;
   const wallK = H.wallMat || 'stucco', plinthK = (H.plinth && H.plinth.mat) || 'stone';
@@ -322,6 +323,72 @@ function visual(H, opt) {
   return V;
 }
 
+// ---- PUEBLO 4.0: what each house is (a few pieces against the walls tell it), lit from inside (15-11-2026)
+//      Only what you see: no box. Everything stands against a wall and is at most 0.3 m deep (the player's eyes stay
+//      outside it when he leans on the wall), or lies flat on the floor (rugs), or hangs within 0.4 m of the ceiling.
+const TYPE = { encalada: 'vivienda', terracota: 'vivienda', arenisca: 'vivienda', piedra: 'piedra', colmado: 'tienda', taller: 'taller', bodega: 'almacen', casona: 'senorial' };
+const ITEMS = { vivienda: ['aparador', 'cuadro', 'estante', 'cuadro'], piedra: ['estante', 'aparador', 'cuadro', 'cuadro'], senorial: ['estante', 'aparador', 'cuadro', 'espejo'],
+  tienda: ['estante', 'estante', 'estante', 'cuadro'], taller: ['panel', 'estante', 'panel', 'bidones'], almacen: ['botellero', 'sacos', 'botellero', 'sacos'] };
+// free stretches of the inner walls at a floor (no window, door, door leaf, stair, partition or crate in front)
+function freeSpans(H, level) {
+  const O = openings(H), y = level ? upY(H) : 0, top = level ? H.h - SLAB : (H.floors === 2 ? H.fl : H.h - SLAB), out = [], st = stairOf(H);
+  for (const f of ['n', 's', 'w', 'e']) {
+    const F = faceFrame(H, f), lim = (F.axis === 'x' ? H.w / 2 : H.d / 2) - T_WALL - 0.3, bl = [];
+    for (const o of O[f]) if (o.y0 < y + 2.4 && o.y1 > y) bl.push(o.kind === 'door' ? [o.u0 - 1.45, o.u1 + 1.45] : [o.u0 - 0.35, o.u1 + 0.35]);
+    if (st && st.face === f) { const a = Math.min(H.stair.from, H.stair.to), b = Math.max(H.stair.from, H.stair.to); bl.push([a - 0.5, b + 0.5]); }
+    const near = (bx) => F.axis === 'x' ? (Math.abs(bx.a[2] - F.inner) < 0.25 || Math.abs(bx.b[2] - F.inner) < 0.25) && [bx.a[0] - H.x, bx.b[0] - H.x] : (Math.abs(bx.a[0] - F.inner) < 0.25 || Math.abs(bx.b[0] - F.inner) < 0.25) && [bx.a[2] - H.z, bx.b[2] - H.z];
+    for (const w of (level ? H.walls2 : H.walls) || []) { const r = near(w); if (r) bl.push([r[0] - 0.5, r[1] + 0.5]); }
+    if (!level) for (const c of H.crates || []) { const dIn = F.axis === 'x' ? Math.abs(c[1] - F.inner) : Math.abs(c[0] - F.inner); if (dIn < 1.4) { const u = F.axis === 'x' ? c[0] - H.x : c[1] - H.z; bl.push([u - 1.0, u + 1.0]); } }
+    bl.sort((a, b) => a[0] - b[0]); let u = -lim;
+    for (const [a, b] of bl.concat([[lim, lim]])) { if (a - u >= 1.0) out.push({ f, u0: u, u1: Math.min(a, lim), y, top }); u = Math.max(u, b); }
+  }
+  return out.sort((a, b) => (b.u1 - b.u0) - (a.u1 - a.u0));
+}
+function deco(H) {
+  const V = {}, add = (k, a, b, col) => (V[k] || (V[k] = [])).push({ a: a.map(r3), b: b.map(r3), col: col == null ? null : col, lit: 1 });
+  const R = ((s) => () => (s = (s * 16807) % 2147483647) / 2147483647)(Math.abs(H.x * 71 + H.z * 13) + 11), type = TYPE[H.id] || 'vivienda';
+  const PROD = [0xc0392b, 0xe6b33a, 0x2f7d6e, 0x3b5f9a, 0xe8e2d0, 0x8a5a3b, 0x6f8f3a, 0xd9805f];
+  // a box against the wall of face f: u0..u1 along it, y0..y1, d deep from the inner face (o = gap to the wall)
+  const wb = (k, f, u0, u1, y0, y1, d, col, o) => { const q = faceBox(H, f, u0, u1, y0, y1, d, T_WALL + (o || 0)); add(k, q.a, q.b, col); };
+  const item = (name, sp, u0, u1) => {
+    const f = sp.f, y = sp.y + 0.035, w = u1 - u0;
+    if (name === 'estante' || name === 'botellero') {
+      const h = Math.min(1.95, sp.top - sp.y - 0.4), n = name === 'botellero' ? 6 : 5, wood = name === 'botellero' ? 0x5a3a24 : 0x7a5638;
+      wb('wood', f, u0, u0 + 0.05, y, y + h, 0.28, wood); wb('wood', f, u1 - 0.05, u1, y, y + h, 0.28, wood); wb('wood', f, u0, u1, y, y + h, 0.02, wood);
+      for (let i = 0; i < n; i++) { const yy = y + 0.08 + i * (h - 0.1) / (n - 1); wb('wood', f, u0 + 0.05, u1 - 0.05, yy, yy + 0.03, 0.28, wood);
+        if (i === n - 1) continue;
+        for (let x = u0 + 0.1; x < u1 - 0.16;) { const bw = name === 'botellero' ? 0.09 : 0.1 + R() * 0.22, bh = name === 'botellero' ? 0.09 : 0.12 + R() * ((h - 0.1) / (n - 1) - 0.2);
+          if (R() < (type === 'tienda' ? 0.92 : 0.6)) wb(name === 'botellero' ? 'dark' : 'stucco', f, x, Math.min(u1 - 0.07, x + bw), yy + 0.03, yy + 0.03 + bh, name === 'botellero' ? 0.24 : 0.16 + R() * 0.08, name === 'botellero' ? 0x2c3a2a : PROD[Math.floor(R() * PROD.length)], 0.02);
+          x += bw + 0.03; } }
+    } else if (name === 'aparador') {
+      wb('wood', f, u0, u1, y, y + 0.82, 0.3, 0x6e4a2c); wb('stone', f, u0 - 0.02, u1 + 0.02, y + 0.82, y + 0.86, 0.3, 0xe8e2d4);
+      for (let x = u0 + 0.05; x < u1 - 0.1; x += (u1 - u0 - 0.1) / 2) wb('wood', f, x + 0.03, x + (u1 - u0 - 0.1) / 2 - 0.03, y + 0.1, y + 0.75, 0.31, 0x8a6040);
+      wb('stucco', f, u0 + 0.15, u0 + 0.35, y + 0.86, y + 1.15, 0.14, PROD[Math.floor(R() * PROD.length)], 0.06);   // a jar
+    } else if (name === 'cuadro' || name === 'espejo') {
+      const c = (u0 + u1) / 2, hw = name === 'espejo' ? 0.35 : 0.3 + R() * 0.15, y0 = y + 1.35, y1 = y0 + (name === 'espejo' ? 0.9 : 0.4 + R() * 0.2);
+      wb('wood', f, c - hw, c + hw, y0, y1, 0.035, name === 'espejo' ? 0xb08a3c : 0x5a3a24); wb(name === 'espejo' ? 'iron' : 'stucco', f, c - hw + 0.05, c + hw - 0.05, y0 + 0.05, y1 - 0.05, 0.045, name === 'espejo' ? null : PROD[Math.floor(R() * PROD.length)]);
+    } else if (name === 'panel') {
+      const c = (u0 + u1) / 2; wb('wood', f, c - 0.7, c + 0.7, y + 1.0, y + 1.9, 0.03, 0xa88a60);
+      for (let i = 0; i < 7; i++) { const x = c - 0.6 + i * 0.2, l = 0.2 + R() * 0.3; wb('iron', f, x - 0.015, x + 0.015, y + 1.75 - l, y + 1.8, 0.06, null, 0.03); }
+    } else if (name === 'bidones' || name === 'sacos') {
+      for (let x = u0 + 0.1; x < u1 - 0.5; x += 0.55) wb('stucco', f, x, x + 0.45, y, y + (name === 'sacos' ? 0.38 + R() * 0.12 : 0.62), 0.29, name === 'sacos' ? 0xcdb98e : [0x3b5f9a, 0x8a2f24, 0x4d6b3a][Math.floor(R() * 3)]);
+    }
+  };
+  for (const level of H.floors === 2 ? [0, 1] : [0]) {
+    const sp = freeSpans(H, level), list = (level ? ['aparador', 'cuadro', 'estante'] : ITEMS[type]).slice();
+    for (const s of sp) { if (!list.length) break; const name = list.shift(), want = name === 'cuadro' ? 1.0 : name === 'espejo' ? 1.0 : name === 'panel' ? 1.6 : Math.min(2.2, s.u1 - s.u0);
+      if (s.u1 - s.u0 < Math.min(want, 1.0)) continue; const c = (s.u0 + s.u1) / 2, half = Math.min(want, s.u1 - s.u0) / 2; item(name, s, c - half, c + half); }
+    // a rug in the middle of the room (not on the stair) and a lamp under the ceiling
+    const y = level ? upY(H) : 0, ceil = level ? H.h - SLAB : (H.floors === 2 ? H.fl : H.h - SLAB), st = stairOf(H);
+    let cx = H.x, cz = H.z; if (st) { const r = st.ramp; cx += (H.x - (r.minX + r.maxX) / 2) * 0.25; cz += (H.z - (r.minZ + r.maxZ) / 2) * 0.25; }
+    if (type !== 'taller' && type !== 'almacen') { const rw = Math.min(2.4, H.w / 2 - 1), rd = Math.min(1.6, H.d / 2 - 1); add('stucco', [cx - rw / 2, y + 0.035, cz - rd / 2], [cx + rw / 2, y + 0.045, cz + rd / 2], [0x8a2f24, 0x2f4f6a, 0x6b4a2c][Math.floor(R() * 3)]); }
+    else add('dark', [cx - 0.6, y + 0.035, cz - 0.4], [cx + 0.5, y + 0.039, cz + 0.45], 0x3a332c);   // an oil stain
+    add('iron', [cx - 0.01, ceil - 0.3, cz - 0.01], [cx + 0.01, ceil, cz + 0.01], null);
+    add('lamp', [cx - 0.16, ceil - 0.4, cz - 0.16], [cx + 0.16, ceil - 0.3, cz + 0.16], 0xfff1d0);
+  }
+  return V;
+}
+
 // ---- PUEBLO 3.0 kit pieces for a house (P3W.place format: { k, x, y, z, ry, s, c })
 function kitPieces(H) {
   const out = [], O = openings(H), ex = H.extras || [], R = ((s) => () => (s = (s * 16807) % 2147483647) / 2147483647)(Math.abs(H.x * 131 + H.z * 17) + 7);
@@ -351,11 +418,12 @@ function kitPieces(H) {
 
 // ---- triangles of a list of boxes, with UVs in metres on each face (world space) and vertex colours.
 //      Faces resting on the ground (y = 0, facing down) are left out.
-function mesh(list) {
+function mesh(list, opt) {
+  const boost = (opt && opt.boost) || 1;
   const pos = [], nrm = [], uv = [], col = [], idx = [];
   const srgb = c => [((c >> 16) & 255) / 255, ((c >> 8) & 255) / 255, (c & 255) / 255];
   for (const bx of list) {
-    const [x0, y0, z0] = bx.a, [x1, y1, z1] = bx.b, c = bx.col == null ? [1, 1, 1] : srgb(bx.col), ci = bx.cin ? srgb(bx.cin[2]) : null;
+    const [x0, y0, z0] = bx.a, [x1, y1, z1] = bx.b, c0 = bx.col == null ? [1, 1, 1] : srgb(bx.col), c = bx.lit ? c0.map(v => v * boost) : c0, ci = bx.cin ? srgb(bx.cin[2]).map(v => v * boost) : null;
     const F = [
       [[1, 0, 0], [[x1, y0, z1], [x1, y0, z0], [x1, y1, z0], [x1, y1, z1]], p => [-p[2], p[1]]],
       [[-1, 0, 0], [[x0, y0, z0], [x0, y0, z1], [x0, y1, z1], [x0, y1, z0]], p => [p[2], p[1]]],
@@ -376,6 +444,6 @@ function mesh(list) {
 // is a point inside one of the houses (bots, rats and flora can ask)
 function inside(x, z, m) { m = m || 0; for (const H of HOUSES) if (Math.abs(x - H.x) < H.w / 2 + m && Math.abs(z - H.z) < H.d / 2 + m) return H; return null; }
 
-const SDCasas = { HOUSES, byKey, T_WALL, SLAB, DOOR_W, DOOR_H, WIN_W, WIN_SILL, WIN_TOP, upY, openings, wallPieces, boxes, ramps, stairOf, steps, nav, visual, kitPieces, mesh, inside, faceFrame };
+const SDCasas = { TYPE, freeSpans, deco, HOUSES, byKey, T_WALL, SLAB, DOOR_W, DOOR_H, WIN_W, WIN_SILL, WIN_TOP, upY, openings, wallPieces, boxes, ramps, stairOf, steps, nav, visual, kitPieces, mesh, inside, faceFrame };
 if (typeof module !== 'undefined' && module.exports) module.exports = SDCasas; else root.SDCasas = SDCasas;
 })(typeof window !== 'undefined' ? window : globalThis);

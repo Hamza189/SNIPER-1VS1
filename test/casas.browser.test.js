@@ -34,7 +34,7 @@ function check(name, cond, info) { if (cond) { pass++; console.log('  ok   ' + n
       calls: S.CASAS.calls, tris: S.CASAS.tris, nav: W.nav.filter(n => n.casa).length, linked: W.nav.filter(n => n.casa && n.n.some(j => !W.nav[j].casa)).length,
       old: W.colliders.filter(c => (c.minY === 0 && c.minX === 7 && c.maxX === 15 && c.minZ === 28)).length, kit: S.CASAS.kit.length, shadow: !!S.CASAS.shadow }; });
     check('por defecto: las ' + NH + ' casas, sus cajas en el mundo, proxies de bala y 4 escaleras', st.on && st.houses === NH && st.cols && st.rays > 300 && st.ramps === 4 && st.old === 0, JSON.stringify(st));
-    check('dibujo: ≤ 40 llamadas (por material y cuarto del pueblo, para que la cámara descarte lo de detrás) y < 30 000 triángulos (más las piezas del kit y una malla de sombras)', st.calls <= 40 && st.tris < 30000 && st.kit > 100 && st.shadow, st.calls + ' llamadas · ' + st.tris + ' triángulos · ' + st.kit + ' piezas');
+    check('dibujo: ≤ 48 llamadas (por material y cuarto del pueblo; con lo de dentro de PUEBLO 4.0) y < 40 000 triángulos (más las piezas del kit y una malla de sombras)', st.calls <= 48 && st.tris < 40000 && st.kit > 100 && st.shadow, st.calls + ' llamadas · ' + st.tris + ' triángulos · ' + st.kit + ' piezas');
     check('navegación: puntos interiores unidos a la red por las ' + C.HOUSES.reduce((n, H) => n + H.doors.length, 0) + ' puertas', st.nav > 400 && st.linked >= C.HOUSES.reduce((n, H) => n + H.doors.length, 0), st.nav + ' puntos · ' + st.linked + ' enlaces');
     check('sin errores ni texturas que falten', errs.length === 0 && bad.length === 0, errs.concat(bad).join(' | ') || 'ninguno');
     // walk with the game's own movement and the live world

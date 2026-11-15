@@ -455,6 +455,10 @@ function ground(opt) {
   // drains: grates every 12 m by the kerbs, a manhole on the cross street
   for (const z of [16, 28, 40].concat(opt.south ? [-16, -28, -40] : [])) for (const x of [-4.1, 4.1]) { flat(B, 'dark', x - 0.2, z - 0.35, x + 0.2, z + 0.35, 0.02, hex(0x2a2622)); for (let k = 0; k < 6; k++) flat(B, 'concrete', x - 0.2, z - 0.33 + k * 0.12, x + 0.2, z - 0.29 + k * 0.12, 0.024, hex(0x5a554e)); }
   for (const x of [-24, 30]) { const c = [x, 0]; for (let k = 0; k < 10; k++) { const a0 = k * Math.PI / 5, a1 = (k + 1) * Math.PI / 5; quad(B, 'concrete', [[c[0], 0.02, c[1]], [c[0] + 0.4 * Math.cos(a0), 0.02, c[1] + 0.4 * Math.sin(a0)], [c[0] + 0.4 * Math.cos(a1), 0.02, c[1] + 0.4 * Math.sin(a1)], [c[0], 0.02, c[1]]], [0, 1, 0], hex(0x6a645a)); } }
+  // PUEBLO 4.0: manholes in the middle of the north and south streets too (the drains run under them)
+  if (opt.p4) for (const [x, z] of [[1.4, 21], [-1.2, 35], [1.3, -21], [-1.4, -35]].filter(p => opt.south || p[1] > 0)) { const c = [x, z];
+    for (let k = 0; k < 12; k++) { const a0 = k * Math.PI / 6, a1 = (k + 1) * Math.PI / 6; quad(B, 'concrete', [[c[0], 0.021, c[1]], [c[0] + 0.36 * Math.cos(a0), 0.021, c[1] + 0.36 * Math.sin(a0)], [c[0] + 0.36 * Math.cos(a1), 0.021, c[1] + 0.36 * Math.sin(a1)], [c[0], 0.021, c[1]]], [0, 1, 0], hex(0x5d584f)); }
+    for (let k = -2; k <= 2; k++) flat(B, 'dark', x - 0.26, z + k * 0.1 - 0.012, x + 0.26, z + k * 0.1 + 0.012, 0.022, hex(0x3a3631)); }
   // pavements round the buildings: slabs with a kerb edge
   for (const [x0, x1, z0, z1] of foot) {
     const p = 1.5;

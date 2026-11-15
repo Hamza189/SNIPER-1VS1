@@ -23,6 +23,7 @@ Detalle de cada cambio (antes/después, medidas, cómo revertir): `docs/next-lev
 ### Siguiente prioridad
 | Tarea | Quién la desbloquea | Estado |
 |---|---|---|
+| **PUEBLO 4.0 F0–F5** (15-11) — rama local `pueblo4` (encima de PUEBLO 3.1) entregada en zip, sin push: auditoría con líneas de tiro medidas, desgaste de materiales, interiores con carácter, vida en fachadas, cables, luz. Solo visual; mapa del servidor idéntico. `?pueblo4=0` = 3.1. Falta: aplicar, enseñar, MEDIR RENDIMIENTO en iPhone (coste GPU del desgaste) y decidir F6 (jugabilidad con colisiones) (`docs/PUEBLO-4.md`) | Propietario | IMPLEMENTADO · PRUEBAS EN VERDE · SIN PUBLICAR · PENDIENTE DE VALIDACIÓN EN IPHONE |
 | **PUEBLO 3.1** (14-11, noche) — rama local `pueblo-mejoras` entregada en zip (sin push): pueblo entero en 3.0, 8 casas habitables EN EL MAPA DEL SERVIDOR, fuente nueva, carteles arreglados. Claude Code: aplicar, pasar pruebas, enseñárselo al propietario, MEDIR RENDIMIENTO en el iPhone, y solo con su OK publicar (cambia `core/mapdata.js` → despliega el servidor) (`docs/PUEBLO-31.md`, `docs/claude-code/PUEBLO31_PARA_CLAUDE_CODE.md`) | Propietario | IMPLEMENTADO · PRUEBAS EN VERDE · SIN PUBLICAR · PENDIENTE DE VALIDACIÓN EN IPHONE |
 | **SALA 1V1** (10-11) — probar `?lobby=2` en el PC y en el iPhone (horizontal), con alguien en otro dispositivo: INICIO › MULTIJUGADOR 1V1 → CREAR SALA PRIVADA → INVITAR (copiar enlace o WhatsApp) → el otro entra y aparece en el hangar → elegir mapa → LISTO los dos → INICIAR PARTIDA. Decir si gusta, los FPS del hangar y si pasa a ser la de siempre (`?lobby=1` = la de antes; `docs/SALA-1V1.md`) | Propietario | SERVIDOR PUBLICADO · PÁGINA SIN PUBLICAR · PENDIENTE DE VALIDACIÓN EN IPHONE Y ANDROID |
 | **CAJA NUEVA** (10-11) — CAJAS › ABRIR CAJA en el PC y en el iPhone: ver la ATLAS DROP temblar, abrirse y encenderse con el color de la rareza; decir si gusta o si se cambia algo (`?caja=0` = la de antes) | Propietario | PUBLICADO · PENDIENTE DE VALIDACIÓN |
@@ -162,6 +163,29 @@ Del propietario: «Sí, instálalo» (el compilador de C++).
 - `npm run typecheck` y la prueba de navwasm entran en `npm test`. `.github/workflows/pages.yml` publica `assets/wasm` y
   no `wasm/` (el código fuente).
 - **Estado:** PROBADO EN NAVEGADOR (PC) · PENDIENTE DE VALIDACIÓN EN IPHONE Y ANDROID.
+
+## 15-11-2026 — PUEBLO 4.0: auditoría y fases F0–F5 (solo visual)
+- Pedido (documento «PUEBLO 4.0 MASTER UPGRADE»): evolución de PUEBLO 3.1 hacia un mapa de shooter 3D real, con auditoría
+  P0–P4, fases pequeñas medidas y una bandera para volver a 3.1. Sin publicar ni cambiar el servidor.
+- Auditoría:
+  - P0: ninguno.
+  - P1: materiales demasiado limpios, interiores vacíos, fachadas repetidas, y poco combate corto y ninguna cobertura
+    intermedia en la plaza.
+  - Medido con la nueva `tools/lineas-de-tiro.js`: 38 % de parejas con línea de tiro (7 % cortas, 28 % medias, 42 %
+    largas, 23 % muy largas). Ningún puesto alto es invencible.
+- Hecho, solo visual:
+  - desgaste en el sombreado de los materiales compartidos;
+  - interiores con carácter y luz de rebote;
+  - ropa tendida, aparatos, jardineras, placas y contadores;
+  - cables y tapas;
+  - sol algo más fuerte y niebla más fría;
+  - GLB ligero.
+- `?pueblo4=0` vuelve a 3.1.
+- Medido en ALTO: 263,5 llamadas y 371,6 mil triángulos → 273,4 y 379,4 mil. 0 texturas nuevas. MEDIO +7 llamadas; BAJO
+  +4. El mapa del servidor sale idéntico.
+- Decisión de Claude: lo que cambia las colisiones (coberturas en la plaza, azotea al norte, callejón, sustituir los
+  restos de 2.0) queda como F6 propuesta, porque cambia el servidor y él pidió no tocarlo todavía.
+- Estado: IMPLEMENTADO · PRUEBAS EN VERDE · SIN PUBLICAR · PENDIENTE DE VALIDACIÓN EN IPHONE.
 
 ## 14-11-2026 (noche) — PUEBLO 3.1: pueblo entero en 3.0, 8 casas habitables, fuente nueva
 - Pedido: «mejora el mapa PUEBLO 3.0 mucho más (texturas, edificios, rayas, fluidez), integra estas casas y pásame un .glb,
