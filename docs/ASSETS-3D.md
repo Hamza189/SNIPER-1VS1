@@ -818,6 +818,15 @@ rifle, ahora 8× fijo) sigue siendo la de por defecto.
   - Tiles_15, baldosa blanca: para baños o interiores de un mapa futuro.
 
 
+## PUEBLO 4.0 — cajas, bidones y depósito de agua (F6b, 15-11-2026)
+- `assets/3d/models/sd_p4_utileria.glb` (0,35 MB): `crate_a`, `crate_b`, `crate_c` (cajas de 1,2 m, unos 240 triángulos),
+  `drum_a`, `drum_b`, `drum_c` (bidones de 200 l, 724) y `water_tower` (3 100). Los hace `tools/blender/utileria.py` en Blender
+  por código (obra propia, sin texturas nuevas: la madera usa la textura `wood` del kit con el tono en el color de vértice).
+  Estadísticas en `tools/blender/utileria-stats.json`.
+- Contrato: caja dentro del cubo de 1,2 m; bidón dentro del cilindro r 0,36 × 1 m; depósito dentro de ±2,4 m hasta 11,4 m, y a
+  la altura de los pies solo las patas (en su caja de 0,3 m). Los redondos y la escalera son finos (2,2 cm), como en 2.0.
+- Solo con PUEBLO 4.0 (`?pueblo4=0` enseña los viejos).
+
 ## PUEBLO 4.0 — vehículos abandonados (15-11-2026)
 - `assets/3d/models/sd_p4_vehiculos.glb` (0,9 MB): `car_wreck_a`, `car_wreck_b` y `car_wreck_c`, pick-ups 4×4 viejas de unos
   4 600 triángulos cada una. Las hace `tools/blender/vehiculos.py` en Blender por código (obra propia, sin texturas ni

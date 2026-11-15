@@ -1,13 +1,14 @@
-# Instrucciones para Claude Code — PUEBLO 4.0, fases F0–F5 y F6a vehículos (15-11-2026)
+# Instrucciones para Claude Code — PUEBLO 4.0, fases F0–F5, F6a vehículos y F6b utilería (15-11-2026)
 
 El propietario pidió PUEBLO 4.0 con auditoría y fases medidas, **sin publicar, sin cambiar el servidor, sin push y sin
-tocar `main`**. Todo está en la rama local `pueblo4`. Lleva 4 commits sobre `main`:
+tocar `main`**. Todo está en la rama local `pueblo4`. Lleva 6 commits sobre `main`:
 1. y 2. casas habitables;
 3. PUEBLO 3.1, del paquete anterior;
 4. PUEBLO 4.0 F0–F5;
-5. PUEBLO 4.0 F6a: pick-ups abandonadas en lugar de los coches de plástico.
+5. PUEBLO 4.0 F6a: pick-ups abandonadas en lugar de los coches de plástico;
+6. PUEBLO 4.0 F6b: cajas, bidones y depósito de agua.
 
-Si ya aplicaste el paquete de PUEBLO 3.1, aplica solo los dos últimos parches.
+Si ya aplicaste el paquete de PUEBLO 3.1, aplica solo los tres últimos parches.
 
 Lee primero `docs/PUEBLO-4.md`: auditoría, líneas de tiro medidas, plan, medidas y la propuesta F6.
 
@@ -15,7 +16,7 @@ Lee primero `docs/PUEBLO-4.md`: auditoría, líneas de tiro medidas, plan, medid
 ```
 git checkout main && git pull
 git checkout -b pueblo4
-git am PARCHES/*.patch           # 0001–0005 (o 0004–0005 encima de pueblo-mejoras)
+git am PARCHES/*.patch           # 0001–0006 (o 0004–0006 encima de pueblo-mejoras)
 python3 build.py
 node tools/export-map.js && git diff --stat core/mapdata.js   # PUEBLO 4.0 no cambia el mapa del servidor: si aquí cambia algo, para
 ```
@@ -34,7 +35,7 @@ Resultados en la nube: `RESULTADOS_PRUEBAS.txt` del paquete.
 
 ## 3. Enseñárselo al propietario
 - `?pueblo=3` frente a `?pueblo=3&pueblo4=0`, que es PUEBLO 3.1 tal cual.
-- Mirar las tres pick-ups (plaza NO, calle transversal este y oeste) con y sin `&pueblo4=0`.
+- Mirar las tres pick-ups (plaza NO, calle transversal este y oeste), el depósito de agua (-17, -21), las cajas y los bidones con y sin `&pueblo4=0`.
 - Recorrer los interiores (tienda, taller, almacén, viviendas), mirar la luz y las fachadas con ropa tendida y cables.
 - **MEDIR RENDIMIENTO** en el iPhone, ALTO, con y sin `&pueblo4=0`. El desgaste del sombreado cuesta GPU y aquí no se ha
   podido medir. Si baja de 60 FPS, `?pueblo4=0` lo quita entero; el desgaste solo también se puede quitar (BAJO ya no lo
@@ -52,5 +53,7 @@ Resultados en la nube: `RESULTADOS_PRUEBAS.txt` del paquete.
 - `tools/pueblo-dibujo.js`: acepta `QUAL=medio|bajo`.
 - `test/pueblo4.test.js`: comprueba también que las 3 pick-ups caben en la caja de colisión del coche viejo, tienen menos de
   6000 triángulos y que el coche viejo sigue en la escena para las balas.
-- Regenerar los vehículos: `pip install bpy` y `python3 tools/blender/vehiculos.py`. El script se para si alguna pieza se
-  sale de la caja.
+- Regenerar los vehículos y la utilería: `pip install bpy`, `python3 tools/blender/vehiculos.py` y
+  `python3 tools/blender/utileria.py`. Los dos scripts se paran si alguna pieza se sale de su caja.
+- `test/pueblo4.test.js` comprueba también las cajas, bidones y el depósito (caben en lo viejo, triángulos, el objeto viejo sigue
+  para las balas).

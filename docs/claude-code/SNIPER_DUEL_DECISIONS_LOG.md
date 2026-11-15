@@ -23,7 +23,7 @@ Detalle de cada cambio (antes/después, medidas, cómo revertir): `docs/next-lev
 ### Siguiente prioridad
 | Tarea | Quién la desbloquea | Estado |
 |---|---|---|
-| **PUEBLO 4.0 F0–F5 + F6a** (15-11) — rama local `pueblo4` (encima de PUEBLO 3.1) entregada en zip, sin push: auditoría con líneas de tiro medidas, desgaste de materiales, interiores con carácter, vida en fachadas, cables, luz, y los coches de plástico cambiados por pick-ups 4×4 abandonadas hechas en Blender (misma caja de colisión). Siguiente: depósito de agua, cajas y bidones de 2.0 con el mismo criterio. Solo visual; mapa del servidor idéntico. `?pueblo4=0` = 3.1. Falta: aplicar, enseñar, MEDIR RENDIMIENTO en iPhone (coste GPU del desgaste) y decidir F6 (jugabilidad con colisiones) (`docs/PUEBLO-4.md`) | Propietario | IMPLEMENTADO · PRUEBAS EN VERDE · SIN PUBLICAR · PENDIENTE DE VALIDACIÓN EN IPHONE |
+| **PUEBLO 4.0 F0–F5 + F6a + F6b** (15-11) — rama local `pueblo4` (encima de PUEBLO 3.1) entregada en zip, sin push: auditoría con líneas de tiro medidas, desgaste de materiales, interiores con carácter, vida en fachadas, cables, luz, y los coches de plástico cambiados por pick-ups 4×4 abandonadas hechas en Blender (misma caja de colisión). F6b: también el depósito de agua, las cajas y los bidones de 2.0 (misma colisión). Solo visual; mapa del servidor idéntico. `?pueblo4=0` = 3.1. Falta: aplicar, enseñar, MEDIR RENDIMIENTO en iPhone (coste GPU del desgaste) y decidir F6 (jugabilidad con colisiones) (`docs/PUEBLO-4.md`) | Propietario | IMPLEMENTADO · PRUEBAS EN VERDE · SIN PUBLICAR · PENDIENTE DE VALIDACIÓN EN IPHONE |
 | **PUEBLO 3.1** (14-11, noche) — rama local `pueblo-mejoras` entregada en zip (sin push): pueblo entero en 3.0, 8 casas habitables EN EL MAPA DEL SERVIDOR, fuente nueva, carteles arreglados. Claude Code: aplicar, pasar pruebas, enseñárselo al propietario, MEDIR RENDIMIENTO en el iPhone, y solo con su OK publicar (cambia `core/mapdata.js` → despliega el servidor) (`docs/PUEBLO-31.md`, `docs/claude-code/PUEBLO31_PARA_CLAUDE_CODE.md`) | Propietario | IMPLEMENTADO · PRUEBAS EN VERDE · SIN PUBLICAR · PENDIENTE DE VALIDACIÓN EN IPHONE |
 | **SALA 1V1** (10-11) — probar `?lobby=2` en el PC y en el iPhone (horizontal), con alguien en otro dispositivo: INICIO › MULTIJUGADOR 1V1 → CREAR SALA PRIVADA → INVITAR (copiar enlace o WhatsApp) → el otro entra y aparece en el hangar → elegir mapa → LISTO los dos → INICIAR PARTIDA. Decir si gusta, los FPS del hangar y si pasa a ser la de siempre (`?lobby=1` = la de antes; `docs/SALA-1V1.md`) | Propietario | SERVIDOR PUBLICADO · PÁGINA SIN PUBLICAR · PENDIENTE DE VALIDACIÓN EN IPHONE Y ANDROID |
 | **CAJA NUEVA** (10-11) — CAJAS › ABRIR CAJA en el PC y en el iPhone: ver la ATLAS DROP temblar, abrirse y encenderse con el color de la rareza; decir si gusta o si se cambia algo (`?caja=0` = la de antes) | Propietario | PUBLICADO · PENDIENTE DE VALIDACIÓN |
@@ -163,6 +163,15 @@ Del propietario: «Sí, instálalo» (el compilador de C++).
 - `npm run typecheck` y la prueba de navwasm entran en `npm test`. `.github/workflows/pages.yml` publica `assets/wasm` y
   no `wasm/` (el código fuente).
 - **Estado:** PROBADO EN NAVEGADOR (PC) · PENDIENTE DE VALIDACIÓN EN IPHONE Y ANDROID.
+
+## 15-11-2026 (tarde) — PUEBLO 4.0 F6b: cajas, bidones y depósito de agua
+- Lo prometido tras la queja del coche de plástico: los últimos restos de PUEBLO 2.0 que se ven de cerca, hechos en Blender
+  por código (`tools/blender/utileria.py` → `assets/3d/models/sd_p4_utileria.glb`, 0,35 MB). Solo lo que se ve: mismas cajas
+  de colisión, mismos triángulos de bala, `core/mapdata.js` idéntico.
+- Medido (ALTO): 263,6 llamadas · 419,1 mil triángulos (F6a: 276 · 401,4 mil; 3.1: 263,5 · 371,6 mil).
+- El detector de coberturas falsas marcó al principio las riostras y la escalera del depósito; se corrigió el modelo (redondos
+  sin subdividir como en 2.0, escalera junto a una pata, sin tubería central), no la prueba: 10/10.
+- Estado: IMPLEMENTADO · PROBADO EN NAVEGADOR (WebGL por software) · SIN PUBLICAR · PENDIENTE DE VALIDACIÓN EN IPHONE.
 
 ## 15-11-2026 (mediodía) — PUEBLO 4.0 F6a: los coches de plástico, fuera
 - Queja del propietario, con razón: «no ves el coche de plástico en medio de la plaza, eso es shooter realista sniper para

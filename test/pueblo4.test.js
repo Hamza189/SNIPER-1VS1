@@ -33,6 +33,17 @@ check('desgaste: se aplica a estuco y adoquín, no al vidrio ni a la pintura de 
   check('vehículos: las 3 pick-ups caben en la caja de colisión del coche viejo', ks.length === 3 && ks.every(k => { const b = st[k].bounds; return st[k].dentro_de_la_caja && b.x[0] >= -2.1 && b.x[1] <= 2.1 && b.z[0] >= -0.95 && b.z[1] <= 0.95 && b.y[1] <= 1.9 && b.y[0] >= -0.001; }), ks.map(k => JSON.stringify(st[k].bounds)).join(' '));
   check('vehículos: menos de 6000 triángulos cada una', ks.every(k => st[k].tris < 6000), ks.map(k => st[k].tris).join(', '));
   const page = fs.readFileSync(path.join(__dirname, '..', 'src', 'page.html'), 'utf8');
-  check('vehículos: el coche viejo sigue en la escena para las balas (solo se oculta cuando carga el modelo)', /P4VEH\.old\.push\(o\);continue;/.test(page) && /for\(const o of P4VEH\.old\)o\.traverse\(c=>\{if\(c\.isMesh\)hideOld\(c\);\}\)/.test(page)); }
+  check('vehículos: el coche viejo sigue en la escena para las balas (solo se oculta cuando carga el modelo)', /P4VEH\.old\.push\(o\);continue;/.test(page) && /for\(const o of P4VEH\.old\)o\.traverse\(c=>\{if\(c\.isMesh\)hideOld\(c\);\}\)/.test(page));
+  // F6b: cajas, bidones y depósito (tools/blender/utileria.py) dentro de las cajas de colisión / triángulos de bala viejos
+  const su = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'tools', 'blender', 'utileria-stats.json'), 'utf8'));
+  const gu = path.join(__dirname, '..', 'assets', '3d', 'models', 'sd_p4_utileria.glb');
+  check('utilería: el GLB existe y pesa menos de 1 MB', fs.existsSync(gu) && fs.statSync(gu).size < 1e6);
+  const inBox = (b, h, top) => b.x[0] >= -h - 1e-3 && b.x[1] <= h + 1e-3 && b.z[0] >= -h - 1e-3 && b.z[1] <= h + 1e-3 && b.y[0] >= -1e-3 && b.y[1] <= top + 1e-3;
+  const cr = ['crate_a', 'crate_b', 'crate_c'], dr = ['drum_a', 'drum_b', 'drum_c'];
+  check('utilería: las 3 cajas caben en el cubo de 1,2 m', cr.every(k => su[k] && inBox(su[k].bounds, 0.6, 1.2)), cr.map(k => su[k] && JSON.stringify(su[k].bounds)).join(' '));
+  check('utilería: los 3 bidones caben en el cilindro viejo (r 0,36, 1 m)', dr.every(k => su[k] && inBox(su[k].bounds, 0.36, 1.0)));
+  check('utilería: el depósito cabe en el viejo (±2,4 m, hasta 11,4 m)', su.water_tower && inBox(su.water_tower.bounds, 2.4, 11.4));
+  check('utilería: ligeros (caja < 400, bidón < 900, depósito < 5000 triángulos)', cr.every(k => su[k].tris < 400) && dr.every(k => su[k].tris < 900) && su.water_tower.tris < 5000, Object.keys(su).map(k => k + ' ' + su[k].tris).join(', '));
+  check('utilería: los objetos viejos siguen para las balas (solo se ocultan si el modelo carga)', /P4VEH\.props\.push\(o\)/.test(page) && /if\(P4VEH\.propPieces\)\{Object\.assign\(kit\.pieces,P4VEH\.propPieces\);for\(const o of P4VEH\.props\)hideOld\(o\);\}/.test(page)); }
 console.log('\n' + pass + ' ok, ' + fail + ' fallos');
 process.exit(fail ? 1 : 0);

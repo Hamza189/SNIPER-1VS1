@@ -2169,8 +2169,14 @@ function hideOld(m){m.userData.penSurf=m.material===MAT.crate?'crate':surfaceOf(
   m.material=Array.isArray(m.material)?m.material.map(()=>INVIS):INVIS;m.castShadow=false;}
 /* PUEBLO 4.0: the wrecked cars become abandoned 4x4 pickups (tools/blender/vehiculos.py). Only what is seen: the old car's
    meshes stay (invisible) for bullets, and its collision box does not change. If the model does not load, the old car stays. */
-const P4VEH={old:[],pieces:null,done:false,go:null};
-if(P4ON&&T.GLTFLoader)KIT3D.load(T,'assets/3d/models/sd_p4_vehiculos.glb?v='+BUILD_HASH,k=>{P4VEH.pieces=k.pieces;P4VEH.done=true;if(P4VEH.go)P4VEH.go();},e=>{console.warn('vehículos',e);P4VEH.done=true;if(P4VEH.go)P4VEH.go();});
+/* F6b (15-11-2026): the same for the PUEBLO 2.0 wooden crates, oil drums and the water tower (tools/blender/utileria.py).
+   Each group is swapped only if its own model loaded; otherwise the old one stays. */
+const P4VEH={old:[],props:[],pieces:null,propPieces:null,done:false,left:0,go:null};
+if(P4ON&&T.GLTFLoader){const end=()=>{if(--P4VEH.left)return;P4VEH.done=true;if(P4VEH.go)P4VEH.go();};P4VEH.left=2;
+  KIT3D.load(T,'assets/3d/models/sd_p4_vehiculos.glb?v='+BUILD_HASH,k=>{P4VEH.pieces=k.pieces;end();},e=>{console.warn('vehículos',e);end();});
+  KIT3D.load(T,'assets/3d/models/sd_p4_utileria.glb?v='+BUILD_HASH,k=>{P4VEH.propPieces=k.pieces;end();},e=>{console.warn('utilería',e);end();});}
+const P4PROP=(k,o,x,y,z,ry)=>{P3W.place.push({k,x,y,z,ry,p4prop:true});P4VEH.props.push(o);};
+const pick3=(x,z)=>'abc'[Math.abs(Math.round(x*7+z*13))%3];
 function dressProps(objs,tag){
   if(!TOWN.on||typeof SDTown==='undefined')return [];
   const list=[],gp=(m,k)=>m.geometry&&m.geometry.parameters?m.geometry.parameters[k]:0;
@@ -2185,6 +2191,14 @@ function dressProps(objs,tag){
     }
     if(!o.isMesh||!flatRot(o))continue;
     const g=o.geometry.type,p=o.position;
+    if(P4ON&&tag==='town'){   // PUEBLO 4.0 F6b: crates, drums and the water tower from sd_p4_utileria.glb (same boxes, same bullets)
+      if(o.material===MAT.crate&&g==='BoxGeometry'){const hh=gp(o,'height');for(let i=0;i<Math.round(hh/1.2);i++)P4PROP('crate_'+pick3(p.x+i,p.z),o,p.x,p.y-hh/2+i*1.2,p.z,o.rotation.y);continue;}
+      if(o.material===MAT.rust&&g==='CylinderGeometry'){const r=gp(o,'radiusTop'),h=gp(o,'height');
+        if(r>0.3&&r<0.4){P4PROP('drum_'+pick3(p.x,p.z),o,p.x,p.y-h/2,p.z,(p.x*2.3+p.z*1.7)%6.283);continue;}
+        if(r>2){P4PROP('water_tower',o,p.x,0,p.z,0);continue;}}
+      if(o.material===MAT.rust&&g==='BoxGeometry'&&gp(o,'height')>5){P4VEH.props.push(o);continue;}   // its legs
+      if(o.material===MAT.metal&&g==='ConeGeometry'){P4VEH.props.push(o);continue;}                  // its roof
+    }
     if(o.material===MAT.crate&&g==='BoxGeometry'){const hh=gp(o,'height');for(let i=0;i<Math.round(hh/1.2);i++)list.push({t:'crate',x:p.x,y:p.y-hh/2+i*1.2,z:p.z,ry:o.rotation.y});hideOld(o);}
     else if(o.material===MAT.bag&&g==='BoxGeometry'){const h=gp(o,'height');list.push({t:'bags',x:p.x,y:p.y-h/2,z:p.z,w:gp(o,'width'),h,d:gp(o,'depth')});hideOld(o);}
     else if(o.material===MAT.rust&&g==='CylinderGeometry'){const r=gp(o,'radiusTop'),h=gp(o,'height');
@@ -2344,9 +2358,9 @@ if(P3ON){
   const low=GFX.profile==='bajo'||/[?&]nm=0\b/.test(location.search);
   // door_arch / door_panel no longer cast (17-10-2026): flush with the wall, they shadowed it in striped patches around the
   // doors and windows (shadow acne) for a shadow on the ground nobody notices
-  const CAST=new Set(['balcony','balcony_long','awning','eave','cornice','fountain','orange_tree','planter_wall','lamp_post','laundry','car_wreck_a','car_wreck_b','car_wreck_c']);
+  const CAST=new Set(['balcony','balcony_long','awning','eave','cornice','fountain','orange_tree','planter_wall','lamp_post','laundry','car_wreck_a','car_wreck_b','car_wreck_c','crate_a','crate_b','crate_c','drum_a','drum_b','drum_c','water_tower']);
   // shadows from the kit: ALTO everything big (eaves, doors…), MEDIO only balconies, awnings and cornices
-  const CAST_MEDIO=new Set(['balcony','balcony_long','awning','cornice','fountain','orange_tree','car_wreck_a','car_wreck_b','car_wreck_c']);
+  const CAST_MEDIO=new Set(['balcony','balcony_long','awning','cornice','fountain','orange_tree','car_wreck_a','car_wreck_b','car_wreck_c','crate_a','crate_b','crate_c','drum_a','drum_b','drum_c','water_tower']);
   P3W.ctx={texLoad,low,cache:{},shared:true,env:null,shadows:(k,m)=>GFX.profile!=='bajo'&&(GFX.profile==='alto'?CAST:CAST_MEDIO).has(k)&&!['iron','glass','lamp','dark','water'].includes(m)};
   if(P4ON&&GFX.profile!=='bajo')P3W.ctx.decorate=(m,k)=>SDPueblo4.weather(m,k);   // PUEBLO 4.0: wear and dirt in the shared materials
   const gctx={texLoad,low,cache:{},shared:true};   // ground: its own materials, drawn just above the sand
@@ -8388,10 +8402,11 @@ function p3Signs(kit){
 if(P3ON&&T.GLTFLoader){
   KIT3D.load(T,'assets/kit.glb?v='+BUILD_HASH,kit=>{const run=()=>{try{
     if(P4VEH.pieces){Object.assign(kit.pieces,P4VEH.pieces);for(const o of P4VEH.old)o.traverse(c=>{if(c.isMesh)hideOld(c);});}   // PUEBLO 4.0: the pickups replace the old cars
+    if(P4VEH.propPieces){Object.assign(kit.pieces,P4VEH.propPieces);for(const o of P4VEH.props)hideOld(o);}   // F6b: crates, drums, water tower
     P3W.kit=kit;P3W.ctx.env=ENV;P3W.loadedAt=performance.now();
     // BAJO: without the small details (decided when the page loads, like the antialiasing)
     const drop=GFX.profile==='bajo'?new Set(['weeds','pipe','pipe_head','pipe_shoe','plaque','meter_box','climber','pot_small','planter','ac_unit','laundry']):null;
-    const list=P3W.place.filter(p=>!drop||!drop.has(p.k));
+    const list=P3W.place.filter(p=>(!drop||!drop.has(p.k))&&(!p.p4prop||P4VEH.propPieces));
     for(const sg of P3W.signs)list.push({k:'sign',x:sg.p[0],y:sg.p[1],z:sg.p[2],ry:sg.ry});
     // baked into static meshes per area of the map and material: few draw calls (see KIT3D.merge)
     // with the whole town in 3.0 (P3-5) each side is cut in two halves (north/south), so the camera culls the half behind it
@@ -8399,7 +8414,7 @@ if(P3ON&&T.GLTFLoader){
       :p=>Math.abs(p.x)>=49.5||Math.abs(p.z)>=49.5?(p.z>=49.5?'fuera_n':p.x<0?'fuera_o':'fuera_e'):(p.x<0?'oeste':'este');
     const THIN=['lamp_post','street_pole','orange_tree'];   // thin posts and trunks: their own meshes, and their axes for the cover check
     P3W.ctx.separate=new Set(THIN);P3W.axes=list.filter(p=>THIN.includes(p.k)).map(p=>[p.x,p.z]);
-    const r=KIT3D.merge(T,kit,list,P3W.ctx,p=>/^car_wreck/.test(p.k)?'coches':regionOf(p));P3W.kitTris=r.tris;   // PUEBLO 4.0: the three pickups in one group per material
+    const r=KIT3D.merge(T,kit,list,P3W.ctx,p=>/^(car_wreck|crate_|drum_|water_tower)/.test(p.k)?'coches':regionOf(p));P3W.kitTris=r.tris;   // PUEBLO 4.0: the three pickups in one group per material
     for(const m of r.meshes){scene.add(m);WORLDS.pueblo.objs.push(m);m.visible=WORLD_ID==='pueblo';P3W.meshes.push(m);}
     farFade(r.meshes);
     p3Signs(kit);
