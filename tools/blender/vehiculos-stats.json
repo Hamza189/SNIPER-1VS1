@@ -1,0 +1,80 @@
+{
+ "car_wreck_a": {
+  "tris": 4576,
+  "mats": [
+   "paint",
+   "dark",
+   "zinc",
+   "glass",
+   "ceramic",
+   "clothv"
+  ],
+  "bounds": {
+   "x": [
+    -2.081,
+    2.081
+   ],
+   "z": [
+    -0.949,
+    0.949
+   ],
+   "y": [
+    0.0,
+    1.885
+   ]
+  },
+  "dentro_de_la_caja": true
+ },
+ "car_wreck_b": {
+  "tris": 4571,
+  "mats": [
+   "paint",
+   "dark",
+   "zinc",
+   "glass",
+   "ceramic",
+   "clothv"
+  ],
+  "bounds": {
+   "x": [
+    -2.081,
+    2.081
+   ],
+   "z": [
+    -0.949,
+    0.949
+   ],
+   "y": [
+    0.0,
+    1.885
+   ]
+  },
+  "dentro_de_la_caja": true
+ },
+ "car_wreck_c": {
+  "tris": 4574,
+  "mats": [
+   "paint",
+   "dark",
+   "zinc",
+   "glass",
+   "ceramic",
+   "clothv"
+  ],
+  "bounds": {
+   "x": [
+    -2.081,
+    2.081
+   ],
+   "z": [
+    -0.949,
+    0.949
+   ],
+   "y": [
+    0.0,
+    1.885
+   ]
+  },
+  "dentro_de_la_caja": true
+ }
+}

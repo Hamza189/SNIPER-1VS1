@@ -36,6 +36,7 @@ const LOOK = {
   water:      { r: 0.05, m: 0.25, col: 0x46706c, env: 0.8 },
   concrete:   { tex: 'concrete', tile: 2.2, r: 0.9, n: 0.4, col: 0xd8d0c4 },
   sign:       { r: 0.7, col: 0xffffff },
+  paint:      { r: 0.66, m: 0.12, col: 0xffffff },   // PUEBLO 4.0: old car paint (colour, rust and dust in the vertex colours)
   // generated walls and ground (client/town3.js): colour from the vertex colours
   rubble:     { tex: 'rubble', tile: 1.7, r: 0.9, n: 0.9, col: 0xffffff },
   brick:      { tex: 'brick', tile: 1.3, r: 0.85, n: 0.7, col: 0xffffff },

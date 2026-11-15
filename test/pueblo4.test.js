@@ -24,5 +24,15 @@ check('cables: ' + cb.spans + ' tramos, todos por encima de 4,5 m', ymin > 4.5, 
 check('cables: pocos triángulos (' + cb.idx.length / 3 + ')', cb.idx.length / 3 < 3000);
 const m = { onBeforeCompile: null, constructor: { prototype: {} }, userData: {} };
 check('desgaste: se aplica a estuco y adoquín, no al vidrio ni a la pintura de carteles', P4.weather(Object.assign({}, m, { userData: {} }), 'stucco') && P4.weather(Object.assign({}, m, { userData: {} }), 'setts') && !P4.weather(Object.assign({}, m, { userData: {} }), 'glass') && !P4.weather(Object.assign({}, m, { userData: {} }), 'sign'));
+// vehículos (tools/blender/vehiculos.py): dentro de la caja de colisión del coche viejo (±2,1 × ±0,95 × 1,9 m) y ligeros
+{ const fs = require('fs'), path = require('path');
+  const st = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'tools', 'blender', 'vehiculos-stats.json'), 'utf8'));
+  const glb = path.join(__dirname, '..', 'assets', '3d', 'models', 'sd_p4_vehiculos.glb');
+  check('vehículos: el GLB existe y pesa menos de 2 MB', fs.existsSync(glb) && fs.statSync(glb).size < 2e6);
+  const ks = Object.keys(st);
+  check('vehículos: las 3 pick-ups caben en la caja de colisión del coche viejo', ks.length === 3 && ks.every(k => { const b = st[k].bounds; return st[k].dentro_de_la_caja && b.x[0] >= -2.1 && b.x[1] <= 2.1 && b.z[0] >= -0.95 && b.z[1] <= 0.95 && b.y[1] <= 1.9 && b.y[0] >= -0.001; }), ks.map(k => JSON.stringify(st[k].bounds)).join(' '));
+  check('vehículos: menos de 6000 triángulos cada una', ks.every(k => st[k].tris < 6000), ks.map(k => st[k].tris).join(', '));
+  const page = fs.readFileSync(path.join(__dirname, '..', 'src', 'page.html'), 'utf8');
+  check('vehículos: el coche viejo sigue en la escena para las balas (solo se oculta cuando carga el modelo)', /P4VEH\.old\.push\(o\);continue;/.test(page) && /for\(const o of P4VEH\.old\)o\.traverse\(c=>\{if\(c\.isMesh\)hideOld\(c\);\}\)/.test(page)); }
 console.log('\n' + pass + ' ok, ' + fail + ' fallos');
 process.exit(fail ? 1 : 0);

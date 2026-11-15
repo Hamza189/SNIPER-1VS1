@@ -6,7 +6,7 @@ en el móvil. Primero auditoría y plan, luego fases pequeñas y medidas. Sin pu
 
 Rama local `pueblo4` (encima de `pueblo-mejoras`), sin push. **`?pueblo4=0` vuelve a PUEBLO 3.1 al instante.**
 
-Estado: **F0–F5 IMPLEMENTADAS · PRUEBAS EN VERDE · MAPA DEL SERVIDOR IDÉNTICO AL DE 3.1 · SIN PUBLICAR · PENDIENTE DE
+Estado: **F0–F5 y F6a (vehículos) IMPLEMENTADAS · PRUEBAS EN VERDE · MAPA DEL SERVIDOR IDÉNTICO AL DE 3.1 · SIN PUBLICAR · PENDIENTE DE
 VALIDACIÓN EN IPHONE/PC/ANDROID**. F6 (jugabilidad con colisiones nuevas) está propuesta y necesita su aprobación.
 
 ---
@@ -73,6 +73,7 @@ VALIDACIÓN EN IPHONE/PC/ANDROID**. F6 (jugabilidad con colisiones nuevas) está
 | F2 Casas | Cada casa tiene su carácter: vivienda, tienda (estanterías llenas), taller (panel de herramientas, bidones, mancha de aceite), almacén (botelleros y sacos), señorial y piedra (librerías, aparador, espejo, cuadros). En cada planta hay una alfombra y una lámpara que brilla. Las caras de dentro están un 30 % más claras, como si les llegara la luz de rebote. Todo va pegado a una pared (como mucho 0,3 m de fondo: los ojos del jugador no se meten dentro), plano o bajo el techo; nada encima de las escaleras | `client/casas.js` (`TYPE`, `freeSpans`, `deco`, `mesh(…,{boost})`) |
 | F3 Vida y calles | En las fachadas de PUEBLO 3.0: ropa tendida, jardineras en los alféizares y aparatos de aire (todo por encima de 2 m), placas con el número y contadores junto a las puertas (planos). Cables entre fachadas sobre las calles (a más de 4,5 m; 10 tramos dobles). Tapas de alcantarilla también en las calles norte y sur | `client/pueblo4.js` (`dress`, `cables`), `client/town3.js` (`opt.p4`) |
 | F4 Luz | Más sol (3,0 → 3,2) y menos cielo (1,0 → 0,92): más relieve en las fachadas. Niebla un poco más fría (`0xdcd6c8` → `0xd8dad6`): lo lejano se separa de lo cercano | `src/page.html` (`LOOK`) |
+| F6a Vehículos (15-11, tras la queja del coche de plástico) | Los 3 coches de PUEBLO 2.0 (cajas de colores planos) son ahora **pick-ups 4×4 viejas y abandonadas**, hechas en Blender por código (`tools/blender/vehiculos.py` → `assets/3d/models/sd_p4_vehiculos.glb`, 0,9 MB, 3 variantes de unos 4 600 triángulos). Tienen pintura desteñida con óxido, churretes, polvo y barro en el color de vértice; lunas rotas; un faro roto; una rueda pinchada; lona sobre la caja; bajos, interior, juntas, rejilla y matrícula sin texto. **Solo cambia lo que se ve:** la caja de colisión y los triángulos de bala del coche viejo siguen igual (el coche viejo queda invisible en la escena, como el resto de restos de 2.0). La forma de pick-up es a propósito: llena la misma silueta que la caja de bala (carrocería hasta 1,2 m y cabina hasta 1,9 m). Un turismo de 1,4 m dejaría medio metro de cobertura falsa sobre el techo. Hasta que carga el modelo se ve el coche viejo; si no carga, se queda el viejo | `tools/blender/vehiculos.py`, `src/page.html` (`P4VEH`), `client/kit3d.js` (`paint`), `client/pueblo4.js` |
 | F5 GLB | `pueblo4-ligero.glb`: el pueblo en una malla por material (76 mallas, 76 materiales, 57 texturas de 512 px como máximo, 418 mil triángulos, **32,4 MB**). Sin color de vértice cuando es todo blanco, sin UV donde no hay textura y con índices de 16 bits cuando caben (37,7 → 32,4 MB). Es de referencia y para arte: el juego no lo carga. Lo que más pesa son las posiciones, normales y UV; para bajar más habría que cuantizar (`KHR_mesh_quantization`) con una herramienta externa, que no se ha añadido sin permiso. `casas-habitables.glb` 5,6 MB (47 mil triángulos) y `fuente.glb` 0,5 MB | `tools/exportar-glb.js` |
 
 No se ha añadido nada que pueda servir de cobertura sin serlo: `test/cover.browser.test.js` sigue en verde. Ninguna
@@ -84,9 +85,13 @@ WebGL por software. Son medias por fotograma. `QUAL=medio` o `QUAL=bajo` miden l
 
 | Perfil | PUEBLO 3.1 (`?pueblo4=0`) | PUEBLO 4.0 | Diferencia |
 |---|---|---|---|
-| ALTO | 263,5 llamadas · 371,6 mil triángulos | 273,4 · 379,4 mil | +10 llamadas (+3,8 %) · +7,8 mil (+2,1 %) |
-| MEDIO | 242,6 · 323,7 mil | 249,7 · 330,9 mil | +7 · +7,2 mil |
-| BAJO | 169 · 218,2 mil | 173,1 · 223,8 mil | +4 · +5,5 mil |
+| ALTO | 263,5 llamadas · 371,6 mil triángulos | 276 · 401,4 mil | +12,5 llamadas (+4,7 %) · +29,8 mil (+8,0 %) |
+| MEDIO | 242,6 · 323,7 mil | 252,3 · 353,3 mil | +9,7 · +29,6 mil |
+| BAJO | 169 · 218,2 mil | 174,6 · 236,9 mil | +5,6 · +18,7 mil |
+
+Sin los vehículos (F1–F5) eran 273,4 · 379,4 mil en ALTO, 249,7 · 330,9 mil en MEDIO y 173,1 · 223,8 mil en BAJO. Las tres
+pick-ups van juntas en un grupo por material (6 materiales) y cuestan unas +2,6 llamadas y +22 mil triángulos en ALTO,
+contando también su sombra.
 
 - Memoria: **0 texturas nuevas** (79 en los dos casos). Geometrías iguales (las piezas nuevas se fusionan con las que
   ya había). +4 programas de sombreado (41 frente a 37) y unos 0,5 MB de geometría.
@@ -113,7 +118,7 @@ Todo esto cambia cajas y balas: hay que exportar el mapa y desplegar el servidor
    para contestar a los balcones de TERRACOTA, con una sola subida (vulnerable) y pretil.
 3. **Callejón**: abrir un paso de 2 m entre la calle norte y el patio de detrás del COLMADO. Sería una ruta de flanqueo
    a cubierto hacia la plaza.
-4. **Sustituir los restos de PUEBLO 2.0** (depósito de agua, cajas, bidones, coches) por piezas del kit con **las mismas
-   cajas de colisión**. Así el servidor no cambia en este punto.
+4. **Sustituir los restos de PUEBLO 2.0 que quedan** (depósito de agua, cajas, bidones) por modelos nuevos con **las mismas
+   cajas de colisión**, como ya se hizo con los coches (F6a). Así el servidor no cambia en este punto. Los coches ya están hechos.
 5. **Bots del servidor dentro de las casas**: cambiar cómo `core/bots.js` calcula la separación de la red y medir el
    coste de su grafo.

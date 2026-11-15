@@ -816,3 +816,14 @@ rifle, ahora 8× fijo) sigue siendo la de por defecto.
   - Carbon_fiber_10, casi igual que el 9;
   - Classic-brick-wall 11, otro ladrillo;
   - Tiles_15, baldosa blanca: para baños o interiores de un mapa futuro.
+
+
+## PUEBLO 4.0 — vehículos abandonados (15-11-2026)
+- `assets/3d/models/sd_p4_vehiculos.glb` (0,9 MB): `car_wreck_a`, `car_wreck_b` y `car_wreck_c`, pick-ups 4×4 viejas de unos
+  4 600 triángulos cada una. Las hace `tools/blender/vehiculos.py` en Blender por código (obra propia, sin texturas ni
+  modelos de terceros, sin marcas). Las estadísticas están en `tools/blender/vehiculos-stats.json`.
+- Materiales del kit, por nombre: `paint` (nuevo: el color, el óxido, el polvo y el barro van en el color de vértice),
+  `dark`, `zinc`, `glass`, `ceramic` y `clothv`.
+- Contrato: todo cabe dentro de la caja de colisión del coche viejo (±2,1 × ±0,95 m, hasta 1,9 m); el script se para si
+  no cabe. Lo que se ve no define balas ni colisiones: siguen siendo las del coche viejo, que queda invisible.
+- Solo con PUEBLO 4.0 (`?pueblo4=0` enseña el coche viejo).

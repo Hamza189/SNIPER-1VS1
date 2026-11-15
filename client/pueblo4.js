@@ -10,7 +10,7 @@
    Puro (Node y navegador); el sombreado necesita el navegador. */
 (function (root) {
 'use strict';
-const WALL = { stucco: 1, plaster: 1, stone: 0.8, rubble: 0.75, brick: 0.85, azulejo: 0.5, concrete: 0.9, wood: 0.55, frame: 0.6, roofterr: 0.6, rooftiles: 0.5 };
+const WALL = { stucco: 1, plaster: 1, stone: 0.8, rubble: 0.75, brick: 0.85, azulejo: 0.5, concrete: 0.9, wood: 0.55, frame: 0.6, roofterr: 0.6, rooftiles: 0.5, paint: 0.45 };
 const FLOOR = { setts: 1, slabs: 0.9, asphalt: 1, earth: 0.7, herring: 0.6, pebbles: 0.8, p0side: 0.9, p0plaza: 0.9, p0cobble: 1, p0patch: 0.8, plaza: 0.9 };
 const GLSL = `
 varying vec3 vP4W; uniform float uP4K;

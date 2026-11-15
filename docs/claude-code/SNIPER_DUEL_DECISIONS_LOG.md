@@ -23,7 +23,7 @@ Detalle de cada cambio (antes/después, medidas, cómo revertir): `docs/next-lev
 ### Siguiente prioridad
 | Tarea | Quién la desbloquea | Estado |
 |---|---|---|
-| **PUEBLO 4.0 F0–F5** (15-11) — rama local `pueblo4` (encima de PUEBLO 3.1) entregada en zip, sin push: auditoría con líneas de tiro medidas, desgaste de materiales, interiores con carácter, vida en fachadas, cables, luz. Solo visual; mapa del servidor idéntico. `?pueblo4=0` = 3.1. Falta: aplicar, enseñar, MEDIR RENDIMIENTO en iPhone (coste GPU del desgaste) y decidir F6 (jugabilidad con colisiones) (`docs/PUEBLO-4.md`) | Propietario | IMPLEMENTADO · PRUEBAS EN VERDE · SIN PUBLICAR · PENDIENTE DE VALIDACIÓN EN IPHONE |
+| **PUEBLO 4.0 F0–F5 + F6a** (15-11) — rama local `pueblo4` (encima de PUEBLO 3.1) entregada en zip, sin push: auditoría con líneas de tiro medidas, desgaste de materiales, interiores con carácter, vida en fachadas, cables, luz, y los coches de plástico cambiados por pick-ups 4×4 abandonadas hechas en Blender (misma caja de colisión). Siguiente: depósito de agua, cajas y bidones de 2.0 con el mismo criterio. Solo visual; mapa del servidor idéntico. `?pueblo4=0` = 3.1. Falta: aplicar, enseñar, MEDIR RENDIMIENTO en iPhone (coste GPU del desgaste) y decidir F6 (jugabilidad con colisiones) (`docs/PUEBLO-4.md`) | Propietario | IMPLEMENTADO · PRUEBAS EN VERDE · SIN PUBLICAR · PENDIENTE DE VALIDACIÓN EN IPHONE |
 | **PUEBLO 3.1** (14-11, noche) — rama local `pueblo-mejoras` entregada en zip (sin push): pueblo entero en 3.0, 8 casas habitables EN EL MAPA DEL SERVIDOR, fuente nueva, carteles arreglados. Claude Code: aplicar, pasar pruebas, enseñárselo al propietario, MEDIR RENDIMIENTO en el iPhone, y solo con su OK publicar (cambia `core/mapdata.js` → despliega el servidor) (`docs/PUEBLO-31.md`, `docs/claude-code/PUEBLO31_PARA_CLAUDE_CODE.md`) | Propietario | IMPLEMENTADO · PRUEBAS EN VERDE · SIN PUBLICAR · PENDIENTE DE VALIDACIÓN EN IPHONE |
 | **SALA 1V1** (10-11) — probar `?lobby=2` en el PC y en el iPhone (horizontal), con alguien en otro dispositivo: INICIO › MULTIJUGADOR 1V1 → CREAR SALA PRIVADA → INVITAR (copiar enlace o WhatsApp) → el otro entra y aparece en el hangar → elegir mapa → LISTO los dos → INICIAR PARTIDA. Decir si gusta, los FPS del hangar y si pasa a ser la de siempre (`?lobby=1` = la de antes; `docs/SALA-1V1.md`) | Propietario | SERVIDOR PUBLICADO · PÁGINA SIN PUBLICAR · PENDIENTE DE VALIDACIÓN EN IPHONE Y ANDROID |
 | **CAJA NUEVA** (10-11) — CAJAS › ABRIR CAJA en el PC y en el iPhone: ver la ATLAS DROP temblar, abrirse y encenderse con el color de la rareza; decir si gusta o si se cambia algo (`?caja=0` = la de antes) | Propietario | PUBLICADO · PENDIENTE DE VALIDACIÓN |
@@ -163,6 +163,16 @@ Del propietario: «Sí, instálalo» (el compilador de C++).
 - `npm run typecheck` y la prueba de navwasm entran en `npm test`. `.github/workflows/pages.yml` publica `assets/wasm` y
   no `wasm/` (el código fuente).
 - **Estado:** PROBADO EN NAVEGADOR (PC) · PENDIENTE DE VALIDACIÓN EN IPHONE Y ANDROID.
+
+## 15-11-2026 (mediodía) — PUEBLO 4.0 F6a: los coches de plástico, fuera
+- Queja del propietario, con razón: «no ves el coche de plástico en medio de la plaza, eso es shooter realista sniper para
+  ti enserio?». Lo había dejado para F6 pensando que tocaba colisiones; no hacía falta.
+- Hecho: 3 pick-ups 4×4 viejas (`tools/blender/vehiculos.py`, Blender por código, obra propia) en lugar de los coches de
+  PUEBLO 2.0. Solo cambia lo que se ve: la caja de colisión y las balas siguen en el coche viejo (invisible). Se eligió la
+  pick-up con lona porque ocupa la misma silueta que la caja de bala: un turismo bajo dejaría cobertura falsa sobre el techo.
+- Medido (ALTO, frente a 3.1): +12,5 llamadas y +29,8 mil triángulos en total con F1–F5 (los vehículos son +2,6 y +22 mil).
+  Pruebas en verde (cobertura, casas, núcleo, sala, armas; `browser.test` con el fallo de siempre en la nube).
+- Siguiente, con el mismo criterio: depósito de agua, cajas de madera y bidones de 2.0.
 
 ## 15-11-2026 — PUEBLO 4.0: auditoría y fases F0–F5 (solo visual)
 - Pedido (documento «PUEBLO 4.0 MASTER UPGRADE»): evolución de PUEBLO 3.1 hacia un mapa de shooter 3D real, con auditoría
