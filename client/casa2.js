@@ -185,6 +185,9 @@ function zones(casa) {
    flat already had (a balcony corner behind its bench, a corner of the bathroom) are no place to spawn in. */
 function navGrid(cols, step, standH, rad) {
   const R = rad || 0.4;   // clearance from the boxes (the tests ask 0.5: every route through doors of 1 m or more)
+  // 17-11-2026: the same grid in C++/WebAssembly (client/navwasm.js, wasm/nav.cpp) when it is loaded; this is its fallback
+  const NW = typeof module !== 'undefined' && module.exports ? require('./navwasm.js') : root.SDNavWasm;
+  if (NW && NW.ready && !NW.off && !NW.failed) { try { return NW.build(cols, step, standH, R, XO, ZN); } catch (e) { NW.failed = true; } }
   const body = cols.filter(c => c.maxY > step && c.minY < standH), B = 2, NB = 64, bk = new Map();
   const bkey = (i, j) => (i + NB) * 1024 + (j + NB);
   for (const c of body) for (let i = Math.floor((c.minX - R) / B); i <= Math.floor((c.maxX + R) / B); i++)

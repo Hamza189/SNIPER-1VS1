@@ -109,3 +109,12 @@ FPS sin límite.
 2. Abrir la página de prueba WebGPU en el iPhone y en el Samsung: comparar FPS y aspecto.
 3. Plan de actualización a Three.js r186 en WebGL tras bandera (`?motor=r186`), empezando por la gestión de color y los
    parches de sombras.
+
+## 6. Hecho el 17-11-2026: la primera pieza en C++
+- Con permiso del propietario («Sí, instálalo»): wasi-sdk 34 (LLVM/clang 23) en `C:\Users\Hamza\tools\wasi-sdk`, sin
+  instalador.
+- **`wasm/nav.cpp` → `assets/wasm/nav.wasm` (5,8 KB):** la red de los bots. Da el mismo resultado que JavaScript y es
+  entre 4 y 10 veces más rápida. En la página: BARRIO 25 ms frente a 72; CASA ATLAS 2.0, 15 frente a 89.
+- La versión JavaScript se queda de reserva, y `?navwasm=0` la fuerza. Detalle en `docs/WASM.md`.
+- `npm run typecheck` ya está en `npm test` (0 avisos).
+

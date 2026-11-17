@@ -540,6 +540,7 @@ function create(opts) {
     if (att) { att.hits++; if (part === 'head') att.hs++; }
     if (vic.bot && att) Bots.alert(vic.bot, att.p.ms.x, att.p.ms.z, R.now / 1000);
     const dist = b ? Math.hypot(pt[0] - b.ox, pt[2] - b.oz) : 0;
+    /** @type {Array<Object>} events of different kinds (hit, kill, …) */
     const e = [{ k: 'hit', by: att ? att.id : null, to: vic.id, part, dmg, hp: Math.max(0, Math.round(vic.hp)), pt: pt.map(v => Math.round(v * 100) / 100), dist: Math.round(dist), weapon: b ? (b.kind || 'rifle') : 'knife' }];
     if (pellets) e[0].pellets = pellets;
     if (b && b.pen && b.pen.n) e[0].thru = b.pen.n;   // it went through the map first (the shooter's page shows no hitmarker)

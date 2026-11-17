@@ -89,7 +89,8 @@ function photo(it) {
   const im = new Image(), rec = { im, ok: false, wait: [] };
   const u = 'assets/camo/' + it.img + '.jpg';
   im.onload = () => { rec.ok = true; for (const f of rec.wait.splice(0)) f(); };
-  im.src = typeof root.av === 'function' ? root.av(u) : u;
+  const v = typeof ASSET_V !== 'undefined' && ASSET_V[u];   // its version (build.py, docs/CARGA.md); the page's av() is not reachable from here
+  im.src = v ? u + '?v=' + v : u;
   return (IMG[it.img] = rec);
 }
 function drawPhoto(it) {

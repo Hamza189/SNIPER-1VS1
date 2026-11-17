@@ -99,6 +99,21 @@ Detalle de cada cambio (antes/después, medidas, cómo revertir): `docs/next-lev
 | Personaje 3D rev. 03 hecho por Claude e integrado tras `?pj=2` (bots y rival online) | 20-10 · directo a `main` |
 | Personajes realistas + elegir personaje (con el SOLDADO de `?pj=2`) y HUD 2 por defecto (aprobado en iPhone y PC) | 28-10 · directo a `main` |
 
+## 17-11-2026 — Primera pieza del juego en C++/WebAssembly: la red de los bots
+Del propietario: «Sí, instálalo» (el compilador de C++).
+- **Compilador:** wasi-sdk 34 (LLVM/clang, gratuito) en `C:\Users\Hamza\tools\wasi-sdk`, sin instalador ni permisos de
+  administrador.
+- **`wasm/nav.cpp` → `assets/wasm/nav.wasm` (5,8 KB) y `client/navwasm.js`:** `navGrid()` lo usa si está cargado y si no,
+  usa JavaScript.
+  - Misma red punto por punto: `test/navwasm.test.js` (9) y `test/navwasm.browser.test.js` (6).
+  - Entre 4 y 10 veces más rápido. En la página: BARRIO 25 ms frente a 72; CASA ATLAS 2.0, 15 frente a 89.
+  - `?navwasm=0` vuelve a JavaScript.
+- **Arreglado de paso:** las fotos de los camuflajes (05-11) se pedían sin su versión, porque `av()` no se ve desde
+  `client/`. Ahora usan `ASSET_V`.
+- `npm run typecheck` y la prueba de navwasm entran en `npm test`. `.github/workflows/pages.yml` publica `assets/wasm` y
+  no `wasm/` (el código fuente).
+- **Estado:** PROBADO EN NAVEGADOR (PC) · PENDIENTE DE VALIDACIÓN EN IPHONE Y ANDROID.
+
 ## 10-11-2026 — BALA DURA y penetración EN LÍNEA (G7)
 Del propietario: «sí, está bien» (aprueba los daños: × 0,75 fina; BALA DURA × 0,7 → × 0,4 según el grosor, una pared
 media como mucho). Ahora lo decide el servidor (`core/room.js`) con las cajas atravesables que exporta la página
