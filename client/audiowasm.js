@@ -9,11 +9,12 @@ if (typeof module !== 'undefined' && module.exports) {
     const fs = require('fs'), path = require('path');
     W.exp = new WebAssembly.Instance(new WebAssembly.Module(fs.readFileSync(path.join(__dirname, '..', 'assets', 'wasm', 'audio.wasm'))), {}).exports; W.ready = true;
   } catch (e) { W.failed = true; }
-} else if (typeof WebAssembly === 'undefined' || /[?&]audiowasm=0\b/.test(location.search)) {
+} else if (typeof WebAssembly === 'undefined' || typeof fetch === 'undefined' || /[?&]audiowasm=0\b/.test(location.search)) {
   W.off = true;
 } else {
-  // asked once the page is parsed, with its version (ASSET_V from build.py, docs/CARGA.md)
-  const go = () => { const u = 'assets/wasm/audio.wasm', v = typeof ASSET_V !== 'undefined' && ASSET_V[u];
+  // asked once the page is parsed, with its version (ASSET_V from build.py, docs/CARGA.md); try: if it runs before the
+  // page's ASSET_V exists (test/smoke.test.js), typeof itself throws on a const not yet declared
+  const go = () => { const u = 'assets/wasm/audio.wasm'; let v = ''; try { v = ASSET_V[u] || ''; } catch (e) {}
     fetch(v ? u + '?v=' + v : u).then(r => { if (!r.ok) throw new Error(r.status); return r.arrayBuffer(); })
       .then(b => WebAssembly.instantiate(b, {})).then(r => { W.exp = r.instance.exports; W.ready = true; }).catch(() => { W.failed = true; }); };
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', go); else go();
