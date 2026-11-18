@@ -7,7 +7,7 @@ const ROOT = path.join(__dirname, '..', '..');
 const SDK = process.env.WASI_SDK || path.join(os.homedir(), 'tools', 'wasi-sdk');
 const clang = path.join(SDK, 'bin', process.platform === 'win32' ? 'clang++.exe' : 'clang++');
 if (!fs.existsSync(clang)) { console.error('No encuentro clang en ' + clang + ' (wasi-sdk: https://github.com/WebAssembly/wasi-sdk/releases)'); process.exit(1); }
-for (const name of ['nav']) {
+for (const name of ['nav', 'astar', 'audio']) {
   const src = path.join(ROOT, 'wasm', name + '.cpp'), out = path.join(ROOT, 'assets', 'wasm', name + '.wasm');
   // freestanding: sin biblioteca estándar ni punto de entrada; solo las funciones marcadas export_name
   execFileSync(clang, ['--target=wasm32', '-O3', '-nostdlib', '-fno-exceptions', '-fno-rtti', '-ffreestanding', '-Wall',

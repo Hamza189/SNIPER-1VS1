@@ -23,12 +23,28 @@ const DIFF = [
 ];
 const SIGHT = 170;   // metres: further than this they do not engage
 
+// ---- A* in C++/WebAssembly (18-11-2026, wasm/astar.cpp, docs/WASM.md): the server loads it and hands it over with
+// useWasm() (server/node.js from the disk, server/worker.js as an imported module); without it, astar() below in JS
+let WA = null;
+function useWasm(mod) { try { WA = mod ? new WebAssembly.Instance(mod, {}).exports : null; } catch (e) { WA = null; } return !!WA; }
+// the graph's points and links copied once into the module's memory (its number, or −1)
+function waGraph(pts, nbr) {
+  let a = 0; for (const l of nbr) a += l.length;
+  WA.astar_input(pts.length, a);
+  const buf = () => WA.memory.buffer, X = new Float64Array(buf(), WA.astar_in_x(), pts.length), Z = new Float64Array(buf(), WA.astar_in_z(), pts.length);
+  const off = new Int32Array(buf(), WA.astar_in_off(), pts.length + 1), adj = new Int32Array(buf(), WA.astar_in_adj(), Math.max(1, a));
+  let w = 0; for (let i = 0; i < pts.length; i++) { X[i] = pts[i][0]; Z[i] = pts[i][1]; off[i] = w; for (const j of nbr[i]) adj[w++] = j; } off[pts.length] = w;
+  return WA.astar_commit();
+}
+
 // ---- the nav graph of a map (cached on its index): neighbours that can walk to each other in a straight line
 function navGraph(map, ix) {
   if (ix.__botNav) return ix.__botNav;
   const pts = map.nav, n = pts.length;
   let sp = 1e9; for (let i = 0; i < Math.min(n, 60); i++) for (let j = 0; j < n; j++) { if (i === j) continue; const d = Math.hypot(pts[i][0] - pts[j][0], pts[i][1] - pts[j][1]); if (d > 1e-3 && d < sp) sp = d; }
-  const reach = sp * 1.5, cell = reach, grid = new Map(), key = (x, z) => Math.floor(x / cell) + ',' + Math.floor(z / cell);
+  // map.navReach (18-11-2026): maps whose grid mixes 0.5 m points with 0.25 m ones along the walls (CASA ATLAS 2.0 ·
+  // NUEVA, JARDÍN, BARRIO) say how far to link; with the smallest spacing (0.25 → 0.375 m) their grid fell to pieces
+  const reach = map.navReach || sp * 1.5, cell = reach, grid = new Map(), key = (x, z) => Math.floor(x / cell) + ',' + Math.floor(z / cell);
   pts.forEach((p, i) => { const k = key(p[0], p[1]); if (!grid.has(k)) grid.set(k, []); grid.get(k).push(i); });
   const nbr = pts.map(() => []);
   for (let i = 0; i < n; i++) {
@@ -38,7 +54,8 @@ function navGraph(map, ix) {
       if (G.losClear(ix, x, 0.5, z, pts[j][0], 0.5, pts[j][1]) && G.losClear(ix, x, 1.2, z, pts[j][0], 1.2, pts[j][1])) { nbr[i].push(j); nbr[j].push(i); }
     }
   }
-  return (ix.__botNav = { pts, nbr, sp, grid, cell, key });
+  let wa = -1; if (WA) { try { wa = waGraph(pts, nbr); } catch (e) { wa = -1; } }
+  return (ix.__botNav = { pts, nbr, sp, grid, cell, key, wa });
 }
 function nearest(g, x, z) {
   const cx = Math.floor(x / g.cell), cz = Math.floor(z / g.cell); let best = -1, bd = 1e9;
@@ -49,6 +66,7 @@ function nearest(g, x, z) {
 }
 function astar(g, s, t) {
   if (s < 0 || t < 0) return [];
+  if (WA && g.wa >= 0 && !g.noWasm) { const n = WA.astar_find(g.wa, s, t, 6000), P = new Int32Array(WA.memory.buffer, WA.astar_path(), n); return Array.from(P); }
   const P = g.pts, h = i => Math.hypot(P[i][0] - P[t][0], P[i][1] - P[t][1]), gs = new Map([[s, 0]]), from = new Map(), open = [[h(s), s]], done = new Set();
   let it = 0;
   while (open.length && it++ < 6000) {
@@ -150,6 +168,6 @@ function think(B, me, foes, X) {
   } else turnTo(me.yaw + 0.6, 0, 1 / 120);   // nothing to do: look around
   return cmd;
 }
-const SDBots = { DIFF, navGraph, nearest, astar, createBrain, think, alert };
+const SDBots = { DIFF, navGraph, nearest, astar, createBrain, think, alert, useWasm, get wasm() { return !!WA; } };
 if (isNode) module.exports = SDBots; else root.SDBots = SDBots;
 })(typeof window !== 'undefined' ? window : globalThis);

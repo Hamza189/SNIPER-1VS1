@@ -111,6 +111,22 @@ Detalle de cada cambio (antes/después, medidas, cómo revertir): `docs/next-lev
 | Personaje 3D rev. 03 hecho por Claude e integrado tras `?pj=2` (bots y rival online) | 20-10 · directo a `main` |
 | Personajes realistas + elegir personaje (con el SOLDADO de `?pj=2`) y HUD 2 por defecto (aprobado en iPhone y PC) | 28-10 · directo a `main` |
 
+## 18-11-2026 — Motor: perfil de CPU, matrices, rutas de los bots del servidor y sonido en C++
+Del propietario: «quiero que en esta sesión mejoremos al máximo el MOTOR DEL JUEGO, en C, C# o C++ o ensamblador».
+- **Perfil de CPU** (`tools/wasm/perfil.js`): en la partida, lo que más pesaba eran las matrices de 3 366 objetos en cada
+  fotograma, también los ocultos. Ahora solo los visibles: −46 % de matrices (`?matrices=0` vuelve a lo de antes).
+- **C++/WebAssembly:**
+  - `wasm/astar.cpp`: las rutas de los bots del servidor, 8–20 veces más rápidas; el peor caso baja de 28 ms a 1,2 ms.
+    Probado en Node y en Cloudflare local.
+  - `wasm/audio.cpp`: el sonido inicial, entre 7 y 16 veces más rápido.
+- **Fallo arreglado:** en la CASA ATLAS 2.0 · NUEVA, el JARDÍN y el BARRIO, los bots del servidor casi no podían moverse
+  (su red estaba en miles de trozos). Ahora cada mapa lleva `navReach`.
+- **Arreglado también:** `?desliz=0/1`, cuyo patrón tenía un carácter de retroceso.
+- **Pruebas:** astar 15, audiowasm 6, navwasm 9 y 7 en navegador, sala 191, núcleo 74, mapas 33/12/13, TypeScript 0 avisos;
+  en navegador, general 61, CASA ATLAS 2.0 · NUEVA 22, BARRIO 8, sombras 7 y casa de la oliva 12.
+- **Estado:** IMPLEMENTADO · PROBADO EN NAVEGADOR (PC) · PROBADO EN CLOUDFLARE LOCAL · PENDIENTE DE VALIDACIÓN EN IPHONE Y
+  ANDROID.
+
 ## 18-11-2026 — SALA 1V1 en el iPhone: hangar ligero y red de seguridad
 
 El propietario: en el iPhone, con `?lobby=2`, la página se reiniciaba y se caía al entrar en la sala; el enlace normal

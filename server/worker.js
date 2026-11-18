@@ -9,6 +9,10 @@ import MAP from '../core/mapdata.js';
 import G from '../core/geom.js';
 import PR from '../core/protocol.js';
 import SDAccounts from './accounts.js';
+import Bots from '../core/bots.js';
+// the bots' routes in C++/WebAssembly (wasm/astar.cpp, docs/WASM.md): wrangler bundles the .wasm as a compiled module
+import ASTAR_WASM from '../assets/wasm/astar.wasm';
+Bots.useWasm(ASTAR_WASM);
 
 const json = (obj, status, extra) => new Response(JSON.stringify(obj), { status: status || 200, headers: Object.assign({ 'content-type': 'application/json' }, extra || {}) });
 function originOk(env, o) {

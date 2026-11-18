@@ -2504,12 +2504,12 @@ if(CASA.on){
   W.colliders=[];W.ray=[];W.ramps=[];
   const pm={},mk=f=>pm[f]||(pm[f]=new T.MeshBasicMaterial({visible:false}));
   // floor for bullets at y = 0 (the GLB floors are 0–1 cm high); wide, so shots out of a window land somewhere
-  {const fl=new T.Mesh(new T.PlaneGeometry(240,240),mk('concrete'));fl.rotation.x=-Math.PI/2;fl.userData.surf='concrete';fl.name='casa_floor_ray';scene.add(fl);fl.updateMatrixWorld(true);W.ray.push(fl);}
+  {const fl=new T.Mesh(new T.PlaneGeometry(240,240),mk('concrete'));fl.rotation.x=-Math.PI/2;fl.userData.surf='concrete';fl.name='casa_floor_ray';scene.add(fl);fl.updateMatrixWorld(true);fl.matrixAutoUpdate=false;W.ray.push(fl);}
   for(const b of SDCasa.boxes){
     const [x0,y0,z0]=b.a,[x1,y1,z1]=b.b;addCollider(x0,y0,z0,x1,y1,z1);
     if(!b.s)continue;
     const m=new T.Mesh(new T.BoxGeometry(x1-x0,y1-y0,z1-z0),mk(b.f));m.position.set((x0+x1)/2,(y0+y1)/2,(z0+z1)/2);
-    m.userData.surf=b.f;m.name='casa_'+b.n;scene.add(m);m.updateMatrixWorld(true);W.ray.push(m);
+    m.userData.surf=b.f;m.name='casa_'+b.n;scene.add(m);m.updateMatrixWorld(true);m.matrixAutoUpdate=false;W.ray.push(m);
   }
   // walkable points (spawns, bots): 0.25 m grid, 0.4 m clear of anything at body height (a door lintel or a table top you
   // step onto does not count); linked to their 8 neighbours when the straight line between them is clear too
@@ -2575,15 +2575,15 @@ const C2S={casa2:C2,casa2b:C2B,casa2c:C2J};
 function c2World(S,label){
   const prevC=W.colliders,prevR=W.ray,prevP=W.ramps;W.colliders=[];W.ray=[];W.ramps=[];
   const pm={},mk=f=>pm[f]||(pm[f]=new T.MeshBasicMaterial({visible:false}));
-  {const fl=new T.Mesh(new T.PlaneGeometry(240,240),mk('concrete'));fl.rotation.x=-Math.PI/2;fl.userData.surf='concrete';fl.name=S.id+'_floor_ray';scene.add(fl);fl.updateMatrixWorld(true);W.ray.push(fl);}
+  {const fl=new T.Mesh(new T.PlaneGeometry(240,240),mk('concrete'));fl.rotation.x=-Math.PI/2;fl.userData.surf='concrete';fl.name=S.id+'_floor_ray';scene.add(fl);fl.updateMatrixWorld(true);fl.matrixAutoUpdate=false;W.ray.push(fl);}
   for(const b of S.L.boxes(SDCasa)){
     const [x0,y0,z0]=b.a,[x1,y1,z1]=b.b;addCollider(x0,y0,z0,x1,y1,z1);
     if(!b.s)continue;
     const m=new T.Mesh(new T.BoxGeometry(x1-x0,y1-y0,z1-z0),mk(b.f));m.position.set((x0+x1)/2,(y0+y1)/2,(z0+z1)/2);
-    m.userData.surf=b.f;m.name=S.id+'_'+b.n;scene.add(m);m.updateMatrixWorld(true);W.ray.push(m);
+    m.userData.surf=b.f;m.name=S.id+'_'+b.n;scene.add(m);m.updateMatrixWorld(true);m.matrixAutoUpdate=false;W.ray.push(m);
   }
   const cols=W.colliders,L=S.L;let nav=null,navS=null;
-  WORLDS[S.id]={colliders:W.colliders,ray:W.ray,ramps:W.ramps,objs:[],label,spawns:L.spawns(SDCasa),
+  WORLDS[S.id]={colliders:W.colliders,ray:W.ray,ramps:W.ramps,objs:[],label,spawns:L.spawns(SDCasa),navReach:S.id==='casa2'?undefined:0.75,
     get nav(){return nav||(nav=L.navGrid(cols,SD_CONFIG.move.step,SD_CONFIG.move.heightStand));},
     get navServer(){return navS||(navS=L.thin(this.nav));}};
   W.colliders=prevC;W.ray=prevR;W.ramps=prevP;
@@ -2659,15 +2659,15 @@ const BAR={id:'barrio',on:typeof SDBarrio!=='undefined',exp:false,ready:false,lo
 if(BAR.on){
   const prevC=W.colliders,prevR=W.ray,prevP=W.ramps;W.colliders=[];W.ray=[];W.ramps=[];
   const pm={},mk=f=>pm[f]||(pm[f]=new T.MeshBasicMaterial({visible:false}));
-  {const fl=new T.Mesh(new T.PlaneGeometry(240,240),mk('concrete'));fl.rotation.x=-Math.PI/2;fl.userData.surf='concrete';fl.name='barrio_floor_ray';scene.add(fl);fl.updateMatrixWorld(true);W.ray.push(fl);}
+  {const fl=new T.Mesh(new T.PlaneGeometry(240,240),mk('concrete'));fl.rotation.x=-Math.PI/2;fl.userData.surf='concrete';fl.name='barrio_floor_ray';scene.add(fl);fl.updateMatrixWorld(true);fl.matrixAutoUpdate=false;W.ray.push(fl);}
   for(const b of SDBarrio.boxes()){
     const [x0,y0,z0]=b.a,[x1,y1,z1]=b.b;addCollider(x0,y0,z0,x1,y1,z1);
     if(!b.s)continue;
     const m=new T.Mesh(new T.BoxGeometry(x1-x0,y1-y0,z1-z0),mk(b.f));m.position.set((x0+x1)/2,(y0+y1)/2,(z0+z1)/2);
-    m.userData.surf=b.f;m.name='barrio_'+b.n;scene.add(m);m.updateMatrixWorld(true);W.ray.push(m);
+    m.userData.surf=b.f;m.name='barrio_'+b.n;scene.add(m);m.updateMatrixWorld(true);m.matrixAutoUpdate=false;W.ray.push(m);
   }
   const cols=W.colliders;let nav=null,navS=null;
-  WORLDS.barrio={colliders:W.colliders,ray:W.ray,ramps:W.ramps,objs:[],label:'BARRIO',spawns:SDBarrio.spawns(),
+  WORLDS.barrio={colliders:W.colliders,ray:W.ray,ramps:W.ramps,objs:[],label:'BARRIO',spawns:SDBarrio.spawns(),navReach:0.75,
     get nav(){return nav||(nav=SDBarrio.navGrid(cols,SD_CONFIG.move.step,SD_CONFIG.move.heightStand));},
     get navServer(){return navS||(navS=SDBarrio.thin(this.nav));}};
   W.colliders=prevC;W.ray=prevR;W.ramps=prevP;
@@ -2750,9 +2750,13 @@ function audioInit(){
   // channels (AJUSTES → AUDIO): every sound goes through one of these on its way to the master
   AU.bus={};for(const k of ['shots','fx','steps','amb','ui'])(AU.bus[k]=ctx.createGain()).connect(AU.master);
   audioLevels();
-  const len=ctx.sampleRate*2;const buf=ctx.createBuffer(1,len,ctx.sampleRate);const d=buf.getChannelData(0);for(let i=0;i<len;i++)d[i]=Math.random()*2-1;AU.noise=buf;
+  // the noise and the reverb (18-11-2026): from C++/WebAssembly when it is loaded (client/audiowasm.js, wasm/audio.cpp), else here
+  const len=ctx.sampleRate*2;const buf=ctx.createBuffer(1,len,ctx.sampleRate);const d=buf.getChannelData(0);AU.noise=buf;
   const rl=Math.floor(ctx.sampleRate*2.4);const ir=ctx.createBuffer(2,rl,ctx.sampleRate);
-  for(let ch=0;ch<2;ch++){const dd=ir.getChannelData(ch);for(let i=0;i<rl;i++){dd[i]=(Math.random()*2-1)*Math.pow(1-i/rl,3.4)*(i<ctx.sampleRate*0.01?i/(ctx.sampleRate*0.01):1);}}
+  const AW=window.SDAudioWasm;let wasmOk=false;
+  if(AW&&AW.ready&&!AW.off){try{const A=AW.make(len,rl,ctx.sampleRate);d.set(A.noise);ir.getChannelData(0).set(A.l);ir.getChannelData(1).set(A.r);wasmOk=true;}catch(e){AW.failed=true;}}
+  if(!wasmOk){for(let i=0;i<len;i++)d[i]=Math.random()*2-1;
+    for(let ch=0;ch<2;ch++){const dd=ir.getChannelData(ch);for(let i=0;i<rl;i++){dd[i]=(Math.random()*2-1)*Math.pow(1-i/rl,3.4)*(i<ctx.sampleRate*0.01?i/(ctx.sampleRate*0.01):1);}}}
   AU.verb=ctx.createConvolver();AU.verb.buffer=ir;const vg=ctx.createGain();vg.gain.value=0.5;AU.verb.connect(vg);vg.connect(AU.master);
   if(ctx.state==='suspended')ctx.resume();
   // wind bed
@@ -5546,7 +5550,7 @@ let slowmo=0;
 /* DESLIZAMIENTO DE VERDAD (09-11-2026, client/soldier2.js slidePose): en tu 3ª persona sin conexión el operador se
    desliza con las piernas por delante. En línea, todavía el de siempre (el rival se ve como su caja de impacto, la del
    servidor, hasta que el propietario apruebe la caja nueva: core/hitbox.js SLIDE). ?desliz=0 vuelve al de antes. */
-{const q=location.search.match(/[?&]desliz=([01])/);if(q)store.set('deslizOld',q[1]==='0');}
+{const q=location.search.match(/[?&]desliz=([01])\b/);if(q)store.set('deslizOld',q[1]==='0');}
 const SLIDE2={on:store.get('deslizOld',false)!==true};
 const VM={sprintW:0,sprintPose:0,slideW:0,airW:0,crouchW:0,deadW:0,land:0,landV:0,eye:MOVE.eyeStand};
 function syncFromSim(){
@@ -7475,7 +7479,7 @@ function m2Warm(now,force){
       typeof HTMLCanvasElement!=='undefined'&&im instanceof HTMLCanvasElement?im.width>0:typeof ImageBitmap!=='undefined'&&im instanceof ImageBitmap?im.width>0:false;
     if(ok)try{renderer.initTexture(t);}catch(e){}}});
   // and draw it once, tiny and off screen: that also compiles what only drawing compiles (the sun's shadow pass)
-  try{const rt=M2.rt||(M2.rt=new T.WebGLRenderTarget(64,64));renderer.setRenderTarget(rt);renderer.render(scene,camera);}catch(e){}
+  try{const rt=M2.rt||(M2.rt=new T.WebGLRenderTarget(64,64));renderer.setRenderTarget(rt);sceneUpdate();renderer.render(scene,camera);}catch(e){}
   renderer.setRenderTarget(null);
 }
 function m2Frame(rdt){
@@ -7978,6 +7982,14 @@ function frame(now){
   requestAnimationFrame(frame);
   if(!MANUAL.on)frameBody(now);
 }
+/* MATRICES (18-11-2026, ENGINE NEXT GENERATION, docs/claude-code/ENGINE_NEXT_GEN_INFORME.md §7): three.js recomputed, every
+   frame, the position matrix of all ~3 400 objects of the scene, also the maps and bots that are hidden (the other maps,
+   unused bot soldiers) and the ~1 200 invisible bullet boxes, which never move (those are fixed when made). Now only what
+   is visible is updated, just before drawing: 2 027 → 1 104 matrices per frame in PUEBLO.
+   ?matrices=0: as before (everything, every frame). */
+const MAT_ALL=/[?&]matrices=0\b/.test(location.search);
+if(!MAT_ALL)scene.autoUpdate=false;
+function sceneUpdate(){if(MAT_ALL)return;const ch=scene.children;for(let i=0;i<ch.length;i++){const c=ch[i];if(c.visible)c.updateMatrixWorld();}}
 function frameBody(now){
   const perfT0=PERF.rec?performance.now():0;if(!PERF.first)PERF.first=now;
   const pf=PROF.on||!!PERF.rec;let pt=pf?performance.now():0;
@@ -8046,7 +8058,7 @@ function frameBody(now){
   pmark('mundo');
   if(LB.room&&LB.vis&&state==='menu'){const ex=renderer.toneMappingExposure;renderer.toneMappingExposure=LB.room.exposure*(SETTINGS.bright||1);renderer.render(LB.room.scene,LB.cam);renderer.toneMappingExposure=ex;}
   else if(M2.room&&state==='menu'){const ex=renderer.toneMappingExposure;renderer.toneMappingExposure=M2.room.exposure*(SETTINGS.bright||1);renderer.render(M2.room.scene,M2.cam);renderer.toneMappingExposure=ex;}
-  else renderer.render(scene,camera);
+  else{sceneUpdate();renderer.render(scene,camera);}
   pmark('dibujo');
   if(!SHOT.noVM&&!TPV.on&&(WROOT.visible||KROOT.visible||PROOT.visible||SROOT.visible)&&(state==='playing'||state==='dead')){renderer.clearDepth();renderer.render(wScene,wCam);}
   pmark('dibujoArma');if(pf)PROF.n++;
@@ -8349,6 +8361,6 @@ if(FLORA.on){const gl=new T.GLTFLoader();let n=2;
       if(P3W.kit)later();else{const w=setInterval(()=>{if(P3W.kit){clearInterval(w);later();}},300);}}}}
 function floraFlush(){if(FLORA.go)FLORA.go();}
 
-window.__SD={get GFX(){return GFX;},get BOX3(){return BOX3;},get GUNCFG(){return GUNCFG;},PRUEBAS,XRAY,xrayFrame,SLIDE2,PEN,penBox,spawnBullet,updateBullets,HALCON,BAL,rifleCfgFor,applyRifleCfg,gsGun,SIL,silCfg,silSaved,SFX,GUN,camLight,get gameTime(){return gameTime;},GSI,gsiDone,gsiRender,M2,m2Tab,m2Sync,m2Sleep,LB,lbRender,lbFrame,openSettings,closeSettings,MIRA,setMira,miraApply,miraClipGeo,miraRifle,openMiras,closeMiras,updateReticle,ENV,MOVE_CLASSIC,MOV_CLASSIC,VIS,VIS_COL,VIS_HULL,visOn,visFrame,visWho,selfHit,PROF,KTX2,R2_ON,R2_URL,PIC,GYRO,gyroEv,crossApply,btnPress,settingsChanged,perfTexMB(){const t=perfTextures();return {real:SDPerf.textureMB(t),asRGBA:SDPerf.textureMB(t.map(x=>Object.assign({},x,{bytes:0})))};},REMOTES,netScoreHud,shotTargets,MINI,miniLayer,miniPing,clockFrame,setOffTime,get OFF_TIME(){return OFF_TIME;},ACC,accRefresh,INV,invSync,camoApply,openInv,invOpenBox,WSKIN,WS_ST,setWskin,get RIF(){return RIF;},TPV,SELF,get PROFILE(){return PROFILE;},openProfile,endMatch,PJ_MIX,MIX_ORDER,SKINS,get SKIN(){return SKIN;},setSkin,pj2SetPack,rivalSkin,PERF,perfRun,HUD2,get H2(){return HUD2?H2:null;},leanIn:HUD2?leanIn:null,h2Frame:HUD2?h2Frame:null,PJ2,pj2Load,CASA,casaLoad,C2,C2B,C2J,C2S,casa2Load,BAR,barrioLoad,FLORA,RATS,RAT_WORLD,ratsFrame,SHADOW_FADE,setDuelLethal,get DUEL_LETHAL(){return DUEL_LETHAL;},gfxDiagText,get P3ON(){return P3ON;},COBCC,damagePlayer,TEX,sunFollow,setSunSnap(on){SUN_SNAP=!!on;},sun,P0,E10,e10Lod,DIAG,setTrainMove,LIGHT:{sun,hemi,skyMat,LOOK,P3},P3W,freeze(on){SIM_FREEZE=!!on;},SHOT,VMA,makeSoldier,animateSoldier,BOT_MAT,scene,camera,RemotePlayer,PMprev,PIS,PROOT,RIF,WROOT,SHO_:null,MANUAL,advance(ms){frameBody(last+ms);},get LAST_PELLETS(){return LAST_PELLETS;},SCORE,SCFG,SROOT,SHO,setPrimaryChoice,get PRIMARY(){return PRIMARY;},PCORE,PCFG,setWorld,WORLDS,get WORLD_ID(){return WORLD_ID;},renderer,GFX,gfxApply,get NET(){return NET;},get REMOTE(){return REMOTE;},W,get NAV(){return NAV;},setOffMap,get OFFMAP(){return OFFMAP;},TOUCH,EDIT,openEditor,get SETTINGS(){return SETTINGS;},get LAYOUT(){return LAYOUT;},checkOrientation,MAT,LOAD,TRAINERS,get RANGE_BOTS(){return RANGE_BOTS;},TRAIN,setTrain,setLethal,kitNote,GINS,TDIAG,AU,get TOUCH_EVENTS(){return TOUCH_EVENTS;},impactFX,bodyFX,get DECALS(){return DECALS;},surfaceOf,soundDelay,aimSelfTest,P,PM,WS,WCORE,RECOIL,AIM,BOTS,DUMMIES,BULLETS,EVENTS,PARTS,STATS,get state(){return state;},get mode(){return mode;},setMode,input,startMatch,simTick,frame,toMenu,pause,resume};
+window.__SD={sceneUpdate,audioInit,get MAT_ALL(){return MAT_ALL;},get GFX(){return GFX;},get BOX3(){return BOX3;},get GUNCFG(){return GUNCFG;},PRUEBAS,XRAY,xrayFrame,SLIDE2,PEN,penBox,spawnBullet,updateBullets,HALCON,BAL,rifleCfgFor,applyRifleCfg,gsGun,SIL,silCfg,silSaved,SFX,GUN,camLight,get gameTime(){return gameTime;},GSI,gsiDone,gsiRender,M2,m2Tab,m2Sync,m2Sleep,LB,lbRender,lbFrame,openSettings,closeSettings,MIRA,setMira,miraApply,miraClipGeo,miraRifle,openMiras,closeMiras,updateReticle,ENV,MOVE_CLASSIC,MOV_CLASSIC,VIS,VIS_COL,VIS_HULL,visOn,visFrame,visWho,selfHit,PROF,KTX2,R2_ON,R2_URL,PIC,GYRO,gyroEv,crossApply,btnPress,settingsChanged,perfTexMB(){const t=perfTextures();return {real:SDPerf.textureMB(t),asRGBA:SDPerf.textureMB(t.map(x=>Object.assign({},x,{bytes:0})))};},REMOTES,netScoreHud,shotTargets,MINI,miniLayer,miniPing,clockFrame,setOffTime,get OFF_TIME(){return OFF_TIME;},ACC,accRefresh,INV,invSync,camoApply,openInv,invOpenBox,WSKIN,WS_ST,setWskin,get RIF(){return RIF;},TPV,SELF,get PROFILE(){return PROFILE;},openProfile,endMatch,PJ_MIX,MIX_ORDER,SKINS,get SKIN(){return SKIN;},setSkin,pj2SetPack,rivalSkin,PERF,perfRun,HUD2,get H2(){return HUD2?H2:null;},leanIn:HUD2?leanIn:null,h2Frame:HUD2?h2Frame:null,PJ2,pj2Load,CASA,casaLoad,C2,C2B,C2J,C2S,casa2Load,BAR,barrioLoad,FLORA,RATS,RAT_WORLD,ratsFrame,SHADOW_FADE,setDuelLethal,get DUEL_LETHAL(){return DUEL_LETHAL;},gfxDiagText,get P3ON(){return P3ON;},COBCC,damagePlayer,TEX,sunFollow,setSunSnap(on){SUN_SNAP=!!on;},sun,P0,E10,e10Lod,DIAG,setTrainMove,LIGHT:{sun,hemi,skyMat,LOOK,P3},P3W,freeze(on){SIM_FREEZE=!!on;},SHOT,VMA,makeSoldier,animateSoldier,BOT_MAT,scene,camera,RemotePlayer,PMprev,PIS,PROOT,RIF,WROOT,SHO_:null,MANUAL,advance(ms){frameBody(last+ms);},get LAST_PELLETS(){return LAST_PELLETS;},SCORE,SCFG,SROOT,SHO,setPrimaryChoice,get PRIMARY(){return PRIMARY;},PCORE,PCFG,setWorld,WORLDS,get WORLD_ID(){return WORLD_ID;},renderer,GFX,gfxApply,get NET(){return NET;},get REMOTE(){return REMOTE;},W,get NAV(){return NAV;},setOffMap,get OFFMAP(){return OFFMAP;},TOUCH,EDIT,openEditor,get SETTINGS(){return SETTINGS;},get LAYOUT(){return LAYOUT;},checkOrientation,MAT,LOAD,TRAINERS,get RANGE_BOTS(){return RANGE_BOTS;},TRAIN,setTrain,setLethal,kitNote,GINS,TDIAG,AU,get TOUCH_EVENTS(){return TOUCH_EVENTS;},impactFX,bodyFX,get DECALS(){return DECALS;},surfaceOf,soundDelay,aimSelfTest,P,PM,WS,WCORE,RECOIL,AIM,BOTS,DUMMIES,BULLETS,EVENTS,PARTS,STATS,get state(){return state;},get mode(){return mode;},setMode,input,startMatch,simTick,frame,toMenu,pause,resume};
 })();
 </script>

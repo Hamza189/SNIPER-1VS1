@@ -118,3 +118,24 @@ FPS sin límite.
 - La versión JavaScript se queda de reserva, y `?navwasm=0` la fuerza. Detalle en `docs/WASM.md`.
 - `npm run typecheck` ya está en `npm test` (0 avisos).
 
+## 7. Hecho el 18-11-2026: perfil de CPU y lo que de verdad pesaba
+- **El perfil** (`node tools/wasm/perfil.js pueblo 20`: el perfilador de muestras de Chrome con la GPU del PC).
+  - **Carga** (8–20 s de reloj en el PC, sin caché de shaders): lo que más pesa es la compilación de shaders de three.js
+    (`WebGLProgram`), entre 4,7 y 11,5 s.
+    - Sin la comprobación de errores (`&shadercheck=0`) la compilación solo se mueve de sitio (8 s en otra función).
+    - El arreglo de verdad es tener menos variantes de shader (hoy hay 40 programas), no C++.
+  - **Partida:** lo primero es recalcular las matrices de posición de **todos** los objetos en cada fotograma. Son 3 366,
+    incluidos los mapas y soldados ocultos y 1 229 cajas invisibles de las balas.
+- **Matrices:** ahora solo se actualiza lo que está a la vista, y las cajas de las balas quedan fijas.
+  - De 2 027 a 1 104 matrices por fotograma en el PUEBLO (−46 %), con WebGL por software.
+  - `?matrices=0` vuelve a lo de antes.
+  - Pruebas en navegador sin cambios: general 61, CASA ATLAS 2.0 · NUEVA 22, BARRIO 8, sombras 7, casa de la oliva 12.
+- **Más C++ (`docs/WASM.md`):**
+  - las rutas de los bots del servidor (A*), 8–20 veces más rápidas;
+  - el sonido inicial, entre 7 y 16 veces más rápido.
+- **Arreglado de paso:**
+  - la red de los bots del servidor, rota en tres mapas (`navReach`);
+  - `?desliz=0/1` no funcionaba, porque su patrón tenía un carácter de control en lugar de `\b`.
+- **Lo que C++ no puede mejorar** (medido): el resto de la CPU de un fotograma es el propio three.js preparando el dibujo,
+  y lo que más pesa en el iPhone es la GPU. Lo que toca ahí es menos llamadas de dibujo y menos variantes de shader.
+
