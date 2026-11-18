@@ -150,7 +150,7 @@ Es más grande: 2 a 5 veces lo de ahora, porque el JPG comprime mejor para guard
   - y probablemente en PC, por la memoria.
 - **Lo mismo para las texturas del mapa**: el pueblo usa ~90–110 MB en texturas.
 
-## Aspectos de arma a 2K en el móvil (`?arma2k=1`, 18-11-2026) — PRUEBA, no es lo de por defecto
+## Aspectos de arma a 2K en el móvil (18-11-2026) — por defecto en el móvil
 - **Medido** (Playwright como un iPhone: táctil, 932 × 430 a ×3, calidad ALTO, PUEBLO; se cuentan los bytes que de verdad
   se mandan a la GPU):
 
@@ -158,16 +158,16 @@ Es más grande: 2 a 5 veces lo de ahora, porque el JPG comprime mejor para guard
   |---|---|---|
   | Sin aspecto de arma | 99 MB | 0,3 s |
   | ÚLTIMA (lo de hoy, 4K) | **483 MB** | 5–6,5 s |
-  | ÚLTIMA con `?arma2k=1` | **211 MB** | 0,7–1 s |
+  | ÚLTIMA a 2K (ahora, en el móvil) | **211 MB** | 0,7–1 s |
 
   - Cada textura de 4K ocupa ~21 MB en la GPU aun comprimida (ASTC/UASTC: 1 byte por píxel más los niveles pequeños).
     Las 17 texturas de ÚLTIMA son de 4K.
   - En calidad MEDIO, sin aspecto: 44 MB.
-- **Qué hace:** cada archivo KTX2 ya trae dentro sus niveles de 2K, 1K… Con la bandera, al llegar se descarta el de 4K
+- **Qué hace:** cada archivo KTX2 ya trae dentro sus niveles de 2K, 1K… En pantallas táctiles, al llegar se descarta el de 4K
   y se sube a la GPU desde el de 2K: un cuarto de memoria, sin archivos nuevos ni otra descarga (`ktx2Cap` en
   `src/page.html`). Solo los aspectos de arma; los personajes no cambian.
 - **Aspecto:** en 1ª persona la GPU casi nunca usa el nivel de 4K. Para eso el arma tendría que ocupar más de 4 096 píxeles
   de pantalla, y en el iPhone mide unos 1 000. Donde más se podría notar es ARMAS, con el rifle grande y acercado.
-- `?arma2k=0` o sin bandera: 4K como hasta hoy (decisión del propietario del 29-10, «todo en 4K»). Pasar a 2K por defecto
-  en el móvil necesita que el propietario lo pruebe en el iPhone y lo apruebe.
-- Prueba: `test/ktx2.browser.test.js` (con `?arma2k=1` las texturas de 4K de ÚLTIMA se suben a 2K).
+- **Por defecto en el móvil desde el 18-11-2026** (el propietario: «Ponlo ya por defecto»). En PC sigue el 4K.
+  `?arma2k=0` = 4K también en el móvil; `?arma2k=1` = 2K también en PC.
+- Prueba: `test/ktx2.browser.test.js` (en el móvil, ÚLTIMA se sube a 2K; con `?arma2k=0`, a 4K).

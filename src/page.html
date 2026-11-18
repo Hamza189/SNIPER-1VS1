@@ -4072,9 +4072,11 @@ canvas.addEventListener('webglcontextrestored',()=>{if(KTX2.freed)location.reloa
 const ktx2Dir=u=>{const m=/assets\/armas\/([^/]+)\//.exec(u);return m?m[1]:'';};
 /* ARMAS A 2K EN EL MÓVIL (18-11-2026, docs/KTX2.md): medido como un iPhone en ALTO, la memoria de texturas de la partida
    pasa de 99 MB a 483 MB con ÚLTIMA (17 texturas de 4K: ~21 MB cada una en la GPU aun comprimidas). Es lo que hace cerrar
-   Safari. Con ?arma2k=1 cada textura de aspecto de arma se sube sin su nivel de 4K: se usa el de 2K que ya trae el
-   mismo archivo (un cuarto de memoria, ~96 MB), sin archivos nuevos ni otra descarga. ?arma2k=0 = 4K siempre (lo de hoy). */
-const ARMA_CAP=/[?&]arma2k=1\b/.test(location.search)?2048:0;
+   Safari. En pantallas táctiles cada textura de aspecto de arma se sube sin su nivel de 4K: se usa el de 2K que ya trae
+   el mismo archivo (un cuarto de memoria, ~96 MB), sin archivos nuevos ni otra descarga. Por defecto en el móvil desde el
+   18-11-2026 (el propietario: «Ponlo ya por defecto»); en PC sigue el 4K. ?arma2k=0 = 4K también en el móvil; ?arma2k=1 =
+   2K también en PC. */
+const ARMA_CAP=/[?&]arma2k=1\b/.test(location.search)?2048:/[?&]arma2k=0\b/.test(location.search)?0:(PJ2_PHONE?2048:0);
 function ktx2Cap(t,cap){
   if(!cap||!t||!t.isCompressedTexture||!t.mipmaps||t.mipmaps.length<2)return t;
   let k=0;while(k<t.mipmaps.length-1&&t.mipmaps[k].width>cap)k++;

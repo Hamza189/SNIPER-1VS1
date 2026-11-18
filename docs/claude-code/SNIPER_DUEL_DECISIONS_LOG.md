@@ -6,6 +6,12 @@ Cada entrada dice qué se decidió o cambió, quién lo decidió, y el estado re
 Las decisiones anteriores al 18-10-2026 están resumidas en `SNIPER_DUEL_MASTER_CONTEXT.md` §4.
 Detalle de cada cambio (antes/después, medidas, cómo revertir): `docs/next-level/NEXT_LEVEL_CHANGELOG.md`.
 
+## 18-11-2026 — Aspectos de arma a 2K por defecto en el móvil
+- El propietario: «Ponlo ya por defecto» (lo que antes era `?arma2k=1`). En pantallas táctiles las texturas de 4K de los
+  aspectos de arma se suben desde su nivel de 2K: con ÚLTIMA, de 483 a 211 MB de texturas en ALTO. En PC sigue el 4K.
+- `?arma2k=0` = 4K también en el móvil; `?arma2k=1` = 2K también en PC. Detalle: `docs/KTX2.md`.
+- Estado: IMPLEMENTADO · PROBADO EN NAVEGADOR · PENDIENTE DE VALIDACIÓN EN IPHONE.
+
 ## 18-11-2026 — Memoria del iPhone: el aspecto de arma ÚLTIMA en 4K, y lo que ya estaba hecho
 El propietario pegó un análisis externo (bajar «630 MB» de texturas a menos de 100, 40 shaders a menos de 12, la mitad de
 llamadas de dibujo en el PUEBLO y la resolución a ×1,5 en móvil). Medido hoy, como un iPhone en ALTO:
