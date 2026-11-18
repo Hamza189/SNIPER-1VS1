@@ -23,7 +23,7 @@ Detalle de cada cambio (antes/después, medidas, cómo revertir): `docs/next-lev
 ### Siguiente prioridad
 | Tarea | Quién la desbloquea | Estado |
 |---|---|---|
-| **PUEBLO 4.0** (integrado el 17-11, rama `pueblo4`) — PUEBLO 3.1 + 4.0 hecho por Claude en la nube, ahora solo con `?pueblo=4` y mapa de servidor propio `pueblo4` (el PUEBLO de siempre no cambia). Falta: su OK para publicar (despliega el servidor), probarlo en el iPhone en MEDIO con MEDIR RENDIMIENTO (con y sin `&pueblo4=0`), una partida larga sin que Safari recargue la pestaña, y decidir F6 (`docs/PUEBLO-4.md`) | Propietario | IMPLEMENTADO · PROBADO EN NAVEGADOR Y ONLINE LOCAL · SIN PUBLICAR · PENDIENTE DE VALIDACIÓN EN IPHONE |
+| **PUEBLO 4.0** (integrado el 17-11, rama `pueblo4`) — PUEBLO 3.1 + 4.0 hecho por Claude en la nube, ahora solo con `?pueblo=4` y mapa de servidor propio `pueblo4` (el PUEBLO de siempre no cambia). Publicado el 18-11: `https://hamza189.github.io/SNIPER-1VS1/?pueblo=4`. Falta: probarlo en el iPhone en MEDIO con MEDIR RENDIMIENTO (con y sin `&pueblo4=0`), una partida larga sin que Safari recargue la pestaña, y decidir F6 (`docs/PUEBLO-4.md`) | Propietario | PUBLICADO TRAS BANDERA · PENDIENTE DE VALIDACIÓN EN IPHONE |
 | **SALA 1V1** (10-11) — probar `?lobby=2` en el PC y en el iPhone (horizontal), con alguien en otro dispositivo: INICIO › MULTIJUGADOR 1V1 → CREAR SALA PRIVADA → INVITAR (copiar enlace o WhatsApp) → el otro entra y aparece en el hangar → elegir mapa → LISTO los dos → INICIAR PARTIDA. Decir si gusta, los FPS del hangar y si pasa a ser la de siempre (`?lobby=1` = la de antes; `docs/SALA-1V1.md`) | Propietario | SERVIDOR PUBLICADO · PÁGINA SIN PUBLICAR · PENDIENTE DE VALIDACIÓN EN IPHONE Y ANDROID |
 | **CAJA NUEVA** (10-11) — CAJAS › ABRIR CAJA en el PC y en el iPhone: ver la ATLAS DROP temblar, abrirse y encenderse con el color de la rareza; decir si gusta o si se cambia algo (`?caja=0` = la de antes) | Propietario | PUBLICADO · PENDIENTE DE VALIDACIÓN |
 | **ORDENADORES FLOJOS** (10-11) — en el portátil HP de su novia: recargar la página, mirar AJUSTES › GRÁFICOS (debe poner AUTO → BAJO y el nombre de la gráfica en el diagnóstico), jugar y saltar; decir los FPS | Propietario | PUBLICADO · PENDIENTE DE VALIDACIÓN EN EL HP |
@@ -191,8 +191,10 @@ Del propietario: «TE PASO PUEBLO 4.0 PARA QUE LO IMPLEMENTES» (zip `PUEBLO4_PA
   `sala1v1.browser` (1: RES ×1/×2, de hoy). Con la CPU al 100 % fallan a veces `casa2.online`, `pro`, `ajustes` y `rifles`;
   solas pasan. Arreglados de paso en esta rama: `smoke.test` (la red de bots y el sonido en C++ rompían si arrancaban
   antes de `ASSET_V` o sin `fetch`).
-- Estado: IMPLEMENTADO · PROBADO EN NAVEGADOR (PC, software) · PROBADO ONLINE CON SERVIDOR LOCAL · SIN PUBLICAR (toca
-  `core/mapdata.js` → despliega el servidor: necesita su OK) · PENDIENTE DE VALIDACIÓN EN IPHONE, PC Y ANDROID.
+- 18-11, del propietario: «Sí, publícalo». Publicado (`1be563b`): «Desplegar servidor», «Publicar página» y «Prueba pública
+  online» en verde. Comprobado en la web real: con `?pueblo=4` carga PUEBLO 4.0 y el servidor público pone `pueblo4` en la sala.
+- Estado: PUBLICADO TRAS BANDERA (`?pueblo=4`) · PROBADO ONLINE (servidor local y público) · PENDIENTE DE VALIDACIÓN EN
+  IPHONE, PC Y ANDROID. El PUEBLO de siempre sigue siendo el de por defecto hasta que lo apruebe.
 
 ## 17-11-2026 — Primera pieza del juego en C++/WebAssembly: la red de los bots
 Del propietario: «Sí, instálalo» (el compilador de C++).
