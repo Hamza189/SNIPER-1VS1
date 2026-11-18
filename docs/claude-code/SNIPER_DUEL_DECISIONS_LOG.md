@@ -180,6 +180,17 @@ Del propietario: «TE PASO PUEBLO 4.0 PARA QUE LO IMPLEMENTES» (zip `PUEBLO4_PA
   casas de 3.1, no lo de 4.0. Riesgo: el 03-11 el iPhone bajó a 55 FPS con ~249 llamadas / 401 mil triángulos, y 4.0 en
   MEDIO está en ese orden. No se ha hecho versión ligera para móvil: primero medir en el iPhone (MEDIR RENDIMIENTO) con y
   sin `&pueblo4=0`.
+- 18-11: rama puesta encima de `main` (`3e955da`: SALA 1V1 en el móvil, RES ×1/×2, matrices de lo visible, sonido en C++).
+  Mapas comprobados de nuevo: los 7 de siempre idénticos a `main`, `pueblo4` idéntico al del paquete. Capturas antes/después
+  en PC, 932×430 y 932×320 (`docs/capturas/pueblo4/integracion/`).
+- Pruebas tras ponerla encima: núcleo, sala, armas, mapas, casas (295), pueblo4 (23), smoke (76), `browser` (61),
+  coberturas (13), casas en navegador (23), sombras, E10, en línea (48) y **PUEBLO 4.0 en línea (13/13: dos navegadores,
+  servidor real, se entra andando en la ENCALADA sin correcciones)**, todo en verde.
+- **Fallos que ya estaban en `main`** (repetidos en una copia limpia de `main`, no son de PUEBLO 4.0): `casa.test` (el
+  televisor de pie no para la bala), `menu2.browser` (2: operador elegido), `arsenal.browser` (1: tocar un camuflaje) y
+  `sala1v1.browser` (1: RES ×1/×2, de hoy). Con la CPU al 100 % fallan a veces `casa2.online`, `pro`, `ajustes` y `rifles`;
+  solas pasan. Arreglados de paso en esta rama: `smoke.test` (la red de bots y el sonido en C++ rompían si arrancaban
+  antes de `ASSET_V` o sin `fetch`).
 - Estado: IMPLEMENTADO · PROBADO EN NAVEGADOR (PC, software) · PROBADO ONLINE CON SERVIDOR LOCAL · SIN PUBLICAR (toca
   `core/mapdata.js` → despliega el servidor: necesita su OK) · PENDIENTE DE VALIDACIÓN EN IPHONE, PC Y ANDROID.
 

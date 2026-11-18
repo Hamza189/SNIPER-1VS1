@@ -21,7 +21,8 @@ Hecho por Claude (sesión en la nube, 14–15-11) e integrado por Claude Code el
 - `?pueblo=4&pueblo4=0` = PUEBLO 3.1 tal cual. `?casas=0`, `?sur=0` y `?fuente=0` siguen valiendo, con la bandera.
 
 - **Capturas** (17/18-11, `tools/capture-scenes.js`, MEDIO, mismas cámaras; izquierda el PUEBLO de siempre, derecha
-  `?pueblo=4`): `docs/capturas/pueblo4/integracion/cmp-pc-*.jpg` (1170×540) y `cmp-movil-*.jpg` (932×430): plaza, calle
+  `?pueblo=4`): `docs/capturas/pueblo4/integracion/cmp-pc-*.jpg` (1170×540), `cmp-movil-*.jpg` (932×430) y
+  `cmp-safari-*.jpg` (932×320, lo que deja Safari en el iPhone 15 Pro Max en horizontal): plaza, calle
   norte, fachada, esquina oeste, vista alta, mitad sur y **dentro de la ENCALADA**. Llamadas y triángulos de cada vista en
   los `*-metrics.json` (plaza: 111 → 263 llamadas, 65 → 379 mil triángulos).
 - **Memoria y dibujo** (`tools/pueblo-dibujo.js`, ahora también memoria): ver la tabla del 17-11 en
