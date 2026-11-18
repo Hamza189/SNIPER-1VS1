@@ -176,10 +176,10 @@ function buildHangar(T, opt) {
   });
   // lights: a warm key from the front on each pad, cold rims from behind, a faint fill and the door's cold glow
   const lights = {};
-  lights.hemi = new T.HemisphereLight(0x8d98aa, 0x0c0b0a, phone ? 0.24 : 0.16); scene.add(lights.hemi);
+  lights.hemi = new T.HemisphereLight(0x8d98aa, 0x0c0b0a, phone ? 0.34 : 0.16); scene.add(lights.hemi);
   if (phone) {   // one warm key over both pads, one cold rim from behind
-    const key = new T.SpotLight(0xffefdc, 3.4, 16, 0.5, 0.8, 1.1); key.position.set(-0.4, 4.8, 4.6); key.target.position.set(0, 1.0, 0); scene.add(key, key.target);
-    lights.rim = new T.DirectionalLight(0xb8cdf2, 0.9); lights.rim.position.set(0.5, 3, -4); scene.add(lights.rim);
+    const key = new T.SpotLight(0xffefdc, 4.4, 16, 0.55, 0.75, 1.1); key.position.set(-0.4, 4.8, 4.6); key.target.position.set(0, 1.0, 0); scene.add(key, key.target);
+    lights.rim = new T.DirectionalLight(0xb8cdf2, 1.2); lights.rim.position.set(0.5, 3, -4); scene.add(lights.rim);
   } else for (const p of pads) {
     const key = new T.SpotLight(0xffefdc, 2.8, 14, 0.36, 0.75, 1.1); key.position.set(p.x * 1.8 - 0.6, 4.6, 4.2); key.target.position.set(p.x, 1.0, 0); scene.add(key, key.target);
     const rim = new T.SpotLight(0xb8cdf2, 3.2, 12, 0.34, 0.6, 1.2); rim.position.set(p.x * 2.6, 3.8, -3.4); rim.target.position.set(p.x, 1.3, 0); scene.add(rim, rim.target);
@@ -215,7 +215,7 @@ function buildHangar(T, opt) {
       for (const m of [].concat(o.material || [])) { if (!m || seen.has(m)) continue; seen.add(m); for (const k of ['map', 'normalMap']) if (m[k] && !seen.has(m[k])) { seen.add(m[k]); m[k].dispose(); } m.dispose(); }
     });
   }
-  return { scene, pads, lights, lamps, frame, dispose, exposure: 0.85 };
+  return { scene, pads, lights, lamps, frame, dispose, exposure: phone ? 1.0 : 0.85 };
 }
 
 const SDLobby = { PAD_X, view, mapCards, fitCamera, sway, appear, buildHangar };

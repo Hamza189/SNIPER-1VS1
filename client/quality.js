@@ -46,7 +46,9 @@ function gpuHint(name, threads) {
   return cap;
 }
 // device pixel ratio actually used for a profile and an adaptive scale
-function pixelRatio(profile, dpr, scale) { return Math.max(0.5, Math.min(dpr || 1, PROFILES[profile].prMax) * (scale || 1)); }
+// res (AJUSTES › GRÁFICOS › Resolución, 18-11-2026, owner: «la resolución que se pueda cambiar el x1 o x2»): 1 or 2 fixes the
+// pixel ratio the profile would cap (never above the screen's own); 'auto' / nothing = the profile's
+function pixelRatio(profile, dpr, scale, res) { const cap = res === 1 || res === 2 ? res : PROFILES[profile].prMax; return Math.max(0.5, Math.min(dpr || 1, cap) * (scale || 1)); }
 
 function createAdaptive(target, enabled) {
   return { target: target || 60, enabled: enabled !== false, scale: 1, acc: 0, frames: 0, fps: 0, goodFor: 0, changed: 0, ceiling: 1, sinceUp: 1e9, upFrom: 1, stuck: 0 };

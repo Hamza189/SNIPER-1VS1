@@ -85,5 +85,15 @@ console.log('\nHANGAR');
   check('se libera entero al jugar', n > 20, n + ' geometrías');
 }
 
+console.log('\nRESOLUCIÓN ×1 / ×2 (AJUSTES › GRÁFICOS, 18-11-2026)');
+{ const Q = require('../client/quality.js'), S = require('../client/settings.js');
+  check('×1 en un iPhone (pantalla 3×) en ALTO: 1 píxel por punto', Q.pixelRatio('alto', 3, 1, 1) === 1);
+  check('×2 en MEDIO sube a 2 (lo que pide el jugador) y nunca pasa de la pantalla', Q.pixelRatio('medio', 3, 1, 2) === 2 && Q.pixelRatio('alto', 1, 1, 2) === 1);
+  check('AUTO (o sin ajuste) = la de la calidad, como siempre', Q.pixelRatio('alto', 3, 1, 'auto') === 2 && Q.pixelRatio('medio', 3, 1) === 1.35);
+  check('la resolución adaptativa (solo con AUTO) sigue multiplicando encima', Q.pixelRatio('alto', 3, 0.5, 2) === 1);
+  const d = S.defaults(true), ok = S.sanitize(Object.assign({}, d, { res: 1 }), true), bad = S.sanitize(Object.assign({}, d, { res: 3 }), true);
+  check('el ajuste se guarda como AUTO por defecto, acepta 1 y 2 y rechaza lo demás', d.res === 'auto' && ok.res === 1 && bad.res === 'auto');
+}
+
 console.log('\n' + pass + ' correctas, ' + fail + ' fallidas');
 process.exit(fail ? 1 : 0);

@@ -111,6 +111,15 @@ Detalle de cada cambio (antes/después, medidas, cómo revertir): `docs/next-lev
 | Personaje 3D rev. 03 hecho por Claude e integrado tras `?pj=2` (bots y rival online) | 20-10 · directo a `main` |
 | Personajes realistas + elegir personaje (con el SOLDADO de `?pj=2`) y HUD 2 por defecto (aprobado en iPhone y PC) | 28-10 · directo a `main` |
 
+## 18-11-2026 — SALA 1V1 responsive en el móvil y resolución ×1 / ×2
+
+Del propietario (con capturas del iPhone): «mejora lo del lobby en móvil, que se vea bien y responsive, la resolución que se
+pueda cambiar el x1 o x2». Con las barras de Safari quedan ~932 × 320: ahora los mapas van en columna, los operadores en el
+centro y más iluminados, nada se monta, y en vertical la barra va en dos filas. Ajuste nuevo AJUSTES › GRÁFICOS ›
+Resolución (AUTO / ×1 / ×2, se guarda; con ×1 o ×2 la resolución adaptativa se apaga) y botón RES en la sala. Detalle y
+capturas antes/después: `docs/SALA-1V1.md`, `docs/sala1v1/movil/`. Estado: IMPLEMENTADO · PROBADO EN NAVEGADOR ·
+PENDIENTE DE VALIDACIÓN EN IPHONE Y ANDROID.
+
 ## 18-11-2026 — Motor: perfil de CPU, matrices, rutas de los bots del servidor y sonido en C++
 Del propietario: «quiero que en esta sesión mejoremos al máximo el MOTOR DEL JUEGO, en C, C# o C++ o ensamblador».
 - **Perfil de CPU** (`tools/wasm/perfil.js`): en la partida, lo que más pesaba eran las matrices de 3 366 objetos en cada

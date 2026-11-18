@@ -15,6 +15,7 @@ const DEFAULTS = {
   quality: 'auto',  // graphics: auto | bajo | medio | alto
   aa: true,         // antialiasing (MSAA 4×) in MEDIO and ALTO: distant façades stop flickering; applies on reload
   fpsCap: 60,       // 60 or 30 (30 saves battery and heat on phones)
+  res: 'auto',      // resolution: auto (the profile's) | 1 (×1: a quarter of the pixels of ×2, much less memory) | 2 (×2)
   showFps: false,   // small FPS counter on screen
   // aiming (ADS)
   // crouch button/key: slide = tap to crouch, and after a slide you stand up on your own (phones) | toggle = tap in, tap out
@@ -65,7 +66,7 @@ const CATEGORIES = {
   controles: ['view', 'crouchMode', 'adsMode', 'leftFire', 'leftFireAds', 'releaseFire', 'leanKeyL', 'leanKeyR', 'leanMode', 'leanTouch', 'wheelSwap'],
   sensibilidad: ['sensH', 'sensV', 'adsSens', 'adsH', 'adsV', 'touchLook', 'touchDead', 'smooth', 'invertY', 'sensFP', 'sensTP', 'scope4', 'scope8', 'gyro', 'gyroSens', 'gyroAds', 'gyroInv'],
   mira: ['xColor', 'xStyle', 'xLen', 'xThick', 'xGap', 'xOutline', 'retColor', 'retLit', 'hitColor', 'blood'],
-  graficos: ['quality', 'aa', 'fpsCap', 'showFps', 'bright', 'look', 'cvd'],
+  graficos: ['quality', 'res', 'aa', 'fpsCap', 'showFps', 'bright', 'look', 'cvd'],
   audio: ['volMaster', 'volShots', 'volFx', 'volSteps', 'volAmb', 'volUi', 'mute', 'vibrate'],
   jugabilidad: ['hitmarkers', 'dmgDir', 'minimap', 'enemyVis'],
   accesibilidad: ['calmVM', 'lowFlash']
@@ -120,6 +121,7 @@ function sanitize(o, touch) {
   if (o.view === 'fp' || o.view === 'tp') s.view = o.view;
   if (['auto', 'bajo', 'medio', 'alto'].includes(o.quality)) s.quality = o.quality;
   if (o.fpsCap === 30 || o.fpsCap === 60) s.fpsCap = o.fpsCap;
+  if (o.res === 'auto' || o.res === 1 || o.res === 2) s.res = o.res;
   s.v = VERSION;
   return s;
 }

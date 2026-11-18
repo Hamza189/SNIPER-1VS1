@@ -136,6 +136,25 @@ async function until(page, fn, arg, ms) { try { await page.waitForFunction(fn, a
       check('en el móvil, al estar en la sala queda la marca (y se quita al salir) y el hangar es el ligero (4 luces)', await until(P, () => { let l = 0; if (__SD.LB.room) __SD.LB.room.scene.traverse(o => { if (o.isLight) l++; }); return !!__SD.LB.room && l > 0 && l <= 4; }, null, 15000) && await until(P, () => !!__SD.LB.room && !!localStorage.getItem('sniperduel_lbOpen') && localStorage.getItem('sniperduel_lbOpen') !== 'null', null, 15000)
         && await P.evaluate(() => { document.getElementById('lbBack').click(); const v = localStorage.getItem('sniperduel_lbOpen'); return v === null || v === 'null'; }));
       await P.close(); }
+    // 18-11-2026: the owner's iPhone in landscape with Safari's bars leaves 932 × 320; the map strip covered everything
+    { const ctxS = await browser.newContext({ viewport: { width: 932, height: 320 }, hasTouch: true, isMobile: true, deviceScaleFactor: 3 });
+      await ctxS.route(/fonts\.(googleapis|gstatic)\.com/, r => r.abort());
+      const S = await open(ctxS, '&lobby=2&sala3d=1'); await S.click('#m2 .m2Mode[data-sel=online]');
+      await S.fill('#lbName', 'Bajo'); await S.click('#lbCreate');
+      await until(S, () => !document.getElementById('lbRoom').hidden && /^[A-Z0-9]{6}$/.test(document.getElementById('lbCodeTopTxt').textContent));
+      await S.evaluate(() => { if (__SD.LB.inv) document.getElementById('lbInvClose').click(); }); await sleep(800);
+      const L = await S.evaluate(() => { const r = id => document.getElementById(id).getBoundingClientRect(), q = sel => document.querySelector(sel).getBoundingClientRect();
+        const over = (a, b) => a.left < b.right && b.left < a.right && a.top < b.bottom && b.top < a.bottom;
+        const maps = q('#lb .lbMapsWrap'), pl = q('#lb .lbPlayers'), me = r('lbTagMe'), op = r('lbTagOp'), bar = r('lbBar');
+        const inView = id => { const x = r(id); return x.width > 0 && x.top >= 0 && x.bottom <= innerHeight + 0.5 && x.right <= innerWidth + 0.5; };
+        return { column: maps.width < innerWidth / 2 && maps.bottom <= bar.top + 1, mapsVsPlayers: over(maps, pl), tags: over(me, op), tagsVsPlayers: over(op, pl), buttons: ['lbReady', 'lbStart', 'lbLeave', 'lbInvBtn', 'lbRes'].every(inView) }; });
+      check('iPhone con las barras de Safari (932 × 320): mapas en columna, nada se monta y todos los botones se ven', L.column && !L.mapsVsPlayers && !L.tags && !L.tagsVsPlayers && L.buttons, JSON.stringify(L));
+      const st = () => S.evaluate(() => ({ res: __SD.SETTINGS.res, saved: JSON.parse(localStorage.getItem('sniperduel_settings') || '{}').res, pr: __SD.renderer.getPixelRatio(), txt: document.getElementById('lbResTxt').textContent, fixed: /perf=low/.test(location.search) }));
+      await S.click('#lbRes'); const r1 = await st(); await S.click('#lbRes'); const r2 = await st();
+      // the real resolution is checked where it is not fixed (with ?perf=low, the software GL of the tests, it stays at 0.5)
+      const real = r1.fixed || (r1.res === 1 ? r1.pr === 1 : r1.pr >= 1.5) && (r2.res === 1 ? r2.pr === 1 : r2.pr >= 1.5);
+      check('RES en la sala: ×1 ↔ ×2, se guarda en AJUSTES, el botón lo dice y cambia la resolución real', [1, 2].includes(r1.res) && r2.res === 3 - r1.res && r1.saved === r1.res && r2.saved === r2.res && r1.txt === '×' + r1.res && r2.txt === '×' + r2.res && real, JSON.stringify([r1, r2]));
+      await ctxS.close(); }
     check('sin errores de JavaScript', errors.length === 0, errors.slice(0, 3).join(' | ') || 'ninguno');
   } catch (e) { fail++; console.log('  FAIL ' + (e && e.stack || e)); }
   await browser.close(); web.close(); await srv.close();

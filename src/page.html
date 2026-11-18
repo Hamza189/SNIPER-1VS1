@@ -1011,6 +1011,56 @@ button.lbChoice:disabled{opacity:.55;cursor:default}
   .lbTag b{font-size:18px}.lbTag .lbSt{font-size:12px;padding:3px 5px 1px}
 }
 @media (max-width:760px){.lbBack span{display:none}.lbTitle{font-size:19px}.lbTitle svg{display:none}.lbPing svg{display:none}}
+.lbRes{height:clamp(28px,5vh,36px);min-width:44px;padding:0 8px;background:var(--lbglass);border:1px solid var(--lbline);color:var(--sand);font:600 clamp(15px,2.6vh,19px)/1 var(--f-display);letter-spacing:.06em}
+.lbRes b{color:var(--hud)}
+/* the FPS counter (AJUSTES) moves off the bar's centre while the room is open */
+body.lbOn #fpsBox{left:auto;right:max(8px,env(safe-area-inset-right,0px));transform:none;bottom:calc(var(--lbbarH,60px) + 6px)}
+/* 18-11-2026, owner's iPhone in landscape with Safari's bars: about 932 × 320. The map strip covered the operators and the
+   players; now the maps are a column on the left, the operators have the middle, the players the right */
+@media (max-height:460px) and (orientation:landscape){
+  #lb{--lbtop:36px;--lbbar:46px}
+  .lbTitle{font-size:18px;border-bottom-width:2px}.lbTitle svg{display:none}
+  .lbBack{font-size:16px}.lbCode,.lbPing,.lbRes{font-size:14px}.lbCode{height:28px}.lbRes{height:28px}
+  .lbMapsWrap{left:var(--lbpad);right:auto;top:6px;bottom:6px;width:clamp(124px,16vw,168px);display:block}
+  .lbMaps{height:100%;display:flex;flex-direction:column;padding:6px;gap:5px}
+  .lbMapsHead{font-size:14px}.lbMapsHead small{display:none}
+  .lbMapRow{flex-direction:column;flex:1;min-height:0;overflow-x:hidden;overflow-y:auto;touch-action:pan-y;gap:5px}
+  .lbMap{flex:0 0 auto;width:100%;aspect-ratio:16/6.4}
+  .lbMap b{font-size:14px;bottom:3px}
+  .lbMapInfo{display:none}
+  .lbPlayers{top:6px;width:clamp(170px,22vw,230px);padding:6px 8px}
+  .lbPlayers h4{font-size:15px}
+  .lbPlayers ul{margin-top:4px;gap:2px}
+  .lbPlayers li{gap:6px;padding:1px 0}.lbPlayers li+li{padding-top:3px}
+  .lbPlayers li img{width:24px}
+  .lbPlayers li b{font-size:15px}.lbPlayers li small{font-size:8px;letter-spacing:.08em}
+  .lbSt{font-size:11px;padding:3px 5px 1px}
+  .lbInvite{left:var(--lbpad);top:6px;transform:none;z-index:2;max-height:calc(100% - 12px);overflow-y:auto;gap:4px;padding:8px 10px}
+  .lbInvite h4{font-size:15px}.lbInvCode b{font-size:22px}.lbInvBtn{height:28px;font-size:10px}.lbInvNote{display:none}
+  .lbTag b{font-size:16px}.lbTag small{display:none}.lbTag .lbSt{font-size:11px;padding:2px 5px 0}
+  .lbBtn{height:36px;font-size:18px;padding:0 10px}
+  #lbStart{min-width:150px}#lbReady{min-width:100px}
+  .lbStatus{font-size:8.5px;letter-spacing:.06em;gap:6px}.lbStatus b{font-size:15px}.lbStatus svg{width:14px;height:14px}
+  .lbHome{width:min(380px,48vw);gap:6px}
+  .lbChoice{padding:7px 12px}.lbChoice b{font-size:20px}.lbChoice small{font-size:9px}
+  .lbName input,.lbJoinRow input{height:32px;font-size:18px}.lbJoinRow{margin-top:5px}
+}
+/* a phone held upright: the bar in two rows, the players across the top, the maps along the bottom (decent, not the main use) */
+@media (orientation:portrait) and (max-width:700px){
+  #lb{--lbtop:46px;--lbbar:auto}
+  .lbTitle{display:none}   /* no room for it next to SALA, RES and the ping: the screen says what it is */
+  .lbBack span{display:none}.lbCode,.lbRes{font-size:15px;padding:0 6px}.lbPing{font-size:15px}.lbPing svg{display:none}
+  .lbBar .lbBtn{font-size:clamp(15px,4.6vw,21px);padding:0 6px;gap:6px}#lbStart svg{display:none}
+  .lbPlayers{left:var(--lbpad);right:var(--lbpadR);width:auto}
+  .lbMapsWrap{grid-template-columns:minmax(0,1fr)}.lbMapInfo{display:none}
+  .lbMap{flex-basis:clamp(110px,34vw,150px)}
+  .lbInvite{left:var(--lbpad);right:var(--lbpadR);width:auto;top:auto;bottom:8px;transform:none;z-index:2}
+  .lbBar{flex-wrap:wrap;height:auto;row-gap:6px;padding-top:8px;padding-bottom:calc(8px + env(safe-area-inset-bottom,0px))}
+  .lbStatus{order:-1;flex:1 1 100%}
+  .lbBar .lbBtn{flex:1 1 40%;min-width:0}
+  #lbStart,#lbReady{min-width:0}
+  .lbHome{left:var(--lbpad);right:var(--lbpadR);width:auto;top:auto;bottom:16px;transform:none}
+}
 @media (max-width:700px) and (max-height:400px){.lbStatus{display:none}}
 .lbStatus.err #lbStatusTxt{color:#ff8b7e}
 </style>
@@ -1187,6 +1237,9 @@ button.lbChoice:disabled{opacity:.55;cursor:default}
     <section class="setPane" data-pane="graficos" role="tabpanel" hidden>
       <div class="seg" id="qSeg" role="group" aria-label="Calidad gráfica"><button type="button" data-q="auto">AUTO</button><button type="button" data-q="bajo">BAJO</button><button type="button" data-q="medio">MEDIO</button><button type="button" data-q="alto">ALTO</button></div>
       <p class="setHelp" id="qNote"></p>
+      <span class="lbl">Resolución</span>
+      <div class="seg" id="resSeg" role="group" aria-label="Resolución"><button type="button" data-res="auto">AUTO</button><button type="button" data-res="1">×1</button><button type="button" data-res="2">×2</button></div>
+      <p class="setHelp">×1 dibuja la cuarta parte de píxeles que ×2: menos memoria, menos calor y más FPS en el móvil, un poco menos nítido. AUTO = la de la calidad elegida.</p>
       <span class="lbl">Pueblo</span>
       <div class="seg" id="p3Seg" role="group" aria-label="Versión del pueblo"><button type="button" data-p3="0">CLÁSICO</button><button type="button" data-p3="1">3.0 (NUEVO)</button></div>
       <p class="setHelp">Se guarda en este dispositivo y la página se recarga.</p>
@@ -1581,6 +1634,7 @@ button.lbChoice:disabled{opacity:.55;cursor:default}
     <div class="lbTitle"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="8" cy="8" r="3.2" fill="none" stroke="currentColor" stroke-width="1.7"/><circle cx="16.5" cy="8" r="3.2" fill="none" stroke="currentColor" stroke-width="1.7"/><path d="M2.5 19c.6-3.4 2.8-5.2 5.5-5.2s4.9 1.8 5.5 5.2M11 14.3c1.2-.9 2.5-1.5 5.5-1.5 2.7 0 4.9 1.8 5.5 5.2" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg><span>MULTIJUGADOR 1V1</span></div>
     <div class="lbTopR">
       <button type="button" class="lbCode" id="lbCodeTop" hidden aria-label="Copiar el código de la sala">SALA: <b id="lbCodeTopTxt">------</b><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="8" y="8" width="12" height="12" rx="1.5" fill="none" stroke="currentColor" stroke-width="1.7"/><path d="M16 8V5.5A1.5 1.5 0 0 0 14.5 4h-9A1.5 1.5 0 0 0 4 5.5v9A1.5 1.5 0 0 0 5.5 16H8" fill="none" stroke="currentColor" stroke-width="1.7"/></svg></button>
+      <button type="button" class="lbRes" id="lbRes" aria-label="Resolución (×1 gasta menos memoria y batería)">RES <b id="lbResTxt">×2</b></button>
       <span class="lbPing" id="lbPing" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 9a15 15 0 0 1 20 0M5.5 12.5a10 10 0 0 1 13 0M9 16a5 5 0 0 1 6 0" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="12" cy="19.3" r="1.5" fill="currentColor"/></svg><b id="lbPingTxt">– ms</b></span>
     </div>
   </header>
@@ -5355,7 +5409,7 @@ function crossApply(){const X=SETTINGS;
 }
 const CROUCH_HELP={slide:'Un toque te agacha y otro te levanta. Si te deslizas corriendo, al acabar el deslizamiento te levantas solo.',toggle:'Un toque te agacha y otro te levanta; después de deslizarte sigues agachado.',hold:'Agachado mientras mantienes el botón o la tecla; al soltar te levantas.'};
 const ADS_HELP={mixed:'Un toque rápido fija la mira (otro toque la quita); si mantienes MIRA, apuntas solo mientras lo mantienes. Con el mismo dedo mueves la mira.',holdDrag:'Mantén MIRA para apuntar y arrastra ese mismo dedo para mover la mira. Al soltar sales del visor.',hold:'Mantén MIRA para apuntar; la cámara se mueve con otro dedo. Al soltar sales del visor.',toggle:'Toca MIRA una vez para entrar en el visor y otra para salir. Mueve la cámara con cualquier dedo libre.'};
-function settingsToUI(){for(const [id,k] of SET_UI){$('#'+id).value=SETTINGS[k];$('#'+id+'o').textContent=setFmt(k,SETTINGS[k]);}setExtraToUI();for(const [id,k] of SET_CHK)$('#'+id).checked=!!SETTINGS[k];$('#sFps30').checked=SETTINGS.fpsCap===30;$('#sDiag').checked=TDIAG.on;$('#adsHelp').textContent=ADS_HELP[SETTINGS.adsMode]||'';document.querySelectorAll('#adsSeg button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.a===SETTINGS.adsMode)));document.querySelectorAll('#crouchSeg button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.c===SETTINGS.crouchMode)));document.querySelectorAll('#viewSeg button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.v===SETTINGS.view)));$('#crouchHelp').textContent=CROUCH_HELP[SETTINGS.crouchMode]||'';document.querySelectorAll('#qSeg button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.q===SETTINGS.quality)));gfxNote();
+function settingsToUI(){for(const [id,k] of SET_UI){$('#'+id).value=SETTINGS[k];$('#'+id+'o').textContent=setFmt(k,SETTINGS[k]);}setExtraToUI();for(const [id,k] of SET_CHK)$('#'+id).checked=!!SETTINGS[k];$('#sFps30').checked=SETTINGS.fpsCap===30;$('#sDiag').checked=TDIAG.on;$('#adsHelp').textContent=ADS_HELP[SETTINGS.adsMode]||'';document.querySelectorAll('#adsSeg button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.a===SETTINGS.adsMode)));document.querySelectorAll('#crouchSeg button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.c===SETTINGS.crouchMode)));document.querySelectorAll('#viewSeg button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.v===SETTINGS.view)));$('#crouchHelp').textContent=CROUCH_HELP[SETTINGS.crouchMode]||'';document.querySelectorAll('#qSeg button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.q===SETTINGS.quality)));document.querySelectorAll('#resSeg button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.res===String(SETTINGS.res))));gfxNote();if(typeof lbResUI==='function')lbResUI();
   const g=(SETTINGS.sensH+SETTINGS.sensV)/2;$('#sens').value=g;$('#sensOut').textContent=g.toFixed(2);if(HUD2)h2SettingsToUI();}
 function applyControlSettings(){TOUCH.dragScope=SETTINGS.adsMode!=='hold';TOUCH.cfg.dead=SETTINGS.touchDead;MOTION=(reduceMotion||SETTINGS.calmVM)?0.35:1;if(SETTINGS.adsMode!=='toggle'&&SETTINGS.adsMode!=='mixed')input.scopeToggle=false;crossApply();
   const B=document.body.classList;B.toggle('miniOn',!!SETTINGS.minimap);B.toggle('noHit',!SETTINGS.hitmarkers);B.toggle('noDmgDir',!SETTINGS.dmgDir);B.toggle('lowFlash',!!SETTINGS.lowFlash);}
@@ -5367,9 +5421,11 @@ function gfxApply(){
   if(PERF_LOW)return;
   const prof=SDQuality.resolve(SETTINGS.quality,isTouch,GFX.cap),P0=SDQuality.PROFILES[prof];
   const changed=prof!==GFX.profile;GFX.profile=prof;GFX.choice=SETTINGS.quality;
-  if(!GFX.adapt||changed||GFX.adapt.target!==SETTINGS.fpsCap)GFX.adapt=SDQuality.createAdaptive(SETTINGS.fpsCap,SETTINGS.quality==='auto');
-  GFX.adapt.enabled=SETTINGS.quality==='auto';if(!GFX.adapt.enabled)GFX.adapt.scale=1;
-  renderer.setPixelRatio(SDQuality.pixelRatio(prof,window.devicePixelRatio,GFX.adapt.scale));
+  // a resolution chosen by hand (AJUSTES › Resolución ×1/×2) is what is drawn: the adaptive one only works with AUTO
+  const adaptOn=SETTINGS.quality==='auto'&&SETTINGS.res==='auto';
+  if(!GFX.adapt||changed||GFX.adapt.target!==SETTINGS.fpsCap)GFX.adapt=SDQuality.createAdaptive(SETTINGS.fpsCap,adaptOn);
+  GFX.adapt.enabled=adaptOn;if(!GFX.adapt.enabled)GFX.adapt.scale=1;
+  renderer.setPixelRatio(SDQuality.pixelRatio(prof,window.devicePixelRatio,GFX.adapt.scale,SETTINGS.res));
   if(renderer.shadowMap.enabled!==(P0.shadows&&!NO_SHADOWS)){renderer.shadowMap.enabled=P0.shadows&&!NO_SHADOWS;scene.traverse(o=>{if(o.material){for(const m of [].concat(o.material))m.needsUpdate=true;}});}
   if(P0.shadowMap&&sun.shadow.mapSize.x!==P0.shadowMap){sun.shadow.mapSize.set(P0.shadowMap,P0.shadowMap);sunBiasFor(P0.shadowMap);if(sun.shadow.map){sun.shadow.map.dispose();sun.shadow.map=null;}}
   $('#fpsBox').hidden=!SETTINGS.showFps;
@@ -5379,6 +5435,7 @@ function gfxNote(){const n=$('#qNote');if(!n)return;const prof=SDQuality.resolve
 for(const [id,k] of SET_UI)$('#'+id).addEventListener('input',()=>{SETTINGS[k]=+$('#'+id).value;settingsChanged();});
 for(const [id,k] of SET_CHK)$('#'+id).addEventListener('change',()=>{SETTINGS[k]=$('#'+id).checked;settingsChanged();});
 $('#sFps30').addEventListener('change',()=>{SETTINGS.fpsCap=$('#sFps30').checked?30:60;settingsChanged();});
+document.querySelectorAll('#resSeg button').forEach(b=>b.addEventListener('click',()=>{SETTINGS.res=b.dataset.res==='auto'?'auto':+b.dataset.res;settingsChanged();SFX.ui();}));
 document.querySelectorAll('#qSeg button').forEach(b=>b.addEventListener('click',()=>{if(b.dataset.q==='auto'&&GPU_AUTO){store.set('gfxCap',null);GFX.cap=GFX.hint;}SETTINGS.quality=b.dataset.q;settingsChanged();SFX.ui();}));
 document.querySelectorAll('#adsSeg button').forEach(b=>b.addEventListener('click',()=>{SETTINGS.adsMode=b.dataset.a;settingsChanged();SFX.ui();}));
 document.querySelectorAll('#crouchSeg button').forEach(b=>b.addEventListener('click',()=>{SETTINGS.crouchMode=b.dataset.c;input.crouchHeld=false;settingsChanged();SFX.ui();}));
@@ -7536,7 +7593,7 @@ const LB_YAW=[0.3,-0.3],LB_PITCH=-0.55,_lbv=new T.Vector3(),_lbcp=new T.Vector3(
 const lbMapName=id=>{const m=M2_MAPS.find(x=>x.id===id)||(id==='barrio'?M2_BARRIO:null);return m?m.name:/^casa2/.test(id)?'CASA ATLAS 2.0':m2MapName(id);};
 const lbMapSub=id=>{const m=M2_MAPS.find(x=>x.id===id)||(id==='barrio'?M2_BARRIO:null)||SDMenu2.MAPS.find(x=>x.id===id);return m?m.sub:'';};
 function lbShow(view){
-  $('#lb').classList.toggle('lite',LB.lite);lbMark(true);
+  $('#lb').classList.toggle('lite',LB.lite);lbMark(true);document.body.classList.add('lbOn');lbResUI();
   NET.view=view;LB.view=view;LB.vis=true;$('#lb').hidden=false;$('#mp').hidden=true;$('#menu').hidden=true;
   setHidden($('#lbHome'),view!=='home');setHidden($('#lbRoom'),view!=='lobby');setHidden($('#lbBar'),view!=='lobby');
   if(view==='home'){$('#lbName').value=$('#mpName').value;if($('#mpCode').value)$('#lbCode').value=$('#mpCode').value;}
@@ -7545,7 +7602,10 @@ function lbShow(view){
 }
 // a player's state in a word or two (tags and list): after a match, whether he wants the rematch
 const lbStText=(p,V,N)=>p.connected===false?'DESCONECTADO':V.over?((N.rematchOf||{})[p.id]?'✓ REVANCHA':'FIN'):p.ready?'✓ LISTO':'NO LISTO';
-function lbHide(){LB.vis=false;$('#lb').hidden=true;lbMark(false);}
+function lbHide(){LB.vis=false;$('#lb').hidden=true;lbMark(false);document.body.classList.remove('lbOn');}
+// RES ×1 / ×2 (AJUSTES › GRÁFICOS › Resolución): what the screen draws now, and the other one on a tap
+function lbResNow(){return SETTINGS.res===1||SETTINGS.res===2?SETTINGS.res:renderer.getPixelRatio()<1.5?1:2;}   // AUTO: what it draws now (a declaration: settingsToUI calls lbResUI at start)
+function lbResUI(){setText($('#lbResTxt'),'×'+lbResNow());}
 // a message: on the first screen under the buttons; in the room in the bar for a few seconds
 function lbMsg(t,err){
   const m=$('#lbMsg');m.textContent=t||'';m.classList.toggle('err',!!err);
@@ -7631,12 +7691,17 @@ function lbOperator(R,want){
 const lbShown=R=>!PJ2.on||!SKIN_ON?true:R.skinPack===undefined?false:(R.skinPack===null||!!R.v2||!!PJ2.failedRoots[packRoot(R.skinPack)]);
 // the free part of the screen: between the panels, under the bar, over the map strip (home: left of the two choices)
 function lbRect(vw,vh){
-  const top=$('#lb .lbTop').getBoundingClientRect().bottom;
-  if(LB.view!=='lobby'){const h=$('#lbHome').getBoundingClientRect();return {left:0,top,width:Math.max(80,h.left-12),height:vh-top-8};}
+  const top0=$('#lb .lbTop').getBoundingClientRect().bottom,bar=$('#lbBar'),barTop=bar.hidden?vh:bar.getBoundingClientRect().top;
+  document.documentElement.style.setProperty('--lbbarH',Math.round(vh-barTop)+'px');
+  if(LB.view!=='lobby'){const h=$('#lbHome').getBoundingClientRect();
+    return h.width>vw*0.6?{left:0,top:top0,width:vw,height:Math.max(80,h.top-top0-8)}:{left:0,top:top0,width:Math.max(80,h.left-12),height:vh-top0-8};}
   const pl=$('#lb .lbPlayers').getBoundingClientRect(),mw=$('#lb .lbMapsWrap').getBoundingClientRect(),iv=$('#lbInvite');
-  const left=iv.hidden?0:iv.getBoundingClientRect().right,right=pl.left;
-  // the tags need ~70 px over the heads
-  const tg=vh<520?44:64;return {left,top:top+tg,width:Math.max(80,right-left),height:Math.max(80,mw.top-top-tg)};
+  let left=0,right=vw,top=top0,bottom=barTop;
+  if(pl.width>vw*0.6)top=Math.max(top,pl.bottom);else right=pl.left;          // portrait: players across the top
+  if(mw.width<vw*0.5)left=Math.max(left,mw.right);else bottom=Math.min(bottom,mw.top);   // short landscape: maps in a column
+  if(!iv.hidden){const r=iv.getBoundingClientRect();if(r.width<vw*0.6)left=Math.max(left,r.right);}
+  const tg=vh<520?40:64;   // the name tags over the heads
+  return {left,top:top+tg,width:Math.max(80,right-left),height:Math.max(80,bottom-top-tg)};
 }
 function lbFrame(rdt){
   if(!LB.room)lbWake();
@@ -7707,6 +7772,7 @@ if(LB.on){
   $('#lbCopyLink').addEventListener('click',()=>lbCopy(inviteLink(NET.code),'ENLACE COPIADO'));
   $('#lbWhats').addEventListener('click',()=>{window.open('https://wa.me/?text='+encodeURIComponent(lbInviteText()),'_blank','noopener');});
   if(navigator.share){$('#lbShare').hidden=false;$('#lbShare').addEventListener('click',async()=>{try{await navigator.share({title:'Sniper Duel',text:lbInviteText(),url:inviteLink(NET.code)});}catch(e){}});}
+  $('#lbRes').addEventListener('click',()=>{SETTINGS.res=lbResNow()===1?2:1;settingsChanged();lbResUI();LB.C=null;audioInit();SFX.ui();lbMsg('RESOLUCIÓN '+(SETTINGS.res===1?'×1 · menos memoria y batería':'×2 · más nítida')+' (también en AJUSTES › GRÁFICOS)');});
   $('#lbReady').addEventListener('click',()=>{const N=NET.N;if(!N||!LB.V||!LB.V.me)return;LB.note=null;if(N.phase==='over'){if(!LB.V.again)N.rematch();}else N.ready(!LB.V.me.ready);audioInit();SFX.ui();});
   $('#lbStart').addEventListener('click',()=>{const N=NET.N;if(!N||!LB.V||!LB.V.canStart)return;LB.goT=performance.now()+1500;$('#lbStart').disabled=true;N.go();audioInit();SFX.ui();});
   window.addEventListener('resize',()=>{LB.C=null;});
@@ -8043,7 +8109,7 @@ function frameBody(now){
   GFX.frame++;const rawDt=(now-GFX.lastRaf)/1000;GFX.lastRaf=now;if(rawDt>0&&rawDt<0.2)GFX.hz=GFX.hz?GFX.hz+(1/rawDt-GFX.hz)*0.05:1/rawDt;
   if(!SDQuality.shouldDraw(SETTINGS.fpsCap,GFX.frame,GFX.hz))return;
   const drawDt=(now-GFX.lastDraw)/1000;GFX.lastDraw=now;
-  if(!PERF_LOW&&GFX.adapt){if(SDQuality.feed(GFX.adapt,drawDt))renderer.setPixelRatio(SDQuality.pixelRatio(GFX.profile,window.devicePixelRatio,GFX.adapt.scale));
+  if(!PERF_LOW&&GFX.adapt){if(SDQuality.feed(GFX.adapt,drawDt))renderer.setPixelRatio(SDQuality.pixelRatio(GFX.profile,window.devicePixelRatio,GFX.adapt.scale,SETTINGS.res));
     // AUTO still far under the target at the lowest resolution during a match: one profile down, remembered (see GPU_AUTO)
     if(GPU_AUTO&&state==='playing'&&SETTINGS.quality==='auto'&&GFX.profile!=='bajo'&&SDQuality.wantsLower(GFX.adapt)){GFX.cap=SDQuality.LOWER[GFX.profile];store.set('gfxCap',GFX.cap);gfxApply();}
     if(SETTINGS.showFps&&GFX.adapt.frames===0)$('#fpsBox').textContent=Math.round(GFX.adapt.fps)+' FPS · '+Math.round(renderer.getPixelRatio()*100)/100+'×';}

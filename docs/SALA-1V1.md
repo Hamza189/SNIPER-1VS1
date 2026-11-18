@@ -109,6 +109,30 @@ luces), polvo, halos y un segundo operador. Medido en el PC: no se descargaba ni
 - Estado: IMPLEMENTADO · PROBADO EN NAVEGADOR · PENDIENTE DE VALIDACIÓN EN IPHONE (el WebGL del PC no reproduce el
   límite de memoria de Safari).
 
+## Móvil: responsive y resolución ×1 / ×2 (18-11-2026)
+
+El propietario, con capturas de su iPhone en horizontal (Safari con sus barras): «mejora lo del lobby en móvil, que se vea
+bien y responsive, la resolución que se pueda cambiar el x1 o x2». Con las barras de Safari la página tiene unos 932 × 320
+(se había probado con 932 × 430): la fila de mapas tapaba el hangar y el panel JUGADORES, «NO LISTO» y «ESPERANDO RIVAL» se
+montaban, el contador de FPS pisaba el texto de la barra y el operador salía pequeño y oscuro.
+
+- **Pantallas bajas en horizontal** (hasta 460 px de alto): los mapas pasan a una columna a la izquierda que se desplaza;
+  los operadores tienen el centro (el encuadre cuenta con la columna); JUGADORES a la derecha, más compacto; todo más
+  pequeño (barras de 36 y 46 px). El rol (ANFITRIÓN/RIVAL) de las etiquetas se quita: ya está en JUGADORES.
+- **Vertical** (que se vea decente): JUGADORES arriba a lo ancho, los operadores en medio, los mapas en fila abajo y la barra
+  en dos filas; sin el título de arriba (no cabe junto a SALA, RES y el ping).
+- **El contador de FPS** se aparta a la derecha, encima de la barra, mientras la sala está abierta.
+- **Más luz en el hangar del móvil** (exposición 1,0; luz principal y contraluz más fuertes).
+- **Resolución ×1 / ×2**: ajuste nuevo en AJUSTES › GRÁFICOS › Resolución (AUTO, ×1, ×2; se guarda) y botón **RES ×1/×2**
+  arriba en la sala. ×1 dibuja la cuarta parte de píxeles que ×2: menos memoria (ayuda contra las caídas de Safari), menos
+  calor y más FPS. AUTO = la de la calidad, como siempre; con ×1 o ×2 elegidos a mano la resolución adaptativa se apaga (dibuja lo que eliges). `client/quality.js` (`pixelRatio(..., res)`) y
+  `client/settings.js` (`res`).
+- Capturas antes y después con la GPU en `docs/sala1v1/movil/` (iPhone con las barras de Safari 932 × 320, iPhone 932 × 430,
+  Android 800 × 360, iPhone en vertical 430 × 932 y PC): `node tools/capture-sala1v1.js docs/sala1v1/movil despues-`.
+- Pruebas: `test/sala1v1.test.js` 33 (la resolución) y `test/sala1v1.browser.test.js` (a 932 × 320: mapas en columna, nada
+  se monta, todos los botones se ven; RES cambia la resolución real y se guarda).
+- Estado: IMPLEMENTADO · PROBADO EN NAVEGADOR · PENDIENTE DE VALIDACIÓN EN IPHONE Y ANDROID.
+
 ## Pendiente
 
 - Que el propietario lo pruebe en iPhone, PC y Android y lo apruebe antes de que sea lo de por defecto.
