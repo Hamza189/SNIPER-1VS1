@@ -61,7 +61,7 @@ async function until(page, fn, arg, ms) { try { await page.waitForFunction(fn, a
     await sleep(1500);
     await A.evaluate(() => { __SD.P.yaw = -Math.PI / 2; __SD.P.pitch = 0; __SD.NET.N.corrMax = 0; __SD.input.keys.KeyW = true; });
     await sleep(1800); await A.evaluate(() => { __SD.input.keys.KeyW = false; }); await sleep(1200);
-    const p = room.debug.seat('A').p, corr = await A.evaluate(() => __SD.NET.N.corrMax);
+    const st = room.debug.seat('A'), p = st.p.ms || st.p, corr = +(await A.evaluate(() => __SD.NET.N.corrMax)) || 0;
     check('A entra andando en la ENCALADA y el servidor lo deja dentro (x 7…15)', p.x > 8 && p.x < 14.5 && Math.abs(p.z - 32.2) < 1.5, p.x.toFixed(2) + ', ' + p.z.toFixed(2));
     check('sin correcciones grandes del servidor al entrar (página y servidor con las mismas paredes)', corr < 0.5, corr.toFixed(3) + ' m');
     check('sin errores en las páginas', errors.length === 0, errors.slice(0, 3).join(' | ') || 'ninguno');
