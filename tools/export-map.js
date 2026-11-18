@@ -55,6 +55,11 @@ async function main() {
   // worlds marked local (CASA ATLAS XL, client only until the owner approves deploying it) are not sent to the server
   const ids = await p.evaluate(() => Object.keys(__SD.WORLDS).filter(id => !__SD.WORLDS[id].local));
   const maps = {}; for (const id of ids) maps[id] = await dumpWorld(p, id);
+  // PUEBLO 4.0 (17-11-2026): the page builds it only with ?pueblo=4 (its houses change collisions), so it is dumped from a
+  // second, fresh page and goes to the server as its own map, 'pueblo4'
+  { const ctx = await b.newContext(); await ctx.route(/fonts\.(googleapis|gstatic)\.com/, r => r.abort()); const p4 = await ctx.newPage();
+    await p4.goto(S.url + '?pueblo=4', { timeout: 180000 }); await p4.waitForFunction(() => window.__SD && __SD.W && __SD.W.ray.length > 0, null, { timeout: 180000 });
+    maps.pueblo4 = await dumpWorld(p4, 'pueblo'); ids.push('pueblo4'); await ctx.close(); }
   await b.close(); S.close();
   fs.writeFileSync(path.join(__dirname, '..', 'core', 'mapdata.js'), toModule(maps));
   for (const id of ids) { const d = maps[id]; console.log('core/mapdata.js [' + id + ']: ' + d.tris.length / 9 + ' triángulos, ' + d.colliders.length + ' cajas, ' + d.ramps.length + ' rampas, ' + d.nav.length + ' puntos'); }

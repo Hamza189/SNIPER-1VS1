@@ -1,4 +1,6 @@
-/* CASAS HABITABLES (14-11-2026, parte del mapa) en la página, con PUEBLO 3.0:
+/* CASAS HABITABLES (14-11-2026) en la página, con PUEBLO 4.0 (?pueblo=4, 17-11-2026: solo con la bandera; mapa 'pueblo4' del servidor):
+   - sin bandera: ni casas ni fuente nueva ni PUEBLO 4.0 (el PUEBLO de siempre); con ?pueblo=4 el mapa 'pueblo4' de
+     core/mapdata.js es exactamente el PUEBLO que dibuja la página
    - ?casas=0 (sin conexión, para comparar): las 8 cajas macizas de antes; por defecto, las casas: cajas, proxies de bala,
      rampas, mallas y puntos de navegación unidos a la red por las puertas; sin errores ni texturas que falten
    - con el movimiento del juego y el mundo vivo (W) se entra por una puerta de cada casa y se sube a la planta alta
@@ -22,7 +24,20 @@ function check(name, cond, info) { if (cond) { pass++; console.log('  ok   ' + n
     await ctx.addInitScript(() => { try { localStorage.setItem('sniperduel_settings', JSON.stringify({ quality: 'medio', v: 3 })); } catch (e) {} });
     const open = async q => { const p = await ctx.newPage(), errs = [], bad = [];
       p.on('pageerror', e => errs.push(e.message)); p.on('response', r => { if (/\/assets\//.test(r.url()) && !/\/personaje\//.test(r.url()) && r.status() >= 400) bad.push(r.status() + ' ' + r.url()); });
-      await p.goto(srv.url + '?vm=0&pueblo=3' + q); await p.waitForFunction(() => window.__SD && __SD.WORLDS && __SD.W, null, { timeout: 180000 }); return { p, errs, bad }; };
+      await p.goto(srv.url + '?vm=0&pueblo=4' + q); await p.waitForFunction(() => window.__SD && __SD.WORLDS && __SD.W, null, { timeout: 180000 }); return { p, errs, bad }; };
+    // no flag (a fresh context: ?pueblo=4 is remembered on the device): the PUEBLO of before
+    { const c0 = await b.newContext({ viewport: { width: 640, height: 360 } }); await c0.route(/fonts\.(googleapis|gstatic)\.com/, r => r.abort());
+      const p0 = await c0.newPage(); await p0.goto(srv.url + '?vm=0'); await p0.waitForFunction(() => window.__SD && __SD.WORLDS && __SD.W, null, { timeout: 180000 });
+      const r = await p0.evaluate(() => ({ casas: __SD.CASAS.on, fuente: __SD.FUENTE.on, p3: __SD.P3ON, mp: __SD.NET && __SD.NET.N ? 1 : 0 }));
+      check('sin bandera: ni casas, ni fuente nueva, ni PUEBLO 3.0/4.0 (el PUEBLO de siempre)', !r.casas && !r.fuente && !r.p3, JSON.stringify(r));
+      await c0.close(); }
+    // with the flag: the server's 'pueblo4' is exactly this page's PUEBLO
+    { const { p, errs } = await open('');
+      const { dumpWorld } = require('../tools/export-map.js'), M = require('../core/mapdata.js').maps.pueblo4, d = await dumpWorld(p, 'pueblo');
+      check("?pueblo=4: el mapa 'pueblo4' del servidor coincide con el PUEBLO de la página (si cambias el pueblo: node tools/export-map.js)", !!M && JSON.stringify(d.tris) === JSON.stringify(M.tris) && JSON.stringify(d.ds) === JSON.stringify(M.ds) && JSON.stringify(d.colliders) === JSON.stringify(M.colliders) && JSON.stringify(d.ramps) === JSON.stringify(M.ramps) && JSON.stringify(d.nav) === JSON.stringify(M.nav) && JSON.stringify(d.pen) === JSON.stringify(M.pen), (d.tris.length / 9) + ' triángulos · ' + d.colliders.length + ' cajas');
+      const m = await p.evaluate(() => { const S = __SD; return { p4: S.P3ON, world: S.WORLD_ID }; });
+      check('?pueblo=4: sin errores al cargar', errs.length === 0 && m.p4, JSON.stringify(m) + (errs.length ? ' · ' + errs.join(' | ') : ''));
+      await p.close(); }
     // without the flag
     { const { p, errs } = await open('&casas=0');
       const r = await p.evaluate(OLD => ({ solid: __SD.CASAS.isSolid, n: __SD.WORLDS.pueblo.colliders.filter(c => OLD.some(o => c.minY === 0 && c.minX === o[0] && c.maxX === o[1] && c.minZ === o[2])).length }), OLD);

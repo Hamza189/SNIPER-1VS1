@@ -4,6 +4,9 @@ El propietario (13-11, con 7 capturas de PUEBLO 3.0) pidió que tres casas fuera
 por la ventana, cubrirse y disparar. El 14-11 pidió integrarlas y hacer más edificios así. Ahora son **8 casas** y
 forman parte del mapa, en cliente y servidor.
 
+**17-11-2026:** integradas en `main` solo con `?pueblo=4` (PUEBLO 4.0), con su propio mapa de servidor `pueblo4`; el
+PUEBLO de siempre y su mapa `pueblo` no cambian. Detalle en `docs/PUEBLO-4.md` § Integración.
+
 Estado: **IMPLEMENTADO · PRUEBAS SIN NAVEGADOR Y EN NAVEGADOR EN VERDE · MAPA DEL SERVIDOR EXPORTADO · SIN PUBLICAR ·
 PENDIENTE DE VALIDACIÓN EN IPHONE/PC/ANDROID**. Para comparar, `?casas=0` vuelve a las cajas macizas, pero solo sin
 conexión: en línea siempre se usan las casas, porque son las del servidor.

@@ -15,7 +15,7 @@ const OUT = process.argv[2] || path.join(__dirname, '..', '.work', 'glb');
   await ctx.route(/fonts\.(googleapis|gstatic)\.com/, r => r.abort());
   await ctx.addInitScript(() => { try { localStorage.setItem('sniperduel_settings', JSON.stringify({ quality: 'alto', v: 3 })); } catch (e) {} });
   const p = await ctx.newPage(); p.on('pageerror', e => console.log('ERR', e.message));
-  await p.goto(srv.url + '?vm=0&pueblo=3&ktx2=0', { timeout: 180000 });
+  await p.goto(srv.url + '?vm=0&pueblo=4&ktx2=0', { timeout: 180000 });
   await p.waitForFunction(() => window.__SD && __SD.W && __SD.P3W && __SD.P3W.kit && (!__SD.E10.on || __SD.E10.ready || __SD.E10.failed), null, { timeout: 240000 });
   await p.evaluate(() => __SD.setWorld('pueblo')); await p.waitForTimeout(8000);   // textures
   await p.addScriptTag({ path: path.join(__dirname, 'caja', 'GLTFExporter.js') });

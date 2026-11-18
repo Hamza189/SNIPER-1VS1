@@ -23,8 +23,7 @@ Detalle de cada cambio (antes/después, medidas, cómo revertir): `docs/next-lev
 ### Siguiente prioridad
 | Tarea | Quién la desbloquea | Estado |
 |---|---|---|
-| **PUEBLO 4.0 F0–F5 + F6a + F6b** (15-11) — rama local `pueblo4` (encima de PUEBLO 3.1) entregada en zip, sin push: auditoría con líneas de tiro medidas, desgaste de materiales, interiores con carácter, vida en fachadas, cables, luz, y los coches de plástico cambiados por pick-ups 4×4 abandonadas hechas en Blender (misma caja de colisión). F6b: también el depósito de agua, las cajas y los bidones de 2.0 (misma colisión). Solo visual; mapa del servidor idéntico. `?pueblo4=0` = 3.1. Falta: aplicar, enseñar, MEDIR RENDIMIENTO en iPhone (coste GPU del desgaste) y decidir F6 (jugabilidad con colisiones) (`docs/PUEBLO-4.md`) | Propietario | IMPLEMENTADO · PRUEBAS EN VERDE · SIN PUBLICAR · PENDIENTE DE VALIDACIÓN EN IPHONE |
-| **PUEBLO 3.1** (14-11, noche) — rama local `pueblo-mejoras` entregada en zip (sin push): pueblo entero en 3.0, 8 casas habitables EN EL MAPA DEL SERVIDOR, fuente nueva, carteles arreglados. Claude Code: aplicar, pasar pruebas, enseñárselo al propietario, MEDIR RENDIMIENTO en el iPhone, y solo con su OK publicar (cambia `core/mapdata.js` → despliega el servidor) (`docs/PUEBLO-31.md`, `docs/claude-code/PUEBLO31_PARA_CLAUDE_CODE.md`) | Propietario | IMPLEMENTADO · PRUEBAS EN VERDE · SIN PUBLICAR · PENDIENTE DE VALIDACIÓN EN IPHONE |
+| **PUEBLO 4.0** (integrado el 17-11, rama `pueblo4`) — PUEBLO 3.1 + 4.0 hecho por Claude en la nube, ahora solo con `?pueblo=4` y mapa de servidor propio `pueblo4` (el PUEBLO de siempre no cambia). Falta: su OK para publicar (despliega el servidor), probarlo en el iPhone en MEDIO con MEDIR RENDIMIENTO (con y sin `&pueblo4=0`), una partida larga sin que Safari recargue la pestaña, y decidir F6 (`docs/PUEBLO-4.md`) | Propietario | IMPLEMENTADO · PROBADO EN NAVEGADOR Y ONLINE LOCAL · SIN PUBLICAR · PENDIENTE DE VALIDACIÓN EN IPHONE |
 | **SALA 1V1** (10-11) — probar `?lobby=2` en el PC y en el iPhone (horizontal), con alguien en otro dispositivo: INICIO › MULTIJUGADOR 1V1 → CREAR SALA PRIVADA → INVITAR (copiar enlace o WhatsApp) → el otro entra y aparece en el hangar → elegir mapa → LISTO los dos → INICIAR PARTIDA. Decir si gusta, los FPS del hangar y si pasa a ser la de siempre (`?lobby=1` = la de antes; `docs/SALA-1V1.md`) | Propietario | SERVIDOR PUBLICADO · PÁGINA SIN PUBLICAR · PENDIENTE DE VALIDACIÓN EN IPHONE Y ANDROID |
 | **CAJA NUEVA** (10-11) — CAJAS › ABRIR CAJA en el PC y en el iPhone: ver la ATLAS DROP temblar, abrirse y encenderse con el color de la rareza; decir si gusta o si se cambia algo (`?caja=0` = la de antes) | Propietario | PUBLICADO · PENDIENTE DE VALIDACIÓN |
 | **ORDENADORES FLOJOS** (10-11) — en el portátil HP de su novia: recargar la página, mirar AJUSTES › GRÁFICOS (debe poner AUTO → BAJO y el nombre de la gráfica en el diagnóstico), jugar y saltar; decir los FPS | Propietario | PUBLICADO · PENDIENTE DE VALIDACIÓN EN EL HP |
@@ -148,6 +147,41 @@ vacío ya no toma el personaje por defecto; y si un móvil se cae dentro de la s
 navegadores). Estado: IMPLEMENTADO · PROBADO EN NAVEGADOR · PENDIENTE DE VALIDACIÓN EN IPHONE.
 Aparte: «Prueba pública online» falla desde el 17-11 porque GitHub pasó `ubuntu-latest` a Ubuntu 26.04 y Playwright 1.56
 no instala Chromium ahí (no es un fallo del juego).
+
+## 17-11-2026 (noche) — PUEBLO 4.0 integrado tras `?pueblo=4`, con su propio mapa de servidor
+Del propietario: «TE PASO PUEBLO 4.0 PARA QUE LO IMPLEMENTES» (zip `PUEBLO4_PARA_CLAUDE_CODE.zip` + `pueblo4.pdf`, que es
+`docs/PUEBLO-4.md` impreso). Y: «El pack es tuyo CLAUDE, no es de chatgpt»: lo hizo Claude en una sesión en la nube (14–15-11).
+- Aplicados los 6 parches (casas habitables, PUEBLO 3.1, PUEBLO 4.0 F0–F5, F6a pick-ups, F6b utilería) encima de `main`
+  (con la red de bots en C++), en la rama `pueblo4` y un worktree aparte. Conflictos solo en `index.html`/`version.json`
+  (se regeneran), `build.py`, `package.json` y este registro.
+- **Cambio de integración:** el paquete activaba las 8 casas habitables y la fuente nueva **para todos** y cambiaba el mapa
+  `pueblo` del servidor. Ahora todo PUEBLO 3.1 + 4.0 va **solo con `?pueblo=4`** (se recuerda; `?pueblo=0`/`=3` lo
+  quitan) y el servidor tiene un mapa nuevo, **`pueblo4`** (7 792 triángulos, 559 cajas). Los 7 mapas de antes salen
+  **idénticos byte a byte** a los de `main`; `pueblo4` es idéntico al `pueblo` del paquete. `?pueblo=3` sigue siendo 3.0.
+- En línea: `client/netcore.js` traduce `pueblo` ↔ `pueblo4` cuando la página tiene la bandera; el enlace de invitación la
+  lleva; si alguien entra en una sala con el otro PUEBLO, su página se recarga sola con la bandera correcta y vuelve a la
+  sala. El servidor no cambia de código (ya admitía cualquier mapa de `core/mapdata.js`).
+- Pruebas nuevas o cambiadas: `test/pueblo4.online.browser.test.js` (dos navegadores, servidor real, entrar andando en una
+  casa), `casas.browser` (sin bandera = PUEBLO de siempre; `pueblo4` del servidor = página), `cover.browser` (revisa
+  también `?pueblo=4`), `pueblo4.test` (bandera y traducción del mapa), `casas.test` y `tools/lineas-de-tiro.js` usan
+  `pueblo4`. `tools/pueblo-dibujo.js` mide también memoria.
+- **Medido** (pantalla de iPhone 932×430 a 2×, WebGL por software: vale para contar, **no** para FPS). MEDIO es lo que
+  AUTO elige en el móvil:
+
+| MEDIO | llamadas | triángulos | texturas | geometría |
+|---|---|---|---|---|
+| PUEBLO de siempre (sin bandera) | 114,6 | 85,8 mil | 96 MB | 8,5 MB |
+| PUEBLO 3.0 (`?pueblo=3`) | 195,1 | 288,9 mil | 160,7 MB | 27,5 MB |
+| PUEBLO 3.1 (`?pueblo=4&pueblo4=0`) | 242,6 | 323,7 mil | 160,1 MB | 33,0 MB |
+| **PUEBLO 4.0 (`?pueblo=4`)** | **239,9** | **371,0 mil** | **160,1 MB** | **35,0 MB** |
+
+  ALTO: 114,4 → 263,6 llamadas, 85,8 → 419,1 mil triángulos, 288 → 399,4 MB de texturas. BAJO: 85,6 → 169,3 llamadas,
+  19,6 → 52,5 MB. **Las texturas no suben respecto a PUEBLO 3.0**; casi todo el aumento de llamadas es la mitad sur y las
+  casas de 3.1, no lo de 4.0. Riesgo: el 03-11 el iPhone bajó a 55 FPS con ~249 llamadas / 401 mil triángulos, y 4.0 en
+  MEDIO está en ese orden. No se ha hecho versión ligera para móvil: primero medir en el iPhone (MEDIR RENDIMIENTO) con y
+  sin `&pueblo4=0`.
+- Estado: IMPLEMENTADO · PROBADO EN NAVEGADOR (PC, software) · PROBADO ONLINE CON SERVIDOR LOCAL · SIN PUBLICAR (toca
+  `core/mapdata.js` → despliega el servidor: necesita su OK) · PENDIENTE DE VALIDACIÓN EN IPHONE, PC Y ANDROID.
 
 ## 17-11-2026 — Primera pieza del juego en C++/WebAssembly: la red de los bots
 Del propietario: «Sí, instálalo» (el compilador de C++).

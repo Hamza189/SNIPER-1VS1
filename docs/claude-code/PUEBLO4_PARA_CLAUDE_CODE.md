@@ -1,5 +1,9 @@
 # Instrucciones para Claude Code — PUEBLO 4.0, fases F0–F5, F6a vehículos y F6b utilería (15-11-2026)
 
+> **Aplicado el 17-11-2026** encima de `main` (rama `pueblo4`, worktree aparte). Al integrarlo, PUEBLO 3.1 + 4.0 pasó a
+> ir **solo con `?pueblo=4`** y con mapa de servidor propio, `pueblo4`: donde abajo pone `?pueblo=3`, ahora es `?pueblo=4`
+> (`docs/PUEBLO-4.md` § Integración).
+
 El propietario pidió PUEBLO 4.0 con auditoría y fases medidas, **sin publicar, sin cambiar el servidor, sin push y sin
 tocar `main`**. Todo está en la rama local `pueblo4`. Lleva 6 commits sobre `main`:
 1. y 2. casas habitables;

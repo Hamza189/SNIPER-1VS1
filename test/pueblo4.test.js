@@ -45,5 +45,15 @@ check('desgaste: se aplica a estuco y adoquín, no al vidrio ni a la pintura de 
   check('utilería: el depósito cabe en el viejo (±2,4 m, hasta 11,4 m)', su.water_tower && inBox(su.water_tower.bounds, 2.4, 11.4));
   check('utilería: ligeros (caja < 400, bidón < 900, depósito < 5000 triángulos)', cr.every(k => su[k].tris < 400) && dr.every(k => su[k].tris < 900) && su.water_tower.tris < 5000, Object.keys(su).map(k => k + ' ' + su[k].tris).join(', '));
   check('utilería: los objetos viejos siguen para las balas (solo se ocultan si el modelo carga)', /P4VEH\.props\.push\(o\)/.test(page) && /if\(P4VEH\.propPieces\)\{Object\.assign\(kit\.pieces,P4VEH\.propPieces\);for\(const o of P4VEH\.props\)hideOld\(o\);\}/.test(page)); }
+// 17-11-2026: PUEBLO 4.0 only behind ?pueblo=4, with its own server map 'pueblo4'; the classic 'pueblo' does not change
+{ const MD = require('../core/mapdata.js').maps, src = require('fs').readFileSync(require('path').join(__dirname, '..', 'src', 'page.html'), 'utf8');
+  check("servidor: 'pueblo' (el de siempre) y 'pueblo4' (con las 8 casas) son mapas distintos", !!MD.pueblo && !!MD.pueblo4 && MD.pueblo4.colliders.length > MD.pueblo.colliders.length + 300, MD.pueblo.colliders.length + ' / ' + (MD.pueblo4 ? MD.pueblo4.colliders.length : '-') + ' cajas');
+  check('página: casas, mitad sur, fuente nueva y 4.0 solo con PU4 (?pueblo=4)', /const CASAS=\{on:PU4&&/.test(src) && /const P31=P3ON&&PU4&&/.test(src) && /const FUENTE=\{on:PU4&&/.test(src) && /const P4ON=PU4&&/.test(src));
+  check("página: con PU4 la sala traduce 'pueblo' ↔ 'pueblo4'", /mapAlias:PU4\?\{pueblo:'pueblo4'\}:undefined/.test(src));
+  const NC = require('../client/netcore.js'), sent = [], mk = alias => NC.create({ mapAlias: alias, send: t => sent.push(JSON.parse(t)), now: () => 0, world: null, local: null });
+  const N = mk({ pueblo: 'pueblo4' }); N.onMessage(JSON.stringify({ t: 'lobby', phase: 'lobby', players: [], map: 'pueblo4', maps: ['arena', 'pueblo', 'pueblo4', 'casa'] })); N.chooseMap('pueblo');
+  check("sala con ?pueblo=4: el servidor dice 'pueblo4' → la página ve 'pueblo'; el 'pueblo' clásico no se ofrece; elegir 'pueblo' manda 'pueblo4'", N.map === 'pueblo' && N.mapSrv === 'pueblo4' && JSON.stringify(N.maps) === '["arena","pueblo","casa"]' && sent.pop().id === 'pueblo4', JSON.stringify([N.map, N.mapSrv, N.maps]));
+  const N0 = mk(undefined); N0.onMessage(JSON.stringify({ t: 'lobby', phase: 'lobby', players: [], map: 'pueblo', maps: ['arena', 'pueblo', 'pueblo4'] })); N0.chooseMap('pueblo');
+  check('sala sin bandera: todo igual que antes', N0.map === 'pueblo' && N0.mapSrv === 'pueblo' && N0.maps.length === 3 && sent.pop().id === 'pueblo'); }
 console.log('\n' + pass + ' ok, ' + fail + ' fallos');
 process.exit(fail ? 1 : 0);

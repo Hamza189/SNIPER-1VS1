@@ -10,7 +10,8 @@
    Uso: node tools/lineas-de-tiro.js [salida.json] */
 'use strict';
 const path = require('path'), fs = require('fs');
-const M = require('../core/mapdata.js').maps.pueblo, G = require('../core/geom.js'), C = require('../client/casas.js');
+const M = require('../core/mapdata.js').maps[process.env.MAPA || 'pueblo4'],   // MAPA=pueblo: el PUEBLO de siempre (17-11-2026)
+      G = require('../core/geom.js'), C = require('../client/casas.js');
 const ix = G.createMapIndex(M), EYE = 1.62, CHEST = 1.3;
 const out = process.argv[2] || path.join(__dirname, '..', '.work', 'lineas-de-tiro.json');
 const bands = [[5, 10, 'corta'], [10, 25, 'media'], [25, 50, 'larga'], [50, 200, 'muy larga']];

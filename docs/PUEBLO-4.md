@@ -4,9 +4,25 @@ Encargo del propietario (15-11): llevar PUEBLO 3.1 a «un mapa de un shooter 3D 
 vida, interiores con personalidad, mejores posiciones de francotirador, verticalidad, luz y profundidad, sin bajar de 60 FPS
 en el móvil. Primero auditoría y plan, luego fases pequeñas y medidas. Sin publicar y sin cambiar el servidor.
 
-Rama local `pueblo4` (encima de `pueblo-mejoras`), sin push. **`?pueblo4=0` vuelve a PUEBLO 3.1 al instante.**
+Hecho por Claude (sesión en la nube, 14–15-11) e integrado por Claude Code el 17-11-2026 encima de `main`.
 
-Estado: **F0–F5, F6a (vehículos) y F6b (cajas, bidones, depósito) IMPLEMENTADAS · PRUEBAS EN VERDE · MAPA DEL SERVIDOR IDÉNTICO AL DE 3.1 · SIN PUBLICAR · PENDIENTE DE
+## Integración en el juego (17-11-2026)
+- **Solo con `?pueblo=4`** (se recuerda en el dispositivo, como `?pueblo=3`; `?pueblo=0` o `?pueblo=3` lo olvidan). Sin la
+  bandera PUEBLO es exactamente el de siempre: ni casas habitables, ni mitad sur nueva, ni fuente nueva, ni 4.0.
+  `?pueblo=3` sigue siendo PUEBLO 3.0 como en `main`.
+- El paquete activaba las 8 casas habitables (PUEBLO 3.1) **para todos** y cambiaba el mapa `pueblo` del servidor. Para que
+  el PUEBLO de ahora siga siendo el de por defecto, el servidor tiene ahora **dos mapas**: `pueblo` (igual que antes, byte a
+  byte) y `pueblo4` (2 404 → 7 792 triángulos de bala, 81 → 559 cajas, 705 → 702 puntos de navegación). El servidor ya
+  admitía cualquier mapa de `core/mapdata.js` (como `casa2b`/`casa2c`): no se ha tocado `core/room.js` ni `server/`.
+- `tools/export-map.js` abre una segunda página con `?pueblo=4` y vuelca su PUEBLO como `pueblo4`.
+- **En línea:** con la bandera, `client/netcore.js` traduce el nombre (la página dice `pueblo`, el servidor `pueblo4`) y
+  no ofrece el `pueblo` clásico. Si la sala tiene el otro PUEBLO, la página se recarga sola con la bandera correcta y
+  vuelve a entrar en la sala (conserva su ficha). El enlace de invitación lleva `&pueblo=4`.
+- `?pueblo=4&pueblo4=0` = PUEBLO 3.1 tal cual. `?casas=0`, `?sur=0` y `?fuente=0` siguen valiendo, con la bandera.
+
+**`?pueblo=4&pueblo4=0` vuelve a PUEBLO 3.1 al instante.**
+
+Estado: **F0–F5, F6a (vehículos) y F6b (cajas, bidones, depósito) IMPLEMENTADAS · PRUEBAS EN VERDE · MAPA DEL SERVIDOR `pueblo4` APARTE (`pueblo` sin cambios) · SIN PUBLICAR · PENDIENTE DE
 VALIDACIÓN EN IPHONE/PC/ANDROID**. F6 (jugabilidad con colisiones nuevas) está propuesta y necesita su aprobación.
 
 ---

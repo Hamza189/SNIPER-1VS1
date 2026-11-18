@@ -108,8 +108,14 @@ async function audit(page, url, p3, canary) {
   check('E10: se comprueban sus tres LOD (no solo el visible)', ['0', '1', '2'].every(k => B.e10.lods[k] > 0), JSON.stringify(B.e10.lods));
   const p3roof = Object.keys(B.roofBy).filter(k => /^p3_|^kit_|^e10_/.test(k)).reduce((s, k) => s + B.roofBy[k], 0);
   check('azoteas de la vertical slice: nada por encima de la caja (+5 cm)', p3roof === 0, p3roof + ' vértices nuevos ' + JSON.stringify(Object.fromEntries(Object.entries(B.roofBy).filter(([k]) => /^p3_|^kit_|^e10_/.test(k)))) + ' ' + B.rx.join(' | ') + '; el resto (' + (B.roof - p3roof) + ') es PUEBLO 2.0 fuera de la slice');
-  const C = await audit(page, srv.url + '?vm=1&pueblo=3', true, true);
-  check('el detector encuentra una caja falsa puesta a propósito en la plaza', C.body > B.body && C.ex.some(e => e.startsWith('canary')), (C.body - B.body) + ' vértices de la caja');
+  console.log('\nCOBERTURAS FALSAS — PUEBLO 4.0 (?pueblo=4: casas habitables, pick-ups, utilería, cables)');
+  const D = await audit(page, srv.url + '?vm=1&pueblo=4', true);
+  check('4.0 a la altura del cuerpo: todo lo que se ve para las balas', D.body === 0, D.body + ' vértices de ' + D.verts + ' en ' + D.meshes + ' mallas' + (D.ex.length ? ': ' + D.ex.join(' | ') : ''));
+  check('4.0 sobre la calle: nada suelto lejos de un muro', D.over === 0, D.over + '');
+  const p4roof = Object.keys(D.roofBy).filter(k => /^p3_|^kit_|^e10_/.test(k)).reduce((s, k) => s + D.roofBy[k], 0);
+  check('4.0 azoteas: nada por encima de la caja (+5 cm)', p4roof === 0, p4roof + ' vértices ' + D.rx.join(' | '));
+  const C = await audit(page, srv.url + '?vm=1&pueblo=4', true, true);
+  check('el detector encuentra una caja falsa puesta a propósito en la plaza (4.0)', C.body > D.body && C.ex.some(e => e.startsWith('canary')), (C.body - D.body) + ' vértices de la caja');
   check('sin errores en la página', errs.length === 0, errs.slice(0, 2).join(' | '));
   await b.close(); srv.close();
   console.log('\n' + pass + ' correctas, ' + fail + ' fallidas');

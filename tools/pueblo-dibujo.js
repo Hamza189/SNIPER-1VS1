@@ -44,10 +44,19 @@ const FRAMES = +(process.env.FRAMES || 16);
     for (let i = 0; i < n; i++) { S.P.yaw = i / n * Math.PI * 2; S.P.pitch = -0.04; R.info.reset(); S.advance(16); calls += R.info.render.calls; tris += R.info.render.triangles; }
     R.info.autoReset = true; R.renderBufferDirect = orig;
     for (const k in tally) { tally[k].calls = +(tally[k].calls / n).toFixed(1); tally[k].tris = Math.round(tally[k].tris / n); }
-    return { calls: +(calls / n).toFixed(1), tris: Math.round(tris / n), p3: !!S.P3ON, aa: R.getContext().getContextAttributes().antialias, tally };
+    // memory (17-11-2026, the iPhone reloads the tab when it runs out): textures as the page counts them, geometry
+    // uploaded to the GPU (every geometry in the scene once: attributes + index), shader programs and the JS heap
+    const seen = new Set(); let geo = 0;
+    S.scene.traverse(o => { const g = o.geometry; if (!g || seen.has(g)) return; seen.add(g);
+      for (const k in g.attributes) geo += g.attributes[k].array.byteLength; if (g.index) geo += g.index.array.byteLength; });
+    const tex = S.perfTexMB ? S.perfTexMB() : null, mb = x => +(x / 1048576).toFixed(1);
+    return { calls: +(calls / n).toFixed(1), tris: Math.round(tris / n), p3: !!S.P3ON, aa: R.getContext().getContextAttributes().antialias, tally,
+      mem: { texMB: tex ? +(+tex.real).toFixed(1) : null, texRGBA_MB: tex ? +(+tex.asRGBA).toFixed(1) : null, textures: R.info.memory.textures, geometries: R.info.memory.geometries,
+        geoMB: mb(geo), programs: (R.info.programs || []).length, heapMB: performance.memory ? mb(performance.memory.usedJSHeapSize) : null } };
   }, FRAMES);
   const rows = Object.entries(r.tally).sort((a, b) => b[1].calls - a[1].calls);
   console.log('media por fotograma: ' + r.calls + ' llamadas · ' + r.tris + ' triángulos · pueblo 3.0 ' + r.p3);
+  console.log('memoria: ' + JSON.stringify(r.mem));
   for (const [k, v] of rows.slice(0, 40)) console.log('  ' + String(v.calls).padStart(6) + ' llamadas  ' + String(v.tris).padStart(8) + ' tri  ' + k);
   if (OUT) fs.writeFileSync(OUT, JSON.stringify(r, null, 1));
   await b.close(); if (srv) srv.close();

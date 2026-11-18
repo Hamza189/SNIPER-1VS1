@@ -14,7 +14,7 @@ function check(name, cond, info) { if (cond) { pass++; console.log('  ok   ' + n
   await ctx.route(/fonts\.(googleapis|gstatic)\.com/, r => r.abort());
   await ctx.addInitScript(() => { try { localStorage.setItem('sniperduel_settings', JSON.stringify({ quality: 'alto', v: 2 })); } catch (e) {} });
   const p = await ctx.newPage(); const errs = []; p.on('pageerror', e => errs.push(e.message));
-  await p.goto(srv.url + '?vm=1&pueblo=3');
+  await p.goto(srv.url + '?vm=1&pueblo=4');
   await p.waitForFunction(() => window.__SD && __SD.P3W && __SD.P3W.kit, null, { timeout: 120000 }); await p.waitForTimeout(2500);
   const r = await p.evaluate(() => { const S = __SD, T = THREE, R = S.renderer; S.setWorld('pueblo'); S.MANUAL.on = true;
     for (const b of S.RANGE_BOTS.concat(S.BOTS)) b.g.visible = false;

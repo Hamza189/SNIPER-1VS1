@@ -10,9 +10,9 @@
 const C = require('../client/casas.js'), MAP = require('../core/mapdata.js'), SDMovement = require('../core/movement.js'), CFG = require('../core/config.js');
 let pass = 0, fail = 0;
 const check = (n, c, i) => { (c ? pass++ : fail++); console.log((c ? '  ok   ' : '  FAIL ') + n + (i !== undefined ? '  (' + i + ')' : '')); };
-const M = CFG.move, P = MAP.maps.pueblo;
+const M = CFG.move, P = MAP.maps.pueblo4;   // 17-11-2026: the houses are in the server's 'pueblo4' (PUEBLO 4.0, ?pueblo=4); 'pueblo' is the town of before
 
-// the pueblo world of the server (core/mapdata.js, exported from the page): the houses are in it, the solid boxes are not
+// the pueblo4 world of the server (core/mapdata.js, exported from the page): the houses are in it, the solid boxes are not
 const isOld = c => C.HOUSES.some(H => Math.abs(c.minX - (H.x - H.w / 2)) < 1e-6 && Math.abs(c.maxX - (H.x + H.w / 2)) < 1e-6 && Math.abs(c.minZ - (H.z - H.d / 2)) < 1e-6 && Math.abs(c.maxZ - (H.z + H.d / 2)) < 1e-6 && c.minY === 0);
 const old = P.colliders.filter(isOld);
 const world = { colliders: P.colliders, ramps: P.ramps || [] };

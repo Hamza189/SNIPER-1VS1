@@ -1822,9 +1822,15 @@ const PIC=(()=>{let o={};try{o=store.get('settings',null)||{};}catch(e){}
   return {look,cvd,on:true,glsl:b};})();
 /* PUEBLO 3.0 (vertical slice, ?pueblo=3): new light and town; without the flag the game looks exactly as before */
 // …or chosen in AJUSTES › GRÁFICOS and remembered on the device (a shared link often loses its ?…, 17-10-2026); ?pueblo=0 forces the old one
-const P3=/[?&]pueblo=3\b/.test(location.search)||(!/[?&]pueblo=0\b/.test(location.search)&&store.get('p3',false)===true);
-/* PUEBLO 4.0 (15-11-2026, client/pueblo4.js, docs/PUEBLO-4.md): on top of PUEBLO 3.1, only what you see. ?pueblo4=0 = 3.1 */
-const P4ON=!!P3&&!/[?&]pueblo4=0\b/.test(location.search)&&typeof SDPueblo4!=='undefined';
+/* PUEBLO 4.0 (17-11-2026, docs/PUEBLO-4.md): ONLY with ?pueblo=4 (remembered on the device; ?pueblo=0 or =3 forgets it).
+   It is PUEBLO 3.1 (south half in 3.0, 8 houses you can walk into, the new fountain) + 4.0 (wear, interiors, washing,
+   cables, light, pickups, crates). Its houses change collisions, so online it is its own server map, 'pueblo4'
+   (core/mapdata.js); without the flag PUEBLO and the server's 'pueblo' are exactly as before. */
+const PU4=/[?&]pueblo=4\b/.test(location.search)||(!/[?&]pueblo=[03]\b/.test(location.search)&&store.get('p4',false)===true);
+if(/[?&]pueblo=4\b/.test(location.search))store.set('p4',true);else if(/[?&]pueblo=[03]\b/.test(location.search))store.set('p4',false);
+const P3=PU4||/[?&]pueblo=3\b/.test(location.search)||(!/[?&]pueblo=0\b/.test(location.search)&&store.get('p3',false)===true);
+/* PUEBLO 4.0 (15-11-2026, client/pueblo4.js): on top of PUEBLO 3.1, only what you see. ?pueblo=4&pueblo4=0 = 3.1 */
+const P4ON=PU4&&!/[?&]pueblo4=0\b/.test(location.search)&&typeof SDPueblo4!=='undefined';
 const LOOK=P3?{exp:0.95,fog:P4ON?0xd8dad6:0xdcd6c8,sun:0xfff0d8,sunI:P4ON?3.2:3.0,sunPos:[-45,60,-30],hemiSky:0xc4d8f0,hemiGround:0xc9a684,hemiI:P4ON?0.92:1.0,
     sky:{top:0x5b8fcb,mid:0x9ec2e2,hor:0xe9e4d6,glow:0xfff2d6}}
   :{exp:0.82,fog:0xe2b894,sun:0xffe0b5,sunI:2.7,sunPos:[-45,60,-30],hemiSky:0xb8cdee,hemiGround:0x9a7656,hemiI:0.6,
@@ -2029,7 +2035,7 @@ box(102,4,1,MAT.concrete,0,0,-50.5);box(102,4,1,MAT.concrete,0,0,50.5);box(1,4,1
 /* CASAS HABITABLES (14-11-2026, client/casas.js, docs/CASAS-HABITABLES.md): 8 PUEBLO houses with doors, windows, rooms,
    stairs and balconies instead of a solid box. Part of the map (core/mapdata.js has them: the server agrees). ?casas=0 shows
    the old solid boxes OFFLINE only, to compare (online always uses the server's map, i.e. the houses). */
-const CASAS={on:typeof SDCasas!=='undefined',pref:!/[?&]casas=0\b/.test(location.search),houses:[],cols:[],rays:[],ramps:[],solid:[],meshes:[],kit:[],isSolid:false,tris:0,calls:0,shadow:null};
+const CASAS={on:PU4&&typeof SDCasas!=='undefined',pref:!/[?&]casas=0\b/.test(location.search),houses:[],cols:[],rays:[],ramps:[],solid:[],meshes:[],kit:[],isSolid:false,tris:0,calls:0,shadow:null};
 const isHab=b=>CASAS.on&&!!SDCasas.byKey[b[0]+','+b[1]];
 const OLD_TOWN={bodies:[],caps:[],roads:[]};   // PUEBLO 1 visuals PUEBLO 2.0 replaces (the boxes stay for bullets)
 const BUILDINGS=[[-31,-31,14,12,7,0],[-31,-9,12,10,5,1],[-32,16,12,12,9,2],[-31,37,14,10,6,3],[31,-33,12,10,8,4],[33,-8,10,12,5,5],[30,17,14,10,7,1],[33,38,10,10,10,2],[-9,-31,8,8,4,3],[13,-25,6,10,6,4],[-12,27,10,6,5,0],[11,31,8,6,4,5],[-2,-43,10,5,3.5,2],[3,43,12,5,4,3]];
@@ -2219,7 +2225,7 @@ function dressProps(objs,tag){
 const P3ON=P3&&TOWN.on&&typeof SDTown3!=='undefined'&&typeof KIT3D!=='undefined';
 const P3W={meshes:[],tris:0,place:[],kit:null,skip:new Set(),kitTris:0,signs:[]};
 // P3-5 (14-11-2026): PUEBLO 3.0 in the south half too (?sur=0 = only the north half, as before)
-const P31=P3ON&&!/[?&]sur=0\b/.test(location.search);
+const P31=P3ON&&PU4&&!/[?&]sur=0\b/.test(location.search);
 const FAM3=P3ON?(P31?Object.assign({},SDTown3.SLICE_FAMILIES,SDTown3.SOUTH_FAMILIES):SDTown3.SLICE_FAMILIES):{};
 const inSlice3=b=>P3ON&&!!FAM3[b[0]+','+b[1]];
 /* PUEBLO 3.0 · E10 «Casa Oliva»: the first delivered 3D model (assets/3d/models/, contract in docs/ASSETS-3D.md).
@@ -2493,7 +2499,7 @@ if(P4ON){const c=SDPueblo4.cables(),g=new T.BufferGeometry();g.setAttribute('pos
   g.setIndex(new T.BufferAttribute(c.idx,1));g.computeBoundingSphere();const m=new T.Mesh(g,new T.MeshStandardMaterial({color:0x1d1b19,roughness:0.75,metalness:0.1}));m.material.userData.cs=1;
   m.name='p4_cables';m.matrixAutoUpdate=false;m.updateMatrix();scene.add(m);}
 /* =================== LA FUENTE (client/fuente.js, docs/FUENTE.md): water that moves; ?fuente=0 = the old flat water =================== */
-const FUENTE={on:typeof SDFuente!=='undefined'&&!/[?&]fuente=0\b/.test(location.search),f:null};
+const FUENTE={on:PU4&&typeof SDFuente!=='undefined'&&!/[?&]fuente=0\b/.test(location.search),f:null};
 if(FUENTE.on){
   const env=SDFuente.skyEnv(T,LOOK.sky.top,LOOK.sky.mid,LOOK.sky.hor,LOOK.hemiGround);
   const fl=new T.MeshStandardMaterial({color:0x6f9e9a,roughness:0.35,metalness:0});
@@ -6480,14 +6486,19 @@ const NET={ws:null,N:null,code:null,url:null,want:false,retries:0,retryAt:0,stat
 const netErr=(t)=>{NET.errors.push(new Date().toISOString().slice(11,19)+' '+t);if(NET.errors.length>6)NET.errors.shift();};
 async function netServerUrl(){
   if(NET.url)return NET.url;
-  const q=new URLSearchParams(location.search).get('server');if(q){NET.url=q.replace(/\/$/,'');return NET.url;}
+  const q=new URLSearchParams(location.search).get('server');if(q){NET.url=q.replace(/\/$/,'');NET.urlQ=true;return NET.url;}
   try{const r=await fetch('server.json?v='+Date.now(),{cache:'no-store'});if(r.ok){const j=await r.json();if(j&&j.url){NET.url=String(j.url).replace(/\/$/,'');return NET.url;}}}catch(e){}
   return null;
 }
 function mpShow(view){if(LB.on){lbShow(view);return;}NET.view=view;$('#mp').hidden=false;$('#menu').hidden=true;$('#mpHome').hidden=view!=='home';$('#mpLobby').hidden=view!=='lobby';}
 function mpMsg(t,err){const m=$('#mpMsg');m.textContent=t||'';m.classList.toggle('err',!!err);if(LB.on)lbMsg(t,err);}
 function mpName(){const n=SDProto.cleanName($('#mpName').value)||'JUGADOR';store.set('mpName',n);if(n!=='JUGADOR'&&PROFILE.name!==n){PROFILE.name=n;SDProfile.save(LS,PROFILE);}return n;}
-function inviteLink(code){return location.origin+location.pathname+'?sala='+code+(LB.on?'&lobby=2':'');}   // SALA 1V1: the guest gets it too
+function inviteLink(code){return location.origin+location.pathname+'?sala='+code+(LB.on?'&lobby=2':'')+(PU4?'&pueblo=4':'');}   // SALA 1V1 and PUEBLO 4.0: the guest gets them too
+/* PUEBLO 4.0 (?pueblo=4) is the server's 'pueblo4' and this page cannot draw both towns: if the room's map is the other
+   one, reload with the right flag (the room's token is kept, so it rejoins by itself) */
+function pu4Check(){const s=NET.N&&NET.N.mapSrv,need=s==='pueblo4'?true:s==='pueblo'?false:null;if(need===null||need===PU4||!NET.code)return false;
+  const u=new URL(location.href);u.searchParams.set('sala',NET.code);if(LB.on)u.searchParams.set('lobby','2');   // the other ?… (server, quality…) stay
+  if(NET.urlQ)u.searchParams.set('server',NET.url);u.searchParams.set('pueblo',need?'4':store.get('p3',false)?'3':'0');location.replace(u.toString());return true;}
 async function netCreate(){
   audioInit();SFX.ui();mpName();mpMsg('Creando sala…');
   const url=await netServerUrl();if(!url){mpMsg('SERVIDOR NO DISPONIBLE. Puedes seguir jugando offline.',true);return;}
@@ -6507,7 +6518,7 @@ function netConnect(code){
   if(NET.ws){try{NET.ws.onclose=null;NET.ws.close();}catch(e){}}
   NET.code=code;NET.want=true;NET.leaving=false;
   if(!NET.N||NET.N.code!==code){
-    NET.N=SDNet.create({send:t=>{if(NET.ws&&NET.ws.readyState===1){NET.ws.send(t);NET.bytesOut+=t.length;}},now:()=>performance.now(),world:W,local:LOCAL});
+    NET.N=SDNet.create({mapAlias:PU4?{pueblo:'pueblo4'}:undefined,send:t=>{if(NET.ws&&NET.ws.readyState===1){NET.ws.send(t);NET.bytesOut+=t.length;}},now:()=>performance.now(),world:W,local:LOCAL});
   }
   NET.status='connecting';mpMsg('Conectando…');
   let ws;try{ws=new WebSocket(NET.url.replace(/^http/,'ws')+'/room/'+code);}catch(e){netErr('ws '+e.message);netRetry();return;}
@@ -6593,6 +6604,7 @@ function netEvent(e){
       if(N.phase==='over'){mpShow('lobby');renderLobby();}
       break;
     case 'lobby':
+      if(pu4Check())break;
       rivalSkin();
       if(NET.view==='lobby'||mode!=='online')renderLobby();
       if(N.phase==='lobby'&&mode==='online'&&state!=='menu'){netEndOnline();mpShow('lobby');renderLobby();mpMsg('');}
@@ -6602,7 +6614,7 @@ function netEvent(e){
       else if(mode==='online'&&N.phase==='over'){const r=e.m.rematch||{};const other=N.you==='A'?'B':'A';$('#overEyebrow').textContent=r[N.you]&&!r[other]?'Esperando al rival…':r[other]&&!r[N.you]?'¡El rival quiere la revancha!':'Fin de la partida';}
       if(N.phase==='lobby'&&(N.players||[]).filter(Boolean).length<2&&mode!=='online'&&NET.view==='lobby')mpMsg('');
       break;
-    case 'start':netStart(e.m);break;
+    case 'start':if(!pu4Check())netStart(e.m);break;
     case 'go':$('#countdown').hidden=true;SFX.ui();break;
     case 'snap':
       if(Math.round(P.hp)!==N.hp){P.hp=N.hp;updateHpUI();}
@@ -7457,7 +7469,8 @@ const m2MapImg=id=>av('assets/menu/mapa_'+(/^casa2/.test(id)?'casa2':id)+'.jpg?v
 const M2_PRUEBAS={id:'pruebas',name:'PRUEBAS',sub:'Paredes de prueba con bots quietos detrás · rayos X · BALA DURA',online:false};
 const M2_BARRIO={id:'barrio',name:'BARRIO',sub:'Calle entre dos filas de edificios · garajes abandonados y torres de fondo · 56 × 40 m',online:true};
 const M2_MAPS=typeof SDMenu2!=='undefined'?SDMenu2.MAPS.filter(m=>m.id==='arena'||m.id==='pueblo'||(m.id==='casa'&&CASA.exp)||(m.id==='casa2'&&C2.exp)).map(m=>m.id==='casa2'&&C2B.exp?Object.assign({},m,{id:'casa2b',name:'CASA ATLAS 2.0 · NUEVA',sub:'Dos casas grandes unidas por dentro · patio despejado y pérgola · 40 × 33 m'}):
-  m.id==='casa2'&&C2J.exp?Object.assign({},m,{id:'casa2c',name:'CASA ATLAS 2.0 · JARDÍN',sub:'Las dos casas desplazadas, con tejados, porches y césped · 44 × 33 m'}):m).concat(BAR.exp?[M2_BARRIO]:[]).concat([M2_PRUEBAS]):[];
+  m.id==='casa2'&&C2J.exp?Object.assign({},m,{id:'casa2c',name:'CASA ATLAS 2.0 · JARDÍN',sub:'Las dos casas desplazadas, con tejados, porches y césped · 44 × 33 m'}):
+  m.id==='pueblo'&&PU4?Object.assign({},m,{name:'PUEBLO 4.0',sub:'Prueba · 8 casas por dentro, pick-ups y fuente nueva'}):m).concat(BAR.exp?[M2_BARRIO]:[]).concat([M2_PRUEBAS]):[];
 const M2_DIFF=['RECLUTA','VETERANO','ÉLITE'],M2_TRAIN={off:'Dianas fijas y móviles',easy:'Bots de entrenamiento · FÁCIL',normal:'Bots de entrenamiento · NORMAL',hard:'Bots de entrenamiento · DIFÍCIL'};
 const m2MapName=id=>{const m=SDMenu2.MAPS.find(x=>x.id===id);return m?m.name:String(id).toUpperCase();};
 function m2Btn(cls,img,name,small,on){const c=document.createElement('button');c.type='button';c.className=cls;
@@ -8323,7 +8336,7 @@ async function perfRun(quick){
   const sw=Math.round(screen.width||innerWidth),sh=Math.round(screen.height||innerHeight),dpr=window.devicePixelRatio||1;
   const R={when:new Date().toLocaleString('es-ES'),build:BUILD_HASH,
     device:{model:SDPerf.deviceName(navigator.userAgent,sw,sh,dpr),screen:sw+'×'+sh,dpr,touch:isTouch,gpu:String(gpu).slice(0,80),webgl:gl2?2:1,maxTex,heapMB:performance.memory?Math.round(performance.memory.usedJSHeapSize/1048576):0},
-    settings:{quality:SETTINGS.quality,profile:String(GFX.profile).toUpperCase(),pixelRatio:SDQuality.pixelRatio(GFX.profile,dpr,1).toFixed(2),fpsCap:SETTINGS.fpsCap,hz:Math.round(GFX.hz||0),pueblo:P3ON?'3.0':'clásico',flags:location.search.replace(/^\?/,'').replace(/(^|&)medir=[^&]*/,'')},
+    settings:{quality:SETTINGS.quality,profile:String(GFX.profile).toUpperCase(),pixelRatio:SDQuality.pixelRatio(GFX.profile,dpr,1).toFixed(2),fpsCap:SETTINGS.fpsCap,hz:Math.round(GFX.hz||0),pueblo:PU4?(P4ON?'4.0':'3.1'):P3ON?'3.0':'clásico',flags:location.search.replace(/^\?/,'').replace(/(^|&)medir=[^&]*/,'')},
     load:{html:nav.responseEnd||0,dom:nav.domContentLoadedEventEnd||0,load:nav.loadEventEnd||0,firstFrame:PERF.first,mb:Math.round(res.reduce((a,e)=>a+size(e),0)/104857.6)/10,
       big:big.map(e=>({name:e.name.replace(/[?#].*$/,'').split('/').pop(),mb:Math.round(size(e)/104857.6)/10,ms:e.duration}))},
     maps};
