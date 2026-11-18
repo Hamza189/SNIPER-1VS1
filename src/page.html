@@ -4070,11 +4070,24 @@ canvas.addEventListener('webglcontextrestored',()=>{if(KTX2.freed)location.reloa
 // (KTX2.want), not behind those of one you chose before (ÚLTIMA is 139 MB); KTX2.prog counts each skin's textures
 // (assets/armas/<dir>/) so the menu can say how far it has got.
 const ktx2Dir=u=>{const m=/assets\/armas\/([^/]+)\//.exec(u);return m?m[1]:'';};
+/* ARMAS A 2K EN EL MÓVIL (18-11-2026, docs/KTX2.md): medido como un iPhone en ALTO, la memoria de texturas de la partida
+   pasa de 99 MB a 483 MB con ÚLTIMA (17 texturas de 4K: ~21 MB cada una en la GPU aun comprimidas). Es lo que hace cerrar
+   Safari. Con ?arma2k=1 cada textura de aspecto de arma se sube sin su nivel de 4K: se usa el de 2K que ya trae el
+   mismo archivo (un cuarto de memoria, ~96 MB), sin archivos nuevos ni otra descarga. ?arma2k=0 = 4K siempre (lo de hoy). */
+const ARMA_CAP=/[?&]arma2k=1\b/.test(location.search)?2048:0;
+function ktx2Cap(t,cap){
+  if(!cap||!t||!t.isCompressedTexture||!t.mipmaps||t.mipmaps.length<2)return t;
+  let k=0;while(k<t.mipmaps.length-1&&t.mipmaps[k].width>cap)k++;
+  if(!k)return t;
+  t.mipmaps=t.mipmaps.slice(k);if(t.image){t.image.width=t.mipmaps[0].width;t.image.height=t.mipmaps[0].height;}
+  const u=t.userData||(t.userData={});u.gpuBytes=t.mipmaps.reduce((s,m)=>s+(m.data?m.data.byteLength:0),0);u.capped=k;
+  KTX2.capped=(KTX2.capped||0)+1;return t;
+}
 function ktx2Queue(L){
   if(KTX2.q)return KTX2.q;const q=[],n=PJ2_PHONE?1:3;let busy=0;const P=KTX2.prog||(KTX2.prog={});
   const tick=(u,done)=>{const d=ktx2Dir(u);if(!d)return;const c=P[d]||(P[d]={n:0,done:0});if(done)c.done++;else c.n++;};
   const pump=()=>{while(busy<n&&q.length){const w=KTX2.want?q.findIndex(x=>KTX2.want(x[0])):-1;busy++;const [u,ok,pr,err]=q.splice(w<0?0:w,1)[0];
-    L.load(u,t=>{busy--;tick(u,1);pump();if(ok)ok(t);},pr,e=>{busy--;tick(u,1);pump();if(err)err(e);});}};
+    L.load(u,t=>{busy--;tick(u,1);pump();if(ok)ok(ktx2Cap(t,ARMA_CAP));},pr,e=>{busy--;tick(u,1);pump();if(err)err(e);});}};
   return KTX2.q=Object.assign(Object.create(L),{load(u,ok,pr,err){q.push([u,ok,pr,err]);tick(u,0);pump();},queue:q});
 }
 function pj2Load(root){

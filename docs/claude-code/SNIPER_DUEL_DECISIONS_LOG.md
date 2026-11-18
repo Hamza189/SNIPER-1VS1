@@ -6,6 +6,19 @@ Cada entrada dice qué se decidió o cambió, quién lo decidió, y el estado re
 Las decisiones anteriores al 18-10-2026 están resumidas en `SNIPER_DUEL_MASTER_CONTEXT.md` §4.
 Detalle de cada cambio (antes/después, medidas, cómo revertir): `docs/next-level/NEXT_LEVEL_CHANGELOG.md`.
 
+## 18-11-2026 — Memoria del iPhone: el aspecto de arma ÚLTIMA en 4K, y lo que ya estaba hecho
+El propietario pegó un análisis externo (bajar «630 MB» de texturas a menos de 100, 40 shaders a menos de 12, la mitad de
+llamadas de dibujo en el PUEBLO y la resolución a ×1,5 en móvil). Medido hoy, como un iPhone en ALTO:
+- Sin aspecto de arma, la memoria de texturas ya es de 99 MB (MEDIO 44). Los 630 MB eran del 30-10.
+- La resolución en el móvil ya tiene tope: MEDIO ×1,35 y ALTO ×2, con escalado automático y el ajuste ×1/×2 de la sesión de
+  la SALA 1V1. No se toca.
+- Shaders: 28–32 programas, que se precompilan en el menú. Llamadas en el PUEBLO: 184–249, y el 03-11 el iPhone medía
+  60 FPS.
+- **Lo que de verdad pesa:** ÚLTIMA en 4K lleva las texturas de 99 a **483 MB**. Con `?arma2k=1` (nuevo), 211 MB, y la
+  entrada a la partida baja de ~5 s a ~1 s.
+Estado: IMPLEMENTADO TRAS BANDERA · PROBADO EN NAVEGADOR · PENDIENTE DE VALIDACIÓN EN IPHONE y de su aprobación para que sea
+lo de por defecto en el móvil. Detalle: `docs/KTX2.md`.
+
 ## 18-11-2026 — Cuenta SD-Y8LN-2N9X (Zaib) con todos los objetos
 - Pedido del propietario: «SD-Y8LN-2N9X - Zaib Quiero que le pongas todas las skins a esta cuenta».
 - Igual que la anterior: añadida a `ADMIN_IDS` en `wrangler.toml` (ahora 4 cuentas). Ve y puede equipar todos los objetos

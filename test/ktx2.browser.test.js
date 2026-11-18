@@ -63,6 +63,15 @@ function check(name, cond, info) { if (cond) { pass++; console.log('  ok   ' + n
     check('MEDIR RENDIMIENTO cuenta las texturas comprimidas por lo que ocupan de verdad', mem.real < mem.asRGBA * 0.6, JSON.stringify(mem));
     check('sin errores (móvil)', M.errs.length === 0, M.errs.slice(0, 2).join(' | '));
     await M.ctx.close();
+    // 18-11-2026: ÚLTIMA (17 texturas de 4K) llevaba la memoria de texturas del móvil en ALTO de 99 a 483 MB; con ?arma2k=1
+    // cada textura del aspecto se sube desde su nivel de 2K (el mismo archivo, sin otra descarga)
+    const W = await open('?arma2k=1', 'alto', true);
+    await W.p.evaluate(() => __SD.setWskin('rifle', 'ultima'));
+    await W.p.waitForFunction(() => { const c = __SD.KTX2.prog && __SD.KTX2.prog.ratio; return c && c.n > 0 && c.done === c.n; }, null, { timeout: 300000 }).catch(() => {});
+    const w = await W.p.evaluate(() => ({ prog: __SD.KTX2.prog && __SD.KTX2.prog.ratio, capped: __SD.KTX2.capped || 0 }));
+    check('con ?arma2k=1: las texturas de 4K de ÚLTIMA se suben a 2K', w.prog && w.prog.n >= 15 && w.capped >= 15, JSON.stringify(w));
+    check('y sin errores (arma2k)', W.errs.length === 0, W.errs.slice(0, 2).join(' | '));
+    await W.ctx.close();
     const D = await open('?ktx2=0', 'alto', true);
     const dd = await tex(D.p);
     check('con ?ktx2=0 en el móvil: los JPG de 2K (sin descargar nada de KTX2)', !D.files.some(f => /ktx2|basis|KTX2Loader/.test(f)) && !dd.map.c && dd.map.w === 2048, JSON.stringify(dd));
