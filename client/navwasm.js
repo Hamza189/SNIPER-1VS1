@@ -18,7 +18,8 @@ if (typeof module !== 'undefined' && module.exports) {
 } else {
   // asked once the page is parsed, with the hash of its content as its version (ASSET_V from build.py, docs/CARGA.md:
   // it is declared after this module in the same script)
-  const go = () => { const u = 'assets/wasm/nav.wasm', v = typeof ASSET_V !== 'undefined' && ASSET_V[u];
+  // (try: run before the page's ASSET_V exists — test/smoke.test.js — typeof itself throws on a const not yet declared)
+  const go = () => { const u = 'assets/wasm/nav.wasm'; let v = ''; try { v = ASSET_V[u] || ''; } catch (e) {}
     fetch(v ? u + '?v=' + v : u).then(r => { if (!r.ok) throw new Error(r.status); return r.arrayBuffer(); })
       .then(b => WebAssembly.instantiate(b, {})).then(r => attach(r.instance)).catch(() => { W.failed = true; }); };
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', go); else go();
