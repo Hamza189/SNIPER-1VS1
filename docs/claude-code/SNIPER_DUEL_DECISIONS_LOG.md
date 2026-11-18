@@ -6,6 +6,12 @@ Cada entrada dice qué se decidió o cambió, quién lo decidió, y el estado re
 Las decisiones anteriores al 18-10-2026 están resumidas en `SNIPER_DUEL_MASTER_CONTEXT.md` §4.
 Detalle de cada cambio (antes/después, medidas, cómo revertir): `docs/next-level/NEXT_LEVEL_CHANGELOG.md`.
 
+## 18-11-2026 — Cuenta SD-Y8LN-2N9X (Zaib) con todos los objetos
+- Pedido del propietario: «SD-Y8LN-2N9X - Zaib Quiero que le pongas todas las skins a esta cuenta».
+- Igual que la anterior: añadida a `ADMIN_IDS` en `wrangler.toml` (ahora 4 cuentas). Ve y puede equipar todos los objetos
+  (camuflajes, personajes, miras, títulos) y su perfil pone ADMIN. No cambia cajas ni puntos de nadie.
+- Estado: IMPLEMENTADO · publicado con `git push origin main` (flujo «Desplegar servidor»).
+
 ## 18-11-2026 — Cuenta SD-XYZL-D2W5 con todos los objetos
 - Pedido del propietario: «SD-XYZL-D2W5 ponle todos los camuflajes de armas y todo a esta cuenta», «súbelo ya y haz commit».
 - Hecho con el mecanismo que ya existía: `ADMIN_IDS` en `wrangler.toml` (ahora 3 cuentas). Una cuenta de la lista ve y puede
