@@ -120,6 +120,22 @@ async function until(page, fn, arg, ms) { try { await page.waitForFunction(fn, a
     // the screen of always comes back with ?lobby=1
     const C = await open(ctxA, '&lobby=1');
     check('con ?lobby=1 vuelve la pantalla de salas de siempre', await C.evaluate(() => !__SD.LB.on) && await (async () => { await C.click('#m2 .m2Mode[data-sel=online]'); await C.click('#m2Play'); return until(C, () => !document.getElementById('mp').hidden && document.getElementById('lb').hidden); })());
+    // 17-11-2026: a phone whose last visit ended inside the room (Safari closed the page) opens the LIGHT room
+    { const ctxL = await ctxOf(true); await ctxL.addInitScript(() => { if (!localStorage.getItem('x_once')) { localStorage.setItem('x_once', '1'); localStorage.setItem('sniperduel_lbOpen', String(Date.now() - 30000)); } });
+      const L = await open(ctxL, '&lobby=2');
+      check('móvil que se cayó dentro de la sala: la próxima vez abre la sala LIGERA', await L.evaluate(() => __SD.LB.lite === true && localStorage.getItem('sniperduel_lbLite') === 'true'));
+      await L.click('#m2 .m2Mode[data-sel=online]');
+      check('sala LIGERA: la misma pantalla sobre la sala del MENÚ 2, sin hangar', await until(L, () => !document.getElementById('lb').hidden && __SD.LB.vis && !__SD.LB.room && !!__SD.M2.room, null, 15000));
+      await L.fill('#lbName', 'Ligera'); await L.click('#lbCreate');
+      check('sala LIGERA: crear sala funciona', await until(L, () => /^[A-Z0-9]{6}$/.test(document.getElementById('lbCodeTopTxt').textContent) && !document.getElementById('lbRoom').hidden));
+      await L.close();
+      const H = await open(ctxL, '&lobby=2&sala3d=1');
+      check('?sala3d=1 devuelve el hangar', await H.evaluate(() => __SD.LB.lite === false));
+      await ctxL.close(); }
+    { const P = await open(await ctxOf(true), '&lobby=2'); await P.click('#m2 .m2Mode[data-sel=online]');
+      check('en el móvil, al estar en la sala queda la marca (y se quita al salir) y el hangar es el ligero (4 luces)', await until(P, () => { let l = 0; if (__SD.LB.room) __SD.LB.room.scene.traverse(o => { if (o.isLight) l++; }); return !!__SD.LB.room && l > 0 && l <= 4; }, null, 15000) && await until(P, () => !!__SD.LB.room && !!localStorage.getItem('sniperduel_lbOpen') && localStorage.getItem('sniperduel_lbOpen') !== 'null', null, 15000)
+        && await P.evaluate(() => { document.getElementById('lbBack').click(); const v = localStorage.getItem('sniperduel_lbOpen'); return v === null || v === 'null'; }));
+      await P.close(); }
     check('sin errores de JavaScript', errors.length === 0, errors.slice(0, 3).join(' | ') || 'ninguno');
   } catch (e) { fail++; console.log('  FAIL ' + (e && e.stack || e)); }
   await browser.close(); web.close(); await srv.close();

@@ -68,7 +68,9 @@ function appear(a) { const e = 1 - Math.pow(1 - clamp(a, 0, 1), 3); return { y: 
 
 function buildHangar(T, opt) {
   opt = opt || {};
-  const tex = opt.tex || (() => null), low = !!opt.low;
+  // phone (17-11-2026): Safari on the iPhone closed the page on entering this room (the menu already uses most of what
+  // it allows): half the lamps, 4 lights instead of 10 (every material compiles once per light set), no haze, no dust
+  const tex = opt.tex || (() => null), phone = !!opt.phone, low = !!opt.low || phone;
   const scene = new T.Scene();
   scene.background = new T.Color(0x07080a);
   scene.fog = new T.Fog(0x07080a, 9, 30);
@@ -112,12 +114,12 @@ function buildHangar(T, opt) {
   const glowMat = new T.MeshBasicMaterial({ color: 0xbccbe6, map: glowTex, transparent: true, opacity: 0.32, depthWrite: false, blending: T.AdditiveBlending, fog: false });
   const lamps = new T.Group(); scene.add(lamps);
   const panel = new T.BoxGeometry(1.5, 0.06, 0.5), panelGlow = new T.PlaneGeometry(2.6, 1.3).rotateX(Math.PI / 2);
-  for (const z of [-10, -6.5, -3, 0.5]) for (const x of [-6, -2, 2, 6]) {
+  for (const z of phone ? [-9, -2] : [-10, -6.5, -3, 0.5]) for (const x of [-6, -2, 2, 6]) {
     add(panel, lampMat, x, 7.8, z, 0, lamps); const gl = add(panelGlow, glowMat, x, 7.74, z, 0, lamps); gl.renderOrder = 2;
   }
   // haze under the two lamps over the pads (light through dust)
   const haze = new T.MeshBasicMaterial({ color: 0x7f93b4, transparent: true, opacity: low ? 0.01 : 0.016, depthWrite: false, blending: T.AdditiveBlending, side: T.DoubleSide, fog: false });
-  for (const x of [-2, 2]) add(new T.CylinderGeometry(0.5, 2.4, 7.8, 20, 1, true), haze, x * 0.7, 3.9, 0.5);
+  if (!phone) for (const x of [-2, 2]) add(new T.CylinderGeometry(0.5, 2.4, 7.8, 20, 1, true), haze, x * 0.7, 3.9, 0.5);
   // crates and gun cases on both sides (mid-ground), a pallet of ammo boxes behind
   const crate = (w, h, d, x, z, y0, ry, mat) => {
     const g = new T.Group(); g.position.set(x, (y0 || 0) + h / 2, z); g.rotation.y = ry || 0; scene.add(g);
@@ -169,24 +171,27 @@ function buildHangar(T, opt) {
     const beam = new T.Mesh(beamGeo, beamMat); beam.position.y = 1.2; beam.visible = false; g.add(beam);
     if (shadowTex) { const sh = new T.Mesh(new T.PlaneGeometry(1.3, 1.0).rotateX(-Math.PI / 2), new T.MeshBasicMaterial({ map: shadowTex, transparent: true, depthWrite: false })); sh.position.y = 0.072; g.add(sh); }
     const stand = new T.Group(); stand.position.y = 0.07; g.add(stand);   // the operator goes here
-    const light = new T.PointLight(0xff8a2b, 0.0, 2.6, 1.6); light.position.set(0, 0.25, 0.6); g.add(light);
+    const light = phone ? null : new T.PointLight(0xff8a2b, 0.0, 2.6, 1.6); if (light) { light.position.set(0, 0.25, 0.6); g.add(light); }
     return { g, stand, ring, ringMat, beam, beamMat, light, x, k };
   });
   // lights: a warm key from the front on each pad, cold rims from behind, a faint fill and the door's cold glow
   const lights = {};
-  lights.hemi = new T.HemisphereLight(0x8d98aa, 0x0c0b0a, 0.16); scene.add(lights.hemi);
-  for (const p of pads) {
+  lights.hemi = new T.HemisphereLight(0x8d98aa, 0x0c0b0a, phone ? 0.24 : 0.16); scene.add(lights.hemi);
+  if (phone) {   // one warm key over both pads, one cold rim from behind
+    const key = new T.SpotLight(0xffefdc, 3.4, 16, 0.5, 0.8, 1.1); key.position.set(-0.4, 4.8, 4.6); key.target.position.set(0, 1.0, 0); scene.add(key, key.target);
+    lights.rim = new T.DirectionalLight(0xb8cdf2, 0.9); lights.rim.position.set(0.5, 3, -4); scene.add(lights.rim);
+  } else for (const p of pads) {
     const key = new T.SpotLight(0xffefdc, 2.8, 14, 0.36, 0.75, 1.1); key.position.set(p.x * 1.8 - 0.6, 4.6, 4.2); key.target.position.set(p.x, 1.0, 0); scene.add(key, key.target);
     const rim = new T.SpotLight(0xb8cdf2, 3.2, 12, 0.34, 0.6, 1.2); rim.position.set(p.x * 2.6, 3.8, -3.4); rim.target.position.set(p.x, 1.3, 0); scene.add(rim, rim.target);
   }
   lights.fill = new T.DirectionalLight(0xdde4ee, 0.12); lights.fill.position.set(0, 2, 6); scene.add(lights.fill);
-  lights.door = new T.PointLight(0x6d86ad, 1.4, 16, 1.5); lights.door.position.set(0, 5, -10.5); scene.add(lights.door);
+  if (!phone) { lights.door = new T.PointLight(0x6d86ad, 1.4, 16, 1.5); lights.door.position.set(0, 5, -10.5); scene.add(lights.door); }
   // dust in the light
-  const N = low ? 120 : 300, pos = new Float32Array(N * 3), seed = [];
+  const N = phone ? 0 : low ? 120 : 300, pos = new Float32Array(N * 3), seed = [];
   for (let i = 0; i < N; i++) { const s = [Math.random() * 9 - 4.5, Math.random() * 5, Math.random() * 8 - 6, Math.random() * Math.PI * 2]; seed.push(s); pos.set(s.slice(0, 3), i * 3); }
   const pg = new T.BufferGeometry(); pg.setAttribute('position', new T.BufferAttribute(pos, 3));
   const dust = new T.Points(pg, new T.PointsMaterial({ color: 0xc9d4e6, size: 0.014, transparent: true, opacity: 0.5, depthWrite: false, blending: T.AdditiveBlending, map: glowTex }));
-  dust.frustumCulled = false; scene.add(dust);
+  dust.frustumCulled = false; if (N) scene.add(dust);
   /* every frame: t in s; st = [{on, ready, flash}] for the two pads (on: someone stands there; ready: LISTO) */
   function frame(t, st) {
     const a = pg.attributes.position.array;
@@ -199,7 +204,7 @@ function buildHangar(T, opt) {
       p.ringMat.color.setHex(q.on && !q.ready ? 0xffb27a : 0xff8a2b);
       p.beam.visible = !q.on || (q.flash || 0) > 0.01;
       p.beamMat.opacity = q.on ? 0.22 * (q.flash || 0) : 0.035 + 0.03 * pulse;
-      p.light.intensity = (q.on && q.ready ? 0.9 : 0.35) + 2.2 * (q.flash || 0);
+      if (p.light) p.light.intensity = (q.on && q.ready ? 0.9 : 0.35) + 2.2 * (q.flash || 0);
     }
   }
   // everything this hangar made, for when it is no longer needed (freed while you play)

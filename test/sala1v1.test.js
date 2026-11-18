@@ -72,6 +72,14 @@ console.log('\nHANGAR');
   check('plataforma con alguien LISTO: aro a tope; vacía: aro tenue y haz de espera', H.pads[0].ringMat.opacity === 1 && H.pads[1].ringMat.opacity < 0.5 && H.pads[1].beam.visible && !H.pads[0].beam.visible);
   H.frame(1.3, [{ on: true }, { on: true, ready: false, flash: 1 }]);
   check('al aparecer el rival su plataforma destella', H.pads[1].light.intensity > 2 && H.pads[1].beam.visible);
+  // 17-11-2026: the iPhone closed the page on entering this room; phones get a lighter hangar
+  const P = L.buildHangar(T, { tex: () => null, phone: true });
+  const count = sc => { let m = 0, l = 0, pts = 0; sc.traverse(o => { if (o.isMesh) m++; if (o.isLight) l++; if (o.isPoints) pts++; }); return { m, l, pts }; };
+  const cp = count(P.scene), cd = count(H.scene);
+  check('móvil: hangar más ligero (menos mallas, 4 luces en vez de 10, sin polvo)', cp.m < cd.m && cp.l <= 4 && cd.l >= 9 && cp.pts === 0 && cd.pts === 1, cp.m + ' mallas · ' + cp.l + ' luces (PC ' + cd.m + ' · ' + cd.l + ')');
+  P.frame(1, [{ on: true, ready: true }, { on: true, flash: 1 }]);
+  check('móvil: las plataformas siguen marcando LISTO y la llegada del rival sin luces propias', P.pads[0].ringMat.opacity === 1 && P.pads[1].beam.visible && !P.pads[1].light);
+  P.dispose();
   let n = 0; const orig = T.BufferGeometry.prototype.dispose; T.BufferGeometry.prototype.dispose = function () { n++; return orig.call(this); };
   H.dispose(); T.BufferGeometry.prototype.dispose = orig;
   check('se libera entero al jugar', n > 20, n + ' geometrías');

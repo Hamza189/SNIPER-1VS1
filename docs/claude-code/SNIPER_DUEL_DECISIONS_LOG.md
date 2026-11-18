@@ -99,6 +99,17 @@ Detalle de cada cambio (antes/después, medidas, cómo revertir): `docs/next-lev
 | Personaje 3D rev. 03 hecho por Claude e integrado tras `?pj=2` (bots y rival online) | 20-10 · directo a `main` |
 | Personajes realistas + elegir personaje (con el SOLDADO de `?pj=2`) y HUD 2 por defecto (aprobado en iPhone y PC) | 28-10 · directo a `main` |
 
+## 18-11-2026 — SALA 1V1 en el iPhone: hangar ligero y red de seguridad
+
+El propietario: en el iPhone, con `?lobby=2`, la página se reiniciaba y se caía al entrar en la sala; el enlace normal
+funciona. «Antes que nada, que pueda funcionar en cualquier móvil en la web.» Causa: memoria de Safari (el menú en ALTO ya
+va justo). En móviles el hangar lleva 4 luces en vez de 10, la mitad de focos, sin polvo ni halos; el operador del rival
+vacío ya no toma el personaje por defecto; y si un móvil se cae dentro de la sala, la próxima vez abre la sala LIGERA
+(sin hangar, sobre la sala del MENÚ 2). `?sala3d=0/1`. Detalle: `docs/SALA-1V1.md`. Pruebas: sala1v1 28 + 43 (dos
+navegadores). Estado: IMPLEMENTADO · PROBADO EN NAVEGADOR · PENDIENTE DE VALIDACIÓN EN IPHONE.
+Aparte: «Prueba pública online» falla desde el 17-11 porque GitHub pasó `ubuntu-latest` a Ubuntu 26.04 y Playwright 1.56
+no instala Chromium ahí (no es un fallo del juego).
+
 ## 17-11-2026 — Primera pieza del juego en C++/WebAssembly: la red de los bots
 Del propietario: «Sí, instálalo» (el compilador de C++).
 - **Compilador:** wasi-sdk 34 (LLVM/clang, gratuito) en `C:\Users\Hamza\tools\wasi-sdk`, sin instalador ni permisos de

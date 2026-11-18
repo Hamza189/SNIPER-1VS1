@@ -87,6 +87,28 @@ TypeScript (`tsc --noEmit`) en otra sesión. Publicado el 10-11-2026.
 - El WebGL por software del entorno de pruebas sirve para contar y comparar, **no** para los FPS: falta medirlo en el
   iPhone y en el Android.
 
+## iPhone: se cerraba al entrar en la sala (17/18-11-2026)
+
+El propietario: con `?lobby=2` el iPhone «carga, se reinicia una vez y al entrar en la sala se cae» («el enlace ha
+generado problemas repetidamente»); el enlace normal funciona y en el PC va bien. Es Safari cerrando la página por memoria:
+en ALTO el menú ya usa casi todo lo que el iPhone deja (tiene cargados los operadores de los bots), y la sala sumaba
+encima un hangar con 10 luces (todos los materiales, también los de los personajes, se recompilan para cada juego de
+luces), polvo, halos y un segundo operador. Medido en el PC: no se descargaba ningún personaje nuevo al abrir la sala.
+
+- **Hangar ligero en pantallas táctiles** (`buildHangar(T, { phone: true })`): 4 luces en vez de 10 (una principal sobre
+  las dos plataformas, un contraluz, el relleno y el ambiente), la mitad de los focos del techo, sin halos ni polvo, sin
+  las luces propias de las plataformas (el aro sigue marcando LISTO y la llegada del rival).
+- **El operador del rival no entra en la lista de personajes hasta que hay rival:** vacío tomaba el personaje por
+  defecto (en ALTO, el S.W.A.T. de 4K) si algún otro terminaba de cargarse mientras tanto.
+- **Red de seguridad:** mientras la sala está abierta en un móvil queda una marca (`sniperduel_lbOpen`); si la página
+  arranca y la encuentra (la última visita terminó dentro de la sala sin salir: Safari la cerró), ese aparato abre desde
+  entonces la **sala LIGERA**: la misma pantalla y los mismos botones sobre la sala del MENÚ 2 (la que ese iPhone ya
+  mueve), sin hangar. `?sala3d=0` la fuerza; `?sala3d=1` devuelve el hangar.
+- Pruebas: `test/sala1v1.test.js` 28 (hangar del móvil más ligero) y `test/sala1v1.browser.test.js` 43 (además: un móvil
+  que se cayó abre la sala ligera y en ella se crea sala; `?sala3d=1`; la marca se pone y se quita).
+- Estado: IMPLEMENTADO · PROBADO EN NAVEGADOR · PENDIENTE DE VALIDACIÓN EN IPHONE (el WebGL del PC no reproduce el
+  límite de memoria de Safari).
+
 ## Pendiente
 
 - Que el propietario lo pruebe en iPhone, PC y Android y lo apruebe antes de que sea lo de por defecto.

@@ -886,6 +886,7 @@ body.m2 #menu .menuInner{display:none}
    orange for what matters (your pad, LISTO, INICIAR PARTIDA). No backdrop blur (a full-screen pass every frame on a phone). */
 #lb{position:fixed;inset:0;z-index:20;display:grid;grid-template-rows:auto minmax(0,1fr) auto;touch-action:none;--lbtop:clamp(44px,8vh,64px);--lbbar:clamp(52px,10vh,78px);--lbpad:max(14px,env(safe-area-inset-left,0px));--lbpadR:max(14px,env(safe-area-inset-right,0px));--lbglass:rgba(14,15,17,.78);--lbline:rgba(244,234,216,.13);color:var(--hud)}
 #lb[hidden]{display:none}
+#lb.lite .lbTag{display:none}
 #lb::before{content:"";position:absolute;inset:0;pointer-events:none;background:radial-gradient(ellipse 70% 75% at 50% 48%,transparent 50%,rgba(0,0,0,.5) 100%),linear-gradient(180deg,rgba(6,7,8,.55) 0,rgba(6,7,8,0) 18%,rgba(6,7,8,0) 62%,rgba(6,7,8,.7) 100%)}
 #lb>*{position:relative}
 #lb button{cursor:pointer}
@@ -7516,10 +7517,22 @@ function m2Frame(rdt){
 {const q=location.search.match(/[?&]lobby=([12])\b/);if(q)store.set('lobby2',q[1]==='2');}
 const LB={on:M2.on&&typeof SDLobby!=='undefined'&&store.get('lobby2',false)===true,vis:false,view:'home',room:null,cam:null,rigs:null,pv:null,
   t:0,n:0,F:{dist:7,ox:0,oy:0},C:null,opIn:1,opSeen:null,heldSig:'',held:null,inv:null,note:null,lastMap:null,lastHost:null,lastRival:null,mapSig:'',listSig:'',busy:false,goT:0};
+/* 17-11-2026, owner: on the iPhone the page reloaded and then closed on entering this room (the normal link works). Phones get
+   a lighter hangar (client/lobby1v1.js, phone) and a safety net: while the room is open on a touch screen it leaves a mark
+   (sniperduel_lbOpen); if the page starts and finds it, the last visit ended inside the room without leaving it (Safari
+   closed it), so from then on this device opens the LIGHT room: the same screen over the MENÚ 2 room of always (which
+   that phone already runs), without the hangar. ?sala3d=0 forces it, ?sala3d=1 brings the hangar back. */
+{const t=isTouch?store.get('lbOpen',0):0;if(t&&Date.now()-t<15*60000)store.set('lbLite',true);store.set('lbOpen',null);}
+{const q=location.search.match(/[?&]sala3d=([01])\b/);if(q)store.set('lbLite',q[1]==='0');}   // the address wins (it runs after the safety net, just above)
+LB.lite=store.get('lbLite',false)===true;
+const lbMark=on=>{if(isTouch&&!LB.lite)store.set('lbOpen',on?Date.now():null);};
+document.addEventListener('visibilitychange',()=>{if(document.hidden)lbMark(false);else if(LB.vis)lbMark(true);});
+window.addEventListener('pagehide',()=>lbMark(false));
 const LB_YAW=[0.3,-0.3],LB_PITCH=-0.55,_lbv=new T.Vector3(),_lbcp=new T.Vector3();
 const lbMapName=id=>{const m=M2_MAPS.find(x=>x.id===id)||(id==='barrio'?M2_BARRIO:null);return m?m.name:/^casa2/.test(id)?'CASA ATLAS 2.0':m2MapName(id);};
 const lbMapSub=id=>{const m=M2_MAPS.find(x=>x.id===id)||(id==='barrio'?M2_BARRIO:null)||SDMenu2.MAPS.find(x=>x.id===id);return m?m.sub:'';};
 function lbShow(view){
+  $('#lb').classList.toggle('lite',LB.lite);lbMark(true);
   NET.view=view;LB.view=view;LB.vis=true;$('#lb').hidden=false;$('#mp').hidden=true;$('#menu').hidden=true;
   setHidden($('#lbHome'),view!=='home');setHidden($('#lbRoom'),view!=='lobby');setHidden($('#lbBar'),view!=='lobby');
   if(view==='home'){$('#lbName').value=$('#mpName').value;if($('#mpCode').value)$('#lbCode').value=$('#mpCode').value;}
@@ -7528,7 +7541,7 @@ function lbShow(view){
 }
 // a player's state in a word or two (tags and list): after a match, whether he wants the rematch
 const lbStText=(p,V,N)=>p.connected===false?'DESCONECTADO':V.over?((N.rematchOf||{})[p.id]?'✓ REVANCHA':'FIN'):p.ready?'✓ LISTO':'NO LISTO';
-function lbHide(){LB.vis=false;$('#lb').hidden=true;}
+function lbHide(){LB.vis=false;$('#lb').hidden=true;lbMark(false);}
 // a message: on the first screen under the buttons; in the room in the bar for a few seconds
 function lbMsg(t,err){
   const m=$('#lbMsg');m.textContent=t||'';m.classList.toggle('err',!!err);
@@ -7592,10 +7605,10 @@ function lbRender(){
   lbStatus();LB.C=null;
 }
 // ---- the hangar in 3D ----
-function lbRig(){let R;if(SKIN_ON){const on=PJ2.on;PJ2.on=false;R=makeSoldier(RIVAL_MAT,{variant:'B'});PJ2.on=on;if(on){R.pj2v='B';PJ2.list.push(R);}}else R=makeSoldier(RIVAL_MAT,{variant:'B'});return R;}
+function lbRig(){let R;if(SKIN_ON){const on=PJ2.on;PJ2.on=false;R=makeSoldier(RIVAL_MAT,{variant:'B'});PJ2.on=on;R.pj2v='B';}else R=makeSoldier(RIVAL_MAT,{variant:'B'});return R;}
 function lbWake(){
   if(LB.room)return;
-  LB.room=SDLobby.buildHangar(T,{tex:(n,nm)=>texLoad(n,nm,true),low:GFX.profile==='bajo'});
+  LB.room=SDLobby.buildHangar(T,{tex:(n,nm)=>texLoad(n,nm,true),low:GFX.profile==='bajo',phone:isTouch});
   if(!LB.cam)LB.cam=new T.PerspectiveCamera(32,1,0.05,80);
   if(!LB.rigs){LB.rigs=[lbRig(),lbRig()];LB.pv=LB.rigs.map(R=>{const g=new T.Group();g.add(R.root);return g;});}
   LB.room.pads.forEach((p,k)=>p.stand.add(LB.pv[k]));
@@ -7609,7 +7622,7 @@ function lbSleep(){
 // the character a rig wears: the chosen one as soon as it is there (the one before stays until then, never the box figure)
 function lbOperator(R,want){
   if(!SKIN_ON||want===undefined||R.skinPack===want)return;const root=want?packRoot(want):null;
-  if(m2PackOk(want)||(root&&PJ2.prev[root]))pj2SetPack(R,want);else if(want)pj2Load(root);
+  if(m2PackOk(want)||(root&&PJ2.prev[root])){if(PJ2.on&&!PJ2.list.includes(R))PJ2.list.push(R);pj2SetPack(R,want);}else if(want)pj2Load(root);
 }
 const lbShown=R=>!PJ2.on||!SKIN_ON?true:R.skinPack===undefined?false:(R.skinPack===null||!!R.v2||!!PJ2.failedRoots[packRoot(R.skinPack)]);
 // the free part of the screen: between the panels, under the bar, over the map strip (home: left of the two choices)
@@ -7656,12 +7669,18 @@ function lbFrame(rdt){
     _lbv.set((k?1:-1)*SDLobby.PAD_X,2.12+(k?A.y:0),0).project(cam);
     const x=Math.round((_lbv.x+1)/2*vw),y=Math.round((1-_lbv.y)/2*vh-$('#lb .lbTop').offsetHeight-6),t='translate('+x+'px,'+y+'px) translate(-50%,-100%)';
     if(el.style.transform!==t)el.style.transform=t;}
-  if(LB.n%15===0&&N){const s=$('#lbPing'),r=Math.round(N.rtt||0);s.className='lbPing'+(NET.status!=='online'?' bad':r>150?' warn':'');
+  if(LB.n%15===0)lbTick(now);
+  if(LB.n%600===0)lbMark(true);
+  WROOT.visible=false;KROOT.visible=false;PROOT.visible=false;SROOT.visible=false;
+}
+function lbTick(now){const N=NET.N,V=LB.view==='lobby'&&N&&N.you?LB.V:null;
+  if(N){const s=$('#lbPing'),r=Math.round(N.rtt||0);s.className='lbPing'+(NET.status!=='online'?' bad':r>150?' warn':'');
     setText($('#lbPingTxt'),NET.status==='online'?(r?r+' ms':'– ms'):NET.status==='reconnecting'?'RECONECTANDO':'SIN CONEXIÓN');
     if(LB.note&&now>LB.note.until){LB.note=null;lbStatus();}
     const sb=$('#lbStart');if(V&&sb.disabled!==(!V.canStart||now<LB.goT))sb.disabled=!V.canStart||now<LB.goT;}
-  WROOT.visible=false;KROOT.visible=false;PROOT.visible=false;SROOT.visible=false;
 }
+// the light room: the MENÚ 2 room draws behind (m2Frame); only the bar and the ping need the time
+function lbLiteFrame(){if(++LB.n%15===0)lbTick(performance.now());}
 function lbInviteText(){return '¡Te reto a un duelo 1 contra 1 en Sniper Duel! Sala '+NET.code+': '+inviteLink(NET.code);}
 async function lbCopy(text,ok){try{await navigator.clipboard.writeText(text);lbMsg(ok);}catch(e){lbMsg('COPIA ESTO: '+text,true);}}
 if(LB.on){
@@ -7965,7 +7984,7 @@ function frameBody(now){
   const pmark=k=>{if(!pf)return;const t=performance.now();PROF.t[k]=(PROF.t[k]||0)+t-pt;pt=t;};
   const rdt=Math.min(PERF_LOW?0.34:0.1,(now-last)/1000);last=now; // test mode: very low FPS still simulates in real time
   if(slowmo>0)slowmo-=rdt;
-  if(M2.room&&(state!=='menu'||LB.vis))m2Sleep();
+  if(M2.room&&(state!=='menu'||(LB.vis&&!LB.lite)))m2Sleep();
   if(LB.room&&(state!=='menu'||!LB.vis))lbSleep();   // SALA 1V1: its hangar too   // MENÚ 2: its room leaves while you play
   const fxdt=rdt*(slowmo>0?0.35:1); // slow motion touches only particles and tracers
   if(calloutTimer>0)calloutTimer-=rdt;
@@ -7992,7 +8011,7 @@ function frameBody(now){
   }else if(state==='menu'){
     // MENÚ 2 draws its own room, but the game camera still circles the map as with the old menu: the map's level of
     // detail, its shadows and what it has on the GPU stay exactly as they were (the servers' map checks count on it)
-    if(LB.vis)lbFrame(rdt);else if(M2.on)m2Frame(rdt);
+    if(LB.vis&&!LB.lite)lbFrame(rdt);else{if(M2.on)m2Frame(rdt);if(LB.vis)lbLiteFrame();}
     menuAng+=rdt*0.04;
     camera.position.set(Math.cos(menuAng)*44,13+Math.sin(menuAng*2)*2,Math.sin(menuAng)*44);
     camera.lookAt(0,3,0);
