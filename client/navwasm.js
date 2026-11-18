@@ -13,7 +13,7 @@ if (typeof module !== 'undefined' && module.exports) {
     const fs = require('fs'), path = require('path');
     attach(new WebAssembly.Instance(new WebAssembly.Module(fs.readFileSync(path.join(__dirname, '..', 'assets', 'wasm', 'nav.wasm'))), {}));
   } catch (e) { W.failed = true; }
-} else if (typeof WebAssembly === 'undefined' || /[?&]navwasm=0\b/.test(location.search)) {
+} else if (typeof WebAssembly === 'undefined' || typeof fetch === 'undefined' || /[?&]navwasm=0\b/.test(location.search)) {
   W.off = true;
 } else {
   // asked once the page is parsed, with the hash of its content as its version (ASSET_V from build.py, docs/CARGA.md:
