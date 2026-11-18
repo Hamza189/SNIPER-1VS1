@@ -20,6 +20,14 @@ Hecho por Claude (sesión en la nube, 14–15-11) e integrado por Claude Code el
   vuelve a entrar en la sala (conserva su ficha). El enlace de invitación lleva `&pueblo=4`.
 - `?pueblo=4&pueblo4=0` = PUEBLO 3.1 tal cual. `?casas=0`, `?sur=0` y `?fuente=0` siguen valiendo, con la bandera.
 
+- **Capturas** (17/18-11, `tools/capture-scenes.js`, MEDIO, mismas cámaras; izquierda el PUEBLO de siempre, derecha
+  `?pueblo=4`): `docs/capturas/pueblo4/integracion/cmp-pc-*.jpg` (1170×540) y `cmp-movil-*.jpg` (932×430): plaza, calle
+  norte, fachada, esquina oeste, vista alta, mitad sur y **dentro de la ENCALADA**. Llamadas y triángulos de cada vista en
+  los `*-metrics.json` (plaza: 111 → 263 llamadas, 65 → 379 mil triángulos).
+- **Memoria y dibujo** (`tools/pueblo-dibujo.js`, ahora también memoria): ver la tabla del 17-11 en
+  `docs/claude-code/SNIPER_DUEL_DECISIONS_LOG.md`. En MEDIO (lo que AUTO elige en el móvil) 4.0 usa las mismas texturas
+  que 3.0 (160 MB) y +7,5 MB de geometría.
+
 **`?pueblo=4&pueblo4=0` vuelve a PUEBLO 3.1 al instante.**
 
 Estado: **F0–F5, F6a (vehículos) y F6b (cajas, bidones, depósito) IMPLEMENTADAS · PRUEBAS EN VERDE · MAPA DEL SERVIDOR `pueblo4` APARTE (`pueblo` sin cambios) · SIN PUBLICAR · PENDIENTE DE

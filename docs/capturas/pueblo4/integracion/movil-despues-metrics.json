@@ -1,0 +1,21 @@
+{
+ "quality": "medio",
+ "size": [
+  932,
+  430
+ ],
+ "metrics": {
+  "pueblo-alto": {
+   "calls": 293,
+   "tris": 404177
+  },
+  "casa-dentro": {
+   "calls": 234,
+   "tris": 363948
+  },
+  "pueblo-sur": {
+   "calls": 180,
+   "tris": 249524
+  }
+ }
+}
