@@ -13,6 +13,9 @@ import Bots from '../core/bots.js';
 // the bots' routes in C++/WebAssembly (wasm/astar.cpp, docs/WASM.md): wrangler bundles the .wasm as a compiled module
 import ASTAR_WASM from '../assets/wasm/astar.wasm';
 Bots.useWasm(ASTAR_WASM);
+// bullets and lines of sight against the map in C++/WebAssembly (wasm/geom.cpp): the same distances, bit for bit
+import GEOM_WASM from '../assets/wasm/geom.wasm';
+G.useWasm(GEOM_WASM);
 
 const json = (obj, status, extra) => new Response(JSON.stringify(obj), { status: status || 200, headers: Object.assign({ 'content-type': 'application/json' }, extra || {}) });
 function originOk(env, o) {

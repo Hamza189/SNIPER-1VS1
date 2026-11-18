@@ -39,8 +39,27 @@ function triHit(T, i, ox, oy, oz, dx, dy, dz, both) {
   const t = (e2x * qx + e2y * qy + e2z * qz) * inv;
   return t >= 0 ? t : -1;
 }
+// ---- segMap in C++/WebAssembly (18-11-2026, wasm/geom.cpp, docs/WASM.md): the server loads it and hands it over with
+// useWasm() (server/node.js from the disk, server/worker.js as an imported module). It gives exactly the same distances
+// (test/geomwasm.test.js, bit for bit); without it, or with ix.noWasm, the JavaScript below.
+let WA = null;
+function useWasm(mod) { try { WA = mod ? new WebAssembly.Instance(mod, {}).exports : null; } catch (e) { WA = null; } return !!WA; }
+// the map's triangles copied once into the module's memory (its number, or −1)
+function waIndex(ix) {
+  try {
+    const n = ix.T.length / 9; WA.geom_input(n);
+    const T = new Float64Array(WA.memory.buffer, WA.geom_in_t(), n * 9); for (let k = 0; k < n * 9; k++) T[k] = ix.T[k];
+    if (ix.ds) { const D = new Uint8Array(WA.memory.buffer, WA.geom_in_ds(), n); for (let i = 0; i < n; i++) D[i] = ix.ds[i] === 1 ? 1 : 0; }
+    return WA.geom_commit(ix.ds ? 1 : 0);
+  } catch (e) { return -1; }
+}
 function segMap(ix, ox, oy, oz, dx, dy, dz, len, near) {
   const nr = near || 0;
+  if (WA && !ix.noWasm) {
+    if (ix.wa === undefined) ix.wa = waIndex(ix);
+    if (ix.wa >= 0) { const t = WA.geom_seg(ix.wa, ox, oy, oz, dx, dy, dz, len, nr);
+      return t < 0 ? null : { t, x: ox + dx * t, y: oy + dy * t, z: oz + dz * t }; }
+  }
   let best = Infinity;
   const test = i => { const t = triHit(ix.T, i, ox, oy, oz, dx, dy, dz, !ix.ds || ix.ds[i] === 1); if (t >= nr && t <= len && t < best) best = t; };
   ix.mark = (ix.mark + 1) >>> 0; if (ix.mark === 0) { ix.stamp.fill(0); ix.mark = 1; }
@@ -84,6 +103,6 @@ function segSphere(ox, oy, oz, dx, dy, dz, len, cx, cy, cz, r) {
   const t = -b - Math.sqrt(disc);
   return t >= 0 && t <= len ? t : -1;
 }
-const SDGeom = { CELL, createMapIndex, segMap, losClear, segBox, segSphere, triHit };
+const SDGeom = { CELL, createMapIndex, segMap, losClear, segBox, segSphere, triHit, useWasm, get wasm() { return !!WA; } };
 if (typeof module !== 'undefined' && module.exports) module.exports = SDGeom; else root.SDGeom = SDGeom;
 })(typeof window !== 'undefined' ? window : globalThis);

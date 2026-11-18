@@ -1,6 +1,6 @@
 # C++ y WebAssembly en SNIPER DUEL
 
-**Estado (18-11-2026):** tres piezas en C++ (red de los bots, rutas del servidor y sonido) · PROBADO EN NAVEGADOR (PC) y en
+**Estado (18-11-2026):** cuatro piezas en C++ (red de los bots, rutas del servidor, sonido y balas del servidor) · PROBADO EN NAVEGADOR (PC) y en
 Cloudflare local (`wrangler dev`) · PENDIENTE DE VALIDACIÓN EN IPHONE Y ANDROID.
 
 Regla 14 de `CLAUDE.md` y conclusión C de `docs/claude-code/ENGINE_NEXT_GEN_INFORME.md`: C++ solo donde una medida lo
@@ -84,12 +84,42 @@ justifique. La primera pieza es la **red por la que andan los bots** (`navGrid`)
   rápido. Lo que dio la mejora fue el algoritmo, no el lenguaje.
 - `?audiowasm=0` usa JavaScript.
 
+## Las balas y las líneas de visión del servidor (18-11-2026): `wasm/geom.cpp` → `assets/wasm/geom.wasm` (5,6 KB)
+- **Por qué:** el perfil de CPU del servidor (CASA ATLAS 2.0, una persona y 5 bots en TODOS CONTRA TODOS) daba el 45 % del
+  tiempo a `segMap`/`triHit` de `core/geom.js`. Ahí entra todo lo que mira si una línea toca un triángulo del mapa: las
+  balas, lo que ven los bots, los sitios de aparición y el cuchillo.
+- **Qué hace:** lo mismo que `segMap`, con la misma rejilla de 4 m y Möller–Trumbore, en doble precisión, en el mismo
+  orden y sin contracción a FMA (`-ffp-contract=off`). Las celdas fuera del mapa ya no se miran una a una: una bala de
+  1 km en JavaScript buscaba en ~60 000 celdas vacías.
+- **Tiene que dar exactamente lo mismo:** son las balas autoritativas (regla 3). `node test/geomwasm.test.js` compara
+  distancia y punto de impacto **bit a bit** en los 9 mapas del servidor, con segmentos al azar (balas largas, vistas de
+  bots, cortos de cuchillo, con y sin margen) y líneas de visión. 0 diferencias en 360 000 segmentos.
+- **Medido** (Node, este PC):
+
+  | | JavaScript | C++/WASM |
+  |---|---|---|
+  | 40 000 segmentos por mapa | 7,6–9,0 s | 29–283 ms (×32–×306) |
+
+  Servidor entero, una persona y 5 bots, por segundo de partida (con las rutas ya en C++):
+
+  | Mapa | Hoy | Con las balas en C++ | Peor paso |
+  |---|---|---|---|
+  | PUEBLO | 13,4 ms | 6,8 ms | 9,1 → 2,7 ms |
+  | CASA ATLAS 2.0 | 15,4 ms | 9,8 ms | 10,8 → 4,0 ms |
+  | PUEBLO 4.0 | 24,2 ms | 14,4 ms | 18,4 → 8,3 ms |
+
+- **Cómo se carga:** igual que las rutas. `server/node.js` lo lee del disco y `server/worker.js` lo importa (wrangler lo
+  empaqueta). Sin él, o con `ix.noWasm`, se usa JavaScript.
+- Pruebas del servidor con las dos piezas cargadas, iguales que sin ellas: core 74, pistol 15, shotgun 27, room 191,
+  gunstats 20, astar 17.
+
 ## Compilar (solo al cambiar el C++)
 - **Compilador:** wasi-sdk 34 (LLVM/clang 23, gratuito y de código abierto, de WebAssembly en GitHub). Instalado el
   17-11-2026 en `C:\Users\Hamza\tools\wasi-sdk`, sin instalador ni permisos de administrador. En otro equipo, la variable
   `WASI_SDK` apunta a su carpeta.
-- `node tools/wasm/build.js` → `assets/wasm/nav.wasm`, `astar.wasm` y `audio.wasm`. Después: `node test/navwasm.test.js`,
-  `node test/astar.test.js`, `node test/audiowasm.test.js` y `python3 build.py`.
+- `node tools/wasm/build.js` → `assets/wasm/nav.wasm`, `astar.wasm`, `audio.wasm` y `geom.wasm`. Después:
+  `node test/navwasm.test.js`, `node test/astar.test.js`, `node test/audiowasm.test.js`, `node test/geomwasm.test.js` y
+  `python3 build.py`. Se compila con `-ffp-contract=off` (sin FMA: los resultados tienen que salir igual que JavaScript).
 - **Compatibilidad:** WebAssembly con memoria ampliable, en todos los navegadores actuales (Safari de iPhone, Chrome de
   Android y escritorio). Sin hilos ni SIMD, para que vaya en todos.
 

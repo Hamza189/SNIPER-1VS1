@@ -6,6 +6,16 @@ Cada entrada dice qué se decidió o cambió, quién lo decidió, y el estado re
 Las decisiones anteriores al 18-10-2026 están resumidas en `SNIPER_DUEL_MASTER_CONTEXT.md` §4.
 Detalle de cada cambio (antes/después, medidas, cómo revertir): `docs/next-level/NEXT_LEVEL_CHANGELOG.md`.
 
+## 18-11-2026 — Balas y líneas de visión del servidor en C++ (la cuarta pieza)
+- El propietario: «sigue pasando más cosas del motor a C, C# o C++». Medido antes de elegir: el perfil del servidor con 5
+  bots daba el 45 % del tiempo a `segMap` de `core/geom.js` (balas, vista de los bots, apariciones, cuchillo).
+- `wasm/geom.cpp` → `assets/wasm/geom.wasm` (5,6 KB). Da la misma distancia **bit a bit** que JavaScript (0 diferencias en
+  360 000 segmentos de los 9 mapas). Es entre 32 y 306 veces más rápido, y el servidor gasta entre un 40 y un 50 % menos
+  por segundo de partida. Ejemplo, el PUEBLO 4.0: de 24,2 a 14,4 ms, y el peor paso de 18,4 a 8,3 ms.
+- Ni la balística ni las cajas de impacto cambian (mismo cálculo). Detalle: `docs/WASM.md`.
+- Aparte: `test/casa.test.js` «el televisor de pie para la bala» falla ya en `main`, con y sin C++ (no es de este cambio).
+- Estado: IMPLEMENTADO · PROBADO EN NODE.
+
 ## 18-11-2026 — Aspectos de arma a 2K por defecto en el móvil
 - El propietario: «Ponlo ya por defecto» (lo que antes era `?arma2k=1`). En pantallas táctiles las texturas de 4K de los
   aspectos de arma se suben desde su nivel de 2K: con ÚLTIMA, de 483 a 211 MB de texturas en ALTO. En PC sigue el 4K.

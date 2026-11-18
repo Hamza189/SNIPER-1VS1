@@ -15,6 +15,8 @@ const SDRoom = require('../core/room.js'), PR = require('../core/protocol.js'), 
 const SDAccounts = require('./accounts.js');
 // the bots' routes in C++/WebAssembly (wasm/astar.cpp, docs/WASM.md); without the file they use the JavaScript A*
 try { require('../core/bots.js').useWasm(new WebAssembly.Module(require('fs').readFileSync(require('path').join(__dirname, '..', 'assets', 'wasm', 'astar.wasm')))); } catch (e) {}
+// bullets and lines of sight against the map in C++/WebAssembly (wasm/geom.cpp): the same distances, bit for bit
+try { G.useWasm(new WebAssembly.Module(require('fs').readFileSync(require('path').join(__dirname, '..', 'assets', 'wasm', 'geom.wasm')))); } catch (e) {}
 // in-memory store with the Durable Object storage shape ({get, put, delete}, async; values copied like structured clone)
 function memStore() { const m = new Map(); return { get: async k => (m.has(k) ? JSON.parse(m.get(k)) : undefined), put: async (k, v) => { m.set(k, JSON.stringify(v)); }, delete: async k => { m.delete(k); } }; }
 
