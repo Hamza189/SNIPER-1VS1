@@ -171,6 +171,15 @@ lo de por defecto en el móvil. Detalle: `docs/KTX2.md`.
 | Personaje 3D rev. 03 hecho por Claude e integrado tras `?pj=2` (bots y rival online) | 20-10 · directo a `main` |
 | Personajes realistas + elegir personaje (con el SOLDADO de `?pj=2`) y HUD 2 por defecto (aprobado en iPhone y PC) | 28-10 · directo a `main` |
 
+## 19-11-2026 — AJUSTES › EN PRUEBA: las funciones nuevas con interruptores, sin tocar el enlace
+
+Del propietario: el acceso directo de la pantalla de inicio (la única pantalla completa en el iPhone) abre siempre el
+enlace normal, y en el iPhone tiene su propia memoria, así que las banderas de URL lo dejaban «medio pillado». Ahora hay
+una pestaña EN PRUEBA en AJUSTES: un interruptor por cada función en prueba que el juego recuerda (sala nueva, sala ligera,
+PUEBLO 4.0, BARRIO, CASA ATLAS, menú nuevo, ARSENAL, rifles distintos, penetración, deslizamiento, rayos X), RECARGAR
+PARA APLICAR y RESTAURAR. Detalle: `docs/EN-PRUEBA.md`. Estado: IMPLEMENTADO · PROBADO EN NAVEGADOR (11) · PENDIENTE
+DE VALIDACIÓN EN EL ACCESO DIRECTO DEL IPHONE.
+
 ## 18-11-2026 — SALA 1V1 responsive en el móvil y resolución ×1 / ×2
 
 Del propietario (con capturas del iPhone): «mejora lo del lobby en móvil, que se vea bien y responsive, la resolución que se

@@ -215,6 +215,14 @@ body.feel2 #hitmark.kill i,body.feel2 #hitmark.hs i{width:3px;left:-1.5px}
 .setTabs::-webkit-scrollbar{display:none}
 .setTabs button{background:none;border:0;border-bottom:2px solid transparent;padding:11px 12px;font:600 12px/1 var(--f-mono);letter-spacing:.14em;color:var(--dust);cursor:pointer;min-height:44px}
 .setTabs button[aria-selected="true"]{color:var(--hud);border-bottom-color:var(--signal)}
+.fxList{display:grid;gap:8px;margin:4px 0 10px}
+.fxRow{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:6px 14px;align-items:center;padding:8px 10px;border:1px solid var(--line);background:rgba(10,9,8,.45)}
+.fxRow b{display:block;font:600 15px/1.1 var(--f-mono);letter-spacing:.06em;color:var(--hud)}
+.fxRow small{display:block;font-size:11px;line-height:1.35;color:var(--dust);margin-top:3px}
+.fxRow .seg{margin:0;min-width:150px}.fxRow .seg button{padding:8px 10px}
+.fxRow.changed{border-color:var(--signal)}
+#fxReloadRow{position:sticky;bottom:0;z-index:2;background:rgba(20,18,15,.97);padding:8px 0;margin:0}
+@media (max-width:620px){.fxRow{grid-template-columns:1fr}.fxRow .seg{min-width:0}}
 .setTabs button:focus-visible{outline:2px solid var(--signal);outline-offset:-2px}
 .setHelp{margin:8px 0 0;font-size:12px;line-height:1.45;color:var(--sand);opacity:.8}
 .setFoot{flex-wrap:wrap;margin-top:16px}
@@ -1163,7 +1171,7 @@ body.lbOn #fpsBox{left:auto;right:max(8px,env(safe-area-inset-right,0px));transf
     <div class="eyebrow">Ajustes</div>
     <h2 style="font-size:clamp(34px,6vw,54px)" id="setTitle">CONTROLES</h2>
     <nav class="setTabs" role="tablist" aria-label="Secciones de ajustes">
-      <button type="button" role="tab" data-tab="controles" aria-selected="true">CONTROLES</button><button type="button" role="tab" data-tab="sensibilidad">SENSIBILIDAD</button><button type="button" role="tab" data-tab="mira">MIRA</button><button type="button" role="tab" data-tab="graficos">GRÁFICOS</button><button type="button" role="tab" data-tab="audio">AUDIO</button><button type="button" role="tab" data-tab="jugabilidad">JUGABILIDAD</button><button type="button" role="tab" data-tab="accesibilidad">ACCESIBILIDAD</button>
+      <button type="button" role="tab" data-tab="controles" aria-selected="true">CONTROLES</button><button type="button" role="tab" data-tab="sensibilidad">SENSIBILIDAD</button><button type="button" role="tab" data-tab="mira">MIRA</button><button type="button" role="tab" data-tab="graficos">GRÁFICOS</button><button type="button" role="tab" data-tab="audio">AUDIO</button><button type="button" role="tab" data-tab="jugabilidad">JUGABILIDAD</button><button type="button" role="tab" data-tab="accesibilidad">ACCESIBILIDAD</button><button type="button" role="tab" data-tab="pruebas">EN PRUEBA</button>
     </nav>
     <section class="setPane" data-pane="controles" role="tabpanel">
       <div class="lbl" style="margin:4px 0 6px">Vista (tecla V)</div>
@@ -1289,6 +1297,13 @@ body.lbOn #fpsBox{left:auto;right:max(8px,env(safe-area-inset-right,0px));transf
         <label class="chk"><input type="checkbox" id="sFlash"> Reducir destellos y sacudidas (flash rojo al recibir daño, temblor de cámara)</label>
       </div>
       <p class="setHelp">No cambian la puntería ni el retroceso real: solo lo que se mueve o parpadea en pantalla.</p>
+    </section>
+    <!-- EN PRUEBA (19-11-2026, docs/EN-PRUEBA.md): the experimental features as switches, without touching the link (the home-screen
+         shortcut always opens the plain link, and on the iPhone it keeps its own memory, apart from Safari) -->
+    <section class="setPane" data-pane="pruebas" role="tabpanel" hidden>
+      <p class="setHelp">Lo nuevo que aún se está probando. Actívalo o desactívalo aquí: se guarda en este dispositivo y vale también en el acceso directo de la pantalla de inicio (iPhone y Android), sin cambiar el enlace. Se aplica al recargar.</p>
+      <div class="fxList" id="fxList"></div>
+      <div class="row" id="fxReloadRow" hidden><button class="btn" id="fxReload" type="button" style="font-size:18px">RECARGAR PARA APLICAR</button></div>
     </section>
     <div class="row setFoot"><button class="btn ghost" id="setResetTab" type="button" style="font-size:16px">RESTAURAR ESTA SECCIÓN</button><button class="btn ghost" id="setReset" type="button" style="font-size:16px">RESTAURAR TODO</button><button class="btn" id="setClose" type="button">LISTO</button></div>
   </div>
@@ -5604,11 +5619,48 @@ $('#lookReload').addEventListener('click',()=>location.reload());
 $('#sDiag').addEventListener('change',()=>{TDIAG.set($('#sDiag').checked);TDIAG.reset();});
 let settingsFrom='menu';
 // tabs: one section at a time; the last one opened is remembered on this device
-const SET_TABS={controles:'CONTROLES',sensibilidad:'SENSIBILIDAD',mira:'MIRA Y EFECTOS',graficos:'GRÁFICOS',audio:'AUDIO',jugabilidad:'JUGABILIDAD',accesibilidad:'ACCESIBILIDAD'};
+const SET_TABS={controles:'CONTROLES',sensibilidad:'SENSIBILIDAD',mira:'MIRA Y EFECTOS',graficos:'GRÁFICOS',audio:'AUDIO',jugabilidad:'JUGABILIDAD',accesibilidad:'ACCESIBILIDAD',pruebas:'FUNCIONES EN PRUEBA'};
 let setTab=SET_TABS[store.get('setTab','')]?store.get('setTab',''):'controles';
 function showSetTab(t){if(!SET_TABS[t])return;setTab=t;store.set('setTab',t);$('#setTitle').textContent=SET_TABS[t];
   document.querySelectorAll('.setTabs button').forEach(b=>b.setAttribute('aria-selected',String(b.dataset.tab===t)));
-  document.querySelectorAll('.setPane').forEach(p=>p.hidden=p.dataset.pane!==t);resetConfirm(false);}
+  document.querySelectorAll('.setPane').forEach(p=>p.hidden=p.dataset.pane!==t);resetConfirm(false);if(t==='pruebas')setTimeout(fxRender,0);}
+/* EN PRUEBA (19-11-2026, owner: the home-screen shortcut is the only full screen on the iPhone, and it always opens the plain
+   link, with its own memory apart from Safari: «si cambia el link … se queda medio pillado»). Every experimental feature that
+   the game already remembers on the device (the ?flag=… of the links) as a switch: it writes the same remembered value the
+   link would, and RECARGAR opens the page again without those flags in the address. What each one shows as ON is what is
+   running now (cur), so a feature that becomes the default later still shows right. */
+const FX=[
+  {k:'lobby2',name:'SALA 1V1 NUEVA',sub:'La sala de espera del multijugador con hangar 3D, invitar, mapas y LISTO / INICIAR PARTIDA',cur:()=>LB.on,val:v=>v},
+  {k:'lbLite',name:'SALA 1V1 LIGERA',sub:'La misma sala sin el hangar 3D (para móviles que se quedan sin memoria; se activa sola si la página se cae dentro de la sala)',cur:()=>LB.lite,val:v=>v},
+  {k:'p4',name:'PUEBLO 4.0',sub:'El pueblo nuevo: casas con carácter, desgaste, pick-ups y casas habitables (en línea, mapa propio)',cur:()=>PU4,val:v=>v},
+  {k:'barrioExp',name:'BARRIO',sub:'El mapa BARRIO en MAPAS: calle entre edificios y garajes',cur:()=>BAR.exp,val:v=>v},
+  {k:'casaExp',name:'CASA ATLAS',sub:'El piso de 18 × 14 m en MAPAS',cur:()=>CASA.exp,val:v=>v},
+  {k:'casa2Exp',name:'CASA ATLAS 2.0',sub:'Las casas unidas con patio en MAPAS',cur:()=>C2.exp,val:v=>v},
+  {k:'menuOld',name:'MENÚ NUEVO',sub:'El menú con la sala oscura y tu operador en 3D (NO = el menú de antes)',cur:()=>M2.on,val:v=>!v},
+  {k:'arsenalOld',name:'ARSENAL',sub:'ARMAS con el arma grande, modelos, accesorios y estadísticas (NO = ARMAS de antes)',cur:()=>GS.on,val:v=>!v},
+  {k:'balanceOld',name:'RIFLES DISTINTOS',sub:'Cada rifle con sus propias cifras contra bots (NO = todos como el HALCÓN)',cur:()=>BAL.on,val:v=>!v},
+  {k:'penOff',name:'BALAS QUE ATRAVIESAN',sub:'Penetración de paredes finas y BALA DURA',cur:()=>PEN.on,val:v=>!v},
+  {k:'deslizOld',name:'DESLIZAMIENTO NUEVO',sub:'El deslizamiento con su caja de colisión nueva (NO = el de antes)',cur:()=>SLIDE2.on,val:v=>!v},
+  {k:'rayosxOff',name:'RAYOS X EN PRUEBAS',sub:'Ver a los bots a través de las paredes en el mapa PRUEBAS',cur:()=>XRAY.on,val:v=>!v}];
+// the link flags these switches replace: RECARGAR removes them from the address so the switch, not an old link, decides
+const FX_PARAMS=['lobby','sala3d','pueblo','barrio','casa','casa2','casa2v','menu','arsenal','balance','pen','desliz','rayosx'];
+const FX_WANT={};let FX_RESET=false;   // RESTAURAR: what is remembered is forgotten; the page shows the defaults after reloading   // what was chosen in this visit (not applied until the page reloads)
+function fxRender(){
+  const L=$('#fxList');if(!L)return;let n=0;
+  if(!L.childElementCount)for(const f of FX){const row=document.createElement('div');row.className='fxRow';row.dataset.k=f.k;
+    row.innerHTML='<div><b></b><small></small></div><div class="seg" role="group"><button type="button" data-v="1">SÍ</button><button type="button" data-v="0">NO</button></div>';
+    row.querySelector('b').textContent=f.name;row.querySelector('small').textContent=f.sub;row.querySelector('.seg').setAttribute('aria-label',f.name);
+    row.querySelectorAll('button').forEach(b=>b.addEventListener('click',()=>{SFX.ui();const on=b.dataset.v==='1';let now=false;try{now=!!f.cur();}catch(e){}
+      if(on===now)delete FX_WANT[f.k];else FX_WANT[f.k]=on;store.set(f.k,f.val(on));fxRender();}));
+    L.append(row);}
+  for(const f of FX){const row=L.querySelector('[data-k="'+f.k+'"]');let now=false;try{now=!!f.cur();}catch(e){}
+    const on=f.k in FX_WANT?FX_WANT[f.k]:now;row.classList.toggle('changed',f.k in FX_WANT);if(f.k in FX_WANT)n++;
+    row.querySelectorAll('button').forEach(b=>b.setAttribute('aria-pressed',String((b.dataset.v==='1')===on)));}
+  $('#fxReloadRow').hidden=!n&&!FX_RESET;
+}
+function fxReload(){const u=new URL(location.href);for(const k of FX_PARAMS)u.searchParams.delete(k);location.replace(u.toString());}
+// RESTAURAR ESTA SECCIÓN: every switch back to what the game does by default (the remembered values are forgotten)
+function fxReset(){for(const f of FX){try{localStorage.removeItem('sniperduel_'+f.k);}catch(e){}delete FX_WANT[f.k];}FX_RESET=true;fxRender();}
 document.querySelectorAll('.setTabs button').forEach(b=>b.addEventListener('click',()=>{showSetTab(b.dataset.tab);SFX.ui();$('#settings').scrollTop=0;}));
 let resetArm=0;function resetConfirm(on){resetArm=on?performance.now():0;const b=$('#setReset');b.classList.toggle('confirm',on);b.textContent=on?'¿SEGURO? TOCA OTRA VEZ':'RESTAURAR TODO';}
 function openSettings(from){settingsFrom=from;settingsToUI();try{$('#gfxDiag').textContent=gfxDiagText();}catch(e){}showSetTab(setTab);$('#settings').hidden=false;$('#settings').scrollTop=0;for(const id of ['menu','pause'])$('#'+id).classList.add('under');}
@@ -5618,7 +5670,8 @@ $('#pauseSettings').addEventListener('click',()=>{SFX.ui();openSettings('pause')
 $('#setClose').addEventListener('click',()=>{closeSettings();SFX.ui();});
 // RESTAURAR TODO asks for a second tap (within 4 s) so a stray touch never wipes the settings
 $('#setReset').addEventListener('click',()=>{SFX.ui();if(!resetArm||performance.now()-resetArm>4000){resetConfirm(true);return;}resetConfirm(false);SETTINGS=SDSettings.defaults(isTouch);settingsChanged();});
-$('#setResetTab').addEventListener('click',()=>{SFX.ui();SETTINGS=SDSettings.resetCategory(SETTINGS,setTab,isTouch);settingsChanged();});
+$('#setResetTab').addEventListener('click',()=>{SFX.ui();if(setTab==='pruebas'){fxReset();return;}SETTINGS=SDSettings.resetCategory(SETTINGS,setTab,isTouch);settingsChanged();});
+$('#fxReload').addEventListener('click',()=>{SFX.ui();fxReload();});
 $('#openEditor').addEventListener('click',()=>{SFX.ui();openEditor();});
 settingsToUI();applyControlSettings();showSetTab(setTab);{const vb=document.getElementById('tbView');if(vb)vb.textContent=SETTINGS.view==='tp'?'1ª':'3ª';}
 
