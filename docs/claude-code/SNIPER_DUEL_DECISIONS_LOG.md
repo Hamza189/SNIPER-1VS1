@@ -31,7 +31,9 @@ esquinas se veía la textura rayada, mejora materiales».
 - Servidor: solo cambia el mapa `pueblo4` (559 → 449 cajas); `pueblo` y los demás idénticos.
 - Pruebas: casas 287, pueblo4 23, casas en navegador 23, coberturas 13, `browser` 61, PUEBLO 4.0 en línea 13/13.
   Medido en MEDIO: 239,7 llamadas · 375 mil triángulos (antes 239,9 · 371 mil).
-- Estado: IMPLEMENTADO · PROBADO EN NAVEGADOR Y ONLINE LOCAL · PENDIENTE DE PUBLICAR (toca `core/mapdata.js`) Y DE
+- 19-11, del propietario: «Sí, publícalo». Publicado (`4a2014f`): servidor, página y prueba pública online en verde;
+  comprobado en la web real con `?pueblo=4`.
+- Estado: PUBLICADO TRAS BANDERA · PENDIENTE DE
   VALIDACIÓN EN IPHONE.
 
 ## 18-11-2026 — Balas y líneas de visión del servidor en C++ (la cuarta pieza)
