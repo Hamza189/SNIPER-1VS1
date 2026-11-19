@@ -15,6 +15,9 @@
 // normal strength, base colour, emissive, vertex colours, tinted per instance, two-sided
 const LOOK = {
   stucco:     { tex: 'stucco', tile: 2.4, r: 0.92, n: 0.45, col: 0xffffff, tint: true },
+  // inside the CASAS HABITABLES (18-11-2026): the same stucco texture, larger and almost flat (the facade's relief drew
+  // zig-zag stripes on the inner walls); no wear from client/pueblo4.js (not in its WALL list)
+  yeso:       { tex: 'stucco', tile: 4.0, r: 0.94, n: 0.1, col: 0xffffff, tint: true },
   stone:      { tex: 'stone', tile: 1.1, r: 0.8, n: 0.55, col: 0xffffff },
   frame:      { r: 0.55, col: 0xeee9df },
   wood:       { tex: 'wood', tile: 0.9, r: 0.6, n: 0.35, col: 0xffffff, tint: true },

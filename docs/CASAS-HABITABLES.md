@@ -7,6 +7,26 @@ forman parte del mapa, en cliente y servidor.
 **17-11-2026:** integradas en `main` solo con `?pueblo=4` (PUEBLO 4.0), con su propio mapa de servidor `pueblo4`; el
 PUEBLO de siempre y su mapa `pueblo` no cambian. Detalle en `docs/PUEBLO-4.md` § Integración.
 
+## 19-11-2026 — más variedad, menos ventanas y sin rayas por dentro
+Del propietario: «se sienten muy monótonas, muy parecidas, y hay alguna que otra casa que tiene DEMASIADAS ventanas, revisa
+todas las casas, también en el interior en las esquinas se veía la textura rayada, mejora materiales».
+- **Rayas:** dentro se veía el estuco de la fachada, con relieve fuerte (un zigzag), y rendijas claras en las juntas
+  entre trozos de muro. Ahora cada casa tiene su revestimiento interior, 4 mm delante del muro, con el material nuevo `yeso`
+  (la misma textura de estuco, más grande y casi lisa; sin desgaste) y los trozos se solapan 2–3 mm: sin rendijas.
+- **Ventanas** (`wins`/`up` y tamaño propio `win`): TERRACOTA 23 → 13, ARENISCA 24 → 13, PIEDRA 18 → 10, CASONA 17 → 14,
+  BODEGA 9 → 5 (ventanas de almacén pequeñas y altas). ENCALADA y PIEDRA, ventanas pequeñas; CASONA, altas. El alféizar
+  sigue entre 1,0 y 1,42 m: de pie te asomas, agachado te cubres (`test/casas.test.js`).
+- **Cada casa por dentro** (`ins`): ENCALADA azulejo, barro y vigas; TERRACOTA zócalo y suelo de madera, azul pálido
+  arriba; ARENISCA verde pálido, losas y vigas; PIEDRA mampostería vista, losas y vigas; COLMADO azulejo de tienda;
+  TALLER ladrillo, hormigón y vigas de hierro; BODEGA adoquín, zócalo de piedra y vigas; CASONA zócalo de madera noble,
+  suelo oscuro y rosa arriba. Los tabiques llevan el acabado de su planta.
+- **Muebles nuevos** (siempre contra la pared, ≤ 0,3 m): chimenea con campana hasta el techo, reloj de péndulo y alacena
+  de cocina con azulejos; cada casa su lista (`items`) y arriba un orden distinto por casa.
+- Colisiones: solo cambian las ventanas → mapa `pueblo4` del servidor 559 → 449 cajas; los otros 7 mapas, iguales.
+- Medido (MEDIO, pantalla de iPhone, WebGL por software): 239,7 llamadas y 375 mil triángulos en PUEBLO 4.0 (antes 239,9 y
+  371 mil); las casas 29 llamadas (antes 21; los materiales pequeños de dentro van en una malla para todo el pueblo).
+- Capturas antes/después con las mismas cámaras: `docs/capturas/casas/1911/` (fuera y dentro de cada casa).
+
 Estado: **IMPLEMENTADO · PRUEBAS SIN NAVEGADOR Y EN NAVEGADOR EN VERDE · MAPA DEL SERVIDOR EXPORTADO · SIN PUBLICAR ·
 PENDIENTE DE VALIDACIÓN EN IPHONE/PC/ANDROID**. Para comparar, `?casas=0` vuelve a las cajas macizas, pero solo sin
 conexión: en línea siempre se usan las casas, porque son las del servidor.

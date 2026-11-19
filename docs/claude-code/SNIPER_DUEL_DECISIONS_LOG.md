@@ -22,6 +22,18 @@ Detalle de cada cambio (antes/después, medidas, cómo revertir): `docs/next-lev
 - La compilación de shaders al entrar no se ha tocado: la lleva la sesión de la pantalla de carga.
 - Estado: IMPLEMENTADO TRAS BANDERA · PROBADO EN NAVEGADOR · PENDIENTE DE VALIDACIÓN EN IPHONE.
 
+## 19-11-2026 — CASAS HABITABLES: variedad, menos ventanas y sin rayas (PUEBLO 4.0, `?pueblo=4`)
+Del propietario: «se sienten muy monótonas, muy parecidas… alguna casa tiene DEMASIADAS ventanas… en el interior en las
+esquinas se veía la textura rayada, mejora materiales».
+- Hecho en `client/casas.js` (+ `yeso` en `client/kit3d.js`, agrupación en `src/page.html`); detalle en
+  `docs/CASAS-HABITABLES.md` § 19-11. Rayas: revestimiento interior propio y juntas solapadas. Ventanas: 108 → 72 en total.
+  Cada casa su suelo, paredes, zócalo, techo, vigas y muebles (chimenea, reloj, alacena nuevos).
+- Servidor: solo cambia el mapa `pueblo4` (559 → 449 cajas); `pueblo` y los demás idénticos.
+- Pruebas: casas 287, pueblo4 23, casas en navegador 23, coberturas 13, `browser` 61, PUEBLO 4.0 en línea 13/13.
+  Medido en MEDIO: 239,7 llamadas · 375 mil triángulos (antes 239,9 · 371 mil).
+- Estado: IMPLEMENTADO · PROBADO EN NAVEGADOR Y ONLINE LOCAL · PENDIENTE DE PUBLICAR (toca `core/mapdata.js`) Y DE
+  VALIDACIÓN EN IPHONE.
+
 ## 18-11-2026 — Balas y líneas de visión del servidor en C++ (la cuarta pieza)
 - El propietario: «sigue pasando más cosas del motor a C, C# o C++». Medido antes de elegir: el perfil del servidor con 5
   bots daba el 45 % del tiempo a `segMap` de `core/geom.js` (balas, vista de los bots, apariciones, cuchillo).

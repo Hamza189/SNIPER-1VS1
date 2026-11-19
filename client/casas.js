@@ -28,67 +28,90 @@ const INNER = 0xefe9dd;                               // pintura de dentro
 // ---- las casas. Caras: 'n' (z mínima, mira a −z), 's' (z máxima), 'w' (x mínima), 'e' (x máxima). u: metros a lo largo
 //      de la cara desde el centro (en n/s crece con x; en w/e con z). Ventanas: número (u) u objeto {u, w, sill, top}.
 //      fl: altura del forjado de la planta alta (su cara de abajo); la planta alta pisa a fl + SLAB.
+// 18-11-2026 (owner: «muy monótonas, muy parecidas, alguna tiene DEMASIADAS ventanas»): fewer windows (TERRACOTA 23 → 13,
+//   ARENISCA 24 → 12, PIEDRA 18 → 10, CASONA 17 → 14, BODEGA high storehouse windows), each house its own window size
+//   (win: { w, sill, top }; the sill stays between 1.0 and 1.55: standing you look out, crouched you are covered) and its
+//   own inside (ins): wall lining, wainscot, floor, ceiling and beams; items: what stands against its walls.
+//   ins: { wall: [key, col], wall2 (upstairs), wain: [key, h, col], floor: [key, col], floor2, ceil: [key, col], beams: [key, col] }
 const HOUSES = [
   { id: 'encalada', key: '11,31', x: 11, z: 31, w: 8, d: 6, h: 4, floors: 1, tint: 0xf3efe6, wallMat: 'stucco',
     plinth: { h: 0.95, col: 0xe2a92a, mat: 'stucco' }, shutter: 0x2f7d34, door: 0x2f8a35, frame: 0xd28a2c, top: 'eave',
+    win: { w: 1.0, top: 2.1 },
     doors: [{ face: 'w', u: 1.2 }, { face: 'e', u: -1.0 }],
     wins: { w: [-1.4], e: [1.4], n: [-1.8, 1.8], s: [-1.8, 1.8] },
     walls: [{ a: [11, 0, 28.3], b: [11.12, 2.6, 31.1] }],
-    crates: [[13.6, 33.1], [8.6, 28.9]], extras: ['pots'] },
+    crates: [[13.6, 33.1], [8.6, 28.9]], extras: ['pots'],
+    ins: { wall: ['yeso', 0xf6f3ec], wain: ['azulejo', 1.15, 0xffffff], floor: ['terracotta', 0xffffff], ceil: ['woodraw', 0xffffff], beams: ['wood', 0x5a3e28] },
+    items: ['alacena', 'reloj', 'aparador', 'cuadro'] },
   { id: 'terracota', key: '30,17', x: 30, z: 17, w: 14, d: 10, h: 7, floors: 2, fl: 3.3, tint: 0xe8792b, wallMat: 'stucco',
     plinth: { h: 1.1, col: 0xd9c7a3, mat: 'stone' }, shutter: 0x3b6f9a, door: 0x3b6f9a, frame: 0xf2ece0, top: 'cornice',
     doors: [{ face: 'w', u: 0 }, { face: 'n', u: -5.0 }],
-    wins: { w: [-3.2, 3.2], e: [-3.2], n: [0.5, 4.5], s: [-4.5, -1.5, 1.5, 4.5] },
-    up: { w: { balcony: [-3.2, 0, 3.2] }, e: [-3.2, 0, 3.2], n: { balcony: [-4.5, -1.5, 1.5, 4.5] }, s: [-4.5, -1.5, 1.5, 4.5] },
+    wins: { w: [-3.2, 3.2], e: [-3.2], n: [2.5], s: [-3.5, 3.5] },
+    up: { w: { balcony: [0], win: [3.2] }, e: [0], n: { balcony: [-1.5, 2.5] }, s: [-3.5, 3.5] },
     stair: { face: 'e', along: 'z', from: 4.6, to: -1.4 },
     walls: [{ a: [26.5, 0, 12.3], b: [26.62, 2.6, 15.6] }, { a: [26.5, 0, 17.2], b: [26.62, 2.6, 21.7] }],
     walls2: [{ a: [30.4, 3.5, 12.3], b: [30.52, 6.1, 15.4] }],
-    crates: [[24.2, 20.6], [33.4, 13.2]], extras: ['lantern', 'pots'] },
+    crates: [[24.2, 20.6], [33.4, 13.2]], extras: ['lantern', 'pots'],
+    ins: { wall: ['yeso', 0xf3e4bc], wain: ['wood', 0.95, 0x7a5232], floor: ['wood', 0xb08860], wall2: ['yeso', 0xd8e3ea], floor2: ['herring', 0xd8c8b8], ceil: ['yeso', 0xf7f4ee] },
+    items: ['chimenea', 'cuadro', 'estante', 'aparador'] },
   { id: 'arenisca', key: '-31,-31', x: -31, z: -31, w: 14, d: 12, h: 7, floors: 2, fl: 3.3, tint: 0xd6b07a, wallMat: 'stucco',
     plinth: { h: 0.9, col: 0x9c7a52, mat: 'stone' }, shutter: 0x2c5e2e, door: 0x7a1f1a, frame: 0xc9a46c, top: 'cornice', quoins: true,
+    win: { w: 1.1 },
     doors: [{ face: 'e', u: 0.5 }, { face: 's', u: 2.0 }],
-    wins: { e: [-3.6, 3.8], w: [-3.6, 0, 3.6], n: [1.5, 4.5], s: [-4.5, -1.2, 5.0] },
-    up: { e: [-3.6, 0.5, 3.8], w: [-3.6, 0, 3.6], n: [-4.5, -1.5, 1.5, 4.5], s: { balcony: [-1.2], win: [-4.5, 2.0, 5.0] } },
+    wins: { e: [-3.6, 3.8], w: [-3, 3], n: [3.0], s: [-3.5] },
+    up: { e: [-3.6, 3.8], w: [-3, 3], n: [3.0], s: { balcony: [-1.2], win: [3.5] } },
     stair: { face: 'n', along: 'x', from: -1.2, to: -6.4 },
     walls: [{ a: [-31.06, 0, -36.7], b: [-30.94, 2.6, -33.2] }, { a: [-31.06, 0, -31.4], b: [-30.94, 2.6, -25.3] }],
     walls2: [{ a: [-34.5, 3.5, -31.06], b: [-24.3, 6.1, -30.94] }],
-    crates: [[-36.6, -26.6], [-26.0, -34.0]], extras: ['lantern'] },
+    crates: [[-36.6, -26.6], [-26.0, -34.0]], extras: ['lantern'],
+    ins: { wall: ['yeso', 0xdde6cf], wain: ['stone', 0.9, 0xd8c8a8], floor: ['slabs', 0xe6dccb], wall2: ['yeso', 0xf1e6d6], floor2: ['wood', 0x9a7048], ceil: ['woodraw', 0xffffff], beams: ['wood', 0x6a4a30] },
+    items: ['estante', 'chimenea', 'reloj', 'cuadro'] },
   { id: 'piedra', key: '-31,37', x: -31, z: 37, w: 14, d: 10, h: 6, floors: 2, fl: 2.9, tint: 0xdcb98a, wallMat: 'stucco',
     plinth: { h: 2.6, col: 0xffffff, mat: 'rubble' }, shutter: 0x6e4a2c, door: 0x5e4026, frame: 0xd9c9a8, top: 'eave',
+    win: { w: 1.0, top: 2.15 },
     doors: [{ face: 'n', u: -2.0 }, { face: 'e', u: 1.5 }],
-    wins: { n: [2.5, 5.0], e: [-2.5], s: [-4.0, 0, 4.0] },
-    up: { n: [-4.5, -1.5, 1.5, 4.5], e: [-2.5, 1.5], w: [-2.5, 2.5], s: [-4.5, -1.5, 1.5, 4.5] },
+    wins: { n: [3.5], e: [-2.5], s: [-3.5, 3.5] },
+    up: { n: [-4.0, 3.5], e: [0], w: [2.5], s: [-3.5, 3.5] },
     stair: { face: 'w', along: 'z', from: 3.8, to: -2.0 },
     walls: [{ a: [-31.06, 0, 32.3], b: [-30.94, 2.6, 35.8] }, { a: [-31.06, 0, 37.4], b: [-30.94, 2.6, 41.7] }],
     walls2: [{ a: [-30.0, 3.1, 37.44], b: [-24.3, 5.4, 37.56] }],
-    crates: [[-28.0, 40.6], [-35.0, 33.5]], extras: ['lantern', 'pots', 'climber'] },
+    crates: [[-28.0, 40.6], [-35.0, 33.5]], extras: ['lantern', 'pots', 'climber'],
+    ins: { wall: ['rubble', 0xf2ece2], floor: ['slabs', 0xc8baa4], wall2: ['yeso', 0xefe4cf], floor2: ['terracotta', 0xffffff], ceil: ['woodraw', 0xd8c8b0], beams: ['wood', 0x4e3622] },
+    items: ['chimenea', 'estante', 'aparador', 'reloj'] },
   { id: 'colmado', key: '-12,27', x: -12, z: 27, w: 10, d: 6, h: 5, floors: 1, tint: 0xebd394, wallMat: 'stucco',
     plinth: { h: 0.6, col: 0xffffff, mat: 'azulejo' }, shutter: 0x356b52, door: 0x2f6b4a, frame: 0xf4efe4, top: 'eave',
     doors: [{ face: 'e', u: 1.7 }, { face: 'w', u: -1.5 }],
     wins: { e: [{ u: -1.0, w: 2.4, sill: 1.05, top: 2.5, shop: true }], n: [-2.5, 2.5], s: [-3.0, 1.0], w: [1.4] },
     walls: [{ a: [-10.2, 0, 25.0], b: [-9.6, 1.05, 27.6] }],             // el mostrador (cobertura agachado)
-    crates: [[-15.8, 28.8]], extras: ['awning', 'pots', 'lantern'] },
+    crates: [[-15.8, 28.8]], extras: ['awning', 'pots', 'lantern'],
+    ins: { wall: ['yeso', 0xf4ecd6], wain: ['azulejo', 1.3, 0xffffff], floor: ['herring', 0xd8c8b8], ceil: ['yeso', 0xf7f4ee] } },
   { id: 'taller', key: '3,43', x: 3, z: 43, w: 12, d: 5, h: 4, floors: 1, tint: 0xb9aca0, wallMat: 'stucco',
     plinth: { h: 0.5, col: 0xb8b2a8, mat: 'concrete' }, shutter: 0x4f6b52, door: 0x3c5a78, frame: 0xc8c0b4, top: 'coping',
     doors: [{ face: 'n', u: -2.0, w: 2.8, h: 2.6 }, { face: 'n', u: 3.6 }],
     wins: { s: [{ u: -3.0, sill: 1.3, top: 2.2 }, { u: 0, sill: 1.3, top: 2.2 }, { u: 3.0, sill: 1.3, top: 2.2 }], w: [0], e: [0] },
     walls: [{ a: [4.5, 0, 44.4], b: [7.5, 0.95, 45.2] }],                // el banco de trabajo
-    crates: [[-1.5, 44.3]], extras: ['lantern'] },
+    crates: [[-1.5, 44.3]], extras: ['lantern'],
+    ins: { wall: ['brick', 0xe8ddd2], floor: ['concrete', 0xffffff], ceil: ['concrete', 0xffffff], beams: ['metal', 0x4a4e52] } },
   { id: 'bodega', key: '33,-8', x: 33, z: -8, w: 10, d: 12, h: 5, floors: 1, tint: 0xe9dcc0, wallMat: 'stucco',
     plinth: { h: 0.9, col: 0xd8ccb4, mat: 'stone' }, shutter: 0x2f6a9a, door: 0x2a5a80, frame: 0xf2ece0, top: 'eave',
+    win: { w: 0.9, sill: 1.35, top: 2.25 },   // storehouse: small high windows (standing you just look out)
     doors: [{ face: 's', u: -1.5 }, { face: 'w', u: -2.0 }],
-    wins: { s: [2.5], w: [-4.5, 1.5, 4.0], e: [-3.0, 0, 3.0], n: [-2.5, 2.5] },
+    wins: { s: [2.5], w: [3.5], e: [-3.0, 3.0], n: [0] },
     walls: [{ a: [28.3, 0, -8.06], b: [32.2, 2.6, -7.94] }, { a: [33.8, 0, -8.06], b: [37.7, 2.6, -7.94] }],
-    crates: [[36.6, -12.8], [29.6, -3.6]], extras: ['pots', 'lantern'] },
+    crates: [[36.6, -12.8], [29.6, -3.6]], extras: ['pots', 'lantern'],
+    ins: { wall: ['yeso', 0xe6d9bf], wain: ['stone', 1.0, 0xcfc3ab], floor: ['setts', 0xd0c4b0], ceil: ['woodraw', 0xc8b49a], beams: ['wood', 0x5a3e28] } },
   { id: 'casona', key: '31,-33', x: 31, z: -33, w: 12, d: 10, h: 8, floors: 2, fl: 3.5, tint: 0xe8bfae, wallMat: 'stucco',
     plinth: { h: 1.0, col: 0xe6dccb, mat: 'stone' }, shutter: 0x3e5f4a, door: 0x2f4f6a, frame: 0xeee6d8, top: 'cornice', quoins: true,
+    win: { w: 1.2, top: 2.55 },   // the manor: tall windows
     doors: [{ face: 's', u: 0 }, { face: 'w', u: 1.5 }],
     wins: { s: [-4.0, 4.0], w: [-2.5], e: [-2.5, 2.5], n: [-4.0] },
-    up: { s: { balcony: [-4.0, 0, 4.0] }, w: [-2.5, 1.5], e: [-2.5, 2.5], n: [-4.5, -1.5, 1.5, 4.5] },
+    up: { s: { balcony: [-4.0, 0, 4.0] }, w: [-2.5], e: [-2.5, 2.5], n: [-3.0, 3.0] },
     stair: { face: 'n', along: 'x', from: 4.5, to: -1.5 },
     walls: [{ a: [28.94, 0, -37.7], b: [29.06, 2.8, -34.2] }, { a: [28.94, 0, -32.6], b: [29.06, 2.8, -28.3] }],
     walls2: [{ a: [33.5, 3.7, -33.06], b: [36.7, 6.6, -32.94] }],
-    crates: [[26.4, -36.6], [35.8, -29.4]], extras: ['lantern', 'pots'] },
+    crates: [[26.4, -36.6], [35.8, -29.4]], extras: ['lantern', 'pots'],
+    ins: { wall: ['yeso', 0xc6d8cf], wain: ['wood', 1.05, 0x5e3a22], floor: ['wood', 0x7a5236], wall2: ['yeso', 0xecd2c8], floor2: ['herring', 0xc8a888], ceil: ['yeso', 0xf7f4ee] },
+    items: ['chimenea', 'espejo', 'estante', 'reloj'] },
 ];
 for (const H of HOUSES) { if (H.floors === 2 && H.fl == null) H.fl = 3.3; H.up = H.up || {}; }
 const byKey = {}; for (const h of HOUSES) byKey[h.key] = h;
@@ -119,8 +142,10 @@ const faceRy = f => ({ n: Math.PI, s: 0, w: -Math.PI / 2, e: Math.PI / 2 })[f]; 
 function openings(H) {
   const O = { n: [], s: [], w: [], e: [] };
   for (const d of H.doors) { const w = d.w || DOOR_W; O[d.face].push({ u0: d.u - w / 2, u1: d.u + w / 2, y0: 0, y1: d.h || DOOR_H, kind: 'door', wide: w > 2 }); }
-  const win = (f, spec, y, kind) => { const o = typeof spec === 'number' ? { u: spec } : spec, w = o.w || WIN_W;
-    O[f].push({ u0: o.u - w / 2, u1: o.u + w / 2, y0: y + (o.sill != null ? o.sill : WIN_SILL), y1: y + (o.top != null ? o.top : WIN_TOP), kind, shop: !!o.shop }); };
+  const D = H.win || {};   // this house's own window (18-11-2026)
+  const win = (f, spec, y, kind) => { const o = typeof spec === 'number' ? { u: spec } : spec, w = o.w || D.w || WIN_W;
+    const sill = o.sill != null ? o.sill : D.sill != null ? D.sill : WIN_SILL, top = o.top != null ? o.top : D.top != null ? D.top : WIN_TOP;
+    O[f].push({ u0: o.u - w / 2, u1: o.u + w / 2, y0: y + sill, y1: y + top, kind, shop: !!o.shop }); };
   for (const f in H.wins || {}) for (const o of H.wins[f]) win(f, o, 0, 'win');
   if (H.floors === 2) {
     const y = upY(H);
@@ -260,20 +285,27 @@ function visual(H, opt) {
   const V = {}, add = (k, a, b, col, extra) => (V[k] || (V[k] = [])).push(Object.assign({ a: a.map(r3), b: b.map(r3), col: col == null ? null : col }, extra || {}));
   const O = openings(H), top = H.h, hx = H.w / 2, hz = H.d / 2, X0 = H.x - hx, X1 = H.x + hx, Z0 = H.z - hz, Z1 = H.z + hz;
   const wallK = H.wallMat || 'stucco', plinthK = (H.plinth && H.plinth.mat) || 'stone';
+  const I = H.ins || {}, floorS = I.floor || ['herring', 0xd8c8b8], floor2S = I.floor2 || floorS, ceilS = I.ceil || ['yeso', 0xf6f3ec], ceils = [];
   for (const b of boxes(H)) {
     if (/_muro_/.test(b.n)) {
       const F = faceFrame(H, b.face), ax = F.axis === 'x' ? 2 : 0, cin = [ax, -F.out, INNER];
+      // 18-11-2026: neighbouring pieces overlap by 2 mm (same colour, same world UVs: no flicker) so no hairline cracks
+      // show between them (the light dashed lines at the joints)
+      const along = ax === 2 ? 0 : 2, A = b.a.slice(), Bx = b.b.slice(); if (!b.end0) A[along] -= 0.002; if (!b.end1) Bx[along] += 0.002; if (A[1] > 0.01) A[1] -= 0.002;
       if (b.a[1] < 0.01 && H.plinth) {   // plinth: the lower part, standing 2.5 cm out of the facade (a ledge on top)
-        const ph = Math.min(H.plinth.h, b.b[1]), a = b.a.slice(), c = [b.b[0], ph, b.b[2]], e = 0.025;
+        const ph = Math.min(H.plinth.h, b.b[1]), a = A.slice(), c = [Bx[0], ph, Bx[2]], e = 0.025;
         if (F.out > 0) c[ax] += e; else a[ax] -= e;
-        const along = ax === 2 ? 0 : 2; if (b.end0) a[along] -= e; if (b.end1) c[along] += e;   // round the corners
+        if (b.end0) a[along] -= e; if (b.end1) c[along] += e;   // round the corners
         add(plinthK, a, c, H.plinth.col, { cin });
-        if (b.b[1] > ph) add(wallK, [b.a[0], ph, b.a[2]], b.b, H.tint, { cin });
-      } else add(wallK, b.a, b.b, H.tint, { cin });
+        if (b.b[1] > ph) add(wallK, [A[0], ph - 0.002, A[2]], Bx, H.tint, { cin });
+      } else add(wallK, A, Bx, H.tint, { cin });
     } else if (/_pretil_/.test(b.n)) add(wallK, b.a, b.b, H.tint);
-    else if (/_tejado/.test(b.n)) { add('stucco', b.a, [b.b[0], b.b[1] - 0.02, b.b[2]], 0xf2eee6); add('roofterr', [b.a[0], b.b[1] - 0.02, b.a[2]], b.b, 0xd8a080); }
-    else if (/_forjado_/.test(b.n)) { add('stucco', b.a, [b.b[0], b.b[1] - 0.02, b.b[2]], 0xf2eee6); add('herring', [b.a[0], b.b[1] - 0.02, b.a[2]], b.b, 0xd8c8b8); }
-    else if (/_tabique/.test(b.n)) add('stucco', b.a, b.b, b.b[1] < 1.2 ? 0x8a6a4c : 0xeee8dc);   // a counter / bench is wood-coloured
+    else if (/_tejado/.test(b.n)) { add('stucco', b.a, [b.b[0], b.b[1] - 0.02, b.b[2]], 0xf2eee6); add('roofterr', [b.a[0], b.b[1] - 0.02, b.a[2]], b.b, 0xd8a080); ceils.push(b); }
+    else if (/_forjado_/.test(b.n)) { add('stucco', b.a, [b.b[0], b.b[1] - 0.02, b.b[2]], 0xf2eee6); add(floor2S[0], [b.a[0], b.b[1] - 0.02, b.a[2]], b.b, floor2S[1]); ceils.push(b); }
+    else if (/_tabique/.test(b.n)) {   // a counter / bench is wood; a partition takes the walls' finish of its floor
+      if (b.b[1] < 1.2) add('wood', b.a, b.b, 0x8a6a4c);
+      else { const s = (/_tabique2/.test(b.n) ? I.wall2 || I.wall : I.wall) || ['yeso', 0xeee8dc]; add(s[0], b.a, b.b, s[1], { lit: 1 }); }
+    }
     else if (/_hoja_/.test(b.n)) add('wood', b.a, b.b, H.door);
     else if (/_balcon_/.test(b.n)) { if (!opt.kit) add('stone', b.a, b.b, 0xe2d8c4); }
     else if (/_baranda|_balaustrada/.test(b.n)) {
@@ -287,9 +319,38 @@ function visual(H, opt) {
     }
     else if (/_caja/.test(b.n)) add('crate', b.a, b.b, null);
   }
-  add('herring', [X0 + T_WALL, 0.0, Z0 + T_WALL], [X1 - T_WALL, 0.035, Z1 - T_WALL], 0xd8c8b8);   // the ground floor (over any pavement drawn under the house)
+  add(floorS[0], [X0 + T_WALL, 0.0, Z0 + T_WALL], [X1 - T_WALL, 0.035, Z1 - T_WALL], floorS[1]);   // the ground floor (over any pavement drawn under the house)
   // skirting inside (dark band 12 cm), just in front of the inner face
   for (const f of ['n', 's', 'w', 'e']) for (const p of wallPieces(H, f, 0.15, O)) { const q = faceBox(H, f, p.u0, p.u1, 0.035, 0.15, 0.015, T_WALL); add('stone', q.a, q.b, 0x8f8070); }
+  // ---- inside (18-11-2026): each house its own lining, 4 mm in front of the inner face of the walls (the outer stucco's
+  //      relief drew zig-zag stripes inside), a wainscot 8 mm out with a small rail on top, the ceiling and, in some, beams.
+  //      Pieces overlap 3 mm along the wall: no cracks at the joints. Only what you see (the boxes do not change).
+  const storeys = [{ y0: 0, y1: H.floors === 2 ? H.fl : H.h - SLAB, wall: I.wall || ['yeso', 0xf6f3ec], wain: I.wain }];
+  if (H.floors === 2) storeys.push({ y0: upY(H), y1: H.h - SLAB, wall: I.wall2 || I.wall || ['yeso', 0xf6f3ec], wain: I.wain2 });
+  for (const f of ['n', 's', 'w', 'e']) {
+    const F = faceFrame(H, f), lim = F.axis === 'x' ? H.w / 2 - T_WALL : F.L / 2;
+    for (const p of wallPieces(H, f, H.h, O)) {
+      const u0 = Math.max(p.u0, -lim), u1 = Math.min(p.u1, lim); if (u1 - u0 < 0.01) continue;
+      for (const s of storeys) {
+        const ya = Math.max(p.y0, s.y0), yb = Math.min(p.y1, s.y1); if (yb - ya < 0.005) continue;
+        const wh = s.wain ? s.y0 + s.wain[1] : -1;
+        const band = (k, col, y0, y1, t) => { if (y1 - y0 < 0.004) return; const q = faceBox(H, f, u0 - 0.003, u1 + 0.003, y0, y1, t, T_WALL); add(k, q.a, q.b, col, { lit: 1 }); };
+        if (s.wain && ya < wh) {
+          band(s.wain[0], s.wain[2], ya, Math.min(yb, wh + 0.003), 0.008);
+          if (yb > wh - 0.01 && ya < wh) band(s.wain[0] === 'wood' ? 'wood' : 'stone', s.wain[0] === 'wood' ? 0x4a2e1a : 0xb8ab96, wh - 0.01, Math.min(yb, wh + 0.03), 0.02);   // the rail
+        }
+        band(s.wall[0], s.wall[1], Math.max(ya, s.wain ? wh : ya), yb, 0.004);
+        if (s.y0 > 0 && ya < s.y0 + 0.15) band('stone', 0x8f8070, Math.max(ya, s.y0 + 0.0), Math.min(yb, s.y0 + 0.13), 0.015);   // upstairs skirting
+      }
+    }
+  }
+  for (const c of ceils) {   // the ceiling under each slab and the roof, 4 mm down
+    add(ceilS[0], [c.a[0], c.a[1] - 0.004, c.a[2]], [c.b[0], c.a[1], c.b[2]], ceilS[1], { lit: 1 });
+    if (!I.beams) continue;
+    const yc = c.a[1] - 0.004, alongZ = H.w > H.d, step = 1.15, bw = 0.07;   // beams across the short side
+    if (alongZ) { for (let x = X0 + T_WALL + 0.6; x < X1 - T_WALL - 0.3; x += step) if (x - bw > c.a[0] + 0.05 && x + bw < c.b[0] - 0.05) add(I.beams[0], [x - bw, yc - 0.16, c.a[2]], [x + bw, yc, c.b[2]], I.beams[1]); }
+    else for (let z = Z0 + T_WALL + 0.6; z < Z1 - T_WALL - 0.3; z += step) if (z - bw > c.a[2] + 0.05 && z + bw < c.b[2] - 0.05) add(I.beams[0], [c.a[0], yc - 0.16, z - bw], [c.b[0], yc, z + bw], I.beams[1]);
+  }
   // frames, sills, steps and (without the kit) shutters
   for (const f of ['n', 's', 'w', 'e']) {
     for (const o of O[f]) {
@@ -336,6 +397,10 @@ function freeSpans(H, level) {
     const F = faceFrame(H, f), lim = (F.axis === 'x' ? H.w / 2 : H.d / 2) - T_WALL - 0.3, bl = [];
     for (const o of O[f]) if (o.y0 < y + 2.4 && o.y1 > y) bl.push(o.kind === 'door' ? [o.u0 - 1.45, o.u1 + 1.45] : [o.u0 - 0.35, o.u1 + 0.35]);
     if (st && st.face === f) { const a = Math.min(H.stair.from, H.stair.to), b = Math.max(H.stair.from, H.stair.to); bl.push([a - 0.5, b + 0.5]); }
+    else if (st) {   // 18-11-2026: a wall the stair ends against (or runs close to) is not free beside it either
+      const r = st.ramp, gap = F.axis === 'x' ? (F.out > 0 ? F.inner - r.maxZ : r.minZ - F.inner) : (F.out > 0 ? F.inner - r.maxX : r.minX - F.inner);
+      if (gap < 0.8) bl.push(F.axis === 'x' ? [r.minX - H.x - 0.4, r.maxX - H.x + 0.4] : [r.minZ - H.z - 0.4, r.maxZ - H.z + 0.4]);
+    }
     const near = (bx) => F.axis === 'x' ? (Math.abs(bx.a[2] - F.inner) < 0.25 || Math.abs(bx.b[2] - F.inner) < 0.25) && [bx.a[0] - H.x, bx.b[0] - H.x] : (Math.abs(bx.a[0] - F.inner) < 0.25 || Math.abs(bx.b[0] - F.inner) < 0.25) && [bx.a[2] - H.z, bx.b[2] - H.z];
     for (const w of (level ? H.walls2 : H.walls) || []) { const r = near(w); if (r) bl.push([r[0] - 0.5, r[1] + 0.5]); }
     if (!level) for (const c of H.crates || []) { const dIn = F.axis === 'x' ? Math.abs(c[1] - F.inner) : Math.abs(c[0] - F.inner); if (dIn < 1.4) { const u = F.axis === 'x' ? c[0] - H.x : c[1] - H.z; bl.push([u - 1.0, u + 1.0]); } }
@@ -370,13 +435,36 @@ function deco(H) {
     } else if (name === 'panel') {
       const c = (u0 + u1) / 2; wb('wood', f, c - 0.7, c + 0.7, y + 1.0, y + 1.9, 0.03, 0xa88a60);
       for (let i = 0; i < 7; i++) { const x = c - 0.6 + i * 0.2, l = 0.2 + R() * 0.3; wb('iron', f, x - 0.015, x + 0.015, y + 1.75 - l, y + 1.8, 0.06, null, 0.03); }
+    } else if (name === 'chimenea') {   // 18-11-2026: a fireplace and its breast up to the ceiling, 0.3 m deep at most
+      const c = (u0 + u1) / 2, ceil = sp.top;
+      wb('stone', f, c - 0.75, c - 0.5, y, y + 1.1, 0.3, 0xd8ccb6); wb('stone', f, c + 0.5, c + 0.75, y, y + 1.1, 0.3, 0xd8ccb6);   // jambs
+      wb('dark', f, c - 0.5, c + 0.5, y, y + 1.0, 0.06, 0x1c1814);                                                                // the black hearth
+      wb('wood', f, c - 0.3, c + 0.3, y, y + 0.12, 0.22, 0x3a2416, 0.04);                                                           // logs
+      wb('stone', f, c - 0.85, c + 0.85, y + 1.1, y + 1.24, 0.3, 0xcfc2aa);                                                        // the mantel
+      wb('yeso', f, c - 0.6, c + 0.6, y + 1.24, ceil, 0.24, 0xf0eadc);                                                              // the breast
+      wb('stucco', f, c - 0.12, c + 0.12, y + 1.26, y + 1.4, 0.12, PROD[Math.floor(R() * PROD.length)], 0.12);                     // a pot on the mantel
+    } else if (name === 'reloj') {
+      const c = (u0 + u1) / 2;
+      wb('wood', f, c - 0.2, c + 0.2, y + 1.75, y + 2.15, 0.05, 0x5a3a24); wb('stucco', f, c - 0.16, c + 0.16, y + 1.79, y + 2.11, 0.056, 0xf4f0e6);
+      wb('iron', f, c - 0.01, c + 0.01, y + 1.95, y + 2.07, 0.06, null); wb('iron', f, c - 0.01, c + 0.09, y + 1.94, y + 1.96, 0.06, null);
+      wb('wood', f, c - 0.05, c + 0.05, y + 1.2, y + 1.75, 0.04, 0x5a3a24); wb('iron', f, c - 0.04, c + 0.04, y + 1.25, y + 1.33, 0.045, 0xb08a3c);   // case and pendulum
+    } else if (name === 'alacena') {   // a kitchen: cupboard, worktop, tiles behind and a cupboard on the wall
+      wb('wood', f, u0, u1, y, y + 0.86, 0.3, 0x7a5638); wb('stone', f, u0 - 0.02, u1 + 0.02, y + 0.86, y + 0.9, 0.3, 0xd8d2c4);
+      for (let x = u0 + 0.04; x < u1 - 0.3; x += 0.5) wb('wood', f, x, x + 0.46, y + 0.08, y + 0.8, 0.31, 0x8f6a46);
+      wb('azulejo', f, u0, u1, y + 0.9, y + 1.45, 0.012, 0xffffff);
+      wb('wood', f, u0 + 0.1, u1 - 0.1, y + 1.6, y + 2.25, 0.28, 0x7a5638);
+      for (let x = u0 + 0.14; x < u1 - 0.4; x += 0.5) wb('wood', f, x, x + 0.44, y + 1.64, y + 2.21, 0.29, 0x8f6a46);
+      wb('stucco', f, u0 + 0.3, u0 + 0.5, y + 0.9, y + 1.15, 0.18, PROD[Math.floor(R() * PROD.length)], 0.06);   // a jar
     } else if (name === 'bidones' || name === 'sacos') {
       for (let x = u0 + 0.1; x < u1 - 0.5; x += 0.55) wb('stucco', f, x, x + 0.45, y, y + (name === 'sacos' ? 0.38 + R() * 0.12 : 0.62), 0.29, name === 'sacos' ? 0xcdb98e : [0x3b5f9a, 0x8a2f24, 0x4d6b3a][Math.floor(R() * 3)]);
     }
   };
   for (const level of H.floors === 2 ? [0, 1] : [0]) {
-    const sp = freeSpans(H, level), list = (level ? ['aparador', 'cuadro', 'estante'] : ITEMS[type]).slice();
-    for (const s of sp) { if (!list.length) break; const name = list.shift(), want = name === 'cuadro' ? 1.0 : name === 'espejo' ? 1.0 : name === 'panel' ? 1.6 : Math.min(2.2, s.u1 - s.u0);
+    // 18-11-2026: each house its own list (H.items); upstairs a different order per house, so no two look alike
+    const up = ['aparador', 'cuadro', 'estante', 'reloj', 'espejo'], rot = Math.floor(R() * up.length);
+    const sp = freeSpans(H, level), list = (level ? up.slice(rot).concat(up.slice(0, rot)) : (H.items || ITEMS[type])).slice();
+    for (const s of sp) { if (!list.length) break; const name = list.shift(), want = name === 'cuadro' || name === 'espejo' || name === 'reloj' ? 1.0 : name === 'panel' ? 1.6 : name === 'chimenea' ? 1.8 : name === 'alacena' ? Math.min(2.0, s.u1 - s.u0) : Math.min(2.2, s.u1 - s.u0);
+      if (name === 'chimenea' && s.u1 - s.u0 < 1.8) { list.push(name); continue; }
       if (s.u1 - s.u0 < Math.min(want, 1.0)) continue; const c = (s.u0 + s.u1) / 2, half = Math.min(want, s.u1 - s.u0) / 2; item(name, s, c - half, c + half); }
     // a rug in the middle of the room (not on the stair) and a lamp under the ceiling
     const y = level ? upY(H) : 0, ceil = level ? H.h - SLAB : (H.floors === 2 ? H.fl : H.h - SLAB), st = stairOf(H);
