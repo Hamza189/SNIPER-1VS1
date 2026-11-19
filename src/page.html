@@ -8440,9 +8440,11 @@ if(P3ON&&T.GLTFLoader){
     // with the whole town in 3.0 (P3-5) each side is cut in two halves (north/south), so the camera culls the half behind it
     const regionOf0=P31?p=>Math.abs(p.x)>=49.5||Math.abs(p.z)>=49.5?(p.z>=49.5?'fuera_n':p.z<=-49.5?'fuera_s':(p.x<0?'fuera_o':'fuera_e')+(p.z<0?'s':'n')):(p.x<0?'oeste':'este')+(p.z<0?'_s':'_n')
       :p=>Math.abs(p.x)>=49.5||Math.abs(p.z)>=49.5?(p.z>=49.5?'fuera_n':p.x<0?'fuera_o':'fuera_e'):(p.x<0?'oeste':'este');
-    // ZONAS DEL KIT (prueba, 19-11-2026): &kitzonas=1 = todo el pueblo en una zona (menos llamadas, sin descartar lo que queda
-    // detrás); &kitzonas=3 = oeste, este y fuera. Lo que se ve no cambia: mismas mallas y materiales, solo cómo se agrupan.
-    const KZ=(location.search.match(/[?&]kitzonas=(\d)/)||[])[1];
+    // ZONAS DEL KIT (19-11-2026, docs/RENDIMIENTO-IPHONE.md): todo el pueblo en una zona por material. Lo que se ve no cambia
+    // (mismas mallas y materiales); hay menos llamadas, aunque ya no se descarta lo que queda detrás. En el iPhone del
+    // propietario (ALTO, PUEBLO 4.0): 282 → 188 llamadas, mismos FPS (59,8), tirones y CPU. Por defecto desde el 19-11.
+    // &kitzonas=0 = las 10 zonas de antes; &kitzonas=3 = oeste, este y fuera.
+    const KZ=(location.search.match(/[?&]kitzonas=(\d)/)||[0,'1'])[1];
     const regionOf=KZ==='1'?()=>'todo':KZ==='3'?p=>Math.abs(p.x)>=49.5||Math.abs(p.z)>=49.5?'fuera':p.x<0?'oeste':'este':regionOf0;
     const THIN=['lamp_post','street_pole','orange_tree'];   // thin posts and trunks: their own meshes, and their axes for the cover check
     P3W.ctx.separate=new Set(THIN);P3W.axes=list.filter(p=>THIN.includes(p.k)).map(p=>[p.x,p.z]);

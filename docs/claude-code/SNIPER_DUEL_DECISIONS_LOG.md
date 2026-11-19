@@ -6,6 +6,12 @@ Cada entrada dice qué se decidió o cambió, quién lo decidió, y el estado re
 Las decisiones anteriores al 18-10-2026 están resumidas en `SNIPER_DUEL_MASTER_CONTEXT.md` §4.
 Detalle de cada cambio (antes/después, medidas, cómo revertir): `docs/next-level/NEXT_LEVEL_CHANGELOG.md`.
 
+## 19-11-2026 — El kit del PUEBLO en una zona, por defecto
+- Medido en el iPhone del propietario (ALTO, PUEBLO 4.0): con `&kitzonas=1` van los mismos 59,8 FPS, con 0,2 % de tirones
+  (0,3 % sin la bandera) y 3,4 ms de CPU (3,3). Las llamadas bajan de 282 a 188 (pico de 445 a 271).
+- Pasa a ser lo de por defecto (lo acordado: «si va igual o mejor»). `&kitzonas=0` = las 10 zonas de antes.
+- Estado: IMPLEMENTADO · PROBADO EN NAVEGADOR · MEDIDO EN IPHONE (con bandera) · Android POR VERIFICAR.
+
 ## 19-11-2026 — Menos llamadas de dibujo en el PUEBLO: `&kitzonas=1` (prueba)
 - El propietario pidió bajar las llamadas de dibujo. Medido en PUEBLO 4.0: el kit de edificios son 105 + 46 llamadas
   (10 zonas × ~20 materiales). Con `&kitzonas=1` el kit va en una zona por material: de 264 a 171 llamadas (−35 %), con

@@ -1,5 +1,6 @@
-/* ZONAS DEL KIT (19-11-2026, docs/RENDIMIENTO-IPHONE.md): con &kitzonas=1 el kit de PUEBLO 3.0/4.0 se agrupa en una sola
-   zona por material (menos llamadas de dibujo); &kitzonas=3, en oeste, este y fuera. Lo que se ve no cambia:
+/* ZONAS DEL KIT (19-11-2026, docs/RENDIMIENTO-IPHONE.md): por defecto el kit de PUEBLO 3.0/4.0 va en una sola zona por
+   material (menos llamadas de dibujo); &kitzonas=0 = las 10 zonas de antes; &kitzonas=3, oeste, este y fuera. Lo que se ve
+   no cambia:
    - los mismos triángulos y los mismos materiales, en menos mallas
    - menos llamadas de dibujo en una vuelta de cámara
    - sin errores
@@ -35,10 +36,10 @@ function check(name, cond, info) { if (cond) { pass++; console.log('  ok   ' + n
     await ctx.close(); return { r, errs };
   };
   try {
-    const A = await run(''), B = await run('&kitzonas=1'), C = await run('&kitzonas=3');
+    const A = await run('&kitzonas=0'), B = await run(''), C = await run('&kitzonas=3');
     console.log('\nZONAS DEL KIT (PUEBLO 4.0, ALTO)');
-    check('kitzonas=1: los mismos triángulos y materiales en menos mallas', B.r.tris === A.r.tris && B.r.mats === A.r.mats && B.r.meshes < A.r.meshes, JSON.stringify({ hoy: A.r, una: B.r }));
-    check('kitzonas=1: menos llamadas de dibujo', B.r.calls < A.r.calls * 0.8, A.r.calls + ' → ' + B.r.calls);
+    check('por defecto (una zona): los mismos triángulos y materiales que con &kitzonas=0, en menos mallas', B.r.tris === A.r.tris && B.r.mats === A.r.mats && B.r.meshes < A.r.meshes, JSON.stringify({ hoy: A.r, una: B.r }));
+    check('por defecto: menos llamadas de dibujo', B.r.calls < A.r.calls * 0.8, A.r.calls + ' → ' + B.r.calls);
     check('kitzonas=3: los mismos triángulos, menos llamadas', C.r.tris === A.r.tris && C.r.calls < A.r.calls, JSON.stringify(C.r));
     check('sin errores', !A.errs.length && !B.errs.length && !C.errs.length, A.errs.concat(B.errs, C.errs).slice(0, 2).join(' | '));
   } catch (e) { fail++; console.log('  FAIL ' + (e && e.stack || e)); }

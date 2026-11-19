@@ -166,7 +166,7 @@ iPhone Pro Max, Safari, ALTO, píxeles ×2.
 Código: `client/perfprobe.js` (cálculos e informe, puro) y el bloque «MEDIR RENDIMIENTO» de `src/page.html`.
 Prueba: `node test/perf.test.js`.
 
-### 19-11-2026 — Menos llamadas de dibujo en el PUEBLO 3.0/4.0: `&kitzonas=1` (PRUEBA, pendiente del iPhone)
+### 19-11-2026 — Menos llamadas de dibujo en el PUEBLO 3.0/4.0: el kit en una zona (por defecto; `&kitzonas=0` = antes)
 - **Medido en el PC** (`tools/pueblo-dibujo.js`, ALTO, 932 × 430 a ×2, vuelta de cámara en la plaza). En PUEBLO 4.0
   (`?pueblo=4`) el kit de edificios hace 105 llamadas por fotograma, más 46 de sombras: 10 zonas del mapa por ~20
   materiales. Juntar zonas no cambia nada de lo que se ve (mismas mallas y materiales), pero ya no se descarta lo que queda
@@ -185,6 +185,21 @@ Prueba: `node test/perf.test.js`.
   - `https://hamza189.github.io/SNIPER-1VS1/?pueblo=4&medir=1` (hoy)
   - `https://hamza189.github.io/SNIPER-1VS1/?pueblo=4&kitzonas=1&medir=1`
   Si va igual o mejor, pasa a ser lo de por defecto.
-- Prueba: `test/kitzonas.browser.test.js` (mismos triángulos y materiales en menos mallas, menos llamadas, sin errores).
+- **Medido en el iPhone del propietario** (19-11, 12:28–12:31; ALTO, ×2, PUEBLO 4.0; las dos con la página ya en caché):
+
+  | PUEBLO | Hoy (`?pueblo=4`) | Una zona (`&kitzonas=1`) |
+  |---|---|---|
+  | FPS · fotograma p50 / p95 | 59,8 · 17 / 18 ms | 59,8 · 17 / 18 ms |
+  | Tirones | 0,3 % | 0,2 % |
+  | CPU por fotograma (envío de dibujo) | 3,3 ms (2,12) | 3,4 ms (2,13) |
+  | Llamadas (máx.) | 282 (445) | **188 (271)** |
+  | Triángulos | 472 mil | 564 mil |
+
+  En el iPhone va igual: los triángulos de más no se notan y la CPU del envío tampoco cambia. Se queda por defecto
+  (el propietario: «si va igual o mejor, por defecto») porque baja el pico de llamadas, lo que más castiga a los móviles
+  con menos CPU (Android: POR VERIFICAR). Una primera medida salió con la página en segundo plano (primer fotograma a
+  los 59 s y ARENA sin fotogramas): no cuenta.
+- Prueba: `test/kitzonas.browser.test.js` (por defecto, los mismos triángulos y materiales que con `&kitzonas=0` en menos
+  mallas, menos llamadas, sin errores).
 - Shaders y la primera partida: lo lleva la sesión de la pantalla de carga (barra 0–100 %). Perfil del 18-11: la
   compilación de shaders son 4,7–11,5 s de la carga en el PC, con 30–46 programas.
