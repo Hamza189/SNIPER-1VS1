@@ -1071,9 +1071,56 @@ body.lbOn #fpsBox{left:auto;right:max(8px,env(safe-area-inset-right,0px));transf
 }
 @media (max-width:700px) and (max-height:400px){.lbStatus{display:none}}
 .lbStatus.err #lbStatusTxt{color:#ff8b7e}
+/* PANTALLA DE CARGA (?carga=2, 18-11-2026, docs/CARGA.md): graphite, white and the game's orange; a scope's scale on the bar */
+#carga{position:fixed;inset:0;z-index:60;display:grid;place-items:center;padding:max(14px,env(safe-area-inset-top)) max(16px,env(safe-area-inset-right)) max(14px,env(safe-area-inset-bottom)) max(16px,env(safe-area-inset-left));
+  background:radial-gradient(120% 90% at 50% 40%,#1d1e20 0%,#121314 62%,#0b0b0c 100%);color:#f4f2ee;font-family:var(--f-mono);transition:opacity .35s ease}
+#carga.out{opacity:0;pointer-events:none}
+#carga::before{content:"";position:absolute;left:50%;top:50%;width:min(78vh,78vw);aspect-ratio:1;transform:translate(-50%,-50%);border-radius:50%;
+  border:1px solid rgba(244,242,238,.05);box-shadow:0 0 0 min(9vh,9vw) rgba(244,242,238,.015) inset;pointer-events:none}
+.cgIn{position:relative;width:min(560px,100%);display:grid;gap:12px}
+.cgLogo{display:flex;align-items:center;gap:12px;justify-self:center}
+.cgLogo svg{width:clamp(30px,7vh,44px);height:auto;color:#f4f2ee}
+.cgLogo b{font:600 clamp(30px,8.5vh,50px)/.8 var(--f-display);letter-spacing:.05em;padding-top:5px}
+.cgLogo b span{color:var(--signal);margin-left:.18em}
+.cgBar{position:relative;height:10px;border:1px solid rgba(244,242,238,.28);background:rgba(244,242,238,.04);overflow:hidden}
+.cgBar i{position:absolute;inset:0;background:linear-gradient(90deg,#d9661a,var(--signal));transform-origin:0 50%;transform:scaleX(0);transition:transform .25s linear}
+.cgBar::after{content:"";position:absolute;inset:0;background:repeating-linear-gradient(90deg,transparent 0 calc(10% - 1px),rgba(11,11,12,.75) calc(10% - 1px) 10%);pointer-events:none}
+.cgRow{display:flex;align-items:baseline;justify-content:space-between;gap:12px;min-height:30px}
+.cgWhat{font-size:11px;letter-spacing:.16em;text-transform:uppercase;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
+.cgWhat small{color:#a6a39d;letter-spacing:.08em;margin-left:8px;font-size:10.5px}
+.cgPct{font:500 34px/.8 var(--f-display);font-variant-numeric:tabular-nums;color:var(--signal)}
+.cgCats{display:flex;flex-wrap:wrap;gap:6px 14px;margin:0;padding:0;list-style:none;font-size:9.5px;letter-spacing:.14em;color:#77746f}
+.cgCats li{display:flex;align-items:center;gap:6px}
+.cgCats li::before{content:"";width:6px;height:6px;border:1px solid currentColor}
+.cgCats li.run{color:#f4f2ee}.cgCats li.run::before{border-color:var(--signal);animation:cgBlink 1s steps(2) infinite}
+.cgCats li.done{color:#c9c6c0}.cgCats li.done::before{background:var(--signal);border-color:var(--signal)}
+@keyframes cgBlink{50%{background:var(--signal)}}
+.cgFoot{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:40px}
+.cgNote{margin:0;font-size:10px;line-height:1.45;letter-spacing:.04em;color:#8f8c86;max-width:40ch}
+#cgSkip{flex:none;border:0;cursor:pointer;font:500 22px/1 var(--f-display);letter-spacing:.06em;padding:9px 18px 5px;background:var(--signal);color:#121314}
+#cgSkip:focus-visible{outline:2px solid #f4f2ee;outline-offset:3px}
+@media (max-height:420px){.cgIn{gap:8px}.cgLogo b{font-size:clamp(28px,10vh,40px)}.cgPct{font-size:28px}.cgRow{min-height:24px}.cgFoot{min-height:34px}#cgSkip{font-size:19px;padding:7px 14px 4px}}
+@media (max-width:520px){.cgCats{gap:5px 10px;font-size:9px}.cgNote{font-size:9.5px}}
+@media (prefers-reduced-motion:reduce){.cgBar i{transition:none}.cgCats li.run::before{animation:none;background:var(--signal)}}
 </style>
 
 <canvas id="c"></canvas>
+<div id="carga" hidden role="progressbar" aria-label="Cargando el juego" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+  <div class="cgIn">
+    <div class="cgLogo"><svg viewBox="0 0 40 40" aria-hidden="true"><circle cx="20" cy="20" r="12.5" fill="none" stroke="currentColor" stroke-width="2.2"/><circle cx="20" cy="20" r="3" fill="var(--signal)"/><path d="M20 2v10M20 28v10M2 20h10M28 20h10" stroke="currentColor" stroke-width="2.2"/></svg><b>SNIPER<span>DUEL</span></b></div>
+    <div class="cgBar"><i id="cgFill"></i></div>
+    <div class="cgRow"><span class="cgWhat" id="cgWhat">MOTOR 3D</span><b class="cgPct" id="cgPct">0 %</b></div>
+    <ul class="cgCats" id="cgCats"></ul>
+    <div class="cgFoot"><p class="cgNote" id="cgNote">Preparando el juego para que no haya esperas en el menú ni al empezar la partida.</p><button type="button" id="cgSkip" hidden>ENTRAR YA</button></div>
+  </div>
+</div>
+<script>
+/* PANTALLA DE CARGA (?carga=2 turns it on and the device remembers it; ?carga=1 the start of always). Shown here, before
+   three.js and the game's code are downloaded: the first thing on screen. */
+(function(){var q=/[?&]carga=([12])\b/.exec(location.search),on=false;
+  try{if(q)localStorage.setItem('sniperduel_carga2',q[1]==='2'?'true':'false');on=localStorage.getItem('sniperduel_carga2')==='true';}catch(e){on=!!q&&q[1]==='2';}
+  if(on)document.getElementById('carga').hidden=false;})();
+</script>
 
 <div id="hud" hidden>
   <div id="top">
@@ -1704,7 +1751,7 @@ body.lbOn #fpsBox{left:auto;right:max(8px,env(safe-area-inset-right,0px));transf
 <script>
 (function(){
 'use strict';
-if(!window.THREE){document.getElementById('loadErr').hidden=false;return;}
+if(!window.THREE){document.getElementById('loadErr').hidden=false;document.getElementById('carga').hidden=true;return;}
 const T=window.THREE;
 /* CARGA (03-11-2026, docs/CARGA.md): every file under assets/ or vendor/ is asked for with the hash of its own content
    (ASSET_V, made by build.py) instead of the build's: after a publish only what changed is downloaded again. All of
@@ -1717,6 +1764,18 @@ function av(u){
   return base+'?v='+h+(rest?'&'+rest:'');
 }
 T.DefaultLoadingManager.setURLModifier(av);
+/* PANTALLA DE CARGA (?carga=2, docs/CARGA.md): the bar counts what really arrives. Every file three.js asks for (models,
+   textures, KTX2) passes through the default loading manager (started / finished / failed) and the downloads through
+   FileLoader (bytes so far of each one). Only with the flag: without it nothing is wrapped. */
+const CARGA2=(()=>{const q=/[?&]carga=([12])\b/.exec(location.search);if(q)return q[1]==='2';try{return localStorage.getItem('sniperduel_carga2')==='true';}catch(e){return false;}})();
+const CG_NET={files:0,done:0,fail:0,bytes:{},last:0};
+if(CARGA2){const M=T.DefaultLoadingManager,s0=M.itemStart,e0=M.itemEnd,x0=M.itemError,tick=()=>{CG_NET.last=performance.now();};
+  M.itemStart=function(u){CG_NET.files++;tick();return s0.call(this,u);};
+  M.itemEnd=function(u){CG_NET.done++;tick();return e0.call(this,u);};
+  M.itemError=function(u){CG_NET.fail++;tick();return x0.call(this,u);};
+  const L0=T.FileLoader.prototype.load;
+  T.FileLoader.prototype.load=function(url,ok,pr,err){const u=String(url);
+    return L0.call(this,url,ok,e=>{if(e&&e.lengthComputable!==false&&e.total)CG_NET.bytes[u]=[e.loaded,e.total];tick();if(pr)pr(e);},err);};}
 /* and a service worker keeps those files on the device (sw.js): a second visit takes them from there without asking
    the network. On https only (not in the local tests); ?sw=0 removes it from this device. */
 if('serviceWorker' in navigator&&location.protocol==='https:'){
@@ -4158,6 +4217,10 @@ function pj2PrevDrop(root){
   go(tp.scene||tp.root);const m=tp.material;if(m&&!seen.has(m)){for(const k in m){const t=m[k];if(t&&t.isTexture&&t!==ENV)t.dispose();}m.dispose();}
 }
 function pj2Attach(R){
+  /* the menu's operator wears only the character you chose (m2Operator sets it when its 1K one is here). 19-11-2026,
+     docs/CARGA.md: until then any other character arriving (the bots' 1K one) attached it to the default 'B' one — the
+     S.W.A.T. in ALTO — and downloaded it to the GPU for nothing (64 MB on a phone, measured with ?carga=2) */
+  if(R.pjOwn&&R.skinPack===undefined)return;
   const v=R.pj2v||'B',root=pj2Root(v,R),tpl=root&&PJ2.tpls[root];
   if(!root)return;
   let was=null;
@@ -7672,7 +7735,7 @@ function m2Wake(){
     M2.pivot=new T.Group();}
   M2.room.scene.add(M2.cam);M2.room.stand.add(M2.pivot);
   // built without its default character (that would download the S.W.A.T. or the FSB for nothing): only the chosen one
-  if(!M2.R&&SKIN_ON){const on=PJ2.on;PJ2.on=false;M2.R=makeSoldier(RIVAL_MAT,{variant:'B'});PJ2.on=on;if(on){M2.R.pj2v='B';PJ2.list.push(M2.R);}M2.pivot.add(M2.R.root);}
+  if(!M2.R&&SKIN_ON){const on=PJ2.on;PJ2.on=false;M2.R=makeSoldier(RIVAL_MAT,{variant:'B'});PJ2.on=on;if(on){M2.R.pj2v='B';M2.R.pjOwn=true;PJ2.list.push(M2.R);}M2.pivot.add(M2.R.root);}
   if(!M2.R){M2.R=makeSoldier(RIVAL_MAT,{variant:'B'});M2.pivot.add(M2.R.root);}
   M2.wsig='';M2.cur=null;
 }
@@ -8263,6 +8326,8 @@ let last=performance.now();let menuAng=0;let rangeT=0;let simAcc=0;
 const MANUAL={on:false};
 function frame(now){
   requestAnimationFrame(frame);
+  // PANTALLA DE CARGA: while it covers everything the menu behind is drawn ~8 times a second (the CPU goes to loading)
+  if(CG.cover){if(now-CG.lastF<120)return;CG.lastF=now;}
   if(!MANUAL.on)frameBody(now);
 }
 /* MATRICES (18-11-2026, ENGINE NEXT GENERATION, docs/claude-code/ENGINE_NEXT_GEN_INFORME.md §7): three.js recomputed, every
@@ -8657,6 +8722,163 @@ if(FLORA.on){const gl=new T.GLTFLoader();let n=2;
       if(P3W.kit)later();else{const w=setInterval(()=>{if(P3W.kit){clearInterval(w);later();}},300);}}}}
 function floraFlush(){if(FLORA.go)FLORA.go();}
 
-window.__SD={sceneUpdate,audioInit,get MAT_ALL(){return MAT_ALL;},get GFX(){return GFX;},get BOX3(){return BOX3;},get GUNCFG(){return GUNCFG;},PRUEBAS,XRAY,xrayFrame,SLIDE2,PEN,penBox,spawnBullet,updateBullets,HALCON,BAL,rifleCfgFor,applyRifleCfg,gsGun,SIL,silCfg,silSaved,SFX,GUN,camLight,get gameTime(){return gameTime;},GSI,gsiDone,gsiRender,M2,m2Tab,m2Sync,m2Sleep,LB,lbRender,lbFrame,openSettings,closeSettings,MIRA,setMira,miraApply,miraClipGeo,miraRifle,openMiras,closeMiras,updateReticle,ENV,MOVE_CLASSIC,MOV_CLASSIC,VIS,VIS_COL,VIS_HULL,visOn,visFrame,visWho,selfHit,PROF,KTX2,R2_ON,R2_URL,PIC,GYRO,gyroEv,crossApply,btnPress,settingsChanged,perfTexMB(){const t=perfTextures();return {real:SDPerf.textureMB(t),asRGBA:SDPerf.textureMB(t.map(x=>Object.assign({},x,{bytes:0})))};},REMOTES,netScoreHud,shotTargets,MINI,miniLayer,miniPing,clockFrame,setOffTime,get OFF_TIME(){return OFF_TIME;},ACC,accRefresh,INV,invSync,camoApply,openInv,invOpenBox,WSKIN,WS_ST,setWskin,get RIF(){return RIF;},TPV,SELF,get PROFILE(){return PROFILE;},openProfile,endMatch,PJ_MIX,MIX_ORDER,SKINS,get SKIN(){return SKIN;},setSkin,pj2SetPack,rivalSkin,PERF,perfRun,HUD2,get H2(){return HUD2?H2:null;},leanIn:HUD2?leanIn:null,h2Frame:HUD2?h2Frame:null,PJ2,pj2Load,CASA,casaLoad,C2,C2B,C2J,C2S,casa2Load,BAR,barrioLoad,FLORA,RATS,RAT_WORLD,ratsFrame,SHADOW_FADE,setDuelLethal,get DUEL_LETHAL(){return DUEL_LETHAL;},gfxDiagText,get P3ON(){return P3ON;},PU4,COBCC,damagePlayer,TEX,sunFollow,setSunSnap(on){SUN_SNAP=!!on;},sun,P0,E10,e10Lod,DIAG,setTrainMove,LIGHT:{sun,hemi,skyMat,LOOK,P3},P3W,freeze(on){SIM_FREEZE=!!on;},SHOT,VMA,makeSoldier,animateSoldier,BOT_MAT,scene,camera,RemotePlayer,PMprev,PIS,PROOT,RIF,WROOT,SHO_:null,MANUAL,advance(ms){frameBody(last+ms);},get LAST_PELLETS(){return LAST_PELLETS;},SCORE,SCFG,SROOT,SHO,setPrimaryChoice,get PRIMARY(){return PRIMARY;},PCORE,PCFG,setWorld,WORLDS,get WORLD_ID(){return WORLD_ID;},renderer,GFX,gfxApply,get NET(){return NET;},get REMOTE(){return REMOTE;},W,get NAV(){return NAV;},setOffMap,get OFFMAP(){return OFFMAP;},TOUCH,EDIT,openEditor,get SETTINGS(){return SETTINGS;},get LAYOUT(){return LAYOUT;},checkOrientation,MAT,LOAD,TRAINERS,get RANGE_BOTS(){return RANGE_BOTS;},TRAIN,setTrain,setLethal,kitNote,GINS,TDIAG,AU,get TOUCH_EVENTS(){return TOUCH_EVENTS;},impactFX,bodyFX,get DECALS(){return DECALS;},surfaceOf,soundDelay,aimSelfTest,P,PM,WS,WCORE,RECOIL,AIM,BOTS,DUMMIES,BULLETS,EVENTS,PARTS,STATS,get state(){return state;},get mode(){return mode;},setMode,input,startMatch,simTick,frame,toMenu,pause,resume,CASAS,casasSolid,FUENTE};
+/* =================== PANTALLA DE CARGA (?carga=2, 18-11-2026, docs/CARGA.md, client/carga.js) ===================
+   Owner: «la típica barrita que va del 0% al 100%… que en ese momento cargue todas las armas, texturas, personajes,
+   mapas». Every piece of the bar is something the game really uses, read from its own state (a character template in
+   PJ2.tpls, the weapons in VMA, the kit of the town, the textures counted by texLoad, the files three.js still has on
+   their way…), with the bytes already downloaded while it is not there yet. What is not needed now is only DOWNLOADED
+   («PARA DESPUÉS», the service worker keeps it on the device), never decoded into memory.
+   MEMORY (the iPhone closes Safari when it runs out: 29-10 with KTX2, 17/18-11 with the SALA 1V1): on a phone the GPU only
+   gets what the game would load anyway — your operator, the bots, the map — one piece at a time and in order; the other
+   characters are downloaded in their light 1K version (files with their own hash: kept across publishes). On a computer
+   the four characters go to the GPU (the online rival may pick any of them). A piece that fails never blocks (the game
+   has its fallback: the box figure, the HALCÓN…); one that stops moving for 45 s is left to the game; ENTRAR YA appears
+   when the menu has its minimum. */
+const CG={on:CARGA2&&typeof SDCarga!=='undefined',cover:false,lastF:0,P:[],st:{},t0:0,done:false,skipped:false,timer:0,report:null,warm:0,log:[]};
+// downloaded fraction of the files whose URL passes the test (FileLoader's own progress: real bytes)
+function cgBytes(test){let l=0,t=0;for(const u in CG_NET.bytes)if(test(u)){const b=CG_NET.bytes[u];l+=Math.min(b[0],b[1]);t+=b[1];}return t?l/t:0;}
+const cgPc=(id,cat,name,o)=>Object.assign({id,cat,name,mode:'gpu'},o);
+const cgName=root=>{for(const k in SKINS)if(SKINS[k].pack&&packRoot(SKINS[k].pack)===root)return SKINS[k].name;return 'PERSONAJE';};
+// a list of files only downloaded (to the service worker's store on https; to the browser's cache locally), one by one
+function cgFetch(p){
+  const n=p.urls.length;let i=0;p.f=0;p.bytes=0;p.errs=0;
+  const one=()=>{if(i>=n||p.stop){p.end=true;return;}const u=p.urls[i];
+    const ctl=typeof AbortController!=='undefined'?new AbortController():null;p.ctl=ctl;
+    fetch(u,{credentials:'omit',signal:ctl?ctl.signal:undefined}).then(async r=>{if(!r.ok)throw new Error('HTTP '+r.status);
+      const tot=+(r.headers.get('content-length')||0);let got=0;
+      if(r.body&&r.body.getReader){const rd=r.body.getReader();for(;;){const x=await rd.read();if(x.done)break;got+=x.value.byteLength;p.bytes+=x.value.byteLength;
+        if(tot)p.f=(i+Math.min(1,got/tot))/n;CG_NET.last=performance.now();}}
+      else p.bytes+=(await r.arrayBuffer()).byteLength;
+    }).catch(e=>{p.errs++;console.warn('carga: descarga',u,e&&e.message);}).then(()=>{i++;p.f=i/n;one();});};
+  one();
+}
+function cgPlan(){
+  const L=[],phone=PJ2_PHONE,world=offWorld();
+  L.push(cgPc('motor','motor','Three.js y el código del juego',{min:true,check:()=>1}));
+  L.push(cgPc('letras','motor','Letras',{check:()=>!document.fonts||document.fonts.status==='loaded'?1:0}));
+  L.push(cgPc('tex','tex','Texturas de los mapas',{check:()=>{if(!TEX.loader)return 1;const a=TEX.asked||0,d=(TEX.ok||0)+(TEX.fail||0);return !a||d>=a?1:d/a;}}));
+  // MAPA: the one chosen (CASA ATLAS / BARRIO load their model now) and the town, which the game loads anyway
+  const mapF={casa:['assets/maps/casa_atlas/casa_atlas.glb'],barrio:typeof SDBarrio!=='undefined'?[SDBarrio.garage,SDBarrio.towers]:[]};
+  for(const id in C2S)if(C2S[id].L)mapF[id]=[C2S[id].L.glb];
+  const mapGpu=id=>id==='casa'?{s:CASA,go:casaLoad}:id==='barrio'?{s:BAR,go:barrioLoad}:C2S[id]?{s:C2S[id],go:()=>casa2Load(id)}:null;
+  const mapPiece=(id,name,min)=>{const G=mapGpu(id);if(!G)return;
+    L.push(cgPc('mapa:'+id,'mapa',name,{min,start:()=>G.go(),check:()=>G.s.ready?1:G.s.failed?'fail':cgBytes(u=>(mapF[id]||[]).some(f=>u.includes(f)))*0.9}));};
+  const mname=id=>typeof m2MapName==='function'?m2MapName(id):String(id).toUpperCase();
+  mapPiece(world,mname(world),true);
+  if(P3ON)L.push(cgPc('kit','mapa','PUEBLO · edificios y calles',{min:world==='pueblo',check:()=>P3W.kit?1:cgBytes(u=>/assets\/kit\.glb/.test(u))*0.9}));
+  if(P4ON)L.push(cgPc('p4','mapa','PUEBLO 4.0 · vehículos',{check:()=>P4VEH.done?1:0}));
+  if(E10.on)L.push(cgPc('e10','mapa','PUEBLO · Casa Oliva',{check:()=>E10.ready?1:E10.failed?'fail':0}));
+  if(FLORA.on)L.push(cgPc('flora','mapa','PUEBLO · hierba y flores',{check:()=>{if(FLORA.ready)return 1;if(FLORA.failed)return 'fail';if(FLORA.go&&(CG.cover||state==='menu'))floraFlush();return 0;}}));   // no 2 s wait under the screen
+  if(RATS.on)L.push(cgPc('ratas','mapa','PUEBLO · ratas',{check:()=>RATS.ready?1:RATS.failed?'fail':0}));
+  // the other maps of the menu with a model of their own: in memory on a computer, only downloaded on a phone
+  const others=(typeof M2_MAPS!=='undefined'?M2_MAPS.map(m=>m.id):[]).filter(id=>id!==world&&mapGpu(id));
+  // PERSONAJES
+  const gpuRoots=[];
+  if(PJ2.on){
+    const add=(r,name,min)=>{if(r&&!gpuRoots.includes(r)){gpuRoots.push(r);
+      L.push(cgPc('pj:'+r,'pj',name,{min,start:()=>pj2Load(r),check:()=>{if(PJ2.tpls[r]){pj2PrevDrop(r);return 1;}   // (its 1K one, if nobody wears it, leaves)
+       
+        return PJ2.failedRoots[r]?'fail':cgBytes(u=>u.includes(r+'personaje')&&!/_1k\.glb/.test(u))*0.9;}}));}};
+    const own=SKIN_ON?(SKINS[SKIN].pack?packRoot(SKINS[SKIN].pack):null):pj2Root('B');
+    if(own)L.push(cgPc('op1k','pj','Tu operador · vista rápida',{min:true,check:()=>PJ2.prev[own]||PJ2.tpls[own]||PJ2.failedRoots[own]?1:cgBytes(u=>u.includes(own+'personaje_1k'))*0.9}));
+    add(own,'Tu operador · '+cgName(own),false);
+    const botR=pj2Root(mode==='range'?'A':'bots');add(botR,'Bots · '+cgName(botR),false);
+    if(SKIN_ON)for(const k in SKINS){const r=SKINS[k].pack?packRoot(SKINS[k].pack):null;if(!r||gpuRoots.includes(r))continue;
+      if(!phone)add(r,SKINS[k].name,false);
+      else L.push(cgPc('dl:'+r,'desc',SKINS[k].name+' (versión ligera)',{mode:'cache',urls:[av(r+'personaje_1k.glb?v='+BUILD_HASH)]}));}
+  }
+  // ARMAS: the guns and arms (one file), and the skins you carry at full resolution
+  const vmOff=()=>!VMA.loading&&!VMA.ready;   // not loaded at all (&vm=0, or the tests without a GPU)
+  L.push(cgPc('vm','armas','Fusiles, escopeta, pistola, cuchillo y manos',{min:true,check:()=>VMA.ready||vmOff()?1:cgBytes(u=>/viewmodels\.glb/.test(u))*0.9}));
+  if(ARMAS_ON)for(const slot of ['rifle','knife']){const id=WSKIN[slot];if(id==='halcon'||id==='navaja'||!WSKINS[slot][id])continue;const dir=WSKINS[slot][id].dir||id;
+    L.push(cgPc('ws:'+slot,'armas',WSKINS[slot][id].name,{check:()=>{const S=WS_ST[slot];if(vmOff())return 'skip';if(WSKIN[slot]!==id)return 'skip';
+      if(S.cur===id&&S.objs.length&&!S.light)return 1;const P=KTX2.prog&&KTX2.prog[dir];
+      return P&&P.n?0.1+0.85*P.done/P.n:cgBytes(u=>u.includes('assets/armas/'+dir+'/'))*0.1;}}));}
+  if(ARMAS_ON){const urls=[];for(const slot of ['rifle','knife'])for(const id in WSKINS[slot]){if(id==='halcon'||id==='navaja'||id===WSKIN[slot])continue;
+      urls.push(av(wsDir(slot,id)+'arma_tp.glb?v='+BUILD_HASH),av(wsDir(slot,id)+'info.json?v='+BUILD_HASH));}
+    if(urls.length)L.push(cgPc('dl:armas','desc','Los demás aspectos de arma (versión ligera)',{mode:'cache',urls}));}
+  for(const id of others){if(!phone)mapPiece(id,mname(id),false);
+    else if((mapF[id]||[]).length)L.push(cgPc('dl:mapa:'+id,'desc','Mapa '+mname(id),{mode:'cache',urls:mapF[id].map(f=>av(f+'?v='+BUILD_HASH))}));}
+  // PREPARANDO: the last files three.js has on their way, then the shaders and the textures to the GPU, here and not in
+  // the first seconds of the menu or of the match
+  L.push(cgPc('files','prep','Últimos archivos',{check:()=>{const pend=CG_NET.files-CG_NET.done-CG_NET.fail;return pend<=0&&performance.now()-CG_NET.last>600?1:CG_NET.files?(CG_NET.done+CG_NET.fail)/CG_NET.files:0;}}));
+  L.push(cgPc('warm','prep','Sombreadores y memoria de vídeo',{noStall:true,check:cgWarm}));
+  for(const p of L)if(p.mode==='cache'){p.start=()=>cgFetch(p);p.check=()=>p.end?(p.errs>=p.urls.length?'fail':1):p.f||0;}
+  return L;
+}
+/* the warm-up, in steps (one per tick, the bar moves between them), once everything else for memory is there: the town's
+   grass, every shader of the game and first-person scenes, the bots of the first match (hidden, like the first one the
+   game already made), the menu's own warm-up (textures to the GPU and one tiny frame) and the sound. Only in the menu. */
+function cgWarm(){
+  if(CG.warm>=5)return 1;
+  if(!CG.P.every(p=>p.id==='warm'||p.mode==='cache'||SDCarga.isDone(CG.st[p.id])))return 0;
+  if(state!=='menu'){CG.warm=5;return 1;}
+  const t=performance.now(),step=CG.warm++;
+  try{
+    if(step===0)floraFlush();
+    else if(step===1){precompileFlush();precompileNow();}
+    else if(step===2&&mode!=='range'){const n=DIFFS[diff].bots;while(BOTS.length<n){const b=new Bot(BOTS.length);b.alive=false;b.g.visible=false;b.glint.visible=false;BOTS.push(b);}precompileNow();}
+    else if(step===3&&M2.on)m2Warm(performance.now(),true);
+    // the game's sound (noise and echo made once: 0,3–0,5 s on a phone, measured): made now, paused until the first touch
+    // (Safari and Chrome only let it play after one); before, the first JUGAR paid for it
+    else if(step===4)audioInit();
+  }catch(e){console.warn('carga: preparar',step,e);}
+  CG.log.push(['warm'+step,Math.round(performance.now()-t)]);
+  return CG.warm/5*0.99;
+}
+// GPU texture memory of everything loaded (scene, first person, the menu's room, character templates, weapon skins),
+// only what is already on the GPU: MB as SDPerf counts them (KTX2 with their real bytes)
+function cgMem(){
+  const seen=new Set(),out=[],up=o=>{const ms=o.material?[].concat(o.material):[];for(const m of ms)if(m)for(const k in m){const tx=m[k];
+    if(!tx||!tx.isTexture||seen.has(tx)||tx.isCubeTexture)continue;seen.add(tx);if(!renderer.properties.get(tx).__webglTexture)continue;const im=tx.image||{};
+    const bytes=tx.isCompressedTexture?(tx.userData&&tx.userData.gpuBytes)||(tx.mipmaps||[]).reduce((s,mm)=>s+(mm.data?mm.data.byteLength:0),0):0;
+    out.push({w:im.videoWidth||im.naturalWidth||im.width||0,h:im.videoHeight||im.naturalHeight||im.height||0,mip:tx.generateMipmaps!==false,bytes});}};
+  const roots=[scene,wScene];if(M2.room)roots.push(M2.room.scene);for(const k in PJ2.tpls)roots.push(PJ2.tpls[k].scene);for(const k in PJ2.prev)roots.push(PJ2.prev[k].scene);
+  for(const k in WS_ST.cache)if(WS_ST.cache[k].scene)roots.push(WS_ST.cache[k].scene);
+  for(const r of roots)if(r&&r.traverse)r.traverse(up);for(const k in PJ2.mats)up({material:PJ2.mats[k]});
+  const i=renderer.info.memory;return {texMB:+SDPerf.textureMB(out).toFixed(1),textures:i.textures,geometries:i.geometries,n:out.length};
+}
+function cgUi(now){
+  const P=CG.P,st=CG.st,pct=SDCarga.progress(P,st),lb=SDCarga.label(P,st),el=$('#carga');
+  $('#cgFill').style.transform='scaleX('+(pct/100)+')';setText($('#cgPct'),pct+' %');el.setAttribute('aria-valuenow',String(pct));
+  const w=$('#cgWhat'),txt=lb.text+'|'+lb.item;if(w.dataset.t!==txt){w.dataset.t=txt;w.textContent=lb.text;if(lb.item){const s=document.createElement('small');s.textContent=lb.item;w.append(s);}}
+  const cs=SDCarga.cats(P,st),ul=$('#cgCats');if(ul.children.length!==cs.length){ul.textContent='';for(const c of cs){const li=document.createElement('li');li.textContent=c.name;ul.append(li);}}
+  cs.forEach((c,i)=>{const li=ul.children[i];if(li.className!==c.state)li.className=c.state;});
+  const bad=P.filter(p=>st[p.id]&&(st[p.id].s==='fail'||st[p.id].s==='skip')).length,dl=P.filter(p=>p.mode==='cache').reduce((s,p)=>s+(p.bytes||0),0);
+  setText($('#cgNote'),SDCarga.gpuDone(P,st)?'Ya está todo lo de la partida. Ahora se descarga lo demás'+(dl?' ('+SDCarga.mb(dl)+')':'')+': queda guardado en el dispositivo, no en la memoria.'
+    :bad?bad+(bad>1?' cosas no han podido cargar':' cosa no ha podido cargar')+': el juego usa su versión sencilla y sigue.':'Preparando el juego para que no haya esperas en el menú ni al empezar la partida.');
+  const sk=$('#cgSkip');setHidden(sk,!SDCarga.canSkip({done:CG.done,min:SDCarga.minReady(P,st),elapsed:now-CG.t0}));setText(sk,SDCarga.gpuDone(P,st)?'ENTRAR':'ENTRAR YA');
+}
+function cgHide(){const el=$('#carga');CG.cover=false;CG.fade=false;el.classList.add('out');setTimeout(()=>{el.hidden=true;},380);}
+function cgTick(){
+  const now=performance.now(),P=CG.P,st=CG.st;
+  for(const p of P){let s=st[p.id];if(s&&SDCarga.isDone(s))continue;
+    if(!s){SDCarga.set(st,p.id,p.start?'wait':'run',0,now);s=st[p.id];}
+    if(s.s==='wait')continue;
+    let r;try{r=p.check();}catch(e){console.warn('carga',p.id,e);r='fail';}
+    if(r==='fail'||r==='skip'){SDCarga.set(st,p.id,r,1,now);CG.log.push([p.id,r,Math.round(now)]);}
+    else if(r>=1){SDCarga.set(st,p.id,'ok',1,now);CG.log.push([p.id,'ok',Math.round(now)]);}
+    else SDCarga.set(st,p.id,'run',r,now);}
+  // stuck for 45 s with nothing arriving from the network: left to the game (it keeps loading it by itself)
+  for(const id of SDCarga.stalled(P,st,now,45000))if(now-CG_NET.last>8000){const p=P.find(x=>x.id===id);if(p&&p.ctl)try{p.stop=true;p.ctl.abort();}catch(e){}
+    SDCarga.set(st,id,'skip',1,now);CG.log.push([id,'skip',Math.round(now)]);}
+  for(const id of SDCarga.next(P,st,{one:PJ2_PHONE,gpu:3,cache:2,cacheAfter:true})){const p=P.find(x=>x.id===id);SDCarga.set(st,id,'run',0,now);CG.log.push([id,'start',Math.round(now)]);try{p.start();}catch(e){console.warn('carga',id,e);SDCarga.set(st,id,'fail',1,now);}}
+  if(!CG.report&&SDCarga.minReady(P,st))CG.minAt=CG.minAt||Math.round(now);
+  if(!CG.gpuAt&&SDCarga.gpuDone(P,st)){CG.gpuAt=Math.round(now);CG.memGpu=cgMem();}
+  const all=SDCarga.progress(P,st)===100;
+  if(CG.cover||CG.done)cgUi(now);
+  if(all&&!CG.done){CG.done=true;CG.report={listo:CG.gpuAt,minimo:CG.minAt,todo:Math.round(now),skipped:CG.skipped,phone:PJ2_PHONE,mem:cgMem(),
+      pieces:P.map(p=>[p.id,st[p.id].s,Math.round(st[p.id].t)]),warm:CG.log.filter(x=>/^warm/.test(x[0]))};
+    clearInterval(CG.timer);CG.timer=0;if(CG.cover){CG.cover=false;CG.fade=true;setTimeout(cgHide,250);}}
+}
+function cgStart(){
+  if(!CG.on){const el=$('#carga');if(el)el.hidden=true;return;}
+  CG.P=SDCarga.plan(cgPlan());CG.t0=performance.now();CG.cover=true;$('#carga').hidden=false;
+  $('#cgSkip').addEventListener('click',()=>{if(CG.done||!CG.cover)return;CG.skipped=true;CG.skipAt=Math.round(performance.now());audioInit();cgHide();});   // the rest goes on behind the menu
+  CG.timer=setInterval(cgTick,120);cgTick();
+}
+cgStart();
+
+window.__SD={CARGA:CG,cgMem,sceneUpdate,audioInit,get MAT_ALL(){return MAT_ALL;},get GFX(){return GFX;},get BOX3(){return BOX3;},get GUNCFG(){return GUNCFG;},PRUEBAS,XRAY,xrayFrame,SLIDE2,PEN,penBox,spawnBullet,updateBullets,HALCON,BAL,rifleCfgFor,applyRifleCfg,gsGun,SIL,silCfg,silSaved,SFX,GUN,camLight,get gameTime(){return gameTime;},GSI,gsiDone,gsiRender,M2,m2Tab,m2Sync,m2Sleep,LB,lbRender,lbFrame,openSettings,closeSettings,MIRA,setMira,miraApply,miraClipGeo,miraRifle,openMiras,closeMiras,updateReticle,ENV,MOVE_CLASSIC,MOV_CLASSIC,VIS,VIS_COL,VIS_HULL,visOn,visFrame,visWho,selfHit,PROF,KTX2,R2_ON,R2_URL,PIC,GYRO,gyroEv,crossApply,btnPress,settingsChanged,perfTexMB(){const t=perfTextures();return {real:SDPerf.textureMB(t),asRGBA:SDPerf.textureMB(t.map(x=>Object.assign({},x,{bytes:0})))};},REMOTES,netScoreHud,shotTargets,MINI,miniLayer,miniPing,clockFrame,setOffTime,get OFF_TIME(){return OFF_TIME;},ACC,accRefresh,INV,invSync,camoApply,openInv,invOpenBox,WSKIN,WS_ST,setWskin,get RIF(){return RIF;},TPV,SELF,get PROFILE(){return PROFILE;},openProfile,endMatch,PJ_MIX,MIX_ORDER,SKINS,get SKIN(){return SKIN;},setSkin,pj2SetPack,rivalSkin,PERF,perfRun,HUD2,get H2(){return HUD2?H2:null;},leanIn:HUD2?leanIn:null,h2Frame:HUD2?h2Frame:null,PJ2,pj2Load,CASA,casaLoad,C2,C2B,C2J,C2S,casa2Load,BAR,barrioLoad,FLORA,RATS,RAT_WORLD,ratsFrame,SHADOW_FADE,setDuelLethal,get DUEL_LETHAL(){return DUEL_LETHAL;},gfxDiagText,get P3ON(){return P3ON;},PU4,COBCC,damagePlayer,TEX,sunFollow,setSunSnap(on){SUN_SNAP=!!on;},sun,P0,E10,e10Lod,DIAG,setTrainMove,LIGHT:{sun,hemi,skyMat,LOOK,P3},P3W,freeze(on){SIM_FREEZE=!!on;},SHOT,VMA,makeSoldier,animateSoldier,BOT_MAT,scene,camera,RemotePlayer,PMprev,PIS,PROOT,RIF,WROOT,SHO_:null,MANUAL,advance(ms){frameBody(last+ms);},get LAST_PELLETS(){return LAST_PELLETS;},SCORE,SCFG,SROOT,SHO,setPrimaryChoice,get PRIMARY(){return PRIMARY;},PCORE,PCFG,setWorld,WORLDS,get WORLD_ID(){return WORLD_ID;},renderer,GFX,gfxApply,get NET(){return NET;},get REMOTE(){return REMOTE;},W,get NAV(){return NAV;},setOffMap,get OFFMAP(){return OFFMAP;},TOUCH,EDIT,openEditor,get SETTINGS(){return SETTINGS;},get LAYOUT(){return LAYOUT;},checkOrientation,MAT,LOAD,TRAINERS,get RANGE_BOTS(){return RANGE_BOTS;},TRAIN,setTrain,setLethal,kitNote,GINS,TDIAG,AU,get TOUCH_EVENTS(){return TOUCH_EVENTS;},impactFX,bodyFX,get DECALS(){return DECALS;},surfaceOf,soundDelay,aimSelfTest,P,PM,WS,WCORE,RECOIL,AIM,BOTS,DUMMIES,BULLETS,EVENTS,PARTS,STATS,get state(){return state;},get mode(){return mode;},setMode,input,startMatch,simTick,frame,toMenu,pause,resume,CASAS,casasSolid,FUENTE};
 })();
 </script>
