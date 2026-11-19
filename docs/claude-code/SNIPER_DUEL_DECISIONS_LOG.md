@@ -6,6 +6,26 @@ Cada entrada dice qué se decidió o cambió, quién lo decidió, y el estado re
 Las decisiones anteriores al 18-10-2026 están resumidas en `SNIPER_DUEL_MASTER_CONTEXT.md` §4.
 Detalle de cada cambio (antes/después, medidas, cómo revertir): `docs/next-level/NEXT_LEVEL_CHANGELOG.md`.
 
+## 19-11-2026 — PANTALLA DE CARGA con barra del 0 al 100 % (`?carga=2`)
+- El propietario: «la típica barrita que va del 0% al 100%… que en ese momento cargue todas las armas, texturas,
+  personajes, mapas». Detrás de `?carga=2` (el aparato lo recuerda; `?carga=1` la quita). Lo de siempre sigue por defecto.
+- La barra es real: cada pieza se lee del estado del juego (personajes en memoria, armas, texturas, mapa, archivos a
+  medias) y de los bytes que llegan. Al final, PREPARANDO deja hechos la hierba, los sombreadores, los bots de la primera
+  partida, el menú y el sonido. ENTRAR YA con el mínimo; un archivo que falla no bloquea.
+- **Decisión de memoria:** en el móvil «cargar todo» es tenerlo descargado, no en memoria. A la GPU solo va tu operador,
+  los bots y el mapa, de uno en uno; los demás personajes, aspectos y mapas solo se descargan en su versión ligera. En PC
+  van los cuatro personajes a memoria (+132 MB). Medido: en el móvil la memoria asentada es igual con y sin pantalla
+  (141,4 MB).
+- **Arreglado también sin bandera:** el operador del menú cargaba el S.W.A.T. en la GPU antes de saber tu personaje
+  (64 MB de más en el móvil, según el orden de llegada).
+- Medido (`node tools/carga2.js`): empezar partida justo al cargar, en PC `startMatch` 873–988 → 23–132 ms y el peor
+  fotograma 782–947 → 65–360 ms; en el móvil (CPU ×4) 892–1 334 → 339–628 ms y 761–1 331 → ~470 ms. Detalle y capturas:
+  `docs/CARGA.md`, `docs/img/carga/`.
+- Pruebas: `test/carga.test.js` (31) y `test/carga.browser.test.js` (26).
+- Siguiente propuesto: versión estable para los archivos de R2 (hoy cambian en cada publicación y se vuelven a bajar).
+- Estado: IMPLEMENTADO TRAS BANDERA · PROBADO EN NAVEGADOR · PENDIENTE DE VALIDACIÓN EN IPHONE Y ANDROID (que el sonido
+  salga, que Safari no recargue y que la barra llegue al 100 %).
+
 ## 19-11-2026 — El kit del PUEBLO en una zona, por defecto
 - Medido en el iPhone del propietario (ALTO, PUEBLO 4.0): con `&kitzonas=1` van los mismos 59,8 FPS, con 0,2 % de tirones
   (0,3 % sin la bandera) y 3,4 ms de CPU (3,3). Las llamadas bajan de 282 a 188 (pico de 445 a 271).
@@ -82,6 +102,7 @@ lo de por defecto en el móvil. Detalle: `docs/KTX2.md`.
 ### Siguiente prioridad
 | Tarea | Quién la desbloquea | Estado |
 |---|---|---|
+| **PANTALLA DE CARGA** (19-11) — abrir `https://hamza189.github.io/SNIPER-1VS1/?carga=2` en el iPhone (horizontal), en Android y en el PC: ver la barra llegar al 100 %, que el sonido salga al tocar, ENTRAR YA si tarda, y que Safari no recargue al empezar una partida. Decir si pasa a ser lo de por defecto (`docs/CARGA.md`) | Propietario | PUBLICADO TRAS BANDERA · PENDIENTE DE VALIDACIÓN EN IPHONE |
 | **PUEBLO 4.0** (integrado el 17-11, rama `pueblo4`) — PUEBLO 3.1 + 4.0 hecho por Claude en la nube, ahora solo con `?pueblo=4` y mapa de servidor propio `pueblo4` (el PUEBLO de siempre no cambia). Publicado el 18-11: `https://hamza189.github.io/SNIPER-1VS1/?pueblo=4`. Falta: probarlo en el iPhone en MEDIO con MEDIR RENDIMIENTO (con y sin `&pueblo4=0`), una partida larga sin que Safari recargue la pestaña, y decidir F6 (`docs/PUEBLO-4.md`) | Propietario | PUBLICADO TRAS BANDERA · PENDIENTE DE VALIDACIÓN EN IPHONE |
 | **SALA 1V1** (10-11) — probar `?lobby=2` en el PC y en el iPhone (horizontal), con alguien en otro dispositivo: INICIO › MULTIJUGADOR 1V1 → CREAR SALA PRIVADA → INVITAR (copiar enlace o WhatsApp) → el otro entra y aparece en el hangar → elegir mapa → LISTO los dos → INICIAR PARTIDA. Decir si gusta, los FPS del hangar y si pasa a ser la de siempre (`?lobby=1` = la de antes; `docs/SALA-1V1.md`) | Propietario | SERVIDOR PUBLICADO · PÁGINA SIN PUBLICAR · PENDIENTE DE VALIDACIÓN EN IPHONE Y ANDROID |
 | **CAJA NUEVA** (10-11) — CAJAS › ABRIR CAJA en el PC y en el iPhone: ver la ATLAS DROP temblar, abrirse y encenderse con el color de la rareza; decir si gusta o si se cambia algo (`?caja=0` = la de antes) | Propietario | PUBLICADO · PENDIENTE DE VALIDACIÓN |

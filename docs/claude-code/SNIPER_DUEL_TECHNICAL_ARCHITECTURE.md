@@ -168,6 +168,7 @@ reconciliación, interpolación del rival 110 ms, ping) · `vmrig.js` (materiale
 | `?perfil=1` | Botón PERFIL sin cambiar de personajes (perfil local: `client/profile.js`, `docs/CUENTAS-Y-MONETIZACION.md`) |
 | `?pj=pro` | (por defecto desde el 28-10) Personajes realistas CC BY por calidad: ALTO op2 (rival) / op3 (bots) con 4K, MEDIO op4, BAJO soldado de cajas (`tools/personaje-ext`, `docs/PERSONAJES-PRO.md`) |
 | `?pj=3` | Personaje LINCE (rev. 04, `assets/personaje/v4/`) en bots y rival online; solo aspecto |
+| `?carga=2` / `?carga=1` (19-11) | PANTALLA DE CARGA con barra del 0 al 100 % (`client/carga.js`, `docs/CARGA.md`). El aparato la recuerda; `?carga=1` vuelve a la entrada de siempre |
 | `?medir=1` | Ejecuta MEDIR RENDIMIENTO al cargar (`client/perfprobe.js`, `docs/RENDIMIENTO-IPHONE.md`); `?medir=rapido` para pruebas |
 | `?town=0` | Pueblo original de cajas |
 | `?vm=0` / `?vm=1` | Armas simples / forzar modelos 3D |

@@ -79,11 +79,119 @@ El propietario, cuando se le ofreció: «sí».
 - Las pruebas que esperaban «el personaje / la skin ha llegado» ahora esperan a la versión completa (`!v2prev`,
   `!light`); `armas.browser` comprueba además que el modelo ligero está en las manos mientras llega.
 
+## PANTALLA DE CARGA con barra del 0 al 100 % (`?carga=2`, 19-11-2026)
+Del propietario: «la típica barrita que va del 0% al 100%, lo digo para que en ese momento cargue todas las armas,
+texturas, personajes, mapas, etc...».
+
+**Estado:** IMPLEMENTADO TRAS BANDERA · PROBADO EN NAVEGADOR · PENDIENTE DE VALIDACIÓN EN IPHONE Y ANDROID. Lo de siempre
+sigue por defecto hasta que el propietario lo apruebe.
+
+**Cómo probarla:** abrir el juego con `?carga=2`. El aparato lo recuerda (las siguientes veces sale sin poner nada);
+`?carga=1` vuelve a la entrada de siempre.
+
+### Qué se ve
+Negro grafito, blanco y el naranja del juego, con el logo. Sale lo primero, antes incluso de que llegue three.js. Debajo
+de la barra, la categoría que está cargando, cuántas van y qué es (por ejemplo «PERSONAJES 2/4 · FSB»), el porcentaje y
+una fila con las 7 categorías (MOTOR 3D, TEXTURAS, MAPA, PERSONAJES, ARMAS, PREPARANDO, PARA DESPUÉS). Cabe en el iPhone
+en horizontal con las barras de Safari (932 × 320), en Android y en PC. Capturas: `docs/img/carga/` (`node tools/capture-carga.js`).
+
+### La barra es real
+Cada trozo de la barra es algo que el juego usa de verdad, leído de su propio estado (`client/carga.js` hace las cuentas;
+`src/page.html`, bloque «PANTALLA DE CARGA», las piezas):
+
+| Categoría | Qué cuenta como «hecho» |
+|---|---|
+| MOTOR 3D | three.js y el código del juego en marcha; las letras |
+| TEXTURAS | todas las texturas de los mapas pedidas por `texLoad` (llegadas o fallidas) |
+| MAPA | el mapa elegido con su modelo (CASA ATLAS, BARRIO…) y lo del PUEBLO que el juego carga siempre (kit, Casa Oliva, hierba, ratas) |
+| PERSONAJES | tu operador (su vista rápida 1K y el completo), el de los bots y, **solo en PC**, los otros personajes: el modelo en `PJ2.tpls` |
+| ARMAS | los fusiles, la escopeta, la pistola, el cuchillo y las manos (`viewmodels.glb`), y los aspectos que llevas, completos |
+| PREPARANDO | ningún archivo de three.js a medias; después, la hierba, todos los sombreadores, los bots de la primera partida, el calentamiento del menú (texturas a la GPU) y el sonido |
+| PARA DESPUÉS | archivos solo **descargados** (sin decodificar): ver abajo |
+
+Mientras una pieza no está, cuenta lo que lleva descargado (los bytes reales de cada archivo, que three.js va dando) hasta
+un 90–95 % de lo suyo. La barra solo sube.
+
+### La memoria del iPhone (decisión)
+Safari cierra la página si se pasa de memoria (29-10 con KTX2, 17/18-11 con la SALA 1V1). «Cargar todo» en el móvil
+significa **tenerlo descargado, no tenerlo en memoria**:
+- En el móvil a la GPU solo va lo que el juego ya cargaba: tu operador, los bots y el mapa. Y lo que pone en marcha la
+  pantalla va **de uno en uno y en orden** (la prueba lo comprueba).
+- Los demás personajes, los demás aspectos de arma y los demás mapas solo se **descargan**, en su versión ligera
+  (`personaje_1k.glb`, `arma_tp.glb`): archivos con su propia huella, así que el service worker los guarda también entre
+  publicaciones. Al elegir otro personaje sale al momento su versión 1K y la completa llega detrás, como siempre.
+- Los completos de 4K de los demás personajes no se descargan en el móvil: están en R2 con la versión de cada publicación
+  (`?v=BUILD_HASH`), así que se volverían a bajar (~50 MB) tras cada publicación sin usarse. Ver «Lo siguiente».
+- En PC los cuatro personajes van a memoria (el rival online puede llevar cualquiera): +132 MB de texturas, de sobra en
+  una GTX 1050 Ti de 4 GB.
+- Medido (`node tools/carga2.js`, memoria de texturas de todo lo que está en la GPU, `__SD.cgMem()`): en el móvil la
+  memoria, una vez asentada, es **la misma con y sin la pantalla: 141,4 MB**.
+
+**Fallo que ya estaba (arreglado, también sin la bandera):** el operador del menú, mientras no sabía qué personaje has
+elegido, se ponía el «por defecto» (el S.W.A.T. en ALTO) en cuanto llegaba otro personaje (la vista 1K de los bots) y lo
+cargaba en la GPU para nada: **64 MB de más en el móvil**, según el orden de llegada. Ahora espera a tu personaje
+(`pj2Attach`, `R.pjOwn`).
+
+### ENTRAR YA y los fallos
+- **ENTRAR YA** aparece cuando el menú tiene su mínimo (motor, tu operador en 1K y las armas) y la espera ya se nota
+  (2,5 s), o a los 15 s aunque falte. Lo que queda sigue cargando detrás del menú. Cuando ya está todo lo de la partida y
+  solo quedan descargas, el botón dice ENTRAR.
+- Un archivo que falla no bloquea: la pieza queda como fallida, la barra sigue y el juego usa su versión sencilla (la
+  figura de cajas, el HALCÓN…). Una pieza que no se mueve en 45 s mientras no llega nada de la red se deja al juego.
+- Mientras la pantalla tapa todo, el menú de detrás se dibuja ~8 veces por segundo (la CPU va a cargar).
+
+### Medidas (antes = sin pantalla; después = `?carga=2`)
+`node tools/carga2.js` (con `?r2=1`, los KTX2 de la web real; GPU del PC con `--use-angle=d3d11`; el «móvil» es el tamaño
+del iPhone, táctil y con la CPU de Chrome frenada ×4). «Listo para jugar» = tu operador y los bots completos, las armas,
+las texturas, y con la pantalla, la pantalla quitada. «Partida al momento» = se empieza una partida justo entonces.
+
+Dos tandas cada una (las de la red y la CPU frenada varían mucho de una vez a otra: se dan las dos).
+
+| PC (GTX 1050 Ti, 1280 × 720, ALTO) | Antes | Después |
+|---|---|---|
+| Listo para jugar | 11,2 s / 24,1 s | 12,2 s / 46,2 s (ENTRAR YA desde 3,4 s / 8,1 s) |
+| Texturas en la GPU | 120 MB | 252 MB (los 4 personajes) |
+| Partida al momento: `startMatch` | 873 ms / 988 ms | **23 ms / 132 ms** |
+| Fotograma más largo en sus 3 primeros segundos | 947 ms / 782 ms | **65 ms / 360 ms** |
+| Fotogramas de más de 100 ms en esos 3 s | 3 / 10 | **0 / 7** |
+| Fotogramas en esos 3 s | 62 / 38 | **178 / 94** |
+
+| Móvil (932 × 430, táctil, CPU ×4) | Antes | Después |
+|---|---|---|
+| Listo para jugar | 37,6 s / 66,7 s | **35,0 s / 53,7 s** (ENTRAR YA desde 14,9 s / 28,7 s) |
+| Texturas en la GPU | 112 MB al estar «listo»; 141,4 MB a los 8 s (aún llegaba el color de los bots) | 141,4 MB (igual) |
+| Partida al momento: `startMatch` | 1 334 ms / 892 ms | **339 ms / 628 ms** |
+| Fotograma más largo | 1 331 ms / 761 ms | **471 ms / 466 ms** |
+| Fotogramas en los 3 primeros segundos | 13 / 13 | **27 / 22** |
+
+Lectura:
+- **Tirones al empezar partida:** claramente menos en los dos (en PC el arranque pasa de casi 1 s a 23–132 ms). Lo que
+  antes se hacía al pulsar JUGAR (hierba, sombreadores, bots, calentar el mapa) ya está hecho.
+- **Tiempo hasta poder jugar:** en el móvil, algo menos (el menú de detrás se dibuja poco y la CPU va a cargar). En PC
+  puede tardar más **la primera vez**, porque espera a los cuatro personajes (~70 MB de R2); ENTRAR YA sale a los 3–8 s.
+  La segunda visita los tiene en el dispositivo.
+- **Memoria en el móvil:** la misma una vez asentada (141,4 MB). Sin el arreglo del operador del menú, con la pantalla
+  salían 205 MB (el S.W.A.T. cargado de más): por eso se arregló.
+- Antes de esta medida, en el perfil del móvil `audioInit` (crear el sonido) costaba 0,3–0,5 s en el primer JUGAR: ahora
+  se hace en PREPARANDO y queda en pausa hasta el primer toque. **Comprobar en el iPhone que el sonido sale.**
+- WebGL por software (las pruebas) no vale para tiempos; estas medidas son con la GPU del PC. Nada de esto prueba el
+  iPhone de verdad: PENDIENTE DE VALIDACIÓN EN IPHONE.
+
+### Archivos
+- `client/carga.js` (lógica pura: pesos, orden, porcentaje, etiqueta, ENTRAR YA) · `src/page.html` (CSS `#carga`, el HTML
+  y su guion inicial, el contador de archivos y bytes junto a `setURLModifier`, y el bloque «PANTALLA DE CARGA» antes de
+  `window.__SD`) · `test/carga.test.js` · `test/carga.browser.test.js` · `tools/carga2.js` (medidas) ·
+  `tools/capture-carga.js` (capturas).
+
 ## Lo siguiente (no hecho todavía)
+- **Versión estable para los archivos de R2.** Los KTX2 de R2 se piden con `?v=BUILD_HASH`, que cambia en cada
+  publicación: el service worker los vuelve a bajar enteros tras cada una (un personaje 4K son 10–28 MB). Con la huella de
+  cada archivo (como `ASSET_V`) solo se bajarían cuando cambian, y la pantalla de carga podría descargar también los
+  completos en el móvil.
 - **Comprimir la geometría y las animaciones con meshoptimizer** (C++; su decodificador es WebAssembly y three.js r128 lo
   admite: `EXT_meshopt_compression`). Bajaría cada personaje unos 2–3 MB y cada arma algo menos. Hace falta comprobar que
   las animaciones, los morphs (agacharse) y las zonas de impacto quedan idénticos.
 
 ## Pruebas
-- La batería completa (`npm test`).
+- La batería completa (`npm test`). La pantalla de carga: `node test/carga.test.js` y `node test/carga.browser.test.js`.
 - En la web publicada: segunda visita sin descargas de `assets/` (todas desde el service worker).
