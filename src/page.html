@@ -8438,8 +8438,12 @@ if(P3ON&&T.GLTFLoader){
     for(const sg of P3W.signs)list.push({k:'sign',x:sg.p[0],y:sg.p[1],z:sg.p[2],ry:sg.ry});
     // baked into static meshes per area of the map and material: few draw calls (see KIT3D.merge)
     // with the whole town in 3.0 (P3-5) each side is cut in two halves (north/south), so the camera culls the half behind it
-    const regionOf=P31?p=>Math.abs(p.x)>=49.5||Math.abs(p.z)>=49.5?(p.z>=49.5?'fuera_n':p.z<=-49.5?'fuera_s':(p.x<0?'fuera_o':'fuera_e')+(p.z<0?'s':'n')):(p.x<0?'oeste':'este')+(p.z<0?'_s':'_n')
+    const regionOf0=P31?p=>Math.abs(p.x)>=49.5||Math.abs(p.z)>=49.5?(p.z>=49.5?'fuera_n':p.z<=-49.5?'fuera_s':(p.x<0?'fuera_o':'fuera_e')+(p.z<0?'s':'n')):(p.x<0?'oeste':'este')+(p.z<0?'_s':'_n')
       :p=>Math.abs(p.x)>=49.5||Math.abs(p.z)>=49.5?(p.z>=49.5?'fuera_n':p.x<0?'fuera_o':'fuera_e'):(p.x<0?'oeste':'este');
+    // ZONAS DEL KIT (prueba, 19-11-2026): &kitzonas=1 = todo el pueblo en una zona (menos llamadas, sin descartar lo que queda
+    // detrás); &kitzonas=3 = oeste, este y fuera. Lo que se ve no cambia: mismas mallas y materiales, solo cómo se agrupan.
+    const KZ=(location.search.match(/[?&]kitzonas=(\d)/)||[])[1];
+    const regionOf=KZ==='1'?()=>'todo':KZ==='3'?p=>Math.abs(p.x)>=49.5||Math.abs(p.z)>=49.5?'fuera':p.x<0?'oeste':'este':regionOf0;
     const THIN=['lamp_post','street_pole','orange_tree'];   // thin posts and trunks: their own meshes, and their axes for the cover check
     P3W.ctx.separate=new Set(THIN);P3W.axes=list.filter(p=>THIN.includes(p.k)).map(p=>[p.x,p.z]);
     const r=KIT3D.merge(T,kit,list,P3W.ctx,p=>/^(car_wreck|crate_|drum_|water_tower)/.test(p.k)?'coches':regionOf(p));P3W.kitTris=r.tris;   // PUEBLO 4.0: the three pickups in one group per material

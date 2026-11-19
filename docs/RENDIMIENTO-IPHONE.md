@@ -165,3 +165,26 @@ iPhone Pro Max, Safari, ALTO, píxeles ×2.
 
 Código: `client/perfprobe.js` (cálculos e informe, puro) y el bloque «MEDIR RENDIMIENTO» de `src/page.html`.
 Prueba: `node test/perf.test.js`.
+
+### 19-11-2026 — Menos llamadas de dibujo en el PUEBLO 3.0/4.0: `&kitzonas=1` (PRUEBA, pendiente del iPhone)
+- **Medido en el PC** (`tools/pueblo-dibujo.js`, ALTO, 932 × 430 a ×2, vuelta de cámara en la plaza). En PUEBLO 4.0
+  (`?pueblo=4`) el kit de edificios hace 105 llamadas por fotograma, más 46 de sombras: 10 zonas del mapa por ~20
+  materiales. Juntar zonas no cambia nada de lo que se ve (mismas mallas y materiales), pero ya no se descarta lo que queda
+  detrás de la cámara:
+
+  | PUEBLO 4.0 | Llamadas | Triángulos |
+  |---|---|---|
+  | Hoy (10 zonas) | 264 | 419 mil |
+  | `&kitzonas=3` (oeste, este, fuera) | 212 | 498 mil |
+  | `&kitzonas=1` (una zona) | **171 (−35 %)** | 500 mil (+19 %) |
+
+- **Capturas con las mismas cámaras** (`tools/capture-scenes.js`): idénticas salvo el agua de la fuente y la hierba, que se
+  mueven. Desde lo alto de la plaza, de 323 a 178 llamadas.
+- **Qué gana en el iPhone: POR VERIFICAR.** Menos llamadas alivian la CPU y el envío de dibujo; más triángulos cargan la
+  GPU. Hay que medirlo con MEDIR RENDIMIENTO:
+  - `https://hamza189.github.io/SNIPER-1VS1/?pueblo=4&medir=1` (hoy)
+  - `https://hamza189.github.io/SNIPER-1VS1/?pueblo=4&kitzonas=1&medir=1`
+  Si va igual o mejor, pasa a ser lo de por defecto.
+- Prueba: `test/kitzonas.browser.test.js` (mismos triángulos y materiales en menos mallas, menos llamadas, sin errores).
+- Shaders y la primera partida: lo lleva la sesión de la pantalla de carga (barra 0–100 %). Perfil del 18-11: la
+  compilación de shaders son 4,7–11,5 s de la carga en el PC, con 30–46 programas.

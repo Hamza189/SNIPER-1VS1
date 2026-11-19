@@ -6,6 +6,16 @@ Cada entrada dice qué se decidió o cambió, quién lo decidió, y el estado re
 Las decisiones anteriores al 18-10-2026 están resumidas en `SNIPER_DUEL_MASTER_CONTEXT.md` §4.
 Detalle de cada cambio (antes/después, medidas, cómo revertir): `docs/next-level/NEXT_LEVEL_CHANGELOG.md`.
 
+## 19-11-2026 — Menos llamadas de dibujo en el PUEBLO: `&kitzonas=1` (prueba)
+- El propietario pidió bajar las llamadas de dibujo. Medido en PUEBLO 4.0: el kit de edificios son 105 + 46 llamadas
+  (10 zonas × ~20 materiales). Con `&kitzonas=1` el kit va en una zona por material: de 264 a 171 llamadas (−35 %), con
+  los mismos triángulos y materiales (en pantalla, +19 % de triángulos al no descartar lo de detrás). Las capturas son
+  idénticas.
+- En el iPhone, POR VERIFICAR con MEDIR RENDIMIENTO (`?pueblo=4&medir=1` frente a `?pueblo=4&kitzonas=1&medir=1`).
+  Detalle: `docs/RENDIMIENTO-IPHONE.md`.
+- La compilación de shaders al entrar no se ha tocado: la lleva la sesión de la pantalla de carga.
+- Estado: IMPLEMENTADO TRAS BANDERA · PROBADO EN NAVEGADOR · PENDIENTE DE VALIDACIÓN EN IPHONE.
+
 ## 18-11-2026 — Balas y líneas de visión del servidor en C++ (la cuarta pieza)
 - El propietario: «sigue pasando más cosas del motor a C, C# o C++». Medido antes de elegir: el perfil del servidor con 5
   bots daba el 45 % del tiempo a `segMap` de `core/geom.js` (balas, vista de los bots, apariciones, cuchillo).
