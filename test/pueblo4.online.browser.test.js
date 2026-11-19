@@ -60,7 +60,9 @@ async function until(page, fn, arg, ms) { try { await page.waitForFunction(fn, a
     room.debug.place('A', 5, 32.2, -Math.PI / 2); room.debug.place('B', -30, 0, Math.PI / 2);
     await sleep(1500);
     await A.evaluate(() => { __SD.P.yaw = -Math.PI / 2; __SD.P.pitch = 0; __SD.NET.N.corrMax = 0; __SD.input.keys.KeyW = true; });
-    await sleep(1800); await A.evaluate(() => { __SD.input.keys.KeyW = false; }); await sleep(1200);
+    // walk until the server has A inside (up to 5 s: on a loaded machine the first steps can take ~1 s to start)
+    for (let t = 0; t < 50 && !((room.debug.seat('A').p.ms || room.debug.seat('A').p).x > 9); t++) await sleep(100);
+    await A.evaluate(() => { __SD.input.keys.KeyW = false; }); await sleep(1200);
     const st = room.debug.seat('A'), p = st.p.ms || st.p, corr = +(await A.evaluate(() => __SD.NET.N.corrMax)) || 0;
     check('A entra andando en la ENCALADA y el servidor lo deja dentro (x 7…15)', p.x > 8 && p.x < 14.5 && Math.abs(p.z - 32.2) < 1.5, p.x.toFixed(2) + ', ' + p.z.toFixed(2));
     check('sin correcciones grandes del servidor al entrar (página y servidor con las mismas paredes)', corr < 0.5, corr.toFixed(3) + ' m');
