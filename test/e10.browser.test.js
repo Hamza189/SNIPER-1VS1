@@ -65,7 +65,7 @@ function check(name, cond, info) { if (cond) { pass++; console.log('  ok   ' + n
   check('solo un LOD visible a la vez', A.visibleLevels === 1);
 
   console.log('\nE10 — sin la bandera y con &e10=0');
-  for (const [url, label] of [['?vm=1', 'el juego normal'], ['?vm=1&pueblo=3&e10=0', '?pueblo=3&e10=0']]) {
+  for (const [url, label] of [['?vm=1&pueblo=0', 'el PUEBLO de antes (?pueblo=0)'], ['?vm=1&pueblo=3&e10=0', '?pueblo=3&e10=0']]) {
     await page.goto(srv.url + url);
     await page.waitForFunction(() => window.__SD && __SD.W, null, { timeout: 90000 });
     await page.waitForTimeout(1500);

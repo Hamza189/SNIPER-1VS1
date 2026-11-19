@@ -84,7 +84,8 @@ const shown = page => page.evaluate(ids => ids.filter(id => { const e = document
       const world0 = await page.evaluate(() => __SD.WORLD_ID);
       check('el menú enseña la ARENA DE PRUEBAS por defecto (mapa del duelo contra bots)', world0 === 'arena', world0);
       for (const id of ['pueblo', 'arena']) {
-        const d = await dumpWorld(page, id), M = MAPF.maps[id];
+        const sid = id === 'pueblo' && await page.evaluate(() => !!__SD.PU4) ? 'pueblo4' : id;   // 19-11-2026: PUEBLO 4.0 is the default (the server's 'pueblo4')
+        const d = await dumpWorld(page, id), M = MAPF.maps[sid];
         check('mapa ' + id + ': el del servidor coincide con el del juego (si cambias un mapa: node tools/export-map.js)', !!M && JSON.stringify(d.tris) === JSON.stringify(M.tris) && JSON.stringify(d.ds) === JSON.stringify(M.ds) && JSON.stringify(d.colliders) === JSON.stringify(M.colliders) && JSON.stringify(d.ramps) === JSON.stringify(M.ramps) && JSON.stringify(d.nav) === JSON.stringify(M.nav), (d.tris.length / 9) + ' triángulos');
       }
       check('después de comprobar los mapas la página sigue en el mismo mapa', await page.evaluate(w => __SD.WORLD_ID === w, world0));

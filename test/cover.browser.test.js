@@ -95,7 +95,7 @@ async function audit(page, url, p3, canary) {
   const page = await ctx.newPage();
   const errs = []; page.on('pageerror', e => errs.push(e.message));
   console.log('\nCOBERTURAS FALSAS — PUEBLO 2.0 (sin bandera)');
-  const A = await audit(page, srv.url + '?vm=1', false);
+  const A = await audit(page, srv.url + '?vm=1&pueblo=0', false);
   check('a la altura del cuerpo: todo lo que se ve para las balas', A.body === 0, A.body + ' vértices de ' + A.verts + ' en ' + A.meshes + ' mallas' + (A.ex.length ? ': ' + A.ex.join(' | ') : ''));
   check('sobre la calle: nada suelto lejos de un muro', A.over === 0, A.over + '');
   console.log('  info PUEBLO 2.0 tiene ' + A.roof + ' vértices sobre azoteas inalcanzables sin colisión (depósitos, chimeneas, antenas): ' + JSON.stringify(A.roofBy));
