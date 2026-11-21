@@ -87,7 +87,8 @@ texturas, personajes, mapas, etc...».
 sigue por defecto hasta que el propietario lo apruebe.
 
 **Cómo probarla:** abrir el juego con `?carga=2`. El aparato lo recuerda (las siguientes veces sale sin poner nada);
-`?carga=1` vuelve a la entrada de siempre.
+`?carga=1` vuelve a la entrada de siempre. También es un interruptor en AJUSTES › EN PRUEBA › PANTALLA DE CARGA
+(sirve en el acceso directo del iPhone, que abre siempre el enlace sin `?`).
 
 ### Qué se ve
 Negro grafito, blanco y el naranja del juego, con el logo. Sale lo primero, antes incluso de que llegue three.js. Debajo

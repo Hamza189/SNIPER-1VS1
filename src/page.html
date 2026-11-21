@@ -5704,9 +5704,10 @@ const FX=[
   {k:'balanceOld',name:'RIFLES DISTINTOS',sub:'Cada rifle con sus propias cifras contra bots (NO = todos como el HALCÓN)',cur:()=>BAL.on,val:v=>!v},
   {k:'penOff',name:'BALAS QUE ATRAVIESAN',sub:'Penetración de paredes finas y BALA DURA',cur:()=>PEN.on,val:v=>!v},
   {k:'deslizOld',name:'DESLIZAMIENTO NUEVO',sub:'El deslizamiento con su caja de colisión nueva (NO = el de antes)',cur:()=>SLIDE2.on,val:v=>!v},
-  {k:'rayosxOff',name:'RAYOS X EN PRUEBAS',sub:'Ver a los bots a través de las paredes en el mapa PRUEBAS',cur:()=>XRAY.on,val:v=>!v}];
+  {k:'rayosxOff',name:'RAYOS X EN PRUEBAS',sub:'Ver a los bots a través de las paredes en el mapa PRUEBAS',cur:()=>XRAY.on,val:v=>!v},
+  {k:'carga2',name:'PANTALLA DE CARGA',sub:'Al entrar, la barra del 0 al 100 % que deja listos personajes, armas, mapa y sombreadores (docs/CARGA.md)',cur:()=>CG.on,val:v=>v}];
 // the link flags these switches replace: RECARGAR removes them from the address so the switch, not an old link, decides
-const FX_PARAMS=['lobby','sala3d','pueblo','barrio','casa','casa2','casa2v','menu','arsenal','balance','pen','desliz','rayosx'];
+const FX_PARAMS=['lobby','sala3d','pueblo','barrio','casa','casa2','casa2v','menu','arsenal','balance','pen','desliz','rayosx','carga'];
 const FX_WANT={};let FX_RESET=false;   // RESTAURAR: what is remembered is forgotten; the page shows the defaults after reloading   // what was chosen in this visit (not applied until the page reloads)
 function fxRender(){
   const L=$('#fxList');if(!L)return;let n=0;

@@ -22,6 +22,7 @@ ya recuerda en el dispositivo:
 | BALAS QUE ATRAVIESAN | `penOff` (`?pen=1/0`) |
 | DESLIZAMIENTO NUEVO | `deslizOld` (`?desliz=1/0`) |
 | RAYOS X EN PRUEBAS | `rayosxOff` (`?rayosx=1/0`) |
+| PANTALLA DE CARGA | `carga2` (`?carga=2/1`; añadido el 21-11-2026, `docs/CARGA.md`) |
 
 - Cada interruptor muestra lo que está funcionando **ahora**. Así sigue siendo correcto aunque algo pase a ser lo de por
   defecto.

@@ -27,7 +27,7 @@ async function open(b, url, o) {
   await p.exposeFunction('__cgSeen', v => seen.push(v));
   await p.addInitScript(() => { const t = setInterval(() => { const e = document.getElementById('carga'); if (!e) return;
     window.__cgSeen([e.hidden ? -1 : +e.getAttribute('aria-valuenow'), document.readyState]); if (window.__SD && window.__SD.CARGA && window.__SD.CARGA.done) clearInterval(t); }, 150); });
-  await p.goto(url);
+  await p.goto(url, { timeout: 180000 });   // (with the PC busy, the page's load event alone can take over 30 s)
   await p.waitForFunction(() => window.__SD && __SD.WORLDS, null, { timeout: 120000 });
   return { ctx, p, errs, seen };
 }
