@@ -1330,7 +1330,7 @@ body.lbOn #fpsBox{left:auto;right:max(8px,env(safe-area-inset-right,0px));transf
         <label class="sens"><span class="lbl">Disparos</span><input id="vS" type="range" min="0" max="1" step="0.05"><output id="vSo"></output></label>
         <label class="sens"><span class="lbl">Efectos (recargas, impactos, menús)</span><input id="vF" type="range" min="0" max="1" step="0.05"><output id="vFo"></output></label>
         <label class="sens"><span class="lbl">Pasos</span><input id="vP" type="range" min="0" max="1" step="0.05"><output id="vPo"></output></label>
-        <label class="sens"><span class="lbl">Ambiente (viento)</span><input id="vA" type="range" min="0" max="1" step="0.05"><output id="vAo"></output></label>
+        <label class="sens"><span class="lbl">Ambiente (la fuente del pueblo)</span><input id="vA" type="range" min="0" max="1" step="0.05"><output id="vAo"></output></label>
         <label class="sens"><span class="lbl">Interfaz (botones y menús)</span><input id="vU" type="range" min="0" max="1" step="0.05"><output id="vUo"></output></label>
         <label class="chk"><input type="checkbox" id="sMute"> Silenciar todo</label>
         <label class="chk" id="vibRow"><input type="checkbox" id="sVib"> Vibración al disparar y al recibir daño (Android: el iPhone no deja vibrar a las páginas web)</label>
@@ -3024,10 +3024,13 @@ function audioInit(){
     for(let ch=0;ch<2;ch++){const dd=ir.getChannelData(ch);for(let i=0;i<rl;i++){dd[i]=(Math.random()*2-1)*Math.pow(1-i/rl,3.4)*(i<ctx.sampleRate*0.01?i/(ctx.sampleRate*0.01):1);}}}
   AU.verb=ctx.createConvolver();AU.verb.buffer=ir;const vg=ctx.createGain();vg.gain.value=0.5;AU.verb.connect(vg);vg.connect(AU.master);
   if(ctx.state==='suspended')ctx.resume();
-  // wind bed
+  // wind bed: OFF since 21-11-2026 (owner: «el sonido de viento se reproduce continuamente, es muy molesto, quítalo»).
+  // ?viento=1 brings it back (remembered: sniperduel_viento); ?viento=0 takes it away again
+  {const q=location.search.match(/[?&]viento=([01])\b/);if(q)store.set('viento',q[1]==='1');}
+  if(store.get('viento',false)===true){
   const ws=ctx.createBufferSource();ws.buffer=buf;ws.loop=true;const wf=ctx.createBiquadFilter();wf.type='lowpass';wf.frequency.value=380;const wg=ctx.createGain();wg.gain.value=0.035;
   const lfo=ctx.createOscillator();lfo.frequency.value=0.08;const lg=ctx.createGain();lg.gain.value=0.022;lfo.connect(lg);lg.connect(wg.gain);lfo.start();
-  ws.connect(wf);wf.connect(wg);wg.connect(AU.bus.amb);ws.start();
+  ws.connect(wf);wf.connect(wg);wg.connect(AU.bus.amb);ws.start();AU.wind=ws;}
   // LA FUENTE (14-11-2026): falling water, a hiss with a slow swell and a lower splash, louder near the plaza (fuenteAudio)
   if(typeof FUENTE!=='undefined'&&FUENTE.on){try{
     const fg=ctx.createGain();fg.gain.value=0;const fp=ctx.createStereoPanner?ctx.createStereoPanner():null;

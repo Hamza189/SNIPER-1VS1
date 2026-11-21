@@ -6,6 +6,12 @@ Cada entrada dice qué se decidió o cambió, quién lo decidió, y el estado re
 Las decisiones anteriores al 18-10-2026 están resumidas en `SNIPER_DUEL_MASTER_CONTEXT.md` §4.
 Detalle de cada cambio (antes/después, medidas, cómo revertir): `docs/next-level/NEXT_LEVEL_CHANGELOG.md`.
 
+## 21-11-2026 — Sin el viento de fondo
+Del propietario: «el sonido de viento se reproduce continuamente, es muy molesto, quítalo». El ruido de viento que sonaba
+siempre (en todos los mapas) ya no se crea. La fuente del PUEBLO sigue (solo suena cerca de la plaza) y el control de
+AJUSTES › AUDIO ahora dice «Ambiente (la fuente del pueblo)». `?viento=1` lo vuelve a poner (se recuerda).
+- Estado: IMPLEMENTADO · PROBADO EN NAVEGADOR.
+
 ## 19-11-2026 — En partida: tu aspecto desde la pausa, bajas más llamativas y RADAR
 Del propietario: «en partida, cuando voy al menú, pon un botón o dos para cambiar tanto el operador como el arma y la
 skin, sin tener que salir», «cuando haga una kill… que salga más brillante, de un color rojo… más llamativo» y «pon como
