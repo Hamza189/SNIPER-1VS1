@@ -147,6 +147,7 @@ reconciliación, interpolación del rival 110 ms, ping) · `vmrig.js` (materiale
 | `?balance=0` / `?balance=1` | Cifras de antes (las del HALCÓN R7 para los 5 modelos) / las de cada rifle (09-11, por defecto, solo sin conexión; en línea siempre el HALCÓN). Se recuerda (`docs/GUNSMITH.md`) |
 | `?pen=0` / `?pen=1` | Penetración de las balas de rifle contra bots (cajas, madera fina, chapa; con BALA DURA, un tabique). `?pen=0` la apaga (se recuerda). 09-11-2026, `docs/GUNSMITH.md` |
 | `?caja=0` | La caja de CAJAS de antes (la cuadrada de CSS) en lugar de la ATLAS DROP en 3D. 10-11-2026, `docs/ASSETS-3D.md` |
+| `?radar=0` / `?radar=1` | RADAR: cada 12 s los enemigos salen 3 s en el minimapa (se recuerda). 19-11-2026, `src/page.html` RADAR |
 | `?gpuauto=0` | AUTO de antes (ALTO en ordenadores, MEDIO en móviles) sin mirar la gráfica ni bajar solo en partida. 10-11-2026, `client/quality.js` |
 | `?desliz=0` / `?desliz=1` | Deslizamiento de verdad (piernas por delante) en tu 3ª persona sin conexión; `0` vuelve al de antes. 09-11-2026, `docs/PERSONAJES-PRO.md` |
 | `?rayosx=0` / `?rayosx=1` | Rayos X del MAPA DE PRUEBAS (zonas de impacto de los bots a través de las paredes). 09-11-2026, `docs/GUNSMITH.md` |

@@ -126,6 +126,15 @@ body.feel2 #hitmark.kill i,body.feel2 #hitmark.hs i{width:3px;left:-1.5px}
 #callout.on{animation:co .9s cubic-bezier(.2,.9,.2,1) forwards}
 #calloutMain{font-family:var(--f-display);font-size:clamp(32px,5vw,58px);line-height:.8;letter-spacing:.04em;font-weight:600;color:var(--hud);text-shadow:0 2px 0 rgba(0,0,0,.5),0 0 24px rgba(0,0,0,.4)}
 #callout.hs #calloutMain{color:var(--gold)}
+/* BAJAS MÁS LLAMATIVAS (19-11-2026, el propietario: «cuando haga una kill que el registro de daño de la muerte salga más
+   brillante, de un color rojo… que sea más llamativo»): la baja en rojo vivo con brillo; el tiro a la cabeza, en oro con
+   brillo; y tu baja en el registro de la derecha, con fondo rojo */
+#callout.kill #calloutMain{color:#ff3434;font-size:clamp(40px,6.4vw,74px);text-shadow:0 0 6px rgba(255,60,50,.95),0 0 22px rgba(255,40,30,.85),0 0 48px rgba(255,20,10,.55),0 3px 0 rgba(0,0,0,.6)}
+#callout.kill.hs #calloutMain{color:#ffd24a;text-shadow:0 0 6px rgba(255,214,90,.95),0 0 22px rgba(255,170,30,.85),0 0 48px rgba(255,120,0,.55),0 3px 0 rgba(0,0,0,.6)}
+#callout.kill #calloutSub{color:#ffd9d2;font-weight:600}
+#feed div.mine.kill{background:linear-gradient(90deg,rgba(150,14,10,.55),rgba(220,30,20,.8));border-right:3px solid #ff3434;color:#fff;box-shadow:0 0 14px rgba(255,40,30,.55)}
+#feed div.mine.kill.hs{background:linear-gradient(90deg,rgba(130,90,0,.55),rgba(220,160,20,.85));border-right-color:#ffd24a;box-shadow:0 0 14px rgba(255,190,40,.55)}
+.pauseLook{margin-top:2px}.pauseLook .btn{font-size:18px}
 #calloutSub{margin-top:6px;font-size:13px;letter-spacing:.2em;color:var(--sand);text-shadow:0 1px 4px #000}
 @keyframes co{0%{opacity:0;transform:translate(-50%,-50%) scale(1.6)}10%{opacity:1;transform:translate(-50%,-50%) scale(.96)}18%{transform:translate(-50%,-50%) scale(1)}75%{opacity:1}100%{opacity:0;transform:translate(-50%,-60%) scale(1)}}
 
@@ -1644,6 +1653,7 @@ body.lbOn #fpsBox{left:auto;right:max(8px,env(safe-area-inset-right,0px));transf
     <div class="row"><button class="btn" id="resume" type="button">REANUDAR</button><button class="btn ghost" id="toMenu1" type="button">MENÚ</button></div>
     <div class="kitRow"><span class="lbl">Arma principal · al reaparecer</span><div class="seg kitSeg" role="group" aria-label="Arma principal"><button type="button" data-kit="rifle">HALCÓN R7</button><button type="button" data-kit="shotgun">FURIA 12</button></div><span class="lbl kitNote" id="kitNote"></span></div>
     <div class="kitRow"><span class="lbl">Mira del rifle · se cambia al momento</span><button type="button" class="miraPick" aria-label="Elegir la mira del rifle" style="max-width:340px"><img alt=""><b></b><span class="lbl">CAMBIAR</span></button></div>
+    <div class="kitRow"><span class="lbl">Tu aspecto · sin salir de la partida (el rifle cambia sus cifras al reaparecer)</span><div class="row pauseLook"><button class="btn ghost" id="pauseLook" type="button">OPERADOR Y ARMA</button><button class="btn ghost" id="pauseCamo" type="button">CAMUFLAJE</button></div></div>
     <div class="row"><button class="btn ghost" id="pauseSettings" type="button" style="font-size:18px">AJUSTES</button><button class="btn ghost" id="dbgBtn" type="button" style="font-size:18px">PANEL TÉCNICO (F3)</button><button class="btn ghost" id="rangeReset" type="button" style="font-size:18px">REINICIAR ESTADÍSTICAS</button><button class="btn ghost" id="selfTestBtn" type="button" style="font-size:18px">AUTOTEST DE PUNTERÍA</button></div>
     <pre id="selfTestOut" hidden></pre>
   </div>
@@ -5133,22 +5143,22 @@ function onKill(bot,head,dist,how){
   const label=how==='back'?'POR LA ESPALDA':how==='knife'?'NAVAJA':head?'HEADSHOT':null;
   STATS.kills++;if(head)STATS.hs++;STATS.longest=Math.max(STATS.longest,dist);if(STATS.kills===1)STATS.firstKill=gameTime;STATS.lastKill=gameTime;
   if(mode==='range'){hitmarker(head||how==='back'?'hs':'kill');if(head){SFX.headshot();P.fovPunch=FEEL.headshotFovPunch*MOTION;slowmo=FEEL.headshotSlowmo;vibrate([30,40,60]);}else{SFX.hitTick();SFX.kill();vibrate(50);}
-    callout(label||'DERRIBADA',how?'':Math.round(dist)+' m',head||how==='back');addFeed('TÚ ▸ '+bot.name+(head?' · <em>HEADSHOT</em>':how==='back'?' · <em>ESPALDA</em>':how==='knife'?' · NAVAJA':'')+(how?'':' · '+Math.round(dist)+' m'),head||how==='back'?'mine hs':'mine');return;}
+    callout(label||'DERRIBADA',how?'':Math.round(dist)+' m',head||how==='back',false,true);addFeed('TÚ ▸ '+bot.name+(head?' · <em>HEADSHOT</em>':how==='back'?' · <em>ESPALDA</em>':how==='knife'?' · NAVAJA':'')+(how?'':' · '+Math.round(dist)+' m'),head||how==='back'?'mine hs':'mine');return;}
   $('#kYou').textContent=STATS.kills;
   hitmarker(head||how==='back'?'hs':'kill');
   const pts=head?100:50;const long=dist>55;
   if(head){SFX.headshot();P.fovPunch=FEEL.headshotFovPunch*MOTION;slowmo=FEEL.headshotSlowmo;vibrate([30,40,60]);}
   else{SFX.hitTick();SFX.kill();vibrate(50);}
-  callout(label||'ELIMINADO',how?'+'+(how==='back'?100:50):'+'+(pts+(long?25:0))+' · '+Math.round(dist)+' m'+(long?' · TIRO LARGO':''),head||how==='back');
-  addFeed('TÚ ▸ '+bot.name+(head?' · <em>HEADSHOT</em>':how==='back'?' · <em>ESPALDA</em>':how==='knife'?' · NAVAJA':'')+(how?'':' · '+Math.round(dist)+' m'),head||how==='back'?'mine hs':'mine');
+  callout(label||'ELIMINADO',how?'+'+(how==='back'?100:50):'+'+(pts+(long?25:0))+' · '+Math.round(dist)+' m'+(long?' · TIRO LARGO':''),head||how==='back',false,true);
+  addFeed('TÚ ▸ '+bot.name+(head?' · <em>HEADSHOT</em>':how==='back'?' · <em>ESPALDA</em>':how==='knife'?' · NAVAJA':'')+(how?'':' · '+Math.round(dist)+' m'),head||how==='back'?'mine hs kill':'mine kill');
   if(STATS.kills>=GOAL)later(1.4,()=>endMatch(true));
 }
 function hitmarker(kind){const h=$('#hitmark');h.className='';void h.offsetWidth;h.className='on '+kind;}
 let calloutTimer=0;
-function callout(main,sub,hs,minor){
+function callout(main,sub,hs,minor,kill){
   const c=$('#callout');if(minor&&c.classList.contains('on')&&calloutTimer>0.3)return;
   $('#calloutMain').textContent=main;$('#calloutSub').textContent=sub;
-  c.className='';void c.offsetWidth;c.className='on'+(hs?' hs':'');
+  c.className='';void c.offsetWidth;c.className='on'+(hs?' hs':'')+(kill?' kill':'');
   $('#calloutMain').style.fontSize=minor?'clamp(22px,3.4vw,34px)':'';
   calloutTimer=0.9;
 }
@@ -6791,8 +6801,8 @@ function netEvent(e){
         STATS.kills++;STATS.longest=Math.max(STATS.longest,e.dist);
         hitmarker(e.part==='head'?'hs':'kill');
         if(e.part==='head'){SFX.headshot();P.fovPunch=FEEL.headshotFovPunch*MOTION;slowmo=FEEL.headshotSlowmo;vibrate([30,40,60]);}else{SFX.hitTick();SFX.kill();vibrate(50);}
-        callout(e.weapon==='knife'?'NAVAJA':e.part==='head'?'HEADSHOT':'BAJA',e.weapon==='knife'?'':e.dist+' m',e.part==='head');
-        addFeed('TÚ ▸ '+escapeHtml(names[other]||'RIVAL')+tag+(e.weapon==='knife'?'':' · '+e.dist+' m'),e.part==='head'?'mine hs':'mine');
+        callout(e.weapon==='knife'?'NAVAJA':e.part==='head'?'HEADSHOT':'BAJA',e.weapon==='knife'?'':e.dist+' m',e.part==='head',false,true);
+        addFeed('TÚ ▸ '+escapeHtml(names[other]||'RIVAL')+tag+(e.weapon==='knife'?'':' · '+e.dist+' m'),e.part==='head'?'mine hs kill':'mine kill');
       }else if(e.to===N.you){
         STATS.deaths++;P.alive=false;P.deadT=0;P.hp=0;updateHpUI();
         addFeed(escapeHtml(names[other]||'RIVAL')+' ▸ TÚ'+tag+(e.weapon==='knife'?'':' · '+e.dist+' m'),'dead');
@@ -7163,8 +7173,8 @@ function skinUI(){
   document.querySelectorAll('.skinPick').forEach(b=>{const im=b.querySelector('img'),src=skinImg(SKIN);if(im.getAttribute('src')!==src)im.src=src;b.querySelector('b').textContent=SKINS[SKIN].name;});
   document.querySelectorAll('#skinGrid .skinCard').forEach(c=>c.setAttribute('aria-pressed',String(c.dataset.skin===SKIN)));
 }
-function openSkins(){$('#skinOv').hidden=false;$('#skinOv').scrollTop=0;for(const id of ['menu','mp','profOv'])$('#'+id).classList.add('under');const c=$('.skinCard[aria-pressed="true"]');if(c)c.focus();}
-function closeSkins(){$('#skinOv').hidden=true;for(const id of ['menu','mp','profOv'])$('#'+id).classList.remove('under');}
+function openSkins(){$('#skinOv').hidden=false;$('#skinOv').scrollTop=0;for(const id of ['menu','mp','profOv','pause'])$('#'+id).classList.add('under');const c=$('.skinCard[aria-pressed="true"]');if(c)c.focus();}
+function closeSkins(){$('#skinOv').hidden=true;for(const id of ['menu','mp','profOv','pause'])$('#'+id).classList.remove('under');}
 if(SKIN_ON){
   $('#skinBlock').hidden=false;document.querySelectorAll('.skinOnly').forEach(e=>e.hidden=false);
   for(const id in SKINS){const c=document.createElement('button');c.type='button';c.className='skinCard';c.dataset.skin=id;
@@ -7360,8 +7370,15 @@ function invUI(){
   $('#invHelp').textContent='Cómo se ganan: una caja de bienvenida y una cada día. Online (los dos con cuenta, más de 1 min jugado): ganar +'+P.onlineWin+', empatar +'+P.onlineDraw+', perder +'+P.onlineLoss+', si el rival abandona +'+P.abandonWin
     +'. Contra bots que disparan: ganar +'+P.botWin+', perder +'+P.botLoss+' (hasta '+P.botsDay+' al día). '+P.box+' puntos = 1 caja. Probabilidades: '+pr+'. Nunca sale algo que ya tienes. Las cajas no se compran: solo se ganan jugando. Solo cambian el aspecto: ni daño, ni cadencia, ni zonas de impacto.';
 }
-function openInv(){box3Load();invMsg('');invUI();$('#invOv').hidden=false;$('#invOv').scrollTop=0;for(const id of ['menu','profOv'])$('#'+id).classList.add('under');if(ACC.token)accRefresh();}
-function closeInv(){$('#invOv').hidden=true;for(const id of ['menu','profOv'])$('#'+id).classList.remove('under');}
+function openInv(){box3Load();invMsg('');invUI();$('#invOv').hidden=false;$('#invOv').scrollTop=0;for(const id of ['menu','profOv','pause'])$('#'+id).classList.add('under');if(ACC.token)accRefresh();}
+function closeInv(){$('#invOv').hidden=true;for(const id of ['menu','profOv','pause'])$('#'+id).classList.remove('under');}
+/* EN PAUSA, TU ASPECTO (19-11-2026, el propietario: «en partida, cuando voy al menú, pon un botón o dos para cambiar tanto
+   el operador como el arma y la skin, sin tener que salir»): OPERADOR Y ARMA abre la misma lista de operadores, rifles y
+   cuchillos de siempre (setSkin / setWskin cambian el modelo al momento; en línea, el rival ve el operador nuevo) y
+   CAMUFLAJE abre CAJAS Y OBJETOS en la pestaña de camuflajes. Las cifras del rifle (sin conexión) se aplican al
+   reaparecer, como siempre. Solo aspecto: nada de esto toca el servidor ni las zonas de impacto. */
+$('#pauseLook').addEventListener('click',()=>{audioInit();SFX.ui();openSkins();});
+$('#pauseCamo').addEventListener('click',()=>{audioInit();SFX.ui();INV.tab='camo';openInv();});
 async function invEquipSet(slot,id){
   if(!ACC.acc||INV.busy)return;const prev=Object.assign({},INV.equip);
   if(id)INV.equip[slot]=id;else delete INV.equip[slot];camoApply();retApply();invUI();   // at once; the server confirms
@@ -7549,7 +7566,30 @@ function clockFrame(){
   const s=Math.ceil(left),txt=Math.floor(s/60)+':'+String(s%60).padStart(2,'0');if(el.textContent!==txt)el.textContent=txt;
   const low=s<=60;if(el.classList.contains('low')!==low)el.classList.toggle('low',low);
 }
-const MINI={layers:{},pings:[],last:0};
+const MINI={layers:{},pings:[],last:0,force:-1};
+/* RADAR (19-11-2026, el propietario: «pon como un radar, que cada 10-15 segundos se pueda ver la ubicación de los
+   enemigos»): cada 12 s de partida, los enemigos vivos salen 3 s en el minimapa (el punto rojo de los disparos, con una
+   onda que barre el minimapa). Si llevas el minimapa apagado, se enciende solo esos 3 s. Contra bots y en línea (con las
+   posiciones del rival que el servidor ya manda para dibujarlo; los compañeros de equipo siguen siempre en azul). No en
+   el campo de tiro. ?radar=0 lo apaga (se recuerda); ?radar=1 lo vuelve a poner. */
+{const q=location.search.match(/[?&]radar=([01])\b/);if(q)store.set('radarOff',q[1]==='0');}
+const RADAR={on:store.get('radarOff',false)!==true,every:12,show:3,next:-1,at:-9};
+function radarEnemies(){
+  const out=[];
+  if(mode==='online'&&NET.N){
+    if(netMulti()){for(const o of NET.N.ops||[]){if(o.id===NET.N.you||netMate(o.id))continue;const q=NET.N.remotePose(o.id);if(q&&q.alive!==false)out.push(q);}}
+    else{const q=NET.N.remotePose();if(q&&q.alive!==false&&REMOTE&&REMOTE.alive!==false)out.push(q);}
+  }else for(const b of activeBots())if(b.alive&&b.g)out.push(b.g.position);
+  return out;
+}
+function radarFrame(){
+  if(!RADAR.on||mode==='range'||state!=='playing'){RADAR.next=-1;return;}
+  if(RADAR.next<0||RADAR.next-gameTime>RADAR.every+1){RADAR.next=gameTime+RADAR.every;return;}   // a new match or life: the first sweep 12 s in
+  if(gameTime<RADAR.next)return;
+  RADAR.next=gameTime+RADAR.every;RADAR.at=gameTime;MINI.force=gameTime+RADAR.show;
+  for(const p of radarEnemies()){miniPing(p.x,p.z);MINI.pings[MINI.pings.length-1].radar=1;}
+  SFX.click(0,1800,0.12);
+}
 function miniPing(x,z){MINI.pings.push({x,z,t:gameTime});if(MINI.pings.length>24)MINI.pings.shift();}
 // the map from above, once per world: body-height obstacles of the collision boxes
 function miniLayer(){
@@ -7564,7 +7604,7 @@ function miniLayer(){
   return MINI.layers[WORLD_ID]={cv,x0,z0,ppm,radius:clamp(ext*0.3,9,34)};
 }
 function miniFrame(){
-  const cv=$('#mini'),on=!!SETTINGS.minimap&&(state==='playing'||state==='dead'||state==='paused');
+  const cv=$('#mini'),on=(!!SETTINGS.minimap||gameTime<MINI.force)&&(state==='playing'||state==='dead'||state==='paused');
   if(cv.hidden===on)cv.hidden=!on;if(!on)return;
   const t=performance.now();if(t-MINI.last<45)return;MINI.last=t;   // ~20 times a second is plenty
   const L=miniLayer(),dpr=Math.min(2,window.devicePixelRatio||1),px=Math.round((cv.clientWidth||150)*dpr),r=px/2;
@@ -7578,6 +7618,8 @@ function miniFrame(){
   if(mode==='online'&&NET.N&&NET.N.mode==='equipos')for(const o of NET.N.ops||[]){if(!netMate(o.id))continue;const q=NET.N.remotePose(o.id);if(q&&q.alive){g.fillStyle='#4da3ff';g.beginPath();g.arc(q.x,q.z,3.4*dpr/k,0,7);g.fill();}}
   for(const p of MINI.pings){const f=1-(now-p.t)/3;g.fillStyle='rgba(229,72,58,'+(0.3+0.7*f).toFixed(2)+')';g.beginPath();g.arc(p.x,p.z,(3.2+2.5*(1-f))*dpr/k,0,7);g.fill();}
   g.restore();
+  // RADAR: a ring that sweeps out from you for the first second of a radar ping
+  {const a=gameTime-RADAR.at;if(a>=0&&a<1){g.strokeStyle='rgba(255,70,55,'+(0.9*(1-a)).toFixed(2)+')';g.lineWidth=2*dpr;g.beginPath();g.arc(r,r,Math.max(1,(r-2*dpr)*a),0,7);g.stroke();}}
   // you: an arrow in the middle, pointing where you look; N on the rim
   g.fillStyle='#f4ead8';g.beginPath();g.moveTo(r,r-7*dpr);g.lineTo(r+5*dpr,r+5*dpr);g.lineTo(r,r+2.5*dpr);g.lineTo(r-5*dpr,r+5*dpr);g.closePath();g.fill();
   const na=rot-Math.PI/2;g.fillStyle='#ff8a2b';g.font='600 '+Math.round(11*dpr)+'px "IBM Plex Mono",monospace';g.textAlign='center';g.textBaseline='middle';
@@ -8367,7 +8409,7 @@ function frameBody(now){
     if(DIAG.want||DIAG.group)DIAG.frame(rdt);
     updateViewmodel(rdt);
     pmark('arma1p');
-    updateCompass();clockFrame();miniFrame();
+    updateCompass();clockFrame();radarFrame();miniFrame();
     if(WCORE.ads>=GUNCFG.scopeAt){rangeT-=rdt;if(rangeT<=0){rangeT=0.1;_ae.set(AIM.pitch,AIM.yaw,0,'YXZ');_aq.setFromEuler(_ae);RAY.set(camera.position,new T.Vector3(0,0,-1).applyQuaternion(_aq));RAY.near=0;RAY.far=400;const h=RAY.intersectObjects(shotTargets(),false);$('#rng').textContent=h.length?String(Math.round(h[0].distance)).padStart(3,'0'):'---';}}
   }else if(state==='menu'){
     // MENÚ 2 draws its own room, but the game camera still circles the map as with the old menu: the map's level of
@@ -8880,6 +8922,6 @@ function cgStart(){
 }
 cgStart();
 
-window.__SD={CARGA:CG,cgMem,sceneUpdate,audioInit,get MAT_ALL(){return MAT_ALL;},get GFX(){return GFX;},get BOX3(){return BOX3;},get GUNCFG(){return GUNCFG;},PRUEBAS,XRAY,xrayFrame,SLIDE2,PEN,penBox,spawnBullet,updateBullets,HALCON,BAL,rifleCfgFor,applyRifleCfg,gsGun,SIL,silCfg,silSaved,SFX,GUN,camLight,get gameTime(){return gameTime;},GSI,gsiDone,gsiRender,M2,m2Tab,m2Sync,m2Sleep,LB,lbRender,lbFrame,openSettings,closeSettings,MIRA,setMira,miraApply,miraClipGeo,miraRifle,openMiras,closeMiras,updateReticle,ENV,MOVE_CLASSIC,MOV_CLASSIC,VIS,VIS_COL,VIS_HULL,visOn,visFrame,visWho,selfHit,PROF,KTX2,R2_ON,R2_URL,PIC,GYRO,gyroEv,crossApply,btnPress,settingsChanged,perfTexMB(){const t=perfTextures();return {real:SDPerf.textureMB(t),asRGBA:SDPerf.textureMB(t.map(x=>Object.assign({},x,{bytes:0})))};},REMOTES,netScoreHud,shotTargets,MINI,miniLayer,miniPing,clockFrame,setOffTime,get OFF_TIME(){return OFF_TIME;},ACC,accRefresh,INV,invSync,camoApply,openInv,invOpenBox,WSKIN,WS_ST,setWskin,get RIF(){return RIF;},TPV,SELF,get PROFILE(){return PROFILE;},openProfile,endMatch,PJ_MIX,MIX_ORDER,SKINS,get SKIN(){return SKIN;},setSkin,pj2SetPack,rivalSkin,PERF,perfRun,HUD2,get H2(){return HUD2?H2:null;},leanIn:HUD2?leanIn:null,h2Frame:HUD2?h2Frame:null,PJ2,pj2Load,CASA,casaLoad,C2,C2B,C2J,C2S,casa2Load,BAR,barrioLoad,FLORA,RATS,RAT_WORLD,ratsFrame,SHADOW_FADE,setDuelLethal,get DUEL_LETHAL(){return DUEL_LETHAL;},gfxDiagText,get P3ON(){return P3ON;},PU4,COBCC,damagePlayer,TEX,sunFollow,setSunSnap(on){SUN_SNAP=!!on;},sun,P0,E10,e10Lod,DIAG,setTrainMove,LIGHT:{sun,hemi,skyMat,LOOK,P3},P3W,freeze(on){SIM_FREEZE=!!on;},SHOT,VMA,makeSoldier,animateSoldier,BOT_MAT,scene,camera,RemotePlayer,PMprev,PIS,PROOT,RIF,WROOT,SHO_:null,MANUAL,advance(ms){frameBody(last+ms);},get LAST_PELLETS(){return LAST_PELLETS;},SCORE,SCFG,SROOT,SHO,setPrimaryChoice,get PRIMARY(){return PRIMARY;},PCORE,PCFG,setWorld,WORLDS,get WORLD_ID(){return WORLD_ID;},renderer,GFX,gfxApply,get NET(){return NET;},get REMOTE(){return REMOTE;},W,get NAV(){return NAV;},setOffMap,get OFFMAP(){return OFFMAP;},TOUCH,EDIT,openEditor,get SETTINGS(){return SETTINGS;},get LAYOUT(){return LAYOUT;},checkOrientation,MAT,LOAD,TRAINERS,get RANGE_BOTS(){return RANGE_BOTS;},TRAIN,setTrain,setLethal,kitNote,GINS,TDIAG,AU,get TOUCH_EVENTS(){return TOUCH_EVENTS;},impactFX,bodyFX,get DECALS(){return DECALS;},surfaceOf,soundDelay,aimSelfTest,P,PM,WS,WCORE,RECOIL,AIM,BOTS,DUMMIES,BULLETS,EVENTS,PARTS,STATS,get state(){return state;},get mode(){return mode;},setMode,input,startMatch,simTick,frame,toMenu,pause,resume,CASAS,casasSolid,FUENTE};
+window.__SD={get RADAR(){return RADAR;},get MINI(){return MINI;},onKill,CARGA:CG,cgMem,sceneUpdate,audioInit,get MAT_ALL(){return MAT_ALL;},get GFX(){return GFX;},get BOX3(){return BOX3;},get GUNCFG(){return GUNCFG;},PRUEBAS,XRAY,xrayFrame,SLIDE2,PEN,penBox,spawnBullet,updateBullets,HALCON,BAL,rifleCfgFor,applyRifleCfg,gsGun,SIL,silCfg,silSaved,SFX,GUN,camLight,get gameTime(){return gameTime;},GSI,gsiDone,gsiRender,M2,m2Tab,m2Sync,m2Sleep,LB,lbRender,lbFrame,openSettings,closeSettings,MIRA,setMira,miraApply,miraClipGeo,miraRifle,openMiras,closeMiras,updateReticle,ENV,MOVE_CLASSIC,MOV_CLASSIC,VIS,VIS_COL,VIS_HULL,visOn,visFrame,visWho,selfHit,PROF,KTX2,R2_ON,R2_URL,PIC,GYRO,gyroEv,crossApply,btnPress,settingsChanged,perfTexMB(){const t=perfTextures();return {real:SDPerf.textureMB(t),asRGBA:SDPerf.textureMB(t.map(x=>Object.assign({},x,{bytes:0})))};},REMOTES,netScoreHud,shotTargets,MINI,miniLayer,miniPing,clockFrame,setOffTime,get OFF_TIME(){return OFF_TIME;},ACC,accRefresh,INV,invSync,camoApply,openInv,invOpenBox,WSKIN,WS_ST,setWskin,get RIF(){return RIF;},TPV,SELF,get PROFILE(){return PROFILE;},openProfile,endMatch,PJ_MIX,MIX_ORDER,SKINS,get SKIN(){return SKIN;},setSkin,pj2SetPack,rivalSkin,PERF,perfRun,HUD2,get H2(){return HUD2?H2:null;},leanIn:HUD2?leanIn:null,h2Frame:HUD2?h2Frame:null,PJ2,pj2Load,CASA,casaLoad,C2,C2B,C2J,C2S,casa2Load,BAR,barrioLoad,FLORA,RATS,RAT_WORLD,ratsFrame,SHADOW_FADE,setDuelLethal,get DUEL_LETHAL(){return DUEL_LETHAL;},gfxDiagText,get P3ON(){return P3ON;},PU4,COBCC,damagePlayer,TEX,sunFollow,setSunSnap(on){SUN_SNAP=!!on;},sun,P0,E10,e10Lod,DIAG,setTrainMove,LIGHT:{sun,hemi,skyMat,LOOK,P3},P3W,freeze(on){SIM_FREEZE=!!on;},SHOT,VMA,makeSoldier,animateSoldier,BOT_MAT,scene,camera,RemotePlayer,PMprev,PIS,PROOT,RIF,WROOT,SHO_:null,MANUAL,advance(ms){frameBody(last+ms);},get LAST_PELLETS(){return LAST_PELLETS;},SCORE,SCFG,SROOT,SHO,setPrimaryChoice,get PRIMARY(){return PRIMARY;},PCORE,PCFG,setWorld,WORLDS,get WORLD_ID(){return WORLD_ID;},renderer,GFX,gfxApply,get NET(){return NET;},get REMOTE(){return REMOTE;},W,get NAV(){return NAV;},setOffMap,get OFFMAP(){return OFFMAP;},TOUCH,EDIT,openEditor,get SETTINGS(){return SETTINGS;},get LAYOUT(){return LAYOUT;},checkOrientation,MAT,LOAD,TRAINERS,get RANGE_BOTS(){return RANGE_BOTS;},TRAIN,setTrain,setLethal,kitNote,GINS,TDIAG,AU,get TOUCH_EVENTS(){return TOUCH_EVENTS;},impactFX,bodyFX,get DECALS(){return DECALS;},surfaceOf,soundDelay,aimSelfTest,P,PM,WS,WCORE,RECOIL,AIM,BOTS,DUMMIES,BULLETS,EVENTS,PARTS,STATS,get state(){return state;},get mode(){return mode;},setMode,input,startMatch,simTick,frame,toMenu,pause,resume,CASAS,casasSolid,FUENTE};
 })();
 </script>

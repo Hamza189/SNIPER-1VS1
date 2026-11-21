@@ -6,6 +6,20 @@ Cada entrada dice qué se decidió o cambió, quién lo decidió, y el estado re
 Las decisiones anteriores al 18-10-2026 están resumidas en `SNIPER_DUEL_MASTER_CONTEXT.md` §4.
 Detalle de cada cambio (antes/después, medidas, cómo revertir): `docs/next-level/NEXT_LEVEL_CHANGELOG.md`.
 
+## 19-11-2026 — En partida: tu aspecto desde la pausa, bajas más llamativas y RADAR
+Del propietario: «en partida, cuando voy al menú, pon un botón o dos para cambiar tanto el operador como el arma y la
+skin, sin tener que salir», «cuando haga una kill… que salga más brillante, de un color rojo… más llamativo» y «pon como
+un radar, que cada 10-15 segundos se pueda ver la ubicación de los enemigos».
+- **Pausa:** OPERADOR Y ARMA (la lista de operadores, rifles y cuchillos de siempre; cambia al momento, en línea el rival
+  ve el operador nuevo) y CAMUFLAJE (CAJAS Y OBJETOS en camuflajes). Las cifras del rifle, sin conexión, al reaparecer.
+- **Baja:** el aviso del centro en rojo vivo con brillo (oro con brillo si es a la cabeza) y tu baja en el registro con
+  fondo rojo. Contra bots, en el campo de tiro y en línea.
+- **RADAR:** cada 12 s de partida los enemigos vivos salen 3 s en el minimapa, con una onda; con el minimapa apagado se
+  enciende solo esos 3 s. Contra bots y en línea, con las posiciones que el servidor ya manda para dibujar al rival (no
+  toca el servidor). No en el campo de tiro. `?radar=0` lo apaga. Es un cambio de juego que pidió el propietario: los dos
+  jugadores lo tienen igual.
+- Prueba: `test/pausa.browser.test.js` (13).
+- Estado: IMPLEMENTADO · PROBADO EN NAVEGADOR (PC con GPU) · PENDIENTE DE VALIDACIÓN EN IPHONE.
 ## 19-11-2026 — PANTALLA DE CARGA con barra del 0 al 100 % (`?carga=2`)
 - El propietario: «la típica barrita que va del 0% al 100%… que en ese momento cargue todas las armas, texturas,
   personajes, mapas». Detrás de `?carga=2` (el aparato lo recuerda; `?carga=1` la quita). Lo de siempre sigue por defecto.
