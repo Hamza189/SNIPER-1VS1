@@ -34,7 +34,7 @@ const shown = page => page.evaluate(ids => ids.filter(id => { const e = document
     await ctx.route(/fonts\.(googleapis|gstatic)\.com/, r => r.abort());
     const page = await ctx.newPage();
     page.on('pageerror', e => errors.push(e.message));
-    await page.goto(url, { waitUntil: 'load' }); await page.waitForTimeout(1500);
+    await page.goto(url, { waitUntil: 'load', timeout: 120000 });   // PUEBLO 4.0 by default (19-11): heavier in software WebGL await page.waitForTimeout(1500);
     return { ctx, page };
   };
   try {

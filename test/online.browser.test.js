@@ -26,8 +26,8 @@ async function until(page, fn, arg, ms) { try { await page.waitForFunction(fn, a
     await ctx.route(/fonts\.(googleapis|gstatic)\.com/, r => r.abort());
     const page = await ctx.newPage();
     page.on('pageerror', e => errors.push(e.message));
-    await page.goto(web.url + '?perf=low&server=' + encodeURIComponent(server) + (pj3 ? '&pj=3' : '') + (q || ''));  // perf=low: no GPU on the test machine
-    await page.waitForFunction(() => window.__SD);
+    await page.goto(web.url + '?perf=low&server=' + encodeURIComponent(server) + (pj3 ? '&pj=3' : '') + (q || ''), { timeout: 120000 });  // perf=low: no GPU on the test machine
+    await page.waitForFunction(() => window.__SD, null, { timeout: 120000 });
     return page;
   };
   try {
@@ -42,7 +42,7 @@ async function until(page, fn, arg, ms) { try { await page.waitForFunction(fn, a
     check('A crea la sala y ve el código', await until(A, () => /^[A-Z0-9]{6}$/.test(document.getElementById('mpCodeBig').textContent)));
     const code = await A.textContent('#mpCodeBig');
     const link = await A.textContent('#mpLink');
-    check('enlace de invitación con el código', link.endsWith('?sala=' + code), link);
+    check('enlace de invitación con el código', (link.endsWith('?sala=' + code) || link.endsWith('?sala=' + code + '&pueblo=4')), link);   // PUEBLO 4.0 (the default since 19-11) travels in the link
     const B = await open('&sala=' + code);
     check('B abre el enlace: el código ya está puesto', await until(B, c => document.getElementById('mpCode').value === c, code));
     await B.fill('#mpName', 'Novia'); await B.click('#mpJoin');

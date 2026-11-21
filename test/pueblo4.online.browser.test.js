@@ -43,8 +43,8 @@ async function until(page, fn, arg, ms) { try { await page.waitForFunction(fn, a
     await A.click('#mpMapSeg button[data-map="pueblo"]');
     check("A elige PUEBLO: el servidor pone su mapa 'pueblo4'", await until(A, () => __SD.NET.N.mapSrv === 'pueblo4' && __SD.NET.N.map === 'pueblo') && srv.rooms.get(code).debug.mapId === 'pueblo4', srv.rooms.get(code).debug.mapId);
     // B joins with a link WITHOUT the flag: the page must reload itself with ?pueblo=4 and rejoin
-    const B = await open('&sala=' + code);
-    check('B (sin bandera) empieza con el PUEBLO de siempre', await B.evaluate(() => !__SD.CASAS.on));
+    const B = await open('&sala=' + code + '&pueblo=0');   // B comes with the town of before (?pueblo=0)
+    check('B (con ?pueblo=0) empieza con el PUEBLO de antes', await B.evaluate(() => !__SD.CASAS.on));
     await until(B, c => document.getElementById('mpCode').value === c, code);
     await B.fill('#mpName', 'Novia'); await B.click('#mpJoin');
     const back = await until(B, () => /[?&]pueblo=4\b/.test(location.search + '') || (window.__SD && __SD.CASAS && __SD.CASAS.on), null, 60000);
