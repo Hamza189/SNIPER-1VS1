@@ -1330,7 +1330,6 @@ body.lbOn #fpsBox{left:auto;right:max(8px,env(safe-area-inset-right,0px));transf
         <label class="sens"><span class="lbl">Disparos</span><input id="vS" type="range" min="0" max="1" step="0.05"><output id="vSo"></output></label>
         <label class="sens"><span class="lbl">Efectos (recargas, impactos, menús)</span><input id="vF" type="range" min="0" max="1" step="0.05"><output id="vFo"></output></label>
         <label class="sens"><span class="lbl">Pasos</span><input id="vP" type="range" min="0" max="1" step="0.05"><output id="vPo"></output></label>
-        <label class="sens"><span class="lbl">Ambiente (la fuente del pueblo)</span><input id="vA" type="range" min="0" max="1" step="0.05"><output id="vAo"></output></label>
         <label class="sens"><span class="lbl">Interfaz (botones y menús)</span><input id="vU" type="range" min="0" max="1" step="0.05"><output id="vUo"></output></label>
         <label class="chk"><input type="checkbox" id="sMute"> Silenciar todo</label>
         <label class="chk" id="vibRow"><input type="checkbox" id="sVib"> Vibración al disparar y al recibir daño (Android: el iPhone no deja vibrar a las páginas web)</label>
@@ -3013,7 +3012,7 @@ function audioInit(){
   const comp=ctx.createDynamicsCompressor();comp.threshold.value=-12;comp.ratio.value=5;comp.attack.value=0.002;comp.release.value=0.2;comp.connect(ctx.destination);
   AU.master=ctx.createGain();AU.master.gain.value=0.85;AU.master.connect(comp);
   // channels (AJUSTES → AUDIO): every sound goes through one of these on its way to the master
-  AU.bus={};for(const k of ['shots','fx','steps','amb','ui'])(AU.bus[k]=ctx.createGain()).connect(AU.master);
+  AU.bus={};for(const k of ['shots','fx','steps','ui'])(AU.bus[k]=ctx.createGain()).connect(AU.master);
   audioLevels();
   // the noise and the reverb (18-11-2026): from C++/WebAssembly when it is loaded (client/audiowasm.js, wasm/audio.cpp), else here
   const len=ctx.sampleRate*2;const buf=ctx.createBuffer(1,len,ctx.sampleRate);const d=buf.getChannelData(0);AU.noise=buf;
@@ -3024,28 +3023,8 @@ function audioInit(){
     for(let ch=0;ch<2;ch++){const dd=ir.getChannelData(ch);for(let i=0;i<rl;i++){dd[i]=(Math.random()*2-1)*Math.pow(1-i/rl,3.4)*(i<ctx.sampleRate*0.01?i/(ctx.sampleRate*0.01):1);}}}
   AU.verb=ctx.createConvolver();AU.verb.buffer=ir;const vg=ctx.createGain();vg.gain.value=0.5;AU.verb.connect(vg);vg.connect(AU.master);
   if(ctx.state==='suspended')ctx.resume();
-  // wind bed: OFF since 21-11-2026 (owner: «el sonido de viento se reproduce continuamente, es muy molesto, quítalo»).
-  // ?viento=1 brings it back (remembered: sniperduel_viento); ?viento=0 takes it away again
-  {const q=location.search.match(/[?&]viento=([01])\b/);if(q)store.set('viento',q[1]==='1');}
-  if(store.get('viento',false)===true){
-  const ws=ctx.createBufferSource();ws.buffer=buf;ws.loop=true;const wf=ctx.createBiquadFilter();wf.type='lowpass';wf.frequency.value=380;const wg=ctx.createGain();wg.gain.value=0.035;
-  const lfo=ctx.createOscillator();lfo.frequency.value=0.08;const lg=ctx.createGain();lg.gain.value=0.022;lfo.connect(lg);lg.connect(wg.gain);lfo.start();
-  ws.connect(wf);wf.connect(wg);wg.connect(AU.bus.amb);ws.start();AU.wind=ws;}
-  // LA FUENTE (14-11-2026): falling water, a hiss with a slow swell and a lower splash, louder near the plaza (fuenteAudio)
-  if(typeof FUENTE!=='undefined'&&FUENTE.on){try{
-    const fg=ctx.createGain();fg.gain.value=0;const fp=ctx.createStereoPanner?ctx.createStereoPanner():null;
-    const mk=(type,f,q,g,rate)=>{const s=ctx.createBufferSource();s.buffer=buf;s.loop=true;s.playbackRate.value=rate;const b=ctx.createBiquadFilter();b.type=type;b.frequency.value=f;b.Q.value=q;const gg=ctx.createGain();gg.gain.value=g;s.connect(b);b.connect(gg);gg.connect(fg);s.start();return gg;};
-    mk('bandpass',2400,0.5,0.55,1);const lo=mk('bandpass',520,0.9,0.5,0.73);
-    const l1=ctx.createOscillator();l1.frequency.value=6.3;const l1g=ctx.createGain();l1g.gain.value=0.18;l1.connect(l1g);l1g.connect(lo.gain);l1.start();
-    const l2=ctx.createOscillator();l2.frequency.value=0.21;const l2g=ctx.createGain();l2g.gain.value=0.12;l2.connect(l2g);l2g.connect(fg.gain);l2.start();
-    if(fp){fg.connect(fp);fp.connect(AU.bus.amb);}else fg.connect(AU.bus.amb);AU.fuente={g:fg,p:fp};}catch(e){}}
-}
-// how loud the fountain is from where the camera is (0 outside PUEBLO); its side for the stereo
-function fuenteAudio(){
-  if(!AU.fuente||!AU.ctx)return;const c=camera.position,dx=-c.x,dz=-c.z,d=Math.hypot(dx,c.y-1,dz);
-  const on=WORLD_ID==='pueblo'&&FUENTE.f&&state!=='menu',k=on?Math.max(0,1-(d-2)/28):0,t=AU.ctx.currentTime;
-  AU.fuente.g.gain.setTargetAtTime(0.32*k*k,t,0.25);
-  if(AU.fuente.p){const r=new T.Vector3(1,0,0).applyQuaternion(camera.quaternion);AU.fuente.p.pan.setTargetAtTime(clamp((r.x*dx+r.z*dz)/Math.max(1,Math.hypot(dx,dz)),-1,1)*0.8,t,0.15);}
+  // No continuous background sound (owner, 21-11 and 23-11-2026: the wind loop and then the fountain's water hiss, which
+  // sounded like wind across the whole PUEBLO, «se escucha sonido de fondo de viento»): both removed for good.
 }
 // applies the AJUSTES → AUDIO levels (master × channel; mute silences everything)
 function audioLevels(){
@@ -3054,7 +3033,7 @@ function audioLevels(){
   // is stopped and a ramp would never get there, so the level is set at once (this also made a test fail at random)
   const set=(g,val)=>{if(AU.ctx.state==='running')g.setTargetAtTime(val,t,0.02);else{g.cancelScheduledValues(0);g.value=val;}};
   set(AU.master.gain,S.mute?0:0.85*S.volMaster);
-  const v={shots:S.volShots,fx:S.volFx,steps:S.volSteps,amb:S.volAmb,ui:S.volUi};for(const k in v)set(AU.bus[k].gain,v[k]);
+  const v={shots:S.volShots,fx:S.volFx,steps:S.volSteps,ui:S.volUi};for(const k in v)set(AU.bus[k].gain,v[k]);
 }
 function outNode(pan,verb){
   const ctx=AU.ctx;const g=ctx.createGain();
@@ -5639,7 +5618,7 @@ $('#edReset').addEventListener('click',()=>{LAYOUT=LY.defaults(isTouch);$('#edOp
 /* ---- settings panel ---- */
 let SETTINGS=SDSettings.load(store,isTouch);
 gfxApply();
-const SET_UI=[['sH','sensH'],['sV','sensV'],['sA','adsSens'],['sAH','adsH'],['sAV','adsV'],['sT','touchLook'],['sDZ','touchDead'],['sSM','smooth'],['vM','volMaster'],['vS','volShots'],['vF','volFx'],['vP','volSteps'],['vA','volAmb'],
+const SET_UI=[['sH','sensH'],['sV','sensV'],['sA','adsSens'],['sAH','adsH'],['sAV','adsV'],['sT','touchLook'],['sDZ','touchDead'],['sSM','smooth'],['vM','volMaster'],['vS','volShots'],['vF','volFx'],['vP','volSteps'],
   ['sFP','sensFP'],['sTP','sensTP'],['sZ4','scope4'],['sZ8','scope8'],['sGy','gyroSens'],['sGyA','gyroAds'],['sXL','xLen'],['sXT','xThick'],['sXG','xGap'],['sBr','bright'],['vU','volUi']];
 const setFmt=(k,v)=>/^vol|^bright/.test(k)?Math.round(v*100)+'%':/^x/.test(k)?Math.round(v)+' px':(+v).toFixed(2);
 // on/off settings: checkbox id → setting
@@ -8435,7 +8414,6 @@ function frameBody(now){
   pmark('hud');
   if(WATER_N){WATER_N.offset.x+=fxdt*0.025;WATER_N.offset.y+=fxdt*0.011;}
   if(FUENTE.f&&WORLD_ID==='pueblo')FUENTE.f.update(now/1000);
-  if(AU.fuente&&((frameN=(frameN||0)+1)%6===0))fuenteAudio();   // ?pulido=1: the water ripples move
   INV.time.value=now/1000%1000;   // legendary camouflages pulse
   if(state!=='paused'){updateParts(fxdt);updateTracers(fxdt);for(const f of FLASHES){if(f.s.visible){f.t-=fxdt;if(f.t<=0)f.s.visible=false;}}}
   pmark('efectos');

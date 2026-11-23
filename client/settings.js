@@ -29,7 +29,7 @@ const DEFAULTS = {
   smooth: 0,        // 0 = direct; up to 0.8 = softer turning (adds a little delay)
   calmVM: false,    // reduce the weapon's visual bob and sway (accessibility); never changes the aim
   // audio (0..1 per channel; the final level is master × channel)
-  volMaster: 1, volShots: 1, volFx: 1, volSteps: 1, volAmb: 1, mute: false,
+  volMaster: 1, volShots: 1, volFx: 1, volSteps: 1, mute: false,
   // gameplay info (only what the player sees; never the rules)
   hitmarkers: true, dmgDir: true,
   minimap: true,    // minimap at the top left: the map from above and the enemies when they shoot
@@ -67,7 +67,7 @@ const CATEGORIES = {
   sensibilidad: ['sensH', 'sensV', 'adsSens', 'adsH', 'adsV', 'touchLook', 'touchDead', 'smooth', 'invertY', 'sensFP', 'sensTP', 'scope4', 'scope8', 'gyro', 'gyroSens', 'gyroAds', 'gyroInv'],
   mira: ['xColor', 'xStyle', 'xLen', 'xThick', 'xGap', 'xOutline', 'retColor', 'retLit', 'hitColor', 'blood'],
   graficos: ['quality', 'res', 'aa', 'fpsCap', 'showFps', 'bright', 'look', 'cvd'],
-  audio: ['volMaster', 'volShots', 'volFx', 'volSteps', 'volAmb', 'volUi', 'mute', 'vibrate'],
+  audio: ['volMaster', 'volShots', 'volFx', 'volSteps', 'volUi', 'mute', 'vibrate'],
   jugabilidad: ['hitmarkers', 'dmgDir', 'minimap', 'enemyVis'],
   accesibilidad: ['calmVM', 'lowFlash']
 };
@@ -77,7 +77,7 @@ const CATEGORIES = {
 const TOUCH_DEFAULTS = { touchLook: 1.6, adsSens: 0.8, crouchMode: 'slide' };   // crouchMode 'slide': owner's request 25-10-2026
 function defaults(touch) { return Object.assign({}, DEFAULTS, touch ? TOUCH_DEFAULTS : {}, { v: VERSION }); }
 const RANGES = { sensH: [0.2, 3], sensV: [0.2, 3], adsSens: [0.3, 2], touchLook: [0.3, 4], adsH: [0.3, 2], adsV: [0.3, 2], touchDead: [0, 12], smooth: [0, 0.8],
-  volMaster: [0, 1], volShots: [0, 1], volFx: [0, 1], volSteps: [0, 1], volAmb: [0, 1], volUi: [0, 1],
+  volMaster: [0, 1], volShots: [0, 1], volFx: [0, 1], volSteps: [0, 1], volUi: [0, 1],
   sensFP: [0.3, 3], sensTP: [0.3, 3], scope4: [0.3, 2], scope8: [0.3, 2], gyroSens: [0.2, 4], gyroAds: [0.2, 4],
   xLen: [3, 24], xThick: [1, 5], xGap: [0, 30], bright: [0.7, 1.4] };
 // mixed: a quick tap fixes the sight (tap again to leave), holding aims only while held

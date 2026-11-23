@@ -16,7 +16,7 @@ Por defecto; `?fuente=0` deja el agua de antes, para comparar.
 | Chorros | 4 caños (salen a 2,6 m/s de la punta del caño y caen a 1,5 m del eje), 4 hilos que rebosan de la taza, el borbotón de arriba y una niebla alrededor de cada chorro; vetas que corren por el agua | 1 |
 | Espuma | 8 manchas que se mueven donde cae el agua | 1 |
 | Gotas | 208 puntos que saltan donde cae el agua (todo en la GPU; no en BAJO) | 1 |
-| Sonido | agua cayendo (dos capas de ruido filtrado con borboteo), más fuerte cerca de la plaza y por el lado en que está, por el canal AMBIENTE de AJUSTES | — |
+| Sonido | quitado el 23-11-2026: el siseo continuo del agua se oía en casi todo el PUEBLO y sonaba a viento (el propietario lo pidió). AJUSTES › AUDIO ya no tiene AMBIENTE | — |
 
 Unos 3 200 triángulos y 6–7 llamadas, solo cuando la plaza está a la vista. Sin texturas nuevas. Los chorros solo con
 PUEBLO 3.0 (usan los caños de la fuente del kit); en PUEBLO 2.0 solo el agua nueva.
