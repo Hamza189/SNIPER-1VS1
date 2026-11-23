@@ -303,10 +303,10 @@
  },
  "ridge": {
   "title": "RIDGE",
-  "author": "Hamza (generado con Meshy AI)",
+  "author": "Meshy AI (generado por Hamza con el plan gratuito)",
   "url": "https://www.meshy.ai/",
-  "license": "PENDIENTE de confirmar (Meshy)",
-  "licenseUrl": "https://www.meshy.ai/",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
   "use": "elegible",
   "size": 4096,
   "input": [
@@ -475,10 +475,10 @@
  },
  "amber": {
   "title": "AMBER",
-  "author": "Hamza (generado con Meshy AI)",
+  "author": "Meshy AI (generado por Hamza con el plan gratuito)",
   "url": "https://www.meshy.ai/",
-  "license": "PENDIENTE de confirmar (Meshy)",
-  "licenseUrl": "https://www.meshy.ai/",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
   "use": "elegible",
   "size": 4096,
   "input": [

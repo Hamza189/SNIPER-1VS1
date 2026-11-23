@@ -242,8 +242,12 @@ textura (color, normales y rugosidad/metal) y las UV partidas en cientos de isla
 - Pruebas: `test/pro.browser.test.js` (los dos en el móvil a 2K, mismas zonas de impacto, sin 404; sin la bandera no
   aparecen).
 
-**Licencia: PENDIENTE de confirmar.** Depende del plan de Meshy con el que se generaron (en el gratuito, según
-recuerdo, es CC BY 4.0 con atribución; en los de pago, del usuario). Hasta confirmarlo, los créditos dicen «Meshy AI ·
-en prueba».
+**Licencia: CC BY 4.0** (confirmado el 23-11-2026):
+- Se generaron con el plan gratuito de Meshy. Su página de precios y sus condiciones (§3.2, https://www.meshy.ai/terms-of-use)
+  dicen que esos modelos son de Meshy y se ceden con CC BY 4.0: se pueden usar también con fines comerciales, citando a
+  Meshy.
+- Créditos en AJUSTES › GRÁFICOS, en `LICENSE` y en cada `CREDITOS.md`.
+- Con el plan gratuito, los modelos no son privados en Meshy.
+- Meshy no garantiza que sean únicos: no se pueden registrar como propios.
 
 Estado: IMPLEMENTADO · PROBADO EN NAVEGADOR · PENDIENTE DE VALIDACIÓN EN IPHONE.

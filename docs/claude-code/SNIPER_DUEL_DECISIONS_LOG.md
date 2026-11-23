@@ -20,8 +20,9 @@ Meshy los da sin esqueleto. Cambios:
   `core/protocol.js`: solo la lista de aspectos, ni balance ni reglas).
 - **Móvil**: texturas de 2K.
 - **Detalle**: `docs/PERSONAJES-PRO.md` y `docs/personajes-ridge/` (comparativa y prompts).
-- **Licencia de Meshy**: PENDIENTE de confirmar con el propietario antes de publicar.
-- **Estado**: IMPLEMENTADO · PROBADO EN NAVEGADOR · PENDIENTE DE VALIDACIÓN EN IPHONE · SIN PUBLICAR.
+- **Licencia**: el propietario los hizo con el plan gratuito de Meshy, que da CC BY 4.0 (condiciones de Meshy §3.2 y
+  su página de precios). Créditos en AJUSTES › GRÁFICOS, `LICENSE` y `CREDITOS.md`.
+- **Estado**: IMPLEMENTADO · PROBADO EN NAVEGADOR · PENDIENTE DE VALIDACIÓN EN IPHONE.
 
 ## 21-11-2026 — Sin el viento de fondo
 Del propietario: «el sonido de viento se reproduce continuamente, es muy molesto, quítalo». El ruido de viento que sonaba
