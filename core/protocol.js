@@ -9,7 +9,7 @@
      go      { t }                           lobby, host with hs only: start now (2/2 people, everyone ready)
      map     { t, id }                       lobby, creator only: choose the map ('pueblo', 'arena', 'casa', 'casa2')
      kit     { t, id }                       my primary: 'rifle' (HALCÓN R7) or 'shotgun' (FURIA 12), used from my next spawn
-     skin    { t, id }                       my character (looks only): 'soldado', 'clasico', 'swat', 'fsb' or 'militar'
+     skin    { t, id }                       my character (looks only): 'soldado', 'clasico', 'swat', 'fsb', 'militar', 'ridge' or 'amber'
      acct    { t, tok }                      my cloud account session (optional): title in the lobby, box points
      cfg     { t, kills, time, mode?, bots?, diff?, size? }   lobby, creator only: kills to win (5/10/20/30), minutes
                                              (0 = no limit), mode ('duelo' | 'todos' | 'equipos'), server bots (0–5),
@@ -27,7 +27,7 @@
 'use strict';
 const VERSION = 1;
 // characters a player can show (looks only: the hit zones are the same for all)
-const SKINS = ['clasico', 'swat', 'fsb', 'militar', 'soldado'];
+const SKINS = ['clasico', 'swat', 'fsb', 'militar', 'soldado', 'ridge', 'amber'];
 const LIMITS = {
   maxBytes: 4096,          // a bigger message is dropped
   maxMsgPerSec: 90,        // per connection; more is dropped, far more closes the socket

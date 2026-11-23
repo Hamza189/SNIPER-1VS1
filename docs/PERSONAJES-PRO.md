@@ -199,3 +199,51 @@ El propietario: «al correr en 3ª persona con el arma se ve la parte de atrás 
   - Todo devuelto a como estaba publicado.
 - **Siguiente paso propuesto:** volver a pesar ese panel en Blender a mano (de la cadera a la columna, de forma
   progresiva) o recortarlo, comprobando la zona de impacto en los 3 LOD.
+
+## RIDGE y AMBER, los primeros personajes propios (Meshy AI, 23-11-2026, en prueba: `?meshy=1`)
+El propietario los generó en Meshy AI (texto → imagen → 3D) con prompts originales (`docs/personajes-ridge/`), parecidos
+en estilo a un operador táctico moderno pero sin copiar a ninguno. Meshy los entrega **sin esqueleto**, con una sola
+textura (color, normales y rugosidad/metal) y las UV partidas en cientos de islas.
+
+| Personaje | Carpeta | Original de Meshy | Triángulos (LOD0 / 1 / 2) | Texturas |
+|---|---|---|---|---|
+| RIDGE (veterano, cara al descubierto) | `assets/personaje/pro/ridge` | 1 303 940 triángulos, 92 MB | 30 000 / 12 000 / 3 000 | 4096 (2K en móvil) |
+| AMBER (exploradora, sombrero boonie) | `assets/personaje/pro/amber` | 15 757 triángulos, 21 MB | 15 756 / 8 000 / 3 000 | 4096 (2K en móvil) |
+
+**Cómo se convierten:**
+1. `tools/personaje-ext/autorig.py` (Blender) les pone esqueleto:
+   - une los vértices partidos en las costuras de UV (sin eso, al reducir se abren grietas y el Decimate no baja de
+     ~13 000 triángulos);
+   - estima las articulaciones cortando el cuerpo en rodajas (puntos repartidos por toda la superficie, para que también
+     sirva con modelos ligeros), en pose en A, simétricas;
+   - la cabeza a la altura de la barbilla y los ojos a su altura real (escala: ojos a 1,62 m);
+   - calcula los pesos sobre una copia cerrada por vóxeles (si Blender no encuentra solución, prueba otro tamaño);
+   - todo lo que está por encima de la barbilla se mueve rígido con la cabeza (el ala del sombrero se «derretía»).
+2. `python tools/personaje-ext/make.py ridge|amber`, el mismo conversor que S.W.A.T., FSB y MILITAR (26 huesos, 29
+   animaciones, LOD, atlas, ajuste a las zonas de impacto). Nuevo en `packs.json`:
+   - `headScale` (la cabeza algo más pequeña por igual: Meshy la hace grande para el cuerpo y la barbilla se salía de la
+     esfera de la cabeza al correr);
+   - `headShift` (y algo hacia atrás).
+3. Las zonas de impacto del servidor **no se tocan**: las comprobaciones (`tools/check-character-hitbox.js`) pasan en los
+   3 LOD de los dos.
+
+**Errores encontrados por el camino (y arreglados):**
+- Con la cabeza puesta a la altura de la nariz, la barbilla y la barba contaban como cuello y el ajuste del cuerpo las
+  aplastaba contra su caja: la cara salía estirada en vertical.
+
+**En el juego:**
+- Interruptor en AJUSTES › EN PRUEBA («RIDGE Y AMBER») o `?meshy=1` (el aparato lo recuerda).
+- Sin activarlo no se ven en la lista ni se descargan. Si el rival lleva uno y tú no los tienes activados, lo ves con su
+  personaje de siempre.
+- El servidor acepta `ridge` y `amber` (`core/protocol.js`).
+- En el móvil, texturas de 2K (como S.W.A.T. y FSB).
+- Sin versión KTX2 todavía: cargan los JPG.
+- Comparativa con las mismas cámaras: `docs/personajes-ridge/comparativa.jpg`.
+- Pruebas: `test/pro.browser.test.js` (los dos en el móvil a 2K, mismas zonas de impacto, sin 404; sin la bandera no
+  aparecen).
+
+**Licencia: PENDIENTE de confirmar.** Depende del plan de Meshy con el que se generaron (en el gratuito, según
+recuerdo, es CC BY 4.0 con atribución; en los de pago, del usuario). Hasta confirmarlo, los créditos dicen «Meshy AI ·
+en prueba».
+
+Estado: IMPLEMENTADO · PROBADO EN NAVEGADOR · PENDIENTE DE VALIDACIÓN EN IPHONE.

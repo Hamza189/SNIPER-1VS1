@@ -9,7 +9,7 @@ const mem = () => { const m = {}; return { getItem: k => (k in m ? m[k] : null),
 console.log('\nPERFIL LOCAL');
 const st = mem(), p = P.load(st);
 check('la primera vez crea un perfil con identificador SD-XXXX-XXXX y lo guarda', /^SD-[A-Z2-9]{4}-[A-Z2-9]{4}$/.test(p.id) && JSON.parse(st.m[P.KEY]).id === p.id, p.id);
-check('los cinco personajes son tuyos y el elegido es el SOLDADO', p.owned.join() === 'soldado,swat,fsb,militar,clasico' && p.skin === 'soldado');
+check('los siete personajes son tuyos (RIDGE y AMBER, en prueba) y el elegido es el SOLDADO', p.owned.join() === 'soldado,swat,fsb,militar,clasico,ridge,amber' && p.skin === 'soldado');
 check('al volver a cargar es el mismo perfil', P.load(st).id === p.id);
 const broken = mem(); broken.setItem(P.KEY, '{"id":"<script>","name":"<b>Hamza</b>","skin":"robot","stats":{"kills":-5,"wins":"x","longest":1e9}}');
 const b = P.load(broken);

@@ -300,5 +300,344 @@
     {"measureMat": "Pads", "axis": "z", "side": 1, "y": [0.18, 0.8], "yFull": [0.34, 0.62], "fade": [-0.1, 0.02], "limit": 0.1}
    ]
   }
+ },
+ "ridge": {
+  "title": "RIDGE",
+  "author": "Hamza (generado con Meshy AI)",
+  "url": "https://www.meshy.ai/",
+  "license": "PENDIENTE de confirmar (Meshy)",
+  "licenseUrl": "https://www.meshy.ai/",
+  "use": "elegible",
+  "size": 4096,
+  "input": [
+   "C:/Users/Hamza/Desktop/SNIPER DUEL 1VS1/SNIPER-1VS1/tools/personaje-ext/.work/ridge/ridge_rig.blend"
+  ],
+  "copy": true,
+  "cfg": {
+   "gait": {
+    "latLift": 0.05
+   },
+   "lod": [
+    30000,
+    12000,
+    3000
+   ],
+   "footScale": [
+    0.85,
+    0.95
+   ],
+   "fitMargin": 0.004,
+   "variants": {
+    "A": [
+     0,
+     1.0,
+     1.0
+    ],
+    "bots": [
+     -14,
+     0.9,
+     1.0
+    ]
+   },
+   "fitInset": [
+    {
+     "box": "legs",
+     "axis": "z",
+     "side": -1,
+     "y": [
+      0.62,
+      0.95
+     ],
+     "inset": 0.03
+    },
+    {
+     "box": "torso",
+     "axis": "z",
+     "side": -1,
+     "y": [
+      0.8,
+      1.6
+     ],
+     "inset": 0.04
+    },
+    {
+     "box": "legs",
+     "axis": "z",
+     "side": 1,
+     "y": [
+      0.15,
+      0.75
+     ],
+     "inset": 0.015
+    },
+    {
+     "box": "legs",
+     "axis": "z",
+     "side": 1,
+     "y": [
+      0.38,
+      0.64
+     ],
+     "inset": 0.022
+    },
+    {
+     "box": "legs",
+     "axis": "z",
+     "side": 1,
+     "y": [
+      0.1,
+      0.45
+     ],
+     "inset": 0.012
+    },
+    {
+     "box": "legs",
+     "axis": "x",
+     "side": -1,
+     "y": [
+      0.1,
+      0.5
+     ],
+     "inset": 0.03
+    },
+    {
+     "box": "legs",
+     "axis": "x",
+     "side": 1,
+     "y": [
+      0.1,
+      0.5
+     ],
+     "inset": 0.03
+    },
+    {
+     "box": "legs",
+     "axis": "x",
+     "side": -1,
+     "y": [
+      0.65,
+      0.95
+     ],
+     "inset": 0.03
+    },
+    {
+     "box": "legs",
+     "axis": "x",
+     "side": 1,
+     "y": [
+      0.65,
+      0.95
+     ],
+     "inset": 0.03
+    },
+    {
+     "box": "legs",
+     "axis": "z",
+     "side": -1,
+     "y": [
+      0.5,
+      0.75
+     ],
+     "inset": 0.015
+    },
+    {
+     "box": "torso",
+     "axis": "x",
+     "side": -1,
+     "y": [
+      0.7,
+      1.0
+     ],
+     "inset": 0.03
+    },
+    {
+     "box": "torso",
+     "axis": "x",
+     "side": 1,
+     "y": [
+      0.7,
+      1.0
+     ],
+     "inset": 0.03
+    }
+   ],
+   "headFit": [
+    0.025,
+    0.015
+   ],
+   "headScale": 0.92,
+   "headShift": [
+    0,
+    0.006,
+    -0.012
+   ]
+  }
+ },
+ "amber": {
+  "title": "AMBER",
+  "author": "Hamza (generado con Meshy AI)",
+  "url": "https://www.meshy.ai/",
+  "license": "PENDIENTE de confirmar (Meshy)",
+  "licenseUrl": "https://www.meshy.ai/",
+  "use": "elegible",
+  "size": 4096,
+  "input": [
+   "C:/Users/Hamza/Desktop/SNIPER DUEL 1VS1/SNIPER-1VS1/tools/personaje-ext/.work/amber/amber_rig.blend"
+  ],
+  "copy": true,
+  "cfg": {
+   "gait": {
+    "latLift": 0.05
+   },
+   "lod": [
+    16000,
+    8000,
+    3000
+   ],
+   "footScale": [
+    0.85,
+    0.95
+   ],
+   "fitMargin": 0.004,
+   "variants": {
+    "A": [
+     0,
+     1.0,
+     1.0
+    ],
+    "bots": [
+     -14,
+     0.9,
+     1.0
+    ]
+   },
+   "fitInset": [
+    {
+     "box": "legs",
+     "axis": "z",
+     "side": -1,
+     "y": [
+      0.62,
+      0.95
+     ],
+     "inset": 0.03
+    },
+    {
+     "box": "torso",
+     "axis": "z",
+     "side": -1,
+     "y": [
+      0.8,
+      1.6
+     ],
+     "inset": 0.04
+    },
+    {
+     "box": "legs",
+     "axis": "z",
+     "side": 1,
+     "y": [
+      0.15,
+      0.75
+     ],
+     "inset": 0.015
+    },
+    {
+     "box": "legs",
+     "axis": "z",
+     "side": 1,
+     "y": [
+      0.38,
+      0.64
+     ],
+     "inset": 0.008
+    },
+    {
+     "box": "legs",
+     "axis": "z",
+     "side": 1,
+     "y": [
+      0.1,
+      0.45
+     ],
+     "inset": 0.012
+    },
+    {
+     "box": "legs",
+     "axis": "x",
+     "side": -1,
+     "y": [
+      0.1,
+      0.5
+     ],
+     "inset": 0.03
+    },
+    {
+     "box": "legs",
+     "axis": "x",
+     "side": 1,
+     "y": [
+      0.1,
+      0.5
+     ],
+     "inset": 0.03
+    },
+    {
+     "box": "legs",
+     "axis": "x",
+     "side": -1,
+     "y": [
+      0.65,
+      0.95
+     ],
+     "inset": 0.03
+    },
+    {
+     "box": "legs",
+     "axis": "x",
+     "side": 1,
+     "y": [
+      0.65,
+      0.95
+     ],
+     "inset": 0.03
+    },
+    {
+     "box": "legs",
+     "axis": "z",
+     "side": -1,
+     "y": [
+      0.5,
+      0.75
+     ],
+     "inset": 0.015
+    },
+    {
+     "box": "torso",
+     "axis": "x",
+     "side": -1,
+     "y": [
+      0.7,
+      1.0
+     ],
+     "inset": 0.03
+    },
+    {
+     "box": "torso",
+     "axis": "x",
+     "side": 1,
+     "y": [
+      0.7,
+      1.0
+     ],
+     "inset": 0.03
+    }
+   ],
+   "headFit": [
+    0.025,
+    0.013
+   ],
+   "headScale": 0.96
+  }
  }
 }

@@ -5,7 +5,7 @@
 (function (root) {
 'use strict';
 const KEY = 'sniperduel_profile', V = 1;
-const SKINS = ['soldado', 'swat', 'fsb', 'militar', 'clasico'];   // los cinco son gratis (ver core/protocol.js SKINS)
+const SKINS = ['soldado', 'swat', 'fsb', 'militar', 'clasico', 'ridge', 'amber'];   // todos gratis; RIDGE y AMBER solo se ven en prueba (ver core/protocol.js SKINS)
 const STATS = ['matches', 'wins', 'kills', 'deaths', 'hs', 'shots', 'hits', 'online', 'onlineWins'];
 const ID_ABC = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';   // sin 0/O ni 1/I
 

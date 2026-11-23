@@ -4070,6 +4070,13 @@ const MIX_ORDER=['op2','op3','op4',null];
    SOLDADO (28-10-2026) = el personaje de ?pj=2 (assets/personaje/), el que se elige si aún no has elegido. */
 const SKINS={soldado:{pack:'v2',name:'SOLDADO',by:'Sniper Duel'},swat:{pack:'op2',name:'S.W.A.T.',by:'Mateusz Woliński · CC BY'},fsb:{pack:'op3',name:'FSB',by:'Mateusz Woliński · CC BY'},
   militar:{pack:'op4',name:'MILITAR',by:'DanlyVostok · CC BY'},clasico:{pack:null,name:'CLÁSICO',by:'Sniper Duel'}};
+/* RIDGE y AMBER (23-11-2026, docs/PERSONAJES-PRO.md): los primeros personajes propios, hechos con Meshy AI a partir de los
+   prompts del propietario y con el esqueleto puesto por tools/personaje-ext/autorig.py. En prueba: ?meshy=1 o AJUSTES › EN
+   PRUEBA (el aparato lo recuerda). Sin activarlo no se eligen ni se descargan; si un rival lleva uno y tú no los tienes
+   activados, ves su personaje de siempre. */
+{const q=location.search.match(/[?&]meshy=([01])\b/);if(q)store.set('meshyExp',q[1]==='1');}
+const MESHY_EXP=store.get('meshyExp',false)===true;
+if(MESHY_EXP)Object.assign(SKINS,{ridge:{pack:'ridge',name:'RIDGE',by:'Meshy AI · en prueba'},amber:{pack:'amber',name:'AMBER',by:'Meshy AI · en prueba'}});
 const SKIN_ON=PJ_PRO||PJ_MIX;
 let SKIN=SKINS[store.get('skin')]?store.get('skin'):'soldado';
 const packRoot=pack=>pack==='v2'?'assets/personaje/':'assets/personaje/pro/'+pack+'/';
@@ -4100,7 +4107,7 @@ const _pj2v=new T.Vector3();
 // tamaño de las texturas de cada personaje: BAJO 1K; en MEDIO, los de 4K (op2/op3) a 2K
 function pj2Suffix(root){
   if(GFX.profile==='bajo')return '_1k';
-  if((PJ_MIX||PJ_PRO)&&(GFX.profile!=='alto'||PJ2_PHONE)&&/\/(op2|op3)\/$/.test(root))return '_2k';   // phones: never 4K
+  if((PJ_MIX||PJ_PRO)&&(GFX.profile!=='alto'||PJ2_PHONE)&&/\/(op2|op3|ridge|amber)\/$/.test(root))return '_2k';   // phones: never 4K
   return '';
 }
 /* KTX2 (docs/KTX2.md): los personajes con sus texturas a la resolución completa (4K S.W.A.T./FSB, 2K MILITAR/SOLDADO)
@@ -5718,9 +5725,10 @@ const FX=[
   {k:'penOff',name:'BALAS QUE ATRAVIESAN',sub:'Penetración de paredes finas y BALA DURA',cur:()=>PEN.on,val:v=>!v},
   {k:'deslizOld',name:'DESLIZAMIENTO NUEVO',sub:'El deslizamiento con su caja de colisión nueva (NO = el de antes)',cur:()=>SLIDE2.on,val:v=>!v},
   {k:'rayosxOff',name:'RAYOS X EN PRUEBAS',sub:'Ver a los bots a través de las paredes en el mapa PRUEBAS',cur:()=>XRAY.on,val:v=>!v},
+  {k:'meshyExp',name:'RIDGE Y AMBER',sub:'Los dos personajes nuevos hechos con Meshy AI (el veterano de la cara al descubierto y la exploradora) en la lista de operadores',cur:()=>MESHY_EXP,val:v=>v},
   {k:'carga2',name:'PANTALLA DE CARGA',sub:'Al entrar, la barra del 0 al 100 % que deja listos personajes, armas, mapa y sombreadores (docs/CARGA.md)',cur:()=>CG.on,val:v=>v}];
 // the link flags these switches replace: RECARGAR removes them from the address so the switch, not an old link, decides
-const FX_PARAMS=['lobby','sala3d','pueblo','barrio','casa','casa2','casa2v','menu','arsenal','balance','pen','desliz','rayosx','carga'];
+const FX_PARAMS=['lobby','sala3d','pueblo','barrio','casa','casa2','casa2v','menu','arsenal','balance','pen','desliz','rayosx','carga','meshy'];
 const FX_WANT={};let FX_RESET=false;   // RESTAURAR: what is remembered is forgotten; the page shows the defaults after reloading   // what was chosen in this visit (not applied until the page reloads)
 function fxRender(){
   const L=$('#fxList');if(!L)return;let n=0;

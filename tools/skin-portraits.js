@@ -17,9 +17,9 @@ const OUT = path.join(__dirname, '..', 'assets', 'personaje', 'retratos');
   await ctx.addInitScript(() => { try { localStorage.setItem('sniperduel_settings', JSON.stringify({ quality: 'alto', v: 3 })); } catch (e) {} });
   const p = await ctx.newPage();
   p.on('pageerror', e => console.log('error de la página: ' + e.message));
-  await p.goto(srv.url + '?vm=1&pj=mix');
+  await p.goto(srv.url + '?vm=1&pj=mix&meshy=1');   // meshy=1: RIDGE y AMBER (en prueba) también en la lista
   await p.waitForFunction(() => window.__SD && __SD.WORLDS && __SD.VMA.ready, null, { timeout: 120000 });
-  const roots = ['op2', 'op3', 'op4'].map(k => 'assets/personaje/pro/' + k + '/').concat('assets/personaje/');   // + SOLDADO (?pj=2)
+  const roots = ['op2', 'op3', 'op4', 'ridge', 'amber'].map(k => 'assets/personaje/pro/' + k + '/').concat('assets/personaje/');   // + SOLDADO (?pj=2)
   for (const r of roots) await p.evaluate(r => __SD.pj2Load(r), r);
   await p.waitForFunction(roots => roots.every(r => __SD.PJ2.tpls[r]), roots, { timeout: 240000 });
   // ONLY=soldado node tools/skin-portraits.js → solo ese retrato

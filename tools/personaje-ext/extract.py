@@ -625,6 +625,14 @@ if HDO and zh.any():
     log('cabeza: quitadas', nd, 'piezas que salían más de', HDO * 100, 'cm de la esfera (', int(drop_t.sum()), 'triángulos)')
 # la cabeza tiene que caber en su esfera en reposo sin tolerancia: lo que sobra (punta de la visera, casco) entra con
 # una curva suave que empieza 1,2 cm antes del borde y nunca llega a él
+# 'headScale' / 'headShift' (RIDGE): la cabeza entera algo más pequeña, por igual, hacia el centro de su esfera y repartido con su peso
+# (sin corte en el cuello). Con la barbilla muy abajo, meterla solo con headFit la aplastaba y estiraba la cara
+if CFG.get('headScale'):
+    wh_ = np.clip(Wsum(['Head', 'Eyes']), 0, 1)[:, None]
+    P[:] = P + (P - [0, 1.63, 0]) * (CFG['headScale'] - 1) * wh_
+    log('cabeza escalada', CFG['headScale'])
+if CFG.get('headShift'):                         # y movida [x, y, z] m (RIDGE: algo arriba y atrás, la barbilla dentro al correr)
+    P[:] = P + np.array(CFG['headShift']) * np.clip(Wsum(['Head', 'Eyes']), 0, 1)[:, None]
 if zh.any():
     hf = CFG.get('headFit', [0.012, 0.002])        # la curva empieza hf[0] antes del borde y se queda a hf[1] de él
     c = np.array([0, 1.63, 0]); r = 0.15; rin = r - hf[0]; rout = r - hf[1]
@@ -751,8 +759,10 @@ for i, tgt in enumerate(LOD):
     L = export_lod(base, tgt)
     # el Decimate mueve vértices: la cabeza vuelve a quedar dentro de su esfera en reposo (sin tolerancia)
     hw = sum(L['weights'][:, c] * np.isin(L['joints'][:, c], [GI['Head'], GI['Eyes']]) for c in range(4)) > 0.5
-    v = L['pos'][hw] - [0, 1.63, 0]; d = np.linalg.norm(v, axis=1); over = d > 0.148
-    v[over] *= (0.148 / d[over])[:, None]; L['pos'][hw] = v + [0, 1.63, 0]
+    # con el mismo fondo que pide headFit (por defecto 0,2 cm: 0,148)
+    HR = 0.15 - max(0.002, CFG.get('headFit', [0.012, 0.002])[1])
+    v = L['pos'][hw] - [0, 1.63, 0]; d = np.linalg.norm(v, axis=1); over = d > HR
+    v[over] *= (HR / d[over])[:, None]; L['pos'][hw] = v + [0, 1.63, 0]
     # y el cuerpo, a su caja (tronco o piernas) con el mismo margen que el LOD0: el Decimate también lo empuja hacia fuera
     moved_b = 0
     if FM_ > 0:

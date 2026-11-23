@@ -6,6 +6,23 @@ Cada entrada dice qué se decidió o cambió, quién lo decidió, y el estado re
 Las decisiones anteriores al 18-10-2026 están resumidas en `SNIPER_DUEL_MASTER_CONTEXT.md` §4.
 Detalle de cada cambio (antes/después, medidas, cómo revertir): `docs/next-level/NEXT_LEVEL_CHANGELOG.md`.
 
+## 23-11-2026 — RIDGE y AMBER: los primeros personajes propios (Meshy AI), en prueba
+El propietario generó en Meshy AI (texto → imagen → 3D) dos personajes originales con prompts de Claude:
+- **RIDGE**: veterano con la cara al descubierto;
+- **AMBER**: exploradora con sombrero boonie.
+
+Meshy los da sin esqueleto. Cambios:
+- **Esqueleto automático**: `tools/personaje-ext/autorig.py` (Blender).
+- **Conversión**: el conversor de siempre (`make.py ridge|amber`).
+- **Triángulos (LOD0 / 1 / 2)**: RIDGE pasa de 1,3 millones a 30 000 / 12 000 / 3 000. AMBER, 15 756 / 8 000 / 3 000.
+- **Zonas de impacto**: BIEN en los 3 LOD de los dos. Las del servidor no cambian.
+- **En prueba**: con AJUSTES › EN PRUEBA «RIDGE Y AMBER» o `?meshy=1`. El servidor acepta `ridge` y `amber` (cambio en
+  `core/protocol.js`: solo la lista de aspectos, ni balance ni reglas).
+- **Móvil**: texturas de 2K.
+- **Detalle**: `docs/PERSONAJES-PRO.md` y `docs/personajes-ridge/` (comparativa y prompts).
+- **Licencia de Meshy**: PENDIENTE de confirmar con el propietario antes de publicar.
+- **Estado**: IMPLEMENTADO · PROBADO EN NAVEGADOR · PENDIENTE DE VALIDACIÓN EN IPHONE · SIN PUBLICAR.
+
 ## 21-11-2026 — Sin el viento de fondo
 Del propietario: «el sonido de viento se reproduce continuamente, es muy molesto, quítalo». El ruido de viento que sonaba
 siempre (en todos los mapas) ya no se crea. La fuente del PUEBLO sigue (solo suena cerca de la plaza) y el control de

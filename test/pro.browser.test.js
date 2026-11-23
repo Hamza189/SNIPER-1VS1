@@ -62,6 +62,17 @@ const zones = p => p.evaluate(() => __SD.BOTS.map(b => b.hit.map(m => [m.userDat
       const rm = await M.p.evaluate(() => ({ roots: Object.keys(__SD.PJ2.tpls).sort().join(' '), tex: __SD.BOTS[0].rig.v2.meshes[0].material.map.image.width }));
       check('en un móvil con ALTO: los mismos personajes (FSB en los bots) pero con texturas de 2K, nunca 4K', okM && rm.tex === 2048 && /op3/.test(rm.roots) && !M.files.some(f => /personaje\.glb/.test(f) && /op[23]/.test(f)), rm.roots + ' · ' + rm.tex + ' · ' + M.files.join(' '));
       await M.ctx.close(); }
+    // RIDGE y AMBER (23-11-2026): los primeros personajes hechos con Meshy AI, en prueba (?meshy=1 o AJUSTES › EN PRUEBA)
+    { const RG = await open(b, srv.url + '?vm=1&pj=pro&meshy=1', 'alto', true);
+      const z1 = await zones(RG.p);
+      for (const [id, name] of [['ridge', 'RIDGE'], ['amber', 'AMBER']]) {
+        const has = await RG.p.evaluate(([id, name]) => { __SD.pj2SetPack(__SD.BOTS[0].rig, id); return !!__SD.SKINS[id] && __SD.SKINS[id].name === name; }, [id, name]);
+        const okR = await RG.p.waitForFunction(id => { const R = __SD.BOTS[0].rig; return R.v2 && !R.v2prev && R.skinPack === id && __SD.PJ2.tpls['assets/personaje/pro/' + id + '/']; }, id, { timeout: 180000 }).then(() => true, () => false);
+        const tex = okR ? await RG.p.evaluate(() => __SD.BOTS[0].rig.v2.meshes[0].material.map.image.width) : 0;
+        check(name + ' con ?meshy=1: está en la lista y en un móvil con ALTO se dibuja con texturas de 2K, nunca 4K', has && okR && tex === 2048 && !RG.files.includes(id + '/personaje.glb'), tex + ' · ' + RG.files.filter(f => f.startsWith(id + '/')).join(' '));
+      }
+      check('RIDGE y AMBER: las zonas de impacto no cambian y sin 404 ni errores', (await zones(RG.p)) === z1 && RG.bad.length === 0 && RG.errs.length === 0, RG.bad.concat(RG.errs).slice(0, 3).join(' | '));
+      await RG.ctx.close(); }
     check('créditos CC BY 4.0 en AJUSTES › GRÁFICOS', await A.p.evaluate(() => /Mateusz Woliński/.test(document.getElementById('credits').textContent) && /DanlyVostok/.test(document.getElementById('credits').textContent) && /CC BY 4\.0/.test(document.getElementById('credits').textContent)));
     await A.ctx.close();
 
@@ -136,6 +147,7 @@ const zones = p => p.evaluate(() => __SD.BOTS.map(b => b.hit.map(m => [m.userDat
     await OA.p.evaluate(() => __SD.pj2SetPack(__SD.REMOTE.rig, 'v2'));
     const sol = await OA.p.waitForFunction(() => (__SD.REMOTE.rig.v2 && !__SD.REMOTE.rig.v2prev) && __SD.PJ2.tpls['assets/personaje/'], null, { timeout: 180000 }).then(() => true, () => false);
     check('el SOLDADO se dibuja con el personaje de ?pj=2 (assets/personaje/)', sol);
+    check('sin ?meshy=1, RIDGE y AMBER no aparecen para elegir (están en prueba)', await OA.p.evaluate(() => !__SD.SKINS.ridge && !__SD.SKINS.amber));
     check('sin errores en las dos páginas', OA.errs.length === 0 && OB.errs.length === 0, OA.errs.concat(OB.errs).slice(0, 3).join(' | '));
     await OA.ctx.close(); await OB.ctx.close(); await gs.close();
   } catch (e) { fail++; console.log('  FAIL ' + (e && e.stack || e)); }
