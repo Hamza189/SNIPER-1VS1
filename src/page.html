@@ -2159,6 +2159,20 @@ function townMat(k){return TOWN_MATS[k]||(TOWN_MATS[k]=townMaterial(k));}   // o
 // metres per texture repeat of a kind → the factor its UVs are multiplied by (the textures themselves stay at repeat 1)
 function townUV(k){const L=TOWN_LOOK[k]||{};return [1/(L.tileU||L.tile||2),1/(L.tileV||L.tile||2)];}
 const INVIS=new T.MeshBasicMaterial({visible:false});
+/* SOLO PARA LAS BALAS (24-11-2026, docs/claude-code/ENGINE_NEXT_GEN_INFORME.md §8): in PUEBLO 1 596 of the ~2 200 objects
+   at the top of the scene are meshes with an invisible material that only bullets and lines of sight use (the houses'
+   walls for bullets, the old town's boxes under the new one, the other maps' bullet boxes). three.js still went through
+   them every frame: their matrices, then again to draw and for the sun's shadow. They are hidden now, their matrices made
+   once when hidden (they never move; test/ocultas.browser.test.js checks it after whole matches): the raycaster does not
+   look at «visible», so bullets hit exactly the same. Measured: the matrices of a frame 0.36 → 0.16 ms (PC, PUEBLO).
+   Again after a map change and the old solid houses (?casas=0), which give those meshes their materials back.
+   ?ocultas=0: as before. */
+const RAY_HIDE=!/[?&]ocultas=0\b/.test(location.search);let RAY_HIDE_N=-1;
+function rayHide(){RAY_HIDE_N=scene.children.length;if(!RAY_HIDE)return;let n=0;
+  for(const c of scene.children){const m=c.material;
+    if(!c.isMesh||c.isSkinnedMesh||c.children.length||!m||Array.isArray(m)||m.visible!==false)continue;
+    if(c.visible){c.updateMatrixWorld(true);c.matrixAutoUpdate=false;c.visible=false;c.userData.rayHid=true;n++;}}
+  return n;}
 // casts the shadow but draws nothing on screen (no colour, no depth): a box costs 12 triangles
 const SHADOW_PROXY=new T.MeshBasicMaterial({colorWrite:false,depthWrite:false});SHADOW_PROXY.userData.cs=1;
 // material groups (client/town.js) → one mesh per material, added to the scene
@@ -2525,6 +2539,7 @@ function casasSolid(on){
   for(const m of CASAS.meshes)m.visible=!on&&WORLD_ID==='pueblo';
   for(const s of CASAS.solid)s.m.visible=WORLD_ID==='pueblo';
   if(CASAS.shadow)CASAS.shadow.visible=!on&&WORLD_ID==='pueblo';
+  rayHide();
 }
 
 /* =================== NAV GRID =================== */
@@ -2922,6 +2937,7 @@ function setWorld(id){
   if(c2)casa2Load(id);
   if(bar)barrioLoad();
   waterPolish();
+  rayHide();   // SOLO PARA LAS BALAS: the map's bullet-only meshes hidden again
 }
 
 /* =================== AUDIO =================== */
@@ -8220,7 +8236,7 @@ function frame(now){
    ?matrices=0: as before (everything, every frame). */
 const MAT_ALL=/[?&]matrices=0\b/.test(location.search);
 if(!MAT_ALL)scene.autoUpdate=false;
-function sceneUpdate(){if(MAT_ALL)return;const ch=scene.children;for(let i=0;i<ch.length;i++){const c=ch[i];if(c.visible)c.updateMatrixWorld();}}
+function sceneUpdate(){if(MAT_ALL)return;const ch=scene.children;if(ch.length!==RAY_HIDE_N)rayHide();for(let i=0;i<ch.length;i++){const c=ch[i];if(c.visible)c.updateMatrixWorld();}}
 function frameBody(now){
   const perfT0=PERF.rec?performance.now():0;if(!PERF.first)PERF.first=now;
   const pf=PROF.on||!!PERF.rec;let pt=pf?performance.now():0;
@@ -8763,6 +8779,6 @@ function cgStart(){
 }
 cgStart();
 
-window.__SD={get RADAR(){return RADAR;},get MINI(){return MINI;},onKill,CARGA:CG,cgMem,sceneUpdate,audioInit,get MAT_ALL(){return MAT_ALL;},get GFX(){return GFX;},get BOX3(){return BOX3;},get GUNCFG(){return GUNCFG;},PRUEBAS,XRAY,xrayFrame,SLIDE2,PEN,penBox,spawnBullet,updateBullets,HALCON,rifleCfgFor,applyRifleCfg,gsGun,SIL,silCfg,silSaved,SFX,GUN,camLight,get gameTime(){return gameTime;},GSI,gsiDone,gsiRender,M2,m2Tab,m2Sync,m2Sleep,LB,lbRender,lbFrame,openSettings,closeSettings,MIRA,setMira,miraApply,miraClipGeo,miraRifle,openMiras,closeMiras,updateReticle,ENV,VIS,VIS_COL,VIS_HULL,visOn,visFrame,visWho,selfHit,PROF,KTX2,R2_ON,R2_URL,PIC,GYRO,gyroEv,crossApply,btnPress,settingsChanged,perfTexMB(){const t=perfTextures();return {real:SDPerf.textureMB(t),asRGBA:SDPerf.textureMB(t.map(x=>Object.assign({},x,{bytes:0})))};},REMOTES,netScoreHud,shotTargets,MINI,miniLayer,miniPing,clockFrame,setOffTime,get OFF_TIME(){return OFF_TIME;},ACC,accRefresh,INV,invSync,camoApply,openInv,invOpenBox,WSKIN,WS_ST,setWskin,get RIF(){return RIF;},TPV,SELF,get PROFILE(){return PROFILE;},openProfile,endMatch,PJ_MIX,MIX_ORDER,SKINS,get SKIN(){return SKIN;},setSkin,pj2SetPack,rivalSkin,PERF,perfRun,HUD2:true,get H2(){return H2;},leanIn,h2Frame,PJ2,pj2Load,CASA,casaLoad,C2,C2B,C2J,C2S,casa2Load,BAR,barrioLoad,FLORA,RATS,RAT_WORLD,ratsFrame,SHADOW_FADE,setDuelLethal,get DUEL_LETHAL(){return DUEL_LETHAL;},gfxDiagText,get P3ON(){return P3ON;},PU4,COBCC,damagePlayer,TEX,sunFollow,setSunSnap(on){SUN_SNAP=!!on;},sun,P0,E10,e10Lod,DIAG,setTrainMove,LIGHT:{sun,hemi,skyMat,LOOK,P3},P3W,freeze(on){SIM_FREEZE=!!on;},SHOT,VMA,makeSoldier,animateSoldier,BOT_MAT,scene,camera,RemotePlayer,PMprev,PIS,PROOT,RIF,WROOT,SHO_:null,MANUAL,advance(ms){frameBody(last+ms);},get LAST_PELLETS(){return LAST_PELLETS;},SCORE,SCFG,SROOT,SHO,setPrimaryChoice,get PRIMARY(){return PRIMARY;},PCORE,PCFG,setWorld,WORLDS,get WORLD_ID(){return WORLD_ID;},renderer,GFX,gfxApply,get NET(){return NET;},get REMOTE(){return REMOTE;},W,get NAV(){return NAV;},setOffMap,get OFFMAP(){return OFFMAP;},TOUCH,EDIT,openEditor,get SETTINGS(){return SETTINGS;},get LAYOUT(){return LAYOUT;},checkOrientation,MAT,LOAD,TRAINERS,get RANGE_BOTS(){return RANGE_BOTS;},TRAIN,setTrain,setLethal,kitNote,GINS,TDIAG,AU,get TOUCH_EVENTS(){return TOUCH_EVENTS;},impactFX,bodyFX,get DECALS(){return DECALS;},surfaceOf,soundDelay,aimSelfTest,P,PM,WS,WCORE,RECOIL,AIM,BOTS,DUMMIES,BULLETS,EVENTS,PARTS,STATS,get state(){return state;},get mode(){return mode;},setMode,input,startMatch,simTick,frame,toMenu,pause,resume,CASAS,casasSolid,FUENTE};
+window.__SD={get RADAR(){return RADAR;},get MINI(){return MINI;},onKill,CARGA:CG,cgMem,sceneUpdate,rayHide,casasSolid,audioInit,get MAT_ALL(){return MAT_ALL;},get GFX(){return GFX;},get BOX3(){return BOX3;},get GUNCFG(){return GUNCFG;},PRUEBAS,XRAY,xrayFrame,SLIDE2,PEN,penBox,spawnBullet,updateBullets,HALCON,rifleCfgFor,applyRifleCfg,gsGun,SIL,silCfg,silSaved,SFX,GUN,camLight,get gameTime(){return gameTime;},GSI,gsiDone,gsiRender,M2,m2Tab,m2Sync,m2Sleep,LB,lbRender,lbFrame,openSettings,closeSettings,MIRA,setMira,miraApply,miraClipGeo,miraRifle,openMiras,closeMiras,updateReticle,ENV,VIS,VIS_COL,VIS_HULL,visOn,visFrame,visWho,selfHit,PROF,KTX2,R2_ON,R2_URL,PIC,GYRO,gyroEv,crossApply,btnPress,settingsChanged,perfTexMB(){const t=perfTextures();return {real:SDPerf.textureMB(t),asRGBA:SDPerf.textureMB(t.map(x=>Object.assign({},x,{bytes:0})))};},REMOTES,netScoreHud,shotTargets,MINI,miniLayer,miniPing,clockFrame,setOffTime,get OFF_TIME(){return OFF_TIME;},ACC,accRefresh,INV,invSync,camoApply,openInv,invOpenBox,WSKIN,WS_ST,setWskin,get RIF(){return RIF;},TPV,SELF,get PROFILE(){return PROFILE;},openProfile,endMatch,PJ_MIX,MIX_ORDER,SKINS,get SKIN(){return SKIN;},setSkin,pj2SetPack,rivalSkin,PERF,perfRun,HUD2:true,get H2(){return H2;},leanIn,h2Frame,PJ2,pj2Load,CASA,casaLoad,C2,C2B,C2J,C2S,casa2Load,BAR,barrioLoad,FLORA,RATS,RAT_WORLD,ratsFrame,SHADOW_FADE,setDuelLethal,get DUEL_LETHAL(){return DUEL_LETHAL;},gfxDiagText,get P3ON(){return P3ON;},PU4,COBCC,damagePlayer,TEX,sunFollow,setSunSnap(on){SUN_SNAP=!!on;},sun,P0,E10,e10Lod,DIAG,setTrainMove,LIGHT:{sun,hemi,skyMat,LOOK,P3},P3W,freeze(on){SIM_FREEZE=!!on;},SHOT,VMA,makeSoldier,animateSoldier,BOT_MAT,scene,camera,RemotePlayer,PMprev,PIS,PROOT,RIF,WROOT,SHO_:null,MANUAL,advance(ms){frameBody(last+ms);},get LAST_PELLETS(){return LAST_PELLETS;},SCORE,SCFG,SROOT,SHO,setPrimaryChoice,get PRIMARY(){return PRIMARY;},PCORE,PCFG,setWorld,WORLDS,get WORLD_ID(){return WORLD_ID;},renderer,GFX,gfxApply,get NET(){return NET;},get REMOTE(){return REMOTE;},W,get NAV(){return NAV;},setOffMap,get OFFMAP(){return OFFMAP;},TOUCH,EDIT,openEditor,get SETTINGS(){return SETTINGS;},get LAYOUT(){return LAYOUT;},checkOrientation,MAT,LOAD,TRAINERS,get RANGE_BOTS(){return RANGE_BOTS;},TRAIN,setTrain,setLethal,kitNote,GINS,TDIAG,AU,get TOUCH_EVENTS(){return TOUCH_EVENTS;},impactFX,bodyFX,get DECALS(){return DECALS;},surfaceOf,soundDelay,aimSelfTest,P,PM,WS,WCORE,RECOIL,AIM,BOTS,DUMMIES,BULLETS,EVENTS,PARTS,STATS,get state(){return state;},get mode(){return mode;},setMode,input,startMatch,simTick,frame,toMenu,pause,resume,CASAS,casasSolid,FUENTE};
 })();
 </script>

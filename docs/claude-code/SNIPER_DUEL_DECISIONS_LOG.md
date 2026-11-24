@@ -6,6 +6,18 @@ Cada entrada dice qué se decidió o cambió, quién lo decidió, y el estado re
 Las decisiones anteriores al 18-10-2026 están resumidas en `SNIPER_DUEL_MASTER_CONTEXT.md` §4.
 Detalle de cada cambio (antes/después, medidas, cómo revertir): `docs/next-level/NEXT_LEVEL_CHANGELOG.md`.
 
+## 24-11-2026 — Motor: las mallas que solo usan las balas, fuera del recorrido de cada fotograma
+El propietario: «continua mejorando rendimiento y graficos y todo, o de pasarlo a C». Medido antes de tocar nada (partida
+sin conexión con bots, `docs/claude-code/ENGINE_NEXT_GEN_INFORME.md` §8):
+- Las balas y líneas de visión del cliente son el 3 % de su CPU: **pasarlas a C++ no compensa** (en el servidor sí, 18-11).
+- Lo que pesa es que three.js recorre ~2 000 objetos por fotograma en PUEBLO, y 1 596 son mallas invisibles que solo usan las
+  balas. Probado y **descartado** no rehacer matrices que no cambian: más lento (medido), no se publicó.
+- **Hecho**: esas mallas quedan ocultas para three.js (las balas chocan igual: su `Raycaster` no mira `visible`). PUEBLO
+  2 020 → 424 objetos por fotograma; las matrices, ~45 % menos de tiempo. Lo que se ve, idéntico (mismas llamadas y
+  triángulos). `?ocultas=0` = como antes. Prueba nueva `test/ocultas.browser.test.js` (18 de 18).
+- No toca el servidor ni `core/`, ni el renderizador ni el posprocesado.
+- **Estado**: IMPLEMENTADO · PROBADO EN NAVEGADOR · PENDIENTE DE VALIDACIÓN EN IPHONE Y ANDROID (MEDIR RENDIMIENTO, «CPU»).
+
 ## 24-11-2026 — Cloudflare Pages: solo lo del juego, nunca más de 25 MiB
 El propietario, con el error de Cloudflare Pages (`cobblestone_02_nor_gl_4k.exr` pesa 31,1 MiB > 25 MiB): «arregla el
 error este de Cloudflare siempre». Preguntó si mudarse a Vercel: no (su plan gratis no permite uso comercial y se

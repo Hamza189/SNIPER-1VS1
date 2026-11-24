@@ -139,3 +139,26 @@ FPS sin límite.
 - **Lo que C++ no puede mejorar** (medido): el resto de la CPU de un fotograma es el propio three.js preparando el dibujo,
   y lo que más pesa en el iPhone es la GPU. Lo que toca ahí es menos llamadas de dibujo y menos variantes de shader.
 
+## 8. Hecho el 24-11-2026: lo que el cliente hace en cada fotograma (medido) y las mallas solo para balas
+- **El perfil del cliente** (partida sin conexión en PUEBLO con bots, el dibujo apartado; WebGL por software, PC):
+  - las matrices de three.js (`updateMatrixWorld`, `multiplyMatrices`, `traverse`) eran ~45 % de la CPU del juego;
+  - las líneas de visión y las balas del cliente contra el mapa (`Raycaster`) solo el 3 % (0,03–0,04 ms por fotograma):
+    **pasarlas a C++ no compensa**, a diferencia del servidor (`geom.wasm`, 18-11).
+- **Probado y descartado: no rehacer las matrices que no cambian** (comparar posición, giro y escala con los de la última
+  vez). Hacía la mitad de cuentas, pero el fotograma salía más lento (0,33 → 0,41 ms): el coste no está en las cuentas sino
+  en recorrer los objetos, y comparar en JavaScript cuesta lo mismo que rehacer. Guardarlo en cada objeto lo empeoraba más
+  (0,35 → 0,50 ms: cambia la «forma» de los objetos y three.js entero va más lento). No se publicó.
+- **Lo que sí: menos objetos que recorrer.** En PUEBLO, 1 596 de los ~2 200 objetos de primer nivel de la escena son mallas
+  de material invisible que solo usan las balas (paredes de las casas para las balas, las cajas del pueblo viejo bajo el
+  nuevo, las cajas de los otros mapas). three.js las recorría en cada fotograma para sus matrices, para dibujar y para la
+  sombra del sol. Ahora quedan ocultas (`visible = false`) con su matriz hecha una vez: el `Raycaster` de three.js no mira
+  `visible`, así que las balas chocan exactamente igual.
+  - Objetos que three.js recorre en cada fotograma: PUEBLO 2 020 → 424, ARENA 1 279 → 146, CASA ATLAS 1 236 → 103.
+  - Matrices del fotograma (PC con WebGL por software, la mejor de 9 vueltas alternas en la misma página): PUEBLO entre
+    0,29–0,43 → 0,16–0,23 ms según lo ocupado que estuviera el PC, ARENA 0,11 → 0,07, CASA 0,10 → 0,06. Además se ahorra el
+    mismo recorrido al preparar el dibujo y la sombra del sol (no medible con la GPU por software).
+  - `test/ocultas.browser.test.js` (18 comprobaciones): en la misma página y el mismo momento, ocultas y a la vista dan las
+    mismas llamadas de dibujo y los mismos triángulos, y 3 000 rayos chocan a la misma distancia; ninguna oculta se ha
+    movido tras una partida con bots; bien al cambiar de mapa y con las casas macizas de antes.
+  - En el móvil, PENDIENTE DE VALIDACIÓN: lo que cuenta es «CPU» en MEDIR RENDIMIENTO (3,3–3,4 ms en el iPhone en PUEBLO).
+  - `?ocultas=0` = como antes.
