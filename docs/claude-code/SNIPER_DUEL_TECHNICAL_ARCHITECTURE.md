@@ -124,41 +124,27 @@ reconciliación, interpolación del rival 110 ms, ping) · `vmrig.js` (materiale
 ## 8. Banderas de URL (todas verificadas en el código)
 | Bandera | Efecto |
 |---|---|
+| (24-11) VERSIONES ANTIGUAS BORRADAS | El propietario («sí, bórralas»): ya no existen el menú de antes (`?menu=1`), el HUD de antes (`?hud=1`), ARMAS de antes (`?arsenal=0`), las cifras de antes (`?balance=0`), el deslizamiento de antes (`?desliz=0`), el movimiento de antes (`?mov=clasico`), `?feel=2`, `?caja=0`, `?perfil=1` ni el pueblo de antes (`?pueblo=0`/`3`/`4`, `?sur=0`, `?pueblo4=0`, `?town=0`, `?e10=0`, `?suelo=0`/`p0`, `?adoquin=0`, `?casas=0`, `?fuente=0`): PUEBLO es siempre el 4.0. El servidor conserva su mapa `pueblo` de antes (congelado en `tools/export-map.js`) para páginas viejas; esta página sale de una sala con ese mapa avisando. Todo sigue en la etiqueta git `antes-de-limpiar-2026-11-24`. `docs/LANZAMIENTO.md` |
 | (23-11) LANZAMIENTO | Por defecto, sin bandera: SALA 1V1 (`?lobby=1` = la de siempre; botón MÁS MODOS), pantalla de carga (`?carga=1` = sin ella), BARRIO en los menús (`?barrio=0`), RIDGE y AMBER (ya no hay `?meshy`), AUTO = ALTO también en móviles, rifles con sus cifras en línea. Sin pestaña EN PRUEBA ni sonido de fondo (`?viento` ya no existe). `docs/LANZAMIENTO.md` |
-| `?pueblo=3` / `?pueblo=0` | PUEBLO 3.0 sí / forzar no (también se guarda desde AJUSTES › GRÁFICOS) |
 | (31-10) Miras | Sin bandera: las 8 miras del rifle, un aumento cada una (`client/miras.js`, `docs/MIRAS.md`), elegidas en el menú, la pausa o el inventario; la elección se guarda en `sniperduel_mira`. FRANCOTIRADOR (la de siempre) por defecto |
 | `&aa=0` / `&aa=1` | (31-10) Fuerza el suavizado de bordes (MSAA 4×) apagado / encendido. Por defecto va en MEDIO y ALTO; AJUSTES › GRÁFICOS lo apaga. Se mide con `node tools/flicker.js` (`docs/PARPADEO.md`) |
-| `&suelo=0` / `&suelo=p0` | Suelo anterior / plaza P0 v2 |
-| `&adoquin=0`, `&adoquinm=<m>` | Adoquín anterior / tamaño de repetición del adoquín CC0 (2,7 por defecto) |
 | `&fachada=cc0` | Fachadas P1 con escaneos de Poly Haven (opción) |
-| `&e10=0` | Sin Casa Oliva (edificio anterior) |
 | `&ratas=0`, `&flora=0` | Sin ratas / sin vegetación |
-| `&sur=0` | PUEBLO 3.0 solo en la mitad norte, como antes del 14-11 (`docs/PUEBLO-31.md`) |
-| `?pueblo=4` | PUEBLO 4.0 (17-11-2026): PUEBLO 3.1 (mitad sur, 8 casas habitables, fuente nueva) + 4.0. Se guarda en el dispositivo; `?pueblo=0` o `?pueblo=3` lo quitan. En línea es el mapa `pueblo4` del servidor; sin la bandera, PUEBLO y el mapa `pueblo` son los de siempre. El enlace de invitación la lleva (`docs/PUEBLO-4.md`) |
-| `?casas=0` | Con `?pueblo=4`, sin conexión: las cajas macizas de antes en lugar de las 8 casas habitables (en línea siempre las casas: son las del servidor) (`docs/CASAS-HABITABLES.md`) |
-| `?fuente=0` | Con `?pueblo=4`: el agua plana de antes en la fuente de la plaza (`docs/FUENTE.md`) |
-| `?pueblo4=0` | Con `?pueblo=4`: PUEBLO 3.1 sin las mejoras de PUEBLO 4.0 (desgaste, interiores, vida en fachadas, cables, luz) (`docs/PUEBLO-4.md`) |
 | `&sombra=libre`, `&sombrafade=0`, `&sombras=0` | Sombra sin ajuste a texels / sin fundido / sin sombras (diagnóstico) |
 | `?casa=1` / `?casa=0` | Muestra / oculta CASA ATLAS en los menús (se recuerda) |
 | `?casa2=0` / `?casa2=1` | Oculta / muestra CASA ATLAS 2.0 en los menús (se recuerda; por defecto se muestra). Aprobada el 02-11: duelo y online (`client/casa2.js`, `docs/CASA-ATLAS-2.md`). La CASA ATLAS XL (`?xlv`, `?xltex`) se retiró el 03-11 |
 | `?casa2v=2` / `?casa2v=1` | CASA ATLAS 2.0 · diseño 2 (04-11): los pisos espalda con espalda, patio despejado, pérgola, suelos CC0 y cristal nuevo, en lugar del diseño 1 en los menús (se recuerda). Otro mapa para el servidor (`casa2b`); pendiente de aprobación (`docs/CASA-ATLAS-2.md`) |
 | `?casa2v=3` | CASA ATLAS 2.0 · JARDÍN (04-11): el GLB de ChatGPT con sus 365 cajas (`client/casa2j.js`, mapa `casa2c` en el servidor), en lugar de los otros diseños en los menús (se recuerda). Pendiente de aprobación |
 | `?barrio=1` / `?barrio=0` | BARRIO (04-11): calle con dos garajes abandonados y torres de fondo (`client/barrio.js`, `docs/BARRIO.md`), en los menús del duelo y online (se recuerda). Mapa `barrio` en el servidor. Pendiente de aprobación |
-| `?arsenal=0` / `?arsenal=1` | ARMAS de antes / el ARSENAL (GUNSMITH, 08-11, por defecto): arma grande, modelos, accesorios, estadísticas reales de `core/gunstats.js`, GUARDAR por modelo (`docs/GUNSMITH.md`). Se recuerda |
-| `?balance=0` / `?balance=1` | Cifras de antes (las del HALCÓN R7 para los 5 modelos) / las de cada rifle (09-11, por defecto, solo sin conexión; en línea siempre el HALCÓN). Se recuerda (`docs/GUNSMITH.md`) |
 | `?pen=0` / `?pen=1` | Penetración de las balas de rifle contra bots (cajas, madera fina, chapa; con BALA DURA, un tabique). `?pen=0` la apaga (se recuerda). 09-11-2026, `docs/GUNSMITH.md` |
-| `?caja=0` | La caja de CAJAS de antes (la cuadrada de CSS) en lugar de la ATLAS DROP en 3D. 10-11-2026, `docs/ASSETS-3D.md` |
 | `?radar=0` / `?radar=1` | RADAR: cada 12 s los enemigos salen 3 s en el minimapa (se recuerda). 19-11-2026, `src/page.html` RADAR |
 | `?gpuauto=0` | AUTO de antes (ALTO en ordenadores, MEDIO en móviles) sin mirar la gráfica ni bajar solo en partida. 10-11-2026, `client/quality.js` |
-| `?desliz=0` / `?desliz=1` | Deslizamiento de verdad (piernas por delante) en tu 3ª persona sin conexión; `0` vuelve al de antes. 09-11-2026, `docs/PERSONAJES-PRO.md` |
 | `?rayosx=0` / `?rayosx=1` | Rayos X del MAPA DE PRUEBAS (zonas de impacto de los bots a través de las paredes). 09-11-2026, `docs/GUNSMITH.md` |
 | `&rejas=0` | Sin el desvanecido de las rejas lejanas del kit (para comparar; `docs/PARPADEO.md`, 03-11-2026) |
-| `?menu=1` / `?menu=2` | El menú principal de antes (se recuerda) / el nuevo con la sala 3D, que es el de por defecto desde el 03-11-2026 (`docs/MENU-2.md`) |
 | `?lobby=2` / `?lobby=1` | SALA 1V1 (10-11, experimental): la sala de espera multijugador nueva sobre un hangar 3D, con INICIAR PARTIDA del anfitrión (`hello.hs`, `go`) / la pantalla de salas de siempre (`#mp`, por defecto). Se recuerda; el enlace de invitación lleva `&lobby=2` (`docs/SALA-1V1.md`) |
 | `&techo=1` | Techo opcional en CASA ATLAS |
 | `?pj=2` | Personaje 3D (rev. 03, `client/soldier2.js`, `assets/personaje/`) en bots y rival online en vez de la figura de cajas; solo aspecto. Sus transiciones (GF-2, 31-10) se miden con `node tools/anim-sheet.js [op4\|op2\|op3\|v2]` |
-| (28-10) por defecto | Sin bandera = `?pj=pro` + `?hud=2`; personaje SOLDADO (el de `?pj=2`) elegible y el de por defecto. Volver a lo anterior: `?pj=0` (cajas) y `?hud=1` (HUD anterior) |
-| `?hud=2` | (por defecto desde el 28-10) HUD 2: iconos, barra de armas, inventario, asomarse en móvil, teclas de asomarse y editor ampliado (`client/hud2.js`, `docs/HUD-2.md`); solo presentación y entrada |
+| (28-10) por defecto | Sin bandera = `?pj=pro` + HUD 2; personaje SOLDADO (el de `?pj=2`) elegible y el de por defecto. `?pj=0`: el soldado de cajas (pruebas; también es el de BAJO) |
 | `?pj=mix` | Los 4 personajes a la vez contra bots (op2, op3, op4 y el de cajas; 4 bots; texturas 4K/2K/1K por calidad) para comparar y medir |
 | `?pj=pro` / `?pj=mix` (27-10) | Además: «Tu personaje» en el menú y la sala (mensaje `skin` del servidor) y botón PERFIL |
 | `?look=vivo\|realista\|suave\|cine` / `?cvd=prot\|deut\|trit` (30-10) | Fuerzan el estilo de imagen o el modo daltónico de AJUSTES › GRÁFICOS (van dentro del tone mapping, `PIC` en `src/page.html`), para comparar con `tools/capture-scenes.js` (`URLX=look=cine`). `docs/AJUSTES.md` |
@@ -167,12 +153,10 @@ reconciliación, interpolación del rival 110 ms, ping) · `vmrig.js` (materiale
 | `?ktx2=0` (29-10) | Los JPG de antes. Por defecto, en PC y en el móvil, los personajes y los aspectos de arma van con texturas comprimidas para la GPU (KTX2/UASTC → ASTC en el iPhone, BC7 en PC): 4K con la memoria del 2K; en el móvil con un solo transcodificador, personajes de uno en uno y texturas de arma de una en una (`ktx2Queue`). En BAJO, siempre los JPG (`docs/KTX2.md`, `docs/ARMAS-EXT.md`) |
 | `?pj=pro` (28-10) | Además: PERFIL › Cuenta en la nube (passkeys, amigos, invitaciones; `server/accounts.js`, rutas `/cuenta/…` del Worker) y CAJAS (inventario en el servidor y cajas gratuitas: `core/items.js`, `client/camo.js`, mensaje `acct` de la sala; `docs/INVENTARIO-Y-CAJAS.md`). Salas personalizadas sin bandera (28-10): modos `duelo`/`todos`/`equipos`, hasta 6 plazas, bots del servidor en `core/bots.js` (`docs/SALAS-PERSONALIZADAS.md`) |
 | `?pulido=1` (28-10) | Agua de las fuentes con ondas en movimiento y reflejo suave (para comparar con la de siempre) |
-| `?perfil=1` | Botón PERFIL sin cambiar de personajes (perfil local: `client/profile.js`, `docs/CUENTAS-Y-MONETIZACION.md`) |
 | `?pj=pro` | (por defecto desde el 28-10) Personajes realistas CC BY por calidad: ALTO op2 (rival) / op3 (bots) con 4K, MEDIO op4, BAJO soldado de cajas (`tools/personaje-ext`, `docs/PERSONAJES-PRO.md`) |
 | `?pj=3` | Personaje LINCE (rev. 04, `assets/personaje/v4/`) en bots y rival online; solo aspecto |
 | `?carga=2` / `?carga=1` (19-11) | PANTALLA DE CARGA con barra del 0 al 100 % (`client/carga.js`, `docs/CARGA.md`). El aparato la recuerda; `?carga=1` vuelve a la entrada de siempre |
 | `?medir=1` | Ejecuta MEDIR RENDIMIENTO al cargar (`client/perfprobe.js`, `docs/RENDIMIENTO-IPHONE.md`); `?medir=rapido` para pruebas |
-| `?town=0` | Pueblo original de cajas |
 | `?vm=0` / `?vm=1` | Armas simples / forzar modelos 3D |
 | `&nm=0` | Sin mapas de normales |
 | `?perf=low` | Modo sin GPU para pruebas automáticas |

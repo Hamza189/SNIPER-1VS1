@@ -1,11 +1,11 @@
 /* Stage B integration test: the whole game booted as a TOUCH device (844×390 landscape),
    driven by pointer events on the touch layer. Not a real phone: no Safari/Chrome, no real
    fingers, no rendering. Run: node test/touch.smoke.test.js
-   Since 28-10-2026 the default is HUD 2 (tested with real touches in hud2.browser.test.js); this suite checks the classic
-   touch HUD, still available with ?hud=1. */
+   HUD 2 since 28-10-2026 (its own parts, with real touches, in hud2.browser.test.js); the classic HUD (?hud=1) was
+   removed on 24-11-2026. */
 'use strict';
 const { boot: boot0 } = require('./harness.js');
-const boot = o => boot0(Object.assign({ search: '?hud=1' }, o));
+const boot = boot0;
 let pass = 0, fail = 0;
 function check(name, cond, info) { if (cond) { pass++; console.log('  ok   ' + name + (info !== undefined ? '  (' + info + ')' : '')); } else { fail++; console.log('  FAIL ' + name + (info !== undefined ? '  (' + info + ')' : '')); } }
 
@@ -208,7 +208,7 @@ console.log('\nRIFLE, PISTOLA Y NAVAJA EN MÓVIL');
 { H.frames(80, 16);
   H.pointer('pointerdown', 8, 642, 200, 'swap'); H.pointer('pointerup', 8, 642, 200, 'swap'); H.frames(30, 16);
   check('ARMA saca la pistola', SD.LOAD.active === 'pistol' && SD.LOAD.phase === 'ready');
-  check('con pistola: MIRA sigue (alzas) y el botón dice FUEGO', H.el('#tbScope').hidden === false && H.el('#tbFire').textContent === 'FUEGO');
+  check('con pistola: MIRA sigue (alzas)', H.el('#tbScope').hidden === false);
   { const s0 = SD.STATS.shots;
     H.pointer('pointerdown', 3, 779, 325, 'fire'); H.frames(1, 16); H.pointer('pointerup', 3, 779, 325, 'fire'); H.frames(15, 16);
     H.pointer('pointerdown', 3, 779, 325, 'fire'); H.frames(1, 16); H.pointer('pointerup', 3, 779, 325, 'fire'); H.frames(15, 16);
@@ -248,7 +248,7 @@ console.log('\nPAUSA, ORIENTACIÓN Y GUARDADO');
 
 console.log('\nMIRA CON TOUCH EVENTS (el camino que usa Safari en iPhone)');
 { // iOS Safari: every finger arrives as a Touch with its own identifier and keeps reporting to the element it started on
-  const T = (id, x, y, btn) => ({ identifier: id, clientX: x, clientY: y, target: { closest: () => (btn ? { dataset: { btn } } : null) } });
+  const T = (id, x, y, btn) => ({ identifier: id, clientX: x, clientY: y, target: { closest: s => (btn && s === '.tb' ? { dataset: { btn } } : null) } });
   const live = new Map();
   const send = (type, touch) => {
     if (type === 'touchstart' || type === 'touchmove') live.set(touch.identifier, touch); else live.delete(touch.identifier);
@@ -258,7 +258,7 @@ console.log('\nMIRA CON TOUCH EVENTS (el camino que usa Safari en iPhone)');
   SD.SETTINGS.adsMode = 'holdDrag'; SD.SETTINGS.releaseFire = false; SD.SETTINGS.invertY = false; H.frames(60, 16);   // (an earlier section left the Y axis inverted)
   // a pointer event of type 'touch' for the same finger must be ignored (iOS sends both)
   send('touchstart', T(7, 689, 327, 'scope'));
-  H.fire('#touch', 'pointerdown', { pointerId: 99, pointerType: 'touch', clientX: 689, clientY: 327, target: { closest: () => ({ dataset: { btn: 'scope' } }) } });
+  H.fire('#touch', 'pointerdown', { pointerId: 99, pointerType: 'touch', clientX: 689, clientY: 327, target: { closest: s => (s === '.tb' ? { dataset: { btn: 'scope' } } : null) } });
   H.frames(25, 16);
   check('touch: mantener MIRA entra el visor (el dedo cuenta una sola vez)', SD.WCORE.ads === 1 && SD.TOUCH.held.size === 1, 'ads ' + SD.WCORE.ads + ' · botones ' + SD.TOUCH.held.size);
   const y0 = SD.P.yaw, p0 = SD.P.pitch;
@@ -290,7 +290,7 @@ console.log('\nMIRA CON TOUCH EVENTS (el camino que usa Safari en iPhone)');
 }
 
 console.log('\nMIRA PULSAR (TOGGLE, opcional en AJUSTES): toca para entrar, mueve la cámara con cualquier dedo libre');
-{ const T = (id, x, y, btn) => ({ identifier: id, clientX: x, clientY: y, target: { closest: () => (btn ? { dataset: { btn } } : null) } });
+{ const T = (id, x, y, btn) => ({ identifier: id, clientX: x, clientY: y, target: { closest: s => (btn && s === '.tb' ? { dataset: { btn } } : null) } });
   const live = new Map();
   const send = (type, t) => { if (type === 'touchstart' || type === 'touchmove') live.set(t.identifier, t); else live.delete(t.identifier); H.fire('#touch', type, { changedTouches: [t], touches: [...live.values()] }); };
   const tap = (id, x, y, btn) => { send('touchstart', T(id, x, y, btn)); H.frames(2, 16); send('touchend', T(id, x, y, btn)); };
@@ -333,12 +333,12 @@ console.log('\nEDITOR DE BOTONES');
   H.pointer('pointerdown', 31, 779, 325, 'fire'); H.pointer('pointerup', 31, 779, 325, 'fire');
   check('en el editor los botones no disparan', SD.STATS.shots === shotsBefore && SD.input.firePressed === false);
   H.fire('#edSave', 'click');
-  const L = JSON.parse(H.storage['sniperduel_touchLayout'] || 'null');
+  const L = JSON.parse(H.storage['sniperduel_hudLayout2'] || 'null');
   check('GUARDAR conserva la disposición en el móvil', L && L.buttons.jump.size === 90 && !SD.EDIT.on);
   SD.openEditor(); H.fire('#edReset', 'click'); H.fire('#edCancel', 'click');
   check('RESTAURAR + CANCELAR deja la disposición guardada intacta', SD.LAYOUT.buttons.jump.size === 90);
   SD.openEditor(); H.fire('#edReset', 'click'); H.fire('#edSave', 'click');
-  check('RESTAURAR + GUARDAR vuelve a la disposición por defecto', SD.LAYOUT.buttons.jump.size === 56 && JSON.parse(H.storage['sniperduel_touchLayout']).buttons.jump.size === 56);
+  check('RESTAURAR + GUARDAR vuelve a la disposición por defecto', SD.LAYOUT.buttons.jump.size === 56 && JSON.parse(H.storage['sniperduel_hudLayout2']).buttons.jump.size === 56);
 }
 { // a second boot reads the saved settings and layout
   const H2 = boot({ touch: true, width: 844, height: 390, storage: H.storage });

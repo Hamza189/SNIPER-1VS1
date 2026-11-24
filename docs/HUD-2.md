@@ -1,5 +1,7 @@
 # HUD 2 — renovación del HUD y del equipamiento (`?hud=2`)
 
+> **24-11-2026:** el HUD de antes (`?hud=1`) se quitó; el HUD 2 es el único (copia en la etiqueta git `antes-de-limpiar-2026-11-24`).
+
 **Desde el 28-10-2026 el HUD 2 es el de por defecto** (aprobado por el propietario en iPhone y PC). El HUD anterior sigue
 disponible con `?hud=1`. (Antes todo esto iba tras la bandera `?hud=2`, que sigue funcionando.)
 Estado: ver la última sección.

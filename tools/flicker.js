@@ -44,7 +44,7 @@ const ONLY = process.env.ONLY ? process.env.ONLY.split(',') : null;
     await ctx.route(/fonts\.(googleapis|gstatic)\.com/, r => r.abort());
     await ctx.addInitScript(q => { try { localStorage.setItem('sniperduel_settings', JSON.stringify({ quality: q, v: 2 })); localStorage.setItem('sniperduel_p3', 'true'); } catch (e) {} }, Q);
     const p = await ctx.newPage(); p.on('pageerror', e => console.log('ERR', e.message));
-    await p.goto(srv.url + '?vm=1&pueblo=3' + (extra ? '&' + extra : ''));
+    await p.goto(srv.url + '?vm=1' + (extra ? '&' + extra : ''));
     await p.waitForTimeout(2500);
     await p.evaluate(() => { __SD.setTrain('off'); __SD.setMode('duel'); __SD.startMatch(); });
     await p.waitForFunction(() => __SD.P3W && __SD.P3W.kit && (!__SD.E10.on || __SD.E10.ready || __SD.E10.failed), null, { timeout: 120000 });

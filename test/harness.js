@@ -50,7 +50,7 @@ function boot(opts) {
     fire(sel, type, ev) { (listeners[sel + ':' + type] || []).forEach(f => f(Object.assign({ type, preventDefault() {} }, ev || {}))); },
     // pointer events on the touch layer; btn = button name under the finger (or null)
     pointer(type, id, x, y, btn) {
-      const target = { closest: () => (btn ? { dataset: { btn } } : null) };
+      const target = { closest: s => (btn && s === '.tb' ? { dataset: { btn } } : null) };   // only the button: not a weapon-bar slot (HUD 2)
       H.fire('#touch', type, { pointerId: id, clientX: x, clientY: y, target });
     }
   };

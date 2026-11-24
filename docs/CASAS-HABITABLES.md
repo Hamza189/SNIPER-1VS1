@@ -1,5 +1,7 @@
 # CASAS HABITABLES del PUEBLO (13/14-11-2026)
 
+> **24-11-2026:** `?casas=0` (las cajas macizas de antes) se quitó: siempre las casas.
+
 El propietario (13-11, con 7 capturas de PUEBLO 3.0) pidió que tres casas fueran «habitables»: entrar, salir, asomarse
 por la ventana, cubrirse y disparar. El 14-11 pidió integrarlas y hacer más edificios así. Ahora son **8 casas** y
 forman parte del mapa, en cliente y servidor.

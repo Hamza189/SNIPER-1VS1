@@ -1,5 +1,5 @@
 /* ARMAS · GUNSMITH (08-11-2026, docs/GUNSMITH.md) en la página real:
-   - el ARSENAL sustituye a ARMAS (sin el operador: el arma, grande, en el centro); ?arsenal=0 devuelve el de antes
+   - el ARSENAL sustituye a ARMAS (sin el operador: el arma, grande, en el centro) (el ARMAS de antes, ?arsenal=0, se quitó el 24-11-2026)
    - elegir es un borrador que se ve al momento y no se guarda; GUARDAR lo guarda (el modelo y, por modelo, su mira);
      RESTABLECER vuelve a lo guardado; salir de ARMAS sin guardar lo deshace; todo sobrevive a recargar la página
    - el selector de mira enseña la mira montada en el MODELO elegido (fotos reales, sin 404); los accesorios sin
@@ -34,10 +34,10 @@ const check = (n, c, i) => { (c ? pass++ : fail++); console.log((c ? '  ok   ' :
 
     console.log('\nEL ARSENAL');
     const lay = await p.evaluate(() => { const pane = document.querySelector('#m2 .m2Pane[data-pane=armas]'), slot = document.getElementById('gsSlot').getBoundingClientRect();
-      return { gs: pane && pane.classList.contains('gsPane') && !pane.hidden, old: document.querySelector('[data-pane=armasOld]').hidden, op: __SD.M2.pivot.visible, slotH: slot.height / innerHeight, slotW: slot.width / innerWidth,
+      return { gs: pane && pane.classList.contains('gsPane') && !pane.hidden, op: __SD.M2.pivot.visible, slotH: slot.height / innerHeight, slotW: slot.width / innerWidth,
         rifles: document.querySelectorAll('#gsRifles .gsIt').length, knives: document.querySelectorAll('#gsKnives .gsIt').length, acc: [...document.querySelectorAll('#gsAcc .gsAccB')].map(x => x.dataset.acc).join(),
         camoB: !document.getElementById('gsCamoB').hidden && !!document.getElementById('gsCamoB').closest('.gsTitle') }; });
-    check('ARMAS es el ARSENAL: el arma sola y grande en el centro (sin el operador)', lay.gs && lay.old && !lay.op && lay.slotH > 0.4 && lay.slotW > 0.4, JSON.stringify(lay));
+    check('ARMAS es el ARSENAL: el arma sola y grande en el centro (sin el operador)', lay.gs && !lay.op && lay.slotH > 0.4 && lay.slotW > 0.4, JSON.stringify(lay));
     check('5 modelos de rifle y 2 cuchillos; las 5 ranuras de accesorios, y el CAMUFLAJE aparte, junto al nombre del arma', lay.rifles === 5 && lay.knives === 2 && lay.acc === 'mira,mag,bipod,muzzle,grip' && lay.camoB, lay.acc + ' · ' + lay.camoB);
     let s = await st();
     check('al entrar: lo que llevas, marcado como EQUIPADO, y nada sin guardar', s.ws === 'halcon' && s.eq === 'halcon' && s.pressed === 'halcon' && !s.save && s.dirty === '', JSON.stringify(s));
@@ -143,11 +143,7 @@ const check = (n, c, i) => { (c ? pass++ : fail++); console.log((c ? '  ok   ' :
     check('sin errores ni archivos que falten', errs.length === 0 && bad.length === 0, errs.concat(bad).slice(0, 3).join(' | ') || 'ninguno');
     // back to the defaults for the next tests on this browser
     await p.evaluate(() => { localStorage.removeItem('sniperduel_gsCfg'); localStorage.setItem('sniperduel_wsRifle', '"halcon"'); localStorage.setItem('sniperduel_mira', '"sniper"'); });
-    await p.goto(srv.url + '?carga=1&arsenal=0'); await p.waitForFunction(() => window.__SD && __SD.M2 && __SD.M2.room, null, { timeout: 180000 });
-    const old = await p.evaluate(() => { document.querySelector('#m2 .m2Nav [data-tab=armas]').click(); const pane = document.querySelector('#m2 .m2Pane[data-pane=armas]');
-      return { oldPane: pane && !pane.classList.contains('gsPane') && !pane.hidden, rows: document.querySelectorAll('#m2Miras .m2W').length, stored: localStorage.getItem('sniperduel_arsenalOld') }; });
-    check('?arsenal=0 devuelve el ARMAS de antes (y se recuerda)', old.oldPane && old.rows === 8 && old.stored === 'true', JSON.stringify(old));
-    await p.goto(srv.url + '?carga=1&arsenal=1'); await ctx.close();
+    await ctx.close();
 
     console.log('\nMÓVIL EN HORIZONTAL (844 × 390)');
     const c2 = await b.newContext({ viewport: { width: 844, height: 390 }, hasTouch: true, isMobile: true, deviceScaleFactor: 2 });

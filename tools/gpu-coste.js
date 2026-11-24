@@ -21,7 +21,7 @@ const VARIANTS = (process.env.VARIANTS || 'base:;sinSombras:sombras=0;sinAA:aa=0
     await ctx.route(/fonts\.(googleapis|gstatic)\.com/, r => r.abort());
     await ctx.addInitScript(() => { try { localStorage.setItem('sniperduel_settings', JSON.stringify({ quality: 'alto', v: 3 })); localStorage.setItem('sniperduel_menuOld', 'true'); } catch (e) {} });
     const p = await ctx.newPage(); p.on('pageerror', e => console.log('ERR', e.message));
-    await p.goto(srv.url + '?vm=1&pueblo=3' + (extra ? '&' + extra : ''), { timeout: 180000 });
+    await p.goto(srv.url + '?vm=1' + (extra ? '&' + extra : ''), { timeout: 180000 });
     await p.waitForFunction(() => window.__SD && __SD.VMA.ready && __SD.P3W && __SD.P3W.kit && (!__SD.E10.on || __SD.E10.ready || __SD.E10.failed) && (!__SD.FLORA.on || __SD.FLORA.ready || __SD.FLORA.failed), null, { timeout: 240000 });
     await p.evaluate(() => { const S = __SD; S.setTrain('off'); S.setMode('duel'); S.setDuelLethal(false); S.setOffMap('pueblo'); S.startMatch(); });
     await p.waitForFunction(() => __SD.state === 'playing', null, { timeout: 120000 });

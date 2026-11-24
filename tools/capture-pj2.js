@@ -26,7 +26,7 @@ fs.mkdirSync(out, { recursive: true });
       const p = await ctx.newPage(), errs = [], bad = [];
       p.on('pageerror', e => errs.push(e.message));
       p.on('response', r => { if (r.status() >= 400) bad.push(r.status() + ' ' + r.url()); });
-      const url = srv.url + '?vm=1' + (map === 'pueblo' ? '&pueblo=3' : '') + (pj ? '&pj=' + pj : '');
+      const url = srv.url + '?vm=1' + (pj ? '&pj=' + pj : '');
       await p.goto(url);
       await p.waitForFunction(() => window.__SD && __SD.WORLDS, null, { timeout: 120000 });
       if (map === 'pueblo') await p.waitForFunction(() => __SD.P3W && __SD.P3W.kit, null, { timeout: 180000 });

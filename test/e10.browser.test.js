@@ -1,5 +1,5 @@
 /* E10 «Casa Oliva» (the first delivered 3D model, assets/3d/models/sd_e10_casa_oliva.glb) in the game:
-   - only with ?pueblo=3; &e10=0 and the default game keep the PUEBLO 2.0 building
+   - always in PUEBLO (the town of before and ?e10=0 were removed on 24-11-2026)
    - it replaces the old building only once loaded, at the slot's centre
    - nothing at any height can be seen through the building (every LOD): a ray coming from outside meets
      something within 0.40 m of the collision box face (the openings are recessed at most that much)
@@ -21,8 +21,8 @@ function check(name, cond, info) { if (cond) { pass++; console.log('  ok   ' + n
   const page = await ctx.newPage();
   const errs = []; page.on('pageerror', e => errs.push(e.message));
 
-  console.log('\nE10 CASA OLIVA — ?pueblo=3');
-  await page.goto(srv.url + '?carga=1&vm=1&pueblo=3');
+  console.log('\nE10 CASA OLIVA');
+  await page.goto(srv.url + '?carga=1&vm=1');
   await page.waitForFunction(() => window.__SD && __SD.E10 && (__SD.E10.ready || __SD.E10.failed), null, { timeout: 120000 });
   const A = await page.evaluate(() => {
     const S = __SD, T = THREE, E = S.E10; S.setWorld('pueblo'); E.root.visible = true; E.root.updateMatrixWorld(true);
@@ -65,14 +65,6 @@ function check(name, cond, info) { if (cond) { pass++; console.log('  ok   ' + n
   check('con la mira (8×) no aparece el LOD bajo: 100 m → LOD0, 60 m → LOD0', A.lod.at100scope === 0 && A.lod.at60scope === 0);
   check('solo un LOD visible a la vez', A.visibleLevels === 1);
 
-  console.log('\nE10 — sin la bandera y con &e10=0');
-  for (const [url, label] of [['?vm=1&pueblo=0', 'el PUEBLO de antes (?pueblo=0)'], ['?vm=1&pueblo=3&e10=0', '?pueblo=3&e10=0']]) {
-    await page.goto(cg1(srv.url + url));
-    await page.waitForFunction(() => window.__SD && __SD.W, null, { timeout: 90000 });
-    await page.waitForTimeout(1500);
-    const r = await page.evaluate(() => ({ on: __SD.E10.on, ready: __SD.E10.ready, old: __SD.E10.old.length, glb: !!__SD.scene.getObjectByName('e10_casa_oliva') }));
-    check(label + ': sigue el edificio de antes, sin cargar el GLB', !r.on && !r.ready && !r.glb && r.old === 0, JSON.stringify(r));
-  }
   check('sin errores en la página', errs.length === 0, errs.slice(0, 2).join(' | '));
   await b.close(); srv.close();
   console.log('\n' + pass + ' correctas, ' + fail + ' fallidas');

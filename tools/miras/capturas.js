@@ -15,7 +15,7 @@ const OUT = process.argv[2] || '.';
   await ctx.route(/fonts\.(googleapis|gstatic)\.com/, r => r.abort());
   await ctx.addInitScript(() => { try { localStorage.setItem('sniperduel_settings', JSON.stringify({ quality: 'alto', v: 3 })); localStorage.setItem('sniperduel_p3', 'true'); } catch (e) {} });
   const p = await ctx.newPage(); p.on('pageerror', e => console.log('ERR', e.message));
-  await p.goto(srv.url + (process.env.PAGE || '') + '?pueblo=3&ktx2=0' + (process.env.URLX || ''), { timeout: 180000 });   // env PAGE=otra.html
+  await p.goto(srv.url + (process.env.PAGE || '') + '?ktx2=0' + (process.env.URLX || ''), { timeout: 180000 });   // env PAGE=otra.html
   await p.waitForFunction(() => window.__SD && __SD.WORLDS && __SD.VMA.ready, null, { timeout: 180000 });
   await p.evaluate(() => { HTMLCanvasElement.prototype.requestPointerLock = function () {}; });
   await p.addStyleTag({ content: '#lockHint,#fpsBox{display:none!important}' });

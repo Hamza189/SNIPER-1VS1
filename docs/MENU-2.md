@@ -1,5 +1,7 @@
 # MENÚ 2 — el menú principal (por defecto desde el 03-11-2026)
 
+> **24-11-2026:** el menú de antes (`?menu=1`) se quitó (copia en la etiqueta git `antes-de-limpiar-2026-11-24`).
+
 Pedido por el propietario el 02-11-2026 con dos imágenes de referencia: «la sala oscura debería ser la referencia
 principal; la primera sirve para organizar el botón JUGAR, las tarjetas y la navegación». Construido con los recursos
 del juego, sin imágenes generadas como fondo.

@@ -1,8 +1,9 @@
 /* P0 ground pack (assets/tex/p0*, tools/p0/make_p0_textures.py) in the game, per graphics profile:
-   - ?pueblo=3 loads the v3 limestone plaza by default; ?pueblo=3&suelo=0 and the default game do not load a single P0 file
+   - PUEBLO loads the v3 limestone plaza and the Poly Haven cobbles (the ground of before, ?suelo=0 / ?adoquin=0, and the
+     town of before were removed on 24-11-2026)
    - every texture the page asks for exists (a missing roughness map reads as 0 = a mirror: this happened in MEDIO)
    - the materials get their maps where the profile says (ALTO/MEDIO: colour, normal, roughness · BAJO: colour)
-   - decals and sand drifts stay flat on the ground (≤ 5 cm) and the collision boxes are the same as without P0
+   - decals and sand drifts stay flat on the ground (≤ 5 cm) and the collision boxes are the same in every profile
    Run: node test/p0.browser.test.js   (software WebGL is fine: nothing is timed) */
 'use strict';
 const cg1 = u => /[?&]carga=/.test(u) ? u : u + (u.includes('?') ? '&' : '?') + 'carga=1';   // (23-11-2026) these checks run without the loading screen (it has its own test)
@@ -11,9 +12,8 @@ const ss = require('../tools/static-server.js');
 let pass = 0, fail = 0;
 function check(name, cond, info) { if (cond) { pass++; console.log('  ok   ' + name + (info !== undefined ? '  (' + info + ')' : '')); } else { fail++; console.log('  FAIL ' + name + (info !== undefined ? '  (' + info + ')' : '')); } }
 
-async function load(b, url, q, p3mem) {
+async function load(b, url, q) {
   const ctx = await b.newContext({ viewport: { width: 640, height: 360 } });
-  if (p3mem) await ctx.addInitScript(() => { try { localStorage.setItem('sniperduel_p3', 'true'); } catch (e) {} });
   await ctx.route(/fonts\.(googleapis|gstatic)\.com/, r => r.abort());
   await ctx.addInitScript(q => { try { localStorage.setItem('sniperduel_settings', JSON.stringify({ quality: q, v: 2 })); } catch (e) {} }, q);
   const p = await ctx.newPage(), bad = [], p0files = [], errs = [];
@@ -43,30 +43,19 @@ async function load(b, url, q, p3mem) {
 (async () => {
   const srv = await ss.start();
   const b = await chromium.launch({ args: ['--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist'] });
-  const base = await load(b, srv.url + '?carga=1&vm=1&pueblo=3&suelo=0', 'alto');
-  console.log('\nSIN EL PACK');
-  check('?pueblo=3&suelo=0: suelo anterior y ningún archivo P0 descargado', !base.on && base.p0files.length === 0, base.p0files.join(' '));
-  check('pueblo exterior: materiales propios con desplazamiento de profundidad (sin rayas contra el muro perimetral)', base.bd.length > 0 && base.bd.every(x => x.off && !x.shared), JSON.stringify(base.bd));
-  const dflt = await load(b, srv.url + '?carga=1&vm=1&pueblo=3', 'alto');
-  check('?pueblo=3 por defecto: caliza v3b en la plaza y adoquín de Poly Haven (aprobados el 12 y el 17-10-2026)', dflt.on && dflt.p0files.some(f => /^p0v3_plaza_c/.test(f)) && dflt.p0files.some(f => /^p0cc_cobble_c/.test(f)), dflt.p0files.join(' '));
-  const noCob = await load(b, srv.url + '?carga=1&vm=1&pueblo=3&adoquin=0', 'alto');
-  check('&adoquin=0: vuelve el adoquín anterior (ningún archivo del escaneo)', noCob.on && !noCob.use.cobble && !noCob.p0files.some(f => /cobble/.test(f)), noCob.p0files.join(' '));
-  const fa = await load(b, srv.url + '?carga=1&vm=1&pueblo=3&fachada=cc0', 'alto');
+  const dflt = await load(b, srv.url + '?carga=1&vm=1', 'alto');
+  console.log('\nEL SUELO DEL PUEBLO');
+  check('caliza v3b en la plaza y adoquín de Poly Haven (aprobados el 12 y el 17-10-2026)', dflt.on && dflt.p0files.some(f => /^p0v3_plaza_c/.test(f)) && dflt.p0files.some(f => /^p0cc_cobble_c/.test(f)), dflt.p0files.join(' '));
+  check('pueblo exterior: materiales propios con desplazamiento de profundidad (sin rayas contra el muro perimetral)', dflt.bd.length > 0 && dflt.bd.every(x => x.off && !x.shared), JSON.stringify(dflt.bd));
+  const fa = await load(b, srv.url + '?carga=1&vm=1&fachada=cc0', 'alto');
   const p1 = fa.p0files.p1 || [];
-  check('&fachada=cc0 (P1): paredes, tejas, persianas y puertas de Poly Haven, sin 404, mismas colisiones', ['stucco', 'rooftiles', 'wood', 'door'].every(m => p1.some(f => f.startsWith('p1_' + m + '_c'))) && !p1.some(f => /\(/.test(f)) && !p1.some(f => /stone/.test(f)) && fa.colliders === base.colliders && fa.bad.length === 0, p1.join(' '));
+  check('&fachada=cc0 (P1): paredes, tejas, persianas y puertas de Poly Haven, sin 404, mismas colisiones', ['stucco', 'rooftiles', 'wood', 'door'].every(m => p1.some(f => f.startsWith('p1_' + m + '_c'))) && !p1.some(f => /\(/.test(f)) && fa.bad.length === 0 && fa.colliders === dflt.colliders, p1.join(' ') + (fa.bad.length ? ' · ' + fa.bad.join(' | ') : ''));
   check('sin &fachada=cc0 no se descarga ninguna textura P1', !(dflt.p0files.p1 || []).length);
-  const mem = await load(b, srv.url + '?carga=1&vm=1', 'alto', true);
-  check('PUEBLO 3.0 elegido en AJUSTES (guardado en el dispositivo) sin nada en el enlace: suelo nuevo', mem.on && mem.p0files.some(f => /^p0cc_cobble_c/.test(f)), mem.p0files.join(' '));
-  check('?pueblo=3 por defecto: mismas cajas de colisión', dflt.colliders === base.colliders);
-  const def = await load(b, srv.url + '?carga=1&vm=1', 'alto');
-  check('el juego normal (PUEBLO 4.0 desde el 17-11-2026): suelo nuevo con el adoquín de Poly Haven', def.on && def.p0files.some(f => /^p0cc_cobble_c/.test(f)), def.p0files.join(' '));
-  for (const [q, set] of [['alto', 'p0'], ['medio', 'p0'], ['bajo', 'p0'], ['alto', 'v3'], ['bajo', 'v3'], ['alto', 'cc0'], ['medio', 'cc0'], ['bajo', 'cc0']]) {
-    console.log('\nP0 ' + (set === 'cc0' ? 'plaza v3b + adoquín Poly Haven CC0 (&adoquin=cc0)' : set === 'v3' ? 'prototipo v3' : 'v2') + ' · ' + q.toUpperCase());
-    const r = await load(b, srv.url + '?carga=1&vm=1&pueblo=3' + (set === 'cc0' ? '&adoquin=cc0' : '&suelo=' + set), q);
-    if (set === 'cc0') {
-      const pre = q === 'bajo' ? 'p0ccb_' : q === 'medio' ? 'p0ccm_' : 'p0cc_';
-      check('el adoquín es el escaneo de Poly Haven (' + pre + 'cobble_*) y la plaza la caliza v3b', r.use.cobble && r.p0files.some(f => f.startsWith(pre + 'cobble_c')) && r.p0files.some(f => /^p0v3.?_plaza_c/.test(f)) && !r.p0files.some(f => /^p0(v3.?|m|b)?_cobble/.test(f)), r.p0files.join(' '));
-    }
+  for (const q of ['alto', 'medio', 'bajo']) {
+    console.log('\nP0 · plaza v3b + adoquín Poly Haven CC0 · ' + q.toUpperCase());
+    const r = q === 'alto' ? dflt : await load(b, srv.url + '?carga=1&vm=1', q);
+    const pre = q === 'bajo' ? 'p0ccb_' : q === 'medio' ? 'p0ccm_' : 'p0cc_';
+    check('el adoquín es el escaneo de Poly Haven (' + pre + 'cobble_*) y la plaza la caliza v3b', r.use.cobble && r.p0files.some(f => f.startsWith(pre + 'cobble_c')) && r.p0files.some(f => /^p0v3.?_plaza_c/.test(f)), r.p0files.join(' '));
     check('todas las texturas que pide la página existen (ningún 404)', r.bad.length === 0, r.bad.slice(0, 4).join(' | ') || r.p0files.length + ' archivos P0');
     const names = [['plaza', 'kit_p0plaza'], ['cobble', 'kit_p0cobble'], ['sidewalk', 'kit_p0side'], ['patch', 'kit_p0patch']].filter(([k]) => r.use[k]).map(([, n]) => n);
     const unused = ['kit_p0plaza', 'kit_p0cobble', 'kit_p0side', 'kit_p0patch'].filter(n => !names.includes(n));
@@ -77,7 +66,7 @@ async function load(b, url, q, p3mem) {
     check('ninguna rugosidad a 0 (espejo)', names.every(n => r.mats[n] && (r.mats[n].rough || r.mats[n].r >= 0.6)));
     check('calcas colocadas según lo elegido (' + (r.use.decals ? 'todas' : 'solo tapas y rejillas') + (r.use.drifts && q !== 'bajo' ? ', con arena acumulada' : ', sin arena acumulada') + ')', r.decals > 0 && (r.use.drifts && q !== 'bajo' ? r.strips > 0 : r.strips === 0) && (r.use.decals && q !== 'bajo' || !r.meshes.includes('p0_decals_soft')), r.decals + ' calcas · ' + r.strips + ' tiras · ' + r.meshes.join(', '));
     check('calcas y tiras planas sobre el suelo (≤ 5 cm)', r.maxY >= 0 && r.maxY <= 0.05, r.maxY.toFixed(3) + ' m');
-    check('las cajas de colisión son las mismas que sin el pack', r.colliders === base.colliders);
+    check('las cajas de colisión son las mismas en todas las calidades', r.colliders === dflt.colliders);
     check('sin errores en la página', r.errs.length === 0, r.errs.slice(0, 2).join(' | '));
   }
   await b.close(); srv.close();

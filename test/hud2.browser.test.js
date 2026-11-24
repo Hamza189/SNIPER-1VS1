@@ -1,5 +1,4 @@
-/* HUD 2 (?hud=2) in the real page (Chromium, software WebGL):
-   - without the flag nothing changes (no bar, no peek buttons, Q/E lean as always)
+/* HUD 2 in the real page (Chromium, software WebGL); the classic HUD (?hud=1) was removed on 24-11-2026:
    - PC: weapon bar (1/2/3, wheel), active weapon and ammo right when firing and reloading, empty magazine, the
      next-spawn primary, inventory open/close, peek with Q/E held and toggled, aiming and firing while peeking,
      configurable peek keys (refuses keys the game uses), cost of the per-frame update
@@ -54,19 +53,9 @@ function fingers(cdp) {
   const b = await chromium.launch({ args: ARGS });
   const base = srv.url + '?carga=1&lobby=1&perf=low';
   try {
-    console.log('\nCON ?hud=1 (el HUD anterior; sin bandera es el HUD 2 desde el 28-10)');
+    console.log('\nEL HUD');
     { const { ctx, p } = await page(b, base);
       check('sin bandera el HUD es el HUD 2', await p.evaluate(() => __SD.HUD2 && document.body.classList.contains('hud2')));
-      await ctx.close(); }
-    { const { ctx, p, errs } = await page(b, base + '&hud=1');
-      await start(p);
-      const r = await p.evaluate(() => ({ bar: !!document.getElementById('wbar'), peek: !!document.getElementById('tbPeekL'), inv: !!document.getElementById('inv2'), cls: document.body.classList.contains('hud2'), ammo: getComputedStyle(document.getElementById('ammo')).display !== 'none', h2: __SD.HUD2 }));
-      check('sin barra, sin botones de asomarse, sin inventario y con la munición de siempre', !r.bar && !r.peek && !r.inv && !r.cls && r.ammo && !r.h2);
-      await p.keyboard.down('KeyQ'); const okQ = await until(p, () => __SD.P.lean < -0.9, null, 4000); await p.keyboard.up('KeyQ');
-      check('Q mantenida sigue inclinando a la izquierda como siempre', okQ);
-      await p.keyboard.press('KeyI'); await sleep(200);
-      check('I no hace nada sin la bandera', await p.evaluate(() => !document.getElementById('inv2')));
-      check('sin errores de JavaScript', errs.length === 0, errs.slice(0, 2).join(' | '));
       await ctx.close(); }
 
     console.log('\nPC CON ?hud=2 (contra bots)');
@@ -231,11 +220,8 @@ function fingers(cdp) {
       const { ctx, p, errs } = await page(b, base + '&hud=2', { vp: { width: 844, height: 390 }, touch: true, storage });
       const m = await p.evaluate(() => ({ fire: __SD.LAYOUT.buttons.fire, op: __SD.LAYOUT.opacity, peek: __SD.LAYOUT.buttons.peekL, saved: localStorage.getItem('sniperduel_hudLayout2') }));
       check('con ?hud=2 por primera vez: FUEGO sigue donde lo puso el jugador y aparecen los botones nuevos', m.fire.dx === 100 && m.fire.dy === 90 && m.op === 0.6 && m.peek && m.peek.dx === 50 && m.saved === null);
-      await ctx.close();
-      const q = await page(b, base + '&hud=1', { vp: { width: 844, height: 390 }, touch: true, storage });
-      check('y con ?hud=1 (HUD anterior) el diseño clásico sigue igual', await q.p.evaluate(() => __SD.LAYOUT.buttons.fire.dx === 100 && !__SD.LAYOUT.buttons.peekL));
-      check('sin errores de JavaScript', errs.length === 0 && q.errs.length === 0);
-      await q.ctx.close(); }
+      check('sin errores de JavaScript', errs.length === 0);
+      await ctx.close(); }
 
     console.log('\nONLINE CON ?hud=2 (servidor local)');
     { const gs = await startServer({ port: 0, debug: true }), server = 'http://127.0.0.1:' + gs.port;

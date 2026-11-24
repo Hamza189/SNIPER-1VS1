@@ -1,11 +1,11 @@
 /* CASA ATLAS vs the other maps: draw calls, triangles, texture memory and a RELATIVE render cost (ms per frame in
    software WebGL on this machine: only useful to compare maps with each other, never a phone's FPS).
-   node tools/casa/perf.js OUT.json   (env Q=alto,bajo  URLX=pueblo=3  TIME=1: also time frames, GPU-synchronous —
+   node tools/casa/perf.js OUT.json   (env Q=alto,bajo  URLX=carga=1  TIME=1: also time frames, GPU-synchronous —
    with software WebGL that takes seconds per frame and says nothing about phones) */
 'use strict';
 const { chromium } = require('playwright');
 const ss = require('../static-server.js');
-const OUT = process.argv[2] || 'perf.json', QS = (process.env.Q || 'alto,medio,bajo').split(','), URLX = process.env.URLX || 'pueblo=3';
+const OUT = process.argv[2] || 'perf.json', QS = (process.env.Q || 'alto,medio,bajo').split(','), URLX = process.env.URLX || 'carga=1';
 const VIEWS = {
   casa: [['spawnA', -7.45, 0, 0.95, -Math.PI / 2, 0], ['salon', -4.2, 0, 4.6, -0.8, 0], ['cocina', 4.6, 0, 0.3, -0.5, 0], ['pasillo', 2.4, 0, -2.5, Math.PI / 2, 0]],
   arena: [['oeste', -21, 0, 0, -Math.PI / 2, 0.02], ['sur', 0, 0, 14.5, 0, -0.04], ['centro', -9, 0, -8, -0.9, 0], ['este', 21, 0, 3, Math.PI / 2, 0]],

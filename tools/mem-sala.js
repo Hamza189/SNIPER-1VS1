@@ -19,7 +19,7 @@ const bots = +(process.argv[2] || 5), secs = +(process.argv[3] || 60), extra = p
   await ctx.addInitScript(() => { try { localStorage.setItem('sniperduel_settings', JSON.stringify({ quality: 'alto', v: 3 })); localStorage.setItem('sniperduel_wsRifle', JSON.stringify('ultima')); } catch (e) {} });
   const p = await ctx.newPage(), errs = [];
   p.on('pageerror', e => errs.push(e.message));
-  await p.goto(srv.url + '?lobby=1&pueblo=3&server=' + encodeURIComponent('http://127.0.0.1:' + gs.port) + extra, { timeout: 180000 });
+  await p.goto(srv.url + '?lobby=1&server=' + encodeURIComponent('http://127.0.0.1:' + gs.port) + extra, { timeout: 180000 });
   await p.waitForFunction(() => window.__SD && __SD.WORLDS, null, { timeout: 180000 });
   await p.evaluate(() => { HTMLCanvasElement.prototype.requestPointerLock = function () {}; });
   await p.click('#mpBtn'); await p.fill('#mpName', 'Medida'); await p.click('#mpCreate');

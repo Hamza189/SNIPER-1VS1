@@ -1,5 +1,7 @@
 # GAME FEEL 3.0 — movimiento, animación, FPS y visibilidad
 
+> **24-11-2026:** el movimiento de antes (`?mov=clasico`) y `?feel=2` se quitaron.
+
 Petición del propietario (30-10-2026, «SNIPER DUEL — ULTIMATE GAME FEEL 3.0»): que el juego se sienta como un shooter
 táctico moderno. Fases GF-0 a GF-9. Reglas: medir antes y después, nada competitivo publicado sin su aprobación, el
 juego estable intacto (todo lo nuevo como opción) y el servidor autoritativo intacto.

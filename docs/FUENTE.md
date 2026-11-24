@@ -1,5 +1,7 @@
 # LA FUENTE de la plaza (14-11-2026)
 
+> **24-11-2026:** `?fuente=0` (el agua plana de antes) se quitó.
+
 El propietario: «mejórame la fuente del medio, el agua parece de Minecraft». Antes el agua era un plano verde azulado,
 quieto y opaco (`MAT.water`) y la taza era otro disco plano del kit.
 

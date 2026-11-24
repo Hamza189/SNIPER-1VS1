@@ -19,7 +19,7 @@ function check(name, cond, info) { if (cond) { pass++; console.log('  ok   ' + n
     await ctx.route(/fonts\.(googleapis|gstatic)\.com/, r => r.abort());
     await ctx.addInitScript(() => { try { localStorage.setItem('sniperduel_settings', JSON.stringify({ quality: 'alto', v: 3 })); localStorage.setItem('sniperduel_menuOld', 'true'); } catch (e) {} });
     const p = await ctx.newPage(), errs = []; p.on('pageerror', e => errs.push(e.message));
-    await p.goto(srv.url + '?carga=1&pueblo=4' + q, { timeout: 180000 });
+    await p.goto(srv.url + '?carga=1' + q, { timeout: 180000 });
     await p.waitForFunction(() => window.__SD && __SD.P3W && __SD.P3W.kit && __SD.P3W.meshes.length, null, { timeout: 240000 });
     await p.evaluate(() => { const S = __SD; S.setTrain('off'); S.setMode('duel'); if (S.setDuelLethal) S.setDuelLethal(false); S.setOffMap('pueblo'); S.startMatch(); });
     await p.waitForFunction(() => __SD.state === 'playing', null, { timeout: 120000 }).catch(() => {});

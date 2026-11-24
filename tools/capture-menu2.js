@@ -33,7 +33,7 @@ const SIZES = { pc: { width: 1600, height: 900, touch: false }, movil: { width: 
       await p.evaluate(t => {
         const S = __SD; document.getElementById('m2Sheet').hidden = true; if (!document.getElementById('settings').hidden) S.closeSettings();
         if (t === 'opciones') { S.m2Tab('inicio'); document.getElementById('m2Opts').click(); return; }
-        if (t === 'armas-cuchillo') { S.m2Tab('armas'); document.querySelector('#m2Cat [data-cat=knife]').click(); return; }
+        if (t === 'armas-cuchillo') { S.m2Tab('armas'); document.querySelector('#gsKnives [data-ws=navaja]').click(); return; }
         if (t === 'armas') { S.M2.cat = 'rifle'; }
         S.m2Tab(t);
       }, tab);

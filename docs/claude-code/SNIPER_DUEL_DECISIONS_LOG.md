@@ -6,6 +6,18 @@ Cada entrada dice qué se decidió o cambió, quién lo decidió, y el estado re
 Las decisiones anteriores al 18-10-2026 están resumidas en `SNIPER_DUEL_MASTER_CONTEXT.md` §4.
 Detalle de cada cambio (antes/después, medidas, cómo revertir): `docs/next-level/NEXT_LEVEL_CHANGELOG.md`.
 
+## 24-11-2026 — Versiones antiguas borradas
+El propietario, a «¿borro también las versiones antiguas que solo siguen por banderas del enlace?»: «Sí, bórralas».
+- Copia de todo antes de borrar: etiqueta git `antes-de-limpiar-2026-11-24` (en GitHub).
+- Fuera: menú de antes (`?menu=1`), HUD de antes (`?hud=1`), ARMAS de antes (`?arsenal=0`), cifras de antes
+  (`?balance=0`), deslizamiento de antes (`?desliz=0`), movimiento de antes (`?mov=clasico`), `?feel=2`, `?caja=0`,
+  `?perfil=1` y el pueblo de antes con sus piezas (`?pueblo=0/3/4`, `?sur=0`, `?pueblo4=0`, `?town=0`, `?e10=0`,
+  `?suelo=0`, `?adoquin=0`, `?casas=0`, `?fuente=0`): PUEBLO es siempre el 4.0.
+- Servidor sin cambios: su mapa `pueblo` de antes se conserva (congelado en `tools/export-map.js`); una página nueva sale
+  de una sala con ese mapa y lo dice.
+- Detalle: `docs/LANZAMIENTO.md` (Fase 3).
+- **Estado**: IMPLEMENTADO · PROBADO EN NAVEGADOR · PENDIENTE DE VALIDACIÓN EN IPHONE Y ANDROID.
+
 ## 23-11-2026 — LANZAMIENTO: lo nuevo por defecto, textos limpios y créditos aparte
 El propietario: «medio lanzarlo a producción… pon todo lo nuevo por defecto, borra cosas que no utilizamos, deja gráficos
 altos por defecto… borra todo el texto innecesario… fuentes y derechos en un archivo aparte». Decisiones suyas en esta

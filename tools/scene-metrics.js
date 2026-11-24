@@ -12,7 +12,7 @@ const VIEWS = [['calle', 1.5, 0, 12, Math.PI, 0.03], ['plaza', 9, 0, -8, 2.65, 0
   const srv = await ss.start();
   const b = await chromium.launch({ args: ['--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist'] });
   const rows = [];
-  for (const flag of ['', '&pueblo=3']) for (const q of ['bajo', 'medio', 'alto']) for (const bots of [false, true]) {
+  for (const flag of ['']) for (const q of ['bajo', 'medio', 'alto']) for (const bots of [false, true]) {
     const ctx = await b.newContext({ viewport: { width: 1170, height: 540 }, deviceScaleFactor: 1 });
     await ctx.route(/fonts\.(googleapis|gstatic)\.com/, r => r.abort());
     await ctx.addInitScript(q => { try { localStorage.setItem('sniperduel_settings', JSON.stringify({ quality: q, v: 2 })); } catch (e) {} }, q);

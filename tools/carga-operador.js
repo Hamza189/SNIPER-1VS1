@@ -7,7 +7,7 @@ const { chromium } = require('playwright');const ss = require('./static-server.j
 const ctx=await b.newContext({viewport:{width:932,height:430},deviceScaleFactor:2,hasTouch:true,isMobile:true});
 await ctx.addInitScript(()=>{localStorage.setItem('sniperduel_settings',JSON.stringify({quality:'alto',v:3}));localStorage.setItem('sniperduel_skin','"fsb"');localStorage.setItem('sniperduel_wsRifle','"ultima"');});
 for(const visit of [1,2]){const p=await ctx.newPage();const cdp=await ctx.newCDPSession(p);await cdp.send('Emulation.setCPUThrottlingRate',{rate:4});
-const errs=[];p.on('pageerror',e=>errs.push(e.message));const t0=Date.now();await p.goto(srv.url+'?pueblo=3');
+const errs=[];p.on('pageerror',e=>errs.push(e.message));const t0=Date.now();await p.goto(srv.url+'?carga=1');
 const at=async(fn,ms)=>{try{await p.waitForFunction(fn,null,{timeout:ms,polling:100});return Date.now()-t0;}catch(e){return null;}};
 await p.waitForFunction(()=>window.__SD&&__SD.M2&&__SD.M2.R,null,{timeout:120000});await p.evaluate(()=>__SD.m2Tab('armas'));
 const r={};

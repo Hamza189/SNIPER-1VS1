@@ -2,7 +2,6 @@
    - el ARSENAL enseña las cifras de cada modelo (core/config.js por core/gunstats.js) y su diferencia con el HALCÓN R7
    - contra bots, lo que dice el ARSENAL es lo que pasa en el juego: cargador, cerrojo, recarga, apuntar y velocidad al
      andar, medidos con el reloj del propio juego
-   - ?balance=0 vuelve a las cifras de antes (las del HALCÓN para todos los modelos) y ?balance=1 lo deshace
    - el SILENCIADOR: se monta y se guarda por modelo; sin fogonazo, sonido bajo, los bots solo lo oyen cerca, bala −8 %
    - en línea, desde el 23-11-2026, cada rifle con sus cifras y sin silenciador: lo comprueban test/room.test.js y
      test/online.browser.test.js con el servidor de verdad
@@ -105,20 +104,8 @@ const FEEL = {
     feel(mv, V, 'VECTOR');
     check('los bots siguen con el HALCÓN R7 (sus balas y su cerrojo)', await p.evaluate(() => __SD.HALCON === SD_CONFIG.rifles.halcon && __SD.GUNCFG !== __SD.HALCON));
 
-    console.log('\n?balance=0: LAS CIFRAS DE ANTES (EL HALCÓN PARA TODOS), PARA COMPARAR');
-    await boot('?balance=0'); await arsenal();
-    const old = await pick('vector');
-    check('el ARSENAL dice «HALCÓN R7 · VECTOR» con las cifras del HALCÓN, sin diferencias', old.name === 'HALCÓN R7 · VECTOR' && Object.keys(want(H)).every(k => old.rows[k] && old.rows[k].v === want(H)[k] && old.rows[k].d === ''), JSON.stringify(old.rows['CADENCIA']));
-    await p.evaluate(() => document.querySelector('#m2 .m2Nav [data-tab=inicio]').click());
-    await play();
-    const mh = await measure();
-    feel(mh, H, 'VECTOR con ?balance=0 = HALCÓN');
-    check('se recuerda (sniperduel_balanceOld)', await p.evaluate(() => localStorage.getItem('sniperduel_balanceOld') === 'true' && !__SD.BAL.on));
-    await boot('?balance=1');
-    check('?balance=1 vuelve a las cifras de cada modelo', await p.evaluate(() => localStorage.getItem('sniperduel_balanceOld') === 'false' && __SD.BAL.on && __SD.rifleCfgFor('vector', false) === SD_CONFIG.rifles.vector && __SD.rifleCfgFor('vector', true) === __SD.HALCON));
-
     console.log('\nEL SILENCIADOR (contra bots)');
-    await arsenal();
+    await boot(); await arsenal();   // back to the menu (a fresh page)
     const sv = await p.evaluate(() => { document.querySelector('#gsRifles [data-ws=halcon]').click(); document.querySelector('#gsAcc [data-acc=muzzle]').click();
       const opts = [...document.querySelectorAll('#gsPickL .gsOpt')].map(b => b.dataset.opt).join(); document.querySelector('#gsPick [data-opt=sil]').click(); return opts; });
     await p.waitForTimeout(300);
@@ -154,7 +141,7 @@ const FEEL = {
     check('sin él: fogonazo, el tiro de siempre, 600 m/s y el bot a 40 m lo oye (hasta 85 m)', !z.sil && !z.mesh && z.flash > 0 && z.light > 0 && z.open === 1 && z.sup === 0 && z.speed === 600 && z.hear === 85 && z.alert > 0, JSON.stringify(z));
     check('sin errores en la página', errs.length === 0, errs.slice(0, 3).join(' | ') || 'ninguno');
     // back to the defaults for the next tests on this browser
-    await p.evaluate(() => { localStorage.removeItem('sniperduel_gsCfg'); localStorage.removeItem('sniperduel_balanceOld'); localStorage.setItem('sniperduel_wsRifle', '"halcon"'); });
+    await p.evaluate(() => { localStorage.removeItem('sniperduel_gsCfg'); localStorage.setItem('sniperduel_wsRifle', '"halcon"'); });
     await ctx.close();
   } catch (e) { check('sin excepciones', false, e.message); }
   await b.close(); srv.close();

@@ -1,5 +1,7 @@
 # PUEBLO 4.0 — auditoría, plan y primeras fases (15-11-2026)
 
+> **24-11-2026:** PUEBLO 4.0 es el único pueblo: el de antes (`?pueblo=0`/`3`, `?pueblo4=0`, `?sur=0`, `?town=0`…) se quitó. El servidor conserva su mapa `pueblo` para páginas viejas (`docs/LANZAMIENTO.md`, Fase 3).
+
 Encargo del propietario (15-11): llevar PUEBLO 3.1 a «un mapa de un shooter 3D real» sin rehacerlo: más calidad visual,
 vida, interiores con personalidad, mejores posiciones de francotirador, verticalidad, luz y profundidad, sin bajar de 60 FPS
 en el móvil. Primero auditoría y plan, luego fases pequeñas y medidas. Sin publicar y sin cambiar el servidor.

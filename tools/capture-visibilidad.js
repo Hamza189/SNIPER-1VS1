@@ -24,7 +24,7 @@ const CASES = [['d10', -4, -16, Y, 10], ['d20', -4, -16, Y, 20], ['d30', -4, -16
   await ctx.route(/fonts\.(googleapis|gstatic)\.com/, r => r.abort());
   await ctx.addInitScript(() => { try { localStorage.setItem('sniperduel_settings', JSON.stringify({ quality: 'alto', v: 3 })); } catch (e) {} });
   const p = await ctx.newPage(); p.on('pageerror', e => console.log('ERR', e.message));
-  await p.goto(srv.url + '?pueblo=3', { timeout: 180000 });
+  await p.goto(srv.url + '?carga=1', { timeout: 180000 });
   await p.waitForFunction(() => window.__SD && __SD.WORLDS, null, { timeout: 180000 });
   await p.addStyleTag({ content: '#lockHint{display:none!important}' });
   await p.evaluate(async () => { __SD.setMode('duel'); __SD.setDuelLethal(false); __SD.setOffMap('pueblo'); __SD.startMatch();

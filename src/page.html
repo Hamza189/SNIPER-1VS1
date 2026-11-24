@@ -125,9 +125,6 @@ body.touch.miniOn #feed{right:calc(110px + env(safe-area-inset-right,0px))}   /*
 #hud.scoped #rangeHud{opacity:.28}   /* the range statistics must not cover the top of the sight */
 #rangeHud{transition:opacity .15s}
 #hud.scoped #calloutMain{font-size:clamp(24px,3.6vw,40px)}
-body.feel2 #hitmark.on.kill,body.feel2 #hitmark.on.hs{animation:hm2 .5s ease-out}
-body.feel2 #hitmark.kill i,body.feel2 #hitmark.hs i{width:3px;left:-1.5px}
-@keyframes hm2{0%{opacity:1;transform:scale(1.9)}18%{opacity:1;transform:scale(1)}70%{opacity:1;transform:scale(1)}100%{opacity:0;transform:scale(1.05)}}
 @keyframes hm{0%{opacity:1;transform:scale(1.5)}25%{opacity:1;transform:scale(1)}100%{opacity:0;transform:scale(1)}}
 
 #callout{position:absolute;left:50%;top:22%;transform:translate(-50%,-50%);text-align:center;opacity:0;z-index:8}
@@ -538,7 +535,7 @@ body.touch #score .side span{max-width:11vw;overflow:hidden;text-overflow:ellips
   #callout.on{animation-duration:1.2s}
   #feed div{animation:none}
 }
-/* ---------- HUD 2 (?hud=2, client/hud2.js): icon buttons, weapon bar, tactical inventory ----------
+/* ---------- HUD 2 (client/hud2.js): icon buttons, weapon bar, tactical inventory ----------
    Light glyphs on a dark translucent base; amber only for "on"; red only for alerts (empty magazine). */
 body.hud2 #ammo{display:none}
 body.hud2 .tb{background:rgba(14,13,11,.5);border:2px solid rgba(240,236,228,.55);color:#f2efe8;box-shadow:0 1px 6px rgba(0,0,0,.35)}
@@ -692,28 +689,6 @@ body.m2 #menu .menuInner{display:none}
 .m2Info h3{margin:0;font:600 clamp(32px,7vh,58px)/.85 var(--f-display);letter-spacing:.03em}
 .m2Info .setHelp{margin:4px 0 0;font-size:11px}
 .m2Hint{font-size:9.5px;letter-spacing:.18em;color:var(--dust);text-transform:uppercase}
-/* ARMAS */
-.m2Pane[data-pane="armas"]{grid-template-columns:minmax(150px,26vw) minmax(0,1fr)}
-.m2Arm{display:grid;grid-template-rows:auto auto minmax(70px,1fr) auto auto;gap:clamp(5px,1.2vh,10px);background:radial-gradient(ellipse 60% 45% at 50% 38%,rgba(60,58,54,.22),transparent 70%);border-color:transparent;padding-inline:0}
-.m2Arm>.m2Rows{background:var(--m2glass);border:1px solid var(--m2line);padding:8px}
-.m2ArmHead .seg{max-width:440px;background:rgba(0,0,0,.35)}
-.m2ArmHead .seg button{font-size:11px;padding:8px 6px}
-.m2ArmTitle{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap}
-.m2ArmTitle b{font:600 clamp(24px,5vh,42px)/.9 var(--f-display);letter-spacing:.04em}
-.m2ArmTitle small{font-size:10px;letter-spacing:.14em;color:var(--sand)}
-.m2Tag{margin-left:auto;font-size:9.5px;letter-spacing:.18em;color:#7fe0c4;border:1px solid rgba(127,224,196,.6);padding:3px 7px}
-.m2Slot{min-height:0;touch-action:none;cursor:grab;position:relative}
-.m2Rows{display:grid;gap:5px;min-width:0}
-.m2Rows .lbl{font-size:9.5px}
-.m2Row{display:flex;align-items:flex-start;gap:7px;overflow-x:auto;overflow-y:hidden;padding-bottom:3px;touch-action:pan-x;scrollbar-width:thin}
-.m2Row .m2W{flex:0 0 auto;width:clamp(96px,11.5vw,150px);display:grid;align-content:start;gap:2px;padding:4px;background:#0c0c0d;border:1px solid var(--m2line);cursor:pointer;text-align:left;color:var(--hud);position:relative}
-.m2Row .m2W img{width:100%;height:clamp(34px,7.5vh,62px);object-fit:cover;background:#000;display:block}
-.m2Row .m2W b,.m2Row .m2W small{display:block}
-.m2Row .m2W small{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.m2Row .m2W b{font:500 clamp(14px,2.4vh,19px)/1 var(--f-display);letter-spacing:.04em;padding-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.m2Row .m2W small{font:500 clamp(12px,2vh,15px)/1 var(--f-display);color:var(--signal);letter-spacing:.05em}
-.m2Row .m2W[aria-pressed="true"]{border-color:var(--signal);box-shadow:inset 0 0 0 1px var(--signal)}
-.m2Row .m2W[aria-pressed="true"]::after{content:"✓";position:absolute;right:7px;top:5px;color:var(--ink);background:var(--signal);font-size:10px;line-height:15px;width:15px;text-align:center}
 .m2Small{font-size:9.5px;letter-spacing:.06em;color:var(--dust);line-height:1.4}
 /* ARMAS · GUNSMITH (08-11-2026, docs/GUNSMITH.md): the weapon big in the middle, the models on the left, the five
    accessories and the camouflage under it (each opens a small picker), the real numbers on the right */
@@ -825,7 +800,6 @@ body.m2 #menu .menuInner{display:none}
 .m2Load i{width:34px;height:34px;border-radius:50%;border:2px solid rgba(244,234,216,.15);border-top-color:var(--signal);animation:m2Spin .9s linear infinite}
 .m2Load small{display:block;margin-top:4px;font-size:9px;letter-spacing:.08em;color:var(--dust);white-space:normal;max-width:300px}
 .m2Load.mini{flex-direction:row;gap:8px}.m2Load.mini i{width:16px;height:16px}
-.m2SlotLoad{left:50%;top:50%}
 @keyframes m2Spin{to{transform:rotate(360deg)}}
 @media (prefers-reduced-motion:reduce){.m2Load i{animation-duration:3s}}
 /* bottom bar */
@@ -858,12 +832,7 @@ body.m2 #menu .menuInner{display:none}
   .m2Card{max-height:none}.m2Card small{font-size:8.5px}
   .m2Pane[data-pane="personaje"]{grid-template-columns:minmax(170px,27vw) minmax(0,1fr) minmax(150px,24vw)}
   .m2Info .setHelp{display:none}
-  .m2Pane[data-pane="armas"]{grid-template-columns:minmax(90px,19vw) minmax(0,1fr)}
-  .m2Arm{padding:8px 10px;gap:4px;grid-template-rows:auto auto minmax(46px,1fr) auto auto}
-  .m2ArmHead .seg button{padding:6px 4px;font-size:9.5px}
-  .m2Row .m2W{width:84px;padding:3px}.m2Row .m2W img{height:34px}.m2Row .m2W b{font-size:13px}
   .m2Small{font-size:8.5px}
-  .m2Arm>.m2Small{display:none}
   .m2Pane.gsPane{grid-template-columns:minmax(132px,17vw) minmax(0,1fr) minmax(188px,25vw);gap:8px}
   .gsList{gap:4px}.gsCatH small{display:none}.gsCatH b{font-size:14px}
   .gsIt{grid-template-columns:34px minmax(0,1fr);gap:5px;padding:3px}.gsIt b{font-size:12.5px}.gsIt small{display:none}.gsIt em{font-size:7px;margin-top:1px}
@@ -1559,28 +1528,7 @@ body.lbOn #fpsBox{left:auto;right:max(8px,env(safe-area-inset-right,0px));transf
           <span class="m2Hint">Arrastra para girarlo</span>
         </div>
       </section>
-      <section class="m2Pane" data-pane="armas" hidden>
-        <div class="m2Stage" data-stage aria-label="Tu operador"></div>
-        <div class="m2Panel m2Arm">
-          <div class="m2ArmHead">
-            <div class="seg" id="m2Cat" role="group" aria-label="Categoría"><button type="button" data-cat="rifle">FRANCOTIRADOR</button><button type="button" data-cat="knife">ARMA DE MANO</button></div>
-          </div>
-          <div class="m2ArmTitle"><b id="m2ArmName"></b><small id="m2ArmSub"></small><span class="m2Tag">EQUIPADA</span></div>
-          <div class="m2Slot" id="m2Slot" aria-label="Vista previa del arma (arrastra para girarla)"><div class="m2Load m2SlotLoad" id="m2SlotLoad" hidden aria-live="polite"><i></i><span id="m2SlotTxt"></span></div></div>
-          <div class="m2Rows" data-catpane="rifle">
-            <div class="lbl">Mira (óptica) · <span id="m2MiraDesc"></span></div>
-            <div class="m2Row" id="m2Miras" role="group" aria-label="Miras"></div>
-            <div class="lbl">Skin (aspecto)</div>
-            <div class="m2Row" id="m2Skins" role="group" aria-label="Skins del rifle"></div>
-          </div>
-          <div class="m2Rows" data-catpane="knife" hidden>
-            <div class="lbl">Cuchillo · cuerpo a cuerpo (tecla 3)</div>
-            <div class="m2Row" id="m2Knives" role="group" aria-label="Cuchillos"></div>
-          </div>
-          <span class="m2Small">Solo aspecto: el daño, la cadencia, el retroceso y las balas son los del arma del juego.</span>
-        </div>
-      </section>
-      <!-- GUNSMITH (08-11-2026, docs/GUNSMITH.md): the ARSENAL. Becomes the ARMAS section at start (?arsenal=0: the one above) -->
+      <!-- GUNSMITH (08-11-2026, docs/GUNSMITH.md): the ARSENAL, the ARMAS section (the ARMAS of before, ?arsenal=0, was removed on 24-11-2026) -->
       <section class="m2Pane gsPane" data-pane="gs" hidden>
         <div class="m2Panel gsList">
           <div class="gsCatH" data-gcat="rifle"><b>FRANCOTIRADOR</b><small>PRINCIPAL</small></div>
@@ -1828,17 +1776,11 @@ const renderer=new T.WebGLRenderer({canvas,antialias:GFX.aa,powerPreference:'hig
 renderer.setPixelRatio(PERF_LOW?0.5:SDQuality.pixelRatio(GFX.profile,window.devicePixelRatio,1));
 // &sombras=0 (diagnostic, 18-10-2026): no sun shadows at all, to tell whether stripes someone sees are shadows or something else
 const NO_SHADOWS=/[?&]sombras=0\b/.test(location.search);
-/* ?feel=2 (NEXT LEVEL, 19-10-2026): the new weapon feel, to compare with the current one. Presentation only: aim, recoil
-   (RECOIL), spread, damage and bullets are exactly the same. 1) sprint: the gun is carried less low and less turned, and
-   comes back about twice as fast when the sprint ends; 2) visual recoil: a spring (snap back, small overshoot, settle)
-   instead of a plain fade; 3) kill / headshot marker: bigger pop and held longer; 4) impacts on walls and ground grow with
-   distance like the ones on bodies (far shots stay readable; the bullet hole keeps its real size) */
-const FEEL2=/[?&]feel=2\b/.test(location.search);if(FEEL2)document.body.classList.add('feel2');
 /* HUD 2 (24-10-2026, docs/HUD-2.md): icon buttons, a weapon bar at the bottom, a tactical inventory, peek buttons on touch,
    configurable peek keys and a fuller HUD editor. Presentation and input only: the commands sent to the simulation and the
    server are the same ones as always (select, the existing camera lean). Default since 28-10-2026 (approved by the owner on
-   iPhone and PC); the old HUD: ?hud=1 */
-const HUD2=!/[?&]hud=1\b/.test(location.search)&&typeof SDHud2!=='undefined';if(HUD2)document.body.classList.add('hud2');
+   iPhone and PC). */
+document.body.classList.add('hud2');   // HUD 2 is the HUD; the classic one (?hud=1) was removed on 24-11-2026
 /* more diagnostics for the stripes on the owner's laptop (audit 18-10-2026, docs/claude-code/SNIPER_DUEL_AUDIT_2026-10-18.md
    G1–G7). None of them changes what is drawn unless it is in the URL; gfxDiagText() lists the ones that are on:
    &near=0.2      camera near plane (default 0.05): 4× more depth precision → tells z-fighting of the painted bands (3–6 mm)
@@ -1849,7 +1791,7 @@ const DIAG_Q=(k,re)=>{const m=location.search.match(new RegExp('[?&]'+k+'=('+re+
 const DIAG_NEAR=Math.min(0.5,Math.max(0.01,+(DIAG_Q('near','[0-9.]+')||0.05))),DIAG_SBIAS=DIAG_Q('sbias','-?[0-9.]+'),
   DIAG_NOKITSH=DIAG_Q('kitsombra','0')==='0',DIAG_SGEO=DIAG_Q('sombrageo','1')==='1',DIAG_SDBG=DIAG_Q('dbg','sombra')==='sombra';
 const DIAG_ON=()=>[DIAG_NEAR!==0.05&&'near='+DIAG_NEAR,DIAG_SBIAS!==null&&'sbias='+DIAG_SBIAS,DIAG_NOKITSH&&'kitsombra=0',
-  DIAG_SGEO&&'sombrageo=1',DIAG_SDBG&&'dbg=sombra',NO_SHADOWS&&'sombras=0',FEEL2&&'feel=2'].filter(Boolean).join(' ');
+  DIAG_SGEO&&'sombrageo=1',DIAG_SDBG&&'dbg=sombra',NO_SHADOWS&&'sombras=0'].filter(Boolean).join(' ');
 renderer.shadowMap.enabled=!PERF_LOW&&!NO_SHADOWS&&SDQuality.PROFILES[GFX.profile].shadows;
 renderer.shadowMap.type=T.PCFShadowMap;
 renderer.autoClear=false;
@@ -1894,22 +1836,15 @@ const PIC=(()=>{let o={};try{o=store.get('settings',null)||{};}catch(e){}
   b+='return clamp(c,0.0,1.0);}';
   T.ShaderChunk.tonemapping_pars_fragment=ch.replace(head,'vec3 sdACES0( vec3 color ) {')+'\n'+b+'\n'+head+'return sdGrade(sdACES0(color));}\n';
   return {look,cvd,on:true,glsl:b};})();
-/* PUEBLO 3.0 (vertical slice, ?pueblo=3): new light and town; without the flag the game looks exactly as before */
-// …or chosen in AJUSTES › GRÁFICOS and remembered on the device (a shared link often loses its ?…, 17-10-2026); ?pueblo=0 forces the old one
-/* PUEBLO 4.0 (17-11-2026, docs/PUEBLO-4.md): ONLY with ?pueblo=4 (remembered on the device; ?pueblo=0 or =3 forgets it).
-   It is PUEBLO 3.1 (south half in 3.0, 8 houses you can walk into, the new fountain) + 4.0 (wear, interiors, washing,
-   cables, light, pickups, crates). Its houses change collisions, so online it is its own server map, 'pueblo4'
-   (core/mapdata.js); without the flag PUEBLO and the server's 'pueblo' are exactly as before. */
-// 19-11-2026, owner: «súbelo a MAIN MAIN»: PUEBLO 4.0 by DEFAULT; ?pueblo=0 (or =3) = the town of before (remembered)
-const PU4=/[?&]pueblo=4\b/.test(location.search)||(!/[?&]pueblo=[03]\b/.test(location.search)&&store.get('p4',true)!==false);
-if(/[?&]pueblo=4\b/.test(location.search))store.set('p4',true);else if(/[?&]pueblo=[03]\b/.test(location.search))store.set('p4',false);
-const P3=PU4||/[?&]pueblo=3\b/.test(location.search)||(!/[?&]pueblo=0\b/.test(location.search)&&store.get('p3',false)===true);
-/* PUEBLO 4.0 (15-11-2026, client/pueblo4.js): on top of PUEBLO 3.1, only what you see. ?pueblo=4&pueblo4=0 = 3.1 */
-const P4ON=PU4&&!/[?&]pueblo4=0\b/.test(location.search)&&typeof SDPueblo4!=='undefined';
-const LOOK=P3?{exp:0.95,fog:P4ON?0xd8dad6:0xdcd6c8,sun:0xfff0d8,sunI:P4ON?3.2:3.0,sunPos:[-45,60,-30],hemiSky:0xc4d8f0,hemiGround:0xc9a684,hemiI:P4ON?0.92:1.0,
-    sky:{top:0x5b8fcb,mid:0x9ec2e2,hor:0xe9e4d6,glow:0xfff2d6}}
-  :{exp:0.82,fog:0xe2b894,sun:0xffe0b5,sunI:2.7,sunPos:[-45,60,-30],hemiSky:0xb8cdee,hemiGround:0x9a7656,hemiI:0.6,
-    sky:{top:0x41557a,mid:0xc99b86,hor:0xf0b47e,glow:0xffd2a0}};
+/* PUEBLO 4.0 (17-11-2026, docs/PUEBLO-4.md; by default since 19-11-2026, the only town since 24-11-2026): PUEBLO 3.1
+   (the whole town in 3.0, 8 houses you can walk into, the new fountain) + 4.0 (wear, interiors, washing, cables, light,
+   pickups, crates). Its houses change collisions, so online it is the server's map 'pueblo4' (core/mapdata.js). The
+   town of before (?pueblo=0 / =3, ?sur=0, ?pueblo4=0, ?town=0, ?e10=0, ?suelo=0, ?adoquin=0, ?casas=0, ?fuente=0) was
+   removed on 24-11-2026 (owner: «sí, bórralas»); the server keeps its map 'pueblo' for pages of before. */
+const PU4=true,P3=true;
+const P4ON=typeof SDPueblo4!=='undefined';
+const LOOK={exp:0.95,fog:P4ON?0xd8dad6:0xdcd6c8,sun:0xfff0d8,sunI:P4ON?3.2:3.0,sunPos:[-45,60,-30],hemiSky:0xc4d8f0,hemiGround:0xc9a684,hemiI:P4ON?0.92:1.0,
+    sky:{top:0x5b8fcb,mid:0x9ec2e2,hor:0xe9e4d6,glow:0xfff2d6}};
 const TONE={exposure:LOOK.exp};renderer.toneMappingExposure=TONE.exposure;
 function csMat(m){
   if(!m||m.userData.cs)return;m.userData.cs=1;
@@ -2108,9 +2043,8 @@ let GROUND=null;const TOWN_FROM=scene.children.length;
 box(102,4,1,MAT.concrete,0,0,-50.5);box(102,4,1,MAT.concrete,0,0,50.5);box(1,4,100,MAT.concrete,-50.5,0,0);box(1,4,100,MAT.concrete,50.5,0,0);
 // buildings [x,z,w,d,h,tint]
 /* CASAS HABITABLES (14-11-2026, client/casas.js, docs/CASAS-HABITABLES.md): 8 PUEBLO houses with doors, windows, rooms,
-   stairs and balconies instead of a solid box. Part of the map (core/mapdata.js has them: the server agrees). ?casas=0 shows
-   the old solid boxes OFFLINE only, to compare (online always uses the server's map, i.e. the houses). */
-const CASAS={on:PU4&&typeof SDCasas!=='undefined',pref:!/[?&]casas=0\b/.test(location.search),houses:[],cols:[],rays:[],ramps:[],solid:[],meshes:[],kit:[],isSolid:false,tris:0,calls:0,shadow:null};
+   stairs and balconies instead of a solid box. Part of the map (core/mapdata.js has them: the server agrees). */
+const CASAS={on:typeof SDCasas!=='undefined',houses:[],cols:[],rays:[],ramps:[],solid:[],meshes:[],kit:[],isSolid:false,tris:0,calls:0,shadow:null};
 const isHab=b=>CASAS.on&&!!SDCasas.byKey[b[0]+','+b[1]];
 const OLD_TOWN={bodies:[],caps:[],roads:[]};   // PUEBLO 1 visuals PUEBLO 2.0 replaces (the boxes stay for bullets)
 const BUILDINGS=[[-31,-31,14,12,7,0],[-31,-9,12,10,5,1],[-32,16,12,12,9,2],[-31,37,14,10,6,3],[31,-33,12,10,8,4],[33,-8,10,12,5,5],[30,17,14,10,7,1],[33,38,10,10,10,2],[-9,-31,8,8,4,3],[13,-25,6,10,6,4],[-12,27,10,6,5,0],[11,31,8,6,4,5],[-2,-43,10,5,3.5,2],[3,43,12,5,4,3]];
@@ -2185,7 +2119,7 @@ for(let i=-4;i<=4;i++){if(blockedPt(-5.2,i*11,0.4))continue;const p=new T.Mesh(n
 /* =================== PUEBLO 2.0 (GFX-2): detailed buildings and streets (client/town.js) ===================
    Built here from the same BUILDINGS list; the old flat boxes become invisible but stay where they are,
    so movement and bullets (and the server's copy of the map) do not change at all. Textures: assets/tex
-   (generated by tools/textures/make_textures.py). ?town=0 shows the old town (for comparisons). */
+   (generated by tools/textures/make_textures.py). */
 const TEX={loader:null,cache:{}};
 // own: a separate copy (its own repeat), not the shared one
 // raw: the file is <name>.jpg as given (data such as roughness: linear, no suffix)
@@ -2206,7 +2140,7 @@ const TOWN_LOOK={
   paving:{tile:2.4,r:0.88,n:0.7},lamp:{r:0.3,emissive:0xffd9a0,ei:1.6},
   crate:{tex:'wood',tile:0.9,r:0.85,n:0.6},cloth:{tile:0.9,r:0.95,n:0.8},bag:{tex:'sandbag',tileU:0.56,tileV:0.21,r:0.95,n:1.0},paint:{r:0.45,m:0.25},rubber:{r:0.9},water:{r:0.08,m:0.2,col:0x3b5a58},concrete:{tile:3.0,r:0.9,n:0.6}
 };
-const TOWN={on:!/[?&]town=0\b/.test(location.search),meshes:[],tris:0};
+const TOWN={on:true,meshes:[],tris:0};
 function townMaterial(k){
   const L=TOWN_LOOK[k]||{},low=GFX.profile==='bajo'||/[?&]nm=0\b/.test(location.search);
   const texName=L.tex||(['iron','glass','lamp','paint','rubber','water'].includes(k)?null:k);
@@ -2296,32 +2230,31 @@ function dressProps(objs,tag){
   for(const [sx,sz] of [[-1,-1],[1,-1],[-1,1],[1,1]]){const q=list.filter(p=>Math.sign(p.x||1)===sx&&Math.sign(p.z||1)===sz);if(q.length)out=out.concat(townMeshes(SDTown.props(q,7+sx*3+sz),tag));}
   return out;
 }
-/* PUEBLO 3.0 vertical slice (?pueblo=3): the north half of the town (client/town3.js + the Blender kit) */
+/* PUEBLO 3.0: the town drawn with client/town3.js + the Blender kit */
 const P3ON=P3&&TOWN.on&&typeof SDTown3!=='undefined'&&typeof KIT3D!=='undefined';
 const P3W={meshes:[],tris:0,place:[],kit:null,skip:new Set(),kitTris:0,signs:[]};
-// P3-5 (14-11-2026): PUEBLO 3.0 in the south half too (?sur=0 = only the north half, as before)
-const P31=P3ON&&PU4&&!/[?&]sur=0\b/.test(location.search);
+// P3-5 (14-11-2026): PUEBLO 3.0 in the south half too
+const P31=P3ON;
 const FAM3=P3ON?(P31?Object.assign({},SDTown3.SLICE_FAMILIES,SDTown3.SOUTH_FAMILIES):SDTown3.SLICE_FAMILIES):{};
 const inSlice3=b=>P3ON&&!!FAM3[b[0]+','+b[1]];
 /* PUEBLO 3.0 · E10 «Casa Oliva»: the first delivered 3D model (assets/3d/models/, contract in docs/ASSETS-3D.md).
-   Only with ?pueblo=3 (&e10=0 → the PUEBLO 2.0 building, for comparisons). The old building is drawn until the
+   The old building is drawn until the
    GLB has loaded (never an empty slot with an invisible wall); the collision box and the server do not change. */
-const E10={on:P3ON&&!/[?&]e10=0\b/.test(location.search),x:13,z:-25,old:[],root:null,levels:null,ready:false,failed:false,lod:-1,tris:[0,0,0]};
+const E10={on:P3ON,x:13,z:-25,old:[],root:null,levels:null,ready:false,failed:false,lod:-1,tris:[0,0,0]};
 const isE10=b=>E10.on&&b[0]===E10.x&&b[1]===E10.z;
 /* PUEBLO 3.0 · P0 ground pack (ChatGPT, v2 12-10-2026; textures in assets/tex/p0*, made by tools/p0/make_p0_textures.py from
    the originals in assets/3d/imports/2026-10-12_p0_ground_pack_v2/): plaza, cobbles, pavements, worn forecourts and
-   sand, plus decals and sand drifts. In ?pueblo=3 by default since 12-10-2026 (v3 limestone plaza + covers); &suelo=0 turns it off.
+   sand, plus decals and sand drifts. By default since 12-10-2026 (v3 limestone plaza + covers).
    Collisions do not change. */
 // opt-in, and per material: v2 (docs/ASSETS-3D.md §11) only the plaza and the covers hold up against the current ground;
 // the cobbles, pavements, forecourts, sand, the other decals and the sand drifts stay as they were
-// ?pueblo=3 uses ChatGPT's photographic limestone for the plaza (v3b, 12-10-2026; approved by the owner the same day)
-// and the drain covers; &suelo=0 → the previous ground, &suelo=p0 → the v2 plaza (for comparisons)
-const P0V3=P3ON&&!/[?&]suelo=(0|p0)\b/.test(location.search);
+// ChatGPT's photographic limestone for the plaza (v3b, 12-10-2026; approved by the owner the same day) and the drain covers
+const P0V3=P3ON;
 // &adoquin=cc0: the Poly Haven scan cobblestone_02 (CC0) on the north street and the plaza bands, instead of the setts (option to
 // judge on the phone, 12-10-2026); one repetition = 2.7 m (the scan is 1.8 m wide: at real size the pebbles read as gravel
 // a few metres away; 3.6 m made them too big and soft); &adoquinm=<m> to try other sizes
-// default since 17-10-2026 (the owner saw it on the iPhone: «se ve todo el suelo muy bien en 4k»); &adoquin=0 → the setts
-const COBCC=P3ON&&!/[?&]adoquin=0\b/.test(location.search),COBCC_TILE=Math.min(8,Math.max(0.5,+((location.search.match(/[?&]adoquinm=([\d.]+)/)||[])[1])||2.7));
+// default since 17-10-2026 (the owner saw it on the iPhone: «se ve todo el suelo muy bien en 4k»)
+const COBCC=P3ON,COBCC_TILE=Math.min(8,Math.max(0.5,+((location.search.match(/[?&]adoquinm=([\d.]+)/)||[])[1])||2.7));
 // &fachada=cc0: P1, the facades with CC0 Poly Haven scans (tools/p1/make_p1_facades.py, 17-10-2026): walls, roof tiles, stone,
 // shutters and doors; the kit's UVs are in metres, so only the texture and its real size change (option to judge on the phone)
 const FACC=P3ON&&/[?&]fachada=cc0\b/.test(location.search);
@@ -2330,9 +2263,9 @@ if(FACC){const pf=GFX.profile,pre=pf==='bajo'?'p1b_':pf==='medio'?'p1m_':'p1_',L
   // stone (sandstone_blocks_04) left out: its blocks are so faint that planters and jambs read as a smear (17-10-2026)
   Object.assign(L.wood,{tex:pre+'wood',tile:1.6,rough:true});
   Object.assign(L.woodraw,{tex:pre+'door',tile:2.0,rough:true,col:0xffffff});}
-const P0={on:P3ON&&!/[?&]suelo=0\b/.test(location.search),set:P0V3?'v3':'v2',
-  use:P0V3?{plaza:true,cobble:COBCC,sidewalk:false,patch:false,sand:false,covers:true,decals:false,drifts:false}   // v3b: the limestone only (its cobbles show a mirror axis)
-          :{plaza:true,cobble:COBCC,sidewalk:false,patch:false,sand:false,covers:true,decals:false,drifts:false},decals:0,strips:0,meshes:[]};
+const P0={on:P3ON,set:'v3',
+  use:{plaza:true,cobble:COBCC,sidewalk:false,patch:false,sand:false,covers:true,decals:false,drifts:false},   // v3b: the limestone only (its cobbles show a mirror axis)
+  decals:0,strips:0,meshes:[]};
 if(P3ON){   // old visuals the slice redraws differently: sandbag walls → stone planters, the fountain
   for(const o of scene.children.slice(TOWN_FROM)){
     if(!o.isMesh||o.geometry.type!=='BoxGeometry')continue;const p=o.position;
@@ -2348,7 +2281,6 @@ if(TOWN.on&&typeof SDTown!=='undefined'){
   TOWN.meshes=[];TOWN.tris=0;
   for(const [sx,sz] of [[-1,-1],[1,-1],[-1,1],[1,1]]){const q=BUILDINGS.filter(b=>Math.sign(b[0]||1)===sx&&Math.sign(b[1]||1)===sz&&!inSlice3(b)&&!isE10(b)&&!isHab(b));if(!q.length)continue;
     const d=SDTown.build(q,Object.assign({part:'buildings'},TOPT));TOWN.tris+=d.tris;TOWN.meshes=TOWN.meshes.concat(townMeshes(d,'town'));}
-  if(!P31){const d=SDTown.build(BUILDINGS.filter(b=>!inSlice3(b)),Object.assign({part:'streets',clipZ:P3ON?-11:undefined},TOPT));TOWN.tris+=d.tris;TOWN.meshes=TOWN.meshes.concat(townMeshes(d,'streets'));}
   if(E10.on){const d=SDTown.build(BUILDINGS.filter(isE10),Object.assign({part:'buildings'},TOPT));TOWN.tris+=d.tris;E10.old=townMeshes(d,'e10old');TOWN.meshes=TOWN.meshes.concat(E10.old);}
   // the old visuals: drawn no more (an invisible material), still there for bullets and the server's map
   for(const m of OLD_TOWN.bodies)hideOld(m);
@@ -2574,8 +2506,8 @@ if(CASAS.on){
 if(P4ON){const c=SDPueblo4.cables(),g=new T.BufferGeometry();g.setAttribute('position',new T.BufferAttribute(c.pos,3));g.setAttribute('normal',new T.BufferAttribute(c.nrm,3));
   g.setIndex(new T.BufferAttribute(c.idx,1));g.computeBoundingSphere();const m=new T.Mesh(g,new T.MeshStandardMaterial({color:0x1d1b19,roughness:0.75,metalness:0.1}));m.material.userData.cs=1;
   m.name='p4_cables';m.matrixAutoUpdate=false;m.updateMatrix();scene.add(m);}
-/* =================== LA FUENTE (client/fuente.js, docs/FUENTE.md): water that moves; ?fuente=0 = the old flat water =================== */
-const FUENTE={on:PU4&&typeof SDFuente!=='undefined'&&!/[?&]fuente=0\b/.test(location.search),f:null};
+/* =================== LA FUENTE (client/fuente.js, docs/FUENTE.md): water that moves =================== */
+const FUENTE={on:typeof SDFuente!=='undefined',f:null};
 if(FUENTE.on){
   const env=SDFuente.skyEnv(T,LOOK.sky.top,LOOK.sky.mid,LOOK.sky.hor,LOOK.hemiGround);
   const fl=new T.MeshStandardMaterial({color:0x6f9e9a,roughness:0.35,metalness:0});
@@ -2585,7 +2517,7 @@ if(FUENTE.on){
   if(FOUNTAIN_FLAT)scene.remove(FOUNTAIN_FLAT);
   scene.traverse(o=>{if(o.isMesh&&/_water$/.test(o.name))o.visible=false;});   // PUEBLO 2.0's flat water (its own fountain)
 }
-// ?casas=0 (offline only): the old solid boxes, to compare; online always the houses (the server's map)
+// the old solid boxes and back (used by test/casas.browser.test.js; the game always plays with the houses)
 function casasSolid(on){
   if(!CASAS.on||CASAS.isSolid===on)return;CASAS.isSolid=on;const w=WORLDS.pueblo,drop=(arr,xs)=>{for(const x of xs){const i=arr.indexOf(x);if(i>=0)arr.splice(i,1);}};
   if(on){drop(w.colliders,CASAS.cols);drop(w.ray,CASAS.rays);drop(w.ramps,CASAS.ramps);for(const s of CASAS.solid){w.colliders.push(s.col);w.ray.push(s.m);s.m.material=s.mat;s.m.castShadow=true;}}
@@ -2974,7 +2906,6 @@ function barrioLoad(){
   L.load(SDBarrio.towers+'?v='+BUILD_HASH,g=>{got.towers=g.scene;done();},undefined,fail);
 }
 let WORLD_ID='pueblo';
-if(CASAS.on&&!CASAS.pref)casasSolid(true);   // ?casas=0: the old boxes (offline; after WORLD_ID exists)
 // switch the live map: what is drawn, what the player collides with, what bullets hit
 function setWorld(id){
   if(!WORLDS[id]||id===WORLD_ID)return;
@@ -3899,20 +3830,14 @@ const GOAL=10;
 const MOVE=SD_CONFIG.move,FEEL=SD_CONFIG.feel,TICK_DT=1/SD_CONFIG.TICK;
 /* GF-1 MOVIMIENTO TÁCTICO (30-10-2026): since the owner approved it, the server's own rule (core/config.js, everyone,
    online too) and a smoother camera (TAC: sin² bob, a slight roll into sideways movement, small landings, sway that does
-   not depend on the FPS). The previous movement stays for comparisons: ?mov=clasico (offline; online always the server's). */
-const MOV_CLASSIC=/[?&]mov=clasico\b/.test(location.search);
-const MOVE_CLASSIC=Object.assign({},MOVE,{walk:4.6,crouch:2.4,backMul:0.85,groundAccel:58,groundDecel:60,overspeedDecel:11});
-const TAC=()=>!MOV_CLASSIC;
+   not depend on the FPS). The previous movement (?mov=clasico) was removed on 24-11-2026. */
 let GUNCFG=SD_CONFIG.rifles.halcon;
 /* GUNSMITH (08-11-2026, docs/GUNSMITH.md): each of the 5 models is its own rifle (core/config.js rifles.*) in the games
    against bots and in the range; the owner approved the table for tests, and online too on 23-11-2026 («sí, cada rifle con
    sus cifras»): the server gives each player the figures of the model sent with 'rifle' (NET.N.chooseRifle), from the next
-   spawn. ?balance=0 brings back the previous figures (the HALCÓN's for every model) offline, to compare (remembered;
-   ?balance=1 undoes it). Bots always carry the HALCÓN (HALCON). */
-{const q=location.search.match(/[?&]balance=([01])\b/);if(q)store.set('balanceOld',q[1]==='0');}
-const BAL={on:store.get('balanceOld',false)!==true};
+   spawn. Bots always carry the HALCÓN (HALCON). (The ?balance=0 comparison was removed on 24-11-2026.) */
 const HALCON=SD_CONFIG.rifles.halcon;
-function rifleCfgFor(model,online){if(online)return NET.N?NET.N.rifleCfg():HALCON;return BAL.on&&SD_CONFIG.rifles[model]?SD_CONFIG.rifles[model]:HALCON;}
+function rifleCfgFor(model,online){if(online)return NET.N?NET.N.rifleCfg():HALCON;return SD_CONFIG.rifles[model]||HALCON;}
 /* SILENCIADOR (09-11-2026, approved by the owner; docs/GUNSMITH.md). Per model, saved in sniperduel_gsCfg (muzzle:'sil').
    With it: no muzzle flash or flash of light, a low shot that does not say where it comes from, and bots only hear it
    within SIL.HEAR m (85 m without it). The price: the bullet leaves 8 % slower (more drop and flight time far away).
@@ -4842,7 +4767,7 @@ const SURF={
 function soundDelay(dist){return Math.min(0.35,dist/343);}
 function impactFX(hit,dist,size){
   const n=hit.face?hit.face.normal.clone().transformDirection(hit.object.matrixWorld):new T.Vector3(0,1,0);
-  const kind=surfaceOf(hit.object),sf=SURF[kind],s0=size||1,s=s0*(FEEL2&&dist>30?Math.min(2.2,dist/30):1);   // feel=2: far → bigger puff
+  const kind=surfaceOf(hit.object),sf=SURF[kind],s0=size||1,s=s0;
   const few=s0<0.7,N=k=>few?Math.max(1,Math.round(k/2)):k;   // shotgun pellets: half the bits each
   // flash, dust burst, a slow plume that hangs in the air, chunks that fall, sparks off metal and stone
   emit(hit.point,{n:1,color:kind==='metal'?0xfff4d8:0xffe2b0,size:0.3*s,life:0.06,spread:0,add:true,op:0.9});
@@ -5182,11 +5107,11 @@ window.addEventListener('keydown',e=>{
     if(e.code==='Digit2'||e.code==='Numpad2')input.select='pistol';
     if(e.code==='Digit3'||e.code==='Numpad3')input.select='knife';
     if(e.code==='KeyF')input.inspect=true;
-    if(HUD2)h2KeyDown(e);
+    h2KeyDown(e);
   }
   input.keys[e.code]=true;
   if(['Space','ArrowUp','ArrowDown','KeyW','KeyS','KeyA','KeyD','ControlLeft'].includes(e.code))e.preventDefault();
-  if(HUD2&&e.code==='Tab')e.preventDefault();
+  if(e.code==='Tab')e.preventDefault();
 });
 window.addEventListener('keyup',e=>{input.keys[e.code]=false;});
 canvas.addEventListener('mousedown',e=>{
@@ -5206,7 +5131,7 @@ window.addEventListener('mousemove',e=>{
   // only where the capture never works; otherwise the camera waits for the click that captures the mouse again
   if(pointerLocked||lockFails>=3){input.lookDX+=e.movementX||0;input.lookDY+=e.movementY||0;}
 });
-window.addEventListener('wheel',e=>{if(state==='playing'&&WS.ads>0.5){const z=SDMiras.nextZoom(MIRA.id,WS.zoom);if(z!==WS.zoom){WS.zoom=z;SFX.click(0,3000,0.15);}}else if(HUD2&&state==='playing')h2Wheel(e);},{passive:true});
+window.addEventListener('wheel',e=>{if(state==='playing'&&WS.ads>0.5){const z=SDMiras.nextZoom(MIRA.id,WS.zoom);if(z!==WS.zoom){WS.zoom=z;SFX.click(0,3000,0.15);}}else if(state==='playing')h2Wheel(e);},{passive:true});
 function requestLock(){
   if(isTouch)return;
   const fail=()=>{if(pointerLocked)return;lockFails++;lockFailed=true;};
@@ -5246,7 +5171,7 @@ TDIAG.reset=function(){this.yaw0=P.yaw;this.pitch0=P.pitch;this.acc=[0,0];this.m
 /* =================== INPUT: TOUCH (Pointer Events + client/touch.js) =================== */
 const touchEl=$('#touch');const stickBase=$('#stickBase'),stickKnob=$('#stickKnob');
 const TOUCH=SDTouch.create();
-const LY=HUD2?SDHud2:SDLayout;   // HUD 2: same layout API + peek buttons, visibility/opacity per element and the weapon bar
+const LY=SDHud2;   // HUD 2: same layout API + peek buttons, visibility/opacity per element and the weapon bar
 let LAYOUT=LY.load(store,isTouch);
 const EDIT={on:false,sel:null,offX:0,offY:0,dragId:null,backup:null};
 /* ---- HUD 2 (?hud=2): weapon bar, tactical inventory, peek on touch, icons (client/hud2.js + client/hudicons.js) ----
@@ -5255,7 +5180,6 @@ const EDIT={on:false,sel:null,offX:0,offY:0,dragId:null,backup:null};
 const leanIn={keyL:false,keyR:false,touchL:false,touchR:false};
 // camera lean target (−1 left … 1 right). Without ?hud=2: Q/E held, exactly as always
 function leanTargetNow(){
-  if(!HUD2)return (input.keys.KeyE?1:0)-(input.keys.KeyQ?1:0);
   const hold=SETTINGS.leanMode!=='toggle';
   return SDHud2.leanTarget({keyL:hold?!!input.keys[SETTINGS.leanKeyL]:leanIn.keyL,keyR:hold?!!input.keys[SETTINGS.leanKeyR]:leanIn.keyR,touchL:leanIn.touchL,touchR:leanIn.touchR});
 }
@@ -5432,15 +5356,15 @@ function h2SettingsToUI(){
   $('#h2Wheel').checked=!!SETTINGS.wheelSwap;
   $('#h2BarBg').value=LAYOUT.bar.bg;$('#h2BarBgOut').textContent=Math.round(LAYOUT.bar.bg*100)+'%';
 }
-if(HUD2)h2Build();
+h2Build();
 function btnEl(name){return touchEl.querySelector('[data-btn="'+name+'"]');}
 function applyLayout(){
   const W=window.innerWidth,H=window.innerHeight;
   touchEl.style.setProperty('--tbOp',LAYOUT.opacity);
   for(const name in LY.BUTTONS){const el=btnEl(name);if(!el)continue;const r=LY.rect(name,LAYOUT.buttons[name],W,H);
     el.style.left=r.left.toFixed(1)+'px';el.style.top=r.top.toFixed(1)+'px';el.style.width=el.style.height=r.size+'px';el.style.right=el.style.bottom='auto';
-    if(HUD2){el.classList.toggle('off',LAYOUT.vis[name]===false);el.style.setProperty('--tbOp',(LAYOUT.opacity*(LAYOUT.op[name]==null?1:LAYOUT.op[name])).toFixed(3));}}
-  if(HUD2)h2PlaceBar(W,H);
+    el.classList.toggle('off',LAYOUT.vis[name]===false);el.style.setProperty('--tbOp',(LAYOUT.opacity*(LAYOUT.op[name]==null?1:LAYOUT.op[name])).toFixed(3));}
+  h2PlaceBar(W,H);
 }
 const SCOPE_TAP_MS=250;   // MIXTO: shorter than this is a tap
 function btnPress(name,down,cancel){ // cancel: the system took the finger (call, notification, edge swipe) — never a shot
@@ -5488,7 +5412,7 @@ function touchFeed(){ // touch state → the same input fields the keyboard/mous
   stickKnob.style.transform='translate('+TOUCH.knobX.toFixed(1)+'px,'+TOUCH.knobY.toFixed(1)+'px)';
   stickBase.classList.toggle('sprint',TOUCH.sprint);
 }
-function releaseAllTouches(){if(HUD2&&H2.tap)h2TapUp(true);for(const name of new Set(TOUCH.held.values()))btnPress(name,false,true);SDTouch.reset(TOUCH);stickBase.hidden=true;input.joyX=input.joyY=0;input.joySprint=false;}
+function releaseAllTouches(){if(H2.tap)h2TapUp(true);for(const name of new Set(TOUCH.held.values()))btnPress(name,false,true);SDTouch.reset(TOUCH);stickBase.hidden=true;input.joyX=input.joyY=0;input.joySprint=false;}
 /* One finger = one id, from either source:
    - Touch Events on phones/tablets (iOS Safari's native model: each touch keeps reporting to the element
      it started on, with its own identifier — the most reliable way to follow a finger that starts on MIRA
@@ -5500,7 +5424,7 @@ function fingerDown(id,x,y,target,src){
   const b=target&&target.closest?target.closest('.tb'):null;
   const name=b&&b.dataset?b.dataset.btn:null;
   TDIAG.ev(src+' down #'+id+' '+(name||'—'));
-  const wsl=HUD2&&target&&target.closest?target.closest('[data-wslot]'):null;
+  const wsl=target&&target.closest?target.closest('[data-wslot]'):null;
   if(EDIT.on&&wsl){const r=H2.rect;EDIT.sel='wbar';EDIT.dragId=id;EDIT.offX=x-(r.left+r.w/2);EDIT.offY=y-(r.top+r.h/2);editorSelect('wbar');return;}
   if(wsl&&!EDIT.on){h2TapDown(id,x,y,wsl);return;}
   if(EDIT.on){ // layout editor: pick and drag buttons
@@ -5518,14 +5442,14 @@ function fingerMove(id,x,y,src){
     if(EDIT.sel==='wbar'){Object.assign(LAYOUT.bar,SDHud2.barMoveTo(LAYOUT.bar,x-EDIT.offX,y-EDIT.offY,window.innerWidth,window.innerHeight,H2.base.h));applyLayout();return;}
     const b=LAYOUT.buttons[EDIT.sel];
     const m=LY.moveTo(EDIT.sel,b,x-EDIT.offX,y-EDIT.offY,window.innerWidth,window.innerHeight);b.dx=m.dx;b.dy=m.dy;applyLayout();return;}
-  if(HUD2&&H2.tap&&H2.tap.id===id){h2TapMove(id,x,y);return;}
+  if(H2.tap&&H2.tap.id===id){h2TapMove(id,x,y);return;}
   TDIAG.move(id,src);
   SDTouch.move(TOUCH,{id,x,y});
 }
 function fingerUp(id,cancel,src){
   TDIAG.ev(src+(cancel?' CANCEL #':' up #')+id);
   if(EDIT.on){if(id===EDIT.dragId)EDIT.dragId=null;return;}
-  if(HUD2&&H2.tap&&H2.tap.id===id){h2TapUp(cancel);return;}
+  if(H2.tap&&H2.tap.id===id){h2TapUp(cancel);return;}
   const r=SDTouch.up(TOUCH,id);
   if(r.release)btnPress(r.release,false,cancel);
   if(r.stickEnd)stickBase.hidden=true;
@@ -5547,7 +5471,7 @@ const tid=t=>'t'+t.identifier;
 // a finger the system ended without telling us (an edge swipe, a notification): close it so it never sticks
 function touchReconcile(e){
   if(!e.touches)return;const live=new Set();for(let i=0;i<e.touches.length;i++)live.add(tid(e.touches[i]));
-  const ids=new Set([...TOUCH.held.keys(),...TOUCH.look.keys()]);if(TOUCH.stickId!==null)ids.add(TOUCH.stickId);if(HUD2&&H2.tap)ids.add(H2.tap.id);
+  const ids=new Set([...TOUCH.held.keys(),...TOUCH.look.keys()]);if(TOUCH.stickId!==null)ids.add(TOUCH.stickId);if(H2.tap)ids.add(H2.tap.id);
   for(const id of ids)if(typeof id==='string'&&!live.has(id))fingerUp(id,true,'tch-lost');
 }
 touchEl.addEventListener('touchstart',e=>{
@@ -5576,22 +5500,20 @@ applyLayout();
 /* ---- layout editor ---- */
 function editorSelect(name){
   for(const el of touchEl.querySelectorAll('.tb'))el.classList.toggle('sel',el.dataset&&el.dataset.btn===name);
-  if(HUD2){h2EditorSelect(name);return;}
-  $('#edName').textContent=name?SDLayout.BUTTONS[name].label+' ('+name+')':'Toca un botón para elegirlo';
-  if(name){$('#edSize').value=LAYOUT.buttons[name].size;$('#edSizeOut').textContent=LAYOUT.buttons[name].size;}
+  h2EditorSelect(name);
 }
 function openEditor(){
   EDIT.on=true;EDIT.sel=null;EDIT.backup=JSON.parse(JSON.stringify(LAYOUT));
   releaseAllTouches();
   $('#settings').hidden=true;touchEl.hidden=false;touchEl.classList.add('editing');
   for(const name in LY.BUTTONS){const el=btnEl(name);if(el)el.hidden=(name==='fire2'&&!SETTINGS.leftFire);}
-  if(HUD2)h2EditorOpen();
+  h2EditorOpen();
   $('#edOp').value=LAYOUT.opacity;$('#edOpOut').textContent=(+LAYOUT.opacity).toFixed(2);
   $('#editPanel').hidden=false;editorSelect(null);applyLayout();checkOrientation();
 }
 function closeEditor(saveIt){
   if(saveIt)LY.save(store,LAYOUT,isTouch);else LAYOUT=LY.sanitize(EDIT.backup,isTouch);
-  if(HUD2)h2EditorClose();
+  h2EditorClose();
   EDIT.on=false;touchEl.classList.remove('editing');$('#editPanel').hidden=true;editorSelect(null);
   touchEl.hidden=!(isTouch&&(state==='playing'||state==='dead'));
   applyLayout();$('#settings').hidden=false;checkOrientation();
@@ -5633,7 +5555,7 @@ function crossApply(){const X=SETTINGS;
 const CROUCH_HELP={slide:'Un toque te agacha y otro te levanta. Si te deslizas corriendo, al acabar el deslizamiento te levantas solo.',toggle:'Un toque te agacha y otro te levanta; después de deslizarte sigues agachado.',hold:'Agachado mientras mantienes el botón o la tecla; al soltar te levantas.'};
 const ADS_HELP={mixed:'Un toque rápido fija la mira (otro toque la quita); si mantienes MIRA, apuntas solo mientras lo mantienes. Con el mismo dedo mueves la mira.',holdDrag:'Mantén MIRA para apuntar y arrastra ese mismo dedo para mover la mira. Al soltar sales del visor.',hold:'Mantén MIRA para apuntar; la cámara se mueve con otro dedo. Al soltar sales del visor.',toggle:'Toca MIRA una vez para entrar en el visor y otra para salir. Mueve la cámara con cualquier dedo libre.'};
 function settingsToUI(){for(const [id,k] of SET_UI){$('#'+id).value=SETTINGS[k];$('#'+id+'o').textContent=setFmt(k,SETTINGS[k]);}setExtraToUI();for(const [id,k] of SET_CHK)$('#'+id).checked=!!SETTINGS[k];$('#sFps30').checked=SETTINGS.fpsCap===30;$('#sDiag').checked=TDIAG.on;$('#adsHelp').textContent=ADS_HELP[SETTINGS.adsMode]||'';document.querySelectorAll('#adsSeg button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.a===SETTINGS.adsMode)));document.querySelectorAll('#crouchSeg button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.c===SETTINGS.crouchMode)));document.querySelectorAll('#viewSeg button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.v===SETTINGS.view)));$('#crouchHelp').textContent=CROUCH_HELP[SETTINGS.crouchMode]||'';document.querySelectorAll('#qSeg button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.q===SETTINGS.quality)));document.querySelectorAll('#resSeg button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.res===String(SETTINGS.res))));gfxNote();if(typeof lbResUI==='function')lbResUI();
-  const g=(SETTINGS.sensH+SETTINGS.sensV)/2;$('#sens').value=g;$('#sensOut').textContent=g.toFixed(2);if(HUD2)h2SettingsToUI();}
+  const g=(SETTINGS.sensH+SETTINGS.sensV)/2;$('#sens').value=g;$('#sensOut').textContent=g.toFixed(2);h2SettingsToUI();}
 function applyControlSettings(){TOUCH.dragScope=SETTINGS.adsMode!=='hold';TOUCH.cfg.dead=SETTINGS.touchDead;MOTION=(reduceMotion||SETTINGS.calmVM)?0.35:1;if(SETTINGS.adsMode!=='toggle'&&SETTINGS.adsMode!=='mixed')input.scopeToggle=false;crossApply();
   const B=document.body.classList;B.toggle('miniOn',!!SETTINGS.minimap);B.toggle('noHit',!SETTINGS.hitmarkers);B.toggle('noDmgDir',!SETTINGS.dmgDir);B.toggle('lowFlash',!!SETTINGS.lowFlash);}
 function settingsChanged(){SETTINGS=SDSettings.sanitize(SETTINGS,isTouch);SDSettings.save(store,SETTINGS,isTouch);gfxApply();applyControlSettings();audioLevels();settingsToUI();
@@ -5741,9 +5663,9 @@ let DUEL_LETHAL=store.get('duelLethal',true)!==false;
 function setDuelLethal(on){DUEL_LETHAL=!!on;store.set('duelLethal',DUEL_LETHAL);document.querySelectorAll('#duelLethalSeg button').forEach(b=>b.setAttribute('aria-pressed',String((b.dataset.l==='1')===DUEL_LETHAL)));}
 document.querySelectorAll('#duelLethalSeg button').forEach(b=>b.addEventListener('click',()=>{setDuelLethal(b.dataset.l==='1');audioInit();SFX.ui();}));
 setDuelLethal(DUEL_LETHAL);
-// AJUSTES › GRÁFICOS: PUEBLO 3.0 on this device (reloads, without the link's own ?pueblo=… so the choice wins) + diagnostics
+// AJUSTES › GRÁFICOS › DIAGNÓSTICO: one technical line
 function gfxDiagText(){let gpu='?',gl2=false;try{const g=renderer.getContext();gl2=typeof WebGL2RenderingContext!=='undefined'&&g instanceof WebGL2RenderingContext;const e=g.getExtension('WEBGL_debug_renderer_info');gpu=e?g.getParameter(e.UNMASKED_RENDERER_WEBGL):g.getParameter(g.RENDERER);}catch(e){}
-  return 'Pueblo 3.0: '+(P3ON?'SÍ':'NO')+(P3ON?' · suelo nuevo: '+(P0.on?'SÍ':'NO')+' · adoquín: '+(COBCC?'Poly Haven':'anterior')+' · kit: '+(P3W.kit?'cargado':'NO cargado'):'')+' · calidad: '+String(GFX.profile).toUpperCase()+(GFX.cap?' (tope AUTO '+String(GFX.cap).toUpperCase()+')':'')+
+  return 'Pueblo: '+(P4ON?'4.0':'3.1')+' · kit: '+(P3W.kit?'cargado':'NO cargado')+' · calidad: '+String(GFX.profile).toUpperCase()+(GFX.cap?' (tope AUTO '+String(GFX.cap).toUpperCase()+')':'')+
     ' · sombras: '+(renderer.shadowMap.enabled?sun.shadow.mapSize.x:'NO')+(DIAG_ON()?' · DIAGNÓSTICO: '+DIAG_ON():'')+' · píxeles ×'+renderer.getPixelRatio().toFixed(2)+' · WebGL '+(gl2?'2':'1')+' · GPU: '+String(gpu).slice(0,60)+' · texturas: '+(TEX.ok||0)+'/'+(TEX.asked||0)+' cargadas'+(TEX.fail?' · FALLAN '+TEX.fail+': '+TEX.failed.slice(0,4).join(', '):'');}
 $('#infAmmo').addEventListener('change',()=>{TRAIN.infAmmo=$('#infAmmo').checked;store.set('infAmmo',TRAIN.infAmmo);});
 function updateRangeHud(){if(mode!=='range')return;$('#rK').textContent=STATS.kills;$('#rD').textContent=Math.round(STATS.damage);$('#rN').textContent=STATS.meleeHits+'/'+(STATS.meleeSwings||0);$('#rT').textContent=STATS.kills>=2?((STATS.lastKill-STATS.firstKill)/(STATS.kills-1)).toFixed(2):'–';$('#rS').textContent=STATS.shots;$('#rH').textContent=STATS.hits;$('#rC').textContent=STATS.rangeHs;$('#rA').textContent=(STATS.shots?Math.round(STATS.hits/STATS.shots*100):0)+'%';}
@@ -5799,13 +5721,13 @@ function startMatch(){
 }
 // one-shot inputs (clicks, key presses) that have not been used yet are thrown away whenever
 // the game is interrupted, so nothing fires, jumps or switches on its own afterwards
-function clearPendingInput(){if(HUD2)h2Clear();if(typeof releaseAllTouches==='function')releaseAllTouches();input.firePressed=input.jumpPressed=input.crouchPressed=input.reloadPressed=false;input.fireAim=false;input.fireAimShot=0;input.select=null;input.inspect=false;input.lookDX=input.lookDY=0;}
+function clearPendingInput(){h2Clear();if(typeof releaseAllTouches==='function')releaseAllTouches();input.firePressed=input.jumpPressed=input.crouchPressed=input.reloadPressed=false;input.fireAim=false;input.fireAimShot=0;input.select=null;input.inspect=false;input.lookDX=input.lookDY=0;}
 function pause(){if(state!=='playing'&&state!=='dead')return;pausedFrom=state;state='paused';$('#pause').hidden=false;kitNote();$('#lockHint').hidden=true;if(pointerLocked&&document.exitPointerLock)document.exitPointerLock();input.fireHeld=false;input.scope=false;input.scopeToggle=false;input.keys={};clearPendingInput();}
 let pausedFrom='playing';
 function resume(){if(state!=='paused')return;
   if(!isTouch&&performance.now()-lockExitAt<1150){const b=$('#resume');if(!b.dataset.wait){b.dataset.wait='1';b.disabled=true;const txt=b.textContent;b.textContent='UN MOMENTO…';
     setTimeout(()=>{b.disabled=false;b.textContent=txt;delete b.dataset.wait;},Math.max(50,1150-(performance.now()-lockExitAt)));}return;}clearPendingInput();state=pausedFrom;$('#pause').hidden=true;audioInit();if(!isTouch)requestLock();}
-function toMenu(){if(mode==='online'){netLeave(true);return;}if(HUD2)h2Clear();state='menu';setWorld(offWorld());$('#pause').hidden=true;$('#lockHint').hidden=true;$('#over').hidden=true;$('#hud').hidden=true;$('#scope').hidden=true;$('#death').hidden=true;$('#touch').hidden=true;$('#menu').hidden=false;BOTS.concat(DUMMIES,TRAINERS).forEach(b=>{b.alive=false;b.g.visible=false;b.trainerActive=false;});BULLETS.length=0;BTR.forEach(m=>m.visible=false);scene.fog.near=45;scene.fog.far=175;if(document.exitPointerLock&&pointerLocked)document.exitPointerLock();}
+function toMenu(){if(mode==='online'){netLeave(true);return;}h2Clear();state='menu';setWorld(offWorld());$('#pause').hidden=true;$('#lockHint').hidden=true;$('#over').hidden=true;$('#hud').hidden=true;$('#scope').hidden=true;$('#death').hidden=true;$('#touch').hidden=true;$('#menu').hidden=false;BOTS.concat(DUMMIES,TRAINERS).forEach(b=>{b.alive=false;b.g.visible=false;b.trainerActive=false;});BULLETS.length=0;BTR.forEach(m=>m.visible=false);scene.fog.near=45;scene.fog.far=175;if(document.exitPointerLock&&pointerLocked)document.exitPointerLock();}
 function endMatch(win,why){   // win: true / false / null (draw, only when the time runs out)
   if(state==='over'||state==='menu')return;
   state='over';
@@ -5828,9 +5750,8 @@ window.addEventListener('blur',()=>{if(isTouch)pause();});window.addEventListene
 let slowmo=0;
 /* DESLIZAMIENTO DE VERDAD (09-11-2026, client/soldier2.js slidePose): en tu 3ª persona sin conexión el operador se
    desliza con las piernas por delante. En línea, todavía el de siempre (el rival se ve como su caja de impacto, la del
-   servidor, hasta que el propietario apruebe la caja nueva: core/hitbox.js SLIDE). ?desliz=0 vuelve al de antes. */
-{const q=location.search.match(/[?&]desliz=([01])\b/);if(q)store.set('deslizOld',q[1]==='0');}
-const SLIDE2={on:store.get('deslizOld',false)!==true};
+   servidor, hasta que el propietario apruebe la caja nueva: core/hitbox.js SLIDE). */
+const SLIDE2={on:true};
 const VM={sprintW:0,sprintPose:0,slideW:0,airW:0,crouchW:0,deadW:0,land:0,landV:0,eye:MOVE.eyeStand};
 function syncFromSim(){
   P.pos.set(PM.x,PM.y,PM.z);P.vel.set(PM.vx,PM.vy,PM.vz);P.onGround=PM.onGround;P.crouch=PM.crouch;
@@ -5861,7 +5782,7 @@ function onMoveEvent(e){
   switch(e.type){
     case 'jump':SFX.jump();break;
     // TÁCTICO: small landings dip the camera too (softer); big ones as always
-    case 'land':if(e.impact>3.5){VM.landV-=e.impact*FEEL.landKick*12*MOTION;SFX.land();}else if(TAC()&&e.impact>1.5)VM.landV-=e.impact*FEEL.landKick*7*MOTION;break;
+    case 'land':if(e.impact>3.5){VM.landV-=e.impact*FEEL.landKick*12*MOTION;SFX.land();}else if(e.impact>1.5)VM.landV-=e.impact*FEEL.landKick*7*MOTION;break;
     case 'slideEnd':if(SETTINGS.crouchMode==='slide')input.crouchHeld=false;break;   // PULSAR · TE LEVANTAS AL DESLIZAR: the slide ends standing
     case 'slideStart':nz(0,0.6,{type:'bandpass',f:500,q:0.6,g:0.25});P.shake=Math.max(P.shake,0.15);break;
   }
@@ -5912,7 +5833,7 @@ function onShotgunEvent(e,hol){
 function onLoadoutEvent(e){
   switch(e.type){
     case 'holster':input.scopeToggle=false;if(e.weapon==='rifle'||e.weapon==='shotgun')SFX.holsterRifle();else if(e.weapon==='pistol')SFX.pHolster();else SFX.knifeHolster();break;
-    case 'draw':if(HUD2)h2Flash(e.weapon);if(e.weapon==='knife')SFX.knifeDraw();else if(e.weapon==='pistol')SFX.pDraw();else if(e.weapon==='shotgun')SFX.sDraw();else SFX.raise();updateWeaponHud();updateAmmoUI();break;
+    case 'draw':h2Flash(e.weapon);if(e.weapon==='knife')SFX.knifeDraw();else if(e.weapon==='pistol')SFX.pDraw();else if(e.weapon==='shotgun')SFX.sDraw();else SFX.raise();updateWeaponHud();updateAmmoUI();break;
     case 'swing':SFX.swing();SDWeapon.kickRecoil(RECOIL,0.006,e.side*0.018,GUNCFG.recoil);STATS.meleeSwings=(STATS.meleeSwings||0)+1;break;
     case 'knifeHit':doKnifeHit();break;
     case 'inspect':SFX.knifeFlick();break;
@@ -5961,7 +5882,7 @@ function simTick(dt){
     PMprev.x=PM.x;PMprev.y=PM.y;PMprev.z=PM.z;
     cmd.select=input.select;cmd.inspect=input.inspect;input.select=null;input.inspect=false;
     gunInspectInput(cmd);
-    const {mev,lev,wev,pev,sev,hol,holP,holS}=SDPlayer.step(LOCAL,cmd,dt,W,mode!=='online'&&MOV_CLASSIC?MOVE_CLASSIC:MOVE);
+    const {mev,lev,wev,pev,sev,hol,holP,holS}=SDPlayer.step(LOCAL,cmd,dt,W,MOVE);
     syncFromSim();
     for(const e of mev)onMoveEvent(e);
     for(const e of lev)onLoadoutEvent(e);
@@ -6025,12 +5946,10 @@ function applyLook(){
   if(P.alive){P.yaw+=ld.yaw;P.pitch=clamp(P.pitch+ld.pitch,-1.45,1.45);}
   if(GYRO.yaw||GYRO.pitch){const g=SDSettings.gyroDelta(GYRO.yaw,GYRO.pitch,SETTINGS,lc);GYRO.yaw=GYRO.pitch=0;
     if(P.alive){P.yaw+=g.yaw;P.pitch=clamp(P.pitch+g.pitch,-1.45,1.45);}}
-  if(TAC()){   // the turn per second (not per frame) and a time-based blend: the same sway at 30, 60 or 120 FPS
+  {   // the turn per second (not per frame) and a time-based blend: the same sway at 30, 60 or 120 FPS
     const f=1/Math.max(0.25,lookDt*60),a=1-Math.pow(0.75,lookDt*60);
     WS.swayX+=(clamp(-input.lookDX*0.0009*f,-0.05,0.05)*MOTION-WS.swayX)*a;WS.swayY+=(clamp(input.lookDY*0.0009*f,-0.05,0.05)*MOTION-WS.swayY)*a;
-  }else{
-  WS.swayX=clamp(-input.lookDX*0.0009,-0.05,0.05)*0.25*MOTION+WS.swayX*0.75;
-  WS.swayY=clamp(input.lookDY*0.0009,-0.05,0.05)*0.25*MOTION+WS.swayY*0.75;}
+  }
   input.lookDX=0;input.lookDY=0;
 }
 /* 3ª PERSONA (28-10-2026, AJUSTES › CONTROLES › Vista o tecla V): la cámara se aparta detrás del hombro derecho sin
@@ -6097,8 +6016,8 @@ function updateCamera(dt,alpha){
   const G0=AG(),C0=ACFG(),iron=IRON();
   const ads=G0.ads,adsE=ss(ads),scoped=!iron&&ads>=GUNCFG.scopeAt,free=1-adsE;
   // smooth presentation weights (no snaps between sprint / slide / air / ADS / death)
-  VM.sprintW=damp(VM.sprintW,PM.sprinting?1:0,FEEL2&&!PM.sprinting?22:10,dt);
-  VM.sprintPose=VM.sprintW*(FEEL2?0.6:1);   // how far the gun is lowered / turned (FOV and bob still use sprintW)
+  VM.sprintW=damp(VM.sprintW,PM.sprinting?1:0,10,dt);
+  VM.sprintPose=VM.sprintW;   // how far the gun is lowered / turned (FOV and bob still use sprintW)
   VM.slideW=damp(VM.slideW,PM.sliding?1:0,12,dt);
   VM.airW=damp(VM.airW,PM.onGround?0:1,8,dt);
   VM.deadW=damp(VM.deadW,P.alive?0:1,4,dt);
@@ -6107,9 +6026,7 @@ function updateCamera(dt,alpha){
      at 15 FPS every landing swung wider and wider, and at 10 FPS the camera flew off («al saltar se le va todo»). */
   for(let h=dt;h>1e-6;h-=1/120){const s=Math.min(h,1/120);VM.landV+=(-220*VM.land-24*VM.landV)*s;VM.land+=VM.landV*s;}
   P.shake=damp(P.shake,0,9,dt);P.fovPunch=damp(P.fovPunch,0,8,dt);
-  if(FEEL2){   // spring (k 420, c 26 → ζ≈0.63): back into the shoulder at once, a little past rest, settles in ~0.25 s
-    for(let h=dt;h>1e-6;h-=1/120){const s=Math.min(h,1/120);WS.kickV+=(-420*WS.kick-26*WS.kickV)*s;WS.kick+=WS.kickV*s;}
-  }else WS.kick=damp(WS.kick,0,9,dt);
+  WS.kick=damp(WS.kick,0,9,dt);
   P.lean=damp(P.lean,P.alive?leanTargetNow():0,10,dt);
   // interpolated position between the last two sim ticks
   const px=lerp(PMprev.x,PM.x,alpha),py=lerp(PMprev.y,PM.y,alpha),pz=lerp(PMprev.z,PM.z,alpha);
@@ -6129,7 +6046,7 @@ function updateCamera(dt,alpha){
   P.bob=damp(P.bob,PM.onGround&&!PM.sliding?clamp(hs/MOVE.sprint,0,1):0,8,dt);
   const bob=P.bob*FEEL.bob*MOTION*free;
   // TÁCTICO: the same height and rhythm, but a smooth curve (sin²) instead of |sin|, which hit bottom with a jolt every step
-  const bobY=(TAC()?Math.sin(P.stepPhase)**2:Math.abs(Math.sin(P.stepPhase)))*bob*(PM.sprinting?1.4:1),bobX=Math.cos(P.stepPhase)*bob*0.5;
+  const bobY=Math.sin(P.stepPhase)**2*bob*(PM.sprinting?1.4:1),bobX=Math.cos(P.stepPhase)*bob*0.5;
   camera.position.set(px+_rt.x*(P.leanOff+bobX),py+VM.eye+VM.land+bobY,pz+_rt.z*(P.leanOff+bobX));
   // what the player aims with (no recoil, no shake)
   AIM.ox=camera.position.x;AIM.oy=camera.position.y;AIM.oz=camera.position.z;AIM.yaw=P.yaw+swY;AIM.pitch=P.pitch+swP;
@@ -6137,7 +6054,7 @@ function updateCamera(dt,alpha){
   // visual-only layers on top
   const shk=P.shake*FEEL.shake*MOTION*free*(SETTINGS.lowFlash?0.35:1);
   // TÁCTICO: a slight roll into sideways movement (0.9° at walking speed) and every roll follows «reducir movimiento»
-  const tacM=TAC()?0.4+0.6*MOTION:1,latV=TAC()?PM.vx*_rt.x+PM.vz*_rt.z:0;
+  const tacM=0.4+0.6*MOTION,latV=PM.vx*_rt.x+PM.vz*_rt.z;
   P.roll=P.alive?damp(P.roll,(-P.lean*0.13+VM.slideW*0.07*free)*tacM-latV*0.004*MOTION*free,10,dt):damp(P.roll,0.5,3,dt);
   camera.rotation.set(AIM.pitch+RECOIL.p+rand(-shk,shk),AIM.yaw+RECOIL.y+rand(-shk,shk),P.roll);
   // fov: fully zoomed by the time the scope picture appears, so the reticle never "breathes"
@@ -6164,8 +6081,8 @@ function updateCamera(dt,alpha){
     $('#airVig').style.opacity=P.exhausted>0?(0.55+Math.sin(P.swayT*7)*0.2).toFixed(2):P.holding?(0.15*clamp(1-P.breath,0,1)+0.08).toFixed(2):0;
   }
   {const lh=document.getElementById('lockHint'),want=!isTouch&&!pointerLocked&&state==='playing';if(lh.hidden===want)lh.hidden=!want;}
-  if(isTouch&&!EDIT.on){const bz=$('#tbZoom'),bb=$('#tbBreath'),kn=LOAD.active==='knife';setHidden($('#tbScope'),kn);{const ih=!kn&&(ads>0.05||PM.sprinting);if($('#tbInspect').hidden!==ih)$('#tbInspect').hidden=ih;}setHidden($('#tbFire2'),!SETTINGS.leftFire||(SETTINGS.leftFireAds&&ads<0.05&&!input.fireHeld&&!input.fireAim&&!input.scopeHeld&&!input.scopeToggle));if(!HUD2){const ft=kn?'ATACAR':'FUEGO';setText($('#tbFire'),ft);setText($('#tbFire2'),ft);}{const zb=LOAD.active==='rifle';if(bz.hidden===zb)bz.hidden=!zb;if(bb.hidden===showScope)bb.hidden=!showScope;}setText(bz,SDMiras.zoomLabel(WS.zoom));bb.classList.toggle('on',P.holding);$('#tbScope').classList.toggle('on',input.scopeToggle||input.scopeHeld);$('#tbCrouch').classList.toggle('on',input.crouchHeld);}
-  if(HUD2)h2Frame(showScope);
+  if(isTouch&&!EDIT.on){const bz=$('#tbZoom'),bb=$('#tbBreath'),kn=LOAD.active==='knife';setHidden($('#tbScope'),kn);{const ih=!kn&&(ads>0.05||PM.sprinting);if($('#tbInspect').hidden!==ih)$('#tbInspect').hidden=ih;}setHidden($('#tbFire2'),!SETTINGS.leftFire||(SETTINGS.leftFireAds&&ads<0.05&&!input.fireHeld&&!input.fireAim&&!input.scopeHeld&&!input.scopeToggle));{const zb=LOAD.active==='rifle';if(bz.hidden===zb)bz.hidden=!zb;if(bb.hidden===showScope)bb.hidden=!showScope;}setText(bz,SDMiras.zoomLabel(WS.zoom));bb.classList.toggle('on',P.holding);$('#tbScope').classList.toggle('on',input.scopeToggle||input.scopeHeld);$('#tbCrouch').classList.toggle('on',input.crouchHeld);}
+  h2Frame(showScope);
   // hip crosshair shows the real spread cone
   const cr=$('#cross');
   {const t=TPV.on?'translate('+TPV.cx.toFixed(1)+'px,'+TPV.cy.toFixed(1)+'px)':'';if(cr.style.transform!==t)cr.style.transform=t;}
@@ -6575,12 +6492,10 @@ async function netServerUrl(){
 function mpShow(view){if(LB.on){lbShow(view);return;}NET.view=view;$('#mp').hidden=false;$('#menu').hidden=true;$('#mpHome').hidden=view!=='home';$('#mpLobby').hidden=view!=='lobby';}
 function mpMsg(t,err){const m=$('#mpMsg');m.textContent=t||'';m.classList.toggle('err',!!err);if(LB.on)lbMsg(t,err);}
 function mpName(){const n=SDProto.cleanName($('#mpName').value)||'JUGADOR';store.set('mpName',n);if(n!=='JUGADOR'&&PROFILE.name!==n){PROFILE.name=n;SDProfile.save(LS,PROFILE);}return n;}
-function inviteLink(code){return location.origin+location.pathname+'?sala='+code+(LB.on?'&lobby=2':'')+(PU4?'&pueblo=4':'');}   // SALA 1V1 and PUEBLO 4.0: the guest gets them too
-/* PUEBLO 4.0 (?pueblo=4) is the server's 'pueblo4' and this page cannot draw both towns: if the room's map is the other
-   one, reload with the right flag (the room's token is kept, so it rejoins by itself) */
-function pu4Check(){const s=NET.N&&NET.N.mapSrv,need=s==='pueblo4'?true:s==='pueblo'?false:null;if(need===null||need===PU4||!NET.code)return false;
-  const u=new URL(location.href);u.searchParams.set('sala',NET.code);if(LB.on)u.searchParams.set('lobby','2');   // the other ?… (server, quality…) stay
-  if(NET.urlQ)u.searchParams.set('server',NET.url);u.searchParams.set('pueblo',need?'4':store.get('p3',false)?'3':'0');location.replace(u.toString());return true;}
+function inviteLink(code){return location.origin+location.pathname+'?sala='+code+(LB.on?'&lobby=2':'');}   // SALA 1V1: the guest gets it too
+/* This page draws only PUEBLO 4.0 (the server's 'pueblo4'). A room on the town of before ('pueblo', made by a page of
+   before) cannot be played here: leave it and say so, instead of drawing one town while the server uses the other */
+function pu4Check(){if(!(NET.N&&NET.N.mapSrv==='pueblo'&&NET.code))return false;netLeave(false);mpMsg('ESA SALA USA EL PUEBLO ANTIGUO: EL ANFITRIÓN TIENE QUE RECARGAR LA PÁGINA.',true);return true;}
 async function netCreate(){
   audioInit();SFX.ui();mpName();mpMsg('Creando sala…');
   const url=await netServerUrl();if(!url){mpMsg('SERVIDOR NO DISPONIBLE. Puedes seguir jugando offline.',true);return;}
@@ -6600,7 +6515,7 @@ function netConnect(code){
   if(NET.ws){try{NET.ws.onclose=null;NET.ws.close();}catch(e){}}
   NET.code=code;NET.want=true;NET.leaving=false;
   if(!NET.N||NET.N.code!==code){
-    NET.N=SDNet.create({mapAlias:PU4?{pueblo:'pueblo4'}:undefined,send:t=>{if(NET.ws&&NET.ws.readyState===1){NET.ws.send(t);NET.bytesOut+=t.length;}},now:()=>performance.now(),world:W,local:LOCAL});
+    NET.N=SDNet.create({mapAlias:{pueblo:'pueblo4'},send:t=>{if(NET.ws&&NET.ws.readyState===1){NET.ws.send(t);NET.bytesOut+=t.length;}},now:()=>performance.now(),world:W,local:LOCAL});
   }
   NET.status='connecting';mpMsg('Conectando…');
   let ws;try{ws=new WebSocket(NET.url.replace(/^http/,'ws')+'/room/'+code);}catch(e){netErr('ws '+e.message);netRetry();return;}
@@ -6643,7 +6558,7 @@ function netEndOnline(){
   $('#netStat').hidden=true;$('#countdown').hidden=true;
   if(state!=='menu'){state='menu';$('#pause').hidden=true;$('#lockHint').hidden=true;$('#over').hidden=true;$('#hud').hidden=true;$('#scope').hidden=true;$('#death').hidden=true;$('#touch').hidden=true;if(document.exitPointerLock&&pointerLocked)document.exitPointerLock();}
   $('#kBotsLbl')&&($('#kBotsLbl').textContent='BOTS');$('#score .you span').textContent='TÚ';
-  casasSolid(!CASAS.pref);setWorld(offWorld());
+  casasSolid(false);setWorld(offWorld());
 }
 function renderLobby(){
   const N=NET.N;if(!N)return;m2LobbyMap();
@@ -7365,7 +7280,7 @@ function boxClose(){$('#boxOv').hidden=true;$('#crate').className='crate';$('#re
    sortea el objeto, suelta los cierres y levanta la tapa, y el fondo y las tiras de dentro se encienden con el color de
    la rareza; luego, la tarjeta del objeto como siempre. Solo aspecto: el sorteo es el del servidor. Se carga la primera vez
    que abres CAJAS. ?caja=0: la caja de antes (la cuadrada). */
-const BOX3={on:!/[?&]caja=0\b/.test(location.search),r:null,sc:null,cam:null,root:null,mx:null,clip:null,ok:false,loading:false,
+const BOX3={on:true,r:null,sc:null,cam:null,root:null,mx:null,clip:null,ok:false,loading:false,
   mode:'off',t:0,last:0,raf:0,rare:null,ion:null,glow:null,col:new T.Color()};
 function box3Load(){
   if(!BOX3.on||BOX3.ok||BOX3.loading)return;BOX3.loading=true;
@@ -7452,7 +7367,7 @@ if(ACC.token)setTimeout(accRefresh,400);   // your objects follow your account o
 /* PERFIL (paso A de las cuentas, client/profile.js, docs/CUENTAS-Y-MONETIZACION.md): apodo, personaje, estadísticas de
    todas tus partidas y un código para pasarlo a otro dispositivo. Se guarda siempre; el botón se ve con ?pj=pro/mix o
    ?perfil=1 mientras se prueba. */
-const PROFILE_ON=SKIN_ON||/[?&]perfil=1\b/.test(location.search);
+const PROFILE_ON=SKIN_ON;
 function profileUI(){
   const S=SDProfile.summary(PROFILE),cell=(l,v)=>'<div><span class="lbl">'+l+'</span><b>'+v+'</b></div>';
   $('#profStats').innerHTML=cell('Partidas',S.matches)+cell('Victorias',S.wins)+cell('Bajas / muertes',S.kd)+cell('Precisión',S.acc+' %')+cell('A la cabeza',S.hsPct+' %')+cell('Tiro más largo',S.longest+' m');
@@ -7573,15 +7488,14 @@ function miniFrame(){
 /* =================== LOOP =================== */
 /* =================== MENÚ 2 (?menu=2, 02-11-2026, client/menu2.js, docs/MENU-2.md) ===================
    The main menu since 03-11-2026 (owner, after trying it on the iPhone: «funciona mejor… al entrar al link original ya
-   cargara el nuevo menú principal»). ?menu=1 brings back the menu of before (remembered: sniperduel_menuOld), ?menu=2
-   the new one again. INICIO | PERSONAJE | ARMAS | MAPAS | AJUSTES over a dark tactical room where your operator
+   cargara el nuevo menú principal»). The menu of before (?menu=1) was removed on 24-11-2026; its hidden blocks
+   (#menu .menuInner) are still the game's controls, moved into OPCIONES DE PARTIDA. INICIO | PERSONAJE | ARMAS | MAPAS | AJUSTES over a dark tactical room where your operator
    (the character you play with, the game's own GLB) stands with your rifle (the one in your hands: skin, optic and
    camouflage) and can be turned with the mouse or a finger. Every choice is the game's own setter (setSkin, setWskin,
    setMira, setOffMap, setMode…): nothing new is saved and nothing reaches the server that did not before. The menu's
    own blocks (difficulty, time, training bots, main weapon, sensitivity) are moved, as they are, into OPCIONES DE
    PARTIDA, and AJUSTES opens the settings of always. While you play the room is freed and nothing of it is drawn. */
-{const q=location.search.match(/[?&]menu=([12])\b/);if(q)store.set('menuOld',q[1]==='1');}
-const M2={on:store.get('menuOld',false)!==true&&typeof SDMenu2!=='undefined',tab:'inicio',prevTab:'inicio',cat:'rifle',sel:'duel',
+const M2={on:typeof SDMenu2!=='undefined',tab:'inicio',prevTab:'inicio',cat:'rifle',sel:'duel',
   room:null,cam:null,pivot:null,R:null,held:null,show:null,spin:null,item:null,showLight:null,
   n:0,yaw:0,yawV:0,wYaw:0,wYawV:0,drag:null,lastDrag:0,t:0,sig:'',wsig:'',held0:null,frame:{dist:5,ox:0,oy:0},cur:null,propose:false};
 const m2MapImg=id=>av('assets/menu/mapa_'+(/^casa2/.test(id)?'casa2':id)+'.jpg?v='+BUILD_HASH);
@@ -7589,7 +7503,7 @@ const M2_PRUEBAS={id:'pruebas',name:'PRUEBAS',sub:'Paredes de prueba con bots qu
 const M2_BARRIO={id:'barrio',name:'BARRIO',sub:'Calle entre dos filas de edificios · garajes abandonados y torres de fondo · 56 × 40 m',online:true};
 const M2_MAPS=typeof SDMenu2!=='undefined'?SDMenu2.MAPS.filter(m=>m.id==='arena'||m.id==='pueblo'||(m.id==='casa'&&CASA.exp)||(m.id==='casa2'&&C2.exp)).map(m=>m.id==='casa2'&&C2B.exp?Object.assign({},m,{id:'casa2b',name:'CASA ATLAS 2.0 · NUEVA',sub:'Dos casas grandes unidas por dentro · patio despejado y pérgola · 40 × 33 m'}):
   m.id==='casa2'&&C2J.exp?Object.assign({},m,{id:'casa2c',name:'CASA ATLAS 2.0 · JARDÍN',sub:'Las dos casas desplazadas, con tejados, porches y césped · 44 × 33 m'}):
-  m.id==='pueblo'&&PU4?Object.assign({},m,{name:'PUEBLO 4.0',sub:'Prueba · 8 casas por dentro, pick-ups y fuente nueva'}):m).concat(BAR.exp?[M2_BARRIO]:[]).concat([M2_PRUEBAS]):[];
+  m.id==='pueblo'?Object.assign({},m,{name:'PUEBLO 4.0',sub:'8 casas por dentro, pick-ups y fuente'}):m).concat(BAR.exp?[M2_BARRIO]:[]).concat([M2_PRUEBAS]):[];
 const M2_DIFF=['RECLUTA','VETERANO','ÉLITE'],M2_TRAIN={off:'Dianas fijas y móviles',easy:'Bots de entrenamiento · FÁCIL',normal:'Bots de entrenamiento · NORMAL',hard:'Bots de entrenamiento · DIFÍCIL'};
 const m2MapName=id=>{const m=SDMenu2.MAPS.find(x=>x.id===id);return m?m.name:String(id).toUpperCase();};
 function m2Btn(cls,img,name,small,on){const c=document.createElement('button');c.type='button';c.className=cls;
@@ -7617,10 +7531,6 @@ function m2Init(){
   if(SKIN_ON)for(const id in SKINS){const c=m2Btn('m2Pick',skinImg(id),SKINS[id].name,SKINS[id].tag,()=>setSkin(id));c.dataset.skin=id;pl.append(c);}
   else{$('#m2PjHelp').textContent='Con este enlace (?pj=…) no se elige personaje.';}
   // ARMAS: the 8 optics, the rifle skins and the two knives
-  for(const id of SDMiras.ORDER){const O=SDMiras.get(id),c=m2Btn('m2W',miraImg(id),O.name,O.short,()=>setMira(id));c.dataset.mira=id;$('#m2Miras').append(c);}
-  for(const id in WSKINS.rifle){if(!ARMAS_ON&&id!=='halcon')continue;const c=m2Btn('m2W',wsImg('rifle',id),WSKINS.rifle[id].name,WSKINS.rifle[id].tag,()=>setWskin('rifle',id));c.dataset.ws=id;$('#m2Skins').append(c);}
-  for(const id in WSKINS.knife){if(!ARMAS_ON&&id!=='navaja')continue;const c=m2Btn('m2W',wsImg('knife',id),WSKINS.knife[id].name,WSKINS.knife[id].tag,()=>setWskin('knife',id));c.dataset.ws=id;$('#m2Knives').append(c);}
-  document.querySelectorAll('#m2Cat button').forEach(b=>b.addEventListener('click',()=>{audioInit();SFX.ui();M2.cat=b.dataset.cat;M2.wsig='';m2Sync();}));
   // MAPAS
   for(const m of M2_MAPS){const c=m2Btn('m2Map',m2MapImg(m.id),m.name,m.sub,()=>setOffMap(m.id));c.dataset.map=m.id;
     const tags=document.createElement('i');tags.innerHTML=(m.online?'<em class="on">ONLINE</em>':'<em>SOLO CONTRA BOTS</em>')+(m.exp?'<em>EXPERIMENTAL</em>':'');c.append(tags);$('#m2Maps').append(c);}
@@ -7634,7 +7544,6 @@ function m2Init(){
     const up=e=>{if(M2.drag&&M2.drag.id===e.pointerId){M2.drag=null;M2.lastDrag=performance.now();}};
     el.addEventListener('pointerup',up);el.addEventListener('pointercancel',up);};
   document.querySelectorAll('#m2 [data-stage]').forEach(el=>drag(el,'yaw'));
-  drag($('#m2Slot'),'wYaw');
   window.addEventListener('resize',()=>{M2.cur=null;});
   // your character first, before the bots' (the KTX2 characters load one after another)
   if(SKIN_ON&&PJ2.on&&SKINS[SKIN].pack)pj2Load(packRoot(SKINS[SKIN].pack));
@@ -7672,13 +7581,6 @@ function m2Sync(){
   setText($('#m2MeName'),PROFILE.name||'JUGADOR');
   const ib=$('#openInv');if(ib)setText($('#m2InvN'),(ib.textContent.match(/\((\d+)\)/)||['',''])[1]);
   press('#m2PjList .m2Pick','skin',SKIN);setText($('#m2PjName'),SKINS[SKIN].name);setText($('#m2PjBy'),SKINS[SKIN].tag);
-  press('#m2Cat button','cat',M2.cat);
-  document.querySelectorAll('#m2 [data-catpane]').forEach(p=>p.hidden=p.dataset.catpane!==M2.cat);
-  press('#m2Miras .m2W','mira',MIRA.id);press('#m2Skins .m2W','ws',WSKIN.rifle);press('#m2Knives .m2W','ws',WSKIN.knife);
-  const oName=O.name.includes(O.short)?O.name:O.name+' '+O.short;
-  setText($('#m2MiraDesc'),oName);
-  if(M2.cat==='rifle'){setText($('#m2ArmName'),rs&&WSKIN.rifle!=='halcon'?'HALCÓN R7 · '+rs.name:'HALCÓN R7');setText($('#m2ArmSub'),'RIFLE DE CERROJO · MIRA '+oName);}
-  else{const k=WSKINS.knife[WSKIN.knife];setText($('#m2ArmName'),k?k.name:'NAVAJA');setText($('#m2ArmSub'),'ARMA DE MANO · CUERPO A CUERPO');}
   press('#m2Maps .m2Map','map',OFFMAP);
   M2.sig=m2Sig();
   if(GS.on)gsSync();
@@ -7761,8 +7663,8 @@ function m2Layout(dt){
   if(!M2.cur){const pane=$('#m2 .m2Pane[data-pane="'+(M2.tab==='ajustes'?M2.prevTab:M2.tab)+'"]'),st=pane&&pane.querySelector('[data-stage]');
     const r=st?st.getBoundingClientRect():{left:vw*0.3,top:vh*0.12,width:vw*0.4,height:vh*0.76};
     // MAPAS has no stage: the operator stays in the middle, behind the cards
-    let slot=M2.tab==='armas'?$(GS.on?'#gsSlot':'#m2Slot').getBoundingClientRect():null;
-    if(slot&&GS.on&&GS.pick==='camo'){const pr=$('#gsPick').getBoundingClientRect();if(pr.height&&pr.top<slot.bottom)slot={left:slot.left,top:slot.top,width:slot.width,height:Math.max(40,pr.top-slot.top-4)};}
+    let slot=M2.tab==='armas'?$('#gsSlot').getBoundingClientRect():null;
+    if(slot&&GS.pick==='camo'){const pr=$('#gsPick').getBoundingClientRect();if(pr.height&&pr.top<slot.bottom)slot={left:slot.left,top:slot.top,width:slot.width,height:Math.max(40,pr.top-slot.top-4)};}
     M2.cur=Object.assign(SDMenu2.stageFrame(r,vw,vh,fov,M2.tab==='personaje'?1.95:2.05),{st:r,slot});
     if(M2.tab==='armas'&&r.width<60)M2.cur.ox=-vw*0.36;}
   const F=M2.frame,C=M2.cur,k=dt>0.2?100:7;
@@ -7817,18 +7719,17 @@ function m2Frame(rdt){
   // front a few seconds after you let go)
   const idle=now-M2.lastDrag>2600&&!M2.drag;
   if(!M2.drag){M2.yaw+=M2.yawV*dt;M2.yawV=SDMenu2.damp(M2.yawV,0,5,dt);if(idle)M2.yaw=SDMenu2.dampAngle(M2.yaw,0,1.4,dt);
-    M2.wYaw+=M2.wYawV*dt;M2.wYawV=SDMenu2.damp(M2.wYawV,0,5,dt);if(idle)M2.wYaw=SDMenu2.dampAngle(M2.wYaw,0,1.4,dt);
-    if(idle&&!GS.on)M2.wPitch=SDMenu2.damp(M2.wPitch||0,0,1.4,dt);}
+    M2.wYaw+=M2.wYawV*dt;M2.wYawV=SDMenu2.damp(M2.wYawV,0,5,dt);if(idle)M2.wYaw=SDMenu2.dampAngle(M2.wYaw,0,1.4,dt);}
   M2.wIdle=SDMenu2.damp(M2.wIdle||0,idle?1:0,1.5,dt);
   const sw=SDMenu2.idleSway(M2.t);
   M2.pivot.rotation.set(0,M2_YAW0+M2.yaw+sw.yaw,sw.lean);M2.pivot.position.y=sw.bob;
-  M2.pivot.visible=M2.tab!=='mapas'&&!(GS.on&&M2.tab==='armas')&&M2.opShown!==false;   // MAPAS: the cards fill the screen; the ARSENAL is the weapon's; never a half-loaded operator
+  M2.pivot.visible=M2.tab!=='mapas'&&M2.tab!=='armas'&&M2.opShown!==false;   // MAPAS: the cards fill the screen; the ARSENAL is the weapon's; never a half-loaded operator
   if(++M2.n%10===1)csFix(M2.pivot);   // the box figure's colours as in the game (CLÁSICO looked white)
-  const sw2=M2.tab==='armas'?m2SkinWait(M2.cat):'',ld=$(GS.on?'#gsLoad':'#m2SlotLoad');setHidden(ld,!sw2);if(sw2){setText($(GS.on?'#gsLoadTxt':'#m2SlotTxt'),sw2);ld.classList.toggle('mini',!!WS_ST[M2.cat].light);}
-  if(GS.on&&M2.tab==='armas'&&GS.msgT&&performance.now()>GS.msgT){GS.msgT=0;gsSync();}   // the line under the buttons goes back to what it was
+  const sw2=M2.tab==='armas'?m2SkinWait(M2.cat):'',ld=$('#gsLoad');setHidden(ld,!sw2);if(sw2){setText($('#gsLoadTxt'),sw2);ld.classList.toggle('mini',!!WS_ST[M2.cat].light);}
+  if(M2.tab==='armas'&&GS.msgT&&performance.now()>GS.msgT){GS.msgT=0;gsSync();}   // the line under the buttons goes back to what it was
   // the soldier's level of detail is measured from the game camera: lend it the menu camera's place just for this call
   if(M2.R){_m2cp.copy(camera.position);camera.position.copy(M2.cam.position);animateSoldier(M2.R,{wpn:PRIMARY==='shotgun'?'shotgun':'rifle',vx:0,vz:0,pitch:M2_PITCH,aim:0,crouch:0},dt);camera.position.copy(_m2cp);}
-  M2.spin.rotation.set(0.1+(M2.wPitch||0),M2.wYaw+M2.wIdle*Math.sin(M2.t*0.45)*(GS.on?0.25:0.4),0);   // on show: side-on, swinging gently (ARSENAL: and tilted as you left it)
+  M2.spin.rotation.set(0.1+(M2.wPitch||0),M2.wYaw+M2.wIdle*Math.sin(M2.t*0.45)*0.25,0);   // on show: side-on, swinging gently (ARSENAL: and tilted as you left it)
   M2.room.frame(M2.t);
   m2Layout(rdt);
   WROOT.visible=false;KROOT.visible=false;PROOT.visible=false;SROOT.visible=false;
@@ -8054,8 +7955,7 @@ if(LB.on){
    real numbers (core/gunstats.js: the server's own damage and ballistics). A choice is a draft shown at once on the
    weapon; GUARDAR keeps it (each model keeps its optic and camouflage), RESTABLECER goes back to what is saved, and
    leaving ARMAS with changes unsaved puts the saved ones back. ?arsenal=0 brings back the ARMAS of before. */
-{const q=location.search.match(/[?&]arsenal=([01])\b/);if(q)store.set('arsenalOld',q[1]==='0');}
-const GS={on:M2.on&&store.get('arsenalOld',false)!==true,tab:'stats',pick:null,draft:null,saved:null,cfg:null,msgT:0,ptr:new Map(),pinch:0};
+const GS={on:M2.on,tab:'stats',pick:null,draft:null,saved:null,cfg:null,msgT:0,ptr:new Map(),pinch:0};
 const gsClone=o=>JSON.parse(JSON.stringify(o));
 // what each model keeps (store: sniperduel_gsCfg). The optic and camouflage of the model in your hands are the game's
 // own (MIRA.id, your account's camouflage): the saved state always starts from them
@@ -8190,7 +8090,7 @@ function gsStatsHTML(){
       row('RECARGA',gsNum(S.reload,2)+' s')+row('APUNTAR',gsNum(S.ads,2)+' s')+row('VELOCIDAD DE LA BALA',S.speed+' m/s')+row('ALCANCE',S.maxRange+' m')+row('MOVILIDAD',gsNum(S.walk,2)+' m/s','con ella en la mano');}}
   const G=gsGun(),S=SDGunStats.sheet(G),H=SDGunStats.sheet(HALCON),own=G!==HALCON,silTxt=G.silenced?' Con silenciador, la bala sale un 8 % más lenta (solo contra bots).':'';
   // the bars compare the 5 rifles (the longest bar is the best of them; for times, sway and recoil, the lowest)
-  const pool=(BAL.on?Object.values(SD_CONFIG.rifles):[HALCON]).map(g=>SDGunStats.sheet(g));
+  const pool=Object.values(SD_CONFIG.rifles).map(g=>SDGunStats.sheet(g));
   const mx=k=>Math.max(...pool.map(x=>x[k])),mn=k=>Math.min(...pool.map(x=>x[k]));
   // the difference with the HALCÓN R7: green is better, red is worse (lowGood: less is better)
   const dl=(v,h,dp,u,lowGood)=>{if(!own||Math.abs(v-h)<1e-9)return '';const d=v-h,ok=lowGood?d<0:d>0;
@@ -8203,7 +8103,7 @@ function gsStatsHTML(){
   }
   const row=(l,v,s,p)=>'<div class="gsRow"><span>'+l+'</span><b>'+v+'</b>'+(p!=null?'<div class="gsBar"><i style="width:'+Math.round(Math.min(1,p)*100)+'%"></i></div>':'')+(s?'<small>'+e(s)+'</small>':'')+'</div>';
   const tS=SDGunStats.shotsToKill(S.dmg.torso),lS=SDGunStats.shotsToKill(S.dmg.legs),rec=g=>g.recoil?g.recoil.pitch:0;
-  const note=!BAL.on?'?balance=0: los 5 modelos con las cifras del HALCÓN R7.':own?'En color, frente al HALCÓN R7: verde mejor, rojo peor.':'';
+  const note=own?'En color, frente al HALCÓN R7: verde mejor, rojo peor.':'';
   const role=(G.role||'').toUpperCase()+(G.silenced?' · SILENCIADOR':'');
   return (note||silTxt?'<p class="gsNote">'+e((note+silTxt).trim())+'</p>':'')+(role?'<p class="gsRole">'+e(role)+'</p>':'')+
     row('DAÑO · CABEZA',S.dmg.head+dl(S.dmg.head,H.dmg.head),'elimina de '+shots(SDGunStats.shotsToKill(S.dmg.head)),S.dmg.head/S.hp)+
@@ -8231,7 +8131,7 @@ function gsSync(){
   document.querySelectorAll('.gsList [data-gc]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.gc===M2.cat)));
   document.querySelectorAll('#gsKnives .gsIt').forEach(b=>{b.setAttribute('aria-pressed',String(M2.cat==='knife'&&b.dataset.ws===d.knife));b.querySelector('em').hidden=b.dataset.ws!==s.knife;});
   if(rifle){const w=WSKINS.rifle[d.rifle],c=gsModelCfg(d,d.rifle),O=SDMiras.get(c.mira);
-    setText($('#gsName'),d.rifle==='halcon'?'HALCÓN R7':BAL.on?w.name:'HALCÓN R7 · '+w.name);
+    setText($('#gsName'),d.rifle==='halcon'?'HALCÓN R7':w.name);
     setText($('#gsSub'),'RIFLE DE CERROJO · '+w.tag+' · '+(O.name.includes(O.short)?O.name:O.name+' '+O.short));}
   else if(Cc){setText($('#gsName'),ci?ci.name:Cc.name);setText($('#gsSub'),ci?ci.title:Cc.sub+' · PRÓXIMAMENTE');}
   else{const k=WSKINS.knife[d.knife];setText($('#gsName'),k.name);setText($('#gsSub'),'CUERPO A CUERPO · '+k.tag);}
@@ -8257,8 +8157,7 @@ function gsSync(){
 function gsInit(){
   if(!GS.on)return;
   GS.cfg=gsLoadCfg();
-  const old=document.querySelector('#m2 .m2Pane[data-pane="armas"]:not(.gsPane)'),pane=document.querySelector('#m2 .gsPane');
-  old.dataset.pane='armasOld';old.hidden=true;pane.dataset.pane='armas';
+  document.querySelector('#m2 .gsPane').dataset.pane='armas';
   const item=(slot,id)=>{const w=WSKINS[slot][id],b=document.createElement('button');b.type='button';b.className='gsIt';b.dataset.ws=id;
     b.innerHTML='<img alt="" loading="lazy"><span><b></b><small></small><em hidden>EQUIPADO</em></span>';b.querySelector('img').src=wsImg(slot,id);
     b.querySelector('b').textContent=w.name;b.querySelector('small').textContent=w.tag;
@@ -8454,7 +8353,7 @@ async function perfRun(quick){
   const sw=Math.round(screen.width||innerWidth),sh=Math.round(screen.height||innerHeight),dpr=window.devicePixelRatio||1;
   const R={when:new Date().toLocaleString('es-ES'),build:BUILD_HASH,
     device:{model:SDPerf.deviceName(navigator.userAgent,sw,sh,dpr),screen:sw+'×'+sh,dpr,touch:isTouch,gpu:String(gpu).slice(0,80),webgl:gl2?2:1,maxTex,heapMB:performance.memory?Math.round(performance.memory.usedJSHeapSize/1048576):0},
-    settings:{quality:SETTINGS.quality,profile:String(GFX.profile).toUpperCase(),pixelRatio:SDQuality.pixelRatio(GFX.profile,dpr,1).toFixed(2),fpsCap:SETTINGS.fpsCap,hz:Math.round(GFX.hz||0),pueblo:PU4?(P4ON?'4.0':'3.1'):P3ON?'3.0':'clásico',flags:location.search.replace(/^\?/,'').replace(/(^|&)medir=[^&]*/,'')},
+    settings:{quality:SETTINGS.quality,profile:String(GFX.profile).toUpperCase(),pixelRatio:SDQuality.pixelRatio(GFX.profile,dpr,1).toFixed(2),fpsCap:SETTINGS.fpsCap,hz:Math.round(GFX.hz||0),pueblo:P4ON?'4.0':'3.1',flags:location.search.replace(/^\?/,'').replace(/(^|&)medir=[^&]*/,'')},
     load:{html:nav.responseEnd||0,dom:nav.domContentLoadedEventEnd||0,load:nav.loadEventEnd||0,firstFrame:PERF.first,mb:Math.round(res.reduce((a,e)=>a+size(e),0)/104857.6)/10,
       big:big.map(e=>({name:e.name.replace(/[?#].*$/,'').split('/').pop(),mb:Math.round(size(e)/104857.6)/10,ms:e.duration}))},
     maps};
@@ -8864,6 +8763,6 @@ function cgStart(){
 }
 cgStart();
 
-window.__SD={get RADAR(){return RADAR;},get MINI(){return MINI;},onKill,CARGA:CG,cgMem,sceneUpdate,audioInit,get MAT_ALL(){return MAT_ALL;},get GFX(){return GFX;},get BOX3(){return BOX3;},get GUNCFG(){return GUNCFG;},PRUEBAS,XRAY,xrayFrame,SLIDE2,PEN,penBox,spawnBullet,updateBullets,HALCON,BAL,rifleCfgFor,applyRifleCfg,gsGun,SIL,silCfg,silSaved,SFX,GUN,camLight,get gameTime(){return gameTime;},GSI,gsiDone,gsiRender,M2,m2Tab,m2Sync,m2Sleep,LB,lbRender,lbFrame,openSettings,closeSettings,MIRA,setMira,miraApply,miraClipGeo,miraRifle,openMiras,closeMiras,updateReticle,ENV,MOVE_CLASSIC,MOV_CLASSIC,VIS,VIS_COL,VIS_HULL,visOn,visFrame,visWho,selfHit,PROF,KTX2,R2_ON,R2_URL,PIC,GYRO,gyroEv,crossApply,btnPress,settingsChanged,perfTexMB(){const t=perfTextures();return {real:SDPerf.textureMB(t),asRGBA:SDPerf.textureMB(t.map(x=>Object.assign({},x,{bytes:0})))};},REMOTES,netScoreHud,shotTargets,MINI,miniLayer,miniPing,clockFrame,setOffTime,get OFF_TIME(){return OFF_TIME;},ACC,accRefresh,INV,invSync,camoApply,openInv,invOpenBox,WSKIN,WS_ST,setWskin,get RIF(){return RIF;},TPV,SELF,get PROFILE(){return PROFILE;},openProfile,endMatch,PJ_MIX,MIX_ORDER,SKINS,get SKIN(){return SKIN;},setSkin,pj2SetPack,rivalSkin,PERF,perfRun,HUD2,get H2(){return HUD2?H2:null;},leanIn:HUD2?leanIn:null,h2Frame:HUD2?h2Frame:null,PJ2,pj2Load,CASA,casaLoad,C2,C2B,C2J,C2S,casa2Load,BAR,barrioLoad,FLORA,RATS,RAT_WORLD,ratsFrame,SHADOW_FADE,setDuelLethal,get DUEL_LETHAL(){return DUEL_LETHAL;},gfxDiagText,get P3ON(){return P3ON;},PU4,COBCC,damagePlayer,TEX,sunFollow,setSunSnap(on){SUN_SNAP=!!on;},sun,P0,E10,e10Lod,DIAG,setTrainMove,LIGHT:{sun,hemi,skyMat,LOOK,P3},P3W,freeze(on){SIM_FREEZE=!!on;},SHOT,VMA,makeSoldier,animateSoldier,BOT_MAT,scene,camera,RemotePlayer,PMprev,PIS,PROOT,RIF,WROOT,SHO_:null,MANUAL,advance(ms){frameBody(last+ms);},get LAST_PELLETS(){return LAST_PELLETS;},SCORE,SCFG,SROOT,SHO,setPrimaryChoice,get PRIMARY(){return PRIMARY;},PCORE,PCFG,setWorld,WORLDS,get WORLD_ID(){return WORLD_ID;},renderer,GFX,gfxApply,get NET(){return NET;},get REMOTE(){return REMOTE;},W,get NAV(){return NAV;},setOffMap,get OFFMAP(){return OFFMAP;},TOUCH,EDIT,openEditor,get SETTINGS(){return SETTINGS;},get LAYOUT(){return LAYOUT;},checkOrientation,MAT,LOAD,TRAINERS,get RANGE_BOTS(){return RANGE_BOTS;},TRAIN,setTrain,setLethal,kitNote,GINS,TDIAG,AU,get TOUCH_EVENTS(){return TOUCH_EVENTS;},impactFX,bodyFX,get DECALS(){return DECALS;},surfaceOf,soundDelay,aimSelfTest,P,PM,WS,WCORE,RECOIL,AIM,BOTS,DUMMIES,BULLETS,EVENTS,PARTS,STATS,get state(){return state;},get mode(){return mode;},setMode,input,startMatch,simTick,frame,toMenu,pause,resume,CASAS,casasSolid,FUENTE};
+window.__SD={get RADAR(){return RADAR;},get MINI(){return MINI;},onKill,CARGA:CG,cgMem,sceneUpdate,audioInit,get MAT_ALL(){return MAT_ALL;},get GFX(){return GFX;},get BOX3(){return BOX3;},get GUNCFG(){return GUNCFG;},PRUEBAS,XRAY,xrayFrame,SLIDE2,PEN,penBox,spawnBullet,updateBullets,HALCON,rifleCfgFor,applyRifleCfg,gsGun,SIL,silCfg,silSaved,SFX,GUN,camLight,get gameTime(){return gameTime;},GSI,gsiDone,gsiRender,M2,m2Tab,m2Sync,m2Sleep,LB,lbRender,lbFrame,openSettings,closeSettings,MIRA,setMira,miraApply,miraClipGeo,miraRifle,openMiras,closeMiras,updateReticle,ENV,VIS,VIS_COL,VIS_HULL,visOn,visFrame,visWho,selfHit,PROF,KTX2,R2_ON,R2_URL,PIC,GYRO,gyroEv,crossApply,btnPress,settingsChanged,perfTexMB(){const t=perfTextures();return {real:SDPerf.textureMB(t),asRGBA:SDPerf.textureMB(t.map(x=>Object.assign({},x,{bytes:0})))};},REMOTES,netScoreHud,shotTargets,MINI,miniLayer,miniPing,clockFrame,setOffTime,get OFF_TIME(){return OFF_TIME;},ACC,accRefresh,INV,invSync,camoApply,openInv,invOpenBox,WSKIN,WS_ST,setWskin,get RIF(){return RIF;},TPV,SELF,get PROFILE(){return PROFILE;},openProfile,endMatch,PJ_MIX,MIX_ORDER,SKINS,get SKIN(){return SKIN;},setSkin,pj2SetPack,rivalSkin,PERF,perfRun,HUD2:true,get H2(){return H2;},leanIn,h2Frame,PJ2,pj2Load,CASA,casaLoad,C2,C2B,C2J,C2S,casa2Load,BAR,barrioLoad,FLORA,RATS,RAT_WORLD,ratsFrame,SHADOW_FADE,setDuelLethal,get DUEL_LETHAL(){return DUEL_LETHAL;},gfxDiagText,get P3ON(){return P3ON;},PU4,COBCC,damagePlayer,TEX,sunFollow,setSunSnap(on){SUN_SNAP=!!on;},sun,P0,E10,e10Lod,DIAG,setTrainMove,LIGHT:{sun,hemi,skyMat,LOOK,P3},P3W,freeze(on){SIM_FREEZE=!!on;},SHOT,VMA,makeSoldier,animateSoldier,BOT_MAT,scene,camera,RemotePlayer,PMprev,PIS,PROOT,RIF,WROOT,SHO_:null,MANUAL,advance(ms){frameBody(last+ms);},get LAST_PELLETS(){return LAST_PELLETS;},SCORE,SCFG,SROOT,SHO,setPrimaryChoice,get PRIMARY(){return PRIMARY;},PCORE,PCFG,setWorld,WORLDS,get WORLD_ID(){return WORLD_ID;},renderer,GFX,gfxApply,get NET(){return NET;},get REMOTE(){return REMOTE;},W,get NAV(){return NAV;},setOffMap,get OFFMAP(){return OFFMAP;},TOUCH,EDIT,openEditor,get SETTINGS(){return SETTINGS;},get LAYOUT(){return LAYOUT;},checkOrientation,MAT,LOAD,TRAINERS,get RANGE_BOTS(){return RANGE_BOTS;},TRAIN,setTrain,setLethal,kitNote,GINS,TDIAG,AU,get TOUCH_EVENTS(){return TOUCH_EVENTS;},impactFX,bodyFX,get DECALS(){return DECALS;},surfaceOf,soundDelay,aimSelfTest,P,PM,WS,WCORE,RECOIL,AIM,BOTS,DUMMIES,BULLETS,EVENTS,PARTS,STATS,get state(){return state;},get mode(){return mode;},setMode,input,startMatch,simTick,frame,toMenu,pause,resume,CASAS,casasSolid,FUENTE};
 })();
 </script>

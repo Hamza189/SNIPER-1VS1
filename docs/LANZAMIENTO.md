@@ -38,6 +38,34 @@ todo eso en un archivo aparte, pero que se vea limpio y profesional». Se hace p
 - **Créditos y licencias en su propia página**: `creditos.html` (personajes, armas, Poly Haven, three.js, Basis Universal,
   tipografías), enlazada al pie de AJUSTES junto a Privacidad.
 
+## Fase 3 — Versiones antiguas borradas (24-11-2026)
+Del propietario, a la pregunta «¿borro también las versiones antiguas que solo siguen por banderas del enlace?»: «Sí,
+bórralas». Antes de tocar nada, todo quedó guardado en la etiqueta git **`antes-de-limpiar-2026-11-24`** (subida a
+GitHub): cualquier versión se puede recuperar de ahí.
+
+| Ya no existe | Qué era | Lo que queda |
+|---|---|---|
+| `?menu=1` | el menú principal de antes | el MENÚ 2 (sus bloques ocultos de `#menu .menuInner` siguen: son los controles del juego que se mueven a OPCIONES DE PARTIDA) |
+| `?hud=1` | el HUD táctil y de PC de antes | el HUD 2 (`client/layout.js` sigue: el HUD 2 se apoya en él) |
+| `?arsenal=0` | la sección ARMAS de antes (filas de miras, skins y cuchillos) | el ARSENAL; fuera su HTML, su CSS y su código |
+| `?balance=0` | las cifras del HALCÓN para los 5 modelos | cada rifle con las suyas |
+| `?desliz=0` | el deslizamiento de antes en tu 3ª persona | el de piernas por delante (en línea, el rival sigue con el de siempre) |
+| `?mov=clasico` | el movimiento de antes (4,6 m/s) | el TÁCTICO del servidor |
+| `?feel=2` | un experimento de sensaciones de arma nunca aprobado | — |
+| `?caja=0` | forzar la caja de CAJAS en CSS | la ATLAS DROP en 3D (la de CSS sigue de reserva si falla WebGL) |
+| `?perfil=1` | PERFIL sin personajes | PERFIL con los personajes |
+| `?pueblo=0` / `=3` / `=4`, `?sur=0`, `?pueblo4=0`, `?town=0`, `?e10=0`, `?suelo=0` / `p0`, `?adoquin=0`, `?casas=0`, `?fuente=0` | el pueblo de antes y sus partes (PUEBLO 2.0, 3.0, 3.1, el suelo y el adoquín de antes, las cajas macizas, el agua plana) | **PUEBLO 4.0 siempre**. El enlace de invitación ya no lleva `&pueblo=4` |
+
+- **Servidor sin cambios.** Su mapa `pueblo` (el de antes) se queda para las páginas viejas que aún lo pidan:
+  `tools/export-map.js` lo copia tal cual de `core/mapdata.js` en lugar de generarlo. Si una sala usa ese mapa (creada
+  desde una página vieja), esta página sale de ella con el aviso «ESA SALA USA EL PUEBLO ANTIGUO: EL ANFITRIÓN TIENE QUE
+  RECARGAR LA PÁGINA», en lugar de dibujar un pueblo mientras el servidor juega en otro.
+- Se quedan las banderas de diagnóstico y pruebas (`?carga=1`, `?lobby=1`, `?perf=low`, `?pj=0`, `?ktx2=0`, `?gpuauto=0`,
+  `?prof=1`, `?medir`, `?server`, `?sala`…) y las opciones aún por decidir (`?fachada=cc0`, `?casa2v=2/3`, `?pulido=1`).
+- Pruebas puestas al día: `touch.smoke` pasa con el HUD 2 (el entorno simulado ya distingue un botón de la barra de
+  armas); `menu2`, `arsenal`, `rifles`, `gamefeel`, `hud2`, `cover`, `e10`, `fauna`, `p0`, `casas` y `pueblo4.online`
+  ya no comprueban las versiones quitadas.
+
 ## Fallos encontrados por el camino
 - **Error de sintaxis** al quitar el «PRÓXIMAMENTE» del ARSENAL (un `else` suelto): la página no arrancaba. Corregido
   antes de publicar; lo cazó la batería completa.

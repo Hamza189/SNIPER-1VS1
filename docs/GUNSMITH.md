@@ -1,5 +1,7 @@
 # GUNSMITH 2.0: el ARSENAL (08-11-2026)
 
+> **24-11-2026:** ARMAS de antes (`?arsenal=0`) y las cifras de antes (`?balance=0`) se quitaron; el ARSENAL es ARMAS y cada rifle lleva sus cifras, también en línea (copia en la etiqueta git `antes-de-limpiar-2026-11-24`).
+
 **Estado:**
 - **23-11-2026 — rifles con sus cifras también EN LÍNEA** (aprobado por el propietario: «Sí, cada rifle con sus cifras»).
   Lo de abajo que dice «en línea, siempre el HALCÓN» es la historia; detalle en `docs/LANZAMIENTO.md`. El silenciador

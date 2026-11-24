@@ -36,7 +36,7 @@ async function dumpWorld(page, id) {
     __SD.setWorld(prev); return res;
   }, id || null);
 }
-// maps: { pueblo: dump, arena: dump }. The module keeps the town at the top level (older code)
+// maps: { pueblo: (frozen, 24-11-2026), arena: dump, …, pueblo4: dump }. The module keeps 'pueblo' at the top level (older code)
 // and every map under .maps
 function toModule(maps) {
   const pack = d => Object.assign({ tris: d.tris, ds: d.ds, colliders: d.colliders, ramps: d.ramps, nav: d.nav, pen: d.pen || [] }, d.spawns ? { spawns: d.spawns } : {}, d.navReach ? { navReach: d.navReach } : {});
@@ -51,15 +51,16 @@ async function main() {
   const S = await require('./static-server.js').start();
   const b = await chromium.launch({ args: ['--use-angle=swiftshader', '--enable-unsafe-swiftshader'] });
   const p = await b.newPage(); await p.route(/fonts\.(googleapis|gstatic)\.com/, r => r.abort());
-  await p.goto(S.url + '?pueblo=0'); await p.waitForFunction(() => window.__SD && __SD.W && __SD.W.ray.length > 0);
+  await p.goto(S.url + '?carga=1', { timeout: 180000 }); await p.waitForFunction(() => window.__SD && __SD.W && __SD.W.ray.length > 0, null, { timeout: 180000 });
   // worlds marked local (CASA ATLAS XL, client only until the owner approves deploying it) are not sent to the server
   const ids = await p.evaluate(() => Object.keys(__SD.WORLDS).filter(id => !__SD.WORLDS[id].local));
-  const maps = {}; for (const id of ids) maps[id] = await dumpWorld(p, id);
-  // PUEBLO 4.0 (17-11-2026): the page builds it only with ?pueblo=4 (its houses change collisions), so it is dumped from a
-  // second, fresh page and goes to the server as its own map, 'pueblo4'
-  { const ctx = await b.newContext(); await ctx.route(/fonts\.(googleapis|gstatic)\.com/, r => r.abort()); const p4 = await ctx.newPage();
-    await p4.goto(S.url + '?pueblo=4', { timeout: 180000 }); await p4.waitForFunction(() => window.__SD && __SD.W && __SD.W.ray.length > 0, null, { timeout: 180000 });
-    maps.pueblo4 = await dumpWorld(p4, 'pueblo'); ids.push('pueblo4'); await ctx.close(); }
+  /* (24-11-2026) the page builds only PUEBLO 4.0, which goes to the server as 'pueblo4'. The town of before ('pueblo') is
+     no longer built by the page (owner: «sí, bórralas»): the server keeps it exactly as it was, for pages of before, so
+     it is copied from the current core/mapdata.js. Same order as always: 'pueblo' first, 'pueblo4' last. */
+  const frozen = require(path.join(__dirname, '..', 'core', 'mapdata.js')).maps.pueblo;
+  const maps = { pueblo: frozen }; let p4 = null;
+  for (const id of ids) { const d = await dumpWorld(p, id); if (id === 'pueblo') p4 = d; else maps[id] = d; }
+  maps.pueblo4 = p4; ids.push('pueblo4');
   await b.close(); S.close();
   fs.writeFileSync(path.join(__dirname, '..', 'core', 'mapdata.js'), toModule(maps));
   for (const id of ids) { const d = maps[id]; console.log('core/mapdata.js [' + id + ']: ' + d.tris.length / 9 + ' triángulos, ' + d.colliders.length + ' cajas, ' + d.ramps.length + ' rampas, ' + d.nav.length + ' puntos'); }

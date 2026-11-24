@@ -1,5 +1,7 @@
 # PUEBLO 3.1 — el pueblo entero en 3.0, 8 casas habitables y la fuente nueva (14-11-2026)
 
+> **24-11-2026:** `?sur=0` y el pueblo de antes se quitaron: PUEBLO es siempre el 4.0 (`docs/LANZAMIENTO.md`, Fase 3).
+
 Petición del propietario (14-11): «mejora el mapa PUEBLO 3.0 mucho más, revisa cada textura, edificio, raya, todo,
 mejora fluidez, integra estas casas y pásame un .glb, haz más edificios habitables… y mejórame la fuente del medio, el
 agua parece de Minecraft». Hecho en la rama local `pueblo-mejoras` (encima de `casas-habitables`), **sin push y sin

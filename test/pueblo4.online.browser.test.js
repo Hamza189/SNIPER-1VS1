@@ -1,7 +1,7 @@
-/* PUEBLO 4.0 EN LÍNEA (17-11-2026): dos navegadores reales con ?pueblo=4 contra el servidor Node de verdad.
-   - A crea la sala con ?pueblo=4 y elige PUEBLO: el servidor juega su mapa 'pueblo4' y la página lo ve como 'pueblo'
-   - el enlace de invitación lleva &pueblo=4
-   - B entra con el enlace SIN la bandera: su página se recarga sola con ?pueblo=4 y vuelve a la sala
+/* PUEBLO 4.0 EN LÍNEA (17-11-2026): dos navegadores reales contra el servidor Node de verdad. Desde el 24-11-2026 la
+   página solo dibuja PUEBLO 4.0 (el de antes, ?pueblo=0, se quitó).
+   - A crea la sala y elige PUEBLO: el servidor juega su mapa 'pueblo4' y la página lo ve como 'pueblo'
+   - B entra con el enlace de invitación y llega con el mismo pueblo
    - en la partida, A entra andando por la puerta oeste de la ENCALADA y el servidor lo deja dentro (con el mapa
      'pueblo' de siempre la casa es una caja maciza y se quedaría fuera)
    Run: node test/pueblo4.online.browser.test.js   (WebGL por software: no mide FPS) */
@@ -32,25 +32,24 @@ async function until(page, fn, arg, ms) { try { await page.waitForFunction(fn, a
   };
   try {
     console.log('\nPUEBLO 4.0 EN LÍNEA (servidor local)');
-    const A = await open('&pueblo=4');
-    check('A con ?pueblo=4: casas habitables y PUEBLO 4.0 cargados', await A.evaluate(() => __SD.CASAS.on && __SD.P3ON));
+    const A = await open('');
+    check('A: casas habitables y PUEBLO 4.0 cargados', await A.evaluate(() => __SD.CASAS.on && __SD.P3ON));
     await A.click('#m2 .m2Mode[data-sel=online]'); await A.click('#m2Play'); await A.fill('#mpName', 'Hamza'); await A.click('#mpCreate');
     check('A crea la sala', await until(A, () => /^[A-Z0-9]{6}$/.test(document.getElementById('mpCodeBig').textContent)));
     const code = await A.textContent('#mpCodeBig'), link = await A.textContent('#mpLink');
-    check('el enlace de invitación lleva &pueblo=4', link.endsWith('?sala=' + code + '&pueblo=4'), link);
+    check('el enlace de invitación lleva el código de la sala', link.endsWith('?sala=' + code), link);
     const maps = await A.evaluate(() => __SD.NET.N.maps);
     check("la página de A no ofrece el PUEBLO clásico ni ve 'pueblo4' (lo llama 'pueblo')", maps.includes('pueblo') && !maps.includes('pueblo4') && maps.filter(m => m === 'pueblo').length === 1, JSON.stringify(maps));
     await A.click('#mpMapSeg button[data-map="pueblo"]');
     check("A elige PUEBLO: el servidor pone su mapa 'pueblo4'", await until(A, () => __SD.NET.N.mapSrv === 'pueblo4' && __SD.NET.N.map === 'pueblo') && srv.rooms.get(code).debug.mapId === 'pueblo4', srv.rooms.get(code).debug.mapId);
-    // B joins with a link WITHOUT the flag: the page must reload itself with ?pueblo=4 and rejoin
-    const B = await open('&sala=' + code + '&pueblo=0');   // B comes with the town of before (?pueblo=0)
-    check('B (con ?pueblo=0) empieza con el PUEBLO de antes', await B.evaluate(() => !__SD.CASAS.on));
+    // B joins with the invitation link
+    const B = await open('&sala=' + code);
+    check('B llega con PUEBLO 4.0 (casas habitables)', await B.evaluate(() => __SD.CASAS.on && __SD.P3ON));
     await until(B, c => document.getElementById('mpCode').value === c, code);
     await B.fill('#mpName', 'Novia'); await B.click('#mpJoin');
-    const back = await until(B, () => /[?&]pueblo=4\b/.test(location.search + '') || (window.__SD && __SD.CASAS && __SD.CASAS.on), null, 60000);
     await B.waitForFunction(() => window.__SD && __SD.NET && __SD.NET.N && __SD.NET.N.phase === 'lobby', null, { timeout: 180000 }).catch(() => {});
     const bs = await B.evaluate(() => ({ casas: __SD.CASAS.on, map: __SD.NET.N && __SD.NET.N.map, srv: __SD.NET.N && __SD.NET.N.mapSrv }));
-    check('B se recarga sola con ?pueblo=4 y vuelve a la sala', back && bs.casas && bs.map === 'pueblo' && bs.srv === 'pueblo4', JSON.stringify(bs));
+    check("B entra en la sala: ve 'pueblo' y el servidor juega 'pueblo4'", bs.casas && bs.map === 'pueblo' && bs.srv === 'pueblo4', JSON.stringify(bs));
     check('los dos en la sala', await until(A, () => (__SD.NET.N.players || []).filter(Boolean).length === 2, null, 20000));
     await A.click('#mpReady'); await B.click('#mpReady');
     check("los dos juegan en PUEBLO 4.0 y el servidor en 'pueblo4'", await until(A, () => __SD.WORLD_ID === 'pueblo' && __SD.NET.N.phase === 'playing', null, 20000) && await until(B, () => __SD.WORLD_ID === 'pueblo' && __SD.NET.N.phase === 'playing', null, 20000) && srv.rooms.get(code).debug.mapId === 'pueblo4');
