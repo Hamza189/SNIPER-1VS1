@@ -28,9 +28,13 @@ queda corto para un juego tan pesado); se sigue en GitHub Pages y Cloudflare Pag
 - `.github/workflows/pages.yml` usa el mismo script: una sola lista para los dos sitios.
 - Medido en local: 258 MB, 703 archivos, ninguno > 20 MiB (Cloudflare admite 20 000 archivos y 25 MiB cada uno).
   Probada la regla de los 25 MiB con archivos falsos de 26 MiB.
-- **Falta (propietario, en el panel):** Workers y Pages › `sniper-1vs1` › Configuración › Compilación: comando
-  `bash tools/pagina-publica.sh`, carpeta de salida `_site`; y «Reintentar implementación».
-- Estado: IMPLEMENTADO · PROBADO EN LOCAL · PENDIENTE DEL AJUSTE EN EL PANEL DE CLOUDFLARE.
+- El propietario puso en el panel (Workers y Pages › `sniper-1vs1` › Configuración › Compilación) el comando
+  `bash tools/pagina-publica.sh` y la salida `_site`, y reintentó: `03f8bb9` publicado en https://sniper-1vs1.pages.dev
+  (antes seguía la versión del 12-10: todas las de después habían fallado). Comprobado: `version.json` = el de GitHub
+  Pages; `wrangler.toml`, `package.json` y el `.exr` ya no están (la dirección devuelve la página).
+- Online desde `sniper-1vs1.pages.dev` todavía no: el servidor solo acepta `hamza189.github.io` (`ALLOWED_ORIGINS` en
+  `wrangler.toml`), y Entrar con Google necesitaría también ese origen en Google Cloud.
+- Estado: IMPLEMENTADO · PUBLICADO EN LOS DOS SITIOS (GitHub Pages y Cloudflare Pages).
 
 ## 24-11-2026 — Versiones antiguas borradas
 El propietario, a «¿borro también las versiones antiguas que solo siguen por banderas del enlace?»: «Sí, bórralas».
@@ -264,7 +268,7 @@ lo de por defecto en el móvil. Detalle: `docs/KTX2.md`.
 | Multiplataforma (web + .exe + iPhone + Android) y monetización cosmética — plan en `SNIPER_DUEL_ROADMAP.md` | FUTURO |
 | Subir de 60 a 120–144 FPS en PC (dificultad media; en el navegador lo limita la frecuencia de la pantalla) | FUTURO |
 | Gráficos de CASA ATLAS XL, poco a poco (cuando haya uso de Codex) | APARCADO |
-| Cloudflare Pages `sniper-1vs1`: el script `tools/pagina-publica.sh` ya existe (24-11); falta poner en el panel el comando `bash tools/pagina-publica.sh` y la salida `_site` | PENDIENTE DEL PROPIETARIO |
+| Cloudflare Pages `sniper-1vs1` publica bien desde el 24-11; para jugar online desde ahí falta añadir `https://sniper-1vs1.pages.dev` a `ALLOWED_ORIGINS` (y a Google Cloud para Entrar con Google) | PENDIENTE DE DECISIÓN |
 | Armas clásicas como aspectos opcionales | SIN EMPEZAR |
 
 ### Hecho y publicado (18–19 de octubre de 2026)
