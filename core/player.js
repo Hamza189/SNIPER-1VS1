@@ -20,10 +20,12 @@ function create(x, y, z, rifle, knife, pistol, shotgun) {
 // the gun in hand (rifle, shotgun or pistol); with the knife out, the rifle (for ADS/reload flags: never set)
 function activeGun(p) { const a = p.load.active; return a === 'pistol' ? p.pw : a === 'shotgun' && p.sw ? p.sw : p.w; }
 // put a player back at a spawn point with fresh guns (multiplayer respawn / rematch);
-// primary: 'rifle' | 'shotgun' for this life (omitted: keep the current one)
-function respawn(p, x, y, z, primary) {
+// primary: 'rifle' | 'shotgun' for this life (omitted: keep the current one); rifle: the figures of the rifle model
+// carried for this life (core/config.js rifles.*; omitted: keep the current one)
+function respawn(p, x, y, z, primary, rifle) {
   Object.assign(p.ms, M.createState(x, y, z));
   if (primary) Me.setPrimary(p.load, primary);
+  if (rifle) p.w.cfg = rifle;
   Wp.resetForSpawn(p.w); if (p.pw) Wp.resetForSpawn(p.pw); if (p.sw) Wp.resetForSpawn(p.sw); Me.resetLoadout(p.load);
 }
 function step(p, cmd, dt, world, moveCfg) {

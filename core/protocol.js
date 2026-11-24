@@ -9,6 +9,9 @@
      go      { t }                           lobby, host with hs only: start now (2/2 people, everyone ready)
      map     { t, id }                       lobby, creator only: choose the map ('pueblo', 'arena', 'casa', 'casa2')
      kit     { t, id }                       my primary: 'rifle' (HALCÓN R7) or 'shotgun' (FURIA 12), used from my next spawn
+     rifle   { t, id }                       my rifle model, used from my next spawn with its own figures (core/config.js
+                                             rifles.*, approved online by the owner on 23-11-2026): 'halcon', 'titan',
+                                             'ultima', 'vector' or 'sahara'
      skin    { t, id }                       my character (looks only): 'soldado', 'clasico', 'swat', 'fsb', 'militar', 'ridge' or 'amber'
      acct    { t, tok }                      my cloud account session (optional): title in the lobby, box points
      cfg     { t, kills, time, mode?, bots?, diff?, size? }   lobby, creator only: kills to win (5/10/20/30), minutes
@@ -28,6 +31,8 @@
 const VERSION = 1;
 // characters a player can show (looks only: the hit zones are the same for all)
 const SKINS = ['clasico', 'swat', 'fsb', 'militar', 'soldado', 'ridge', 'amber'];
+// rifle models (core/config.js rifles.*): each one with its own damage, bolt, magazine, reload, aim time, bullet and weight
+const RIFLES = ['halcon', 'titan', 'ultima', 'vector', 'sahara'];
 const LIMITS = {
   maxBytes: 4096,          // a bigger message is dropped
   maxMsgPerSec: 90,        // per connection; more is dropped, far more closes the socket
@@ -102,6 +107,7 @@ function parse(text) {
       return { msg: { t: 'in', m: m.m, s: m.s, c } };
     }
     case 'kit': return m.id === 'rifle' || m.id === 'shotgun' ? { msg: { t: 'kit', id: m.id } } : { error: 'shape' };
+    case 'rifle': return RIFLES.includes(m.id) ? { msg: { t: 'rifle', id: m.id } } : { error: 'shape' };
     case 'skin': return SKINS.includes(m.id) ? { msg: { t: 'skin', id: m.id } } : { error: 'shape' };
     case 'acct': return typeof m.tok === 'string' && /^SD-[A-Z2-9]{4}-[A-Z2-9]{4}\.[A-Za-z0-9_-]{20,64}$/.test(m.tok) ? { msg: { t: 'acct', tok: m.tok } } : { error: 'shape' };
     case 'cfg': {
@@ -127,6 +133,6 @@ function isCode(s) { return typeof s === 'string' && s.length === 6 && [...s].ev
 function codeFrom(bytes) { let s = ''; for (let i = 0; i < 6; i++) s += CODE_ALPHABET[bytes[i] % CODE_ALPHABET.length]; return s; }
 function tokenFrom(bytes) { const A = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_'; let s = ''; for (const b of bytes) s += A[b & 63]; return s; }
 
-const SDProto = { VERSION, SKINS, LIMITS, B, quantize, packCmd, unpackCmd, parse, cleanName, CODE_ALPHABET, isCode, codeFrom, tokenFrom };
+const SDProto = { VERSION, SKINS, RIFLES, LIMITS, B, quantize, packCmd, unpackCmd, parse, cleanName, CODE_ALPHABET, isCode, codeFrom, tokenFrom };
 if (typeof module !== 'undefined' && module.exports) module.exports = SDProto; else root.SDProto = SDProto;
 })(typeof window !== 'undefined' ? window : globalThis);

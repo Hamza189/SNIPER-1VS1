@@ -47,6 +47,10 @@ function create(opts) {
   // my primary ('rifle' | 'shotgun'): the server uses it from my next spawn, and so does my prediction
   N.kit = 'rifle';
   N.chooseKit = id => { if (id !== 'rifle' && id !== 'shotgun') return; N.kit = id; out({ t: 'kit', id }); };
+  // my rifle model: the server gives me its figures from my next spawn, and so does my prediction
+  N.rifle = 'halcon';
+  N.chooseRifle = id => { if (!PR.RIFLES.includes(id)) return; N.rifle = id; out({ t: 'rifle', id }); };
+  N.rifleCfg = () => CFG.rifles[N.rifle] || CFG.rifles.halcon;
   N.skin = null;
   N.chooseSkin = id => { if (!['clasico', 'swat', 'fsb', 'militar', 'soldado', 'ridge', 'amber'].includes(id)) return; N.skin = id; out({ t: 'skin', id }); };
   N.account = tok => { if (typeof tok === 'string') out({ t: 'acct', tok }); };   // my cloud account (server/accounts.js)
@@ -127,7 +131,7 @@ function create(opts) {
         N.rules = m.rules || {}; N.timeLeft = N.rules.timeMs || null; N.mode = N.rules.mode || 'duelo'; N.teams = m.teams || null;
         if (!m.resume) { N.remotes = {}; N.ops = []; N.tsc = N.mode === 'equipos' ? { rojo: 0, azul: 0 } : null; }
         if (!m.resume) { N.pending = []; N.outBuf = []; N.lastAck = -1; N.remote = []; N.score = { A: 0, B: 0 }; N.seenShots.clear(); N.corrMax = 0;
-          SDP.respawn(N.local, m.spawn.x, 0, m.spawn.z, N.kit); }   // same spawn as the server: no correction on the first snapshot
+          SDP.respawn(N.local, m.spawn.x, 0, m.spawn.z, N.kit, N.rifleCfg()); }   // same spawn as the server: no correction on the first snapshot
         else { N.lastAck = m.lastSeq; N.pending = N.pending.filter(p => p.seq > m.lastSeq); }
         N.alive = true; N.hp = 100;
         ev.push({ k: 'start', m }); break;
@@ -159,7 +163,7 @@ function create(opts) {
           if (e.k === 'over') N.phase = 'over';
           if (e.k === 'hit' && e.to === N.you) N.hp = e.hp;
           if (e.k === 'kill' && e.to === N.you) N.alive = false;
-          if (e.k === 'respawn' && e.id === N.you) { N.alive = true; N.hp = 100; N.pending = []; SDP.respawn(N.local, e.x, 0, e.z, N.kit); }
+          if (e.k === 'respawn' && e.id === N.you) { N.alive = true; N.hp = 100; N.pending = []; SDP.respawn(N.local, e.x, 0, e.z, N.kit, N.rifleCfg()); }
           ev.push(e);
         }
         break;

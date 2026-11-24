@@ -419,6 +419,29 @@ console.log('\nESCOPETA FURIA 12 ONLINE');
   A.N.ready(true); B.N.ready(true); S.until(() => A.N.phase === 'playing' && B.N.phase === 'playing', 6000);
   check('la partida empieza con la escopeta en la mano de B (servidor y su predicción)', S.room.seats.B.p.load.active === 'shotgun' && B.local.load.active === 'shotgun' && S.room.seats.A.p.load.active === 'rifle');
 }
+console.log('\nRIFLES CON SUS CIFRAS ONLINE (aprobado el 23-11-2026)');
+{ const S = createSim({ maps: 'arena', latency: 30 });
+  let shoot = false;
+  const A0 = S.addClient('Hamza'), B0 = S.addClient('Novia');
+  A0.N.hello('Hamza'); S.run(100); B0.N.hello('Novia'); S.run(100);
+  B0.N.chooseRifle('vector'); S.run(100);
+  check('un modelo inventado se rechaza', PR.parse(JSON.stringify({ t: 'rifle', id: 'bazooka' })).error === 'shape' && PR.parse(JSON.stringify({ t: 'rifle', id: 'titan' })).msg.id === 'titan');
+  A0.N.ready(true); B0.N.ready(true); S.until(() => A0.N.phase === 'playing' && B0.N.phase === 'playing', 6000);
+  check('B elige el VECTOR en la sala: empieza con sus 6 balas (servidor y predicción)', S.room.seats.B.p.w.cfg === CFG.rifles.vector && B0.local.w.cfg === CFG.rifles.vector && S.room.seats.B.p.w.ammo === 6 && B0.local.w.ammo === 6 && S.room.seats.A.p.w.cfg === CFG.rifles.halcon);
+}
+{ const S = createSim({ maps: 'arena', latency: 30 });
+  let shoot = false;
+  const { A, B } = S.setupMatch((c, S) => { const s = S.room.seats.B.p.ms; return Object.assign(lookAt(c, [s.x, s.y + 1.17, s.z]), { fire: shoot, adsHeld: true }); }, () => ({ yaw: Math.PI / 2 }));
+  A.N.chooseRifle('ultima'); S.run(300);
+  check('cambiar de modelo en mitad de la vida no cambia las cifras todavía', S.room.seats.A.rifle === 'ultima' && S.room.seats.A.p.w.cfg === CFG.rifles.halcon && A.local.w.cfg === CFG.rifles.halcon);
+  S.room.debug.seat('A').alive = false; S.room.debug.seat('A').diedAt = S.room.now; S.run(3500);
+  check('al reaparecer, A lleva la ÚLTIMA: 5 balas y su cerrojo (servidor y cliente)', S.room.seats.A.alive && S.room.seats.A.p.w.cfg === CFG.rifles.ultima && A.local.w.cfg === CFG.rifles.ultima && S.room.seats.A.p.w.ammo === 5 && A.local.w.ammo === 5);
+  S.room.debug.place('A', -10, -3, -Math.PI / 2); S.room.debug.place('B', 10, -3, Math.PI / 2); S.run(900); A.N.corrMax = 0;
+  const h0 = evs(A, 'hit').length; shoot = true; S.run(9); shoot = false; S.run(600);
+  const h = evs(A, 'hit')[h0];
+  check('a 20 m al pecho la ÚLTIMA hace su daño (' + CFG.rifles.ultima.dmg.torso + ', el HALCÓN ' + CFG.rifles.halcon.dmg.torso + ')', h && h.part === 'torso' && h.dmg === CFG.rifles.ultima.dmg.torso, h && h.part + ' ' + h.dmg);
+  check('balas iguales en cliente y servidor, sin correcciones', A.local.w.ammo === S.room.seats.A.p.w.ammo && A.local.w.ammo === 4 && A.N.corrMax < 1e-6, A.local.w.ammo + ' / ' + S.room.seats.A.p.w.ammo + ' corr ' + A.N.corrMax.toExponential(1));
+}
 { // the character (looks only): each player sees the other's choice; nothing else changes
   const S = createSim({ maps: 'arena' });
   const A = S.addClient('Hamza'), B = S.addClient('Novia');

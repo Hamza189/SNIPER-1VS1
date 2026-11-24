@@ -106,10 +106,10 @@ function create(opts) {
   function save() {
     if (!R.persist) return;
     R.persist({ code: R.code, map: mapId, cfg: R.cfg, phase: R.phase === 'playing' || R.phase === 'countdown' || R.phase === 'paused' ? 'interrupted' : R.phase, match: R.match,
-      seats: humans().sort((a, b) => a.order - b.order).map(s => ({ id: s.id, name: s.name, token: s.token, kills: s.kills, deaths: s.deaths, kit: s.kit, skin: s.skin, team: s.team || undefined })) });
+      seats: humans().sort((a, b) => a.order - b.order).map(s => ({ id: s.id, name: s.name, token: s.token, kills: s.kills, deaths: s.deaths, kit: s.kit, rifle: s.rifle, skin: s.skin, team: s.team || undefined })) });
   }
   function newSeat(id, name, token) {
-    return { id, name: name || ('JUGADOR ' + (SEATS.indexOf(id) + 1)), token, conn: null, ready: false, leftAt: 0, kit: 'rifle', skin: null, team: null, bot: null, away: false, hostBtn: false,
+    return { id, name: name || ('JUGADOR ' + (SEATS.indexOf(id) + 1)), token, conn: null, ready: false, leftAt: 0, kit: 'rifle', rifle: 'halcon', skin: null, team: null, bot: null, away: false, hostBtn: false,
       p: SDP.create(0, 0, 0), hp: RULES.hp, alive: false, diedAt: 0, lastHit: -1e9, kills: 0, deaths: 0,
       lastSeq: -1, budget: PR.LIMITS.cmdBurst, budgetAt: R.now, yaw: 0, pitch: 0, shots: 0, hits: 0, hs: 0 };
   }
@@ -158,7 +158,7 @@ function create(opts) {
     return { x: best.x, z: best.z, yaw: Math.atan2(best.x, best.z) };
   }
   function placeSeat(s, sp) {
-    SDP.respawn(s.p, sp.x, 0, sp.z, s.kit); s.hist = [];   // the chosen primary takes effect at every spawn
+    SDP.respawn(s.p, sp.x, 0, sp.z, s.kit, CFG.rifles[s.rifle] || GUN); s.hist = [];   // the chosen primary and rifle model take effect at every spawn
     s.yaw = sp.yaw; s.pitch = 0; s.hp = RULES.hp; s.alive = true; s.lastHit = -1e9;
   }
 
@@ -336,6 +336,9 @@ function create(opts) {
       case 'kit':   // my primary for my next spawn (any time: the rival sees it in the lobby)
         if (s.kit !== m.id) { s.kit = m.id; if (between) sendAll(lobbyMsg()); save(); }
         break;
+      case 'rifle': // my rifle model (its own figures) for my next spawn, like the primary
+        if (s.rifle !== m.id) { s.rifle = m.id; save(); }
+        break;
       case 'skin':  // my character: looks only (the rival draws it; nothing in the rules changes)
         if (s.skin !== m.id) { s.skin = m.id; if (between) sendAll(lobbyMsg()); save(); }
         break;
@@ -404,7 +407,7 @@ function create(opts) {
   function simulate(s, cmd) {
     s.yaw = cmd.yaw; s.pitch = Math.max(-1.45, Math.min(1.45, cmd.pitch));
     const r = SDP.step(s.p, cmd, DT, ix.world, CFG.move);
-    for (const e of r.wev) if (e.type === 'fire') fire(s, cmd, GUN, 'rifle');
+    for (const e of r.wev) if (e.type === 'fire') fire(s, cmd, s.p.w.cfg, 'rifle');   // the model carried in this life
     for (const e of r.pev || []) if (e.type === 'fire') fire(s, cmd, PISTOL, 'pistol');
     for (const e of r.sev || []) if (e.type === 'fire') fire(s, cmd, SHOTGUN, 'shotgun', e);
     for (const e of r.lev) if (e.type === 'knifeHit') knife(s);
@@ -646,7 +649,7 @@ function create(opts) {
   // restore seats after the server object was evicted (names, tokens, score)
   function restore(d) {
     if (!d || !d.seats) return;
-    for (const x of d.seats) if (x && SEATS.includes(x.id)) { const s = newSeat(x.id, x.name, x.token); s.kills = x.kills || 0; s.deaths = x.deaths || 0; if (x.kit === 'shotgun') s.kit = 'shotgun'; if (PR.SKINS.includes(x.skin)) s.skin = x.skin; if (TEAMS.includes(x.team)) s.team = x.team; s.leftAt = R.now; s.order = ++R.joinSeq; R.seats[x.id] = s; }
+    for (const x of d.seats) if (x && SEATS.includes(x.id)) { const s = newSeat(x.id, x.name, x.token); s.kills = x.kills || 0; s.deaths = x.deaths || 0; if (x.kit === 'shotgun') s.kit = 'shotgun'; if (PR.RIFLES.includes(x.rifle)) s.rifle = x.rifle; if (PR.SKINS.includes(x.skin)) s.skin = x.skin; if (TEAMS.includes(x.team)) s.team = x.team; s.leftAt = R.now; s.order = ++R.joinSeq; R.seats[x.id] = s; }
     R.match = d.match || 0;
     if (d.map && MAPS[d.map]) mapId = d.map;
     const c = d.cfg && cleanCfg(Object.assign({}, R.cfg, d.cfg)); if (c) R.cfg = c;
