@@ -6,7 +6,8 @@ compatibility_date = "2025-09-01"
 workers_dev = true
 
 [vars]
-ALLOWED_ORIGINS = "https://hamza189.github.io,http://localhost,http://127.0.0.1"
+# 24-11-2026 (propietario): también la copia de Cloudflare Pages, https://sniper-1vs1.pages.dev (tools/pagina-publica.sh)
+ALLOWED_ORIGINS = "https://hamza189.github.io,https://sniper-1vs1.pages.dev,http://localhost,http://127.0.0.1"
 # cuentas de administrador: todos los objetos desbloqueados para probarlos (server/accounts.js). La del propietario y
 # (09-11-2026, a petición suya) la de su novia; (18-11-2026, a petición suya) SD-XYZL-D2W5 y SD-Y8LN-2N9X (Zaib).
 ADMIN_IDS = "SD-QTFX-77ZM,SD-P48Q-4YM2,SD-XYZL-D2W5,SD-Y8LN-2N9X"

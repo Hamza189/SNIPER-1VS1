@@ -38,6 +38,9 @@ function client(code) {
     check('crea una sala desde el origen del juego', PR.isCode(code) && r.headers.get('access-control-allow-origin') === 'https://hamza189.github.io', code);
     const evil = await fetch(base + '/create', { method: 'POST', headers: { Origin: 'https://evil.example' } });
     check('rechaza crear salas desde otra web', evil.status === 403);
+    // 24-11-2026: the Cloudflare Pages copy of the game (https://sniper-1vs1.pages.dev) plays online too
+    const cf = await fetch(base + '/health', { headers: { Origin: 'https://sniper-1vs1.pages.dev' } });
+    check('acepta la copia de Cloudflare Pages (sniper-1vs1.pages.dev)', cf.headers.get('access-control-allow-origin') === 'https://sniper-1vs1.pages.dev', cf.headers.get('access-control-allow-origin'));
     // accounts (server/accounts.js): a login challenge from the game, refused from another site; a session nobody has: 401
     const ac = await fetch(base + '/cuenta/entrar/reto', { method: 'POST', headers: { Origin: 'https://hamza189.github.io' } }), acj = await ac.json().catch(() => ({}));
     const acEvil = await fetch(base + '/cuenta/entrar/reto', { method: 'POST', headers: { Origin: 'https://evil.example' } });
