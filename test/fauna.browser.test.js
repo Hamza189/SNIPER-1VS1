@@ -5,6 +5,7 @@
    - &ratas=0&flora=0 → nothing of it is downloaded; collision boxes are the same as without them
    Run: node test/fauna.browser.test.js   (software WebGL is fine: nothing is timed) */
 'use strict';
+const cg1 = u => /[?&]carga=/.test(u) ? u : u + (u.includes('?') ? '&' : '?') + 'carga=1';   // (23-11-2026) these checks run without the loading screen (it has its own test)
 const { chromium } = require('playwright');
 const ss = require('../tools/static-server.js');
 let pass = 0, fail = 0;
@@ -18,7 +19,7 @@ async function open(b, url, q) {
   p.on('pageerror', e => errs.push(e.message));
   p.on('console', m => { if (/rata|flora/.test(m.text())) errs.push(m.text()); });
   p.on('response', r => { const u = r.url(); if (/\/assets\//.test(u) && r.status() >= 400) bad.push(r.status() + ' ' + u.replace(/^.*\/assets\//, '')); if (/\/assets\/.*(fauna|flora|rat_)/.test(u)) files.push(u.replace(/^.*\/assets\//, '').replace(/\?.*/, '')); });
-  await p.goto(url);
+  await p.goto(cg1(url));
   await p.waitForFunction(() => window.__SD && __SD.P3W && __SD.P3W.kit && (!__SD.FLORA.on || __SD.FLORA.ready || __SD.FLORA.failed) && (!__SD.RATS.on || __SD.RATS.ready || __SD.RATS.failed), null, { timeout: 180000 });
   await p.waitForTimeout(1500);
   return { ctx, p, bad, files, errs };
@@ -28,7 +29,7 @@ const colliders = p => p.evaluate(() => __SD.W.colliders.map(c => [c.minX, c.min
 (async () => {
   const srv = await ss.start();
   const b = await chromium.launch({ args: ['--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist'] });
-  const off = await open(b, srv.url + '?vm=1&pueblo=3&ratas=0&flora=0', 'alto');
+  const off = await open(b, srv.url + '?carga=1&vm=1&pueblo=3&ratas=0&flora=0', 'alto');
   const baseCol = await colliders(off.p);
   console.log('\nSIN FAUNA NI FLORA');
   check('&ratas=0&flora=0: no se descarga nada de ratas ni plantas', off.files.length === 0, off.files.join(' '));
@@ -36,7 +37,7 @@ const colliders = p => p.evaluate(() => __SD.W.colliders.map(c => [c.minX, c.min
   const counts = {};
   for (const q of ['alto', 'medio', 'bajo']) {
     console.log('\n' + q.toUpperCase());
-    const o = await open(b, srv.url + '?vm=1&pueblo=3', q), p = o.p;
+    const o = await open(b, srv.url + '?carga=1&vm=1&pueblo=3', q), p = o.p;
     const r = await p.evaluate(() => { const S = __SD, F = S.FLORA, R = S.RATS;
       const shadow = F.meshes.some(m => m.castShadow);
       const grassTris = F.meshes.filter(m => /grass/.test(m.name)).reduce((n, m) => n + m.count * (m.geometry.index.count / 3), 0) / Math.max(1, F.meshes.filter(m => /grass/.test(m.name)).reduce((n, m) => n + m.count, 0));

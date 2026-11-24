@@ -18,7 +18,7 @@ function check(name, cond, info) { if (cond) { pass++; console.log('  ok   ' + n
     const ctx = await b.newContext({ viewport: { width: 960, height: 600 } });
     await ctx.route(/fonts\.(googleapis|gstatic)\.com/, r => r.abort());
     const p = await ctx.newPage(), errs = []; p.on('pageerror', e => errs.push(e.message));
-    await p.goto(srv.url + '?perf=low&pj=0&server=' + encodeURIComponent('http://127.0.0.1:' + gs.port) + (q || ''), { timeout: 180000 });
+    await p.goto(srv.url + '?carga=1&lobby=1&perf=low&pj=0&server=' + encodeURIComponent('http://127.0.0.1:' + gs.port) + (q || ''), { timeout: 180000 });
     await p.waitForFunction(() => window.__SD && __SD.WORLDS, null, { timeout: 180000 });
     // no pointer lock in the test browser
     await p.evaluate(() => { HTMLCanvasElement.prototype.requestPointerLock = function () {}; });

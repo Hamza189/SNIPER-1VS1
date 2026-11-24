@@ -19,7 +19,7 @@ const GPU = process.env.GPU === '0' ? ['--use-angle=swiftshader', '--enable-unsa
     if (settings) await ctx.addInitScript(s => { try { localStorage.setItem('sniperduel_settings', JSON.stringify(s)); } catch (e) {} }, settings);
     await ctx.route(/fonts\.(googleapis|gstatic)\.com/, r => r.abort());
     const p = await ctx.newPage(), errs = []; p.on('pageerror', e => errs.push(e.message));
-    await p.goto(srv.url + '?pj=pro' + (q || ''), { timeout: 180000 });
+    await p.goto(srv.url + '?carga=1&pj=pro' + (q || ''), { timeout: 180000 });
     await p.waitForFunction(() => window.__SD && __SD.WORLDS, null, { timeout: 180000 });
     return { ctx, p, errs };
   };
@@ -68,7 +68,7 @@ const GPU = process.env.GPU === '0' ? ['--use-angle=swiftshader', '--enable-unsa
     const B = await open('&radar=0');
     await play(B.p);
     await B.p.waitForTimeout(13500);
-    check('?radar=0: a los 13 s, ningún punto en el minimapa', await B.p.evaluate(() => !__SD.RADAR.on && __SD.MINI.pings.length === 0));
+    check('?radar=0: a los 13 s, ningún punto del RADAR en el minimapa (los de los bots que disparan sí salen)', await B.p.evaluate(() => !__SD.RADAR.on && !__SD.MINI.pings.some(p => p.radar)));
     await B.p.evaluate(() => localStorage.removeItem('sniperduel_radarOff'));
     await B.ctx.close();
   } catch (e) { fail++; console.log('  FAIL excepción: ' + (e && e.stack || e)); }

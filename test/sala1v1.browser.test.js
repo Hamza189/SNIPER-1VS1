@@ -57,7 +57,7 @@ async function until(page, fn, arg, ms) { try { await page.waitForFunction(fn, a
     check('INVITAR abierto en el PC con el código', !(await A.locator('#lbInvite').isHidden()) && (await A.textContent('#lbInvCodeTxt')) === code);
     await A.click('#lbCopyLink');
     const link = await A.evaluate(() => navigator.clipboard.readText());
-    check('copiar enlace: el enlace de la sala (lleva también la sala nueva)', link.endsWith('?sala=' + code + '&lobby=2'), link);
+    check('copiar enlace: el enlace de la sala (lleva también la sala nueva)', /[?]sala=[A-Z2-9]{6}&lobby=2(&pueblo=4)?$/.test(link) && link.includes('?sala=' + code), link);   // (&pueblo=4: the town of the room, PUEBLO 4.0)
     await A.click('#lbCopyCode');
     check('copiar código', (await A.evaluate(() => navigator.clipboard.readText())) === code);
     check('compartir por WhatsApp está (el menú del móvil sale donde el navegador lo tiene)', !(await A.locator('#lbWhats').isHidden()));
@@ -79,7 +79,7 @@ async function until(page, fn, arg, ms) { try { await page.waitForFunction(fn, a
     check('tarjetas con capturas reales, solo de mapas que existen y el servidor tiene', cards.length >= 2 && cards.every(id => ['arena', 'pueblo', 'casa', 'casa2', 'casa2b', 'casa2c', 'barrio'].includes(id)) && await A.$$eval('#lbMapRow .lbMap img', im => im.every(i => /assets\/menu\/mapa_/.test(i.src))), cards.join(','));
     check('B no puede elegir mapa', await B.$$eval('#lbMapRow .lbMap', b => b.every(x => x.disabled)));
     await A.click('#lbMapRow .lbMap[data-map="pueblo"]');
-    check('A elige PUEBLO: B lo ve marcado al momento', await until(B, () => { const b = document.querySelector('#lbMapRow .lbMap[aria-pressed="true"]'); return b && b.dataset.map === 'pueblo'; }) && room.debug.mapId === 'pueblo');
+    check('A elige PUEBLO: B lo ve marcado al momento', await until(B, () => { const b = document.querySelector('#lbMapRow .lbMap[aria-pressed="true"]'); return b && b.dataset.map === 'pueblo'; }) && ['pueblo', 'pueblo4'].includes(room.debug.mapId), room.debug.mapId);   // PUEBLO 4.0 is 'pueblo4' in the server
     // LISTO, and changing the map takes it back
     await A.click('#lbReady'); await B.click('#lbReady');
     check('LISTO los dos: A puede INICIAR, B no (inicia el anfitrión)', await until(A, () => !document.getElementById('lbStart').disabled) && await B.locator('#lbStart').isDisabled() && room.phase === 'lobby');
@@ -120,6 +120,15 @@ async function until(page, fn, arg, ms) { try { await page.waitForFunction(fn, a
     // the screen of always comes back with ?lobby=1
     const C = await open(ctxA, '&lobby=1');
     check('con ?lobby=1 vuelve la pantalla de salas de siempre', await C.evaluate(() => !__SD.LB.on) && await (async () => { await C.click('#m2 .m2Mode[data-sel=online]'); await C.click('#m2Play'); return until(C, () => !document.getElementById('mp').hidden && document.getElementById('lb').hidden); })());
+    // 23-11-2026 (lanzamiento): sin bandera la sala nueva es la de por defecto, y MÁS MODOS lleva a la de siempre (TODOS, EQUIPOS, bots)
+    { const D = await open(await ctxOf(false), '');
+      check('sin bandera, la SALA 1V1 nueva es la de por defecto', await D.evaluate(() => __SD.LB.on));
+      await D.click('#m2 .m2Mode[data-sel=online]');
+      const seen = await until(D, () => !document.getElementById('lb').hidden && !!document.getElementById('lbMore'));
+      await D.click('#lbMore');
+      check('MÁS MODOS abre la pantalla de salas de siempre (con TODOS CONTRA TODOS y EQUIPOS)', seen && await until(D, () => !document.getElementById('mp').hidden && document.getElementById('lb').hidden && !__SD.LB.on));
+      await D.click('#mpBack'); await D.click('#m2 .m2Mode[data-sel=online]');
+      check('al volver y entrar otra vez en MULTIJUGADOR, otra vez la sala nueva', await until(D, () => __SD.LB.on && !document.getElementById('lb').hidden && document.getElementById('mp').hidden)); }
     // 17-11-2026: a phone whose last visit ended inside the room (Safari closed the page) opens the LIGHT room
     { const ctxL = await ctxOf(true); await ctxL.addInitScript(() => { if (!localStorage.getItem('x_once')) { localStorage.setItem('x_once', '1'); localStorage.setItem('sniperduel_lbOpen', String(Date.now() - 30000)); } });
       const L = await open(ctxL, '&lobby=2');
@@ -149,7 +158,7 @@ async function until(page, fn, arg, ms) { try { await page.waitForFunction(fn, a
         const inView = id => { const x = r(id); return x.width > 0 && x.top >= 0 && x.bottom <= innerHeight + 0.5 && x.right <= innerWidth + 0.5; };
         return { column: maps.width < innerWidth / 2 && maps.bottom <= bar.top + 1, mapsVsPlayers: over(maps, pl), tags: over(me, op), tagsVsPlayers: over(op, pl), buttons: ['lbReady', 'lbStart', 'lbLeave', 'lbInvBtn', 'lbRes'].every(inView) }; });
       check('iPhone con las barras de Safari (932 × 320): mapas en columna, nada se monta y todos los botones se ven', L.column && !L.mapsVsPlayers && !L.tags && !L.tagsVsPlayers && L.buttons, JSON.stringify(L));
-      const st = () => S.evaluate(() => ({ res: __SD.SETTINGS.res, saved: JSON.parse(localStorage.getItem('sniperduel_settings') || '{}').res, pr: __SD.renderer.getPixelRatio(), txt: document.getElementById('lbResTxt').textContent, fixed: /perf=low/.test(location.search) }));
+      const st = () => S.evaluate(() => ({ res: __SD.SETTINGS.res, saved: JSON.parse(localStorage.getItem('sniperduel_settings') || '{}').res, pr: __SD.renderer.getPixelRatio(), txt: document.getElementById('lbResTxt').textContent, fixed: /perf=low/.test(performance.getEntriesByType('navigation')[0].name) }));   // (the room rewrites the address)
       await S.click('#lbRes'); const r1 = await st(); await S.click('#lbRes'); const r2 = await st();
       // the real resolution is checked where it is not fixed (with ?perf=low, the software GL of the tests, it stays at 0.5)
       const real = r1.fixed || (r1.res === 1 ? r1.pr === 1 : r1.pr >= 1.5) && (r2.res === 1 ? r2.pr === 1 : r2.pr >= 1.5);

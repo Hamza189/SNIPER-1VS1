@@ -1,4 +1,7 @@
-# AJUSTES › EN PRUEBA (19-11-2026)
+# AJUSTES › EN PRUEBA (19-11-2026) — RETIRADA el 23-11-2026
+
+> Con el lanzamiento (`docs/LANZAMIENTO.md`) todo lo que ofrecía esta pestaña pasó a ser lo de por defecto y la pestaña se
+> quitó. Las banderas del enlace siguen funcionando para comparar. Lo de abajo es la historia.
 
 Lo pidió el propietario: el acceso directo de la pantalla de inicio es la única forma de tener el juego a pantalla
 completa en el iPhone, pero ese acceso abre siempre el enlace normal. El manifiesto dice `start_url: "./"`, así que se

@@ -24,7 +24,7 @@ async function until(page, fn, arg, ms) { try { await page.waitForFunction(fn, a
     await ctx.route(/fonts\.(googleapis|gstatic)\.com/, r => r.abort());
     const page = await ctx.newPage(); page.on('pageerror', e => errors.push(who + ': ' + e.message + ' @ ' + String(e.stack || '').split('\n').slice(1, 3).join(' ')));
     page.on('response', r => { if ((BAR ? /barrio\/garaje\.glb/ : V3 ? /casa_atlas_jardin\.glb/ : /casa_atlas\.glb/).test(r.url()) && r.status() < 400) files[who]++; });
-    await page.goto(web.url + (process.env.PAGE || '') + '?perf=low&server=' + encodeURIComponent(server) + (BAR ? '&barrio=1' : V3 ? '&casa2v=3' : V2 ? '&casa2v=2' : '') + q); await page.waitForFunction(() => window.__SD);
+    await page.goto(web.url + (process.env.PAGE || '') + '?carga=1&lobby=1&perf=low&server=' + encodeURIComponent(server) + (BAR ? '&barrio=1' : V3 ? '&casa2v=3' : V2 ? '&casa2v=2' : '') + q); await page.waitForFunction(() => window.__SD);
     return page;
   };
   try {

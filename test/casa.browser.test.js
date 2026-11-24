@@ -8,6 +8,7 @@
      the sun's shadow box
    Run: node test/casa.browser.test.js   (software WebGL is fine: nothing is timed) */
 'use strict';
+const cg1 = u => /[?&]carga=/.test(u) ? u : u + (u.includes('?') ? '&' : '?') + 'carga=1';   // (23-11-2026) these checks run without the loading screen (it has its own test)
 const { chromium } = require('playwright');
 const path = require('path');
 const ss = require('../tools/static-server.js');
@@ -21,7 +22,7 @@ async function open(b, url, opts) {
   p.on('pageerror', e => errs.push(e.message));
   p.on('console', m => { if (/casa/i.test(m.text()) && m.type() !== 'log') errs.push(m.text()); });
   p.on('response', r => { const u = r.url(); if (/\/assets\//.test(u) && r.status() >= 400) bad.push(r.status() + ' ' + u.replace(/^.*\/assets\//, '')); if (/casa_atlas/.test(u)) files.push(u.replace(/^.*\/assets\//, '').replace(/\?.*/, '')); });
-  await p.goto(url); await p.waitForFunction(() => window.__SD && __SD.WORLDS && __SD.WORLDS.casa);
+  await p.goto(cg1(url)); await p.waitForFunction(() => window.__SD && __SD.WORLDS && __SD.WORLDS.casa);
   return { ctx, p, errs, bad, files };
 }
 (async () => {
@@ -29,7 +30,7 @@ async function open(b, url, opts) {
   const b = await chromium.launch({ args: ['--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist'] });
 
   console.log('\nSIN ?casa=1');
-  { const o = await open(b, srv.url + '?vm=0'); await o.p.waitForTimeout(1500);
+  { const o = await open(b, srv.url + '?carga=1&vm=0'); await o.p.waitForTimeout(1500);
     const r = await o.p.evaluate(() => ({ btn: [...document.querySelectorAll('#mapSeg [data-map=casa],#mpMapSeg [data-map=casa]')].map(x => x.hidden), exp: __SD.CASA.exp, built: !!__SD.WORLDS.casa }));
     // since 18-10-2026 every map is offered in the menu (owner); ?casa=0 still hides the experimental ones
     check('el botón CASA ATLAS aparece en los dos menús (duelo y online)', r.btn.length === 2 && r.btn.every(h => !h), JSON.stringify(r.btn));
@@ -38,7 +39,7 @@ async function open(b, url, opts) {
     await o.ctx.close(); }
 
   console.log('\nCON ?casa=1 · DUELO VS BOTS');
-  const o = await open(b, srv.url + '?vm=1&casa=1', { diff: 1 }), p = o.p;
+  const o = await open(b, srv.url + '?carga=1&vm=1&casa=1', { diff: 1 }), p = o.p;
   const m0 = await p.evaluate(() => ({ btn: [...document.querySelectorAll('#mapSeg [data-map=casa],#mpMapSeg [data-map=casa]')].map(x => x.hidden), exp: __SD.CASA.exp, stored: localStorage.getItem('sniperduel_casaExp') }));
   check('con ?casa=1 aparece en DUELO VS BOTS y en ONLINE, y se recuerda', m0.btn.every(h => !h) && m0.exp && m0.stored === 'true');
   await p.evaluate(() => { __SD.setMode('duel'); document.querySelector('#mapSeg [data-map=casa]').click(); __SD.startMatch(); });
@@ -130,10 +131,10 @@ async function open(b, url, opts) {
   await o.ctx.close();
 
   console.log('\nÉLITE y ?casa=0');
-  { const o2 = await open(b, srv.url + '?vm=0&casa=1', { diff: 2 }); await o2.p.evaluate(() => { __SD.setMode('duel'); __SD.setOffMap('casa'); __SD.startMatch(); });
+  { const o2 = await open(b, srv.url + '?carga=1&vm=0&casa=1', { diff: 2 }); await o2.p.evaluate(() => { __SD.setMode('duel'); __SD.setOffMap('casa'); __SD.startMatch(); });
     await o2.p.waitForFunction(() => __SD.state === 'playing', null, { timeout: 120000 }); await o2.p.waitForTimeout(500);
     check('ÉLITE: 2 bots', (await o2.p.evaluate(() => __SD.BOTS.filter(x => x.alive).length)) === 2);
-    await o2.p.goto(srv.url + '?vm=0&casa=0'); await o2.p.waitForFunction(() => window.__SD && __SD.WORLDS); await o2.p.waitForTimeout(500);
+    await o2.p.goto(srv.url + '?carga=1&vm=0&casa=0'); await o2.p.waitForFunction(() => window.__SD && __SD.WORLDS); await o2.p.waitForTimeout(500);
     const r = await o2.p.evaluate(() => ({ exp: __SD.CASA.exp, off: __SD.OFFMAP, hid: document.querySelector('#mapSeg [data-map=casa]').hidden }));
     check('?casa=0 lo vuelve a ocultar y el mapa elegido vuelve a la ARENA', !r.exp && r.hid && r.off === 'arena', JSON.stringify(r));
     await o2.ctx.close(); }

@@ -5,6 +5,7 @@
    - decals and sand drifts stay flat on the ground (≤ 5 cm) and the collision boxes are the same as without P0
    Run: node test/p0.browser.test.js   (software WebGL is fine: nothing is timed) */
 'use strict';
+const cg1 = u => /[?&]carga=/.test(u) ? u : u + (u.includes('?') ? '&' : '?') + 'carga=1';   // (23-11-2026) these checks run without the loading screen (it has its own test)
 const { chromium } = require('playwright');
 const ss = require('../tools/static-server.js');
 let pass = 0, fail = 0;
@@ -19,7 +20,7 @@ async function load(b, url, q, p3mem) {
   p.on('pageerror', e => errs.push(e.message));
   p.on('response', r => { const u = r.url(); if (/\/assets\//.test(u) && r.status() >= 400) bad.push(r.status() + ' ' + u.replace(/^.*\/assets\//, 'assets/').replace(/\?.*/, '')); if (/assets\/tex\/p1/.test(u)) (p0files.p1 || (p0files.p1 = [])).push(u.replace(/^.*\/tex\//, '').replace(/\?.*/, '') + (r.status() >= 400 ? '(' + r.status() + ')' : '')); if (/assets\/tex\/p0/.test(u)) p0files.push(u.replace(/^.*\/tex\//, '').replace(/\?.*/, '')); });
   p.on('requestfailed', r => { if (/\/assets\//.test(r.url())) bad.push('fallo ' + r.url().replace(/^.*\/assets\//, 'assets/')); });
-  await p.goto(url);
+  await p.goto(cg1(url));
   await p.waitForFunction(() => window.__SD && __SD.W && (!__SD.P3ON || (__SD.P3W && __SD.P3W.kit)), null, { timeout: 120000 });
   await p.waitForTimeout(2500);   // the textures arrive after the kit
   const r = await p.evaluate(() => {
@@ -42,26 +43,26 @@ async function load(b, url, q, p3mem) {
 (async () => {
   const srv = await ss.start();
   const b = await chromium.launch({ args: ['--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist'] });
-  const base = await load(b, srv.url + '?vm=1&pueblo=3&suelo=0', 'alto');
+  const base = await load(b, srv.url + '?carga=1&vm=1&pueblo=3&suelo=0', 'alto');
   console.log('\nSIN EL PACK');
   check('?pueblo=3&suelo=0: suelo anterior y ningún archivo P0 descargado', !base.on && base.p0files.length === 0, base.p0files.join(' '));
   check('pueblo exterior: materiales propios con desplazamiento de profundidad (sin rayas contra el muro perimetral)', base.bd.length > 0 && base.bd.every(x => x.off && !x.shared), JSON.stringify(base.bd));
-  const dflt = await load(b, srv.url + '?vm=1&pueblo=3', 'alto');
+  const dflt = await load(b, srv.url + '?carga=1&vm=1&pueblo=3', 'alto');
   check('?pueblo=3 por defecto: caliza v3b en la plaza y adoquín de Poly Haven (aprobados el 12 y el 17-10-2026)', dflt.on && dflt.p0files.some(f => /^p0v3_plaza_c/.test(f)) && dflt.p0files.some(f => /^p0cc_cobble_c/.test(f)), dflt.p0files.join(' '));
-  const noCob = await load(b, srv.url + '?vm=1&pueblo=3&adoquin=0', 'alto');
+  const noCob = await load(b, srv.url + '?carga=1&vm=1&pueblo=3&adoquin=0', 'alto');
   check('&adoquin=0: vuelve el adoquín anterior (ningún archivo del escaneo)', noCob.on && !noCob.use.cobble && !noCob.p0files.some(f => /cobble/.test(f)), noCob.p0files.join(' '));
-  const fa = await load(b, srv.url + '?vm=1&pueblo=3&fachada=cc0', 'alto');
+  const fa = await load(b, srv.url + '?carga=1&vm=1&pueblo=3&fachada=cc0', 'alto');
   const p1 = fa.p0files.p1 || [];
   check('&fachada=cc0 (P1): paredes, tejas, persianas y puertas de Poly Haven, sin 404, mismas colisiones', ['stucco', 'rooftiles', 'wood', 'door'].every(m => p1.some(f => f.startsWith('p1_' + m + '_c'))) && !p1.some(f => /\(/.test(f)) && !p1.some(f => /stone/.test(f)) && fa.colliders === base.colliders && fa.bad.length === 0, p1.join(' '));
   check('sin &fachada=cc0 no se descarga ninguna textura P1', !(dflt.p0files.p1 || []).length);
-  const mem = await load(b, srv.url + '?vm=1', 'alto', true);
+  const mem = await load(b, srv.url + '?carga=1&vm=1', 'alto', true);
   check('PUEBLO 3.0 elegido en AJUSTES (guardado en el dispositivo) sin nada en el enlace: suelo nuevo', mem.on && mem.p0files.some(f => /^p0cc_cobble_c/.test(f)), mem.p0files.join(' '));
   check('?pueblo=3 por defecto: mismas cajas de colisión', dflt.colliders === base.colliders);
-  const def = await load(b, srv.url + '?vm=1', 'alto');
-  check('el juego normal: P0 apagado y ningún archivo P0 descargado', !def.on && def.p0files.length === 0);
+  const def = await load(b, srv.url + '?carga=1&vm=1', 'alto');
+  check('el juego normal (PUEBLO 4.0 desde el 17-11-2026): suelo nuevo con el adoquín de Poly Haven', def.on && def.p0files.some(f => /^p0cc_cobble_c/.test(f)), def.p0files.join(' '));
   for (const [q, set] of [['alto', 'p0'], ['medio', 'p0'], ['bajo', 'p0'], ['alto', 'v3'], ['bajo', 'v3'], ['alto', 'cc0'], ['medio', 'cc0'], ['bajo', 'cc0']]) {
     console.log('\nP0 ' + (set === 'cc0' ? 'plaza v3b + adoquín Poly Haven CC0 (&adoquin=cc0)' : set === 'v3' ? 'prototipo v3' : 'v2') + ' · ' + q.toUpperCase());
-    const r = await load(b, srv.url + '?vm=1&pueblo=3' + (set === 'cc0' ? '&adoquin=cc0' : '&suelo=' + set), q);
+    const r = await load(b, srv.url + '?carga=1&vm=1&pueblo=3' + (set === 'cc0' ? '&adoquin=cc0' : '&suelo=' + set), q);
     if (set === 'cc0') {
       const pre = q === 'bajo' ? 'p0ccb_' : q === 'medio' ? 'p0ccm_' : 'p0cc_';
       check('el adoquín es el escaneo de Poly Haven (' + pre + 'cobble_*) y la plaza la caliza v3b', r.use.cobble && r.p0files.some(f => f.startsWith(pre + 'cobble_c')) && r.p0files.some(f => /^p0v3.?_plaza_c/.test(f)) && !r.p0files.some(f => /^p0(v3.?|m|b)?_cobble/.test(f)), r.p0files.join(' '));

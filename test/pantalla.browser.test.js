@@ -6,6 +6,7 @@
    - la página se puede instalar: manifiesto con iconos y pantalla completa, icono de iPhone
    Run: node test/pantalla.browser.test.js */
 'use strict';
+const cg1 = u => /[?&]carga=/.test(u) ? u : u + (u.includes('?') ? '&' : '?') + 'carga=1';   // (23-11-2026) these checks run without the loading screen (it has its own test)
 const { chromium } = require('playwright');
 const ss = require('../tools/static-server.js');
 let pass = 0, fail = 0;
@@ -22,7 +23,7 @@ const IPHONE = 'Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebK
     await ctx.addInitScript(() => { window.addEventListener('resize', e => { if (e.isTrusted && window.__noResize) e.stopImmediatePropagation(); }, true); });
     const p = await ctx.newPage(), errs = [];
     p.on('pageerror', e => errs.push(e.message));
-    await p.goto(srv.url + (q || '?pj=0'), { timeout: 180000 });
+    await p.goto(cg1(srv.url + (q || '?pj=0')), { timeout: 180000 });
     await p.waitForFunction(() => window.__SD && __SD.WORLDS, null, { timeout: 180000 });
     return { ctx, p, errs };
   };

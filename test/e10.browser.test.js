@@ -6,6 +6,7 @@
    - the level of detail follows the distance divided by the zoom (the scope does not show the low LOD)
    Run: node test/e10.browser.test.js   (software WebGL is fine: nothing is timed)                        */
 'use strict';
+const cg1 = u => /[?&]carga=/.test(u) ? u : u + (u.includes('?') ? '&' : '?') + 'carga=1';   // (23-11-2026) these checks run without the loading screen (it has its own test)
 const { chromium } = require('playwright');
 const ss = require('../tools/static-server.js');
 let pass = 0, fail = 0;
@@ -21,7 +22,7 @@ function check(name, cond, info) { if (cond) { pass++; console.log('  ok   ' + n
   const errs = []; page.on('pageerror', e => errs.push(e.message));
 
   console.log('\nE10 CASA OLIVA — ?pueblo=3');
-  await page.goto(srv.url + '?vm=1&pueblo=3');
+  await page.goto(srv.url + '?carga=1&vm=1&pueblo=3');
   await page.waitForFunction(() => window.__SD && __SD.E10 && (__SD.E10.ready || __SD.E10.failed), null, { timeout: 120000 });
   const A = await page.evaluate(() => {
     const S = __SD, T = THREE, E = S.E10; S.setWorld('pueblo'); E.root.visible = true; E.root.updateMatrixWorld(true);
@@ -66,7 +67,7 @@ function check(name, cond, info) { if (cond) { pass++; console.log('  ok   ' + n
 
   console.log('\nE10 — sin la bandera y con &e10=0');
   for (const [url, label] of [['?vm=1&pueblo=0', 'el PUEBLO de antes (?pueblo=0)'], ['?vm=1&pueblo=3&e10=0', '?pueblo=3&e10=0']]) {
-    await page.goto(srv.url + url);
+    await page.goto(cg1(srv.url + url));
     await page.waitForFunction(() => window.__SD && __SD.W, null, { timeout: 90000 });
     await page.waitForTimeout(1500);
     const r = await page.evaluate(() => ({ on: __SD.E10.on, ready: __SD.E10.ready, old: __SD.E10.old.length, glb: !!__SD.scene.getObjectByName('e10_casa_oliva') }));

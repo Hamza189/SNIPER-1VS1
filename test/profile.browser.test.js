@@ -17,7 +17,7 @@ function check(name, cond, info) { if (cond) { pass++; console.log('  ok   ' + n
     await ctx.route(/fonts\.(googleapis|gstatic)\.com/, r => r.abort());
     const p = await ctx.newPage(), errs = [];
     p.on('pageerror', e => errs.push(e.message));
-    await p.goto(srv.url + '?perf=low' + q);
+    await p.goto(srv.url + '?carga=1&perf=low' + q);
     await p.waitForFunction(() => window.__SD && __SD.WORLDS, null, { timeout: 120000 });
     return { ctx, p, errs };
   };
@@ -27,7 +27,7 @@ function check(name, cond, info) { if (cond) { pass++; console.log('  ok   ' + n
     check('con ?pj=0 (el juego de antes) no hay botón PERFIL, pero el perfil existe', await off.p.evaluate(() => document.getElementById('openProfile').hidden && /^SD-/.test(__SD.PROFILE.id)));
     await off.ctx.close();
     const A = await open('');
-    check('sin bandera (= ?pj=pro desde el 28-10) sale PERFIL junto a AJUSTES y se ve entero, y el personaje es el SOLDADO', await A.p.evaluate(() => __SD.SKIN === 'soldado' && document.querySelectorAll('#skinGrid .skinCard').length === 5) && await A.p.evaluate(() => { const r = document.getElementById('openProfile').getBoundingClientRect(); return !document.getElementById('openProfile').hidden && r.bottom <= innerHeight && r.right <= innerWidth; }));
+    check('sin bandera (= ?pj=pro desde el 28-10) sale PERFIL junto a AJUSTES y se ve entero, y el personaje es el SOLDADO', await A.p.evaluate(() => __SD.SKIN === 'soldado' && document.querySelectorAll('#skinGrid .skinCard').length === 7) && await A.p.evaluate(() => { const r = document.getElementById('openProfile').getBoundingClientRect(); return !document.getElementById('openProfile').hidden && r.bottom <= innerHeight && r.right <= innerWidth; }));
     await A.p.click('#m2Me');
     await A.p.fill('#profName', 'Hamza'); await A.p.press('#profName', 'Tab');
     check('el apodo del perfil es el nombre del online', await A.p.evaluate(() => __SD.PROFILE.name === 'Hamza' && document.getElementById('mpName').value === 'Hamza' && JSON.parse(localStorage.getItem('sniperduel_mpName')) === 'Hamza'));

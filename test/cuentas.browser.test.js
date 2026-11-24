@@ -25,7 +25,7 @@ function check(name, cond, info) { if (cond) { pass++; console.log('  ok   ' + n
     const cdp = await ctx.newCDPSession(p);
     await cdp.send('WebAuthn.enable');
     const { authenticatorId } = await cdp.send('WebAuthn.addVirtualAuthenticator', { options: { protocol: 'ctap2', transport: 'internal', hasResidentKey: true, hasUserVerification: true, isUserVerified: true, automaticPresenceSimulation: true } });
-    await p.goto(web + '?pj=pro&perf=low&server=' + encodeURIComponent(server) + (q || ''));
+    await p.goto(web + '?carga=1&lobby=1&pj=pro&perf=low&server=' + encodeURIComponent(server) + (q || ''));
     await p.waitForFunction(() => window.__SD && __SD.WORLDS, null, { timeout: 120000 });
     return { ctx, p, errs, cdp, authenticatorId };
   };

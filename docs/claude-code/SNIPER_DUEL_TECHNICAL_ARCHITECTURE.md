@@ -124,6 +124,7 @@ reconciliación, interpolación del rival 110 ms, ping) · `vmrig.js` (materiale
 ## 8. Banderas de URL (todas verificadas en el código)
 | Bandera | Efecto |
 |---|---|
+| (23-11) LANZAMIENTO | Por defecto, sin bandera: SALA 1V1 (`?lobby=1` = la de siempre; botón MÁS MODOS), pantalla de carga (`?carga=1` = sin ella), BARRIO en los menús (`?barrio=0`), RIDGE y AMBER (ya no hay `?meshy`), AUTO = ALTO también en móviles, rifles con sus cifras en línea. Sin pestaña EN PRUEBA ni sonido de fondo (`?viento` ya no existe). `docs/LANZAMIENTO.md` |
 | `?pueblo=3` / `?pueblo=0` | PUEBLO 3.0 sí / forzar no (también se guarda desde AJUSTES › GRÁFICOS) |
 | (31-10) Miras | Sin bandera: las 8 miras del rifle, un aumento cada una (`client/miras.js`, `docs/MIRAS.md`), elegidas en el menú, la pausa o el inventario; la elección se guarda en `sniperduel_mira`. FRANCOTIRADOR (la de siempre) por defecto |
 | `&aa=0` / `&aa=1` | (31-10) Fuerza el suavizado de bordes (MSAA 4×) apagado / encendido. Por defecto va en MEDIO y ALTO; AJUSTES › GRÁFICOS lo apaga. Se mide con `node tools/flicker.js` (`docs/PARPADEO.md`) |

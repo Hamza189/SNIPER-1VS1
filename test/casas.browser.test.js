@@ -24,10 +24,10 @@ function check(name, cond, info) { if (cond) { pass++; console.log('  ok   ' + n
     await ctx.addInitScript(() => { try { localStorage.setItem('sniperduel_settings', JSON.stringify({ quality: 'medio', v: 3 })); } catch (e) {} });
     const open = async q => { const p = await ctx.newPage(), errs = [], bad = [];
       p.on('pageerror', e => errs.push(e.message)); p.on('response', r => { if (/\/assets\//.test(r.url()) && !/\/personaje\//.test(r.url()) && r.status() >= 400) bad.push(r.status() + ' ' + r.url()); });
-      await p.goto(srv.url + '?vm=0&pueblo=4' + q); await p.waitForFunction(() => window.__SD && __SD.WORLDS && __SD.W, null, { timeout: 180000 }); return { p, errs, bad }; };
+      await p.goto(srv.url + '?carga=1&vm=0&pueblo=4' + q); await p.waitForFunction(() => window.__SD && __SD.WORLDS && __SD.W, null, { timeout: 180000 }); return { p, errs, bad }; };
     // no flag (a fresh context: ?pueblo=4 is remembered on the device): the PUEBLO of before
     { const c0 = await b.newContext({ viewport: { width: 640, height: 360 } }); await c0.route(/fonts\.(googleapis|gstatic)\.com/, r => r.abort());
-      const p0 = await c0.newPage(); await p0.goto(srv.url + '?vm=0&pueblo=0'); await p0.waitForFunction(() => window.__SD && __SD.WORLDS && __SD.W, null, { timeout: 180000 });
+      const p0 = await c0.newPage(); await p0.goto(srv.url + '?carga=1&vm=0&pueblo=0'); await p0.waitForFunction(() => window.__SD && __SD.WORLDS && __SD.W, null, { timeout: 180000 });
       const r = await p0.evaluate(() => ({ casas: __SD.CASAS.on, fuente: __SD.FUENTE.on, p3: __SD.P3ON, mp: __SD.NET && __SD.NET.N ? 1 : 0 }));
       check('?pueblo=0: ni casas, ni fuente nueva, ni PUEBLO 3.0/4.0 (el PUEBLO de antes)', !r.casas && !r.fuente && !r.p3, JSON.stringify(r));
       await c0.close(); }

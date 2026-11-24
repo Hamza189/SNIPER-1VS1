@@ -2,7 +2,8 @@
    Profiles change only how the picture is drawn (resolution, shadows), never the simulation,
    the hit zones, the fog distance or what is visible: the rival is drawn the same way in all.
 
-   AUTO = MEDIO on phones, ALTO on computers, and then the resolution follows the real FPS:
+   AUTO = ALTO on every device (phones too since 23-11-2026, owner: «deja gráficos altos por defecto»; before, MEDIO on
+   phones), lowered only by gpuHint / wantsLower below, and then the resolution follows the real FPS:
    every 1.5 s, if the frame rate is clearly under the target the internal resolution drops a
    step; when it has stayed comfortably over the target for a while it goes back up.
    Stable (PUEBLO 3.0): it never goes below 0.75 of the profile's resolution (the scene and the rival
@@ -28,7 +29,7 @@ const ORDER = ['bajo', 'medio', 'alto'];
 // the lower of two profiles (a missing one does not count)
 function lower(a, b) { if (!PROFILES[a]) return b; if (!PROFILES[b]) return a; return ORDER.indexOf(a) <= ORDER.indexOf(b) ? a : b; }
 // cap = the most AUTO may use on this device (gpuHint, or what wantsLower settled on); manual choices ignore it
-function resolve(choice, touch, cap) { return PROFILES[choice] ? choice : lower(touch ? 'medio' : 'alto', cap); }
+function resolve(choice, touch, cap) { return PROFILES[choice] ? choice : lower('alto', cap); }
 const LOWER = { alto: 'medio', medio: 'bajo', bajo: 'bajo' };
 // from the WebGL renderer name (WEBGL_debug_renderer_info, through ANGLE on Windows) and the CPU threads: the most AUTO
 // should start with, or null = no limit. Only lowers: an unknown name keeps the old AUTO.

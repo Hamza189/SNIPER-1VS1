@@ -7,6 +7,7 @@
    - LOD: cerca LOD0, lejos LOD2, y con la mira de zoom vuelve a LOD0; perfil BAJO usa el GLB de 1024
    Run: node test/pj2.browser.test.js   (WebGL por software: no se mide tiempo) */
 'use strict';
+const cg1 = u => /[?&]carga=/.test(u) ? u : u + (u.includes('?') ? '&' : '?') + 'carga=1';   // (23-11-2026) these checks run without the loading screen (it has its own test)
 const { chromium } = require('playwright');
 const ss = require('../tools/static-server.js');
 const flag = process.argv.includes('--pj3') ? '3' : '2';
@@ -22,7 +23,7 @@ async function open(b, url, q) {
   p.on('pageerror', e => errs.push(e.message));
   p.on('console', m => { if (/pj2/.test(m.text())) errs.push(m.text()); });
   p.on('response', r => { const u = r.url(); if (/\/assets\//.test(u) && r.status() >= 400) bad.push(r.status() + ' ' + u.replace(/^.*\/assets\//, '')); if (/\/assets\/personaje\//.test(u)) files.push(u.replace(/^.*\/assets\//, '').replace(/\?.*/, '')); });
-  await p.goto(url + '&ktx2=0');   // these checks are about the JPG files (KTX2 by default since 29-10: test/ktx2.browser.test.js)
+  await p.goto(cg1(url + '&ktx2=0'));   // these checks are about the JPG files (KTX2 by default since 29-10: test/ktx2.browser.test.js)
   await p.waitForFunction(() => window.__SD && __SD.WORLDS, null, { timeout: 120000 });
   await p.evaluate(() => { __SD.setMode('duel'); __SD.setOffMap('arena'); __SD.startMatch(); });
   await p.waitForTimeout(1500);
@@ -34,19 +35,19 @@ const zones = p => p.evaluate(() => __SD.BOTS.map(b => b.hit.map(m => [m.userDat
   const srv = await ss.start();
   const b = await chromium.launch({ args: ['--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist'] });
   console.log('\nCON ?pj=0 (el soldado de cajas; sin bandera es ?pj=pro desde el 28-10)');
-  const off = await open(b, srv.url + '?vm=1&pj=0', 'alto');
+  const off = await open(b, srv.url + '?carga=1&vm=1&pj=0', 'alto');
   const z0 = await zones(off.p);
   const offState = await off.p.evaluate(() => ({ on: __SD.PJ2.on, v2: __SD.BOTS.some(b => !!b.rig.v2) }));
   check('no se descarga nada del personaje y los bots son los de siempre', off.files.length === 0 && !offState.on && !offState.v2, off.files.join(' '));
   await off.ctx.close();
   if (flag === '3') {
-    const invalid = await open(b, srv.url + '?vm=1&pj=3invalid', 'alto');
+    const invalid = await open(b, srv.url + '?carga=1&vm=1&pj=3invalid', 'alto');
     check('un valor de bandera no válido no descarga ni activa el candidato', invalid.files.length === 0 && await invalid.p.evaluate(() => !__SD.PJ2.on));
     await invalid.ctx.close();
   }
 
   console.log('\nCON ?pj=' + flag + ' (ALTO)');
-  const o = await open(b, srv.url + '?vm=1&pj=' + flag, 'alto'), p = o.p;
+  const o = await open(b, srv.url + '?carga=1&vm=1&pj=' + flag, 'alto'), p = o.p;
   await p.waitForFunction(() => __SD.PJ2.tpl || __SD.PJ2.failed, null, { timeout: 120000 });
   await p.waitForTimeout(500);
   check('carga sin 404 ni errores', o.bad.length === 0 && o.errs.length === 0, o.bad.concat(o.errs).slice(0, 3).join(' | ') || o.files.join(' '));
@@ -97,7 +98,7 @@ const zones = p => p.evaluate(() => __SD.BOTS.map(b => b.hit.map(m => [m.userDat
   await o.ctx.close();
 
   console.log('\nCON ?pj=' + flag + ' (BAJO)');
-  const lo = await open(b, srv.url + '?vm=1&pj=' + flag, 'bajo');
+  const lo = await open(b, srv.url + '?carga=1&vm=1&pj=' + flag, 'bajo');
   await lo.p.waitForFunction(() => __SD.PJ2.tpl || __SD.PJ2.failed, null, { timeout: 120000 });
   check('BAJO: GLB y apariencia de 1024, sin errores', lo.files.includes(assetBase + 'personaje_1k.glb') && lo.files.includes(assetBase + 'color_bots_1k.jpg') && !lo.files.includes(assetBase + 'personaje.glb') && lo.errs.length === 0 && lo.bad.length === 0, lo.files.join(' '));
   await lo.ctx.close();

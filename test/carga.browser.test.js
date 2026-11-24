@@ -1,5 +1,5 @@
 /* PANTALLA DE CARGA (?carga=2, docs/CARGA.md) en la página real:
-   - sin la bandera no aparece ni cambia nada
+   - con ?carga=1 no aparece ni cambia nada; sin bandera sale (la de por defecto desde el 23-11-2026)
    - con ?carga=2 sale antes que nada, la barra solo sube y llega al 100 %; cada pieza que dice «hecha» está de verdad
      (personajes en memoria, armas, texturas, ningún archivo a medias, sombreadores preparados, bots de la partida) y
      después la partida empieza y se juega
@@ -51,9 +51,12 @@ const truth = p => p.evaluate(() => {
   const srv = await ss.start();
   const b = await chromium.launch({ args: ['--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist'] });
 
-  console.log('\nSIN LA BANDERA');
+  console.log('\nCON ?carga=1 (sin la pantalla)');
   {
-    const o = await open(b, srv.url + '?vm=1');
+    const d = await open(b, srv.url + '?vm=1');
+    check('sin bandera, la pantalla de carga sale (es la de por defecto desde el 23-11-2026)', await d.p.evaluate(() => __SD.CARGA.on));
+    await d.ctx.close();
+    const o = await open(b, srv.url + '?vm=1&carga=1');
     await o.p.waitForTimeout(1500);
     const r = await report(o.p);
     check('no sale la pantalla ni hay piezas', !r.on && r.hidden && r.pieces.length === 0 && o.seen.every(v => v[0] === -1), JSON.stringify(o.seen.slice(0, 3)));
@@ -78,7 +81,7 @@ const truth = p => p.evaluate(() => {
     check('carga motor, texturas, personajes, armas, preparar y lo de después', ['motor', 'tex', 'pj', 'armas', 'prep', 'desc'].every(c => cats.has(c)), [...cats].join());
     check('lo que dice que ha cargado está de verdad', Object.values(t).length > 5 && Object.values(t).every(Boolean), JSON.stringify(t));
     const pj = r.pieces.filter(x => x.id.startsWith('pj:'));
-    check('PC: los cuatro personajes a memoria (el rival online puede llevar cualquiera)', pj.length === 4 && pj.every(x => x.s === 'ok'), pj.map(x => x.id + ':' + x.s).join(' '));
+    check('PC: los seis personajes a memoria, RIDGE y AMBER incluidos (el rival online puede llevar cualquiera)', pj.length === 6 && pj.every(x => x.s === 'ok'), pj.map(x => x.id + ':' + x.s).join(' '));
     const st = await p.evaluate(() => ({ bots: __SD.BOTS.length, want: 0, warm: __SD.CARGA.warm, tpls: Object.keys(__SD.PJ2.tpls).length, prev: Object.keys(__SD.PJ2.prev) }));
     check('preparados los bots de la primera partida y los sombreadores', st.warm >= 5 && st.bots >= 2, JSON.stringify(st));
     check('las versiones 1K que nadie lleva ya no están en memoria', st.prev.length === 0, st.prev.join());

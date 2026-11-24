@@ -26,14 +26,14 @@ async function until(page, fn, arg, ms) { try { await page.waitForFunction(fn, a
     await ctx.route(/fonts\.(googleapis|gstatic)\.com/, r => r.abort());
     const page = await ctx.newPage();
     page.on('pageerror', e => errors.push(e.message));
-    await page.goto(web.url + '?perf=low&server=' + encodeURIComponent(server) + (pj3 ? '&pj=3' : '') + (q || ''), { timeout: 120000 });  // perf=low: no GPU on the test machine
+    await page.goto(web.url + '?carga=1&lobby=1&perf=low&server=' + encodeURIComponent(server) + (pj3 ? '&pj=3' : '') + (q || ''), { timeout: 120000 });  // perf=low: no GPU on the test machine
     await page.waitForFunction(() => window.__SD, null, { timeout: 120000 });
     return page;
   };
   try {
     console.log('\nPARTIDA 1v1 EN DOS NAVEGADORES REALES (servidor local)');
     const A = await open('');
-    // GUNSMITH (08-11): A carries the VECTOR model; online it must still be the server's HALCÓN R7 (the new rifles are only against bots)
+    // GUNSMITH (08-11): A carries the VECTOR model; online (approved 23-11-2026) the server gives A the VECTOR's own figures, without the silencer
     const offV = await A.evaluate(() => { __SD.WSKIN.rifle = 'vector'; localStorage.setItem('sniperduel_gsCfg', JSON.stringify({ v: 1, models: { vector: { mira: 'sniper', camo: '', muzzle: 'sil' } } }));
       __SD.applyRifleCfg(); return __SD.GUNCFG.name + (__SD.GUNCFG.silenced ? ' con silenciador ' + __SD.GUNCFG.speed : ''); });   // as after a game against bots
     check('antes, sin conexión, A lleva las cifras del VECTOR con su silenciador', offV === 'VECTOR con silenciador 515', offV);
@@ -59,7 +59,7 @@ async function until(page, fn, arg, ms) { try { await page.waitForFunction(fn, a
     check('cuenta atrás en los dos', await until(A, () => !document.getElementById('countdown').hidden) && await until(B, () => __SD.NET.N.phase === 'countdown' || __SD.NET.N.phase === 'playing'));
     check('los dos juegan en la ARENA (mapa del servidor = mapa dibujado)', await until(A, () => __SD.WORLD_ID === 'arena', null, 9000) && await until(B, () => __SD.WORLD_ID === 'arena', null, 9000) && srv.rooms.get(code).debug.mapId === 'arena');
     check('empieza la partida en los dos', await until(A, () => __SD.NET.N.phase === 'playing' && __SD.state === 'playing', null, 9000) && await until(B, () => __SD.NET.N.phase === 'playing', null, 9000));
-    check('en línea, A lleva el HALCÓN R7 sin silenciador aunque haya elegido el VECTOR con él (cifras del servidor)', await A.evaluate(() => __SD.mode === 'online' && __SD.WSKIN.rifle === 'vector' && __SD.GUNCFG === __SD.HALCON && __SD.WCORE.cfg === __SD.HALCON && __SD.WCORE.cfg.mag === 5 && !__SD.GUNCFG.silenced && !(__SD.SIL.mesh && __SD.SIL.mesh.visible) && /^HALCÓN R7/.test(document.getElementById('wname').textContent)));
+    check('en línea, A lleva las cifras del VECTOR (las del servidor) sin silenciador', await A.evaluate(() => __SD.mode === 'online' && __SD.WSKIN.rifle === 'vector' && __SD.NET.N.rifle === 'vector' && __SD.GUNCFG === SD_CONFIG.rifles.vector && __SD.WCORE.cfg === SD_CONFIG.rifles.vector && __SD.WCORE.cfg.mag === 6 && !__SD.GUNCFG.silenced && !(__SD.SIL.mesh && __SD.SIL.mesh.visible) && /^VECTOR/.test(document.getElementById('wname').textContent)));
     check('el marcador muestra el nombre del rival', (await A.textContent('#kBotsLbl')) === 'NOVIA' && (await B.textContent('#kBotsLbl')) === 'HAMZA');
     if (pj3) {
       const loaded = pg => until(pg, () => __SD.PJ2.assetRoot.endsWith('/v4/') && !!(__SD.REMOTE && __SD.REMOTE.rig.v2), null, 120000);
@@ -142,7 +142,7 @@ async function until(page, fn, arg, ms) { try { await page.waitForFunction(fn, a
     check('revancha de uno solo: espera al rival', await A.textContent('#overEyebrow') === 'Esperando al rival…' && room.phase === 'over');
     await B.click('#again');
     check('los dos aceptan: empieza otra partida sin recargar la página', await until(A, () => __SD.NET.N.phase === 'playing' && __SD.state === 'playing', null, 9000) && await until(B, () => __SD.NET.N.phase === 'playing', null, 9000));
-    check('marcador a 0–0 y 5 balas', await A.textContent('#kYou') === '0' && await B.textContent('#kYou') === '0' && room.seats.A.p.w.ammo === 5);
+    check('marcador a 0–0 y las 6 balas del VECTOR de A en el servidor', await A.textContent('#kYou') === '0' && await B.textContent('#kYou') === '0' && room.seats.A.p.w.ammo === 6 && room.seats.A.p.w.cfg.name === 'VECTOR');
     // VÍBORA 9 online: A draws the pistol, B hears and sees it, the server confirms the damage
     room.debug.place('A', -10, -3, -Math.PI / 2); room.debug.place('B', 10, -3, Math.PI / 2); await sleep(1200);
     await A.evaluate(() => { __SD.input.select = 'pistol'; });

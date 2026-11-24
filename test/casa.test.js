@@ -129,7 +129,8 @@ console.log('\n1V1 ONLINE EN CASA ATLAS (red simulada)');
   check('a través de la cristalera del balcón sí se acierta', r.hits.length === 1, r.hits.map(h => h.part).join());
   S.run(3300);
   r = shot([-1.2, -2.9], [-1.2, -0.6]);
-  check('el televisor de pie para la bala', r.hits.length === 0 && r.shots >= 1);
+  // since 10-11-2026 rifle bullets go through thin things online (core/pen.js): the TV stops it or lets it through weakened
+  check('el televisor de pie para la bala o la deja pasar debilitada (penetración, desde el 10-11)', r.shots >= 1 && r.hits.every(h => h.thru && h.dmg < (h.part === 'head' ? 250 : 85)), r.hits.map(h => h.part + ' ' + h.dmg + (h.thru ? ' a través' : '')).join());
   check('sin correcciones de predicción tras colocarlos', A.N.corrMax < 0.05, A.N.corrMax.toFixed(3));
 }
 console.log('\n' + pass + ' correctas, ' + fail + ' fallidas');

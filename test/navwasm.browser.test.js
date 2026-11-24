@@ -13,7 +13,7 @@ const check = (n, c, i) => { (c ? pass++ : fail++); console.log((c ? '  ok   ' :
     const ctx = await b.newContext({ viewport: { width: 640, height: 360 } }); await ctx.route(/fonts\.(googleapis|gstatic)\.com/, r => r.abort());
     const p = await ctx.newPage(), errs = [], bad = [];
     p.on('pageerror', e => errs.push(e.message)); p.on('response', r => { if (/\/assets\//.test(r.url()) && r.status() >= 400) bad.push(r.status() + ' ' + r.url()); });
-    await p.goto(srv.url + '?barrio=1' + q + (/navwasm=0/.test(q) ? '&audiowasm=0' : '')); await p.waitForFunction(() => window.__SD && __SD.WORLDS && window.SDNavWasm, null, { timeout: 180000 });
+    await p.goto(srv.url + '?carga=1&barrio=1' + q + (/navwasm=0/.test(q) ? '&audiowasm=0' : '')); await p.waitForFunction(() => window.__SD && __SD.WORLDS && window.SDNavWasm, null, { timeout: 180000 });
     if (!/navwasm=0/.test(q)) await p.waitForFunction(() => (SDNavWasm.ready || SDNavWasm.failed) && window.SDAudioWasm && (SDAudioWasm.ready || SDAudioWasm.failed), null, { timeout: 30000 }).catch(() => {});
     const r = await p.evaluate(() => { const out = { ready: SDNavWasm.ready, off: SDNavWasm.off, maps: {} };
       for (const id of ['barrio', 'casa2', 'casa2b']) { const W = __SD.WORLDS[id]; if (!W) continue; const t = performance.now(), nav = W.nav;

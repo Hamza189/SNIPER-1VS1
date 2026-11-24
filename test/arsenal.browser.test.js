@@ -8,6 +8,7 @@
    - girar (arrastrar) y acercar (rueda); en el móvil en horizontal todo cabe entre las dos barras
    Run: node test/arsenal.browser.test.js      env GPU=0: WebGL por software */
 'use strict';
+const cg1 = u => /[?&]carga=/.test(u) ? u : u + (u.includes('?') ? '&' : '?') + 'carga=1';   // (23-11-2026) these checks run without the loading screen (it has its own test)
 let chromium;
 try { ({ chromium } = require('playwright')); } catch (e) { console.log('\nARSENAL: playwright no está instalado, se omite'); process.exit(0); }
 const ss = require('../tools/static-server.js');
@@ -29,7 +30,7 @@ const check = (n, c, i) => { (c ? pass++ : fail++); console.log((c ? '  ok   ' :
       cfg: JSON.parse(localStorage.getItem('sniperduel_gsCfg')), dirty: document.getElementById('gsDirty').textContent, save: !document.getElementById('gsSave').disabled,
       eq: [...document.querySelectorAll('#gsRifles .gsIt')].filter(x => !x.querySelector('em').hidden).map(x => x.dataset.ws).join(),
       pressed: [...document.querySelectorAll('#gsRifles .gsIt[aria-pressed=true]')].map(x => x.dataset.ws).join() }));
-    await p.goto(srv.url, { timeout: 180000 }); await open();
+    await p.goto(cg1(srv.url), { timeout: 180000 }); await open();
 
     console.log('\nEL ARSENAL');
     const lay = await p.evaluate(() => { const pane = document.querySelector('#m2 .m2Pane[data-pane=armas]'), slot = document.getElementById('gsSlot').getBoundingClientRect();
@@ -56,7 +57,7 @@ const check = (n, c, i) => { (c ? pass++ : fail++); console.log((c ? '  ok   ' :
     check('elegir el VISOR 4×: en el arma al momento, sin guardarse', s.mira === 'x4' && s.sMira !== 'x4' && x4, JSON.stringify({ mira: s.mira, guardada: s.sMira, enArma: x4 }));
     const one = await p.evaluate(() => { document.querySelector('#gsAcc [data-acc=mag]').click(); const o = [...document.querySelectorAll('#gsPickL .gsOpt')];
       return { n: o.length, txt: o.map(x => x.textContent).join(), note: document.getElementById('gsPickN').textContent }; });
-    check('CARGADOR: solo el que existe (ESTÁNDAR, 5 balas) y lo dice', one.n === 1 && /ESTÁNDAR/.test(one.txt) && /5 balas/.test(one.txt) && /única opción/.test(one.note), JSON.stringify(one));
+    check('CARGADOR: solo el que existe (ESTÁNDAR, 5 balas), sin texto de relleno', one.n === 1 && /ESTÁNDAR/.test(one.txt) && /5 balas/.test(one.txt) && !one.note, JSON.stringify(one));
     const cam = await p.evaluate(() => { document.getElementById('gsCamoB').click(); return { n: document.querySelectorAll('#gsPickL .gsOpt').length, note: document.getElementById('gsPickN').textContent }; });
     check('CAMUFLAJE sin cuenta: solo «sin camuflaje» y cómo conseguirlos', cam.n === 1 && /cuenta/.test(cam.note), JSON.stringify(cam));
     await p.evaluate(() => document.getElementById('gsReset').click());
@@ -79,7 +80,7 @@ const check = (n, c, i) => { (c ? pass++ : fail++); console.log((c ? '  ok   ' :
     const stats = await p.evaluate(() => { const o = {}; o.stats = document.getElementById('gsStats').textContent; document.querySelector('#gsTabs [data-gt=dmg]').click();
       o.rows = [...document.querySelectorAll('#gsStats .gsTbl tr')].slice(1).map(tr => [...tr.children].map(td => td.textContent)); document.querySelector('#gsTabs [data-gt=stats]').click(); return o; });
     const T = GS.table(CFG.rifles.ultima), r0 = stats.rows[0] || [], rl = stats.rows[stats.rows.length - 1] || [];
-    check('ESTADÍSTICAS de la ÚLTIMA (sus cifras contra bots, con la diferencia con el HALCÓN): 95 / 70, 52/min, 680 m/s, 450 m; y que en línea va el HALCÓN', /95\+10 \/ 70\+15/.test(stats.stats) && /52\/min−11/.test(stats.stats) && /680 m\/s\+80/.test(stats.stats) && /450 m/.test(stats.stats) && /EN LÍNEA: HALCÓN R7/.test(stats.stats), stats.stats.slice(0, 160));
+    check('ESTADÍSTICAS de la ÚLTIMA (sus cifras contra bots, con la diferencia con el HALCÓN): 95 / 70, 52/min, 680 m/s, 450 m; sin el aviso de «en línea va el HALCÓN» (desde el 23-11 cada rifle va con sus cifras también en línea)', /95\+10 \/ 70\+15/.test(stats.stats) && /52\/min−11/.test(stats.stats) && /680 m\/s\+80/.test(stats.stats) && /450 m/.test(stats.stats) && !/EN LÍNEA/.test(stats.stats), stats.stats.slice(0, 160));
     check('DAÑO: la tabla es la de core/gunstats.js (daño, disparos para eliminar, caída y vuelo)', stats.rows.length === T.length && r0[0] === T[0].d + ' m' && r0[2] === T[0].torso + ' (' + T[0].torsoShots + ')' && rl[4] === T[T.length - 1].dropCm + ' cm' && rl[5] === T[T.length - 1].ms + ' ms', JSON.stringify([r0, rl]));
     const kn = await p.evaluate(async () => { document.querySelector('#gsKnives [data-ws=tactica]').click(); await new Promise(r => setTimeout(r, 200));
       return { acc: document.getElementById('gsAcc').hidden, stats: document.getElementById('gsStats').textContent, name: document.getElementById('gsName').textContent }; });
@@ -142,17 +143,17 @@ const check = (n, c, i) => { (c ? pass++ : fail++); console.log((c ? '  ok   ' :
     check('sin errores ni archivos que falten', errs.length === 0 && bad.length === 0, errs.concat(bad).slice(0, 3).join(' | ') || 'ninguno');
     // back to the defaults for the next tests on this browser
     await p.evaluate(() => { localStorage.removeItem('sniperduel_gsCfg'); localStorage.setItem('sniperduel_wsRifle', '"halcon"'); localStorage.setItem('sniperduel_mira', '"sniper"'); });
-    await p.goto(srv.url + '?arsenal=0'); await p.waitForFunction(() => window.__SD && __SD.M2 && __SD.M2.room, null, { timeout: 180000 });
+    await p.goto(srv.url + '?carga=1&arsenal=0'); await p.waitForFunction(() => window.__SD && __SD.M2 && __SD.M2.room, null, { timeout: 180000 });
     const old = await p.evaluate(() => { document.querySelector('#m2 .m2Nav [data-tab=armas]').click(); const pane = document.querySelector('#m2 .m2Pane[data-pane=armas]');
       return { oldPane: pane && !pane.classList.contains('gsPane') && !pane.hidden, rows: document.querySelectorAll('#m2Miras .m2W').length, stored: localStorage.getItem('sniperduel_arsenalOld') }; });
     check('?arsenal=0 devuelve el ARMAS de antes (y se recuerda)', old.oldPane && old.rows === 8 && old.stored === 'true', JSON.stringify(old));
-    await p.goto(srv.url + '?arsenal=1'); await ctx.close();
+    await p.goto(srv.url + '?carga=1&arsenal=1'); await ctx.close();
 
     console.log('\nMÓVIL EN HORIZONTAL (844 × 390)');
     const c2 = await b.newContext({ viewport: { width: 844, height: 390 }, hasTouch: true, isMobile: true, deviceScaleFactor: 2 });
     await c2.route(/fonts\.(googleapis|gstatic)\.com/, r => r.abort());
     const q = await c2.newPage(), e2 = []; q.on('pageerror', e => e2.push(e.message));
-    await q.goto(srv.url, { timeout: 180000 }); await q.waitForFunction(() => window.__SD && __SD.M2 && __SD.M2.room && __SD.VMA.ready, null, { timeout: 180000 });
+    await q.goto(cg1(srv.url), { timeout: 180000 }); await q.waitForFunction(() => window.__SD && __SD.M2 && __SD.M2.room && __SD.VMA.ready, null, { timeout: 180000 });
     const ph = await q.evaluate(() => { document.querySelector('#m2 .m2Nav [data-tab=armas]').click();
       const navTop = document.querySelector('#m2 .m2Nav').getBoundingClientRect().top, inside = el => { const r = el.getBoundingClientRect(); return r.width > 0 && r.left >= -1 && r.right <= innerWidth + 1 && r.top >= 0 && r.bottom <= navTop + 1; };
       const must = [...document.querySelectorAll('#gsAcc .gsAccB, #gsCamoB, #gsSave, #gsReset, #gsTabs button')];

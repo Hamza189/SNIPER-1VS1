@@ -4,9 +4,11 @@
      andar, medidos con el reloj del propio juego
    - ?balance=0 vuelve a las cifras de antes (las del HALCÓN para todos los modelos) y ?balance=1 lo deshace
    - el SILENCIADOR: se monta y se guarda por modelo; sin fogonazo, sonido bajo, los bots solo lo oyen cerca, bala −8 %
-   - en línea siempre el HALCÓN R7 sin silenciador: lo comprueba test/online.browser.test.js con el servidor de verdad
+   - en línea, desde el 23-11-2026, cada rifle con sus cifras y sin silenciador: lo comprueban test/room.test.js y
+     test/online.browser.test.js con el servidor de verdad
    Run: node test/rifles.browser.test.js      env GPU=0: WebGL por software */
 'use strict';
+const cg1 = u => /[?&]carga=/.test(u) ? u : u + (u.includes('?') ? '&' : '?') + 'carga=1';   // (23-11-2026) these checks run without the loading screen (it has its own test)
 let chromium;
 try { ({ chromium } = require('playwright')); } catch (e) { console.log('\nRIFLES: playwright no está instalado, se omite'); process.exit(0); }
 const ss = require('../tools/static-server.js');
@@ -35,7 +37,7 @@ const FEEL = {
     await ctx.route(/fonts\.(googleapis|gstatic)\.com/, r => r.abort());
     const p = await ctx.newPage(), errs = [];
     p.on('pageerror', e => errs.push(e.message));
-    const boot = async q => { await p.goto(srv.url + (q || ''), { timeout: 180000 });
+    const boot = async q => { await p.goto(cg1(srv.url + (q || '')), { timeout: 180000 });
       await p.waitForFunction(() => window.__SD && __SD.M2 && __SD.M2.room && __SD.VMA.ready, null, { timeout: 180000 }); };
     const arsenal = async () => { await p.evaluate(() => document.querySelector('#m2 .m2Nav [data-tab=armas]').click()); await p.waitForFunction(() => __SD.M2.item, null, { timeout: 60000 }); };
     const pick = id => p.evaluate(id => { document.querySelector('#gsRifles [data-ws=' + id + ']').click(); document.querySelector('#gsTabs [data-gt=stats]').click();
@@ -83,14 +85,14 @@ const FEEL = {
       if (id === 'halcon') check('el HALCÓN R7 no cambia (las cifras de antes) y no lleva diferencias', S.dmg.head === 250 && S.dmg.torso === 85 && S.dmg.legs === 55 && S.bolt === 0.95 && S.mag === 5 && S.reload === 2.35 && S.ads === 0.2 && S.speed === 600 && S.moveMul === 1
         && Object.values(r.rows).every(x => x.d === ''), r.role);
       else { const F = FEEL[id], off = Object.keys(F).filter(k => !r.rows[k] || r.rows[k].d !== F[k]).map(k => k + ' ' + (r.rows[k] ? r.rows[k].d || '=' : '—') + ' ≠ ' + F[k]);
-        check(id + ': su personalidad frente al HALCÓN (' + Object.keys(F).map(k => k.toLowerCase() + ' ' + F[k]).join(', ') + ') y que en línea va el HALCÓN', off.length === 0 && /EN LÍNEA: HALCÓN R7/.test(r.role), off.join(' | ') || r.role); }
+        check(id + ': su personalidad frente al HALCÓN (' + Object.keys(F).map(k => k.toLowerCase() + ' ' + F[k]).join(', ') + ')', off.length === 0 && !/EN LÍNEA/.test(r.role), off.join(' | ') || r.role); }
     }
     const dmg = await p.evaluate(() => { document.querySelector('#gsTabs [data-gt=dmg]').click();
       const o = { rows: [...document.querySelectorAll('#gsStats .gsTbl tr')].slice(1).map(tr => [...tr.children].map(td => td.textContent)), note: document.querySelector('#gsStats .gsNote').textContent };
       document.querySelector('#gsTabs [data-gt=stats]').click(); return o; });
     const T = GS.table(CFG.rifles.sahara);
-    check('DAÑO del SAHARA: la tabla de core/gunstats.js con sus cifras, y dice que en línea van las del HALCÓN', dmg.rows.length === T.length && dmg.rows.every((r, i) => r[1] === T[i].head + ' (' + T[i].headShots + ')' && r[2] === T[i].torso + ' (' + T[i].torsoShots + ')' && r[3] === T[i].legs + ' (' + T[i].legsShots + ')' && r[5] === T[i].ms + ' ms')
-      && /en línea, las del HALCÓN R7/.test(dmg.note), JSON.stringify(dmg.rows[2]));
+    check('DAÑO del SAHARA: la tabla de core/gunstats.js con sus cifras', dmg.rows.length === T.length && dmg.rows.every((r, i) => r[1] === T[i].head + ' (' + T[i].headShots + ')' && r[2] === T[i].torso + ' (' + T[i].torsoShots + ')' && r[3] === T[i].legs + ' (' + T[i].legsShots + ')' && r[5] === T[i].ms + ' ms')
+      && !/HALCÓN/.test(dmg.note), JSON.stringify(dmg.rows[2]));
     const mag = await p.evaluate(() => { document.querySelector('#gsAcc [data-acc=mag]').click(); return document.getElementById('gsPickL').textContent; });
     check('el CARGADOR del accesorio también es el del modelo (SAHARA: 5 balas, recarga 2,20 s)', /5 balas · recarga 2,20 s/.test(mag), mag);
 

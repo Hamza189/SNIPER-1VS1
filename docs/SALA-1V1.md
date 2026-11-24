@@ -1,5 +1,8 @@
 # SALA 1V1 — la sala de espera multijugador nueva (`?lobby=2`, 10-11-2026)
 
+> **23-11-2026: la de por defecto** (`docs/LANZAMIENTO.md`), con el botón **MÁS MODOS** que lleva a la pantalla de salas de
+> siempre (TODOS CONTRA TODOS, EQUIPOS, bots). `?lobby=1` vuelve a la de siempre.
+
 Pedido del propietario: una sala de espera MULTIJUGADOR 1V1 «al estilo de los lobbies de PUBG o COD, pero con diseño
 original», con una imagen de referencia («no tiene que ser igual, pero sí parecido»). Reutiliza las salas privadas de
 siempre: mismo servidor (Cloudflare Worker + Durable Objects), mismo protocolo, mismo código de invitación. No hay un

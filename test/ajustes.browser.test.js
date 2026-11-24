@@ -24,7 +24,7 @@ function check(name, cond, info) { if (cond) { pass++; console.log('  ok   ' + n
     p.on('console', m => { if (m.type() === 'error' && /shader|WebGLProgram|GLSL/i.test(m.text())) errs.push(m.text().slice(0, 200)); });
     // the phone runs on SwiftShader here, which AUTO (10-11-2026) rightly treats as a weak GPU → BAJO; a real phone has an
     // Apple / Adreno / Mali GPU, so the phone checks use the AUTO that ignores the GPU name (gpuauto=0). The PC page keeps it.
-    await p.goto(srv.url + '?pj=0' + (phone ? '&gpuauto=0' : ''), { timeout: 180000 });
+    await p.goto(srv.url + '?carga=1&pj=0' + (phone ? '&gpuauto=0' : ''), { timeout: 180000 });
     await p.waitForFunction(() => window.__SD && __SD.WORLDS, null, { timeout: 180000 });
     return { ctx, p, errs };
   };
@@ -109,7 +109,7 @@ function check(name, cond, info) { if (cond) { pass++; console.log('  ok   ' + n
       return { on, off: P.yaw - y1, want: 3 * Math.PI / 180 }; });
     check('giroscopio: girar el móvil 3° a la izquierda gira la cámara 3° (y hacia arriba al inclinarlo)', Math.abs(gy.on.dy - gy.want) < 0.004 && gy.on.dp > 0.02, JSON.stringify(gy));
     check('giroscopio apagado: no gira nada', Math.abs(gy.off) < 1e-6, gy.off);
-    check('suavizado de bordes en el móvil (AUTO → MEDIO): MSAA 4×', await M.p.evaluate(() => { const g = __SD.renderer.getContext(); return g.getParameter(g.SAMPLES) === 4 && __SD.GFX.aa === true; }));
+    check('suavizado de bordes en el móvil (AUTO → ALTO): MSAA 4×', await M.p.evaluate(() => { const g = __SD.renderer.getContext(); return g.getParameter(g.SAMPLES) === 4 && __SD.GFX.aa === true; }));
     check('sin errores (móvil)', M.errs.length === 0, M.errs.slice(0, 2).join(' | '));
     await M.ctx.close();
 

@@ -6,6 +6,24 @@ Cada entrada dice qué se decidió o cambió, quién lo decidió, y el estado re
 Las decisiones anteriores al 18-10-2026 están resumidas en `SNIPER_DUEL_MASTER_CONTEXT.md` §4.
 Detalle de cada cambio (antes/después, medidas, cómo revertir): `docs/next-level/NEXT_LEVEL_CHANGELOG.md`.
 
+## 23-11-2026 — LANZAMIENTO: lo nuevo por defecto, textos limpios y créditos aparte
+El propietario: «medio lanzarlo a producción… pon todo lo nuevo por defecto, borra cosas que no utilizamos, deja gráficos
+altos por defecto… borra todo el texto innecesario… fuentes y derechos en un archivo aparte». Decisiones suyas en esta
+sesión:
+- **Rifles con sus cifras también online**: «Sí, cada rifle con sus cifras» (cambio de equilibrio del servidor, aprobado).
+- **SALA 1V1 por defecto con un botón MÁS MODOS** a la pantalla de salas de siempre (TODOS, EQUIPOS, bots).
+- **Sin sonido de fondo**: fuera el agua de la fuente, que sonaba a viento.
+Hecho: AUTO = ALTO en todos los aparatos; pantalla de carga, BARRIO, RIDGE y AMBER por defecto; pestaña EN PRUEBA fuera
+(y una vez por aparato se olvidan sus elecciones); textos de PERSONAJE, ARMAS y AJUSTES de una línea; `creditos.html`
+enlazada al pie de AJUSTES; los paquetes de origen de `assets/3d/imports` que el juego no carga (~100 MB) ya no se
+publican en la web (siguen en el repositorio). Detalle: `docs/LANZAMIENTO.md`.
+- **Fallos encontrados y corregidos**: un error de sintaxis propio antes de publicar; la pantalla de carga podía quedarse
+  encima de una partida; el ajuste «Pueblo CLÁSICO / 3.0» no hacía nada; RIDGE y AMBER a 4K sin comprimir en el PC (ahora 2K).
+  Nueve pruebas que se habían quedado viejas, puestas al día (`docs/LANZAMIENTO.md`). Herramienta: `tools/todas-las-pruebas.js`.
+- **Pendiente de decisión del propietario**: en CASA ATLAS el televisor de pie deja pasar la bala con el 75 % del daño
+  (penetración del 10-11): un tiro a la cabeza a través mata. ¿Debe pararla del todo? Sería un cambio del servidor.
+- **Estado**: IMPLEMENTADO · PROBADO EN NAVEGADOR · PENDIENTE DE VALIDACIÓN EN IPHONE Y ANDROID.
+
 ## 23-11-2026 — RIDGE y AMBER: los primeros personajes propios (Meshy AI), en prueba
 El propietario generó en Meshy AI (texto → imagen → 3D) dos personajes originales con prompts de Claude:
 - **RIDGE**: veterano con la cara al descubierto;

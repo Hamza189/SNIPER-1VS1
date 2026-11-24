@@ -24,7 +24,7 @@ function check(name, cond, info) { if (cond) { pass++; console.log('  ok   ' + n
     const p = await ctx.newPage(), errs = [];
     p.on('pageerror', e => errs.push(e.message));
     p.on('console', m => { if (m.type() === 'error' && /shader|WebGLProgram|GLSL|mira/i.test(m.text())) errs.push(m.text().slice(0, 200)); });
-    await p.goto(srv.url + (process.env.PAGE || '') + '?ktx2=0', { timeout: 180000 });   // env PAGE=otra.html: another build
+    await p.goto(srv.url + (process.env.PAGE || '') + '?carga=1&ktx2=0', { timeout: 180000 });   // env PAGE=otra.html: another build
     await p.waitForFunction(() => window.__SD && __SD.WORLDS && __SD.VMA.ready, null, { timeout: 180000 });
     await p.evaluate(() => { HTMLCanvasElement.prototype.requestPointerLock = function () {}; });
 
@@ -119,7 +119,7 @@ function check(name, cond, info) { if (cond) { pass++; console.log('  ok   ' + n
     await c2.addInitScript(() => { try { localStorage.setItem('sniperduel_mira', JSON.stringify('punto')); } catch (e) {} });
     const q = await c2.newPage(), e2 = [];
     q.on('pageerror', e => e2.push(e.message));
-    await q.goto(srv.url + (process.env.PAGE || '') + '?pj=pro&ktx2=0', { timeout: 180000 });
+    await q.goto(srv.url + (process.env.PAGE || '') + '?carga=1&pj=pro&ktx2=0', { timeout: 180000 });
     await q.waitForFunction(() => window.__SD && __SD.VMA.ready, null, { timeout: 180000 });
     for (const [skin, dir] of [['titan', 'titan'], ['ultima', 'ratio'], ['vector', 'vector'], ['sahara', 'lince']]) {
       const r = await q.evaluate(async ([skin, dir]) => { const S = __SD; S.setWskin('rifle', skin);

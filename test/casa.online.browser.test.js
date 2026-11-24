@@ -20,7 +20,7 @@ async function until(page, fn, arg, ms) { try { await page.waitForFunction(fn, a
     await ctx.route(/fonts\.(googleapis|gstatic)\.com/, r => r.abort());
     const page = await ctx.newPage(); page.on('pageerror', e => errors.push(who + ': ' + e.message));
     page.on('response', r => { if (/casa_atlas\.glb/.test(r.url()) && r.status() < 400) files[who]++; });
-    await page.goto(web.url + '?perf=low&server=' + encodeURIComponent(server) + q); await page.waitForFunction(() => window.__SD);
+    await page.goto(web.url + '?carga=1&lobby=1&perf=low&server=' + encodeURIComponent(server) + q); await page.waitForFunction(() => window.__SD);
     return page;
   };
   try {

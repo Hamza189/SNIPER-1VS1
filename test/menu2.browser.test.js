@@ -29,13 +29,13 @@ const wait = (p, fn, arg, ms) => p.waitForFunction(fn, arg, { timeout: ms || 120
     await p.addInitScript(() => { HTMLCanvasElement.prototype.requestPointerLock = function () {}; });
 
     console.log('\n?menu=1: EL MENÚ DE ANTES');
-    await p.goto(srv.url + '?ktx2=0&menu=1', { timeout: 180000 });
+    await p.goto(srv.url + '?carga=1&ktx2=0&menu=1', { timeout: 180000 });
     await wait(p, () => window.__SD && __SD.WORLDS && __SD.VMA.ready);
     const d0 = await p.evaluate(() => ({ m2: !document.getElementById('m2').hidden, cls: document.body.classList.contains('m2'), inner: getComputedStyle(document.querySelector('#menu .menuInner')).display, diff: !!document.querySelector('#menu .menuInner #diffBlock'), room: !!__SD.M2.room }));
     check('con ?menu=1 no hay nada del menú nuevo y los bloques siguen en su sitio', !d0.m2 && !d0.cls && d0.inner !== 'none' && d0.diff && !d0.room, JSON.stringify(d0));
 
     console.log('\nEL MENÚ NUEVO (?menu=2 lo vuelve a poner tras ?menu=1)');
-    await p.goto(srv.url + '?ktx2=0&menu=2&arsenal=0', { timeout: 180000 });   // ARMAS of before (the ARSENAL: test/arsenal.browser.test.js)
+    await p.goto(srv.url + '?carga=1&ktx2=0&menu=2&arsenal=0&carga=1', { timeout: 180000 });   // carga=1: the loading screen has its own test   // ARMAS of before (the ARSENAL: test/arsenal.browser.test.js)
     await wait(p, () => window.__SD && __SD.VMA.ready && __SD.M2.room && __SD.M2.held);
     const d1 = await p.evaluate(() => { const S = __SD; S.advance(16); const r = S.renderer.info.render;
       return { m2: !document.getElementById('m2').hidden, inner: getComputedStyle(document.querySelector('#menu .menuInner')).display, tabs: [...document.querySelectorAll('#m2 .m2Nav button')].map(x => x.textContent.trim()).join('|'),
@@ -50,10 +50,10 @@ const wait = (p, fn, arg, ms) => p.waitForFunction(fn, arg, { timeout: ms || 120
     console.log('\nINICIO');
     const mode = await p.evaluate(() => { const out = {}; const c = s => document.querySelector('#m2 .m2Mode[data-sel=' + s + ']').click();
       c('range'); out.range = __SD.mode; c('duel'); out.duel = __SD.mode; out.pressed = document.querySelector('#m2 .m2Mode[aria-pressed=true]').dataset.sel;
-      c('online'); document.getElementById('m2Play').click(); out.mp = !document.getElementById('mp').hidden && document.getElementById('menu').hidden;
-      document.getElementById('mpBack').click(); out.back = !document.getElementById('menu').hidden && !document.getElementById('m2').hidden; c('duel'); return out; });
+      c('online'); out.mp = !document.getElementById('lb').hidden && document.getElementById('menu').hidden;   // (23-11-2026) the SALA 1V1, at once
+      document.getElementById('lbBack').click(); out.back = !document.getElementById('menu').hidden && !document.getElementById('m2').hidden; c('duel'); return out; });
     check('CAMPO DE TIRO y VS BOTS son los modos del juego', mode.range === 'range' && mode.duel === 'duel' && mode.pressed === 'duel', JSON.stringify(mode));
-    check('MULTIJUGADOR + JUGAR abre las salas y VOLVER trae el menú nuevo', mode.mp && mode.back);
+    check('MULTIJUGADOR abre la SALA 1V1 y VOLVER trae el menú nuevo', mode.mp && mode.back);
     const opt = await p.evaluate(() => { document.getElementById('m2Opts').click(); const sh = document.getElementById('m2Sheet'), body = document.getElementById('m2SheetBody');
       const out = { open: !sh.hidden, blocks: ['diffBlock', 'rangeBlock', 'modeSub'].every(id => body.contains(document.getElementById(id))) && !!body.querySelector('.kitSeg') && !!body.querySelector('#sens') };
       document.querySelector('#diffSeg [data-d="2"]').click(); out.diff = JSON.parse(localStorage.getItem('sniperduel_diff')); document.querySelector('#offTimeSeg [data-t="5"]').click();
@@ -66,18 +66,18 @@ const wait = (p, fn, arg, ms) => p.waitForFunction(fn, arg, { timeout: ms || 120
 
     console.log('\nPERSONAJE');
     const pj = await p.evaluate(async () => { const S = __SD, out = [], bad = []; let waitSeen = false, keptOld = false;
-      for (const id of Object.keys(S.SKINS)) { const before = S.M2.R.skinPack; document.querySelector('#m2PjList [data-skin="' + id + '"]').click();
+      for (const id of Object.keys(S.SKINS).filter(k => k !== 'clasico').concat('clasico')) { const before = S.M2.R.skinPack; document.querySelector('#m2PjList [data-skin="' + id + '"]').click();
         const t = performance.now(); let first = true;
         while (performance.now() - t < 120000) { S.advance(16); const R = S.M2.R;
           // never the box figure in place of a realistic operator that is still on its way
-          if (S.M2.pivot.visible && S.SKINS[id].pack !== null && R.skinPack !== null && !R.v2) bad.push(id);
+          if (S.PJ2.on && S.M2.pivot.visible && S.SKINS[id].pack !== null && R.skinPack !== null && !R.v2) bad.push(id);
           if (first && R.skinPack !== S.SKINS[id].pack && S.SKINS[id].pack) { if (R.skinPack === before) keptOld = true; if (!document.getElementById('m2Load').hidden && /CARGANDO/.test(document.getElementById('m2LoadTxt').textContent)) waitSeen = true; }
           first = false;
-          if (R.skinPack === S.SKINS[id].pack && (S.SKINS[id].pack === null || R.v2)) break; await new Promise(r => setTimeout(r, 50)); }
-        out.push(id + ':' + (S.SKIN === id) + ':' + (S.M2.R.skinPack === S.SKINS[id].pack) + ':' + (JSON.parse(localStorage.getItem('sniperduel_skin')) === id) + ':' + (document.getElementById('m2PjName').textContent === S.SKINS[id].name)); }
+          if (!S.PJ2.on || (R.skinPack === S.SKINS[id].pack && (S.SKINS[id].pack === null || R.v2))) break; await new Promise(r => setTimeout(r, 50)); }
+        out.push(id + ':' + (S.SKIN === id) + ':' + (!S.PJ2.on || S.M2.R.skinPack === S.SKINS[id].pack) + ':' + (JSON.parse(localStorage.getItem('sniperduel_skin')) === id) + ':' + (document.getElementById('m2PjName').textContent === S.SKINS[id].name)); }
       let lin = true; S.M2.R.root.traverse(o => { if (o.isMesh && o.visible && o.material && o.material.isMeshStandardMaterial && !o.material.userData.cs) lin = false; });
       document.querySelector('#m2PjList [data-skin="fsb"]').click(); return { out, bad: [...new Set(bad)], waitSeen, keptOld, lin }; });
-    check('cada operador: se elige, se guarda, lo lleva el de la sala y sale su nombre', pj.out.length === 5 && pj.out.every(x => !/false/.test(x)), pj.out.join(' '));
+    check('cada operador: se elige, se guarda, lo lleva el de la sala y sale su nombre', pj.out.length === 7 && pj.out.every(x => !/false/.test(x)), pj.out.join(' '));
     check('nunca se ve el soldado de cajas mientras llega un operador realista; el anterior se queda y sale «CARGANDO…»', pj.bad.length === 0 && pj.keptOld && pj.waitSeen, JSON.stringify(pj));
     check('el CLÁSICO con los colores del juego (no blanco: corrección de color aplicada)', pj.lin);
 
@@ -115,16 +115,16 @@ const wait = (p, fn, arg, ms) => p.waitForFunction(fn, arg, { timeout: ms || 120
       const out = { ids: cards.map(c => c.dataset.map).join(), imgs: cards.every(c => c.querySelector('img').naturalWidth >= 640) };
       document.querySelector('#m2Maps [data-map=pueblo]').click(); out.off = __SD.OFFMAP; out.world = __SD.WORLD_ID; out.pressed = document.querySelector('#m2Maps [aria-pressed=true]').dataset.map;
       out.sub = document.getElementById('m2SubDuel').textContent; document.querySelector('#m2Maps [data-map=arena]').click(); return out; });
-    check('las tarjetas de los mapas del juego, con su vista real', maps.ids === 'arena,pueblo,casa,casa2,pruebas' && maps.imgs, JSON.stringify(maps));
+    check('las tarjetas de los mapas del juego, con su vista real', ['arena,pueblo,casa,casa2,barrio,pruebas', 'arena,pueblo,casa,casa2,pruebas,barrio'].includes(maps.ids) && maps.imgs, JSON.stringify(maps));
     check('elegir un mapa es el mapa de VS BOTS', maps.off === 'pueblo' && maps.world === 'pueblo' && maps.pressed === 'pueblo' && /PUEBLO/.test(maps.sub));
     // 09-11-2026: with more than 4 maps (BARRIO) the cards overlapped (the owner's screenshot)
-    await p.goto(srv.url + '?barrio=1'); await p.waitForFunction(() => window.__SD && __SD.M2 && __SD.M2.room, null, { timeout: 180000 });
+    await p.goto(srv.url + '?carga=1&barrio=1&carga=1'); await p.waitForFunction(() => window.__SD && __SD.M2 && __SD.M2.room, null, { timeout: 180000 });
     const many = await p.evaluate(() => { document.querySelector('#m2 .m2Nav [data-tab=mapas]').click(); const g = document.getElementById('m2Maps'), gr = g.getBoundingClientRect();
       const cs = [...g.querySelectorAll('.m2Map')].map(c => c.getBoundingClientRect()); let ov = 0;
       for (let i = 0; i < cs.length; i++) for (let j = i + 1; j < cs.length; j++) { const a = cs[i], b = cs[j]; if (a.left < b.right - 1 && b.left < a.right - 1 && a.top < b.bottom - 1 && b.top < a.bottom - 1) ov++; }
       return { n: cs.length, many: g.classList.contains('many'), ov, ratio: +(cs[0].width / cs[0].height).toFixed(2), top: cs.every(r => r.top >= gr.top - 1) }; });
     check('con 6 mapas (BARRIO y PRUEBAS): 3 por fila, ninguna tarjeta encima de otra y ninguna cortada por arriba', many.n === 6 && many.many && many.ov === 0 && Math.abs(many.ratio - 1.6) < 0.05 && many.top, JSON.stringify(many));
-    await p.goto(srv.url + '?barrio=0'); await p.waitForFunction(() => window.__SD && __SD.M2 && __SD.M2.room, null, { timeout: 180000 });
+    await p.goto(srv.url + '?carga=1&barrio=0&carga=1'); await p.waitForFunction(() => window.__SD && __SD.M2 && __SD.M2.room, null, { timeout: 180000 });
 
     console.log('\nAJUSTES');
     const aj = await p.evaluate(() => { document.querySelector('#m2 .m2Nav [data-tab=armas]').click(); document.querySelector('#m2 .m2Nav [data-tab=ajustes]').click();
@@ -151,7 +151,7 @@ const wait = (p, fn, arg, ms) => p.waitForFunction(fn, arg, { timeout: ms || 120
     await c2.route(/fonts\.(googleapis|gstatic)\.com/, r => r.abort());
     const q = await c2.newPage(), e2 = [];
     q.on('pageerror', e => e2.push(e.message));
-    await q.goto(srv.url + '?ktx2=0&arsenal=0', { timeout: 180000 });   // the plain link: the new menu (ARMAS of before: the ARSENAL has its own test)
+    await q.goto(srv.url + '?carga=1&ktx2=0&arsenal=0&carga=1', { timeout: 180000 });   // the plain link: the new menu (ARMAS of before: the ARSENAL has its own test)
     await wait(q, () => window.__SD && __SD.M2.room);
     const ph = await q.evaluate(() => { const out = {}; const inView = el => { const r = el.getBoundingClientRect(); return r.width > 0 && r.left >= -1 && r.top >= -1 && r.right <= innerWidth + 1 && r.bottom <= innerHeight + 1; };
       for (const t of ['inicio', 'personaje', 'armas', 'mapas']) { document.querySelector('#m2 .m2Nav [data-tab=' + t + ']').click();
@@ -171,7 +171,7 @@ const wait = (p, fn, arg, ms) => p.waitForFunction(fn, arg, { timeout: ms || 120
     check('en cada sección los botones caben entre la barra de arriba y la de abajo (las filas largas se deslizan)', ph.inicio && ph.personaje && ph.armas && ph.mapas);
     check('ARMAS: las filas de miras, skins y cuchillos acaban encima de la barra y queda sitio para ver el arma', ph.armasRows.every(d => d <= 1) && ph.slotH >= 40, JSON.stringify({ filas: ph.armasRows, arma: ph.slotH }));
     check('sin errores (móvil)', e2.length === 0, e2.slice(0, 3).join(' | '));
-    await q.goto(srv.url + '?ktx2=0&menu=1', { timeout: 180000 });
+    await q.goto(srv.url + '?carga=1&ktx2=0&menu=1', { timeout: 180000 });
     await wait(q, () => window.__SD && __SD.WORLDS);
     const back = await q.evaluate(() => ({ m2: !document.getElementById('m2').hidden, stored: localStorage.getItem('sniperduel_menuOld') }));
     check('?menu=1 devuelve el menú de antes (y se recuerda)', !back.m2 && back.stored === 'true', JSON.stringify(back));

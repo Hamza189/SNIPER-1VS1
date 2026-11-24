@@ -26,7 +26,7 @@ async function until(page, fn, arg, ms) { try { await page.waitForFunction(fn, a
     await ctx.route(/fonts\.(googleapis|gstatic)\.com/, r => r.abort());
     const page = await ctx.newPage();
     page.on('pageerror', e => errors.push(e.message));
-    await page.goto(web.url + '?perf=low&server=' + encodeURIComponent(server) + (q || ''), { timeout: 180000 });
+    await page.goto(web.url + '?carga=1&lobby=1&perf=low&server=' + encodeURIComponent(server) + (q || ''), { timeout: 180000 });
     await page.waitForFunction(() => window.__SD, null, { timeout: 180000 });
     return page;
   };

@@ -10,13 +10,14 @@
        and chimneys, unchanged), must be zero in the PUEBLO 3.0 slice
    Run: node test/cover.browser.test.js   (needs Playwright; software WebGL is fine: nothing is timed) */
 'use strict';
+const cg1 = u => /[?&]carga=/.test(u) ? u : u + (u.includes('?') ? '&' : '?') + 'carga=1';   // (23-11-2026) these checks run without the loading screen (it has its own test)
 const { chromium } = require('playwright');
 const ss = require('../tools/static-server.js');
 let pass = 0, fail = 0;
 function check(name, cond, info) { if (cond) { pass++; console.log('  ok   ' + name + (info !== undefined ? '  (' + info + ')' : '')); } else { fail++; console.log('  FAIL ' + name + (info !== undefined ? '  (' + info + ')' : '')); } }
 
 async function audit(page, url, p3, canary) {
-  await page.goto(url);
+  await page.goto(cg1(url));
   await page.waitForFunction(p3 => window.__SD && __SD.W && (!p3 || (__SD.P3W && __SD.P3W.kit && (!__SD.E10.on || __SD.E10.ready || __SD.E10.failed) && (!__SD.FLORA.on || __SD.FLORA.ready || __SD.FLORA.failed))), p3, { timeout: 120000 });
   return page.evaluate(canary => {
     const S = __SD, T = THREE; S.setWorld('pueblo'); const W = S.WORLDS.pueblo;
@@ -95,12 +96,12 @@ async function audit(page, url, p3, canary) {
   const page = await ctx.newPage();
   const errs = []; page.on('pageerror', e => errs.push(e.message));
   console.log('\nCOBERTURAS FALSAS — PUEBLO 2.0 (sin bandera)');
-  const A = await audit(page, srv.url + '?vm=1&pueblo=0', false);
+  const A = await audit(page, srv.url + '?carga=1&vm=1&pueblo=0', false);
   check('a la altura del cuerpo: todo lo que se ve para las balas', A.body === 0, A.body + ' vértices de ' + A.verts + ' en ' + A.meshes + ' mallas' + (A.ex.length ? ': ' + A.ex.join(' | ') : ''));
   check('sobre la calle: nada suelto lejos de un muro', A.over === 0, A.over + '');
   console.log('  info PUEBLO 2.0 tiene ' + A.roof + ' vértices sobre azoteas inalcanzables sin colisión (depósitos, chimeneas, antenas): ' + JSON.stringify(A.roofBy));
   console.log('\nCOBERTURAS FALSAS — PUEBLO 3.0 (?pueblo=3)');
-  const B = await audit(page, srv.url + '?vm=1&pueblo=3', true);
+  const B = await audit(page, srv.url + '?carga=1&vm=1&pueblo=3', true);
   check('a la altura del cuerpo: todo lo que se ve para las balas', B.body === 0, B.body + ' vértices de ' + B.verts + ' en ' + B.meshes + ' mallas' + (B.ex.length ? ': ' + B.ex.join(' | ') : ''));
   check('sobre la calle: nada suelto lejos de un muro', B.over === 0, B.over + '');
   check('vegetación: decoración baja que no tapa a nadie (≤ 0,66 m, por debajo de la zona de las piernas)', B.floraMax > 0.1 && B.floraMax <= 0.66, (B.floraMax || 0).toFixed(2) + ' m');
@@ -109,12 +110,12 @@ async function audit(page, url, p3, canary) {
   const p3roof = Object.keys(B.roofBy).filter(k => /^p3_|^kit_|^e10_/.test(k)).reduce((s, k) => s + B.roofBy[k], 0);
   check('azoteas de la vertical slice: nada por encima de la caja (+5 cm)', p3roof === 0, p3roof + ' vértices nuevos ' + JSON.stringify(Object.fromEntries(Object.entries(B.roofBy).filter(([k]) => /^p3_|^kit_|^e10_/.test(k)))) + ' ' + B.rx.join(' | ') + '; el resto (' + (B.roof - p3roof) + ') es PUEBLO 2.0 fuera de la slice');
   console.log('\nCOBERTURAS FALSAS — PUEBLO 4.0 (?pueblo=4: casas habitables, pick-ups, utilería, cables)');
-  const D = await audit(page, srv.url + '?vm=1&pueblo=4', true);
+  const D = await audit(page, srv.url + '?carga=1&vm=1&pueblo=4', true);
   check('4.0 a la altura del cuerpo: todo lo que se ve para las balas', D.body === 0, D.body + ' vértices de ' + D.verts + ' en ' + D.meshes + ' mallas' + (D.ex.length ? ': ' + D.ex.join(' | ') : ''));
   check('4.0 sobre la calle: nada suelto lejos de un muro', D.over === 0, D.over + '');
   const p4roof = Object.keys(D.roofBy).filter(k => /^p3_|^kit_|^e10_/.test(k)).reduce((s, k) => s + D.roofBy[k], 0);
   check('4.0 azoteas: nada por encima de la caja (+5 cm)', p4roof === 0, p4roof + ' vértices ' + D.rx.join(' | '));
-  const C = await audit(page, srv.url + '?vm=1&pueblo=4', true, true);
+  const C = await audit(page, srv.url + '?carga=1&vm=1&pueblo=4', true, true);
   check('el detector encuentra una caja falsa puesta a propósito en la plaza (4.0)', C.body > D.body && C.ex.some(e => e.startsWith('canary')), (C.body - D.body) + ' vértices de la caja');
   check('sin errores en la página', errs.length === 0, errs.slice(0, 2).join(' | '));
   await b.close(); srv.close();

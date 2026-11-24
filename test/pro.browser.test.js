@@ -5,6 +5,7 @@
    - las zonas de impacto de los bots son exactamente las mismas que sin la bandera; créditos CC BY en AJUSTES
    Run: node test/pro.browser.test.js   (WebGL por software: no se mide tiempo) */
 'use strict';
+const cg1 = u => /[?&]carga=/.test(u) ? u : u + (u.includes('?') ? '&' : '?') + 'carga=1';   // (23-11-2026) these checks run without the loading screen (it has its own test)
 const { chromium } = require('playwright');
 const ss = require('../tools/static-server.js');
 let pass = 0, fail = 0;
@@ -18,7 +19,7 @@ async function open(b, url, q, phone) {
   p.on('pageerror', e => errs.push(e.message));
   p.on('console', m => { if (/pj2/.test(m.text())) errs.push(m.text()); });
   p.on('response', r => { const u = r.url(); if (/\/assets\//.test(u) && r.status() >= 400) bad.push(r.status() + ' ' + u.replace(/^.*\/assets\//, '')); if (/\/assets\/personaje\/pro\//.test(u)) files.push(u.replace(/^.*\/assets\/personaje\/pro\//, '').replace(/\?.*/, '')); });
-  await p.goto(url + '&ktx2=0', { timeout: 180000 });   // (the same margin as the other browser tests: a second page loads slowly while the first draws 4K characters in software) these checks are about the JPG files (KTX2 by default since 29-10: test/ktx2.browser.test.js)
+  await p.goto(cg1(url + '&ktx2=0'), { timeout: 180000 });   // (the same margin as the other browser tests: a second page loads slowly while the first draws 4K characters in software) these checks are about the JPG files (KTX2 by default since 29-10: test/ktx2.browser.test.js)
   await p.waitForFunction(() => window.__SD && __SD.WORLDS, null, { timeout: 120000 });
   await p.evaluate(() => { __SD.setDuelLethal(false); __SD.setMode('duel'); __SD.setOffMap('arena'); __SD.startMatch(); });
   await p.waitForTimeout(1500);
@@ -31,13 +32,13 @@ const zones = p => p.evaluate(() => __SD.BOTS.map(b => b.hit.map(m => [m.userDat
   const b = await chromium.launch({ args: ['--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist'] });
   try {
     console.log('\nCON ?pj=0 (sin bandera es ?pj=pro desde el 28-10)');
-    const off = await open(b, srv.url + '?vm=1&pj=0', 'alto');
+    const off = await open(b, srv.url + '?carga=1&vm=1&pj=0', 'alto');
     const z0 = await zones(off.p);
     check('no descarga ningún personaje de pro/', off.files.length === 0);
     await off.ctx.close();
 
     console.log('\nALTO (?pj=pro)');
-    const A = await open(b, srv.url + '?vm=1&pj=pro', 'alto');
+    const A = await open(b, srv.url + '?carga=1&vm=1&pj=pro', 'alto');
     await A.p.evaluate(() => { const S = __SD; window.__R = S.makeSoldier(S.BOT_MAT, { variant: 'B' }); S.scene.add(__R.root); });
     const okA = await A.p.waitForFunction(() => __SD.BOTS.every(b => (b.rig.v2 && !b.rig.v2prev)) && (__R.v2 && !__R.v2prev), null, { timeout: 180000 }).then(() => true, () => false);
     const ra = await A.p.evaluate(() => ({ roots: Object.keys(__SD.PJ2.tpls).sort(), botTpl: __SD.BOTS[0].rig.v2.meshes[0].geometry.index.count / 3, rivalTpl: __R.v2.meshes[0].geometry.index.count / 3,
@@ -57,27 +58,27 @@ const zones = p => p.evaluate(() => __SD.BOTS.map(b => b.hit.map(m => [m.userDat
       return { stand, crouch, morph: I.meshes[0].morphTargetInfluences[I.meshes[0].morphTargetDictionary.agachado] }; });
     check('se anima con las animaciones del juego: agachado baja la cabeza con el morph', r2.morph > 0.99 && r2.crouch < r2.stand - 0.3, r2.stand.toFixed(2) + ' → ' + r2.crouch.toFixed(2) + ' m');
     // phones (28-10-2026): Safari on the iPhone closed the page with the 4K characters (340 MB each): never more than 2K there
-    { const M = await open(b, srv.url + '?vm=1&pj=pro', 'alto', true);
+    { const M = await open(b, srv.url + '?carga=1&vm=1&pj=pro', 'alto', true);
       const okM = await M.p.waitForFunction(() => __SD.BOTS.length && __SD.BOTS.every(b => (b.rig.v2 && !b.rig.v2prev)), null, { timeout: 180000 }).then(() => true, () => false);
       const rm = await M.p.evaluate(() => ({ roots: Object.keys(__SD.PJ2.tpls).sort().join(' '), tex: __SD.BOTS[0].rig.v2.meshes[0].material.map.image.width }));
       check('en un móvil con ALTO: los mismos personajes (FSB en los bots) pero con texturas de 2K, nunca 4K', okM && rm.tex === 2048 && /op3/.test(rm.roots) && !M.files.some(f => /personaje\.glb/.test(f) && /op[23]/.test(f)), rm.roots + ' · ' + rm.tex + ' · ' + M.files.join(' '));
       await M.ctx.close(); }
-    // RIDGE y AMBER (23-11-2026): los primeros personajes hechos con Meshy AI, en prueba (?meshy=1 o AJUSTES › EN PRUEBA)
-    { const RG = await open(b, srv.url + '?vm=1&pj=pro&meshy=1', 'alto', true);
+    // RIDGE y AMBER (23-11-2026): los primeros personajes hechos con Meshy AI, en la lista para todos desde el lanzamiento
+    { const RG = await open(b, srv.url + '?carga=1&vm=1&pj=pro', 'alto', true);
       const z1 = await zones(RG.p);
       for (const [id, name] of [['ridge', 'RIDGE'], ['amber', 'AMBER']]) {
         const has = await RG.p.evaluate(([id, name]) => { __SD.pj2SetPack(__SD.BOTS[0].rig, id); return !!__SD.SKINS[id] && __SD.SKINS[id].name === name; }, [id, name]);
         const okR = await RG.p.waitForFunction(id => { const R = __SD.BOTS[0].rig; return R.v2 && !R.v2prev && R.skinPack === id && __SD.PJ2.tpls['assets/personaje/pro/' + id + '/']; }, id, { timeout: 180000 }).then(() => true, () => false);
         const tex = okR ? await RG.p.evaluate(() => __SD.BOTS[0].rig.v2.meshes[0].material.map.image.width) : 0;
-        check(name + ' con ?meshy=1: está en la lista y en un móvil con ALTO se dibuja con texturas de 2K, nunca 4K', has && okR && tex === 2048 && !RG.files.includes(id + '/personaje.glb'), tex + ' · ' + RG.files.filter(f => f.startsWith(id + '/')).join(' '));
+        check(name + ': está en la lista y en un móvil con ALTO se dibuja con texturas de 2K, nunca 4K', has && okR && tex === 2048 && !RG.files.includes(id + '/personaje.glb'), tex + ' · ' + RG.files.filter(f => f.startsWith(id + '/')).join(' '));
       }
       check('RIDGE y AMBER: las zonas de impacto no cambian y sin 404 ni errores', (await zones(RG.p)) === z1 && RG.bad.length === 0 && RG.errs.length === 0, RG.bad.concat(RG.errs).slice(0, 3).join(' | '));
       await RG.ctx.close(); }
-    check('créditos CC BY 4.0 en AJUSTES › GRÁFICOS', await A.p.evaluate(() => /Mateusz Woliński/.test(document.getElementById('credits').textContent) && /DanlyVostok/.test(document.getElementById('credits').textContent) && /CC BY 4\.0/.test(document.getElementById('credits').textContent)));
+    check('créditos CC BY 4.0 de los personajes en creditos.html, enlazada al pie de AJUSTES', await A.p.evaluate(async () => { const t = await (await fetch('creditos.html')).text(); return /Mateusz Woliński/.test(t) && /DanlyVostok/.test(t) && /Meshy AI/.test(t) && /CC BY 4\.0/.test(t) && !!document.querySelector('#settings .setLinks a[href="creditos.html"]'); }));
     await A.ctx.close();
 
     console.log('\nMEDIO (?pj=pro)');
-    const M = await open(b, srv.url + '?vm=1&pj=pro', 'medio');
+    const M = await open(b, srv.url + '?carga=1&vm=1&pj=pro', 'medio');
     const okM = await M.p.waitForFunction(() => __SD.BOTS.every(b => (b.rig.v2 && !b.rig.v2prev)), null, { timeout: 180000 }).then(() => true, () => false);
     const rm = await M.p.evaluate(() => Object.keys(__SD.PJ2.tpls));
     check('MEDIO: todos con op4 (y tu SOLDADO en el menú) y no se descargan op2/op3', okM && rm.sort().join() === 'assets/personaje/,assets/personaje/pro/op4/' && M.files.every(f => f.startsWith('op4/')), rm.join(' ') + ' · ' + M.files.join(' '));
@@ -85,7 +86,7 @@ const zones = p => p.evaluate(() => __SD.BOTS.map(b => b.hit.map(m => [m.userDat
     await M.ctx.close();
 
     console.log('\nBAJO (?pj=pro)');
-    const L = await open(b, srv.url + '?vm=1&pj=pro', 'bajo');
+    const L = await open(b, srv.url + '?carga=1&vm=1&pj=pro', 'bajo');
     await L.p.waitForTimeout(1500);
     const rl = await L.p.evaluate(() => ({ on: __SD.PJ2.on, v2: __SD.BOTS.some(b => !!b.rig.v2) }));
     check('BAJO: el soldado de siempre, sin descargar nada de pro/', !rl.on && !rl.v2 && L.files.length === 0 && L.errs.length === 0, L.files.join(' '));
@@ -95,7 +96,7 @@ const zones = p => p.evaluate(() => __SD.BOTS.map(b => b.hit.map(m => [m.userDat
     const zone1 = z0.split(';')[0];
     for (const [q, suf] of [['alto', ''], ['medio', '_2k'], ['bajo', '_1k']]) {
       console.log('\nMEZCLA ?pj=mix (' + q.toUpperCase() + ')');
-      const X = await open(b, srv.url + '?vm=1&pj=mix', q);
+      const X = await open(b, srv.url + '?carga=1&vm=1&pj=mix', q);
       const ok = await X.p.waitForFunction(() => __SD.BOTS.length >= 4 && __SD.BOTS.slice(0, 3).every(b => (b.rig.v2 && !b.rig.v2prev)), null, { timeout: 240000 }).then(() => true, () => false);
       const r = await X.p.evaluate(() => __SD.BOTS.slice(0, 4).map(b => ({ pack: b.rig.mixPack, v2: !!b.rig.v2, box: b.rig.root.children.some(c => c.visible && (!b.rig.v2 || c !== b.rig.v2.root)), alive: b.alive })));
       check(q + ': 4 bots, cada uno con su personaje (S.W.A.T., FSB, Military suit y el soldado de cajas)', ok && r.length === 4 && r[0].pack === 'op2' && r[1].pack === 'op3' && r[2].pack === 'op4' && r[3].pack === null && r[0].v2 && r[1].v2 && r[2].v2 && !r[3].v2 && r[3].box && r.every(x => x.alive),
@@ -117,13 +118,13 @@ const zones = p => p.evaluate(() => __SD.BOTS.map(b => b.hit.map(m => [m.userDat
       const p = await ctx.newPage(), errs = [], files = [];
       p.on('pageerror', e => errs.push(e.message));
       p.on('response', r => { const u = r.url(); if (/\/assets\/personaje\//.test(u) && r.status() >= 400) errs.push(r.status() + ' ' + u); if (/\/assets\/personaje\/pro\/.*\.glb/.test(u)) files.push(u.replace(/^.*\/assets\/personaje\/pro\//, '').replace(/\?.*/, '')); });
-      await p.goto(srv.url + '?pj=pro&ktx2=0&server=' + encodeURIComponent('http://127.0.0.1:' + gs.port));
+      await p.goto(srv.url + '?carga=1&lobby=1&pj=pro&ktx2=0&server=' + encodeURIComponent('http://127.0.0.1:' + gs.port));
       await p.waitForFunction(() => window.__SD && __SD.WORLDS, null, { timeout: 120000 });
       return { ctx, p, errs, files };
     };
     const OA = await on('fsb'), OB = await on('militar');
     const ui = await OA.p.evaluate(() => ({ shown: !document.getElementById('skinBlock').hidden, name: document.querySelector('#skinBlock .skinPick b').textContent, cards: document.querySelectorAll('#skinGrid .skinCard').length }));
-    check('el menú muestra «Tu personaje» con el elegido y la ventana tiene los 5 (con el SOLDADO de ?pj=2)', ui.shown && ui.name === 'FSB' && ui.cards === 5, JSON.stringify(ui));
+    check('el menú muestra «Tu personaje» con el elegido y la ventana tiene los 7 (con el SOLDADO de ?pj=2, RIDGE y AMBER)', ui.shown && ui.name === 'FSB' && ui.cards === 7, JSON.stringify(ui));
     await OA.p.click('#m2 .m2Mode[data-sel=online]'); await OA.p.click('#m2Play'); await OA.p.fill('#mpName', 'Hamza'); await OA.p.click('#mpCreate');
     await OA.p.waitForFunction(() => /^[A-Z0-9]{6}$/.test(document.getElementById('mpCodeBig').textContent), null, { timeout: 15000 });
     const code = await OA.p.textContent('#mpCodeBig');
@@ -147,7 +148,7 @@ const zones = p => p.evaluate(() => __SD.BOTS.map(b => b.hit.map(m => [m.userDat
     await OA.p.evaluate(() => __SD.pj2SetPack(__SD.REMOTE.rig, 'v2'));
     const sol = await OA.p.waitForFunction(() => (__SD.REMOTE.rig.v2 && !__SD.REMOTE.rig.v2prev) && __SD.PJ2.tpls['assets/personaje/'], null, { timeout: 180000 }).then(() => true, () => false);
     check('el SOLDADO se dibuja con el personaje de ?pj=2 (assets/personaje/)', sol);
-    check('sin ?meshy=1, RIDGE y AMBER no aparecen para elegir (están en prueba)', await OA.p.evaluate(() => !__SD.SKINS.ridge && !__SD.SKINS.amber));
+    check('RIDGE y AMBER están en la lista sin activar nada', await OA.p.evaluate(() => !!__SD.SKINS.ridge && !!__SD.SKINS.amber));
     check('sin errores en las dos páginas', OA.errs.length === 0 && OB.errs.length === 0, OA.errs.concat(OB.errs).slice(0, 3).join(' | '));
     await OA.ctx.close(); await OB.ctx.close(); await gs.close();
   } catch (e) { fail++; console.log('  FAIL ' + (e && e.stack || e)); }

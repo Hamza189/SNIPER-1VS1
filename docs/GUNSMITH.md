@@ -1,6 +1,9 @@
 # GUNSMITH 2.0: el ARSENAL (08-11-2026)
 
 **Estado:**
+- **23-11-2026 — rifles con sus cifras también EN LÍNEA** (aprobado por el propietario: «Sí, cada rifle con sus cifras»).
+  Lo de abajo que dice «en línea, siempre el HALCÓN» es la historia; detalle en `docs/LANZAMIENTO.md`. El silenciador
+  sigue siendo solo contra bots.
 - **G1 y G2:** IMPLEMENTADO · PROBADO EN NAVEGADOR (PC con GPU y móvil en horizontal) · PENDIENTE DE VALIDACIÓN EN IPHONE.
 - **Rifles distintos (09-11):** IMPLEMENTADO · PROBADO EN NAVEGADOR (contra bots) · solo sin conexión: en línea, todos con el
   HALCÓN R7 hasta que el propietario lo apruebe. `?balance=0` vuelve a las cifras de antes.

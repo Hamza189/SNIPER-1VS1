@@ -7,6 +7,7 @@
    - (30-10) los archivos KTX2 vienen de Cloudflare R2 en la web publicada (?r2=1 aquí); en localhost, las copias locales
    Run: node test/ktx2.browser.test.js */
 'use strict';
+const cg1 = u => /[?&]carga=/.test(u) ? u : u + (u.includes('?') ? '&' : '?') + 'carga=1';   // (23-11-2026) these checks run without the loading screen (it has its own test)
 const { chromium } = require('playwright');
 const ss = require('../tools/static-server.js');
 const fs = require('fs'), path = require('path');
@@ -30,7 +31,7 @@ function check(name, cond, info) { if (cond) { pass++; console.log('  ok   ' + n
     p.on('request', rq => { const m = rq.url().match(R2); if (m) fromR2.push(m[1]); });
     p.on('pageerror', e => errs.push(e.message));
     p.on('response', r => { const u = r.url(); if (/ktx2|basis|KTX2Loader|personaje.*\.glb|color_/.test(u)) files.push(u.replace(/^.*\/(assets|vendor)\//, '').replace(/\?.*$/, '')); });
-    await p.goto(srv.url + q, { timeout: 180000 });
+    await p.goto(cg1(srv.url + q), { timeout: 180000 });
     await p.waitForFunction(() => window.__SD && __SD.WORLDS, null, { timeout: 180000 });
     await p.evaluate(() => { __SD.setMode('duel'); __SD.setDuelLethal(false); __SD.setOffMap('arena'); __SD.startMatch(); });
     await p.waitForFunction(() => __SD.state === 'playing' && __SD.BOTS.length && __SD.BOTS.every(b => (b.rig.v2 && !b.rig.v2prev)), null, { timeout: 240000 }).catch(() => {});
@@ -60,7 +61,7 @@ function check(name, cond, info) { if (cond) { pass++; console.log('  ok   ' + n
     check('las texturas del personaje ya no guardan su copia en JavaScript', await M.p.evaluate(() => { const m = __SD.BOTS[0].rig.v2.meshes[0].material;
       return ['map', 'normalMap', 'roughnessMap'].every(k => m[k] && m[k].mipmaps.every(x => x.data === null) && m[k].userData.gpuBytes > 0); }));
     const mem = await M.p.evaluate(() => __SD.perfTexMB());
-    check('MEDIR RENDIMIENTO cuenta las texturas comprimidas por lo que ocupan de verdad', mem.real < mem.asRGBA * 0.6, JSON.stringify(mem));
+    check('MEDIR RENDIMIENTO cuenta las texturas comprimidas por lo que ocupan de verdad', mem.real < mem.asRGBA * 0.7, JSON.stringify(mem));   // 0.7 since 23-11-2026: RIDGE and AMBER (JPG, no KTX2 yet) add the same to both
     check('sin errores (móvil)', M.errs.length === 0, M.errs.slice(0, 2).join(' | '));
     await M.ctx.close();
     // 18-11-2026: ÚLTIMA (17 texturas de 4K) llevaba la memoria de texturas del móvil en ALTO de 99 a 483 MB; con ?arma2k=1

@@ -3,6 +3,8 @@
 Del propietario: «Los personajes, armas, mapas tardan en cargar, optimiza esto, que vaya mucho más rápido todo el juego…
 si hace falta utilizar C, C++ o C# puedes utilizarlo».
 
+> **23-11-2026:** la pantalla de carga con barra (`?carga=2`) es la de por defecto; `?carga=1` vuelve a la entrada de siempre.
+
 **Estado:** IMPLEMENTADO · PROBADO EN NAVEGADOR · PENDIENTE DE VALIDACIÓN EN IPHONE (el service worker solo funciona en la
 web publicada, https).
 

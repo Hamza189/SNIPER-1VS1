@@ -47,7 +47,7 @@ const ctx = vm.createContext({
   matchMedia: () => ({ matches: false }), AudioContext: undefined,
   document, navigator: {}, localStorage: { getItem: k => storage[k] ?? null, setItem: (k, v) => { storage[k] = v; } },
   performance: { now: () => now }, requestAnimationFrame: cb => { rafCb = cb; },
-  URLSearchParams, location: { search: '', origin: 'http://test', pathname: '/' }, history: { replaceState() {} },
+  URLSearchParams, location: { search: '?carga=1', origin: 'http://test', pathname: '/' },   // ?carga=1: without the loading screen (the default since 23-11-2026; with these stand-ins nothing ever finishes loading, so it would stay up; test/carga.browser.test.js tests it) history: { replaceState() {} },
   setTimeout: () => 0, setInterval: () => 0, console, Math, JSON, Object, Array, Map, Set, Int32Array, Number, String, Symbol, Proxy, Error
 });
 ctx.window = ctx; ctx.globalThis = ctx;

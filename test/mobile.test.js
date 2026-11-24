@@ -149,7 +149,7 @@ console.log('\nDISPOSICIÓN DE BOTONES');
 
 console.log('\nGRÁFICOS (etapa C)');
 { const Q = require('../client/quality.js');
-  check('AUTO = MEDIO en móvil y ALTO en PC', Q.resolve('auto', true) === 'medio' && Q.resolve('auto', false) === 'alto' && Q.resolve('bajo', false) === 'bajo');
+  check('AUTO = ALTO en móvil y en PC (desde el 23-11-2026)', Q.resolve('auto', true) === 'alto' && Q.resolve('auto', false) === 'alto' && Q.resolve('bajo', false) === 'bajo');
   check('resolución interna: el móvil (pantalla 3×) no pasa de 1,35× en MEDIO ni de 1,0× en BAJO', Q.pixelRatio('medio', 3, 1) === 1.35 && Q.pixelRatio('bajo', 3, 1) === 1 && Q.pixelRatio('alto', 1, 1) === 1);
   check('BAJO sin sombras; MEDIO y ALTO con sombras', !Q.PROFILES.bajo.shadows && Q.PROFILES.medio.shadows && Q.PROFILES.alto.shadows);
   const a = Q.createAdaptive(60, true);
@@ -180,7 +180,7 @@ console.log('\nGRÁFICOS (etapa C)');
       Q.gpuHint(ang('Arc(TM) A770 Graphics'), 8) === null && Q.gpuHint('Apple GPU', 0) === null && Q.gpuHint('', 0) === null);
     check('2 hilos de CPU o menos → tope BAJO', Q.gpuHint('Apple GPU', 2) === 'bajo');
     check('el tope solo baja AUTO: AUTO+BAJO = BAJO, ALTO a mano sigue ALTO, móvil con tope ALTO sigue MEDIO',
-      Q.resolve('auto', false, 'bajo') === 'bajo' && Q.resolve('alto', false, 'bajo') === 'alto' && Q.resolve('auto', true, 'alto') === 'medio' && Q.resolve('auto', false, null) === 'alto');
+      Q.resolve('auto', false, 'bajo') === 'bajo' && Q.resolve('alto', false, 'bajo') === 'alto' && Q.resolve('auto', true, 'alto') === 'alto' && Q.resolve('auto', true, 'medio') === 'medio' && Q.resolve('auto', false, null) === 'alto');
     const w = Q.createAdaptive(60, true); for (let i = 0; i < 20 * 4; i++) Q.feed(w, 1 / 20);   // 4 s a 20 FPS
     const early = Q.wantsLower(w); for (let i = 0; i < 20 * 10; i++) Q.feed(w, 1 / 20);   // unos 12 s en total
     check('a 20 FPS con la resolución en el mínimo, en unos 12 s pide bajar un perfil', !early && Q.wantsLower(w), 'escala ' + w.scale + ', ' + w.stuck.toFixed(1) + ' s');

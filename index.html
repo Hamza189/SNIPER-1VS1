@@ -10,6 +10,14 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="assets/app/icono-180.png">
 <title>Sniper Duel</title>
+<meta name="description" content="Duelo de francotiradores 1 contra 1 en el navegador. Juega online con un amigo o contra bots, en PC y en el móvil. Gratis y sin descargas.">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Sniper Duel · duelo de francotiradores 1v1">
+<meta property="og:description" content="Duelo de francotiradores 1 contra 1 en el navegador. Online con un amigo o contra bots, en PC y en el móvil. Gratis.">
+<meta property="og:url" content="https://hamza189.github.io/SNIPER-1VS1/">
+<meta property="og:image" content="https://hamza189.github.io/SNIPER-1VS1/assets/app/compartir.jpg">
+<meta property="og:image:width" content="1200"><meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 32 32%22%3E%3Crect width=%2232%22 height=%2232%22 rx=%226%22 fill=%22%23171310%22/%3E%3Ccircle cx=%2216%22 cy=%2216%22 r=%229%22 fill=%22none%22 stroke=%22%23ff8a2b%22 stroke-width=%222.5%22/%3E%3Cpath d=%22M16 4v8M16 20v8M4 16h8M20 16h8%22 stroke=%22%23f3e9d6%22 stroke-width=%222%22/%3E%3C/svg%3E">
 <meta name="theme-color" content="#0f0d0a">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -235,15 +243,10 @@ body.feel2 #hitmark.kill i,body.feel2 #hitmark.hs i{width:3px;left:-1.5px}
 .setTabs::-webkit-scrollbar{display:none}
 .setTabs button{background:none;border:0;border-bottom:2px solid transparent;padding:11px 12px;font:600 12px/1 var(--f-mono);letter-spacing:.14em;color:var(--dust);cursor:pointer;min-height:44px}
 .setTabs button[aria-selected="true"]{color:var(--hud);border-bottom-color:var(--signal)}
-.fxList{display:grid;gap:8px;margin:4px 0 10px}
-.fxRow{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:6px 14px;align-items:center;padding:8px 10px;border:1px solid var(--line);background:rgba(10,9,8,.45)}
-.fxRow b{display:block;font:600 15px/1.1 var(--f-mono);letter-spacing:.06em;color:var(--hud)}
-.fxRow small{display:block;font-size:11px;line-height:1.35;color:var(--dust);margin-top:3px}
-.fxRow .seg{margin:0;min-width:150px}.fxRow .seg button{padding:8px 10px}
-.fxRow.changed{border-color:var(--signal)}
-#fxReloadRow{position:sticky;bottom:0;z-index:2;background:rgba(20,18,15,.97);padding:8px 0;margin:0}
-@media (max-width:620px){.fxRow{grid-template-columns:1fr}.fxRow .seg{min-width:0}}
 .setTabs button:focus-visible{outline:2px solid var(--signal);outline-offset:-2px}
+.setDiag{margin:14px 0 4px;border-top:1px solid rgba(232,223,204,.12);padding-top:8px}.setDiag summary{cursor:pointer;font:600 12px/1.6 var(--f-mono);letter-spacing:.18em;color:var(--dust)}
+.setLinks{margin:10px 0 0;font-size:12px;letter-spacing:.06em;color:var(--dust);text-align:center}.setLinks a{color:var(--sand)}
+.setHelp:empty{display:none}
 .setHelp{margin:8px 0 0;font-size:12px;line-height:1.45;color:var(--sand);opacity:.8}
 .setFoot{flex-wrap:wrap;margin-top:16px}
 #setReset.confirm{border-color:var(--blood);color:var(--hud)}
@@ -731,7 +734,6 @@ body.m2 #menu .menuInner{display:none}
 .gsCatH b{font:600 clamp(17px,2.9vh,23px)/1 var(--f-display);letter-spacing:.06em}
 .gsCatH small{font-size:8.5px;letter-spacing:.14em;color:var(--sand)}
 .gsItems{display:grid;gap:5px}
-.gsSoon{padding:7px 10px;border:1px dashed var(--m2line);color:var(--dust);font-size:9px;letter-spacing:.2em}
 .gsIt{display:grid;grid-template-columns:clamp(56px,6vw,82px) minmax(0,1fr);align-items:center;gap:8px;padding:4px;background:#0c0c0d;border:1px solid var(--m2line);cursor:pointer;text-align:left;color:var(--hud);position:relative}
 .gsIt img{width:100%;aspect-ratio:16/9;object-fit:cover;background:#000;display:block}
 .gsIt b{display:block;font:500 clamp(14px,2.3vh,19px)/1 var(--f-display);letter-spacing:.05em;padding-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -783,8 +785,6 @@ body.m2 #menu .menuInner{display:none}
 .gsPick.strip{bottom:0;max-height:none;background:#0f0f10;grid-template-rows:auto auto auto;gap:6px;padding:8px 10px}
 .gsPick.strip .gsPickL{grid-auto-flow:column;grid-auto-columns:clamp(98px,9.5vw,138px);grid-template-columns:none;overflow-x:auto;overflow-y:hidden;touch-action:pan-x;overscroll-behavior:contain;scrollbar-width:thin;padding-bottom:4px}
 .gsPick.strip .gsPickN{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.m2PjCamo{display:grid;gap:2px;margin-top:8px;padding:8px 10px;background:#0c0c0d;border:1px dashed var(--m2line);color:var(--dust);text-align:left;cursor:not-allowed;width:100%}
-.m2PjCamo b{font:500 16px/1 var(--f-display);letter-spacing:.05em;color:var(--hud);opacity:.7}.m2PjCamo small{font-size:8.5px;letter-spacing:.12em;color:var(--sand)}
 .gsSide{display:grid;grid-template-rows:auto minmax(0,1fr) auto auto;gap:10px;min-height:0;overflow:hidden}
 .gsTabs{background:rgba(0,0,0,.35)}.gsTabs button{font-size:10.5px;padding:8px 4px}
 .gsStats{display:grid;gap:8px;align-content:start;overflow:auto;min-height:0;touch-action:pan-y;scrollbar-width:thin;padding-right:2px}
@@ -888,7 +888,6 @@ body.m2 #menu .menuInner{display:none}
   .gsPick.strip{padding:4px 6px;gap:6px;grid-template-columns:26px minmax(0,1fr);grid-template-rows:auto}
   .gsPick.strip .gsPickH{flex-direction:column;justify-content:center}.gsPick.strip .gsPickH b,.gsPick.strip .gsPickN,.gsPick.strip .gsOpt small{display:none}
   .gsPick.strip .gsPickX{margin:0;width:26px;height:26px}.gsPick.strip .gsPickL{grid-auto-columns:80px;padding-bottom:2px}.gsPick.strip .gsOpt b{font-size:11px}
-  .m2PjCamo{margin-top:4px;padding:5px 7px}.m2PjCamo b{font-size:13px}
   .gsTabs button{font-size:9px;padding:6px 3px}
   .gsStats{gap:5px}.gsRow>span{font-size:8px;letter-spacing:.08em}.gsRow>b{font-size:13px}.gsRow>small{display:none}
   .gsRole{font-size:8px;letter-spacing:.06em}.gsD{font-size:8.5px;margin-left:3px}
@@ -957,6 +956,8 @@ button.lbChoice:disabled{opacity:.55;cursor:default}
 .lbBtn.go:hover{filter:brightness(1.08)}
 .lbBtn:disabled{opacity:.42;cursor:default;filter:grayscale(.6)}
 .lbBtn.go:disabled{box-shadow:none}
+.lbMore{justify-self:start;background:none;border:0;border-bottom:1px solid rgba(232,223,204,.35);color:var(--sand);font:600 clamp(11px,1.9vh,13px)/1.3 var(--f-mono);letter-spacing:.12em;padding:4px 0;cursor:pointer}
+.lbMore span{color:var(--dust);font-weight:400;letter-spacing:.06em;margin-left:6px}.lbMore:hover{color:var(--hud);border-color:var(--hud)}
 .lbMsg{margin:0;min-height:1.3em;font-size:clamp(10px,1.8vh,12px);letter-spacing:.06em;color:var(--sand);line-height:1.4}
 .lbMsg.err{color:#ff8b7e}
 /* the room */
@@ -1241,12 +1242,12 @@ body.lbOn #fpsBox{left:auto;right:max(8px,env(safe-area-inset-right,0px));transf
     <div class="eyebrow">Ajustes</div>
     <h2 style="font-size:clamp(34px,6vw,54px)" id="setTitle">CONTROLES</h2>
     <nav class="setTabs" role="tablist" aria-label="Secciones de ajustes">
-      <button type="button" role="tab" data-tab="controles" aria-selected="true">CONTROLES</button><button type="button" role="tab" data-tab="sensibilidad">SENSIBILIDAD</button><button type="button" role="tab" data-tab="mira">MIRA</button><button type="button" role="tab" data-tab="graficos">GRÁFICOS</button><button type="button" role="tab" data-tab="audio">AUDIO</button><button type="button" role="tab" data-tab="jugabilidad">JUGABILIDAD</button><button type="button" role="tab" data-tab="accesibilidad">ACCESIBILIDAD</button><button type="button" role="tab" data-tab="pruebas">EN PRUEBA</button>
+      <button type="button" role="tab" data-tab="controles" aria-selected="true">CONTROLES</button><button type="button" role="tab" data-tab="sensibilidad">SENSIBILIDAD</button><button type="button" role="tab" data-tab="mira">MIRA</button><button type="button" role="tab" data-tab="graficos">GRÁFICOS</button><button type="button" role="tab" data-tab="audio">AUDIO</button><button type="button" role="tab" data-tab="jugabilidad">JUGABILIDAD</button><button type="button" role="tab" data-tab="accesibilidad">ACCESIBILIDAD</button>
     </nav>
     <section class="setPane" data-pane="controles" role="tabpanel">
       <div class="lbl" style="margin:4px 0 6px">Vista (tecla V)</div>
       <div class="seg" id="viewSeg" role="group" aria-label="Vista"><button type="button" data-v="fp">1ª PERSONA</button><button type="button" data-v="tp">3ª PERSONA</button></div>
-      <p class="setHelp">En 3ª persona la cámara va detrás de tu hombro y ves a tu personaje; al apuntar con la mira vuelves a 1ª persona. La bala sale siempre de tus ojos: la cruceta marca dónde va.</p>
+      <p class="setHelp">Al apuntar con la mira, siempre en 1ª persona.</p>
       <div class="lbl" style="margin:4px 0 6px">Agacharse (botón AGACH y tecla C / Ctrl)</div>
       <div class="seg" id="crouchSeg" role="group" aria-label="Agacharse"><button type="button" data-c="slide">PULSAR · TE LEVANTAS AL DESLIZAR</button><button type="button" data-c="toggle">PULSAR</button><button type="button" data-c="hold">MANTENER</button></div>
       <p class="setHelp" id="crouchHelp"></p>
@@ -1260,7 +1261,6 @@ body.lbOn #fpsBox{left:auto;right:max(8px,env(safe-area-inset-right,0px));transf
         <label class="chk"><input type="checkbox" id="sDiag"> Diagnóstico táctil (dedos y MIRA en pantalla)</label>
       </div>
       <div class="row"><button class="btn ghost" id="openEditor" type="button" style="font-size:18px">EDITAR BOTONES TÁCTILES</button></div>
-      <p class="setHelp">En el editor puedes mover cada botón, cambiar su tamaño y la transparencia de todos.</p>
     </section>
     <section class="setPane" data-pane="sensibilidad" role="tabpanel" hidden>
       <div class="setGrid">
@@ -1278,7 +1278,7 @@ body.lbOn #fpsBox{left:auto;right:max(8px,env(safe-area-inset-right,0px));transf
         <label class="sens"><span class="lbl">Visor de más de 4×</span><input id="sZ8" type="range" min="0.3" max="2" step="0.05"><output id="sZ8o"></output></label>
         <label class="chk"><input type="checkbox" id="sInv"> Invertir eje vertical</label>
       </div>
-      <p class="setHelp">Cómo se combinan: giro = movimiento × horizontal/vertical × dedo (móvil) × «sin mira» de tu vista (1ª o 3ª persona) o «al apuntar» (cualquier arma con la mira) × «visor francotirador» × el de su zoom («hasta 4×» para el punto rojo, la holográfica, el 2×, el 3× y el 4×; «más de 4×» para el 6×, el 8× y el 12×). El zoom ya se compensa solo y no hay aceleración: la misma distancia de dedo gira siempre lo mismo.</p>
+<!-- (the formula, docs/AJUSTES.md) -->
       <div id="gyroBox">
         <div class="lbl" style="margin:12px 0 6px">Giroscopio (girar el móvil mueve la cámara)</div>
         <div class="seg" id="gyroSeg" role="group" aria-label="Giroscopio"><button type="button" data-g="off">NO</button><button type="button" data-g="ads">AL APUNTAR</button><button type="button" data-g="on">SIEMPRE</button></div>
@@ -1287,7 +1287,7 @@ body.lbOn #fpsBox{left:auto;right:max(8px,env(safe-area-inset-right,0px));transf
           <label class="sens"><span class="lbl">Giroscopio · apuntando</span><input id="sGyA" type="range" min="0.2" max="4" step="0.05"><output id="sGyAo"></output></label>
           <label class="chk"><input type="checkbox" id="sGyInv"> Invertir giroscopio</label>
         </div>
-        <p class="setHelp" id="gyroHelp">A 1,00 la cámara gira lo mismo que el móvil; con el visor, dividido por su zoom (como el dedo). El iPhone pide permiso la primera vez. Es solo otra forma de mover la cámara: no apunta por ti.</p>
+        <p class="setHelp" id="gyroHelp">El iPhone pide permiso la primera vez.</p>
       </div>
     </section>
     <section class="setPane" data-pane="mira" role="tabpanel" hidden>
@@ -1302,7 +1302,6 @@ body.lbOn #fpsBox{left:auto;right:max(8px,env(safe-area-inset-right,0px));transf
         <label class="sens"><span class="lbl">Separación extra</span><input id="sXG" type="range" min="0" max="30" step="1"><output id="sXGo"></output></label>
         <label class="chk"><input type="checkbox" id="sXO"> Borde oscuro (se ve mejor sobre fondos claros)</label>
       </div>
-      <p class="setHelp">La cruceta se sigue abriendo con la dispersión real del arma (al moverte o saltar): la separación extra solo se suma.</p>
       <div class="lbl" style="margin:12px 0 6px">Visor del francotirador · color del punto</div>
       <div class="swatches" id="retColSw" data-key="retColor" role="group" aria-label="Color del punto del visor"></div>
       <div class="setGrid"><label class="chk"><input type="checkbox" id="sRetL"> Retícula iluminada (las líneas también de ese color)</label></div>
@@ -1310,33 +1309,30 @@ body.lbOn #fpsBox{left:auto;right:max(8px,env(safe-area-inset-right,0px));transf
       <div class="swatches" id="hitColSw" data-key="hitColor" role="group" aria-label="Color del marcador de impacto"></div>
       <div class="lbl" style="margin:12px 0 6px">Impacto en el cuerpo</div>
       <div class="seg" id="bloodSeg" role="group" aria-label="Color del impacto"><button type="button" data-b="red">ROJO</button><button type="button" data-b="green">VERDE</button><button type="button" data-b="yellow">AMARILLO</button></div>
-      <p class="setHelp">Las bajas se siguen marcando en rojo y los disparos a la cabeza en dorado. Solo cambia lo que ves.</p>
     </section>
     <section class="setPane" data-pane="graficos" role="tabpanel" hidden>
       <div class="seg" id="qSeg" role="group" aria-label="Calidad gráfica"><button type="button" data-q="auto">AUTO</button><button type="button" data-q="bajo">BAJO</button><button type="button" data-q="medio">MEDIO</button><button type="button" data-q="alto">ALTO</button></div>
       <p class="setHelp" id="qNote"></p>
       <span class="lbl">Resolución</span>
       <div class="seg" id="resSeg" role="group" aria-label="Resolución"><button type="button" data-res="auto">AUTO</button><button type="button" data-res="1">×1</button><button type="button" data-res="2">×2</button></div>
-      <p class="setHelp">×1 dibuja la cuarta parte de píxeles que ×2: menos memoria, menos calor y más FPS en el móvil, un poco menos nítido. AUTO = la de la calidad elegida.</p>
-      <span class="lbl">Pueblo</span>
-      <div class="seg" id="p3Seg" role="group" aria-label="Versión del pueblo"><button type="button" data-p3="0">CLÁSICO</button><button type="button" data-p3="1">3.0 (NUEVO)</button></div>
-      <p class="setHelp">Se guarda en este dispositivo y la página se recarga.</p>
+      <p class="setHelp">×1: más FPS y menos batería. ×2: más nítido.</p>
       <div class="setGrid"><label class="sens"><span class="lbl">Brillo</span><input id="sBr" type="range" min="0.7" max="1.4" step="0.05"><output id="sBro"></output></label></div>
       <span class="lbl">Estilo de imagen</span>
       <div class="seg" id="lookSeg" role="group" aria-label="Estilo de imagen"><button type="button" data-l="clasico">CLÁSICO</button><button type="button" data-l="vivo">VIVO</button><button type="button" data-l="realista">REALISTA</button><button type="button" data-l="suave">SUAVE</button><button type="button" data-l="cine">CINE</button></div>
       <span class="lbl">Modo daltónico</span>
       <div class="seg" id="cvdSeg" role="group" aria-label="Modo daltónico"><button type="button" data-cvd="off">NO</button><button type="button" data-cvd="prot">PROTANOPÍA</button><button type="button" data-cvd="deut">DEUTERANOPÍA</button><button type="button" data-cvd="trit">TRITANOPÍA</button></div>
-      <p class="setHelp" id="lookNote">El estilo y el modo daltónico van dentro del propio dibujo de cada objeto (no cuestan FPS) y se aplican al recargar la página.</p>
+      <p class="setHelp" id="lookNote">Se aplican al recargar la página.</p>
       <div class="row" id="lookReloadRow" hidden><button class="btn ghost" id="lookReload" type="button" style="font-size:16px">RECARGAR PARA APLICAR</button></div>
-      <p class="setHelp" id="gfxDiag" style="font-family:var(--f-mono);font-size:11px;opacity:.85"></p>
       <div class="setGrid">
-        <label class="chk"><input type="checkbox" id="sAA"> Suavizado de bordes (MEDIO y ALTO): las fachadas lejanas no parpadean. Se aplica al recargar</label>
-        <label class="chk"><input type="checkbox" id="sFps30"> Limitar a 30 FPS (ahorra batería y calor)</label>
+        <label class="chk"><input type="checkbox" id="sAA"> Suavizado de bordes (se aplica al recargar)</label>
+        <label class="chk"><input type="checkbox" id="sFps30"> Limitar a 30 FPS (ahorra batería)</label>
         <label class="chk"><input type="checkbox" id="sShowFps"> Mostrar FPS en pantalla</label>
       </div>
+      <details class="setDiag"><summary>DIAGNÓSTICO</summary>
+      <p class="setHelp" id="gfxDiag" style="font-family:var(--f-mono);font-size:11px;opacity:.85"></p>
       <div class="row"><button class="btn ghost" id="perfRun" type="button" style="font-size:18px">MEDIR RENDIMIENTO</button></div>
-      <p class="setHelp">Juega solo unos 45 s (ARENA, PUEBLO y CASA ATLAS 2.0) con la cámara girando y la mira puesta, y da un informe para mandárselo a Claude: fotogramas, CPU, dibujo, memoria de texturas y tiempos de carga. Mejor en horizontal, sin otras apps abiertas y sin tocar la pantalla.</p>
-      <p class="setHelp" id="credits" style="font-size:11px;opacity:.8">Créditos · Personajes realistas (?pj=pro), modificados para el juego: «<a href="https://sketchfab.com/3d-models/swat-operator-4k-followers-special-remaster-f6923917c8014578b1c1cb2b4c249268" target="_blank" rel="noopener">S.W.A.T. Operator - 4k Followers Special Remaster</a>» y «<a href="https://sketchfab.com/3d-models/fsb-operator-43a561e941704eefb1ab0614be4f0049" target="_blank" rel="noopener">FSB Operator</a>» de Mateusz Woliński (jeandiz) y «<a href="https://sketchfab.com/3d-models/military-tactical-suit-lowpolygameready-ef698ce36b1545a78ce592dd3db4c7ed" target="_blank" rel="noopener">Military tactical suit (LowPolyGameReady)</a>» de DanlyVostok, con licencia <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener">CC BY 4.0</a>. RIDGE y AMBER: modelos generados con <a href="https://www.meshy.ai/" target="_blank" rel="noopener">Meshy AI</a>, con licencia <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener">CC BY 4.0</a>, modificados para el juego. Armas (aspectos con ?pj=pro), modificadas para el juego: «<a href="https://sketchfab.com/3d-models/cheytac-m200-intervention-sniper-rifle-231bc2d38c4c4cf2bbe882112caa1ba4" target="_blank" rel="noopener">CheyTac M200 «Intervention» sniper rifle</a>» de Aleksandr (sannf4), «<a href="https://sketchfab.com/3d-models/pgm-ultima-ratio-game-ready-sniper-rifle-34611493b4104bdba2ce6beabfeb4465" target="_blank" rel="noopener">PGM Ultima Ratio – Game-Ready Sniper Rifle</a>» de drepi.3d, «<a href="https://sketchfab.com/3d-models/modern-sniper-rifle-free-lowpoly-45c99509f1ee4c2a8c9c3336d3e2ff5a" target="_blank" rel="noopener">Modern Sniper Rifle | Free Lowpoly</a>» de Vlasov Daniil (dan741vlasov), «<a href="https://sketchfab.com/3d-models/sniper-rifle-e5930a4ddbec4cae9909706e29c8d55a" target="_blank" rel="noopener">Sniper Rifle</a>» de awakov_dawid, «<a href="https://sketchfab.com/3d-models/tactical-knife-5fb333837f1343caa6a0e80a46b68ac1" target="_blank" rel="noopener">Tactical Knife</a>» de lunea, con licencia <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener">CC BY 4.0</a>. Three.js (MIT). Texturas y modelos de Poly Haven (CC0).</p>
+      <p class="setHelp">Unos 45 s jugando solo, en horizontal y sin tocar la pantalla. Da un informe de FPS, memoria y tiempos de carga.</p>
+      </details>
     </section>
     <section class="setPane" data-pane="audio" role="tabpanel" hidden>
       <div class="setGrid">
@@ -1346,7 +1342,7 @@ body.lbOn #fpsBox{left:auto;right:max(8px,env(safe-area-inset-right,0px));transf
         <label class="sens"><span class="lbl">Pasos</span><input id="vP" type="range" min="0" max="1" step="0.05"><output id="vPo"></output></label>
         <label class="sens"><span class="lbl">Interfaz (botones y menús)</span><input id="vU" type="range" min="0" max="1" step="0.05"><output id="vUo"></output></label>
         <label class="chk"><input type="checkbox" id="sMute"> Silenciar todo</label>
-        <label class="chk" id="vibRow"><input type="checkbox" id="sVib"> Vibración al disparar y al recibir daño (Android: el iPhone no deja vibrar a las páginas web)</label>
+        <label class="chk" id="vibRow"><input type="checkbox" id="sVib"> Vibración al disparar y al recibir daño (Android)</label>
       </div>
     </section>
     <section class="setPane" data-pane="jugabilidad" role="tabpanel" hidden>
@@ -1357,34 +1353,25 @@ body.lbOn #fpsBox{left:auto;right:max(8px,env(safe-area-inset-right,0px));transf
       </div>
       <div class="lbl" style="margin:12px 0 6px">Visibilidad de enemigos</div>
       <div class="seg" id="visSeg" role="group" aria-label="Visibilidad de enemigos"><button type="button" data-vis="normal">NORMAL</button><button type="button" data-vis="silueta">SILUETA MEJORADA</button><button type="button" data-vis="contorno">CONTORNO</button></div>
-      <p class="setHelp">Solo en las partes que de verdad ves: nunca a través de paredes, suelos ni vegetación. SILUETA: de lejos, una luz de borde suave. CONTORNO: una línea roja casi opaca alrededor de los enemigos desde unos 14 m, y azul alrededor de tus compañeros de equipo. Tiene el mismo grosor en BAJO y en ALTO y, con el visor, se ajusta al zoom. Es igual para todos los jugadores (online también).</p>
-      <p class="setHelp">Solo cambian lo que ves: el daño, el retroceso y las reglas son siempre las del juego (y online, las del servidor).</p>
+      <p class="setHelp">Igual para todos los jugadores. Nunca a través de paredes.</p>
     </section>
     <section class="setPane" data-pane="accesibilidad" role="tabpanel" hidden>
       <div class="setGrid">
         <label class="chk"><input type="checkbox" id="sCalm"> Reducir el movimiento visual del arma</label>
         <label class="chk"><input type="checkbox" id="sFlash"> Reducir destellos y sacudidas (flash rojo al recibir daño, temblor de cámara)</label>
       </div>
-      <p class="setHelp">No cambian la puntería ni el retroceso real: solo lo que se mueve o parpadea en pantalla.</p>
     </section>
-    <!-- EN PRUEBA (19-11-2026, docs/EN-PRUEBA.md): the experimental features as switches, without touching the link (the home-screen
-         shortcut always opens the plain link, and on the iPhone it keeps its own memory, apart from Safari) -->
-    <section class="setPane" data-pane="pruebas" role="tabpanel" hidden>
-      <p class="setHelp">Lo nuevo que aún se está probando. Actívalo o desactívalo aquí: se guarda en este dispositivo y vale también en el acceso directo de la pantalla de inicio (iPhone y Android), sin cambiar el enlace. Se aplica al recargar.</p>
-      <div class="fxList" id="fxList"></div>
-      <div class="row" id="fxReloadRow" hidden><button class="btn" id="fxReload" type="button" style="font-size:18px">RECARGAR PARA APLICAR</button></div>
-    </section>
+    <p class="setLinks"><a href="creditos.html" target="_blank" rel="noopener">Créditos y licencias</a> · <a href="privacidad.html" target="_blank" rel="noopener">Privacidad</a></p>
     <div class="row setFoot"><button class="btn ghost" id="setResetTab" type="button" style="font-size:16px">RESTAURAR ESTA SECCIÓN</button><button class="btn ghost" id="setReset" type="button" style="font-size:16px">RESTAURAR TODO</button><button class="btn" id="setClose" type="button">LISTO</button></div>
   </div>
 </div>
 
 <div id="miraOv" class="overlay center" hidden>
   <div class="panel" style="width:min(900px,calc(100% - 24px));gap:12px">
-    <div class="eyebrow">Accesorio del rifle · se cambia cuando quieras, también en mitad de la partida</div>
+    <div class="eyebrow">Accesorio del rifle</div>
     <h2 style="font-size:clamp(34px,6vw,54px)">MIRAS</h2>
     <div class="miraGrid" id="miraGrid"></div>
     <p class="setHelp" id="miraDesc" style="margin:0;min-height:2.6em"></p>
-    <p class="setHelp" style="margin:0">Solo cambia lo que ves: con la mira puesta el disparo es exacto con todas, y el tiempo de apuntar, el retroceso y el daño son los mismos. El rival online ve tu rifle con su mira de siempre.</p>
     <div class="row"><button class="btn" id="miraClose" type="button">LISTO</button></div>
   </div>
 </div>
@@ -1402,14 +1389,14 @@ body.lbOn #fpsBox{left:auto;right:max(8px,env(safe-area-inset-right,0px));transf
       <div class="row"><button class="btn ghost" id="profCopy" type="button" style="font-size:18px">COPIAR CÓDIGO</button><button class="btn ghost" id="profPaste" type="button" style="font-size:18px">RESTAURAR</button></div>
       <p id="profCode" hidden></p><input type="text" id="profIn" placeholder="Pega aquí el código (SD1.…)" autocomplete="off" spellcheck="false" hidden><span class="lbl kitNote" id="profMsg"></span></div>
     <div id="accBox" aria-live="polite"></div>
-    <p class="setHelp" style="margin:0">Jugar no pide cuenta. Con cuenta entras desde cualquier dispositivo con tu cuenta de Google o con una llave (passkey: Face ID, huella o el PIN del móvil); sin contraseñas. Y tienes amigos, invitaciones y tus objetos. <a href="privacidad.html" target="_blank" rel="noopener" style="color:var(--hud)">Privacidad</a></p>
+    <p class="setHelp" style="margin:0">Jugar no pide cuenta. Con cuenta (Google o llave de acceso) entras desde cualquier dispositivo y tienes amigos, invitaciones y tus objetos. <a href="privacidad.html" target="_blank" rel="noopener" style="color:var(--hud)">Privacidad</a></p>
     <div class="row"><button class="btn ghost" id="profClose" type="button" style="font-size:20px">VOLVER</button></div>
   </div>
 </div>
 
 <div id="invOv" class="overlay center" hidden>
   <div class="panel" style="width:min(780px,calc(100% - 24px));gap:12px">
-    <div class="eyebrow">Cajas y objetos · solo aspecto, gratis</div>
+    <div class="eyebrow">Cajas y objetos</div>
     <div id="invHead" aria-live="polite"></div>
     <div class="seg" id="invTabs" role="group" aria-label="Tipo de objeto"><button type="button" data-tab="camo">CAMUFLAJES</button><button type="button" data-tab="ret">MIRA</button><button type="button" data-tab="titulo">TÍTULOS</button></div>
     <div class="invGrid" id="invGrid" role="group" aria-label="Objetos"></div>
@@ -1427,11 +1414,10 @@ body.lbOn #fpsBox{left:auto;right:max(8px,env(safe-area-inset-right,0px));transf
   <div class="panel" style="width:min(780px,calc(100% - 24px));gap:12px">
     <div class="eyebrow">Tu personaje</div>
     <div class="skinGrid" id="skinGrid" role="group" aria-label="Personajes"></div>
-    <div class="eyebrow wsOnly" hidden>Tu rifle · solo aspecto (el arma es el HALCÓN R7)</div>
+    <div class="eyebrow wsOnly" hidden>Tu rifle</div>
     <div class="skinGrid wsGrid wsOnly" id="wsRifleGrid" role="group" aria-label="Rifles" hidden></div>
-    <div class="eyebrow wsOnly" hidden>Tu cuchillo · solo aspecto</div>
+    <div class="eyebrow wsOnly" hidden>Tu cuchillo</div>
     <div class="skinGrid wsGrid wsOnly" id="wsKnifeGrid" role="group" aria-label="Cuchillos" hidden></div>
-    <p class="setHelp" style="margin:0">Solo cambia el aspecto: las zonas de impacto son las mismas para todos. Tu rival online ve el que elijas. En calidad BAJA todos se ven como el soldado clásico.</p>
     <div class="row"><button class="btn ghost" id="skinClose" type="button" style="font-size:20px">VOLVER</button></div>
   </div>
 </div>
@@ -1577,13 +1563,13 @@ body.lbOn #fpsBox{left:auto;right:max(8px,env(safe-area-inset-right,0px));transf
         </div>
       </section>
       <section class="m2Pane" data-pane="personaje" hidden>
-        <div class="m2Panel m2List"><div class="eyebrow">Operadores</div><div id="m2PjList" role="group" aria-label="Operadores"></div><button type="button" class="m2PjCamo" id="m2PjCamo" disabled aria-disabled="true"><small>CAMUFLAJE DEL OPERADOR</small><b>PRÓXIMAMENTE</b></button></div>
+        <div class="m2Panel m2List"><div class="eyebrow">Operadores</div><div id="m2PjList" role="group" aria-label="Operadores"></div></div>
         <div class="m2Stage" data-stage aria-label="Tu operador (arrastra para girarlo)"></div>
         <div class="m2Panel m2Info">
           <div class="eyebrow">Equipado</div>
           <h3 id="m2PjName"></h3>
           <span class="lbl" id="m2PjBy"></span>
-          <p class="setHelp" id="m2PjHelp">Solo cambia el aspecto: las zonas de impacto son las mismas para todos. Tu rival online ve el que elijas. En calidad BAJA todos se ven como el soldado clásico.</p>
+          <p class="setHelp" id="m2PjHelp"></p>
           <span class="m2Hint">Arrastra para girarlo</span>
         </div>
       </section>
@@ -1611,9 +1597,9 @@ body.lbOn #fpsBox{left:auto;right:max(8px,env(safe-area-inset-right,0px));transf
       <!-- GUNSMITH (08-11-2026, docs/GUNSMITH.md): the ARSENAL. Becomes the ARMAS section at start (?arsenal=0: the one above) -->
       <section class="m2Pane gsPane" data-pane="gs" hidden>
         <div class="m2Panel gsList">
-          <div class="gsCatH" data-gcat="rifle"><b>FRANCOTIRADOR</b><small>MODELO · cambia el rifle entero</small></div>
+          <div class="gsCatH" data-gcat="rifle"><b>FRANCOTIRADOR</b><small>PRINCIPAL</small></div>
           <div class="gsItems" id="gsRifles" role="group" aria-label="Modelos del rifle"></div>
-          <div class="gsCatH" data-gcat="knife"><b>ARMA DE MANO</b><small>CUCHILLO · tecla 3</small></div>
+          <div class="gsCatH" data-gcat="knife"><b>ARMA DE MANO</b><small>CUCHILLO</small></div>
           <div class="gsItems" id="gsKnives" role="group" aria-label="Cuchillos"></div>
         </div>
         <div class="gsCenter">
@@ -1665,8 +1651,8 @@ body.lbOn #fpsBox{left:auto;right:max(8px,env(safe-area-inset-right,0px));transf
     <h2>EN ESPERA</h2>
     <div class="row"><button class="btn" id="resume" type="button">REANUDAR</button><button class="btn ghost" id="toMenu1" type="button">MENÚ</button></div>
     <div class="kitRow"><span class="lbl">Arma principal · al reaparecer</span><div class="seg kitSeg" role="group" aria-label="Arma principal"><button type="button" data-kit="rifle">HALCÓN R7</button><button type="button" data-kit="shotgun">FURIA 12</button></div><span class="lbl kitNote" id="kitNote"></span></div>
-    <div class="kitRow"><span class="lbl">Mira del rifle · se cambia al momento</span><button type="button" class="miraPick" aria-label="Elegir la mira del rifle" style="max-width:340px"><img alt=""><b></b><span class="lbl">CAMBIAR</span></button></div>
-    <div class="kitRow"><span class="lbl">Tu aspecto · sin salir de la partida (el rifle cambia sus cifras al reaparecer)</span><div class="row pauseLook"><button class="btn ghost" id="pauseLook" type="button">OPERADOR Y ARMA</button><button class="btn ghost" id="pauseCamo" type="button">CAMUFLAJE</button></div></div>
+    <div class="kitRow"><span class="lbl">Mira del rifle</span><button type="button" class="miraPick" aria-label="Elegir la mira del rifle" style="max-width:340px"><img alt=""><b></b><span class="lbl">CAMBIAR</span></button></div>
+    <div class="kitRow"><span class="lbl">Tu aspecto (el rifle cambia al reaparecer)</span><div class="row pauseLook"><button class="btn ghost" id="pauseLook" type="button">OPERADOR Y ARMA</button><button class="btn ghost" id="pauseCamo" type="button">CAMUFLAJE</button></div></div>
     <div class="row"><button class="btn ghost" id="pauseSettings" type="button" style="font-size:18px">AJUSTES</button><button class="btn ghost" id="dbgBtn" type="button" style="font-size:18px">PANEL TÉCNICO (F3)</button><button class="btn ghost" id="rangeReset" type="button" style="font-size:18px">REINICIAR ESTADÍSTICAS</button><button class="btn ghost" id="selfTestBtn" type="button" style="font-size:18px">AUTOTEST DE PUNTERÍA</button></div>
     <pre id="selfTestOut" hidden></pre>
   </div>
@@ -1730,6 +1716,7 @@ body.lbOn #fpsBox{left:auto;right:max(8px,env(safe-area-inset-right,0px));transf
       <div class="lbChoice"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="8" cy="12" r="4.2" fill="none" stroke="currentColor" stroke-width="1.7"/><path d="M12.2 12H21M17.5 12v3.4M20.5 12v2.4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg><b>UNIRSE CON CÓDIGO</b><small>Escribe el código de 6 letras que te ha pasado tu rival.</small>
         <div class="lbJoinRow"><input type="text" id="lbCode" maxlength="6" autocomplete="off" spellcheck="false" autocapitalize="characters" placeholder="ABC234" aria-label="Código de sala"><button type="button" class="lbBtn" id="lbJoin"><span>UNIRSE</span></button></div></div>
       <p class="lbMsg" id="lbMsg" aria-live="polite"></p>
+      <button type="button" class="lbMore" id="lbMore">MÁS MODOS <span>TODOS CONTRA TODOS · EQUIPOS · BOTS</span></button>
     </section>
     <section class="lbRoom" id="lbRoom" hidden>
       <div class="lbTag" id="lbTagMe"><small class="lbRole"></small><b><svg class="lbCrown" viewBox="0 0 24 24" aria-hidden="true" hidden><path d="M3 18 4.5 7l5 4.5L12 5l2.5 6.5 5-4.5L21 18z" fill="currentColor"/></svg><span class="lbNm"></span></b><span class="lbSt"></span></div>
@@ -2867,10 +2854,12 @@ function create(x, y, z, rifle, knife, pistol, shotgun) {
 // the gun in hand (rifle, shotgun or pistol); with the knife out, the rifle (for ADS/reload flags: never set)
 function activeGun(p) { const a = p.load.active; return a === 'pistol' ? p.pw : a === 'shotgun' && p.sw ? p.sw : p.w; }
 // put a player back at a spawn point with fresh guns (multiplayer respawn / rematch);
-// primary: 'rifle' | 'shotgun' for this life (omitted: keep the current one)
-function respawn(p, x, y, z, primary) {
+// primary: 'rifle' | 'shotgun' for this life (omitted: keep the current one); rifle: the figures of the rifle model
+// carried for this life (core/config.js rifles.*; omitted: keep the current one)
+function respawn(p, x, y, z, primary, rifle) {
   Object.assign(p.ms, M.createState(x, y, z));
   if (primary) Me.setPrimary(p.load, primary);
+  if (rifle) p.w.cfg = rifle;
   Wp.resetForSpawn(p.w); if (p.pw) Wp.resetForSpawn(p.pw); if (p.sw) Wp.resetForSpawn(p.sw); Me.resetLoadout(p.load);
 }
 function step(p, cmd, dt, world, moveCfg) {
@@ -2919,6 +2908,9 @@ if (isNode) module.exports = SDPlayer; else root.SDPlayer = SDPlayer;
      go      { t }                           lobby, host with hs only: start now (2/2 people, everyone ready)
      map     { t, id }                       lobby, creator only: choose the map ('pueblo', 'arena', 'casa', 'casa2')
      kit     { t, id }                       my primary: 'rifle' (HALCÓN R7) or 'shotgun' (FURIA 12), used from my next spawn
+     rifle   { t, id }                       my rifle model, used from my next spawn with its own figures (core/config.js
+                                             rifles.*, approved online by the owner on 23-11-2026): 'halcon', 'titan',
+                                             'ultima', 'vector' or 'sahara'
      skin    { t, id }                       my character (looks only): 'soldado', 'clasico', 'swat', 'fsb', 'militar', 'ridge' or 'amber'
      acct    { t, tok }                      my cloud account session (optional): title in the lobby, box points
      cfg     { t, kills, time, mode?, bots?, diff?, size? }   lobby, creator only: kills to win (5/10/20/30), minutes
@@ -2938,6 +2930,8 @@ if (isNode) module.exports = SDPlayer; else root.SDPlayer = SDPlayer;
 const VERSION = 1;
 // characters a player can show (looks only: the hit zones are the same for all)
 const SKINS = ['clasico', 'swat', 'fsb', 'militar', 'soldado', 'ridge', 'amber'];
+// rifle models (core/config.js rifles.*): each one with its own damage, bolt, magazine, reload, aim time, bullet and weight
+const RIFLES = ['halcon', 'titan', 'ultima', 'vector', 'sahara'];
 const LIMITS = {
   maxBytes: 4096,          // a bigger message is dropped
   maxMsgPerSec: 90,        // per connection; more is dropped, far more closes the socket
@@ -3012,6 +3006,7 @@ function parse(text) {
       return { msg: { t: 'in', m: m.m, s: m.s, c } };
     }
     case 'kit': return m.id === 'rifle' || m.id === 'shotgun' ? { msg: { t: 'kit', id: m.id } } : { error: 'shape' };
+    case 'rifle': return RIFLES.includes(m.id) ? { msg: { t: 'rifle', id: m.id } } : { error: 'shape' };
     case 'skin': return SKINS.includes(m.id) ? { msg: { t: 'skin', id: m.id } } : { error: 'shape' };
     case 'acct': return typeof m.tok === 'string' && /^SD-[A-Z2-9]{4}-[A-Z2-9]{4}\.[A-Za-z0-9_-]{20,64}$/.test(m.tok) ? { msg: { t: 'acct', tok: m.tok } } : { error: 'shape' };
     case 'cfg': {
@@ -3037,7 +3032,7 @@ function isCode(s) { return typeof s === 'string' && s.length === 6 && [...s].ev
 function codeFrom(bytes) { let s = ''; for (let i = 0; i < 6; i++) s += CODE_ALPHABET[bytes[i] % CODE_ALPHABET.length]; return s; }
 function tokenFrom(bytes) { const A = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_'; let s = ''; for (const b of bytes) s += A[b & 63]; return s; }
 
-const SDProto = { VERSION, SKINS, LIMITS, B, quantize, packCmd, unpackCmd, parse, cleanName, CODE_ALPHABET, isCode, codeFrom, tokenFrom };
+const SDProto = { VERSION, SKINS, RIFLES, LIMITS, B, quantize, packCmd, unpackCmd, parse, cleanName, CODE_ALPHABET, isCode, codeFrom, tokenFrom };
 if (typeof module !== 'undefined' && module.exports) module.exports = SDProto; else root.SDProto = SDProto;
 })(typeof window !== 'undefined' ? window : globalThis);
 
@@ -3809,7 +3804,8 @@ if (typeof module !== 'undefined' && module.exports) module.exports = SDPerf; el
    Profiles change only how the picture is drawn (resolution, shadows), never the simulation,
    the hit zones, the fog distance or what is visible: the rival is drawn the same way in all.
 
-   AUTO = MEDIO on phones, ALTO on computers, and then the resolution follows the real FPS:
+   AUTO = ALTO on every device (phones too since 23-11-2026, owner: «deja gráficos altos por defecto»; before, MEDIO on
+   phones), lowered only by gpuHint / wantsLower below, and then the resolution follows the real FPS:
    every 1.5 s, if the frame rate is clearly under the target the internal resolution drops a
    step; when it has stayed comfortably over the target for a while it goes back up.
    Stable (PUEBLO 3.0): it never goes below 0.75 of the profile's resolution (the scene and the rival
@@ -3835,7 +3831,7 @@ const ORDER = ['bajo', 'medio', 'alto'];
 // the lower of two profiles (a missing one does not count)
 function lower(a, b) { if (!PROFILES[a]) return b; if (!PROFILES[b]) return a; return ORDER.indexOf(a) <= ORDER.indexOf(b) ? a : b; }
 // cap = the most AUTO may use on this device (gpuHint, or what wantsLower settled on); manual choices ignore it
-function resolve(choice, touch, cap) { return PROFILES[choice] ? choice : lower(touch ? 'medio' : 'alto', cap); }
+function resolve(choice, touch, cap) { return PROFILES[choice] ? choice : lower('alto', cap); }
 const LOWER = { alto: 'medio', medio: 'bajo', bajo: 'bajo' };
 // from the WebGL renderer name (WEBGL_debug_renderer_info, through ANGLE on Windows) and the CPU threads: the most AUTO
 // should start with, or null = no limit. Only lowers: an unknown name keeps the old AUTO.
@@ -3940,6 +3936,10 @@ function create(opts) {
   // my primary ('rifle' | 'shotgun'): the server uses it from my next spawn, and so does my prediction
   N.kit = 'rifle';
   N.chooseKit = id => { if (id !== 'rifle' && id !== 'shotgun') return; N.kit = id; out({ t: 'kit', id }); };
+  // my rifle model: the server gives me its figures from my next spawn, and so does my prediction
+  N.rifle = 'halcon';
+  N.chooseRifle = id => { if (!PR.RIFLES.includes(id)) return; N.rifle = id; out({ t: 'rifle', id }); };
+  N.rifleCfg = () => CFG.rifles[N.rifle] || CFG.rifles.halcon;
   N.skin = null;
   N.chooseSkin = id => { if (!['clasico', 'swat', 'fsb', 'militar', 'soldado', 'ridge', 'amber'].includes(id)) return; N.skin = id; out({ t: 'skin', id }); };
   N.account = tok => { if (typeof tok === 'string') out({ t: 'acct', tok }); };   // my cloud account (server/accounts.js)
@@ -4020,7 +4020,7 @@ function create(opts) {
         N.rules = m.rules || {}; N.timeLeft = N.rules.timeMs || null; N.mode = N.rules.mode || 'duelo'; N.teams = m.teams || null;
         if (!m.resume) { N.remotes = {}; N.ops = []; N.tsc = N.mode === 'equipos' ? { rojo: 0, azul: 0 } : null; }
         if (!m.resume) { N.pending = []; N.outBuf = []; N.lastAck = -1; N.remote = []; N.score = { A: 0, B: 0 }; N.seenShots.clear(); N.corrMax = 0;
-          SDP.respawn(N.local, m.spawn.x, 0, m.spawn.z, N.kit); }   // same spawn as the server: no correction on the first snapshot
+          SDP.respawn(N.local, m.spawn.x, 0, m.spawn.z, N.kit, N.rifleCfg()); }   // same spawn as the server: no correction on the first snapshot
         else { N.lastAck = m.lastSeq; N.pending = N.pending.filter(p => p.seq > m.lastSeq); }
         N.alive = true; N.hp = 100;
         ev.push({ k: 'start', m }); break;
@@ -4052,7 +4052,7 @@ function create(opts) {
           if (e.k === 'over') N.phase = 'over';
           if (e.k === 'hit' && e.to === N.you) N.hp = e.hp;
           if (e.k === 'kill' && e.to === N.you) N.alive = false;
-          if (e.k === 'respawn' && e.id === N.you) { N.alive = true; N.hp = 100; N.pending = []; SDP.respawn(N.local, e.x, 0, e.z, N.kit); }
+          if (e.k === 'respawn' && e.id === N.you) { N.alive = true; N.hp = 100; N.pending = []; SDP.respawn(N.local, e.x, 0, e.z, N.kit, N.rifleCfg()); }
           ev.push(e);
         }
         break;
@@ -9031,7 +9031,7 @@ const SDCarga = { CATS, CAT, plan, progress, label, cats, next, minReady, gpuDon
 if (typeof module !== 'undefined' && module.exports) module.exports = SDCarga; else root.SDCarga = SDCarga;
 })(typeof window !== 'undefined' ? window : globalThis);
 
-const BUILD_ID="c6ba244";const BUILD_HASH="fe9dc15083";const ASSET_V={"assets/3d/fauna/rat.glb":"3815b14d","assets/3d/flora/dandelion.glb":"6dd99727","assets/3d/flora/grass_cards.json":"e348ecb0","assets/3d/imports/2026-10-12_p0_ground_pack_v2/manifest.json":"2be78cf2","assets/3d/imports/2026-10-12_p0_ground_pack_v2/models/sd_ground_curb_kit_01.glb":"3ad12c80","assets/3d/imports/2026-10-12_p0_ground_pack_v2/previews/p0_v2_materials.jpg":"c8d1d1d1","assets/3d/imports/2026-10-12_p0_ground_pack_v2/QA_report.json":"bc519d03","assets/3d/imports/2026-10-12_p0_ground_pack_v2/textures/sd_ground_cobble_01_basecolor.png":"1e428fe1","assets/3d/imports/2026-10-12_p0_ground_pack_v2/textures/sd_ground_cobble_01_normal.png":"dae7377c","assets/3d/imports/2026-10-12_p0_ground_pack_v2/textures/sd_ground_cobble_01_roughness.png":"7e078571","assets/3d/imports/2026-10-12_p0_ground_pack_v2/textures/sd_ground_curb_01_basecolor.png":"f2b087b9","assets/3d/imports/2026-10-12_p0_ground_pack_v2/textures/sd_ground_decal_atlas_01.png":"b5241b83","assets/3d/imports/2026-10-12_p0_ground_pack_v2/textures/sd_ground_patch_01_basecolor.png":"7e3a5286","assets/3d/imports/2026-10-12_p0_ground_pack_v2/textures/sd_ground_patch_01_normal.png":"84ceec46","assets/3d/imports/2026-10-12_p0_ground_pack_v2/textures/sd_ground_patch_01_roughness.png":"cefa4637","assets/3d/imports/2026-10-12_p0_ground_pack_v2/textures/sd_ground_plaza_01_basecolor.png":"0feccfcc","assets/3d/imports/2026-10-12_p0_ground_pack_v2/textures/sd_ground_plaza_01_normal.png":"0f146c3d","assets/3d/imports/2026-10-12_p0_ground_pack_v2/textures/sd_ground_plaza_01_roughness.png":"a8a994c5","assets/3d/imports/2026-10-12_p0_ground_pack_v2/textures/sd_ground_sand_01_basecolor.png":"5e24f61c","assets/3d/imports/2026-10-12_p0_ground_pack_v2/textures/sd_ground_sand_01_normal.png":"84fbc800","assets/3d/imports/2026-10-12_p0_ground_pack_v2/textures/sd_ground_sand_01_roughness.png":"84a99570","assets/3d/imports/2026-10-12_p0_ground_pack_v2/textures/sd_ground_sidewalk_01_basecolor.png":"9fdd8439","assets/3d/imports/2026-10-12_p0_ground_pack_v2/textures/sd_ground_sidewalk_01_normal.png":"559c440d","assets/3d/imports/2026-10-12_p0_ground_pack_v2/textures/sd_ground_sidewalk_01_roughness.png":"28d41d9b","assets/3d/imports/2026-10-12_p0_ground_pack_v2/textures/sd_ground_transition_sand_stone_01.png":"57f4e0d7","assets/3d/imports/2026-10-18_casa_atlas/collision_map.json":"0f4972b9","assets/3d/imports/2026-10-18_casa_atlas/geometry_stats.json":"c4bec501","assets/3d/imports/2026-10-18_casa_atlas/models/sd_casa_atlas_1v1.glb":"8b28363b","assets/3d/imports/2026-10-18_casa_atlas/models/sd_casa_atlas_roof_optional.glb":"e9c8d7af","assets/3d/imports/2026-10-18_casa_atlas/web/apartmentMap.js":"afdd251e","assets/3d/models/sd_e10_casa_oliva.glb":"e822baa2","assets/3d/models/sd_p4_utileria.glb":"ef3cbdcf","assets/3d/models/sd_p4_vehiculos.glb":"7d10873d","assets/3d/weapons_classic/bolt_action_rifle_7_62.glb":"b0a819bf","assets/3d/weapons_classic/fish_knife.glb":"95b6d064","assets/3d/weapons_classic/service_pistol.glb":"a6b01ff8","assets/app/icono-180.png":"0939aeeb","assets/app/icono-192.png":"5869b606","assets/app/icono-512.png":"e4571be3","assets/armas/furia12/retrato.jpg":"c2fb38a3","assets/armas/halcon/retrato.jpg":"f27d58e7","assets/armas/lince/arma.glb":"46315c89","assets/armas/lince/arma_ktx2.glb":"ffcbd16e","assets/armas/lince/arma_tp.glb":"b53e1cc1","assets/armas/lince/info.json":"d95fa2cb","assets/armas/lince/ktx2/Barrel_baseColor.fc3a700c.ktx2":"fc3a700c","assets/armas/lince/ktx2/Barrel_metallicRoughness.f5c79c97.ktx2":"f5c79c97","assets/armas/lince/ktx2/Barrel_normal.b95d2dd1.ktx2":"b95d2dd1","assets/armas/lince/ktx2/Base_baseColor.e97f85d1.ktx2":"e97f85d1","assets/armas/lince/ktx2/Base_metallicRoughness.60ddd486.ktx2":"60ddd486","assets/armas/lince/ktx2/Base_normal.079a9822.ktx2":"079a9822","assets/armas/lince/ktx2/Butt_baseColor.e9c7f18b.ktx2":"e9c7f18b","assets/armas/lince/ktx2/Butt_metallicRoughness.c0534a91.ktx2":"c0534a91","assets/armas/lince/ktx2/Butt_normal.1f21187e.ktx2":"1f21187e","assets/armas/lince/ktx2/Handle_Spusk_baseColor.288d0085.ktx2":"288d0085","assets/armas/lince/ktx2/Handle_Spusk_metallicRoughness.28b78c41.ktx2":"28b78c41","assets/armas/lince/ktx2/Handle_Spusk_normal.08554cab.ktx2":"08554cab","assets/armas/lince/ktx2/Soshki_baseColor.8b2f6a3b.ktx2":"8b2f6a3b","assets/armas/lince/ktx2/Soshki_metallicRoughness.8013a9b6.ktx2":"8013a9b6","assets/armas/lince/ktx2/Soshki_normal.20974fdf.ktx2":"20974fdf","assets/armas/lince/ktx2/Zoom_baseColor.8fa2dd0a.ktx2":"8fa2dd0a","assets/armas/lince/ktx2/Zoom_metallicRoughness.d8ba14b6.ktx2":"d8ba14b6","assets/armas/lince/ktx2/Zoom_normal.461677cd.ktx2":"461677cd","assets/armas/lince/retrato.jpg":"e1fc68dc","assets/armas/navaja/retrato.jpg":"0dd33756","assets/armas/ratio/arma.glb":"dccc5bb3","assets/armas/ratio/arma_ktx2.glb":"e859d050","assets/armas/ratio/arma_tp.glb":"5f9f132e","assets/armas/ratio/info.json":"abdb4ed6","assets/armas/ratio/ktx2/01_GripMagazine_low_4k_001_baseColor.9a8db3af.ktx2":"9a8db3af","assets/armas/ratio/ktx2/01_GripMagazine_low_4k_001_metallicRoughness.c79b0d21.ktx2":"c79b0d21","assets/armas/ratio/ktx2/01_GripMagazine_low_4k_001_normal.f92b1eb9.ktx2":"f92b1eb9","assets/armas/ratio/ktx2/02_MainBody_low_4k_001_baseColor.40ac3190.ktx2":"40ac3190","assets/armas/ratio/ktx2/02_MainBody_low_4k_001_metallicRoughness.17d29c34.ktx2":"17d29c34","assets/armas/ratio/ktx2/02_MainBody_low_4k_001_normal.2f5db7f0.ktx2":"2f5db7f0","assets/armas/ratio/ktx2/03_BackParts_low_4k_001_baseColor.61ee1dbf.ktx2":"61ee1dbf","assets/armas/ratio/ktx2/03_BackParts_low_4k_001_metallicRoughness.2fe06f2b.ktx2":"2fe06f2b","assets/armas/ratio/ktx2/03_BackParts_low_4k_001_normal.6609425d.ktx2":"6609425d","assets/armas/ratio/ktx2/04_BarrelRail_low_4k_002_baseColor.7e06f145.ktx2":"7e06f145","assets/armas/ratio/ktx2/04_BarrelRail_low_4k_002_metallicRoughness.ab84682e.ktx2":"ab84682e","assets/armas/ratio/ktx2/04_BarrelRail_low_4k_002_normal.32514676.ktx2":"32514676","assets/armas/ratio/ktx2/05_Scope_low_4K_001_baseColor.4b39cbc8.ktx2":"4b39cbc8","assets/armas/ratio/ktx2/05_Scope_low_4K_001_metallicRoughness.e65f9801.ktx2":"e65f9801","assets/armas/ratio/ktx2/05_Scope_low_4K_001_normal.6948d6f5.ktx2":"6948d6f5","assets/armas/ratio/ktx2/06_SmallParts_low_2k_003_baseColor.b4462b7c.ktx2":"b4462b7c","assets/armas/ratio/ktx2/06_SmallParts_low_2k_003_metallicRoughness.b9fbbecf.ktx2":"b9fbbecf","assets/armas/ratio/retrato.jpg":"8bb0aa6b","assets/armas/tactica/arma.glb":"6a73ea28","assets/armas/tactica/arma_ktx2.glb":"83c29cb0","assets/armas/tactica/arma_tp.glb":"b0dac4eb","assets/armas/tactica/info.json":"30d8234f","assets/armas/tactica/ktx2/blade_low_txt_baseColor.12e0033e.ktx2":"12e0033e","assets/armas/tactica/ktx2/blade_low_txt_metallicRoughness.491d3748.ktx2":"491d3748","assets/armas/tactica/ktx2/blade_low_txt_normal.536d9445.ktx2":"536d9445","assets/armas/tactica/ktx2/handle_low_txt_baseColor.e3f08c64.ktx2":"e3f08c64","assets/armas/tactica/ktx2/handle_low_txt_metallicRoughness.c074c9be.ktx2":"c074c9be","assets/armas/tactica/ktx2/handle_low_txt_normal.aca2695c.ktx2":"aca2695c","assets/armas/tactica/retrato.jpg":"fa1a3f96","assets/armas/titan/arma.glb":"7f4111c0","assets/armas/titan/arma_ktx2.glb":"a432d454","assets/armas/titan/arma_tp.glb":"c47a5cb2","assets/armas/titan/info.json":"db074acd","assets/armas/titan/ktx2/material_baseColor.7c15dc64.ktx2":"7c15dc64","assets/armas/titan/ktx2/material_metallicRoughness.849f8e59.ktx2":"849f8e59","assets/armas/titan/ktx2/material_normal.92228de1.ktx2":"92228de1","assets/armas/titan/ktx2/Optical_baseColor.3e0ce754.ktx2":"3e0ce754","assets/armas/titan/ktx2/Optical_metallicRoughness.5ecda68e.ktx2":"5ecda68e","assets/armas/titan/ktx2/Optical_normal.2ee94b2f.ktx2":"2ee94b2f","assets/armas/titan/ktx2/Rifle_magazine_baseColor.1863ed24.ktx2":"1863ed24","assets/armas/titan/ktx2/Rifle_magazine_metallicRoughness.a8bb265b.ktx2":"a8bb265b","assets/armas/titan/ktx2/Rifle_magazine_normal.8994a92c.ktx2":"8994a92c","assets/armas/titan/retrato.jpg":"a7cab333","assets/armas/vector/arma.glb":"bfcfb17c","assets/armas/vector/arma_ktx2.glb":"70ff8ce2","assets/armas/vector/arma_tp.glb":"d8fa379c","assets/armas/vector/info.json":"b0ef88cd","assets/armas/vector/ktx2/Mat1_baseColor.c1a0b48e.ktx2":"c1a0b48e","assets/armas/vector/ktx2/Mat1_metallicRoughness.824af6ea.ktx2":"824af6ea","assets/armas/vector/ktx2/Mat1_normal.d7569241.ktx2":"d7569241","assets/armas/vector/ktx2/Mat2_baseColor.5d59156b.ktx2":"5d59156b","assets/armas/vector/ktx2/Mat2_metallicRoughness.76bb846f.ktx2":"76bb846f","assets/armas/vector/ktx2/Mat2_normal.45c02862.ktx2":"45c02862","assets/armas/vector/retrato.jpg":"946f277c","assets/armas/vibora9/retrato.jpg":"7b80040d","assets/caja/atlas_drop.glb":"00be117f","assets/camo/aluminio.jpg":"21d87093","assets/camo/carbono_azul.jpg":"1502c1af","assets/camo/carbono_rojo.jpg":"98284b46","assets/camo/cristal_menta.jpg":"3ce25400","assets/camo/marmol_negro.jpg":"d39b38a0","assets/camo/oro_pulido.jpg":"6aa79083","assets/camo/oro_rejilla.jpg":"492d72cb","assets/camo/oxido.jpg":"6116425c","assets/camo/panal.jpg":"5d7d6793","assets/hud/hud_icons.json":"24c2cc4d","assets/hud/icons/aim_ads.svg":"fe6f0bc2","assets/hud/icons/aim_ads_active.svg":"1eb78afc","assets/hud/icons/aim_ads_pressed.svg":"dff31cf8","assets/hud/icons/crouch.svg":"10aadc64","assets/hud/icons/crouch_active.svg":"492c75db","assets/hud/icons/crouch_pressed.svg":"b48756ab","assets/hud/icons/fire_left.svg":"54907ada","assets/hud/icons/fire_left_pressed.svg":"88ef5223","assets/hud/icons/fire_main.svg":"2665448e","assets/hud/icons/fire_main_pressed.svg":"68d01951","assets/hud/icons/hold_breath.svg":"14438cb2","assets/hud/icons/hold_breath_active.svg":"d7ffa578","assets/hud/icons/hold_breath_pressed.svg":"9c507630","assets/hud/icons/inspect.svg":"1b0dd5c6","assets/hud/icons/inspect_pressed.svg":"ce71338c","assets/hud/icons/inventory.svg":"bed74e48","assets/hud/icons/inventory_active.svg":"5b9b1b0e","assets/hud/icons/inventory_pressed.svg":"8664ed5e","assets/hud/icons/jump.svg":"6da3abbc","assets/hud/icons/jump_pressed.svg":"171dc109","assets/hud/icons/knife.svg":"1b3f2f4b","assets/hud/icons/knife_pressed.svg":"36e9f9bb","assets/hud/icons/pause.svg":"5d93a26b","assets/hud/icons/pause_pressed.svg":"fb186451","assets/hud/icons/peak_left.svg":"6af0337a","assets/hud/icons/peak_left_active.svg":"0fd43330","assets/hud/icons/peak_left_pressed.svg":"0784ea39","assets/hud/icons/peak_right.svg":"7b2020e9","assets/hud/icons/peak_right_active.svg":"9bf945e1","assets/hud/icons/peak_right_pressed.svg":"f4804199","assets/hud/icons/reload.svg":"7b05dfc5","assets/hud/icons/reload_alert.svg":"b8b06ae4","assets/hud/icons/reload_pressed.svg":"ac0170fe","assets/hud/icons/sprint.svg":"d67dc68c","assets/hud/icons/sprint_active.svg":"f119663f","assets/hud/icons/sprint_pressed.svg":"50e656a9","assets/hud/icons/variants/hold_breath_a.svg":"14438cb2","assets/hud/icons/variants/hold_breath_b.svg":"e6cfc9e9","assets/hud/icons/variants/inspect_a.svg":"1b0dd5c6","assets/hud/icons/variants/inspect_b.svg":"02300cbe","assets/hud/icons/variants/peak_left_a.svg":"6af0337a","assets/hud/icons/variants/peak_left_b.svg":"62907055","assets/hud/icons/variants/peak_left_c.svg":"0f6bbb57","assets/hud/icons/variants/peak_right_a.svg":"7b2020e9","assets/hud/icons/variants/peak_right_b.svg":"4487b642","assets/hud/icons/variants/peak_right_c.svg":"1b1efcf8","assets/hud/icons/weapon_swap.svg":"ab7bfccf","assets/hud/icons/weapon_swap_pressed.svg":"a3b60fbf","assets/hud/icons/weapons/weapon_knife.svg":"77b1f3c3","assets/hud/icons/weapons/weapon_pistol.svg":"0e1e9d5b","assets/hud/icons/weapons/weapon_rifle.svg":"857a84dc","assets/hud/icons/weapons/weapon_shotgun.svg":"c981d855","assets/hud/png/128/aim_ads.png":"0198149f","assets/hud/png/128/aim_ads_active.png":"7818426d","assets/hud/png/128/aim_ads_pressed.png":"eab3eece","assets/hud/png/128/crouch.png":"53d52298","assets/hud/png/128/crouch_active.png":"23333f44","assets/hud/png/128/crouch_pressed.png":"8c00a7c1","assets/hud/png/128/fire_left.png":"55f05aca","assets/hud/png/128/fire_left_pressed.png":"5d0669b7","assets/hud/png/128/fire_main.png":"e6a31f09","assets/hud/png/128/fire_main_pressed.png":"4adc697a","assets/hud/png/128/hold_breath.png":"0442dca0","assets/hud/png/128/hold_breath_active.png":"e1cda9c2","assets/hud/png/128/hold_breath_pressed.png":"a636ec54","assets/hud/png/128/inspect.png":"4cb08264","assets/hud/png/128/inspect_pressed.png":"07f8f761","assets/hud/png/128/inventory.png":"c0d45409","assets/hud/png/128/inventory_active.png":"dac115f6","assets/hud/png/128/inventory_pressed.png":"c4a8a2f7","assets/hud/png/128/jump.png":"fafdcc9c","assets/hud/png/128/jump_pressed.png":"a670d6a5","assets/hud/png/128/knife.png":"21011536","assets/hud/png/128/knife_pressed.png":"d1f1aa11","assets/hud/png/128/pause.png":"6be8d985","assets/hud/png/128/pause_pressed.png":"4cb9add7","assets/hud/png/128/peak_left.png":"61c163ec","assets/hud/png/128/peak_left_active.png":"f084e4ce","assets/hud/png/128/peak_left_pressed.png":"7804512a","assets/hud/png/128/peak_right.png":"83feefbc","assets/hud/png/128/peak_right_active.png":"5614735b","assets/hud/png/128/peak_right_pressed.png":"3781a7d7","assets/hud/png/128/reload.png":"21d981ba","assets/hud/png/128/reload_alert.png":"599ef7e0","assets/hud/png/128/reload_pressed.png":"def5decc","assets/hud/png/128/sprint.png":"3ed654cf","assets/hud/png/128/sprint_active.png":"05744830","assets/hud/png/128/sprint_pressed.png":"a8c068d5","assets/hud/png/128/variants/hold_breath_a.png":"0442dca0","assets/hud/png/128/variants/hold_breath_b.png":"cc651177","assets/hud/png/128/variants/inspect_a.png":"4cb08264","assets/hud/png/128/variants/inspect_b.png":"9ebe5f2c","assets/hud/png/128/variants/peak_left_a.png":"61c163ec","assets/hud/png/128/variants/peak_left_b.png":"bf23666b","assets/hud/png/128/variants/peak_left_c.png":"bff2c254","assets/hud/png/128/variants/peak_right_a.png":"83feefbc","assets/hud/png/128/variants/peak_right_b.png":"59cd3aeb","assets/hud/png/128/variants/peak_right_c.png":"7c353985","assets/hud/png/128/weapon_swap.png":"b5896f80","assets/hud/png/128/weapon_swap_pressed.png":"11ea8443","assets/hud/png/128/weapons/weapon_knife.png":"0d43fae5","assets/hud/png/128/weapons/weapon_pistol.png":"fe8d20d8","assets/hud/png/128/weapons/weapon_rifle.png":"b9a42ec0","assets/hud/png/128/weapons/weapon_shotgun.png":"045dbbda","assets/hud/png/256/aim_ads.png":"61851152","assets/hud/png/256/aim_ads_active.png":"936a3d6e","assets/hud/png/256/aim_ads_pressed.png":"cf3db481","assets/hud/png/256/crouch.png":"d0fd1d3c","assets/hud/png/256/crouch_active.png":"2497bfdf","assets/hud/png/256/crouch_pressed.png":"86068e2f","assets/hud/png/256/fire_left.png":"1334239d","assets/hud/png/256/fire_left_pressed.png":"0d3a57f7","assets/hud/png/256/fire_main.png":"a8485883","assets/hud/png/256/fire_main_pressed.png":"66b99350","assets/hud/png/256/hold_breath.png":"db1cc835","assets/hud/png/256/hold_breath_active.png":"59f2da2b","assets/hud/png/256/hold_breath_pressed.png":"59217936","assets/hud/png/256/inspect.png":"7bdd9240","assets/hud/png/256/inspect_pressed.png":"55b7bfcc","assets/hud/png/256/inventory.png":"034ccb6f","assets/hud/png/256/inventory_active.png":"3899b65a","assets/hud/png/256/inventory_pressed.png":"c709f2f4","assets/hud/png/256/jump.png":"e49615d1","assets/hud/png/256/jump_pressed.png":"af230e9a","assets/hud/png/256/knife.png":"a277b873","assets/hud/png/256/knife_pressed.png":"8e5e5658","assets/hud/png/256/pause.png":"a9897d58","assets/hud/png/256/pause_pressed.png":"079f4357","assets/hud/png/256/peak_left.png":"0f0188a9","assets/hud/png/256/peak_left_active.png":"dd61cb0a","assets/hud/png/256/peak_left_pressed.png":"13ef672a","assets/hud/png/256/peak_right.png":"925cf4da","assets/hud/png/256/peak_right_active.png":"bc0173fb","assets/hud/png/256/peak_right_pressed.png":"c5cada00","assets/hud/png/256/reload.png":"46dff5aa","assets/hud/png/256/reload_alert.png":"42e2c50a","assets/hud/png/256/reload_pressed.png":"9acec025","assets/hud/png/256/sprint.png":"500cd27d","assets/hud/png/256/sprint_active.png":"6a122d98","assets/hud/png/256/sprint_pressed.png":"1c3b21b2","assets/hud/png/256/variants/hold_breath_a.png":"db1cc835","assets/hud/png/256/variants/hold_breath_b.png":"d05261e8","assets/hud/png/256/variants/inspect_a.png":"7bdd9240","assets/hud/png/256/variants/inspect_b.png":"0b89c953","assets/hud/png/256/variants/peak_left_a.png":"0f0188a9","assets/hud/png/256/variants/peak_left_b.png":"038da697","assets/hud/png/256/variants/peak_left_c.png":"8af8191a","assets/hud/png/256/variants/peak_right_a.png":"925cf4da","assets/hud/png/256/variants/peak_right_b.png":"8f952fb7","assets/hud/png/256/variants/peak_right_c.png":"10773f78","assets/hud/png/256/weapon_swap.png":"d18bef18","assets/hud/png/256/weapon_swap_pressed.png":"799bb135","assets/hud/png/256/weapons/weapon_knife.png":"afa1f4c8","assets/hud/png/256/weapons/weapon_pistol.png":"f4a6904f","assets/hud/png/256/weapons/weapon_rifle.png":"915e6739","assets/hud/png/256/weapons/weapon_shotgun.png":"0306c985","assets/hud/png/64/aim_ads.png":"46122a99","assets/hud/png/64/aim_ads_active.png":"cdf75973","assets/hud/png/64/aim_ads_pressed.png":"d593e149","assets/hud/png/64/crouch.png":"4d7d7d51","assets/hud/png/64/crouch_active.png":"a75ca948","assets/hud/png/64/crouch_pressed.png":"453b52ff","assets/hud/png/64/fire_left.png":"551f6bac","assets/hud/png/64/fire_left_pressed.png":"de03cf84","assets/hud/png/64/fire_main.png":"995826ab","assets/hud/png/64/fire_main_pressed.png":"eec3a3b0","assets/hud/png/64/hold_breath.png":"39d881ce","assets/hud/png/64/hold_breath_active.png":"293e9c1b","assets/hud/png/64/hold_breath_pressed.png":"a5b83280","assets/hud/png/64/inspect.png":"2fd60dcf","assets/hud/png/64/inspect_pressed.png":"12d0c763","assets/hud/png/64/inventory.png":"8100005d","assets/hud/png/64/inventory_active.png":"0f22158c","assets/hud/png/64/inventory_pressed.png":"f222cf8a","assets/hud/png/64/jump.png":"502d89d8","assets/hud/png/64/jump_pressed.png":"39dc672b","assets/hud/png/64/knife.png":"41f91708","assets/hud/png/64/knife_pressed.png":"0d3d344b","assets/hud/png/64/pause.png":"306d58e5","assets/hud/png/64/pause_pressed.png":"5a5e845a","assets/hud/png/64/peak_left.png":"e313b7a4","assets/hud/png/64/peak_left_active.png":"de63b2b9","assets/hud/png/64/peak_left_pressed.png":"e1fff4bf","assets/hud/png/64/peak_right.png":"fa781401","assets/hud/png/64/peak_right_active.png":"20ea4dbc","assets/hud/png/64/peak_right_pressed.png":"c35019ff","assets/hud/png/64/reload.png":"a6774bea","assets/hud/png/64/reload_alert.png":"3f3323c0","assets/hud/png/64/reload_pressed.png":"d626d1b3","assets/hud/png/64/sprint.png":"87de7b82","assets/hud/png/64/sprint_active.png":"c24106e0","assets/hud/png/64/sprint_pressed.png":"97006148","assets/hud/png/64/variants/hold_breath_a.png":"39d881ce","assets/hud/png/64/variants/hold_breath_b.png":"acd4f8df","assets/hud/png/64/variants/inspect_a.png":"2fd60dcf","assets/hud/png/64/variants/inspect_b.png":"03f41118","assets/hud/png/64/variants/peak_left_a.png":"e313b7a4","assets/hud/png/64/variants/peak_left_b.png":"575386d9","assets/hud/png/64/variants/peak_left_c.png":"81ce0fcb","assets/hud/png/64/variants/peak_right_a.png":"fa781401","assets/hud/png/64/variants/peak_right_b.png":"68ed4b71","assets/hud/png/64/variants/peak_right_c.png":"665d2b6b","assets/hud/png/64/weapon_swap.png":"5e4e7547","assets/hud/png/64/weapon_swap_pressed.png":"c4772e24","assets/hud/png/64/weapons/weapon_knife.png":"d436a648","assets/hud/png/64/weapons/weapon_pistol.png":"b107a26c","assets/hud/png/64/weapons/weapon_rifle.png":"9cf412f8","assets/hud/png/64/weapons/weapon_shotgun.png":"a378b073","assets/hud/png/96/aim_ads.png":"535e2fb7","assets/hud/png/96/aim_ads_active.png":"c1811330","assets/hud/png/96/aim_ads_pressed.png":"f5be9666","assets/hud/png/96/crouch.png":"136ef824","assets/hud/png/96/crouch_active.png":"08643197","assets/hud/png/96/crouch_pressed.png":"16e1c5bf","assets/hud/png/96/fire_left.png":"192834d7","assets/hud/png/96/fire_left_pressed.png":"5fa2f353","assets/hud/png/96/fire_main.png":"e10705e8","assets/hud/png/96/fire_main_pressed.png":"92616f36","assets/hud/png/96/hold_breath.png":"3da67a03","assets/hud/png/96/hold_breath_active.png":"ef25fa76","assets/hud/png/96/hold_breath_pressed.png":"5d12b81a","assets/hud/png/96/inspect.png":"2680fb8a","assets/hud/png/96/inspect_pressed.png":"8d0741aa","assets/hud/png/96/inventory.png":"cec9c13d","assets/hud/png/96/inventory_active.png":"863f092d","assets/hud/png/96/inventory_pressed.png":"d10c8550","assets/hud/png/96/jump.png":"2bbbf5f0","assets/hud/png/96/jump_pressed.png":"5b016c77","assets/hud/png/96/knife.png":"8b215367","assets/hud/png/96/knife_pressed.png":"a4f2db59","assets/hud/png/96/pause.png":"6bd462e0","assets/hud/png/96/pause_pressed.png":"72dadf5c","assets/hud/png/96/peak_left.png":"563f55cc","assets/hud/png/96/peak_left_active.png":"c9abe0b9","assets/hud/png/96/peak_left_pressed.png":"0a400022","assets/hud/png/96/peak_right.png":"10c20356","assets/hud/png/96/peak_right_active.png":"df18f419","assets/hud/png/96/peak_right_pressed.png":"00c6aee8","assets/hud/png/96/reload.png":"54546278","assets/hud/png/96/reload_alert.png":"948dcfbb","assets/hud/png/96/reload_pressed.png":"6391edf6","assets/hud/png/96/sprint.png":"8c2c4673","assets/hud/png/96/sprint_active.png":"94be56e5","assets/hud/png/96/sprint_pressed.png":"a9391146","assets/hud/png/96/variants/hold_breath_a.png":"3da67a03","assets/hud/png/96/variants/hold_breath_b.png":"2bf5e93a","assets/hud/png/96/variants/inspect_a.png":"2680fb8a","assets/hud/png/96/variants/inspect_b.png":"0b4e9d94","assets/hud/png/96/variants/peak_left_a.png":"563f55cc","assets/hud/png/96/variants/peak_left_b.png":"f3ca37ed","assets/hud/png/96/variants/peak_left_c.png":"b7f0e32f","assets/hud/png/96/variants/peak_right_a.png":"10c20356","assets/hud/png/96/variants/peak_right_b.png":"e504fd19","assets/hud/png/96/variants/peak_right_c.png":"7db73a1b","assets/hud/png/96/weapon_swap.png":"396bb02a","assets/hud/png/96/weapon_swap_pressed.png":"6c7bfc3f","assets/hud/png/96/weapons/weapon_knife.png":"3c511e1d","assets/hud/png/96/weapons/weapon_pistol.png":"51eae8e1","assets/hud/png/96/weapons/weapon_rifle.png":"06ed5f58","assets/hud/png/96/weapons/weapon_shotgun.png":"656c82f5","assets/hud/preview/preview_dark.png":"8299758c","assets/hud/preview/preview_light.png":"75bf5f20","assets/hud/preview/variants.png":"23f2b0a4","assets/hud/sprites/hud_icons_128.json":"c7af61af","assets/hud/sprites/hud_icons_128.png":"b4f53d6d","assets/kit.glb":"137a3c32","assets/maps/barrio/garaje.glb":"309785ad","assets/maps/barrio/torres.glb":"9b3ecbea","assets/maps/casa_atlas/casa_atlas.glb":"3b40cc83","assets/maps/casa_atlas/casa_atlas_techo.glb":"ce3d05bf","assets/maps/casa_atlas/collision_fixes.json":"f7c8a7d8","assets/maps/casa_atlas/collision_map.json":"0f4972b9","assets/maps/casa_atlas_jardin/casa_atlas_jardin.glb":"2b7d99f3","assets/menu/mapa_arena.jpg":"9daa7aba","assets/menu/mapa_barrio.jpg":"94cf3b47","assets/menu/mapa_casa.jpg":"cb05ea52","assets/menu/mapa_casa2.jpg":"d2f171c7","assets/menu/mapa_pruebas.jpg":"9eb04773","assets/menu/mapa_pueblo.jpg":"2d9b1f32","assets/miras/holo.jpg":"01a2026a","assets/miras/largo.jpg":"f4e5c30e","assets/miras/punto.jpg":"f047d744","assets/miras/sahara/holo.jpg":"7bd60e6c","assets/miras/sahara/largo.jpg":"09ebebf1","assets/miras/sahara/punto.jpg":"e2af6123","assets/miras/sahara/sniper.jpg":"15f1aaa0","assets/miras/sahara/tactica.jpg":"5bced45b","assets/miras/sahara/x2.jpg":"44c618b4","assets/miras/sahara/x4.jpg":"65bd09de","assets/miras/sahara/x6.jpg":"7879b871","assets/miras/sniper.jpg":"f9afe6ef","assets/miras/tactica.jpg":"adc0d697","assets/miras/titan/holo.jpg":"f46a3af4","assets/miras/titan/largo.jpg":"5de4a677","assets/miras/titan/punto.jpg":"279c2655","assets/miras/titan/sniper.jpg":"71ce133e","assets/miras/titan/tactica.jpg":"ddb052e4","assets/miras/titan/x2.jpg":"b8bcd07f","assets/miras/titan/x4.jpg":"c05efd36","assets/miras/titan/x6.jpg":"207c666a","assets/miras/ultima/holo.jpg":"f6182ce4","assets/miras/ultima/largo.jpg":"3af1dec5","assets/miras/ultima/punto.jpg":"60f4848f","assets/miras/ultima/sniper.jpg":"3cb73ec5","assets/miras/ultima/tactica.jpg":"ee75828b","assets/miras/ultima/x2.jpg":"f6e7583c","assets/miras/ultima/x4.jpg":"ca411be7","assets/miras/ultima/x6.jpg":"fcf7738d","assets/miras/vector/holo.jpg":"c5ba6ed0","assets/miras/vector/largo.jpg":"fb8afbd3","assets/miras/vector/punto.jpg":"87601f10","assets/miras/vector/sniper.jpg":"899977fa","assets/miras/vector/tactica.jpg":"a3c9609b","assets/miras/vector/x2.jpg":"a2180a57","assets/miras/vector/x4.jpg":"7bc8377c","assets/miras/vector/x6.jpg":"2738f4af","assets/miras/x2.jpg":"5e98192c","assets/miras/x4.jpg":"94240b55","assets/miras/x6.jpg":"8b00567c","assets/personaje/color_A.jpg":"d122ac65","assets/personaje/color_A_1k.jpg":"be58a9b2","assets/personaje/color_A_ktx2.ktx2":"55390d5b","assets/personaje/color_bots.jpg":"46bbfd09","assets/personaje/color_bots_1k.jpg":"5810bb99","assets/personaje/color_bots_ktx2.ktx2":"ba69cb60","assets/personaje/personaje.glb":"13fada8c","assets/personaje/personaje_1k.glb":"129c1bef","assets/personaje/personaje_ktx2.glb":"d86d9499","assets/personaje/pro/amber/color_A.jpg":"3ee343c3","assets/personaje/pro/amber/color_A_1k.jpg":"d32b4002","assets/personaje/pro/amber/color_A_2k.jpg":"80f1191d","assets/personaje/pro/amber/color_B.jpg":"3ee343c3","assets/personaje/pro/amber/color_B_1k.jpg":"d32b4002","assets/personaje/pro/amber/color_B_2k.jpg":"80f1191d","assets/personaje/pro/amber/color_bots.jpg":"3ee343c3","assets/personaje/pro/amber/color_bots_1k.jpg":"d32b4002","assets/personaje/pro/amber/color_bots_2k.jpg":"80f1191d","assets/personaje/pro/amber/personaje.glb":"46264d8d","assets/personaje/pro/amber/personaje_1k.glb":"92477f27","assets/personaje/pro/amber/personaje_2k.glb":"4903e190","assets/personaje/pro/op2/color_A.jpg":"bef575c1","assets/personaje/pro/op2/color_A_1k.jpg":"ed1f37c8","assets/personaje/pro/op2/color_A_2k.jpg":"8a885ded","assets/personaje/pro/op2/color_A_ktx2.ktx2":"8a4be407","assets/personaje/pro/op2/color_B.jpg":"bef575c1","assets/personaje/pro/op2/color_B_1k.jpg":"ed1f37c8","assets/personaje/pro/op2/color_B_2k.jpg":"8a885ded","assets/personaje/pro/op2/color_B_ktx2.ktx2":"8a4be407","assets/personaje/pro/op2/color_bots.jpg":"bef575c1","assets/personaje/pro/op2/color_bots_1k.jpg":"ed1f37c8","assets/personaje/pro/op2/color_bots_2k.jpg":"8a885ded","assets/personaje/pro/op2/color_bots_ktx2.ktx2":"8a4be407","assets/personaje/pro/op2/personaje.glb":"a9d11415","assets/personaje/pro/op2/personaje_1k.glb":"06ed1687","assets/personaje/pro/op2/personaje_2k.glb":"d9c85eff","assets/personaje/pro/op2/personaje_ktx2.glb":"a6bb9ff5","assets/personaje/pro/op3/color_A.jpg":"f23f8d02","assets/personaje/pro/op3/color_A_1k.jpg":"17af165c","assets/personaje/pro/op3/color_A_2k.jpg":"2352550b","assets/personaje/pro/op3/color_A_ktx2.ktx2":"099f3cc9","assets/personaje/pro/op3/color_B.jpg":"b1bdc774","assets/personaje/pro/op3/color_B_1k.jpg":"d1f4d761","assets/personaje/pro/op3/color_B_2k.jpg":"7ee2b8b8","assets/personaje/pro/op3/color_B_ktx2.ktx2":"727840db","assets/personaje/pro/op3/color_bots.jpg":"c2f8cf22","assets/personaje/pro/op3/color_bots_1k.jpg":"f52253fe","assets/personaje/pro/op3/color_bots_2k.jpg":"58e0863f","assets/personaje/pro/op3/color_bots_ktx2.ktx2":"63c6ebc3","assets/personaje/pro/op3/personaje.glb":"5368ed41","assets/personaje/pro/op3/personaje_1k.glb":"55863f1a","assets/personaje/pro/op3/personaje_2k.glb":"4bc1cc29","assets/personaje/pro/op3/personaje_ktx2.glb":"a2936ff4","assets/personaje/pro/op4/color_A.jpg":"26dbbd3d","assets/personaje/pro/op4/color_A_1k.jpg":"f754f532","assets/personaje/pro/op4/color_A_ktx2.ktx2":"00257a61","assets/personaje/pro/op4/color_B.jpg":"ceef52f9","assets/personaje/pro/op4/color_B_1k.jpg":"9bc2e67c","assets/personaje/pro/op4/color_B_ktx2.ktx2":"3489c9ca","assets/personaje/pro/op4/color_bots.jpg":"a7d7385e","assets/personaje/pro/op4/color_bots_1k.jpg":"6269d84f","assets/personaje/pro/op4/color_bots_ktx2.ktx2":"2ba10f2b","assets/personaje/pro/op4/personaje.glb":"d8c950da","assets/personaje/pro/op4/personaje_1k.glb":"3e671723","assets/personaje/pro/op4/personaje_ktx2.glb":"71c1de47","assets/personaje/pro/ridge/color_A.jpg":"67b00fcd","assets/personaje/pro/ridge/color_A_1k.jpg":"360cc62a","assets/personaje/pro/ridge/color_A_2k.jpg":"e67e6588","assets/personaje/pro/ridge/color_B.jpg":"67b00fcd","assets/personaje/pro/ridge/color_B_1k.jpg":"360cc62a","assets/personaje/pro/ridge/color_B_2k.jpg":"e67e6588","assets/personaje/pro/ridge/color_bots.jpg":"67b00fcd","assets/personaje/pro/ridge/color_bots_1k.jpg":"360cc62a","assets/personaje/pro/ridge/color_bots_2k.jpg":"e67e6588","assets/personaje/pro/ridge/personaje.glb":"195fd7d9","assets/personaje/pro/ridge/personaje_1k.glb":"be17ff7b","assets/personaje/pro/ridge/personaje_2k.glb":"5c742a46","assets/personaje/retratos/amber.jpg":"8e471be2","assets/personaje/retratos/clasico.jpg":"9089d991","assets/personaje/retratos/fsb.jpg":"a437ba7e","assets/personaje/retratos/militar.jpg":"cc7bb82e","assets/personaje/retratos/ridge.jpg":"3ee1b43b","assets/personaje/retratos/soldado.jpg":"ea597e39","assets/personaje/retratos/swat.jpg":"59863f61","assets/personaje/v4/color_A.jpg":"ec6173ce","assets/personaje/v4/color_A_1k.jpg":"b9fcf76e","assets/personaje/v4/color_bots.jpg":"555188eb","assets/personaje/v4/color_bots_1k.jpg":"e84476a0","assets/personaje/v4/personaje.glb":"7f56f4cd","assets/personaje/v4/personaje_1k.glb":"52efbd17","assets/tex/asphalt_c.jpg":"77fd9abe","assets/tex/asphalt_n.jpg":"d0ffcf83","assets/tex/asphalt_r.jpg":"04b10e5b","assets/tex/azulejo_c.jpg":"4146d6e0","assets/tex/azulejo_n.jpg":"f90aadf8","assets/tex/azulejo_r.jpg":"3b205f10","assets/tex/br_blocks_c.jpg":"c66233d2","assets/tex/br_blocks_n.jpg":"bf3deb4d","assets/tex/br_blocks_r.jpg":"ba5337c9","assets/tex/br_brick_c.jpg":"abfd403f","assets/tex/br_brick_n.jpg":"c94321ec","assets/tex/br_brick_r.jpg":"56acd6cd","assets/tex/br_pavers_c.jpg":"997b5428","assets/tex/br_pavers_n.jpg":"b9e9d68b","assets/tex/br_pavers_r.jpg":"e1765522","assets/tex/brick_c.jpg":"447fd785","assets/tex/brick_n.jpg":"ff87c7f1","assets/tex/c2_patio_c.jpg":"12e88a35","assets/tex/c2_patio_n.jpg":"19efaad1","assets/tex/c2_patio_r.jpg":"813662a9","assets/tex/c2_tiles_c.jpg":"50e0a4d9","assets/tex/c2_tiles_n.jpg":"8d46f206","assets/tex/c2_tiles_r.jpg":"a46a2bfa","assets/tex/c2_wood_c.jpg":"5877d738","assets/tex/c2_wood_n.jpg":"15338e57","assets/tex/c2_wood_r.jpg":"87011503","assets/tex/cobble_c.jpg":"6be66585","assets/tex/cobble_n.jpg":"f7e3ba2a","assets/tex/concrete_c.jpg":"d08a832c","assets/tex/concrete_n.jpg":"457ab210","assets/tex/earth_c.jpg":"e6a9f902","assets/tex/earth_n.jpg":"06bb00de","assets/tex/flora_dandelion_1024.png":"9a0db91e","assets/tex/flora_dandelion_512.png":"dc42d215","assets/tex/flora_grasscards_1024.png":"52d6a551","assets/tex/flora_grasscards_512.png":"dfa1cda3","assets/tex/herring_c.jpg":"32fd218f","assets/tex/herring_n.jpg":"5a3477cc","assets/tex/metal_c.jpg":"8b6d8e26","assets/tex/metal_n.jpg":"53673af2","assets/tex/p0_cobble_c.jpg":"ba3785bf","assets/tex/p0_cobble_n.jpg":"c57bfc05","assets/tex/p0_cobble_r.jpg":"53832a82","assets/tex/p0_covers.png":"33fc76ef","assets/tex/p0_decals.png":"c1db49d5","assets/tex/p0_patch_c.jpg":"764000c4","assets/tex/p0_patch_n.jpg":"11d825d8","assets/tex/p0_patch_r.jpg":"d1184e18","assets/tex/p0_plaza_c.jpg":"8ed7bb08","assets/tex/p0_plaza_n.jpg":"71ec9b9f","assets/tex/p0_plaza_r.jpg":"2635a161","assets/tex/p0_sand_c.jpg":"ec00f2db","assets/tex/p0_sidewalk_c.jpg":"f57d5ec0","assets/tex/p0_sidewalk_n.jpg":"f2f12e33","assets/tex/p0_sidewalk_r.jpg":"8d420df6","assets/tex/p0_transition.png":"2d8a53a4","assets/tex/p0b_cobble_c.jpg":"c9abc843","assets/tex/p0b_covers.png":"295dc5b7","assets/tex/p0b_decals.png":"4189d6d6","assets/tex/p0b_patch_c.jpg":"6993c987","assets/tex/p0b_plaza_c.jpg":"3b8d3198","assets/tex/p0b_sand_c.jpg":"cd0c4def","assets/tex/p0b_sidewalk_c.jpg":"a2bc532a","assets/tex/p0cc_cobble_c.jpg":"4ae894f2","assets/tex/p0cc_cobble_n.jpg":"bf85a45a","assets/tex/p0cc_cobble_r.jpg":"8fd0c14b","assets/tex/p0ccb_cobble_c.jpg":"16ee23a2","assets/tex/p0ccm_cobble_c.jpg":"7eb6a4cc","assets/tex/p0ccm_cobble_n.jpg":"a4e4647f","assets/tex/p0ccm_cobble_r.jpg":"1006bac9","assets/tex/p0m_cobble_c.jpg":"ba3785bf","assets/tex/p0m_cobble_n.jpg":"e4efdd1f","assets/tex/p0m_cobble_r.jpg":"53832a82","assets/tex/p0m_plaza_c.jpg":"8ed7bb08","assets/tex/p0m_plaza_n.jpg":"2b7bb548","assets/tex/p0m_plaza_r.jpg":"2635a161","assets/tex/p0v3_cobble_c.jpg":"d1a7a842","assets/tex/p0v3_cobble_n.jpg":"7f59ef40","assets/tex/p0v3_cobble_r.jpg":"327df272","assets/tex/p0v3_plaza_c.jpg":"95d16848","assets/tex/p0v3_plaza_n.jpg":"0c1bce0a","assets/tex/p0v3_plaza_r.jpg":"7187b7c8","assets/tex/p0v3b_cobble_c.jpg":"a672484f","assets/tex/p0v3b_plaza_c.jpg":"04ae070f","assets/tex/p0v3m_cobble_c.jpg":"d1a7a842","assets/tex/p0v3m_cobble_n.jpg":"1945f886","assets/tex/p0v3m_cobble_r.jpg":"327df272","assets/tex/p0v3m_plaza_c.jpg":"95d16848","assets/tex/p0v3m_plaza_n.jpg":"9dff174d","assets/tex/p0v3m_plaza_r.jpg":"7187b7c8","assets/tex/p1_door_c.jpg":"add4ad19","assets/tex/p1_door_n.jpg":"12a1bb22","assets/tex/p1_door_r.jpg":"2e6a5d99","assets/tex/p1_rooftiles_c.jpg":"429c4813","assets/tex/p1_rooftiles_n.jpg":"0da1a4aa","assets/tex/p1_rooftiles_r.jpg":"50ae143b","assets/tex/p1_stone_c.jpg":"08b8e5f9","assets/tex/p1_stone_n.jpg":"53244400","assets/tex/p1_stone_r.jpg":"4713d6de","assets/tex/p1_stucco_c.jpg":"23513034","assets/tex/p1_stucco_n.jpg":"58365463","assets/tex/p1_stucco_r.jpg":"2476e5e4","assets/tex/p1_wood_c.jpg":"aacb2ac1","assets/tex/p1_wood_n.jpg":"8de0c779","assets/tex/p1_wood_r.jpg":"34a31c4b","assets/tex/p1b_door_c.jpg":"e061bfd3","assets/tex/p1b_rooftiles_c.jpg":"8c4284b3","assets/tex/p1b_stone_c.jpg":"2e766301","assets/tex/p1b_stucco_c.jpg":"e6ed13f6","assets/tex/p1b_wood_c.jpg":"ec02ebfe","assets/tex/p1m_door_c.jpg":"add4ad19","assets/tex/p1m_door_n.jpg":"18c73624","assets/tex/p1m_door_r.jpg":"2e6a5d99","assets/tex/p1m_rooftiles_c.jpg":"429c4813","assets/tex/p1m_rooftiles_n.jpg":"018ae078","assets/tex/p1m_rooftiles_r.jpg":"50ae143b","assets/tex/p1m_stone_c.jpg":"08b8e5f9","assets/tex/p1m_stone_n.jpg":"db2a4db3","assets/tex/p1m_stone_r.jpg":"4713d6de","assets/tex/p1m_stucco_c.jpg":"23513034","assets/tex/p1m_stucco_n.jpg":"b54e4e5c","assets/tex/p1m_stucco_r.jpg":"2476e5e4","assets/tex/p1m_wood_c.jpg":"aacb2ac1","assets/tex/p1m_wood_n.jpg":"73da7b12","assets/tex/p1m_wood_r.jpg":"34a31c4b","assets/tex/paving_c.jpg":"de729c21","assets/tex/paving_n.jpg":"e7ce1b5e","assets/tex/pebbles_c.jpg":"92f3a761","assets/tex/pebbles_n.jpg":"04797193","assets/tex/plaster_c.jpg":"b9baf0d3","assets/tex/plaster_n.jpg":"57ab2216","assets/tex/rat_c.jpg":"18f0d109","assets/tex/rat_n.jpg":"5cda8929","assets/tex/rat_r.jpg":"cd628297","assets/tex/roof_c.jpg":"4e3265a6","assets/tex/roof_n.jpg":"7eec2601","assets/tex/rooftiles_c.jpg":"f52e8938","assets/tex/rooftiles_n.jpg":"7dd55eb0","assets/tex/rubble_c.jpg":"c980bdcd","assets/tex/rubble_n.jpg":"93400d41","assets/tex/sand_c.jpg":"44e227fe","assets/tex/sand_n.jpg":"d259a3b8","assets/tex/sandbag_c.jpg":"da97fddc","assets/tex/sandbag_n.jpg":"737ae913","assets/tex/setts_c.jpg":"0807efce","assets/tex/setts_n.jpg":"ae5af8cf","assets/tex/setts_r.jpg":"a09459c8","assets/tex/slabs_c.jpg":"2038cef4","assets/tex/slabs_n.jpg":"ec0bcab9","assets/tex/slabs_r.jpg":"74281b0b","assets/tex/stone_c.jpg":"2fffcb0b","assets/tex/stone_n.jpg":"b8445cb7","assets/tex/stucco_c.jpg":"17d897f3","assets/tex/stucco_n.jpg":"246827a0","assets/tex/wood_c.jpg":"ccb5489b","assets/tex/wood_n.jpg":"86830c96","assets/viewmodels.glb":"5825c8a7","assets/wasm/astar.wasm":"6d5be415","assets/wasm/audio.wasm":"70540f72","assets/wasm/geom.wasm":"3cdd6f81","assets/wasm/nav.wasm":"8b560fc5","vendor/basis/basis_transcoder.js":"8838f833","vendor/basis/basis_transcoder.wasm":"0969f9ba","vendor/GLTFLoader.js":"fb4d39e3","vendor/KTX2Loader.js":"dc442074","vendor/three.min.js":"05c8df80"};
+const BUILD_ID="0eace0d";const BUILD_HASH="8b1c31f2e6";const ASSET_V={"assets/3d/fauna/rat.glb":"3815b14d","assets/3d/flora/dandelion.glb":"6dd99727","assets/3d/flora/grass_cards.json":"e348ecb0","assets/3d/imports/2026-10-12_p0_ground_pack_v2/manifest.json":"2be78cf2","assets/3d/imports/2026-10-12_p0_ground_pack_v2/models/sd_ground_curb_kit_01.glb":"3ad12c80","assets/3d/imports/2026-10-12_p0_ground_pack_v2/previews/p0_v2_materials.jpg":"c8d1d1d1","assets/3d/imports/2026-10-12_p0_ground_pack_v2/QA_report.json":"bc519d03","assets/3d/imports/2026-10-12_p0_ground_pack_v2/textures/sd_ground_cobble_01_basecolor.png":"1e428fe1","assets/3d/imports/2026-10-12_p0_ground_pack_v2/textures/sd_ground_cobble_01_normal.png":"dae7377c","assets/3d/imports/2026-10-12_p0_ground_pack_v2/textures/sd_ground_cobble_01_roughness.png":"7e078571","assets/3d/imports/2026-10-12_p0_ground_pack_v2/textures/sd_ground_curb_01_basecolor.png":"f2b087b9","assets/3d/imports/2026-10-12_p0_ground_pack_v2/textures/sd_ground_decal_atlas_01.png":"b5241b83","assets/3d/imports/2026-10-12_p0_ground_pack_v2/textures/sd_ground_patch_01_basecolor.png":"7e3a5286","assets/3d/imports/2026-10-12_p0_ground_pack_v2/textures/sd_ground_patch_01_normal.png":"84ceec46","assets/3d/imports/2026-10-12_p0_ground_pack_v2/textures/sd_ground_patch_01_roughness.png":"cefa4637","assets/3d/imports/2026-10-12_p0_ground_pack_v2/textures/sd_ground_plaza_01_basecolor.png":"0feccfcc","assets/3d/imports/2026-10-12_p0_ground_pack_v2/textures/sd_ground_plaza_01_normal.png":"0f146c3d","assets/3d/imports/2026-10-12_p0_ground_pack_v2/textures/sd_ground_plaza_01_roughness.png":"a8a994c5","assets/3d/imports/2026-10-12_p0_ground_pack_v2/textures/sd_ground_sand_01_basecolor.png":"5e24f61c","assets/3d/imports/2026-10-12_p0_ground_pack_v2/textures/sd_ground_sand_01_normal.png":"84fbc800","assets/3d/imports/2026-10-12_p0_ground_pack_v2/textures/sd_ground_sand_01_roughness.png":"84a99570","assets/3d/imports/2026-10-12_p0_ground_pack_v2/textures/sd_ground_sidewalk_01_basecolor.png":"9fdd8439","assets/3d/imports/2026-10-12_p0_ground_pack_v2/textures/sd_ground_sidewalk_01_normal.png":"559c440d","assets/3d/imports/2026-10-12_p0_ground_pack_v2/textures/sd_ground_sidewalk_01_roughness.png":"28d41d9b","assets/3d/imports/2026-10-12_p0_ground_pack_v2/textures/sd_ground_transition_sand_stone_01.png":"57f4e0d7","assets/3d/imports/2026-10-18_casa_atlas/collision_map.json":"0f4972b9","assets/3d/imports/2026-10-18_casa_atlas/geometry_stats.json":"c4bec501","assets/3d/imports/2026-10-18_casa_atlas/models/sd_casa_atlas_1v1.glb":"8b28363b","assets/3d/imports/2026-10-18_casa_atlas/models/sd_casa_atlas_roof_optional.glb":"e9c8d7af","assets/3d/imports/2026-10-18_casa_atlas/web/apartmentMap.js":"afdd251e","assets/3d/models/sd_e10_casa_oliva.glb":"e822baa2","assets/3d/models/sd_p4_utileria.glb":"ef3cbdcf","assets/3d/models/sd_p4_vehiculos.glb":"7d10873d","assets/3d/weapons_classic/bolt_action_rifle_7_62.glb":"b0a819bf","assets/3d/weapons_classic/fish_knife.glb":"95b6d064","assets/3d/weapons_classic/service_pistol.glb":"a6b01ff8","assets/app/icono-180.png":"0939aeeb","assets/app/icono-192.png":"5869b606","assets/app/icono-512.png":"e4571be3","assets/armas/furia12/retrato.jpg":"c2fb38a3","assets/armas/halcon/retrato.jpg":"f27d58e7","assets/armas/lince/arma.glb":"46315c89","assets/armas/lince/arma_ktx2.glb":"ffcbd16e","assets/armas/lince/arma_tp.glb":"b53e1cc1","assets/armas/lince/info.json":"d95fa2cb","assets/armas/lince/ktx2/Barrel_baseColor.fc3a700c.ktx2":"fc3a700c","assets/armas/lince/ktx2/Barrel_metallicRoughness.f5c79c97.ktx2":"f5c79c97","assets/armas/lince/ktx2/Barrel_normal.b95d2dd1.ktx2":"b95d2dd1","assets/armas/lince/ktx2/Base_baseColor.e97f85d1.ktx2":"e97f85d1","assets/armas/lince/ktx2/Base_metallicRoughness.60ddd486.ktx2":"60ddd486","assets/armas/lince/ktx2/Base_normal.079a9822.ktx2":"079a9822","assets/armas/lince/ktx2/Butt_baseColor.e9c7f18b.ktx2":"e9c7f18b","assets/armas/lince/ktx2/Butt_metallicRoughness.c0534a91.ktx2":"c0534a91","assets/armas/lince/ktx2/Butt_normal.1f21187e.ktx2":"1f21187e","assets/armas/lince/ktx2/Handle_Spusk_baseColor.288d0085.ktx2":"288d0085","assets/armas/lince/ktx2/Handle_Spusk_metallicRoughness.28b78c41.ktx2":"28b78c41","assets/armas/lince/ktx2/Handle_Spusk_normal.08554cab.ktx2":"08554cab","assets/armas/lince/ktx2/Soshki_baseColor.8b2f6a3b.ktx2":"8b2f6a3b","assets/armas/lince/ktx2/Soshki_metallicRoughness.8013a9b6.ktx2":"8013a9b6","assets/armas/lince/ktx2/Soshki_normal.20974fdf.ktx2":"20974fdf","assets/armas/lince/ktx2/Zoom_baseColor.8fa2dd0a.ktx2":"8fa2dd0a","assets/armas/lince/ktx2/Zoom_metallicRoughness.d8ba14b6.ktx2":"d8ba14b6","assets/armas/lince/ktx2/Zoom_normal.461677cd.ktx2":"461677cd","assets/armas/lince/retrato.jpg":"e1fc68dc","assets/armas/navaja/retrato.jpg":"0dd33756","assets/armas/ratio/arma.glb":"dccc5bb3","assets/armas/ratio/arma_ktx2.glb":"e859d050","assets/armas/ratio/arma_tp.glb":"5f9f132e","assets/armas/ratio/info.json":"abdb4ed6","assets/armas/ratio/ktx2/01_GripMagazine_low_4k_001_baseColor.9a8db3af.ktx2":"9a8db3af","assets/armas/ratio/ktx2/01_GripMagazine_low_4k_001_metallicRoughness.c79b0d21.ktx2":"c79b0d21","assets/armas/ratio/ktx2/01_GripMagazine_low_4k_001_normal.f92b1eb9.ktx2":"f92b1eb9","assets/armas/ratio/ktx2/02_MainBody_low_4k_001_baseColor.40ac3190.ktx2":"40ac3190","assets/armas/ratio/ktx2/02_MainBody_low_4k_001_metallicRoughness.17d29c34.ktx2":"17d29c34","assets/armas/ratio/ktx2/02_MainBody_low_4k_001_normal.2f5db7f0.ktx2":"2f5db7f0","assets/armas/ratio/ktx2/03_BackParts_low_4k_001_baseColor.61ee1dbf.ktx2":"61ee1dbf","assets/armas/ratio/ktx2/03_BackParts_low_4k_001_metallicRoughness.2fe06f2b.ktx2":"2fe06f2b","assets/armas/ratio/ktx2/03_BackParts_low_4k_001_normal.6609425d.ktx2":"6609425d","assets/armas/ratio/ktx2/04_BarrelRail_low_4k_002_baseColor.7e06f145.ktx2":"7e06f145","assets/armas/ratio/ktx2/04_BarrelRail_low_4k_002_metallicRoughness.ab84682e.ktx2":"ab84682e","assets/armas/ratio/ktx2/04_BarrelRail_low_4k_002_normal.32514676.ktx2":"32514676","assets/armas/ratio/ktx2/05_Scope_low_4K_001_baseColor.4b39cbc8.ktx2":"4b39cbc8","assets/armas/ratio/ktx2/05_Scope_low_4K_001_metallicRoughness.e65f9801.ktx2":"e65f9801","assets/armas/ratio/ktx2/05_Scope_low_4K_001_normal.6948d6f5.ktx2":"6948d6f5","assets/armas/ratio/ktx2/06_SmallParts_low_2k_003_baseColor.b4462b7c.ktx2":"b4462b7c","assets/armas/ratio/ktx2/06_SmallParts_low_2k_003_metallicRoughness.b9fbbecf.ktx2":"b9fbbecf","assets/armas/ratio/retrato.jpg":"8bb0aa6b","assets/armas/tactica/arma.glb":"6a73ea28","assets/armas/tactica/arma_ktx2.glb":"83c29cb0","assets/armas/tactica/arma_tp.glb":"b0dac4eb","assets/armas/tactica/info.json":"30d8234f","assets/armas/tactica/ktx2/blade_low_txt_baseColor.12e0033e.ktx2":"12e0033e","assets/armas/tactica/ktx2/blade_low_txt_metallicRoughness.491d3748.ktx2":"491d3748","assets/armas/tactica/ktx2/blade_low_txt_normal.536d9445.ktx2":"536d9445","assets/armas/tactica/ktx2/handle_low_txt_baseColor.e3f08c64.ktx2":"e3f08c64","assets/armas/tactica/ktx2/handle_low_txt_metallicRoughness.c074c9be.ktx2":"c074c9be","assets/armas/tactica/ktx2/handle_low_txt_normal.aca2695c.ktx2":"aca2695c","assets/armas/tactica/retrato.jpg":"fa1a3f96","assets/armas/titan/arma.glb":"7f4111c0","assets/armas/titan/arma_ktx2.glb":"a432d454","assets/armas/titan/arma_tp.glb":"c47a5cb2","assets/armas/titan/info.json":"db074acd","assets/armas/titan/ktx2/material_baseColor.7c15dc64.ktx2":"7c15dc64","assets/armas/titan/ktx2/material_metallicRoughness.849f8e59.ktx2":"849f8e59","assets/armas/titan/ktx2/material_normal.92228de1.ktx2":"92228de1","assets/armas/titan/ktx2/Optical_baseColor.3e0ce754.ktx2":"3e0ce754","assets/armas/titan/ktx2/Optical_metallicRoughness.5ecda68e.ktx2":"5ecda68e","assets/armas/titan/ktx2/Optical_normal.2ee94b2f.ktx2":"2ee94b2f","assets/armas/titan/ktx2/Rifle_magazine_baseColor.1863ed24.ktx2":"1863ed24","assets/armas/titan/ktx2/Rifle_magazine_metallicRoughness.a8bb265b.ktx2":"a8bb265b","assets/armas/titan/ktx2/Rifle_magazine_normal.8994a92c.ktx2":"8994a92c","assets/armas/titan/retrato.jpg":"a7cab333","assets/armas/vector/arma.glb":"bfcfb17c","assets/armas/vector/arma_ktx2.glb":"70ff8ce2","assets/armas/vector/arma_tp.glb":"d8fa379c","assets/armas/vector/info.json":"b0ef88cd","assets/armas/vector/ktx2/Mat1_baseColor.c1a0b48e.ktx2":"c1a0b48e","assets/armas/vector/ktx2/Mat1_metallicRoughness.824af6ea.ktx2":"824af6ea","assets/armas/vector/ktx2/Mat1_normal.d7569241.ktx2":"d7569241","assets/armas/vector/ktx2/Mat2_baseColor.5d59156b.ktx2":"5d59156b","assets/armas/vector/ktx2/Mat2_metallicRoughness.76bb846f.ktx2":"76bb846f","assets/armas/vector/ktx2/Mat2_normal.45c02862.ktx2":"45c02862","assets/armas/vector/retrato.jpg":"946f277c","assets/armas/vibora9/retrato.jpg":"7b80040d","assets/caja/atlas_drop.glb":"00be117f","assets/camo/aluminio.jpg":"21d87093","assets/camo/carbono_azul.jpg":"1502c1af","assets/camo/carbono_rojo.jpg":"98284b46","assets/camo/cristal_menta.jpg":"3ce25400","assets/camo/marmol_negro.jpg":"d39b38a0","assets/camo/oro_pulido.jpg":"6aa79083","assets/camo/oro_rejilla.jpg":"492d72cb","assets/camo/oxido.jpg":"6116425c","assets/camo/panal.jpg":"5d7d6793","assets/hud/hud_icons.json":"24c2cc4d","assets/hud/icons/aim_ads.svg":"fe6f0bc2","assets/hud/icons/aim_ads_active.svg":"1eb78afc","assets/hud/icons/aim_ads_pressed.svg":"dff31cf8","assets/hud/icons/crouch.svg":"10aadc64","assets/hud/icons/crouch_active.svg":"492c75db","assets/hud/icons/crouch_pressed.svg":"b48756ab","assets/hud/icons/fire_left.svg":"54907ada","assets/hud/icons/fire_left_pressed.svg":"88ef5223","assets/hud/icons/fire_main.svg":"2665448e","assets/hud/icons/fire_main_pressed.svg":"68d01951","assets/hud/icons/hold_breath.svg":"14438cb2","assets/hud/icons/hold_breath_active.svg":"d7ffa578","assets/hud/icons/hold_breath_pressed.svg":"9c507630","assets/hud/icons/inspect.svg":"1b0dd5c6","assets/hud/icons/inspect_pressed.svg":"ce71338c","assets/hud/icons/inventory.svg":"bed74e48","assets/hud/icons/inventory_active.svg":"5b9b1b0e","assets/hud/icons/inventory_pressed.svg":"8664ed5e","assets/hud/icons/jump.svg":"6da3abbc","assets/hud/icons/jump_pressed.svg":"171dc109","assets/hud/icons/knife.svg":"1b3f2f4b","assets/hud/icons/knife_pressed.svg":"36e9f9bb","assets/hud/icons/pause.svg":"5d93a26b","assets/hud/icons/pause_pressed.svg":"fb186451","assets/hud/icons/peak_left.svg":"6af0337a","assets/hud/icons/peak_left_active.svg":"0fd43330","assets/hud/icons/peak_left_pressed.svg":"0784ea39","assets/hud/icons/peak_right.svg":"7b2020e9","assets/hud/icons/peak_right_active.svg":"9bf945e1","assets/hud/icons/peak_right_pressed.svg":"f4804199","assets/hud/icons/reload.svg":"7b05dfc5","assets/hud/icons/reload_alert.svg":"b8b06ae4","assets/hud/icons/reload_pressed.svg":"ac0170fe","assets/hud/icons/sprint.svg":"d67dc68c","assets/hud/icons/sprint_active.svg":"f119663f","assets/hud/icons/sprint_pressed.svg":"50e656a9","assets/hud/icons/variants/hold_breath_a.svg":"14438cb2","assets/hud/icons/variants/hold_breath_b.svg":"e6cfc9e9","assets/hud/icons/variants/inspect_a.svg":"1b0dd5c6","assets/hud/icons/variants/inspect_b.svg":"02300cbe","assets/hud/icons/variants/peak_left_a.svg":"6af0337a","assets/hud/icons/variants/peak_left_b.svg":"62907055","assets/hud/icons/variants/peak_left_c.svg":"0f6bbb57","assets/hud/icons/variants/peak_right_a.svg":"7b2020e9","assets/hud/icons/variants/peak_right_b.svg":"4487b642","assets/hud/icons/variants/peak_right_c.svg":"1b1efcf8","assets/hud/icons/weapon_swap.svg":"ab7bfccf","assets/hud/icons/weapon_swap_pressed.svg":"a3b60fbf","assets/hud/icons/weapons/weapon_knife.svg":"77b1f3c3","assets/hud/icons/weapons/weapon_pistol.svg":"0e1e9d5b","assets/hud/icons/weapons/weapon_rifle.svg":"857a84dc","assets/hud/icons/weapons/weapon_shotgun.svg":"c981d855","assets/hud/png/128/aim_ads.png":"0198149f","assets/hud/png/128/aim_ads_active.png":"7818426d","assets/hud/png/128/aim_ads_pressed.png":"eab3eece","assets/hud/png/128/crouch.png":"53d52298","assets/hud/png/128/crouch_active.png":"23333f44","assets/hud/png/128/crouch_pressed.png":"8c00a7c1","assets/hud/png/128/fire_left.png":"55f05aca","assets/hud/png/128/fire_left_pressed.png":"5d0669b7","assets/hud/png/128/fire_main.png":"e6a31f09","assets/hud/png/128/fire_main_pressed.png":"4adc697a","assets/hud/png/128/hold_breath.png":"0442dca0","assets/hud/png/128/hold_breath_active.png":"e1cda9c2","assets/hud/png/128/hold_breath_pressed.png":"a636ec54","assets/hud/png/128/inspect.png":"4cb08264","assets/hud/png/128/inspect_pressed.png":"07f8f761","assets/hud/png/128/inventory.png":"c0d45409","assets/hud/png/128/inventory_active.png":"dac115f6","assets/hud/png/128/inventory_pressed.png":"c4a8a2f7","assets/hud/png/128/jump.png":"fafdcc9c","assets/hud/png/128/jump_pressed.png":"a670d6a5","assets/hud/png/128/knife.png":"21011536","assets/hud/png/128/knife_pressed.png":"d1f1aa11","assets/hud/png/128/pause.png":"6be8d985","assets/hud/png/128/pause_pressed.png":"4cb9add7","assets/hud/png/128/peak_left.png":"61c163ec","assets/hud/png/128/peak_left_active.png":"f084e4ce","assets/hud/png/128/peak_left_pressed.png":"7804512a","assets/hud/png/128/peak_right.png":"83feefbc","assets/hud/png/128/peak_right_active.png":"5614735b","assets/hud/png/128/peak_right_pressed.png":"3781a7d7","assets/hud/png/128/reload.png":"21d981ba","assets/hud/png/128/reload_alert.png":"599ef7e0","assets/hud/png/128/reload_pressed.png":"def5decc","assets/hud/png/128/sprint.png":"3ed654cf","assets/hud/png/128/sprint_active.png":"05744830","assets/hud/png/128/sprint_pressed.png":"a8c068d5","assets/hud/png/128/variants/hold_breath_a.png":"0442dca0","assets/hud/png/128/variants/hold_breath_b.png":"cc651177","assets/hud/png/128/variants/inspect_a.png":"4cb08264","assets/hud/png/128/variants/inspect_b.png":"9ebe5f2c","assets/hud/png/128/variants/peak_left_a.png":"61c163ec","assets/hud/png/128/variants/peak_left_b.png":"bf23666b","assets/hud/png/128/variants/peak_left_c.png":"bff2c254","assets/hud/png/128/variants/peak_right_a.png":"83feefbc","assets/hud/png/128/variants/peak_right_b.png":"59cd3aeb","assets/hud/png/128/variants/peak_right_c.png":"7c353985","assets/hud/png/128/weapon_swap.png":"b5896f80","assets/hud/png/128/weapon_swap_pressed.png":"11ea8443","assets/hud/png/128/weapons/weapon_knife.png":"0d43fae5","assets/hud/png/128/weapons/weapon_pistol.png":"fe8d20d8","assets/hud/png/128/weapons/weapon_rifle.png":"b9a42ec0","assets/hud/png/128/weapons/weapon_shotgun.png":"045dbbda","assets/hud/png/256/aim_ads.png":"61851152","assets/hud/png/256/aim_ads_active.png":"936a3d6e","assets/hud/png/256/aim_ads_pressed.png":"cf3db481","assets/hud/png/256/crouch.png":"d0fd1d3c","assets/hud/png/256/crouch_active.png":"2497bfdf","assets/hud/png/256/crouch_pressed.png":"86068e2f","assets/hud/png/256/fire_left.png":"1334239d","assets/hud/png/256/fire_left_pressed.png":"0d3a57f7","assets/hud/png/256/fire_main.png":"a8485883","assets/hud/png/256/fire_main_pressed.png":"66b99350","assets/hud/png/256/hold_breath.png":"db1cc835","assets/hud/png/256/hold_breath_active.png":"59f2da2b","assets/hud/png/256/hold_breath_pressed.png":"59217936","assets/hud/png/256/inspect.png":"7bdd9240","assets/hud/png/256/inspect_pressed.png":"55b7bfcc","assets/hud/png/256/inventory.png":"034ccb6f","assets/hud/png/256/inventory_active.png":"3899b65a","assets/hud/png/256/inventory_pressed.png":"c709f2f4","assets/hud/png/256/jump.png":"e49615d1","assets/hud/png/256/jump_pressed.png":"af230e9a","assets/hud/png/256/knife.png":"a277b873","assets/hud/png/256/knife_pressed.png":"8e5e5658","assets/hud/png/256/pause.png":"a9897d58","assets/hud/png/256/pause_pressed.png":"079f4357","assets/hud/png/256/peak_left.png":"0f0188a9","assets/hud/png/256/peak_left_active.png":"dd61cb0a","assets/hud/png/256/peak_left_pressed.png":"13ef672a","assets/hud/png/256/peak_right.png":"925cf4da","assets/hud/png/256/peak_right_active.png":"bc0173fb","assets/hud/png/256/peak_right_pressed.png":"c5cada00","assets/hud/png/256/reload.png":"46dff5aa","assets/hud/png/256/reload_alert.png":"42e2c50a","assets/hud/png/256/reload_pressed.png":"9acec025","assets/hud/png/256/sprint.png":"500cd27d","assets/hud/png/256/sprint_active.png":"6a122d98","assets/hud/png/256/sprint_pressed.png":"1c3b21b2","assets/hud/png/256/variants/hold_breath_a.png":"db1cc835","assets/hud/png/256/variants/hold_breath_b.png":"d05261e8","assets/hud/png/256/variants/inspect_a.png":"7bdd9240","assets/hud/png/256/variants/inspect_b.png":"0b89c953","assets/hud/png/256/variants/peak_left_a.png":"0f0188a9","assets/hud/png/256/variants/peak_left_b.png":"038da697","assets/hud/png/256/variants/peak_left_c.png":"8af8191a","assets/hud/png/256/variants/peak_right_a.png":"925cf4da","assets/hud/png/256/variants/peak_right_b.png":"8f952fb7","assets/hud/png/256/variants/peak_right_c.png":"10773f78","assets/hud/png/256/weapon_swap.png":"d18bef18","assets/hud/png/256/weapon_swap_pressed.png":"799bb135","assets/hud/png/256/weapons/weapon_knife.png":"afa1f4c8","assets/hud/png/256/weapons/weapon_pistol.png":"f4a6904f","assets/hud/png/256/weapons/weapon_rifle.png":"915e6739","assets/hud/png/256/weapons/weapon_shotgun.png":"0306c985","assets/hud/png/64/aim_ads.png":"46122a99","assets/hud/png/64/aim_ads_active.png":"cdf75973","assets/hud/png/64/aim_ads_pressed.png":"d593e149","assets/hud/png/64/crouch.png":"4d7d7d51","assets/hud/png/64/crouch_active.png":"a75ca948","assets/hud/png/64/crouch_pressed.png":"453b52ff","assets/hud/png/64/fire_left.png":"551f6bac","assets/hud/png/64/fire_left_pressed.png":"de03cf84","assets/hud/png/64/fire_main.png":"995826ab","assets/hud/png/64/fire_main_pressed.png":"eec3a3b0","assets/hud/png/64/hold_breath.png":"39d881ce","assets/hud/png/64/hold_breath_active.png":"293e9c1b","assets/hud/png/64/hold_breath_pressed.png":"a5b83280","assets/hud/png/64/inspect.png":"2fd60dcf","assets/hud/png/64/inspect_pressed.png":"12d0c763","assets/hud/png/64/inventory.png":"8100005d","assets/hud/png/64/inventory_active.png":"0f22158c","assets/hud/png/64/inventory_pressed.png":"f222cf8a","assets/hud/png/64/jump.png":"502d89d8","assets/hud/png/64/jump_pressed.png":"39dc672b","assets/hud/png/64/knife.png":"41f91708","assets/hud/png/64/knife_pressed.png":"0d3d344b","assets/hud/png/64/pause.png":"306d58e5","assets/hud/png/64/pause_pressed.png":"5a5e845a","assets/hud/png/64/peak_left.png":"e313b7a4","assets/hud/png/64/peak_left_active.png":"de63b2b9","assets/hud/png/64/peak_left_pressed.png":"e1fff4bf","assets/hud/png/64/peak_right.png":"fa781401","assets/hud/png/64/peak_right_active.png":"20ea4dbc","assets/hud/png/64/peak_right_pressed.png":"c35019ff","assets/hud/png/64/reload.png":"a6774bea","assets/hud/png/64/reload_alert.png":"3f3323c0","assets/hud/png/64/reload_pressed.png":"d626d1b3","assets/hud/png/64/sprint.png":"87de7b82","assets/hud/png/64/sprint_active.png":"c24106e0","assets/hud/png/64/sprint_pressed.png":"97006148","assets/hud/png/64/variants/hold_breath_a.png":"39d881ce","assets/hud/png/64/variants/hold_breath_b.png":"acd4f8df","assets/hud/png/64/variants/inspect_a.png":"2fd60dcf","assets/hud/png/64/variants/inspect_b.png":"03f41118","assets/hud/png/64/variants/peak_left_a.png":"e313b7a4","assets/hud/png/64/variants/peak_left_b.png":"575386d9","assets/hud/png/64/variants/peak_left_c.png":"81ce0fcb","assets/hud/png/64/variants/peak_right_a.png":"fa781401","assets/hud/png/64/variants/peak_right_b.png":"68ed4b71","assets/hud/png/64/variants/peak_right_c.png":"665d2b6b","assets/hud/png/64/weapon_swap.png":"5e4e7547","assets/hud/png/64/weapon_swap_pressed.png":"c4772e24","assets/hud/png/64/weapons/weapon_knife.png":"d436a648","assets/hud/png/64/weapons/weapon_pistol.png":"b107a26c","assets/hud/png/64/weapons/weapon_rifle.png":"9cf412f8","assets/hud/png/64/weapons/weapon_shotgun.png":"a378b073","assets/hud/png/96/aim_ads.png":"535e2fb7","assets/hud/png/96/aim_ads_active.png":"c1811330","assets/hud/png/96/aim_ads_pressed.png":"f5be9666","assets/hud/png/96/crouch.png":"136ef824","assets/hud/png/96/crouch_active.png":"08643197","assets/hud/png/96/crouch_pressed.png":"16e1c5bf","assets/hud/png/96/fire_left.png":"192834d7","assets/hud/png/96/fire_left_pressed.png":"5fa2f353","assets/hud/png/96/fire_main.png":"e10705e8","assets/hud/png/96/fire_main_pressed.png":"92616f36","assets/hud/png/96/hold_breath.png":"3da67a03","assets/hud/png/96/hold_breath_active.png":"ef25fa76","assets/hud/png/96/hold_breath_pressed.png":"5d12b81a","assets/hud/png/96/inspect.png":"2680fb8a","assets/hud/png/96/inspect_pressed.png":"8d0741aa","assets/hud/png/96/inventory.png":"cec9c13d","assets/hud/png/96/inventory_active.png":"863f092d","assets/hud/png/96/inventory_pressed.png":"d10c8550","assets/hud/png/96/jump.png":"2bbbf5f0","assets/hud/png/96/jump_pressed.png":"5b016c77","assets/hud/png/96/knife.png":"8b215367","assets/hud/png/96/knife_pressed.png":"a4f2db59","assets/hud/png/96/pause.png":"6bd462e0","assets/hud/png/96/pause_pressed.png":"72dadf5c","assets/hud/png/96/peak_left.png":"563f55cc","assets/hud/png/96/peak_left_active.png":"c9abe0b9","assets/hud/png/96/peak_left_pressed.png":"0a400022","assets/hud/png/96/peak_right.png":"10c20356","assets/hud/png/96/peak_right_active.png":"df18f419","assets/hud/png/96/peak_right_pressed.png":"00c6aee8","assets/hud/png/96/reload.png":"54546278","assets/hud/png/96/reload_alert.png":"948dcfbb","assets/hud/png/96/reload_pressed.png":"6391edf6","assets/hud/png/96/sprint.png":"8c2c4673","assets/hud/png/96/sprint_active.png":"94be56e5","assets/hud/png/96/sprint_pressed.png":"a9391146","assets/hud/png/96/variants/hold_breath_a.png":"3da67a03","assets/hud/png/96/variants/hold_breath_b.png":"2bf5e93a","assets/hud/png/96/variants/inspect_a.png":"2680fb8a","assets/hud/png/96/variants/inspect_b.png":"0b4e9d94","assets/hud/png/96/variants/peak_left_a.png":"563f55cc","assets/hud/png/96/variants/peak_left_b.png":"f3ca37ed","assets/hud/png/96/variants/peak_left_c.png":"b7f0e32f","assets/hud/png/96/variants/peak_right_a.png":"10c20356","assets/hud/png/96/variants/peak_right_b.png":"e504fd19","assets/hud/png/96/variants/peak_right_c.png":"7db73a1b","assets/hud/png/96/weapon_swap.png":"396bb02a","assets/hud/png/96/weapon_swap_pressed.png":"6c7bfc3f","assets/hud/png/96/weapons/weapon_knife.png":"3c511e1d","assets/hud/png/96/weapons/weapon_pistol.png":"51eae8e1","assets/hud/png/96/weapons/weapon_rifle.png":"06ed5f58","assets/hud/png/96/weapons/weapon_shotgun.png":"656c82f5","assets/hud/preview/preview_dark.png":"8299758c","assets/hud/preview/preview_light.png":"75bf5f20","assets/hud/preview/variants.png":"23f2b0a4","assets/hud/sprites/hud_icons_128.json":"c7af61af","assets/hud/sprites/hud_icons_128.png":"b4f53d6d","assets/kit.glb":"137a3c32","assets/maps/barrio/garaje.glb":"309785ad","assets/maps/barrio/torres.glb":"9b3ecbea","assets/maps/casa_atlas/casa_atlas.glb":"3b40cc83","assets/maps/casa_atlas/casa_atlas_techo.glb":"ce3d05bf","assets/maps/casa_atlas/collision_fixes.json":"f7c8a7d8","assets/maps/casa_atlas/collision_map.json":"0f4972b9","assets/maps/casa_atlas_jardin/casa_atlas_jardin.glb":"2b7d99f3","assets/menu/mapa_arena.jpg":"9daa7aba","assets/menu/mapa_barrio.jpg":"94cf3b47","assets/menu/mapa_casa.jpg":"cb05ea52","assets/menu/mapa_casa2.jpg":"d2f171c7","assets/menu/mapa_pruebas.jpg":"9eb04773","assets/menu/mapa_pueblo.jpg":"2d9b1f32","assets/miras/holo.jpg":"01a2026a","assets/miras/largo.jpg":"f4e5c30e","assets/miras/punto.jpg":"f047d744","assets/miras/sahara/holo.jpg":"7bd60e6c","assets/miras/sahara/largo.jpg":"09ebebf1","assets/miras/sahara/punto.jpg":"e2af6123","assets/miras/sahara/sniper.jpg":"15f1aaa0","assets/miras/sahara/tactica.jpg":"5bced45b","assets/miras/sahara/x2.jpg":"44c618b4","assets/miras/sahara/x4.jpg":"65bd09de","assets/miras/sahara/x6.jpg":"7879b871","assets/miras/sniper.jpg":"f9afe6ef","assets/miras/tactica.jpg":"adc0d697","assets/miras/titan/holo.jpg":"f46a3af4","assets/miras/titan/largo.jpg":"5de4a677","assets/miras/titan/punto.jpg":"279c2655","assets/miras/titan/sniper.jpg":"71ce133e","assets/miras/titan/tactica.jpg":"ddb052e4","assets/miras/titan/x2.jpg":"b8bcd07f","assets/miras/titan/x4.jpg":"c05efd36","assets/miras/titan/x6.jpg":"207c666a","assets/miras/ultima/holo.jpg":"f6182ce4","assets/miras/ultima/largo.jpg":"3af1dec5","assets/miras/ultima/punto.jpg":"60f4848f","assets/miras/ultima/sniper.jpg":"3cb73ec5","assets/miras/ultima/tactica.jpg":"ee75828b","assets/miras/ultima/x2.jpg":"f6e7583c","assets/miras/ultima/x4.jpg":"ca411be7","assets/miras/ultima/x6.jpg":"fcf7738d","assets/miras/vector/holo.jpg":"c5ba6ed0","assets/miras/vector/largo.jpg":"fb8afbd3","assets/miras/vector/punto.jpg":"87601f10","assets/miras/vector/sniper.jpg":"899977fa","assets/miras/vector/tactica.jpg":"a3c9609b","assets/miras/vector/x2.jpg":"a2180a57","assets/miras/vector/x4.jpg":"7bc8377c","assets/miras/vector/x6.jpg":"2738f4af","assets/miras/x2.jpg":"5e98192c","assets/miras/x4.jpg":"94240b55","assets/miras/x6.jpg":"8b00567c","assets/personaje/color_A.jpg":"d122ac65","assets/personaje/color_A_1k.jpg":"be58a9b2","assets/personaje/color_A_ktx2.ktx2":"55390d5b","assets/personaje/color_bots.jpg":"46bbfd09","assets/personaje/color_bots_1k.jpg":"5810bb99","assets/personaje/color_bots_ktx2.ktx2":"ba69cb60","assets/personaje/personaje.glb":"13fada8c","assets/personaje/personaje_1k.glb":"129c1bef","assets/personaje/personaje_ktx2.glb":"d86d9499","assets/personaje/pro/amber/color_A.jpg":"3ee343c3","assets/personaje/pro/amber/color_A_1k.jpg":"d32b4002","assets/personaje/pro/amber/color_A_2k.jpg":"80f1191d","assets/personaje/pro/amber/color_B.jpg":"3ee343c3","assets/personaje/pro/amber/color_B_1k.jpg":"d32b4002","assets/personaje/pro/amber/color_B_2k.jpg":"80f1191d","assets/personaje/pro/amber/color_bots.jpg":"3ee343c3","assets/personaje/pro/amber/color_bots_1k.jpg":"d32b4002","assets/personaje/pro/amber/color_bots_2k.jpg":"80f1191d","assets/personaje/pro/amber/personaje.glb":"46264d8d","assets/personaje/pro/amber/personaje_1k.glb":"92477f27","assets/personaje/pro/amber/personaje_2k.glb":"4903e190","assets/personaje/pro/op2/color_A.jpg":"bef575c1","assets/personaje/pro/op2/color_A_1k.jpg":"ed1f37c8","assets/personaje/pro/op2/color_A_2k.jpg":"8a885ded","assets/personaje/pro/op2/color_A_ktx2.ktx2":"8a4be407","assets/personaje/pro/op2/color_B.jpg":"bef575c1","assets/personaje/pro/op2/color_B_1k.jpg":"ed1f37c8","assets/personaje/pro/op2/color_B_2k.jpg":"8a885ded","assets/personaje/pro/op2/color_B_ktx2.ktx2":"8a4be407","assets/personaje/pro/op2/color_bots.jpg":"bef575c1","assets/personaje/pro/op2/color_bots_1k.jpg":"ed1f37c8","assets/personaje/pro/op2/color_bots_2k.jpg":"8a885ded","assets/personaje/pro/op2/color_bots_ktx2.ktx2":"8a4be407","assets/personaje/pro/op2/personaje.glb":"a9d11415","assets/personaje/pro/op2/personaje_1k.glb":"06ed1687","assets/personaje/pro/op2/personaje_2k.glb":"d9c85eff","assets/personaje/pro/op2/personaje_ktx2.glb":"a6bb9ff5","assets/personaje/pro/op3/color_A.jpg":"f23f8d02","assets/personaje/pro/op3/color_A_1k.jpg":"17af165c","assets/personaje/pro/op3/color_A_2k.jpg":"2352550b","assets/personaje/pro/op3/color_A_ktx2.ktx2":"099f3cc9","assets/personaje/pro/op3/color_B.jpg":"b1bdc774","assets/personaje/pro/op3/color_B_1k.jpg":"d1f4d761","assets/personaje/pro/op3/color_B_2k.jpg":"7ee2b8b8","assets/personaje/pro/op3/color_B_ktx2.ktx2":"727840db","assets/personaje/pro/op3/color_bots.jpg":"c2f8cf22","assets/personaje/pro/op3/color_bots_1k.jpg":"f52253fe","assets/personaje/pro/op3/color_bots_2k.jpg":"58e0863f","assets/personaje/pro/op3/color_bots_ktx2.ktx2":"63c6ebc3","assets/personaje/pro/op3/personaje.glb":"5368ed41","assets/personaje/pro/op3/personaje_1k.glb":"55863f1a","assets/personaje/pro/op3/personaje_2k.glb":"4bc1cc29","assets/personaje/pro/op3/personaje_ktx2.glb":"a2936ff4","assets/personaje/pro/op4/color_A.jpg":"26dbbd3d","assets/personaje/pro/op4/color_A_1k.jpg":"f754f532","assets/personaje/pro/op4/color_A_ktx2.ktx2":"00257a61","assets/personaje/pro/op4/color_B.jpg":"ceef52f9","assets/personaje/pro/op4/color_B_1k.jpg":"9bc2e67c","assets/personaje/pro/op4/color_B_ktx2.ktx2":"3489c9ca","assets/personaje/pro/op4/color_bots.jpg":"a7d7385e","assets/personaje/pro/op4/color_bots_1k.jpg":"6269d84f","assets/personaje/pro/op4/color_bots_ktx2.ktx2":"2ba10f2b","assets/personaje/pro/op4/personaje.glb":"d8c950da","assets/personaje/pro/op4/personaje_1k.glb":"3e671723","assets/personaje/pro/op4/personaje_ktx2.glb":"71c1de47","assets/personaje/pro/ridge/color_A.jpg":"67b00fcd","assets/personaje/pro/ridge/color_A_1k.jpg":"360cc62a","assets/personaje/pro/ridge/color_A_2k.jpg":"e67e6588","assets/personaje/pro/ridge/color_B.jpg":"67b00fcd","assets/personaje/pro/ridge/color_B_1k.jpg":"360cc62a","assets/personaje/pro/ridge/color_B_2k.jpg":"e67e6588","assets/personaje/pro/ridge/color_bots.jpg":"67b00fcd","assets/personaje/pro/ridge/color_bots_1k.jpg":"360cc62a","assets/personaje/pro/ridge/color_bots_2k.jpg":"e67e6588","assets/personaje/pro/ridge/personaje.glb":"195fd7d9","assets/personaje/pro/ridge/personaje_1k.glb":"be17ff7b","assets/personaje/pro/ridge/personaje_2k.glb":"5c742a46","assets/personaje/retratos/amber.jpg":"8e471be2","assets/personaje/retratos/clasico.jpg":"9089d991","assets/personaje/retratos/fsb.jpg":"a437ba7e","assets/personaje/retratos/militar.jpg":"cc7bb82e","assets/personaje/retratos/ridge.jpg":"3ee1b43b","assets/personaje/retratos/soldado.jpg":"ea597e39","assets/personaje/retratos/swat.jpg":"59863f61","assets/personaje/v4/color_A.jpg":"ec6173ce","assets/personaje/v4/color_A_1k.jpg":"b9fcf76e","assets/personaje/v4/color_bots.jpg":"555188eb","assets/personaje/v4/color_bots_1k.jpg":"e84476a0","assets/personaje/v4/personaje.glb":"7f56f4cd","assets/personaje/v4/personaje_1k.glb":"52efbd17","assets/tex/asphalt_c.jpg":"77fd9abe","assets/tex/asphalt_n.jpg":"d0ffcf83","assets/tex/asphalt_r.jpg":"04b10e5b","assets/tex/azulejo_c.jpg":"4146d6e0","assets/tex/azulejo_n.jpg":"f90aadf8","assets/tex/azulejo_r.jpg":"3b205f10","assets/tex/br_blocks_c.jpg":"c66233d2","assets/tex/br_blocks_n.jpg":"bf3deb4d","assets/tex/br_blocks_r.jpg":"ba5337c9","assets/tex/br_brick_c.jpg":"abfd403f","assets/tex/br_brick_n.jpg":"c94321ec","assets/tex/br_brick_r.jpg":"56acd6cd","assets/tex/br_pavers_c.jpg":"997b5428","assets/tex/br_pavers_n.jpg":"b9e9d68b","assets/tex/br_pavers_r.jpg":"e1765522","assets/tex/brick_c.jpg":"447fd785","assets/tex/brick_n.jpg":"ff87c7f1","assets/tex/c2_patio_c.jpg":"12e88a35","assets/tex/c2_patio_n.jpg":"19efaad1","assets/tex/c2_patio_r.jpg":"813662a9","assets/tex/c2_tiles_c.jpg":"50e0a4d9","assets/tex/c2_tiles_n.jpg":"8d46f206","assets/tex/c2_tiles_r.jpg":"a46a2bfa","assets/tex/c2_wood_c.jpg":"5877d738","assets/tex/c2_wood_n.jpg":"15338e57","assets/tex/c2_wood_r.jpg":"87011503","assets/tex/cobble_c.jpg":"6be66585","assets/tex/cobble_n.jpg":"f7e3ba2a","assets/tex/concrete_c.jpg":"d08a832c","assets/tex/concrete_n.jpg":"457ab210","assets/tex/earth_c.jpg":"e6a9f902","assets/tex/earth_n.jpg":"06bb00de","assets/tex/flora_dandelion_1024.png":"9a0db91e","assets/tex/flora_dandelion_512.png":"dc42d215","assets/tex/flora_grasscards_1024.png":"52d6a551","assets/tex/flora_grasscards_512.png":"dfa1cda3","assets/tex/herring_c.jpg":"32fd218f","assets/tex/herring_n.jpg":"5a3477cc","assets/tex/metal_c.jpg":"8b6d8e26","assets/tex/metal_n.jpg":"53673af2","assets/tex/p0_cobble_c.jpg":"ba3785bf","assets/tex/p0_cobble_n.jpg":"c57bfc05","assets/tex/p0_cobble_r.jpg":"53832a82","assets/tex/p0_covers.png":"33fc76ef","assets/tex/p0_decals.png":"c1db49d5","assets/tex/p0_patch_c.jpg":"764000c4","assets/tex/p0_patch_n.jpg":"11d825d8","assets/tex/p0_patch_r.jpg":"d1184e18","assets/tex/p0_plaza_c.jpg":"8ed7bb08","assets/tex/p0_plaza_n.jpg":"71ec9b9f","assets/tex/p0_plaza_r.jpg":"2635a161","assets/tex/p0_sand_c.jpg":"ec00f2db","assets/tex/p0_sidewalk_c.jpg":"f57d5ec0","assets/tex/p0_sidewalk_n.jpg":"f2f12e33","assets/tex/p0_sidewalk_r.jpg":"8d420df6","assets/tex/p0_transition.png":"2d8a53a4","assets/tex/p0b_cobble_c.jpg":"c9abc843","assets/tex/p0b_covers.png":"295dc5b7","assets/tex/p0b_decals.png":"4189d6d6","assets/tex/p0b_patch_c.jpg":"6993c987","assets/tex/p0b_plaza_c.jpg":"3b8d3198","assets/tex/p0b_sand_c.jpg":"cd0c4def","assets/tex/p0b_sidewalk_c.jpg":"a2bc532a","assets/tex/p0cc_cobble_c.jpg":"4ae894f2","assets/tex/p0cc_cobble_n.jpg":"bf85a45a","assets/tex/p0cc_cobble_r.jpg":"8fd0c14b","assets/tex/p0ccb_cobble_c.jpg":"16ee23a2","assets/tex/p0ccm_cobble_c.jpg":"7eb6a4cc","assets/tex/p0ccm_cobble_n.jpg":"a4e4647f","assets/tex/p0ccm_cobble_r.jpg":"1006bac9","assets/tex/p0m_cobble_c.jpg":"ba3785bf","assets/tex/p0m_cobble_n.jpg":"e4efdd1f","assets/tex/p0m_cobble_r.jpg":"53832a82","assets/tex/p0m_plaza_c.jpg":"8ed7bb08","assets/tex/p0m_plaza_n.jpg":"2b7bb548","assets/tex/p0m_plaza_r.jpg":"2635a161","assets/tex/p0v3_cobble_c.jpg":"d1a7a842","assets/tex/p0v3_cobble_n.jpg":"7f59ef40","assets/tex/p0v3_cobble_r.jpg":"327df272","assets/tex/p0v3_plaza_c.jpg":"95d16848","assets/tex/p0v3_plaza_n.jpg":"0c1bce0a","assets/tex/p0v3_plaza_r.jpg":"7187b7c8","assets/tex/p0v3b_cobble_c.jpg":"a672484f","assets/tex/p0v3b_plaza_c.jpg":"04ae070f","assets/tex/p0v3m_cobble_c.jpg":"d1a7a842","assets/tex/p0v3m_cobble_n.jpg":"1945f886","assets/tex/p0v3m_cobble_r.jpg":"327df272","assets/tex/p0v3m_plaza_c.jpg":"95d16848","assets/tex/p0v3m_plaza_n.jpg":"9dff174d","assets/tex/p0v3m_plaza_r.jpg":"7187b7c8","assets/tex/p1_door_c.jpg":"add4ad19","assets/tex/p1_door_n.jpg":"12a1bb22","assets/tex/p1_door_r.jpg":"2e6a5d99","assets/tex/p1_rooftiles_c.jpg":"429c4813","assets/tex/p1_rooftiles_n.jpg":"0da1a4aa","assets/tex/p1_rooftiles_r.jpg":"50ae143b","assets/tex/p1_stone_c.jpg":"08b8e5f9","assets/tex/p1_stone_n.jpg":"53244400","assets/tex/p1_stone_r.jpg":"4713d6de","assets/tex/p1_stucco_c.jpg":"23513034","assets/tex/p1_stucco_n.jpg":"58365463","assets/tex/p1_stucco_r.jpg":"2476e5e4","assets/tex/p1_wood_c.jpg":"aacb2ac1","assets/tex/p1_wood_n.jpg":"8de0c779","assets/tex/p1_wood_r.jpg":"34a31c4b","assets/tex/p1b_door_c.jpg":"e061bfd3","assets/tex/p1b_rooftiles_c.jpg":"8c4284b3","assets/tex/p1b_stone_c.jpg":"2e766301","assets/tex/p1b_stucco_c.jpg":"e6ed13f6","assets/tex/p1b_wood_c.jpg":"ec02ebfe","assets/tex/p1m_door_c.jpg":"add4ad19","assets/tex/p1m_door_n.jpg":"18c73624","assets/tex/p1m_door_r.jpg":"2e6a5d99","assets/tex/p1m_rooftiles_c.jpg":"429c4813","assets/tex/p1m_rooftiles_n.jpg":"018ae078","assets/tex/p1m_rooftiles_r.jpg":"50ae143b","assets/tex/p1m_stone_c.jpg":"08b8e5f9","assets/tex/p1m_stone_n.jpg":"db2a4db3","assets/tex/p1m_stone_r.jpg":"4713d6de","assets/tex/p1m_stucco_c.jpg":"23513034","assets/tex/p1m_stucco_n.jpg":"b54e4e5c","assets/tex/p1m_stucco_r.jpg":"2476e5e4","assets/tex/p1m_wood_c.jpg":"aacb2ac1","assets/tex/p1m_wood_n.jpg":"73da7b12","assets/tex/p1m_wood_r.jpg":"34a31c4b","assets/tex/paving_c.jpg":"de729c21","assets/tex/paving_n.jpg":"e7ce1b5e","assets/tex/pebbles_c.jpg":"92f3a761","assets/tex/pebbles_n.jpg":"04797193","assets/tex/plaster_c.jpg":"b9baf0d3","assets/tex/plaster_n.jpg":"57ab2216","assets/tex/rat_c.jpg":"18f0d109","assets/tex/rat_n.jpg":"5cda8929","assets/tex/rat_r.jpg":"cd628297","assets/tex/roof_c.jpg":"4e3265a6","assets/tex/roof_n.jpg":"7eec2601","assets/tex/rooftiles_c.jpg":"f52e8938","assets/tex/rooftiles_n.jpg":"7dd55eb0","assets/tex/rubble_c.jpg":"c980bdcd","assets/tex/rubble_n.jpg":"93400d41","assets/tex/sand_c.jpg":"44e227fe","assets/tex/sand_n.jpg":"d259a3b8","assets/tex/sandbag_c.jpg":"da97fddc","assets/tex/sandbag_n.jpg":"737ae913","assets/tex/setts_c.jpg":"0807efce","assets/tex/setts_n.jpg":"ae5af8cf","assets/tex/setts_r.jpg":"a09459c8","assets/tex/slabs_c.jpg":"2038cef4","assets/tex/slabs_n.jpg":"ec0bcab9","assets/tex/slabs_r.jpg":"74281b0b","assets/tex/stone_c.jpg":"2fffcb0b","assets/tex/stone_n.jpg":"b8445cb7","assets/tex/stucco_c.jpg":"17d897f3","assets/tex/stucco_n.jpg":"246827a0","assets/tex/wood_c.jpg":"ccb5489b","assets/tex/wood_n.jpg":"86830c96","assets/viewmodels.glb":"5825c8a7","assets/wasm/astar.wasm":"6d5be415","assets/wasm/audio.wasm":"70540f72","assets/wasm/geom.wasm":"3cdd6f81","assets/wasm/nav.wasm":"8b560fc5","vendor/basis/basis_transcoder.js":"8838f833","vendor/basis/basis_transcoder.wasm":"0969f9ba","vendor/GLTFLoader.js":"fb4d39e3","vendor/KTX2Loader.js":"dc442074","vendor/three.min.js":"05c8df80"};
 </script>
 <script>
 (function(){
@@ -9051,8 +9051,12 @@ function av(u){
 T.DefaultLoadingManager.setURLModifier(av);
 /* PANTALLA DE CARGA (?carga=2, docs/CARGA.md): the bar counts what really arrives. Every file three.js asks for (models,
    textures, KTX2) passes through the default loading manager (started / finished / failed) and the downloads through
-   FileLoader (bytes so far of each one). Only with the flag: without it nothing is wrapped. */
-const CARGA2=(()=>{const q=/[?&]carga=([12])\b/.exec(location.search);if(q)return q[1]==='2';try{return localStorage.getItem('sniperduel_carga2')==='true';}catch(e){return false;}})();
+   FileLoader (bytes so far of each one). The default since 23-11-2026; ?carga=1 goes back to the old entry (nothing wrapped). */
+/* RELEASE (23-11-2026, owner: «pon todo lo nuevo por defecto»): the AJUSTES › EN PRUEBA switches are gone and everything they
+   offered is the default. Once per device, what they remembered is forgotten, so no old choice keeps a device on the
+   previous version. The link flags (?lobby=1, ?carga=1, ?balance=0…) still work for comparing. */
+try{if(localStorage.getItem('sniperduel_rel1')!=='1'){for(const k of ['lobby2','lbLite','p4','p3','barrioExp','casaExp','casa2Exp','menuOld','arsenalOld','balanceOld','penOff','deslizOld','rayosxOff','meshyExp','carga2','viento'])localStorage.removeItem('sniperduel_'+k);localStorage.setItem('sniperduel_rel1','1');}}catch(e){}
+const CARGA2=(()=>{const q=/[?&]carga=([12])\b/.exec(location.search);if(q)return q[1]==='2';try{return localStorage.getItem('sniperduel_carga2')!=='false';}catch(e){return true;}})();
 const CG_NET={files:0,done:0,fail:0,bytes:{},last:0};
 if(CARGA2){const M=T.DefaultLoadingManager,s0=M.itemStart,e0=M.itemEnd,x0=M.itemError,tick=()=>{CG_NET.last=performance.now();};
   M.itemStart=function(u){CG_NET.files++;tick();return s0.call(this,u);};
@@ -10193,7 +10197,7 @@ function casa2Load(id){
    each row, open onto the street) and the blocks of flats ×3.5 as the skyline. Behind ?barrio=1 (remembered) until the
    owner approves it; always built, so a friend can join a room on it. The two models load the first time it is played. */
 const BAR={id:'barrio',on:typeof SDBarrio!=='undefined',exp:false,ready:false,loading:false,failed:false,root:null,tris:0,calls:0,wait:[]};
-{const q=location.search.match(/[?&]barrio=([01])\b/);if(q)store.set('barrioExp',q[1]==='1');BAR.exp=BAR.on&&store.get('barrioExp',false)===true;}
+{const q=location.search.match(/[?&]barrio=([01])\b/);if(q)store.set('barrioExp',q[1]==='1');BAR.exp=BAR.on&&store.get('barrioExp',true)!==false;}   // in the menus by default since 23-11-2026
 if(BAR.on){
   const prevC=W.colliders,prevR=W.ray,prevP=W.ramps;W.colliders=[];W.ray=[];W.ramps=[];
   const pm={},mk=f=>pm[f]||(pm[f]=new T.MeshBasicMaterial({visible:false}));
@@ -11190,13 +11194,14 @@ const MOVE_CLASSIC=Object.assign({},MOVE,{walk:4.6,crouch:2.4,backMul:0.85,groun
 const TAC=()=>!MOV_CLASSIC;
 let GUNCFG=SD_CONFIG.rifles.halcon;
 /* GUNSMITH (08-11-2026, docs/GUNSMITH.md): each of the 5 models is its own rifle (core/config.js rifles.*) in the games
-   against bots and in the range; the owner approved the table for tests. Online it is always the server's HALCÓN R7 until
-   he approves it there. ?balance=0 brings back the previous figures (the HALCÓN's for every model) offline too, to compare
-   (remembered; ?balance=1 undoes it). Bots and the online rival always carry the HALCÓN (HALCON). */
+   against bots and in the range; the owner approved the table for tests, and online too on 23-11-2026 («sí, cada rifle con
+   sus cifras»): the server gives each player the figures of the model sent with 'rifle' (NET.N.chooseRifle), from the next
+   spawn. ?balance=0 brings back the previous figures (the HALCÓN's for every model) offline, to compare (remembered;
+   ?balance=1 undoes it). Bots always carry the HALCÓN (HALCON). */
 {const q=location.search.match(/[?&]balance=([01])\b/);if(q)store.set('balanceOld',q[1]==='0');}
 const BAL={on:store.get('balanceOld',false)!==true};
 const HALCON=SD_CONFIG.rifles.halcon;
-function rifleCfgFor(model,online){return BAL.on&&!online&&SD_CONFIG.rifles[model]?SD_CONFIG.rifles[model]:HALCON;}
+function rifleCfgFor(model,online){if(online)return NET.N?NET.N.rifleCfg():HALCON;return BAL.on&&SD_CONFIG.rifles[model]?SD_CONFIG.rifles[model]:HALCON;}
 /* SILENCIADOR (09-11-2026, approved by the owner; docs/GUNSMITH.md). Per model, saved in sniperduel_gsCfg (muzzle:'sil').
    With it: no muzzle flash or flash of light, a low shot that does not say where it comes from, and bots only hear it
    within SIL.HEAR m (85 m without it). The price: the bullet leaves 8 % slower (more drop and flight time far away).
@@ -11205,7 +11210,7 @@ const SIL={want:false,mesh:null,SPEED:0.92,HEAR:20,HEAR_OPEN:85};
 function silSaved(id){const c=store.get('gsCfg',null),m=c&&c.models&&c.models[id];return !!(m&&m.muzzle==='sil');}
 const SILCFG=new Map();
 function silCfg(c){let k=SILCFG.get(c);if(!k){k=Object.assign({},c,{speed:Math.round(c.speed*SIL.SPEED),silenced:true});SILCFG.set(c,k);}return k;}
-// takes effect when you (re)spawn: the model you carry (WSKIN.rifle) decides the figures; online, the HALCÓN (no silencer)
+// takes effect when you (re)spawn: the model you carry (WSKIN.rifle) decides the figures; online, the server's (no silencer)
 function applyRifleCfg(){const online=mode==='online',b=rifleCfgFor(WSKIN.rifle,online),c=!online&&silSaved(WSKIN.rifle)?silCfg(b):b;
   if(c!==GUNCFG){GUNCFG=c;WCORE.cfg=c;if(WCORE.ammo>c.mag)WCORE.ammo=c.mag;}
   SIL.want=!!c.silenced;if(typeof silApply==='function')silApply();}
@@ -11323,15 +11328,11 @@ const MIX_ORDER=['op2','op3','op4',null];
 /* elegir personaje (27-10-2026): con ?pj=pro o ?pj=mix cada jugador elige el suyo antes de la partida. Solo aspecto: las
    zonas de impacto son las mismas. El rival online lo ve (mensaje 'skin' del servidor); en BAJO con ?pj=pro, el de cajas.
    SOLDADO (28-10-2026) = el personaje de ?pj=2 (assets/personaje/), el que se elige si aún no has elegido. */
-const SKINS={soldado:{pack:'v2',name:'SOLDADO',by:'Sniper Duel'},swat:{pack:'op2',name:'S.W.A.T.',by:'Mateusz Woliński · CC BY'},fsb:{pack:'op3',name:'FSB',by:'Mateusz Woliński · CC BY'},
-  militar:{pack:'op4',name:'MILITAR',by:'DanlyVostok · CC BY'},clasico:{pack:null,name:'CLÁSICO',by:'Sniper Duel'}};
-/* RIDGE y AMBER (23-11-2026, docs/PERSONAJES-PRO.md): los primeros personajes propios, hechos con Meshy AI a partir de los
-   prompts del propietario y con el esqueleto puesto por tools/personaje-ext/autorig.py. En prueba: ?meshy=1 o AJUSTES › EN
-   PRUEBA (el aparato lo recuerda). Sin activarlo no se eligen ni se descargan; si un rival lleva uno y tú no los tienes
-   activados, ves su personaje de siempre. */
-{const q=location.search.match(/[?&]meshy=([01])\b/);if(q)store.set('meshyExp',q[1]==='1');}
-const MESHY_EXP=store.get('meshyExp',false)===true;
-if(MESHY_EXP)Object.assign(SKINS,{ridge:{pack:'ridge',name:'RIDGE',by:'Meshy AI · CC BY'},amber:{pack:'amber',name:'AMBER',by:'Meshy AI · CC BY'}});
+// by: the author (creditos.html lists them all); tag: the short role shown in the menus (release, 23-11-2026)
+const SKINS={soldado:{pack:'v2',name:'SOLDADO',by:'Sniper Duel',tag:'INFANTERÍA'},swat:{pack:'op2',name:'S.W.A.T.',by:'Mateusz Woliński · CC BY',tag:'ASALTO URBANO'},fsb:{pack:'op3',name:'FSB',by:'Mateusz Woliński · CC BY',tag:'FUERZAS ESPECIALES'},
+  militar:{pack:'op4',name:'MILITAR',by:'DanlyVostok · CC BY',tag:'TIRADOR DE ÉLITE'},clasico:{pack:null,name:'CLÁSICO',by:'Sniper Duel',tag:'RECLUTA'}};
+// RIDGE y AMBER (23-11-2026, docs/PERSONAJES-PRO.md): made with Meshy AI (CC BY 4.0), for everyone since the release
+Object.assign(SKINS,{ridge:{pack:'ridge',name:'RIDGE',by:'Meshy AI · CC BY',tag:'VETERANO'},amber:{pack:'amber',name:'AMBER',by:'Meshy AI · CC BY',tag:'EXPLORADORA'}});
 const SKIN_ON=PJ_PRO||PJ_MIX;
 let SKIN=SKINS[store.get('skin')]?store.get('skin'):'soldado';
 const packRoot=pack=>pack==='v2'?'assets/personaje/':'assets/personaje/pro/'+pack+'/';
@@ -11362,6 +11363,7 @@ const _pj2v=new T.Vector3();
 // tamaño de las texturas de cada personaje: BAJO 1K; en MEDIO, los de 4K (op2/op3) a 2K
 function pj2Suffix(root){
   if(GFX.profile==='bajo')return '_1k';
+  if(/\/(ridge|amber)\/$/.test(root))return '_2k';   // RIDGE / AMBER have no KTX2 yet: their 4K JPG would be ~85 MB of GPU memory each (release, 23-11-2026)
   if((PJ_MIX||PJ_PRO)&&(GFX.profile!=='alto'||PJ2_PHONE)&&/\/(op2|op3|ridge|amber)\/$/.test(root))return '_2k';   // phones: never 4K
   return '';
 }
@@ -12941,7 +12943,7 @@ function gfxApply(){
   $('#fpsBox').hidden=!SETTINGS.showFps;
 }
 function gfxNote(){const n=$('#qNote');if(!n)return;const prof=SDQuality.resolve(SETTINGS.quality,isTouch,GFX.cap);
-  n.textContent=(SETTINGS.quality==='auto'?'AUTO → '+SDQuality.PROFILES[prof].label+(GFX.cap&&prof===GFX.cap&&prof!==(isTouch?'medio':'alto')?' (tu gráfica va justa)':'')+', la resolución se ajusta sola a los FPS reales. ':'')+'Resolución interna '+Math.round(renderer.getPixelRatio()*100)/100+'×'+(GFX.adapt&&GFX.adapt.fps?' · '+Math.round(GFX.adapt.fps)+' FPS':'')+' · suavizado de bordes '+(GFX.aa?'4×':'no')+' (cambia al recargar la página).';}
+  n.textContent=(SETTINGS.quality==='auto'?'AUTO → '+SDQuality.PROFILES[prof].label+(GFX.cap&&prof===GFX.cap&&prof!=='alto'?' (tu gráfica va justa)':'')+' · la resolución se ajusta sola a tus FPS':'');}
 for(const [id,k] of SET_UI)$('#'+id).addEventListener('input',()=>{SETTINGS[k]=+$('#'+id).value;settingsChanged();});
 for(const [id,k] of SET_CHK)$('#'+id).addEventListener('change',()=>{SETTINGS[k]=$('#'+id).checked;settingsChanged();});
 $('#sFps30').addEventListener('change',()=>{SETTINGS.fpsCap=$('#sFps30').checked?30:60;settingsChanged();});
@@ -12957,50 +12959,11 @@ $('#lookReload').addEventListener('click',()=>location.reload());
 $('#sDiag').addEventListener('change',()=>{TDIAG.set($('#sDiag').checked);TDIAG.reset();});
 let settingsFrom='menu';
 // tabs: one section at a time; the last one opened is remembered on this device
-const SET_TABS={controles:'CONTROLES',sensibilidad:'SENSIBILIDAD',mira:'MIRA Y EFECTOS',graficos:'GRÁFICOS',audio:'AUDIO',jugabilidad:'JUGABILIDAD',accesibilidad:'ACCESIBILIDAD',pruebas:'FUNCIONES EN PRUEBA'};
+const SET_TABS={controles:'CONTROLES',sensibilidad:'SENSIBILIDAD',mira:'MIRA Y EFECTOS',graficos:'GRÁFICOS',audio:'AUDIO',jugabilidad:'JUGABILIDAD',accesibilidad:'ACCESIBILIDAD'};
 let setTab=SET_TABS[store.get('setTab','')]?store.get('setTab',''):'controles';
 function showSetTab(t){if(!SET_TABS[t])return;setTab=t;store.set('setTab',t);$('#setTitle').textContent=SET_TABS[t];
   document.querySelectorAll('.setTabs button').forEach(b=>b.setAttribute('aria-selected',String(b.dataset.tab===t)));
-  document.querySelectorAll('.setPane').forEach(p=>p.hidden=p.dataset.pane!==t);resetConfirm(false);if(t==='pruebas')setTimeout(fxRender,0);}
-/* EN PRUEBA (19-11-2026, owner: the home-screen shortcut is the only full screen on the iPhone, and it always opens the plain
-   link, with its own memory apart from Safari: «si cambia el link … se queda medio pillado»). Every experimental feature that
-   the game already remembers on the device (the ?flag=… of the links) as a switch: it writes the same remembered value the
-   link would, and RECARGAR opens the page again without those flags in the address. What each one shows as ON is what is
-   running now (cur), so a feature that becomes the default later still shows right. */
-const FX=[
-  {k:'lobby2',name:'SALA 1V1 NUEVA',sub:'La sala de espera del multijugador con hangar 3D, invitar, mapas y LISTO / INICIAR PARTIDA',cur:()=>LB.on,val:v=>v},
-  {k:'lbLite',name:'SALA 1V1 LIGERA',sub:'La misma sala sin el hangar 3D (para móviles que se quedan sin memoria; se activa sola si la página se cae dentro de la sala)',cur:()=>LB.lite,val:v=>v},
-  {k:'p4',name:'PUEBLO 4.0',sub:'El pueblo nuevo: casas con carácter, desgaste, pick-ups y casas habitables (en línea, mapa propio)',cur:()=>PU4,val:v=>v},
-  {k:'barrioExp',name:'BARRIO',sub:'El mapa BARRIO en MAPAS: calle entre edificios y garajes',cur:()=>BAR.exp,val:v=>v},
-  {k:'casaExp',name:'CASA ATLAS',sub:'El piso de 18 × 14 m en MAPAS',cur:()=>CASA.exp,val:v=>v},
-  {k:'casa2Exp',name:'CASA ATLAS 2.0',sub:'Las casas unidas con patio en MAPAS',cur:()=>C2.exp,val:v=>v},
-  {k:'menuOld',name:'MENÚ NUEVO',sub:'El menú con la sala oscura y tu operador en 3D (NO = el menú de antes)',cur:()=>M2.on,val:v=>!v},
-  {k:'arsenalOld',name:'ARSENAL',sub:'ARMAS con el arma grande, modelos, accesorios y estadísticas (NO = ARMAS de antes)',cur:()=>GS.on,val:v=>!v},
-  {k:'balanceOld',name:'RIFLES DISTINTOS',sub:'Cada rifle con sus propias cifras contra bots (NO = todos como el HALCÓN)',cur:()=>BAL.on,val:v=>!v},
-  {k:'penOff',name:'BALAS QUE ATRAVIESAN',sub:'Penetración de paredes finas y BALA DURA',cur:()=>PEN.on,val:v=>!v},
-  {k:'deslizOld',name:'DESLIZAMIENTO NUEVO',sub:'El deslizamiento con su caja de colisión nueva (NO = el de antes)',cur:()=>SLIDE2.on,val:v=>!v},
-  {k:'rayosxOff',name:'RAYOS X EN PRUEBAS',sub:'Ver a los bots a través de las paredes en el mapa PRUEBAS',cur:()=>XRAY.on,val:v=>!v},
-  {k:'meshyExp',name:'RIDGE Y AMBER',sub:'Los dos personajes nuevos hechos con Meshy AI (el veterano de la cara al descubierto y la exploradora) en la lista de operadores',cur:()=>MESHY_EXP,val:v=>v},
-  {k:'carga2',name:'PANTALLA DE CARGA',sub:'Al entrar, la barra del 0 al 100 % que deja listos personajes, armas, mapa y sombreadores (docs/CARGA.md)',cur:()=>CG.on,val:v=>v}];
-// the link flags these switches replace: RECARGAR removes them from the address so the switch, not an old link, decides
-const FX_PARAMS=['lobby','sala3d','pueblo','barrio','casa','casa2','casa2v','menu','arsenal','balance','pen','desliz','rayosx','carga','meshy'];
-const FX_WANT={};let FX_RESET=false;   // RESTAURAR: what is remembered is forgotten; the page shows the defaults after reloading   // what was chosen in this visit (not applied until the page reloads)
-function fxRender(){
-  const L=$('#fxList');if(!L)return;let n=0;
-  if(!L.childElementCount)for(const f of FX){const row=document.createElement('div');row.className='fxRow';row.dataset.k=f.k;
-    row.innerHTML='<div><b></b><small></small></div><div class="seg" role="group"><button type="button" data-v="1">SÍ</button><button type="button" data-v="0">NO</button></div>';
-    row.querySelector('b').textContent=f.name;row.querySelector('small').textContent=f.sub;row.querySelector('.seg').setAttribute('aria-label',f.name);
-    row.querySelectorAll('button').forEach(b=>b.addEventListener('click',()=>{SFX.ui();const on=b.dataset.v==='1';let now=false;try{now=!!f.cur();}catch(e){}
-      if(on===now)delete FX_WANT[f.k];else FX_WANT[f.k]=on;store.set(f.k,f.val(on));fxRender();}));
-    L.append(row);}
-  for(const f of FX){const row=L.querySelector('[data-k="'+f.k+'"]');let now=false;try{now=!!f.cur();}catch(e){}
-    const on=f.k in FX_WANT?FX_WANT[f.k]:now;row.classList.toggle('changed',f.k in FX_WANT);if(f.k in FX_WANT)n++;
-    row.querySelectorAll('button').forEach(b=>b.setAttribute('aria-pressed',String((b.dataset.v==='1')===on)));}
-  $('#fxReloadRow').hidden=!n&&!FX_RESET;
-}
-function fxReload(){const u=new URL(location.href);for(const k of FX_PARAMS)u.searchParams.delete(k);location.replace(u.toString());}
-// RESTAURAR ESTA SECCIÓN: every switch back to what the game does by default (the remembered values are forgotten)
-function fxReset(){for(const f of FX){try{localStorage.removeItem('sniperduel_'+f.k);}catch(e){}delete FX_WANT[f.k];}FX_RESET=true;fxRender();}
+  document.querySelectorAll('.setPane').forEach(p=>p.hidden=p.dataset.pane!==t);resetConfirm(false);}
 document.querySelectorAll('.setTabs button').forEach(b=>b.addEventListener('click',()=>{showSetTab(b.dataset.tab);SFX.ui();$('#settings').scrollTop=0;}));
 let resetArm=0;function resetConfirm(on){resetArm=on?performance.now():0;const b=$('#setReset');b.classList.toggle('confirm',on);b.textContent=on?'¿SEGURO? TOCA OTRA VEZ':'RESTAURAR TODO';}
 function openSettings(from){settingsFrom=from;settingsToUI();try{$('#gfxDiag').textContent=gfxDiagText();}catch(e){}showSetTab(setTab);$('#settings').hidden=false;$('#settings').scrollTop=0;for(const id of ['menu','pause'])$('#'+id).classList.add('under');}
@@ -13010,8 +12973,7 @@ $('#pauseSettings').addEventListener('click',()=>{SFX.ui();openSettings('pause')
 $('#setClose').addEventListener('click',()=>{closeSettings();SFX.ui();});
 // RESTAURAR TODO asks for a second tap (within 4 s) so a stray touch never wipes the settings
 $('#setReset').addEventListener('click',()=>{SFX.ui();if(!resetArm||performance.now()-resetArm>4000){resetConfirm(true);return;}resetConfirm(false);SETTINGS=SDSettings.defaults(isTouch);settingsChanged();});
-$('#setResetTab').addEventListener('click',()=>{SFX.ui();if(setTab==='pruebas'){fxReset();return;}SETTINGS=SDSettings.resetCategory(SETTINGS,setTab,isTouch);settingsChanged();});
-$('#fxReload').addEventListener('click',()=>{SFX.ui();fxReload();});
+$('#setResetTab').addEventListener('click',()=>{SFX.ui();SETTINGS=SDSettings.resetCategory(SETTINGS,setTab,isTouch);settingsChanged();});
 $('#openEditor').addEventListener('click',()=>{SFX.ui();openEditor();});
 settingsToUI();applyControlSettings();showSetTab(setTab);{const vb=document.getElementById('tbView');if(vb)vb.textContent=SETTINGS.view==='tp'?'1ª':'3ª';}
 
@@ -13069,8 +13031,6 @@ function setDuelLethal(on){DUEL_LETHAL=!!on;store.set('duelLethal',DUEL_LETHAL);
 document.querySelectorAll('#duelLethalSeg button').forEach(b=>b.addEventListener('click',()=>{setDuelLethal(b.dataset.l==='1');audioInit();SFX.ui();}));
 setDuelLethal(DUEL_LETHAL);
 // AJUSTES › GRÁFICOS: PUEBLO 3.0 on this device (reloads, without the link's own ?pueblo=… so the choice wins) + diagnostics
-function setP3Pref(on){store.set('p3',!!on);if(!!on===!!P3ON)return;const u=new URL(location.href);['pueblo','adoquin','suelo'].forEach(k=>u.searchParams.delete(k));location.replace(u.toString());}
-document.querySelectorAll('#p3Seg button').forEach(b=>{b.setAttribute('aria-pressed',String((b.dataset.p3==='1')===!!P3ON));b.addEventListener('click',()=>{SFX.ui();setP3Pref(b.dataset.p3==='1');});});
 function gfxDiagText(){let gpu='?',gl2=false;try{const g=renderer.getContext();gl2=typeof WebGL2RenderingContext!=='undefined'&&g instanceof WebGL2RenderingContext;const e=g.getExtension('WEBGL_debug_renderer_info');gpu=e?g.getParameter(e.UNMASKED_RENDERER_WEBGL):g.getParameter(g.RENDERER);}catch(e){}
   return 'Pueblo 3.0: '+(P3ON?'SÍ':'NO')+(P3ON?' · suelo nuevo: '+(P0.on?'SÍ':'NO')+' · adoquín: '+(COBCC?'Poly Haven':'anterior')+' · kit: '+(P3W.kit?'cargado':'NO cargado'):'')+' · calidad: '+String(GFX.profile).toUpperCase()+(GFX.cap?' (tope AUTO '+String(GFX.cap).toUpperCase()+')':'')+
     ' · sombras: '+(renderer.shadowMap.enabled?sun.shadow.mapSize.x:'NO')+(DIAG_ON()?' · DIAGNÓSTICO: '+DIAG_ON():'')+' · píxeles ×'+renderer.getPixelRatio().toFixed(2)+' · WebGL '+(gl2?'2':'1')+' · GPU: '+String(gpu).slice(0,60)+' · texturas: '+(TEX.ok||0)+'/'+(TEX.asked||0)+' cargadas'+(TEX.fail?' · FALLAN '+TEX.fail+': '+TEX.failed.slice(0,4).join(', '):'');}
@@ -13086,6 +13046,7 @@ $('#toMenu1').addEventListener('click',toMenu);
 $('#toMenu2').addEventListener('click',toMenu);
 
 function startMatch(){
+  cgOff();   // the loading screen never stays over a match (it goes on loading behind, as with ENTRAR YA)
   clearPendingInput();
   audioInit();SFX.ui();
   const df=DIFFS[diff];
@@ -14007,7 +13968,8 @@ function netEvent(e){
   const N=NET.N;
   switch(e.k){
     case 'welcome':
-      store.set('tok_'+NET.code,N.token);netBanner(null);N.chooseKit(PRIMARY);   // my primary (also after a reconnect)
+      if(LB.on&&N.cfg&&(N.cfg.mode&&N.cfg.mode!=='duelo'||(N.cfg.bots|0)>0)){lbHide();LB.on=false;}   // SALA 1V1 is for two
+      store.set('tok_'+NET.code,N.token);netBanner(null);N.chooseKit(PRIMARY);N.chooseRifle(WSKIN.rifle);   // my primary and rifle model (also after a reconnect)
       if(ACC.token)N.account(ACC.token);   // my cloud account: the server shows my title and gives box points
       if(SKIN_ON)N.chooseSkin(SKIN);rivalSkin();
       if(N.phase==='lobby'){mpShow('lobby');renderLobby();history.replaceState(null,'',location.pathname+'?sala='+NET.code);}
@@ -14015,6 +13977,7 @@ function netEvent(e){
       break;
     case 'lobby':
       if(pu4Check())break;
+      if(LB.on&&N.cfg&&(N.cfg.mode&&N.cfg.mode!=='duelo'||(N.cfg.bots|0)>0)){lbHide();LB.on=false;if(N.phase==='lobby')mpShow('lobby');}
       rivalSkin();
       if(NET.view==='lobby'||mode!=='online')renderLobby();
       if(N.phase==='lobby'&&mode==='online'&&state!=='menu'){netEndOnline();mpShow('lobby');renderLobby();mpMsg('');}
@@ -14081,7 +14044,7 @@ function netEvent(e){
       }
       break;}
     case 'respawn':
-      if(e.id===N.you){P.alive=true;P.hp=100;P.yaw=e.yaw;P.pitch=0;P.deadT=0;Object.assign(RECOIL,SDWeapon.createRecoil());syncFromSim();PMprev.x=PM.x;PMprev.y=PM.y;PMprev.z=PM.z;
+      if(e.id===N.you){applyRifleCfg();P.alive=true;P.hp=100;P.yaw=e.yaw;P.pitch=0;P.deadT=0;Object.assign(RECOIL,SDWeapon.createRecoil());syncFromSim();PMprev.x=PM.x;PMprev.y=PM.y;PMprev.z=PM.z;
         $('#death').hidden=true;updateHpUI();updateAmmoUI();updateWeaponHud();SFX.raise();clearPendingInput();
         if(state==='dead')state='playing';else if(state==='paused')pausedFrom='playing';}
       break;
@@ -14101,11 +14064,12 @@ function netEvent(e){
 }
 function escapeHtml(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
 function netStart(m){
+  cgOff();
   const N=NET.N;
   $('#score .goal').textContent='PRIMERO A '+((m.rules&&m.rules.kills)||10);if(!m.resume){$('#clock').hidden=true;MINI.pings.length=0;}
   casasSolid(false);setWorld(m.map||'pueblo');
   if(mode!=='online'){NET.prevMode=mode;mode='online';}
-  applyRifleCfg();   // online: the server's HALCÓN R7, whatever model you carry
+  applyRifleCfg();   // online: the figures of the model the server has for you (NET.N.rifle)
   if(!REMOTE)REMOTE=new RemotePlayer();
   rivalSkin();
   clearPendingInput();audioInit();
@@ -14217,10 +14181,11 @@ setPrimaryChoice(PRIMARY);
    cerrojo y el cargador del aspecto se mueven con los del HALCÓN (sus nodos se colocan donde están esas piezas), así las
    manos van a su sitio. Con ?pj=pro o ?pj=mix. Por ahora solo en tu 1ª persona (los demás ven el HALCÓN). */
 const ARMAS_ON=SKIN_ON;
-const WSKINS={rifle:{halcon:{name:'HALCÓN R7',by:'Sniper Duel'},titan:{name:'TITÁN',by:'Aleksandr (sannf4) · CC BY'},
-    ultima:{dir:'ratio',name:'ÚLTIMA',by:'drepi.3d · CC BY'},vector:{name:'VECTOR',by:'Vlasov Daniil · CC BY'},
-    sahara:{dir:'lince',name:'SAHARA',by:'awakov_dawid · CC BY'}},
-  knife:{navaja:{name:'NAVAJA',by:'Sniper Duel'},tactica:{name:'TÁCTICA',by:'lunea · CC BY'}}};
+// by: the author (creditos.html); tag: the short role shown in the menus
+const WSKINS={rifle:{halcon:{name:'HALCÓN R7',by:'Sniper Duel',tag:'EQUILIBRADO'},titan:{name:'TITÁN',by:'Aleksandr (sannf4) · CC BY',tag:'LARGO ALCANCE'},
+    ultima:{dir:'ratio',name:'ÚLTIMA',by:'drepi.3d · CC BY',tag:'MÁXIMA POTENCIA'},vector:{name:'VECTOR',by:'Vlasov Daniil · CC BY',tag:'RÁPIDO'},
+    sahara:{dir:'lince',name:'SAHARA',by:'awakov_dawid · CC BY',tag:'LIGERO'}},
+  knife:{navaja:{name:'NAVAJA',by:'Sniper Duel',tag:'PLEGABLE'},tactica:{name:'TÁCTICA',by:'lunea · CC BY',tag:'COMBATE'}}};
 const WSKIN={rifle:WSKINS.rifle[store.get('wsRifle')]?store.get('wsRifle'):'halcon',knife:WSKINS.knife[store.get('wsKnife')]?store.get('wsKnife'):'navaja'};
 const WS_ST={rifle:{cur:null,objs:[],base:null},knife:{cur:null,objs:[],base:null},cache:{},ktx2:{},pend:{}};
 KTX2.want=u=>{const d=ktx2Dir(u);return !!d&&(d===(WSKINS.rifle[WSKIN.rifle].dir||WSKIN.rifle)||d===(WSKINS.knife[WSKIN.knife].dir||WSKIN.knife));};   // the chosen skins first
@@ -14336,6 +14301,7 @@ function wskinKnife(id){
 }
 function setWskin(slot,id){
   if(!WSKINS[slot][id])return;WSKIN[slot]=id;store.set(slot==='rifle'?'wsRifle':'wsKnife',id);
+  if(slot==='rifle'&&NET.N&&NET.N.you)NET.N.chooseRifle(id);   // online: its figures from my next spawn
   if(slot==='rifle')wskinRifle(id);else wskinKnife(id);
   document.querySelectorAll('#ws'+(slot==='rifle'?'Rifle':'Knife')+'Grid .skinCard').forEach(c=>c.setAttribute('aria-pressed',String(c.dataset.ws===id)));
 }
@@ -14344,7 +14310,7 @@ if(ARMAS_ON){
   for(const slot of ['rifle','knife'])for(const id in WSKINS[slot]){
     const c=document.createElement('button');c.type='button';c.className='skinCard';c.dataset.ws=id;c.setAttribute('aria-pressed',String(WSKIN[slot]===id));
     const im=document.createElement('img');im.alt='';im.src=wsImg(slot,id);const b=document.createElement('b');b.textContent=WSKINS[slot][id].name;
-    const by=document.createElement('span');by.className='lbl';by.textContent=WSKINS[slot][id].by;c.append(im,b,by);
+    const by=document.createElement('span');by.className='lbl';by.textContent=WSKINS[slot][id].tag;c.append(im,b,by);
     c.addEventListener('click',()=>{setWskin(slot,id);audioInit();SFX.ui();});$('#ws'+(slot==='rifle'?'Rifle':'Knife')+'Grid').append(c);}
 }
 /* =================== MIRAS (31-10-2026, client/miras.js, docs/MIRAS.md) ===================
@@ -14445,7 +14411,7 @@ if(SKIN_ON){
   $('#skinBlock').hidden=false;document.querySelectorAll('.skinOnly').forEach(e=>e.hidden=false);
   for(const id in SKINS){const c=document.createElement('button');c.type='button';c.className='skinCard';c.dataset.skin=id;
     const im=document.createElement('img');im.alt='';im.src=skinImg(id);const b=document.createElement('b');b.textContent=SKINS[id].name;
-    const by=document.createElement('span');by.className='lbl';by.textContent=SKINS[id].by;c.append(im,b,by);
+    const by=document.createElement('span');by.className='lbl';by.textContent=SKINS[id].tag;c.append(im,b,by);
     c.addEventListener('click',()=>{setSkin(id);audioInit();SFX.ui();closeSkins();});$('#skinGrid').append(c);}
   document.querySelectorAll('.skinPick').forEach(b=>b.addEventListener('click',()=>{openSkins();audioInit();SFX.ui();}));
   $('#skinClose').addEventListener('click',()=>{closeSkins();SFX.ui();});
@@ -14800,7 +14766,7 @@ if(PROFILE_ON){
     const q=SDProfile.importCode(inp.value);if(!q){$('#profMsg').textContent='Ese código no es válido (¿está entero?)';return;}
     PROFILE=q;SDProfile.save(LS,PROFILE);setSkin(PROFILE.skin);if(PROFILE.name)setProfileName(PROFILE.name);profileUI();inp.value='';inp.hidden=true;$('#profMsg').textContent='PERFIL RESTAURADO';SFX.ui();});
 }
-$('#mpBack').addEventListener('click',()=>{$('#mp').hidden=true;$('#menu').hidden=false;SFX.ui();});
+$('#mpBack').addEventListener('click',()=>{$('#mp').hidden=true;$('#menu').hidden=false;LB.on=LB.def;SFX.ui();});
 $('#mpCreate').addEventListener('click',netCreate);
 $('#mpJoin').addEventListener('click',()=>netJoin($('#mpCode').value));
 $('#mpCode').addEventListener('keydown',e=>{if(e.key==='Enter')netJoin($('#mpCode').value);});
@@ -14937,12 +14903,12 @@ function m2Init(){
   if(PROFILE_ON){$('#m2Inv').hidden=false;$('#m2Inv').addEventListener('click',()=>{audioInit();SFX.ui();openInv();});}
   // PERSONAJE: the characters you can really play with
   const pl=$('#m2PjList');
-  if(SKIN_ON)for(const id in SKINS){const c=m2Btn('m2Pick',skinImg(id),SKINS[id].name,SKINS[id].by,()=>setSkin(id));c.dataset.skin=id;pl.append(c);}
+  if(SKIN_ON)for(const id in SKINS){const c=m2Btn('m2Pick',skinImg(id),SKINS[id].name,SKINS[id].tag,()=>setSkin(id));c.dataset.skin=id;pl.append(c);}
   else{$('#m2PjHelp').textContent='Con este enlace (?pj=…) no se elige personaje.';}
   // ARMAS: the 8 optics, the rifle skins and the two knives
   for(const id of SDMiras.ORDER){const O=SDMiras.get(id),c=m2Btn('m2W',miraImg(id),O.name,O.short,()=>setMira(id));c.dataset.mira=id;$('#m2Miras').append(c);}
-  for(const id in WSKINS.rifle){if(!ARMAS_ON&&id!=='halcon')continue;const c=m2Btn('m2W',wsImg('rifle',id),WSKINS.rifle[id].name,WSKINS.rifle[id].by,()=>setWskin('rifle',id));c.dataset.ws=id;$('#m2Skins').append(c);}
-  for(const id in WSKINS.knife){if(!ARMAS_ON&&id!=='navaja')continue;const c=m2Btn('m2W',wsImg('knife',id),WSKINS.knife[id].name,WSKINS.knife[id].by,()=>setWskin('knife',id));c.dataset.ws=id;$('#m2Knives').append(c);}
+  for(const id in WSKINS.rifle){if(!ARMAS_ON&&id!=='halcon')continue;const c=m2Btn('m2W',wsImg('rifle',id),WSKINS.rifle[id].name,WSKINS.rifle[id].tag,()=>setWskin('rifle',id));c.dataset.ws=id;$('#m2Skins').append(c);}
+  for(const id in WSKINS.knife){if(!ARMAS_ON&&id!=='navaja')continue;const c=m2Btn('m2W',wsImg('knife',id),WSKINS.knife[id].name,WSKINS.knife[id].tag,()=>setWskin('knife',id));c.dataset.ws=id;$('#m2Knives').append(c);}
   document.querySelectorAll('#m2Cat button').forEach(b=>b.addEventListener('click',()=>{audioInit();SFX.ui();M2.cat=b.dataset.cat;M2.wsig='';m2Sync();}));
   // MAPAS
   for(const m of M2_MAPS){const c=m2Btn('m2Map',m2MapImg(m.id),m.name,m.sub,()=>setOffMap(m.id));c.dataset.map=m.id;
@@ -14994,7 +14960,7 @@ function m2Sync(){
   const mi=$('#m2MeImg');if(SKIN_ON&&mi.getAttribute('src')!==psrc)mi.src=psrc;setHidden(mi,!SKIN_ON);
   setText($('#m2MeName'),PROFILE.name||'JUGADOR');
   const ib=$('#openInv');if(ib)setText($('#m2InvN'),(ib.textContent.match(/\((\d+)\)/)||['',''])[1]);
-  press('#m2PjList .m2Pick','skin',SKIN);setText($('#m2PjName'),SKINS[SKIN].name);setText($('#m2PjBy'),SKINS[SKIN].by);
+  press('#m2PjList .m2Pick','skin',SKIN);setText($('#m2PjName'),SKINS[SKIN].name);setText($('#m2PjBy'),SKINS[SKIN].tag);
   press('#m2Cat button','cat',M2.cat);
   document.querySelectorAll('#m2 [data-catpane]').forEach(p=>p.hidden=p.dataset.catpane!==M2.cat);
   press('#m2Miras .m2W','mira',MIRA.id);press('#m2Skins .m2W','ws',WSKIN.rifle);press('#m2Knives .m2W','ws',WSKIN.knife);
@@ -15165,7 +15131,7 @@ function m2Frame(rdt){
    the same server); the only new thing the server sees is that this page starts the match with a button (hello hs, 'go').
    Experimental: ?lobby=2 turns it on (remembered on the device), ?lobby=1 brings back the room screen of always (#mp). */
 {const q=location.search.match(/[?&]lobby=([12])\b/);if(q)store.set('lobby2',q[1]==='2');}
-const LB={on:M2.on&&typeof SDLobby!=='undefined'&&store.get('lobby2',false)===true,vis:false,view:'home',room:null,cam:null,rigs:null,pv:null,
+const LB={on:M2.on&&typeof SDLobby!=='undefined'&&store.get('lobby2',true)!==false,vis:false,view:'home',room:null,cam:null,rigs:null,pv:null,
   t:0,n:0,F:{dist:7,ox:0,oy:0},C:null,opIn:1,opSeen:null,heldSig:'',held:null,inv:null,note:null,lastMap:null,lastHost:null,lastRival:null,mapSig:'',listSig:'',busy:false,goT:0};
 /* 17-11-2026, owner: on the iPhone the page reloaded and then closed on entering this room (the normal link works). Phones get
    a lighter hangar (client/lobby1v1.js, phone) and a safety net: while the room is open on a touch screen it leaves a mark
@@ -15175,6 +15141,7 @@ const LB={on:M2.on&&typeof SDLobby!=='undefined'&&store.get('lobby2',false)===tr
 {const t=isTouch?store.get('lbOpen',0):0;if(t&&Date.now()-t<15*60000)store.set('lbLite',true);store.set('lbOpen',null);}
 {const q=location.search.match(/[?&]sala3d=([01])\b/);if(q)store.set('lbLite',q[1]==='0');}   // the address wins (it runs after the safety net, just above)
 LB.lite=store.get('lbLite',false)===true;
+LB.def=LB.on;   // SALA 1V1 is the default (23-11-2026); MÁS MODOS lends the room screen of always for a while (LB.on=false)
 const lbMark=on=>{if(isTouch&&!LB.lite)store.set('lbOpen',on?Date.now():null);};
 document.addEventListener('visibilitychange',()=>{if(document.hidden)lbMark(false);else if(LB.vis)lbMark(true);});
 window.addEventListener('pagehide',()=>lbMark(false));
@@ -15343,10 +15310,12 @@ function lbInviteText(){return '¡Te reto a un duelo 1 contra 1 en Sniper Duel! 
 async function lbCopy(text,ok){try{await navigator.clipboard.writeText(text);lbMsg(ok);}catch(e){lbMsg('COPIA ESTO: '+text,true);}}
 if(LB.on){
   // INICIO › MULTIJUGADOR 1V1 opens the room screen at once (no need to press JUGAR)
-  document.querySelectorAll('#m2 .m2Mode[data-sel=online]').forEach(b=>b.addEventListener('click',()=>{if(!LB.on)return;netServerUrl();mpShow(NET.N&&NET.code?'lobby':'home');mpMsg('');}));
+  document.querySelectorAll('#m2 .m2Mode[data-sel=online]').forEach(b=>b.addEventListener('click',()=>{if(!LB.on&&NET.N&&NET.code)return;LB.on=true;netServerUrl();mpShow(NET.N&&NET.code?'lobby':'home');mpMsg('');}));
   $('#lbName').value=$('#mpName').value;
   $('#lbName').addEventListener('input',()=>{$('#mpName').value=$('#lbName').value;});
   $('#lbBack').addEventListener('click',()=>{SFX.ui();if(LB.view==='lobby'){netLeave(false);return;}lbHide();$('#menu').hidden=false;});
+  // MÁS MODOS: the room screen of always, with TODOS CONTRA TODOS, EQUIPOS (up to 6) and server bots (owner, 23-11-2026)
+  $('#lbMore').addEventListener('click',()=>{SFX.ui();$('#mpName').value=$('#lbName').value;lbHide();LB.on=false;mpShow('home');mpMsg('');});
   // one room at a time: a second tap while it is being created does nothing (no duplicated rooms)
   $('#lbCreate').addEventListener('click',async()=>{if(LB.busy||(NET.want&&NET.code))return;LB.busy=true;$('#lbCreate').disabled=true;$('#mpName').value=$('#lbName').value;
     try{await netCreate();}finally{LB.busy=false;$('#lbCreate').disabled=false;}});
@@ -15428,13 +15397,12 @@ function gsReset(){if(!GS.saved)return;GS.draft=gsClone(GS.saved);gsApply(GS.sav
 // ---- the accessories: only what exists. A model's own bipod or grip is part of its 3D model (looks only)
 const GS_BIPOD={ultima:1,sahara:1};
 // the other categories (at: in front of which built-in one); items: what is shown, or none = PRÓXIMAMENTE
-const GS_CATS=[{k:'assault',name:'ASALTO',sub:'FUSIL AUTOMÁTICO',at:'rifle'},{k:'smg',name:'SUBFUSIL',sub:'CORTA DISTANCIA',at:'rifle'},
-  {k:'shotgun',name:'ESCOPETA',sub:'PRINCIPAL · se elige en JUGAR',at:'knife',items:[{id:'furia12',name:'FURIA 12',by:'Sniper Duel',src:'FURIA12',title:'ESCOPETA DE CORREDERA · MODELO DEL JUEGO · 9 PERDIGONES'}]},
-  {k:'pistol',name:'PISTOLA',sub:'SECUNDARIA · tecla 2',at:'knife',items:[{id:'vibora9',name:'VÍBORA 9',by:'Sniper Duel',src:'VIBORA9',title:'PISTOLA SEMIAUTOMÁTICA · MODELO DEL JUEGO'}]},
-  {k:'grenade',name:'GRANADAS',sub:'LANZABLES',at:null}];
+const GS_CATS=[
+  {k:'shotgun',name:'ESCOPETA',sub:'PRINCIPAL',at:'knife',items:[{id:'furia12',name:'FURIA 12',by:'Sniper Duel',tag:'CORREDERA',src:'FURIA12',title:'ESCOPETA DE CORREDERA · 9 PERDIGONES'}]},
+  {k:'pistol',name:'PISTOLA',sub:'SECUNDARIA',at:'knife',items:[{id:'vibora9',name:'VÍBORA 9',by:'Sniper Duel',tag:'SEMIAUTOMÁTICA',src:'VIBORA9',title:'PISTOLA SEMIAUTOMÁTICA'}]}];
 const gsCatItem=k=>{const C=GS_CATS.find(c=>c.k===k);return C&&C.items?C.items[0]:null;};
 const gsGun=()=>{const d=GS.draft,id=d?d.rifle:WSKIN.rifle,b=rifleCfgFor(id,false),sil=d?gsModelCfg(d,id).muzzle==='sil':silSaved(id);return sil?silCfg(b):b;};
-const GS_SOON='Por ahora es la única opción. Llegan modelos de este accesorio con efecto de verdad, primero contra bots.';
+const GS_SOON='';
 function gsCamos(){
   const own=(ACC.acc&&ACC.acc.inv&&ACC.acc.inv.items)||[];
   return SDItems.ITEMS.filter(it=>it.type==='camo'&&own.includes(it.id));
@@ -15443,13 +15411,13 @@ function gsAccList(){
   const d=GS.draft,c=gsModelCfg(d,d.rifle),O=SDMiras.get(c.mira);
   return [
     {k:'mira',name:'MIRA',val:O.name,sub:O.short,opts:()=>SDMiras.ORDER.map(id=>{const o=SDMiras.get(id);return {id,name:o.name,sub:o.short,img:d.rifle==='halcon'?miraImg(id):av('assets/miras/'+d.rifle+'/'+id+'.jpg?v='+BUILD_HASH)};}),
-      cur:c.mira,set:id=>{c.mira=id;},note:'Cada mira tiene un solo aumento (con dos dedos en el móvil). Se ve al momento en el rifle y es la que llevarás en la partida.'},
+      cur:c.mira,set:id=>{c.mira=id;},note:'Cada mira tiene un aumento fijo.'},
     {k:'mag',name:'CARGADOR',val:'ESTÁNDAR',sub:gsGun().mag+' BALAS',one:1,opts:()=>[{id:'std',name:'ESTÁNDAR',sub:gsGun().mag+' balas · recarga '+gsGun().reload.toFixed(2).replace('.',',')+' s'}],cur:'std',note:GS_SOON},
     {k:'bipod',name:'BÍPODE',val:GS_BIPOD[d.rifle]?'DEL MODELO':'SIN BÍPODE',sub:GS_BIPOD[d.rifle]?'solo aspecto':'—',one:1,
       opts:()=>[{id:'cur',name:GS_BIPOD[d.rifle]?'DEL MODELO':'SIN BÍPODE',sub:GS_BIPOD[d.rifle]?'parte del modelo 3D':'este modelo no lo trae'}],cur:'cur',note:GS_SOON},
     {k:'muzzle',name:'SILENCIADOR',val:c.muzzle==='sil'?'PUESTO':'NINGUNO',sub:c.muzzle==='sil'?'bala −8 %':'—',
       opts:()=>[{id:'none',name:'NINGUNO',sub:'se oye lejos · fogonazo'},{id:'sil',name:'SILENCIADOR',sub:'sin fogonazo · bala −8 %'}],cur:c.muzzle==='sil'?'sil':'none',set:id=>{c.muzzle=id;},
-      note:'Con SILENCIADOR: sin fogonazo, un tiro bajo que no dice de dónde viene y los bots solo lo oyen a menos de '+SIL.HEAR+' m (sin él, hasta '+SIL.HEAR_OPEN+' m). El precio: la bala sale un 8 % más lenta (más caída lejos). Contra bots y en el campo de tiro; en línea todavía no.'},
+      note:'Sin fogonazo y casi no se oye; la bala sale un 8 % más lenta. Contra bots y en el campo de tiro.'},
     {k:'grip',name:'EMPUÑADURA',val:'DEL MODELO',sub:'—',one:1,opts:()=>[{id:'model',name:'DEL MODELO',sub:'parte del modelo 3D'}],cur:'model',note:GS_SOON}
   ];
 }
@@ -15460,8 +15428,7 @@ function gsCamoA(){
   return {k:'camo',name:'CAMUFLAJE',val:cam?cam.name:'SIN CAMUFLAJE',sub:cam?SDItems.RARITY[cam.r].name:'acabado del modelo',camo:cam||null,
     opts:()=>[{id:'',name:'SIN CAMUFLAJE',sub:'el acabado del modelo'}].concat(gsCamos().map(it=>({id:it.id,name:it.name,sub:SDItems.RARITY[it.r].name,camo:it}))),
     cur,set:id=>{if(knife){(d.kcfg||(d.kcfg={}))[d.knife]={camo:id};}else gsModelCfg(d,d.rifle).camo=id;},
-    note:!ACC.acc?'Los camuflajes son de tu cuenta: entra en PERFIL › CUENTA para usarlos.'
-      :'Toca uno y se ve al momento en '+(knife?'la TÁCTICA':'el arma')+'; GUARDAR lo deja puesto. Tienes '+gsCamos().length+' de '+n+' (los demás salen en CAJAS).'};
+    note:!ACC.acc?'Entra con tu cuenta (PERFIL) para usar camuflajes.':'Tienes '+gsCamos().length+' de '+n+'. Los demás salen en CAJAS.'};
 }
 function gsPick(k){
   const A=!k?null:k==='camo'?gsCamoA():gsAccList().find(a=>a.k===k);if(!A)k=null;
@@ -15480,7 +15447,7 @@ function gsPick(k){
     else if(k==='camo'){const cv=document.createElement('canvas');cv.width=192;cv.height=108;const g=cv.getContext('2d');g.fillStyle='#16171a';g.fillRect(0,0,192,108);
       g.fillStyle='#8f949a';g.font='600 13px sans-serif';g.textAlign='center';g.fillText('ACABADO DEL MODELO',96,58);b.append(cv);}
     const nm=document.createElement('b');nm.textContent=o.name;const sm=document.createElement('small');sm.textContent=o.sub||'';b.append(nm,sm);
-    if(A.set)b.addEventListener('click',()=>{A.set(o.id);gsApply(GS.draft);audioInit();SFX.ui();gsPick(k);gsSync();});
+    if(A.set)b.addEventListener('click',()=>{A.set(o.id);GS.msgT=0;gsApply(GS.draft);audioInit();SFX.ui();gsPick(k);gsSync();});   // a new change: the old message («RESTAURADA…») goes
     else b.disabled=o.id!==A.cur;
     L.append(b);
   }
@@ -15495,22 +15462,22 @@ function gsStatsHTML(){
   if(M2.cat==='knife'){
     const K=SDGunStats.knifeSheet(SD_CONFIG.knives.tactica);
     if(GS.tab==='dmg')return '<table class="gsTbl"><tr><th>GOLPE</th><th>DAÑO</th><th>GOLPES PARA ELIMINAR</th></tr><tr><td>De frente</td><td>'+K.front+'</td><td>'+K.hits.front+'</td></tr><tr><td>Por la espalda</td><td>'+K.back+'</td><td>'+K.hits.back+'</td></tr></table>'+
-      '<p class="gsNote">Vida: '+K.hp+'. «Por la espalda» es a menos de 60° de su espalda. Los dos cuchillos (NAVAJA y TÁCTICA) son aspectos: mismas cifras.</p>';
+      '<p class="gsNote">Por la espalda: a menos de 60° de su espalda.</p>';
     const row=(l,v,s,p)=>'<div class="gsRow"><span>'+l+'</span><b>'+v+'</b>'+(p!=null?'<div class="gsBar"><i style="width:'+Math.round(Math.min(1,p)*100)+'%"></i></div>':'')+(s?'<small>'+s+'</small>':'')+'</div>';
-    return row('DAÑO',K.front+' · '+K.back,'de frente · por la espalda (vida '+K.hp+')',K.front/K.hp)+row('GOLPES POR MINUTO',K.rpm,'uno cada '+gsNum(K.interval,2)+' s')+
-      row('ALCANCE',gsNum(K.range,1)+' m','de tu cuerpo al suyo')+row('MOVILIDAD',gsNum(K.walk,2)+' m/s','+'+Math.round((K.moveMul-1)*100)+' % con el cuchillo en la mano · corriendo '+gsNum(K.sprint,1)+' m/s');
+    return row('DAÑO',K.front+' · '+K.back,'de frente · por la espalda',K.front/K.hp)+row('GOLPES POR MINUTO',K.rpm,'uno cada '+gsNum(K.interval,2)+' s')+
+      row('ALCANCE',gsNum(K.range,1)+' m','de tu cuerpo al suyo')+row('MOVILIDAD',gsNum(K.walk,2)+' m/s','corriendo '+gsNum(K.sprint,1)+' m/s');
   }
   {const C=GS_CATS.find(c=>c.k===M2.cat);if(C){
-    if(!C.items)return '<p class="gsNote">'+e(C.name)+': todavía no hay armas de esta categoría. Irán llegando aquí, con sus cifras reales.</p>';
+    if(!C.items)return '';
     const G=M2.cat==='shotgun'?SCFG:PCFG,S=SDGunStats.sheet(G),pel=G.pellets>1?' por perdigón ('+G.pellets+' por disparo)':'';
     if(GS.tab==='dmg'){let h='<table class="gsTbl"><tr><th>DIST.</th><th>CABEZA</th><th>TORSO</th><th>PIERNAS</th><th>VUELO</th></tr>';
       for(const r of S.table)h+='<tr><td>'+r.d+' m</td><td>'+r.head+'</td><td>'+r.torso+'</td><td>'+r.legs+'</td><td>'+r.ms+' ms</td></tr>';
-      return h+'</table><p class="gsNote">Daño'+e(pel)+' según la distancia (vida '+S.hp+'). Calculado con el mismo código que usa el servidor.</p>';}
+      return h+'</table>'+(pel?'<p class="gsNote">Daño'+e(pel)+'.</p>':'');}
     const row=(l,v,sb)=>'<div class="gsRow"><span>'+l+'</span><b>'+v+'</b>'+(sb?'<small>'+e(sb)+'</small>':'')+'</div>';
-    return '<p class="gsNote">'+e(M2.cat==='shotgun'?'La FURIA 12 se elige como arma principal en JUGAR (en lugar del rifle). Estas son sus cifras reales.':'La VÍBORA 9 la llevas siempre como secundaria (tecla 2). Estas son sus cifras reales.')+'</p>'+
+    return '<p class="gsNote">'+e(M2.cat==='shotgun'?'Arma principal: se elige en JUGAR, en lugar del rifle.':'Siempre la llevas como secundaria (tecla 2).')+'</p>'+
       row('DAÑO · CABEZA / TORSO / PIERNAS',S.dmg.head+' / '+S.dmg.torso+' / '+S.dmg.legs,'a 10 m'+pel)+row('CADENCIA',S.rpm+'/min')+row('CARGADOR',S.mag+'','balas')+
       row('RECARGA',gsNum(S.reload,2)+' s')+row('APUNTAR',gsNum(S.ads,2)+' s')+row('VELOCIDAD DE LA BALA',S.speed+' m/s')+row('ALCANCE',S.maxRange+' m')+row('MOVILIDAD',gsNum(S.walk,2)+' m/s','con ella en la mano');}}
-  const G=gsGun(),S=SDGunStats.sheet(G),H=SDGunStats.sheet(HALCON),own=G!==HALCON,silTxt=G.silenced?' Con SILENCIADOR: la bala sale un 8 % más lenta (en línea todavía no se usa).':'';
+  const G=gsGun(),S=SDGunStats.sheet(G),H=SDGunStats.sheet(HALCON),own=G!==HALCON,silTxt=G.silenced?' Con silenciador, la bala sale un 8 % más lenta (solo contra bots).':'';
   // the bars compare the 5 rifles (the longest bar is the best of them; for times, sway and recoil, the lowest)
   const pool=(BAL.on?Object.values(SD_CONFIG.rifles):[HALCON]).map(g=>SDGunStats.sheet(g));
   const mx=k=>Math.max(...pool.map(x=>x[k])),mn=k=>Math.min(...pool.map(x=>x[k]));
@@ -15521,30 +15488,28 @@ function gsStatsHTML(){
   if(GS.tab==='dmg'){
     let h='<table class="gsTbl"><tr><th>DIST.</th><th>CABEZA</th><th>TORSO</th><th>PIERNAS</th><th>CAÍDA</th><th>VUELO</th></tr>';
     for(const r of S.table)h+='<tr><td>'+r.d+' m</td><td>'+r.head+' <small>('+r.headShots+')</small></td><td>'+r.torso+' <small>('+r.torsoShots+')</small></td><td>'+r.legs+' <small>('+r.legsShots+')</small></td><td>'+(r.dropCm>0?r.dropCm+' cm':r.dropCm<0?'+'+(-r.dropCm)+' cm':'0')+'</td><td>'+r.ms+' ms</td></tr>';
-    return h+'</table><p class="gsNote">'+(own?'Cifras del '+e(S.name)+' contra bots y en el campo de tiro; en línea, las del HALCÓN R7. ':'')+'Entre paréntesis, disparos para eliminar (vida '+S.hp+'). El rifle no pierde daño con la distancia. CAÍDA: cuánto cae la bala por debajo de la retícula (puesta a cero a '+S.zero+' m; + es por encima). VUELO: lo que tarda en llegar. Calculado con el mismo código que usa el servidor.</p>';
+    return h+'</table><p class="gsNote">Entre paréntesis, disparos para eliminar. CAÍDA: bajo la retícula (puesta a cero a '+S.zero+' m).</p>';
   }
   const row=(l,v,s,p)=>'<div class="gsRow"><span>'+l+'</span><b>'+v+'</b>'+(p!=null?'<div class="gsBar"><i style="width:'+Math.round(Math.min(1,p)*100)+'%"></i></div>':'')+(s?'<small>'+e(s)+'</small>':'')+'</div>';
   const tS=SDGunStats.shotsToKill(S.dmg.torso),lS=SDGunStats.shotsToKill(S.dmg.legs),rec=g=>g.recoil?g.recoil.pitch:0;
-  const note=!BAL.on?'Con ?balance=0 los 5 modelos usan las cifras del HALCÓN R7 (las de antes). ?balance=1 vuelve a las de cada modelo.'
-    :G.name!==HALCON.name?'El '+S.name+' usa estas cifras contra bots y en el campo de tiro (tabla de prueba del 08-11). En línea todos llevan todavía el HALCÓN R7, hasta que el propietario lo apruebe. En color, la diferencia con el HALCÓN R7 (las cifras de antes): verde mejor, rojo peor. Las barras comparan los 5 rifles.'
-    :'El HALCÓN R7 es el rifle equilibrado y el de las partidas en línea. Los otros 4 modelos tienen sus propias cifras contra bots. Las barras comparan los 5 rifles.';
-  const role=(G.role||'').toUpperCase()+(G.silenced?' · SILENCIADOR':'')+(own?' · EN LÍNEA: HALCÓN R7':'');
-  return '<p class="gsNote">'+e(note+silTxt)+'</p>'+(role?'<p class="gsRole">'+e(role)+'</p>':'')+
-    row('DAÑO · CABEZA',S.dmg.head+dl(S.dmg.head,H.dmg.head),'elimina de '+shots(SDGunStats.shotsToKill(S.dmg.head))+' (vida '+S.hp+')',S.dmg.head/S.hp)+
+  const note=!BAL.on?'?balance=0: los 5 modelos con las cifras del HALCÓN R7.':own?'En color, frente al HALCÓN R7: verde mejor, rojo peor.':'';
+  const role=(G.role||'').toUpperCase()+(G.silenced?' · SILENCIADOR':'');
+  return (note||silTxt?'<p class="gsNote">'+e((note+silTxt).trim())+'</p>':'')+(role?'<p class="gsRole">'+e(role)+'</p>':'')+
+    row('DAÑO · CABEZA',S.dmg.head+dl(S.dmg.head,H.dmg.head),'elimina de '+shots(SDGunStats.shotsToKill(S.dmg.head)),S.dmg.head/S.hp)+
     row('DAÑO · TORSO / PIERNAS',S.dmg.torso+dl(S.dmg.torso,H.dmg.torso)+' / '+S.dmg.legs+dl(S.dmg.legs,H.dmg.legs),tS===lS?shots(tS)+' al cuerpo':shots(tS)+' al torso · '+shots(lS)+' a las piernas',S.dmg.torso/mx('torsoDmg'))+
-    row('CADENCIA',S.rpm+'/min'+dl(S.rpm,H.rpm),'un disparo cada '+gsNum(S.bolt,2)+' s (cerrojo)',S.rpm/mx('rpm'))+
-    row('CARGADOR',S.mag+dl(S.mag,H.mag),'balas por cargador',S.mag/mx('mag'))+
+    row('CADENCIA',S.rpm+'/min'+dl(S.rpm,H.rpm),'un disparo cada '+gsNum(S.bolt,2)+' s',S.rpm/mx('rpm'))+
+    row('CARGADOR',S.mag+dl(S.mag,H.mag),'balas',S.mag/mx('mag'))+
     row('RECARGA',gsNum(S.reload,2)+' s'+dl(S.reload,H.reload,2,'',true),'cargador vacío a listo',mn('reload')/S.reload)+
     row('APUNTAR',gsNum(S.ads,2)+' s'+dl(S.ads,H.ads,2,'',true),'de la cadera a la mira',mn('ads')/S.ads)+
-    row('VELOCIDAD DE LA BALA',S.speed+' m/s'+dl(S.speed,H.speed),'menos caída y menos espera a distancia · gravedad '+gsNum(S.gravity,1)+' m/s²',S.speed/mx('speed'))+
+    row('VELOCIDAD DE LA BALA',S.speed+' m/s'+dl(S.speed,H.speed),'más rápida, menos caída',S.speed/mx('speed'))+
     row('ALCANCE',S.maxRange+' m','puesta a cero a '+S.zero+' m',S.maxRange/mx('maxRange'))+
-    row('MOVILIDAD',gsNum(S.walk,2)+' m/s'+dl(S.walk,H.walk,2),'con el rifle en la mano · corriendo '+gsNum(S.sprint,1)+' · apuntando '+gsNum(S.adsWalk,2)+' m/s',S.walk/mx('walk'))+
-    row('BALANCEO DE LA MIRA',gsNum(S.sway*1000,1)+' mrad'+dl(S.sway*1000,H.sway*1000,1,'',true),'lo que se mueve la retícula con el visor: menos es más estable',mn('sway')/S.sway)+
-    row('RETROCESO',Math.round(rec(G)/rec(HALCON)*100)+' %'+dl(Math.round(rec(G)/rec(HALCON)*100),100,0,'',true),'golpe de la cámara al disparar (solo se ve: la bala sale donde apuntas)',mn('recoil')/S.recoil);
+    row('MOVILIDAD',gsNum(S.walk,2)+' m/s'+dl(S.walk,H.walk,2),'corriendo '+gsNum(S.sprint,1)+' · apuntando '+gsNum(S.adsWalk,2)+' m/s',S.walk/mx('walk'))+
+    row('BALANCEO DE LA MIRA',gsNum(S.sway*1000,1)+' mrad'+dl(S.sway*1000,H.sway*1000,1,'',true),'menos es más estable',mn('sway')/S.sway)+
+    row('RETROCESO',Math.round(rec(G)/rec(HALCON)*100)+' %'+dl(Math.round(rec(G)/rec(HALCON)*100),100,0,'',true),'solo visual: la bala sale donde apuntas',mn('recoil')/S.recoil);
 }
 function gsPasHTML(){
   const on=PEN.hard;
-  return '<em>'+(on?'ACTIVA · TAMBIÉN EN LÍNEA':'PASIVA · CONTRA BOTS Y EN LÍNEA')+'</em><b>BALA DURA</b><small>Atraviesa una pared de hasta 50 cm (la mitad de la columna de ARENA), del material que sea: del 70 % del daño con una fina al 40 % con una de 50 cm. Nunca dos paredes, sacos, edificios macizos ni el borde del mapa. Sin ella, cualquier rifle ya atraviesa cajas, madera fina y chapa (75 % del daño). Un impacto a través de una pared no da marcador.</small>'+
+  return '<em>'+(on?'ACTIVA · TAMBIÉN EN LÍNEA':'PASIVA · CONTRA BOTS Y EN LÍNEA')+'</em><b>BALA DURA</b><small>Atraviesa una pared de hasta 50 cm, con menos daño cuanto más gruesa (del 70 % al 40 %). Nunca dos paredes ni edificios macizos.</small>'+
     '<button type="button" class="gsPasT" data-pas="dura" aria-pressed="'+on+'">'+(on?'QUITAR':'ACTIVAR')+'</button>';
 }
 // ---- what is chosen, on screen
@@ -15556,9 +15521,9 @@ function gsSync(){
   document.querySelectorAll('#gsKnives .gsIt').forEach(b=>{b.setAttribute('aria-pressed',String(M2.cat==='knife'&&b.dataset.ws===d.knife));b.querySelector('em').hidden=b.dataset.ws!==s.knife;});
   if(rifle){const w=WSKINS.rifle[d.rifle],c=gsModelCfg(d,d.rifle),O=SDMiras.get(c.mira);
     setText($('#gsName'),d.rifle==='halcon'?'HALCÓN R7':BAL.on?w.name:'HALCÓN R7 · '+w.name);
-    setText($('#gsSub'),'RIFLE DE CERROJO · '+(d.rifle==='halcon'?'MODELO DEL JUEGO':'MODELO DE '+w.by.toUpperCase())+' · '+(O.name.includes(O.short)?O.name:O.name+' '+O.short));}
+    setText($('#gsSub'),'RIFLE DE CERROJO · '+w.tag+' · '+(O.name.includes(O.short)?O.name:O.name+' '+O.short));}
   else if(Cc){setText($('#gsName'),ci?ci.name:Cc.name);setText($('#gsSub'),ci?ci.title:Cc.sub+' · PRÓXIMAMENTE');}
-  else{const k=WSKINS.knife[d.knife];setText($('#gsName'),k.name);setText($('#gsSub'),'ARMA DE MANO · CUERPO A CUERPO · '+(d.knife==='navaja'?'MODELO DEL JUEGO':'MODELO DE '+k.by.toUpperCase()));}
+  else{const k=WSKINS.knife[d.knife];setText($('#gsName'),k.name);setText($('#gsSub'),'CUERPO A CUERPO · '+k.tag);}
   // the accessory slots (the rifle's; a knife has none)
   const acc=$('#gsAcc');acc.hidden=!rifle;
   if(rifle){const L=gsAccList();
@@ -15585,7 +15550,7 @@ function gsInit(){
   old.dataset.pane='armasOld';old.hidden=true;pane.dataset.pane='armas';
   const item=(slot,id)=>{const w=WSKINS[slot][id],b=document.createElement('button');b.type='button';b.className='gsIt';b.dataset.ws=id;
     b.innerHTML='<img alt="" loading="lazy"><span><b></b><small></small><em hidden>EQUIPADO</em></span>';b.querySelector('img').src=wsImg(slot,id);
-    b.querySelector('b').textContent=w.name;b.querySelector('small').textContent=w.by;
+    b.querySelector('b').textContent=w.name;b.querySelector('small').textContent=w.tag;
     b.addEventListener('click',()=>{audioInit();SFX.ui();M2.cat=slot;if(slot==='rifle')GS.draft.rifle=id;else GS.draft.knife=id;gsApply(GS.draft);gsPick(GS.pick==='camo'?'camo':null);gsSync();m2Sync();});
     return b;};
   for(const id in WSKINS.rifle){if(!ARMAS_ON&&id!=='halcon')continue;$('#gsRifles').append(item('rifle',id));}
@@ -15598,10 +15563,9 @@ function gsInit(){
    for(const C of GS_CATS){const h=document.createElement('div');h.className='gsCatH';h.dataset.gcat=C.k;
      const hb=document.createElement('b');hb.textContent=C.name;const hs=document.createElement('small');hs.textContent=C.sub;h.append(hb,hs);
      const box=document.createElement('div');box.className='gsItems';box.dataset.gitems=C.k;
-     if(!C.items){const so=document.createElement('div');so.className='gsSoon';so.textContent='PRÓXIMAMENTE';box.append(so);}
-     else for(const it of C.items){const b=document.createElement('button');b.type='button';b.className='gsIt';b.dataset.ws=it.id;b.dataset.gc=C.k;
+     for(const it of C.items||[]){const b=document.createElement('button');b.type='button';b.className='gsIt';b.dataset.ws=it.id;b.dataset.gc=C.k;
        b.innerHTML='<img alt="" loading="lazy"><span><b></b><small></small></span>';b.querySelector('img').src=av('assets/armas/'+it.id+'/retrato.jpg?v='+BUILD_HASH);
-       b.querySelector('b').textContent=it.name;b.querySelector('small').textContent=it.by;
+       b.querySelector('b').textContent=it.name;b.querySelector('small').textContent=it.tag;
        b.addEventListener('click',()=>{audioInit();SFX.ui();M2.cat=C.k;gsPick(null);gsSync();m2Sync();});box.append(b);}
      const at=C.at==='rifle'?hR:C.at==='knife'?hK:null;list.insertBefore(h,at);list.insertBefore(box,at);}}
   document.querySelectorAll('#gsTabs button').forEach(b=>b.addEventListener('click',()=>{audioInit();SFX.ui();GS.tab=b.dataset.gt;gsSync();}));
@@ -16157,6 +16121,8 @@ function cgUi(now){
     :bad?bad+(bad>1?' cosas no han podido cargar':' cosa no ha podido cargar')+': el juego usa su versión sencilla y sigue.':'Preparando el juego para que no haya esperas en el menú ni al empezar la partida.');
   const sk=$('#cgSkip');setHidden(sk,!SDCarga.canSkip({done:CG.done,min:SDCarga.minReady(P,st),elapsed:now-CG.t0}));setText(sk,SDCarga.gpuDone(P,st)?'ENTRAR':'ENTRAR YA');
 }
+// a match starts while the loading screen is still up (an invitation link, a quick tap): it goes, as with ENTRAR YA
+function cgOff(){try{if(CG.cover&&!CG.done){CG.skipped=true;CG.skipAt=Math.round(performance.now());cgHide();}}catch(e){}}
 function cgHide(){const el=$('#carga');CG.cover=false;CG.fade=false;el.classList.add('out');setTimeout(()=>{el.hidden=true;},380);}
 function cgTick(){
   const now=performance.now(),P=CG.P,st=CG.st;

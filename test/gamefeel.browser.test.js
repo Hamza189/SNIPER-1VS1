@@ -10,6 +10,7 @@
      disparan con retroceso y cerrojo, caen sin girar de golpe y no rebotan sobre la animación
    Run: node test/gamefeel.browser.test.js */
 'use strict';
+const cg1 = u => /[?&]carga=/.test(u) ? u : u + (u.includes('?') ? '&' : '?') + 'carga=1';   // (23-11-2026) these checks run without the loading screen (it has its own test)
 const { chromium } = require('playwright');
 const ss = require('../tools/static-server.js');
 let pass = 0, fail = 0;
@@ -25,7 +26,7 @@ function check(name, cond, info) { if (cond) { pass++; console.log('  ok   ' + n
     const p = await ctx.newPage(), errs = [];
     p.on('pageerror', e => errs.push(e.message));
     p.on('console', m => { if (m.type() === 'error' && /shader|WebGLProgram|GLSL/i.test(m.text())) errs.push(m.text().slice(0, 200)); });
-    await p.goto(srv.url + q, { timeout: 180000 });
+    await p.goto(cg1(srv.url + q), { timeout: 180000 });
     await p.waitForFunction(() => window.__SD && __SD.WORLDS, null, { timeout: 180000 });
     await p.evaluate(() => { HTMLCanvasElement.prototype.requestPointerLock = function () {}; });
     return { ctx, p, errs };

@@ -31,7 +31,7 @@ const FAKE_GSI = `window.google={accounts:{id:{initialize(o){window.__gsi={id:o.
     await ctx.route(/fonts\.(googleapis|gstatic)\.com/, r => r.abort());
     await ctx.route('https://accounts.google.com/gsi/client', r => { asked.push(1); r.fulfill({ status: 200, contentType: 'text/javascript', body: FAKE_GSI }); });
     const p = await ctx.newPage(), errs = []; p.on('pageerror', e => errs.push(e.message));
-    await p.goto(web + '?perf=low&server=' + encodeURIComponent('http://localhost:' + port));
+    await p.goto(web + '?carga=1&perf=low&server=' + encodeURIComponent('http://localhost:' + port));
     await p.waitForFunction(() => window.__SD && __SD.WORLDS, null, { timeout: 120000 });
     await p.evaluate(() => __SD.openProfile());
     return { ctx, p, errs, asked };

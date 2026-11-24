@@ -20,7 +20,7 @@ function check(name, cond, info) { if (cond) { pass++; console.log('  ok   ' + n
     await ctx.addInitScript(() => { try { localStorage.setItem('sniperduel_settings', JSON.stringify({ quality: 'medio', v: 3 })); localStorage.setItem('sniperduel_skin', '"militar"'); } catch (e) {} });
     const p = await ctx.newPage(), errs = [];
     p.on('pageerror', e => errs.push(e.message));
-    await p.goto(srv.url + '?vm=1&pj=pro');
+    await p.goto(srv.url + '?carga=1&vm=1&pj=pro');
     await p.waitForFunction(() => window.__SD && __SD.WORLDS, null, { timeout: 120000 });
     await p.evaluate(() => { document.querySelector('canvas').requestPointerLock = () => Promise.reject(new Error('sin captura')); __SD.setDuelLethal(false); __SD.setMode('duel'); __SD.setOffMap('arena'); __SD.startMatch(); });
     await p.waitForTimeout(800);
@@ -56,7 +56,7 @@ function check(name, cond, info) { if (cond) { pass++; console.log('  ok   ' + n
     await mc.addInitScript(() => { try { localStorage.setItem('sniperduel_settings', JSON.stringify({ quality: 'medio', v: 3 })); } catch (e) {} });
     const m = await mc.newPage(), merrs = [];
     m.on('pageerror', e => merrs.push(e.message));
-    await m.goto(srv.url + '?vm=1&pj=pro');
+    await m.goto(srv.url + '?carga=1&vm=1&pj=pro');
     await m.waitForFunction(() => window.__SD && __SD.WORLDS, null, { timeout: 120000 });
     await m.evaluate(() => { __SD.setDuelLethal(false); __SD.setMode('duel'); __SD.setOffMap('arena'); __SD.startMatch(); });
     await m.waitForTimeout(800);

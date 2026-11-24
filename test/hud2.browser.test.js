@@ -10,6 +10,7 @@
      accepted and hits
    Run: node test/hud2.browser.test.js */
 'use strict';
+const cg1 = u => /[?&]carga=/.test(u) ? u : u + (u.includes('?') ? '&' : '?') + 'carga=1';   // (23-11-2026) these checks run without the loading screen (it has its own test)
 const { chromium } = require('playwright');
 const ss = require('../tools/static-server.js');
 const { startServer } = require('../server/node.js');
@@ -26,7 +27,7 @@ async function page(b, url, opts) {
   if (opts.storage) await ctx.addInitScript(s => { for (const k in s) localStorage.setItem(k, JSON.stringify(s[k])); }, opts.storage);
   const p = await ctx.newPage(), errs = [];
   p.on('pageerror', e => errs.push(e.message));
-  await p.goto(url);
+  await p.goto(cg1(url));
   await p.waitForFunction(() => window.__SD && __SD.WORLDS, null, { timeout: 120000 });
   await p.evaluate(() => { document.querySelector('canvas').requestPointerLock = () => Promise.reject(new Error('test')); });   // never grab the real mouse
   return { ctx, p, errs };
@@ -51,7 +52,7 @@ function fingers(cdp) {
 (async () => {
   const srv = await ss.start();
   const b = await chromium.launch({ args: ARGS });
-  const base = srv.url + '?perf=low';
+  const base = srv.url + '?carga=1&lobby=1&perf=low';
   try {
     console.log('\nCON ?hud=1 (el HUD anterior; sin bandera es el HUD 2 desde el 28-10)');
     { const { ctx, p } = await page(b, base);

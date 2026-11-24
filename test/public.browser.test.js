@@ -14,7 +14,7 @@ async function until(p, fn, arg, ms) { try { await p.waitForFunction(fn, arg, { 
   const errors = [];
   const open = async q => { const ctx = await browser.newContext({ viewport: { width: 480, height: 270 } }); const p = await ctx.newPage();
     p.on('pageerror', e => errors.push(e.message)); p.on('console', m => { if (m.type() === 'error' && !/favicon|fonts/.test(m.text())) errors.push(m.text()); });
-    await p.goto(page0 + '?perf=low' + (q || ''), { waitUntil: 'load' }); await p.waitForFunction(() => window.__SD, null, { timeout: 20000 }); return p; };
+    await p.goto(page0 + '?lobby=1&carga=1&perf=low' + (q || ''), { waitUntil: 'load' }); await p.waitForFunction(() => window.__SD, null, { timeout: 20000 }); return p; };
   try {
     console.log('\nPÁGINA PÚBLICA + SERVIDOR PÚBLICO: ' + page0);
     const A = await open('');

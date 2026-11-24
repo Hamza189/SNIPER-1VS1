@@ -7,6 +7,7 @@
    - el ARSENAL enciende y apaga BALA DURA (se recuerda); ?pen=0 lo apaga todo
    Run: node test/pen.browser.test.js      env GPU=0: WebGL por software */
 'use strict';
+const cg1 = u => /[?&]carga=/.test(u) ? u : u + (u.includes('?') ? '&' : '?') + 'carga=1';   // (23-11-2026) these checks run without the loading screen (it has its own test)
 let chromium;
 try { ({ chromium } = require('playwright')); } catch (e) { console.log('\nPENETRACIÓN: playwright no está instalado, se omite'); process.exit(0); }
 const ss = require('../tools/static-server.js');
@@ -19,7 +20,7 @@ const check = (n, c, i) => { (c ? pass++ : fail++); console.log((c ? '  ok   ' :
     const ctx = await b.newContext({ viewport: { width: 1280, height: 720 } });
     await ctx.route(/fonts\.(googleapis|gstatic)\.com/, r => r.abort());
     const p = await ctx.newPage(), errs = []; p.on('pageerror', e => errs.push(e.message));
-    const boot = async q => { await p.goto(srv.url + (q || ''), { timeout: 180000 }); await p.waitForFunction(() => window.__SD && __SD.M2 && __SD.M2.room && __SD.VMA.ready, null, { timeout: 180000 }); };
+    const boot = async q => { await p.goto(cg1(srv.url + (q || '')), { timeout: 180000 }); await p.waitForFunction(() => window.__SD && __SD.M2 && __SD.M2.room && __SD.VMA.ready, null, { timeout: 180000 }); };
     await boot();
     // a match against bots on that map, and a helper: one rifle bullet at a bot hidden right behind box m
     const setup = map => p.evaluate(async map => {

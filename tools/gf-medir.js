@@ -31,7 +31,7 @@ const stats = a => { const s = a.slice().sort((x, y) => x - y), q = f => s[Math.
     const p = await ctx.newPage(), errs = [];
     p.on('pageerror', e => errs.push(e.message));
     const q = '?prof=1' + URLX + (gs ? '&server=' + encodeURIComponent('http://127.0.0.1:' + gs.port) : '');
-    await p.goto(srv.url + (process.env.PAGE || "") + q, { timeout: 180000 });   // env PAGE=_antes.html: another build (git show HEAD:index.html > _antes.html)
+    await p.goto(srv.url + (process.env.PAGE || "") + q + (q.includes('?') ? '&' : '?') + 'lobby=1', { timeout: 180000 });   // env PAGE=_antes.html: another build (git show HEAD:index.html > _antes.html)
     await p.waitForFunction(() => window.__SD && __SD.WORLDS, null, { timeout: 180000 });
     await p.evaluate(() => { HTMLCanvasElement.prototype.requestPointerLock = function () {}; });
     if (!out.renderer) out.renderer = await p.evaluate(() => { const g = __SD.renderer.getContext(), e = g.getExtension('WEBGL_debug_renderer_info'); return e ? g.getParameter(e.UNMASKED_RENDERER_WEBGL) : '?'; });

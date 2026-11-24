@@ -25,7 +25,7 @@ function check(name, cond, info) { if (cond) { pass++; console.log('  ok   ' + n
     await ctx.addInitScript(() => { try { localStorage.setItem('sniperduel_settings', JSON.stringify({ quality: 'medio', v: 3 })); localStorage.setItem('sniperduel_diff', '1'); } catch (e) {} });
     const p = await ctx.newPage(), errs = [], bad = [];
     p.on('pageerror', e => errs.push(e.message)); p.on('response', r => { if (/\/assets\//.test(r.url()) && r.status() >= 400) bad.push(r.status() + ' ' + r.url()); });
-    await p.goto(srv.url + (process.env.PAGE || '') + '?vm=0&casa2v=2'); await p.waitForFunction(() => window.__SD && __SD.WORLDS && __SD.W, null, { timeout: 180000 });
+    await p.goto(srv.url + (process.env.PAGE || '') + '?carga=1&vm=0&casa2v=2'); await p.waitForFunction(() => window.__SD && __SD.WORLDS && __SD.W, null, { timeout: 180000 });
 
     console.log('\nMENÚS');
     const menu = await p.evaluate(() => ({ duel: !!document.querySelector('#mapSeg [data-map=casa2b]:not([hidden])'), online: !!document.querySelector('#mpMapSeg [data-map=casa2b]:not([hidden])'),
