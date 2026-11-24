@@ -23,25 +23,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Lo que carga el juego
-        run: |
-          mkdir _site
-          git ls-files -z | tar --null -T - -cf - | tar -xf - -C _site
-          cd _site
-          # never loaded by the page: documentation, tools, tests, workflow files, sources and previews
-          rm -rf docs tools test .github build wasm   # wasm/: the C++ sources (the page loads assets/wasm/*.wasm)
-          find ./assets/3d \( -path '*/preview/*' -o -path '*/src/*' \) -type f -delete   # only the 3D import packs' previews and sources
-          # (23-11-2026, release) assets/3d/imports holds the original 3D packs; the page only loads from these two. The rest
-          # (tests, previews, retired versions such as CASA ATLAS XL: ~100 MB) stays in the repository, not on the web
-          find ./assets/3d/imports -mindepth 1 -maxdepth 1 -type d ! -name '2026-10-12_p0_ground_pack_v2' ! -name '2026-10-18_casa_atlas' -exec rm -rf {} +
-          find . -type f \( -name '*.blend' -o -name '*.blend1' -o -name '*.exr' -o -name '*.target' -o -name '*.obj' -o -name '*.max' -o -name '*.mb' -o -name '*.py' -o -name '*.md' \) -delete
-          touch .nojekyll
-          du -sh . ; find . -type f | wc -l
-          # every assets/... path written literally in the page has to be there
-          missing=0
-          for f in $(grep -o "assets/[A-Za-z0-9_./-]*\.\(glb\|jpg\|png\|json\|ktx2\|webp\|mp3\|ogg\|wasm\)" index.html | grep -v 'ktx2' | sort -u); do   # the KTX2 files live in Cloudflare R2 (docs/R2.md)
-            [ -e "$f" ] || { echo "falta: $f"; missing=1; }
-          done
-          [ $missing -eq 0 ]
+        # (24-11-2026) the same script prepares Cloudflare Pages (project sniper-1vs1): one list for both sites, and no
+        # file above 25 MiB (tools/pagina-publica.sh)
+        run: bash tools/pagina-publica.sh _site
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:

@@ -6,6 +6,20 @@ Cada entrada dice qué se decidió o cambió, quién lo decidió, y el estado re
 Las decisiones anteriores al 18-10-2026 están resumidas en `SNIPER_DUEL_MASTER_CONTEXT.md` §4.
 Detalle de cada cambio (antes/después, medidas, cómo revertir): `docs/next-level/NEXT_LEVEL_CHANGELOG.md`.
 
+## 24-11-2026 — Cloudflare Pages: solo lo del juego, nunca más de 25 MiB
+El propietario, con el error de Cloudflare Pages (`cobblestone_02_nor_gl_4k.exr` pesa 31,1 MiB > 25 MiB): «arregla el
+error este de Cloudflare siempre». Preguntó si mudarse a Vercel: no (su plan gratis no permite uso comercial y se
+queda corto para un juego tan pesado); se sigue en GitHub Pages y Cloudflare Pages queda listo como segundo sitio.
+- **Script nuevo** `tools/pagina-publica.sh [carpeta]`: lo que antes hacía `pages.yml` (solo lo que carga el juego) y,
+  además, ningún archivo de más de 25 MiB. Si la página no lo carga, se deja fuera con un aviso; si lo carga, falla
+  (hay que pasarlo a R2). Tampoco sube `wrangler.toml`, `package.json`, `package-lock.json` ni `tsconfig.json`.
+- `.github/workflows/pages.yml` usa el mismo script: una sola lista para los dos sitios.
+- Medido en local: 258 MB, 703 archivos, ninguno > 20 MiB (Cloudflare admite 20 000 archivos y 25 MiB cada uno).
+  Probada la regla de los 25 MiB con archivos falsos de 26 MiB.
+- **Falta (propietario, en el panel):** Workers y Pages › `sniper-1vs1` › Configuración › Compilación: comando
+  `bash tools/pagina-publica.sh`, carpeta de salida `_site`; y «Reintentar implementación».
+- Estado: IMPLEMENTADO · PROBADO EN LOCAL · PENDIENTE DEL AJUSTE EN EL PANEL DE CLOUDFLARE.
+
 ## 24-11-2026 — Versiones antiguas borradas
 El propietario, a «¿borro también las versiones antiguas que solo siguen por banderas del enlace?»: «Sí, bórralas».
 - Copia de todo antes de borrar: etiqueta git `antes-de-limpiar-2026-11-24` (en GitHub).
@@ -238,7 +252,7 @@ lo de por defecto en el móvil. Detalle: `docs/KTX2.md`.
 | Multiplataforma (web + .exe + iPhone + Android) y monetización cosmética — plan en `SNIPER_DUEL_ROADMAP.md` | FUTURO |
 | Subir de 60 a 120–144 FPS en PC (dificultad media; en el navegador lo limita la frecuencia de la pantalla) | FUTURO |
 | Gráficos de CASA ATLAS XL, poco a poco (cuando haya uso de Codex) | APARCADO |
-| Cloudflare Pages `sniper-1vs1`: falla porque un original pesa 31 MiB (> 25 MiB); arreglo: comando de compilación en el panel | APARCADO |
+| Cloudflare Pages `sniper-1vs1`: el script `tools/pagina-publica.sh` ya existe (24-11); falta poner en el panel el comando `bash tools/pagina-publica.sh` y la salida `_site` | PENDIENTE DEL PROPIETARIO |
 | Armas clásicas como aspectos opcionales | SIN EMPEZAR |
 
 ### Hecho y publicado (18–19 de octubre de 2026)
