@@ -8,6 +8,9 @@ Reparto del trabajo:
 
 Ningún modelo entra en el juego sin pasar antes por `tools/validate-glb.js`.
 
+**Cómo debe verse** (color base, PBR, desgaste, la luz con la que se juzga; 25-11-2026): `docs/GUIA-DE-ESTILO.md`, y
+`node tools/estilo-check.js modelo.glb` antes de integrarlo.
+
 ## Caja ATLAS DROP (CAJAS Y OBJETOS, 10-11-2026)
 - `assets/caja/atlas_drop.glb` (546 KB, 23 mallas, 5 300 triángulos, animaciones `Abrir` y `Cerrar`). Fuente:
   `tools/caja/modelo.js` (geometría por código), exportada con `node tools/caja/exportar.js` (Three.js r128 del juego y

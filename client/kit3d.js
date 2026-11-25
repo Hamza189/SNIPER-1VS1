@@ -54,6 +54,19 @@ const LOOK = {
   pebbles:    { tex: 'pebbles', tile: 1.0, r: 0.8, n: 0.9, col: 0xffffff },
 };
 const TINT = new Set(Object.keys(LOOK).filter(k => LOOK[k].tint));
+// GUÍA DE ESTILO (25-11-2026, docs/GUIA-DE-ESTILO.md §8), with ?estilo=1: metal 0 or 1 (what is painted is paint), real
+// metal with a reflection, clay rougher, nothing darker than 25 in sRGB. applyStyle() before any material is made
+const STYLE = {
+  iron:  { m: 0, r: 0.6 },              // painted wrought iron (railings, lamp posts)
+  metal: { m: 0, r: 0.5 },              // painted sheet
+  zinc:  { m: 1, r: 0.45, env: 0.6 },   // galvanised: a metal, so it needs the sky's reflection
+  paint: { m: 0, r: 0.62 },             // old car paint
+  glass: { m: 0 },
+  water: { m: 0 },
+  tile:  { r: 0.8 },                    // fired clay
+  dark:  { col: 0x221c16 },             // the darkest a base colour may be
+};
+function applyStyle() { for (const k in STYLE) if (LOOK[k]) Object.assign(LOOK[k], STYLE[k]); return Object.keys(STYLE).length; }
 
 function material(T, name, ctx) {
   ctx = ctx || {};
@@ -203,6 +216,6 @@ function merge(T, kit, list, ctx, regionOf) {
   return { meshes, tris };
 }
 
-const KIT3D = { LOOK, TINT, material, load, place, merge };
+const KIT3D = { LOOK, TINT, STYLE, applyStyle, material, load, place, merge };
 if (typeof module !== 'undefined' && module.exports) module.exports = KIT3D; else root.KIT3D = KIT3D;
 })(typeof window !== 'undefined' ? window : globalThis);

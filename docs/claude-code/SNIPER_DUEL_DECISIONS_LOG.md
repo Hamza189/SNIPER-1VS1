@@ -6,6 +6,17 @@ Cada entrada dice qué se decidió o cambió, quién lo decidió, y el estado re
 Las decisiones anteriores al 18-10-2026 están resumidas en `SNIPER_DUEL_MASTER_CONTEXT.md` §4.
 Detalle de cada cambio (antes/después, medidas, cómo revertir): `docs/next-level/NEXT_LEVEL_CHANGELOG.md`.
 
+## 25-11-2026 — Gráficos tipo CoD/PUBG: fase 3, una sola dirección de arte (`?estilo=1`)
+- **Guía** `docs/GUIA-DE-ESTILO.md`: la luz con la que se juzga todo, márgenes de color base por superficie (nunca 0 ni
+  255; saturación máxima), tabla PBR (metal 0 o 1, rugosidades), desgaste, densidad de texel y una lista para pegar en
+  los encargos a ChatGPT/Meshy.
+- **Comprobador** `node tools/estilo-check.js [modelo.glb]`: avisa de lo que se sale de la guía (en `npm test` para
+  `KIT3D.LOOK` con la guía aplicada).
+- **Materiales**: con `?estilo=1`, `KIT3D.STYLE` corrige los 7 de `KIT3D.LOOK` que no la seguían (hierro, chapa,
+  zinc, pintura, vidrio, agua, el negro) y el hierro y el vidrio de la casa E10. Cambia el 1–3 % de los píxeles;
+  mismas llamadas y triángulos.
+- **Estado**: IMPLEMENTADO · PROBADO EN NAVEGADOR · PENDIENTE DE QUE EL PROPIETARIO LO VEA con `?estilo=1`.
+
 ## 25-11-2026 — Gráficos tipo CoD/PUBG: fase 2, posprocesado por calidad (`?post=1`)
 - **Qué**: `client/post.js`, hecho a mano con `ShaderMaterial` de Three.js r128 (ninguna librería nueva). ALTO: SSAO
   (media resolución en PC, un tercio en el móvil; solo la escena, el arma no), bloom en dos tamaños, FXAA y corrección

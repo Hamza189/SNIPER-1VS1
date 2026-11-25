@@ -1850,6 +1850,11 @@ const PIC=(()=>{let o={};try{o=store.get('settings',null)||{};}catch(e){}
    removed on 24-11-2026 (owner: «sí, bórralas»); the server keeps its map 'pueblo' for pages of before. */
 const PU4=true,P3=true;
 const P4ON=typeof SDPueblo4!=='undefined';
+/* GUÍA DE ESTILO (25-11-2026, docs/GUIA-DE-ESTILO.md): los materiales del pueblo que no seguían la guía (metal a medias,
+   el negro más oscuro) con sus valores nuevos. En prueba: ?estilo=1 (se recuerda; ?estilo=0 lo quita). Antes de que se
+   cree ningún material del pueblo. */
+const ESTILO_ON=typeof KIT3D!=='undefined'&&(()=>{const q=(location.search.match(/[?&]estilo=([01])\b/)||[])[1];if(q)store.set('estilo',q==='1');return !!store.get('estilo',false);})();
+if(ESTILO_ON)KIT3D.applyStyle();
 const LOOK={exp:0.95,fog:P4ON?0xd8dad6:0xdcd6c8,sun:0xfff0d8,sunI:P4ON?3.2:3.0,sunPos:[-45,60,-30],hemiSky:0xc4d8f0,hemiGround:0xc9a684,hemiI:P4ON?0.92:1.0,
     sky:{top:0x5b8fcb,mid:0x9ec2e2,hor:0xe9e4d6,glow:0xfff2d6}};
 const TONE={exposure:LOOK.exp};renderer.toneMappingExposure=TONE.exposure;
@@ -8517,6 +8522,9 @@ function e10Setup(g){
     if(low&&m.normalMap){m.normalMap=null;}
     for(const t of [m.map,m.normalMap])if(t)t.anisotropy=Math.min(aniso,renderer.capabilities.getMaxAnisotropy?renderer.capabilities.getMaxAnisotropy():1);
     if(ENV&&/vidrio|hierro/.test(m.name)){m.envMap=ENV;m.envMapIntensity=/vidrio/.test(m.name)?0.55:0.35;}
+    // ?estilo=1 (docs/GUIA-DE-ESTILO.md): metal 0 o 1 — su hierro va pintado (0,82 → 0) y el vidrio no es metal (0,15 → 0)
+    if(ESTILO_ON&&/hierro/.test(m.name)){m.metalness=0;m.roughness=0.6;}
+    if(ESTILO_ON&&/vidrio/.test(m.name)){m.metalness=0;m.roughness=Math.min(m.roughness,0.08);}
     m.needsUpdate=true;}
   // opaque interior volume just behind the glass (0.36 m inside the collision box): the delivered shell is hollow
   // and some openings have gaps, so without it you can see through the building where bullets cannot pass
