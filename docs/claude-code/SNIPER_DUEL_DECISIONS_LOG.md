@@ -6,6 +6,26 @@ Cada entrada dice qué se decidió o cambió, quién lo decidió, y el estado re
 Las decisiones anteriores al 18-10-2026 están resumidas en `SNIPER_DUEL_MASTER_CONTEXT.md` §4.
 Detalle de cada cambio (antes/después, medidas, cómo revertir): `docs/next-level/NEXT_LEVEL_CHANGELOG.md`.
 
+## 25-11-2026 — Gráficos tipo CoD/PUBG sin cambiar de motor: fase 1, iluminación horneada (`?lm=1`)
+Encargo (24-11, de la sesión principal en nombre del propietario): cinco mejoras en orden, una fase y un commit cada una,
+todo detrás de una bandera hasta que el propietario lo vea. Fase 1 hecha:
+- **Qué**: Blender (Cycles, en la GTX 1050 Ti) hornea para el PUEBLO oclusión ambiental (rincones, jambas, aleros, suelo
+  junto a las paredes), «cuánto cielo ve» cada punto (el interior de las casas en penumbra) y la sombra del sol, en un
+  atlas de 2048 (`assets/lightmaps/`). Lo reciben las paredes, tejados y suelo del pueblo y las 8 casas por dentro y
+  por fuera (52 mallas, segundo juego de UV); el kit hace sombra sobre ellas.
+- **Primero una casa** (ENCALADA, `--solo encalada`) y luego todo el pueblo, como pedía el encargo.
+- **BAJO gana sombras del sol** sin coste, y en MEDIO/ALTO las sombras siguen más allá de 58 m (donde la de tiempo real
+  se apagaba). Cerca manda la de tiempo real, como siempre.
+- **Coste medido**: mismas llamadas y triángulos (ALTO y BAJO); 60 FPS con y sin en la GTX 1050 Ti; 1,9 MB de imagen y
+  0,5 MB de uv2; ~21 MB de GPU. iPhone: PENDIENTE.
+- **Fallos encontrados por el camino** (documentados en `docs/ILUMINACION-HORNEADA.md`): el horneado «SHADOW» de Blender
+  5.2 no da 0 en sombra (se hornea luz directa ÷ N·L); el margen de Blender no se aplicaba (relleno propio); el suelo
+  está en el plano de la arena (2 cm de separación); las fachadas no son volúmenes cerrados (se hornean también las
+  cajas de sombra de los edificios); manchas junto a las contraventanas (las piezas finas no hacen oclusión).
+- Herramientas: `tools/lightmap/` (dump, pack, bake, finish, check, probe). Prueba: `test/lightmap.test.js` (12).
+- Nada de colisiones, balas ni servidor: `core/mapdata.js` sin tocar.
+- **Estado**: IMPLEMENTADO · PROBADO EN NAVEGADOR · PENDIENTE DE QUE EL PROPIETARIO LO VEA (PC e iPhone) con `?lm=1`.
+
 ## 24-11-2026 — Motor: las mallas que solo usan las balas, fuera del recorrido de cada fotograma
 El propietario: «continua mejorando rendimiento y graficos y todo, o de pasarlo a C». Medido antes de tocar nada (partida
 sin conexión con bots, `docs/claude-code/ENGINE_NEXT_GEN_INFORME.md` §8):
@@ -202,6 +222,7 @@ lo de por defecto en el móvil. Detalle: `docs/KTX2.md`.
 ### Siguiente prioridad
 | Tarea | Quién la desbloquea | Estado |
 |---|---|---|
+| **GRÁFICOS TIPO CoD/PUBG** (25-11) — ver el PUEBLO con `?lm=1` (luz horneada) en el PC y en el iPhone: interior de las casas en penumbra, rincones y aleros más oscuros, sombras a lo lejos y en BAJO; decir si pasa a ser lo de por defecto (`?lm=0` lo quita). Siguen las fases 2–5 (`?post=1`, `?estilo=1`, detalle, texturas por distancia) | Propietario | PENDIENTE DE VALIDACIÓN |
 | **PANTALLA DE CARGA** (19-11) — abrir `https://hamza189.github.io/SNIPER-1VS1/?carga=2` en el iPhone (horizontal), en Android y en el PC: ver la barra llegar al 100 %, que el sonido salga al tocar, ENTRAR YA si tarda, y que Safari no recargue al empezar una partida. Decir si pasa a ser lo de por defecto (`docs/CARGA.md`) | Propietario | PUBLICADO TRAS BANDERA · PENDIENTE DE VALIDACIÓN EN IPHONE |
 | **PUEBLO 4.0** (integrado el 17-11, rama `pueblo4`) — PUEBLO 3.1 + 4.0 hecho por Claude en la nube, ahora solo con `?pueblo=4` y mapa de servidor propio `pueblo4` (el PUEBLO de siempre no cambia). Publicado el 18-11: `https://hamza189.github.io/SNIPER-1VS1/?pueblo=4`. Falta: probarlo en el iPhone en MEDIO con MEDIR RENDIMIENTO (con y sin `&pueblo4=0`), una partida larga sin que Safari recargue la pestaña, y decidir F6 (`docs/PUEBLO-4.md`) | Propietario | PUBLICADO TRAS BANDERA · PENDIENTE DE VALIDACIÓN EN IPHONE |
 | **SALA 1V1** (10-11) — probar `?lobby=2` en el PC y en el iPhone (horizontal), con alguien en otro dispositivo: INICIO › MULTIJUGADOR 1V1 → CREAR SALA PRIVADA → INVITAR (copiar enlace o WhatsApp) → el otro entra y aparece en el hangar → elegir mapa → LISTO los dos → INICIAR PARTIDA. Decir si gusta, los FPS del hangar y si pasa a ser la de siempre (`?lobby=1` = la de antes; `docs/SALA-1V1.md`) | Propietario | SERVIDOR PUBLICADO · PÁGINA SIN PUBLICAR · PENDIENTE DE VALIDACIÓN EN IPHONE Y ANDROID |

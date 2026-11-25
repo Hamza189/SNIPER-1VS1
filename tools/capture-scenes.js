@@ -57,6 +57,9 @@ const LOOKX = process.env.LOOKX || '';
   // MODE=duel (default: what a match in PUEBLO looks like, fog included) or range; BOTS=1 keeps the bots
   const MODE = process.env.MODE || 'duel', KEEPBOTS = process.env.BOTS === '1';
   await p.evaluate(m => { __SD.setTrain('off'); __SD.setMode(m); __SD.startMatch(); }, MODE);
+  // the town's kit (PUEBLO 4.0 is the only town since 24-11-2026) and, with lm=1, the baked lighting
+  await p.waitForFunction(() => __SD.P3W && __SD.P3W.kit, null, { timeout: 120000 }).catch(() => console.log('kit: sin cargar'));
+  if (/lm=1/.test(URLX)) await p.waitForFunction(() => __SD.LM.ready || __SD.LM.failed, null, { timeout: 60000 }).then(async () => console.log('horneado', await p.evaluate(() => JSON.stringify({ ready: __SD.LM.ready, res: __SD.LM.res && { meshes: __SD.LM.res.meshes, verts: __SD.LM.res.verts, skipped: __SD.LM.res.skipped.length } }))));
   if (/pueblo=[34]/.test(URLX)) await p.waitForFunction(() => __SD.P3W && __SD.P3W.kit && (!__SD.E10.on || __SD.E10.ready || __SD.E10.failed), null, { timeout: 90000 });
   if (VIEWS.some(v => v[1] === 'casa' && (!ONLY || ONLY.includes(v[0])))) {
     await p.evaluate(() => { __SD.setWorld('casa'); }); await p.waitForFunction(() => __SD.CASA.ready || __SD.CASA.failed, null, { timeout: 90000 });
