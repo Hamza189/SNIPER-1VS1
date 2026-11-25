@@ -1771,7 +1771,12 @@ GFX.profile=PERF_LOW?'bajo':SDQuality.resolve(GFX.choice,isTouch,GFX.cap);
    without; AJUSTES › GRÁFICOS › Suavizado de bordes turns it off (on reload). &aa=0 / &aa=1 force it off / on. */
 const AA_Q=(location.search.match(/[?&]aa=([01])\b/)||[])[1];
 const aaWanted=(prof,s)=>prof!=='bajo'&&s.aa!==false;
-GFX.aa=AA_Q?AA_Q==='1':!PERF_LOW&&aaWanted(GFX.profile,GFX_SET);
+/* POSPROCESADO POR CALIDAD (25-11-2026, client/post.js, docs/POSPROCESADO.md): en prueba con ?post=1 (se recuerda; ?post=0
+   lo quita). ALTO: SSAO + bloom + FXAA + color; MEDIO: bloom + color (MSAA en el render target); BAJO: nada. Con él, el
+   lienzo no necesita su propio MSAA (lo hace el render target o el FXAA): memoria y ancho de banda que no se gastan.
+   &ssao=0 lo deja sin SSAO (comparar). */
+const POST_ON=typeof SDPost!=='undefined'&&!PERF_LOW&&(()=>{const q=(location.search.match(/[?&]post=([01])\b/)||[])[1];if(q)store.set('post',q==='1');return !!store.get('post',false);})();
+GFX.aa=AA_Q?AA_Q==='1':!PERF_LOW&&!(POST_ON&&GFX.profile!=='bajo')&&aaWanted(GFX.profile,GFX_SET);
 const renderer=new T.WebGLRenderer({canvas,antialias:GFX.aa,powerPreference:'high-performance'});
 renderer.setPixelRatio(PERF_LOW?0.5:SDQuality.pixelRatio(GFX.profile,window.devicePixelRatio,1));
 // &sombras=0 (diagnostic, 18-10-2026): no sun shadows at all, to tell whether stripes someone sees are shadows or something else
@@ -1806,6 +1811,8 @@ renderer.autoClear=false;
 renderer.debug.checkShaderErrors=!/[?&]shadercheck=0\b/.test(location.search);
 renderer.outputEncoding=T.sRGBEncoding;
 renderer.toneMapping=T.ACESFilmicToneMapping;
+const POST=POST_ON?SDPost.create(T,renderer,{touch:isTouch,noSsao:/[?&]ssao=0\b/.test(location.search)}):null;
+if(POST)POST.setLevel(GFX.profile);
 /* ESTILO DE IMAGEN y MODO DALTÓNICO (AJUSTES › GRÁFICOS, 30-10-2026): the grading goes inside the ACES tone mapping that
    every lit material already runs (a few operations per pixel, no full-screen pass: no FPS cost). Read once at load
    (the shaders are built with it), so a change applies on reload. CLÁSICO and no correction = the chunk untouched.
@@ -5599,7 +5606,7 @@ function gfxApply(){
   renderer.toneMappingExposure=TONE.exposure*(SETTINGS.bright||1);   // AJUSTES › GRÁFICOS › Brillo
   if(PERF_LOW)return;
   const prof=SDQuality.resolve(SETTINGS.quality,isTouch,GFX.cap),P0=SDQuality.PROFILES[prof];
-  const changed=prof!==GFX.profile;GFX.profile=prof;GFX.choice=SETTINGS.quality;
+  const changed=prof!==GFX.profile;GFX.profile=prof;GFX.choice=SETTINGS.quality;if(POST)POST.setLevel(prof);
   // a resolution chosen by hand (AJUSTES › Resolución ×1/×2) is what is drawn: the adaptive one only works with AUTO
   const adaptOn=SETTINGS.quality==='auto'&&SETTINGS.res==='auto';
   if(!GFX.adapt||changed||GFX.adapt.target!==SETTINGS.fpsCap)GFX.adapt=SDQuality.createAdaptive(SETTINGS.fpsCap,adaptOn);
@@ -8324,9 +8331,10 @@ function frameBody(now){
   pmark('mundo');
   if(LB.room&&LB.vis&&state==='menu'){const ex=renderer.toneMappingExposure;renderer.toneMappingExposure=LB.room.exposure*(SETTINGS.bright||1);renderer.render(LB.room.scene,LB.cam);renderer.toneMappingExposure=ex;}
   else if(M2.room&&state==='menu'){const ex=renderer.toneMappingExposure;renderer.toneMappingExposure=M2.room.exposure*(SETTINGS.bright||1);renderer.render(M2.room.scene,M2.cam);renderer.toneMappingExposure=ex;}
-  else{sceneUpdate();renderer.render(scene,camera);}
+  else{sceneUpdate();const post=POST&&POST.begin();renderer.render(scene,camera);if(post)POST.afterScene(camera);}
   pmark('dibujo');
   if(!SHOT.noVM&&!TPV.on&&(WROOT.visible||KROOT.visible||PROOT.visible||SROOT.visible)&&(state==='playing'||state==='dead')){renderer.clearDepth();renderer.render(wScene,wCam);}
+  if(POST&&POST.active)POST.end();
   pmark('dibujoArma');if(pf)PROF.n++;
   if(PERF.rec){const R=PERF.rec;if(R.last)R.dt.push(now-R.last);R.last=now;R.cpu.push(performance.now()-perfT0);R.calls.push(renderer.info.render.calls);R.tris.push(renderer.info.render.triangles);}
 }
@@ -8797,6 +8805,6 @@ function cgStart(){
 }
 cgStart();
 
-window.__SD={get RADAR(){return RADAR;},get MINI(){return MINI;},onKill,CARGA:CG,cgMem,sceneUpdate,rayHide,casasSolid,audioInit,get MAT_ALL(){return MAT_ALL;},get GFX(){return GFX;},get BOX3(){return BOX3;},get GUNCFG(){return GUNCFG;},PRUEBAS,XRAY,xrayFrame,SLIDE2,PEN,penBox,spawnBullet,updateBullets,HALCON,rifleCfgFor,applyRifleCfg,gsGun,SIL,silCfg,silSaved,SFX,GUN,camLight,get gameTime(){return gameTime;},GSI,gsiDone,gsiRender,M2,m2Tab,m2Sync,m2Sleep,LB,lbRender,lbFrame,openSettings,closeSettings,MIRA,setMira,miraApply,miraClipGeo,miraRifle,openMiras,closeMiras,updateReticle,ENV,VIS,VIS_COL,VIS_HULL,visOn,visFrame,visWho,selfHit,PROF,KTX2,R2_ON,R2_URL,PIC,GYRO,gyroEv,crossApply,btnPress,settingsChanged,perfTexMB(){const t=perfTextures();return {real:SDPerf.textureMB(t),asRGBA:SDPerf.textureMB(t.map(x=>Object.assign({},x,{bytes:0})))};},REMOTES,netScoreHud,shotTargets,MINI,miniLayer,miniPing,clockFrame,setOffTime,get OFF_TIME(){return OFF_TIME;},ACC,accRefresh,INV,invSync,camoApply,openInv,invOpenBox,WSKIN,WS_ST,setWskin,get RIF(){return RIF;},TPV,SELF,get PROFILE(){return PROFILE;},openProfile,endMatch,PJ_MIX,MIX_ORDER,SKINS,get SKIN(){return SKIN;},setSkin,pj2SetPack,rivalSkin,PERF,perfRun,HUD2:true,get H2(){return H2;},leanIn,h2Frame,PJ2,pj2Load,CASA,casaLoad,C2,C2B,C2J,C2S,casa2Load,BAR,barrioLoad,FLORA,RATS,RAT_WORLD,ratsFrame,SHADOW_FADE,setDuelLethal,get DUEL_LETHAL(){return DUEL_LETHAL;},gfxDiagText,get P3ON(){return P3ON;},PU4,COBCC,damagePlayer,TEX,sunFollow,setSunSnap(on){SUN_SNAP=!!on;},sun,P0,E10,e10Lod,DIAG,setTrainMove,LIGHT:{sun,hemi,skyMat,LOOK,P3},P3W,freeze(on){SIM_FREEZE=!!on;},SHOT,VMA,makeSoldier,animateSoldier,BOT_MAT,scene,camera,RemotePlayer,PMprev,PIS,PROOT,RIF,WROOT,SHO_:null,MANUAL,advance(ms){frameBody(last+ms);},get LAST_PELLETS(){return LAST_PELLETS;},SCORE,SCFG,SROOT,SHO,setPrimaryChoice,get PRIMARY(){return PRIMARY;},PCORE,PCFG,setWorld,WORLDS,get WORLD_ID(){return WORLD_ID;},renderer,GFX,gfxApply,get NET(){return NET;},get REMOTE(){return REMOTE;},W,get NAV(){return NAV;},setOffMap,get OFFMAP(){return OFFMAP;},TOUCH,EDIT,openEditor,get SETTINGS(){return SETTINGS;},get LAYOUT(){return LAYOUT;},checkOrientation,MAT,LOAD,TRAINERS,get RANGE_BOTS(){return RANGE_BOTS;},TRAIN,setTrain,setLethal,kitNote,GINS,TDIAG,AU,get TOUCH_EVENTS(){return TOUCH_EVENTS;},impactFX,bodyFX,get DECALS(){return DECALS;},surfaceOf,soundDelay,aimSelfTest,P,PM,WS,WCORE,RECOIL,AIM,BOTS,DUMMIES,BULLETS,EVENTS,PARTS,STATS,get state(){return state;},get mode(){return mode;},setMode,input,startMatch,simTick,frame,toMenu,pause,resume,CASAS,casasSolid,FUENTE,LM,lmLoad};
+window.__SD={get RADAR(){return RADAR;},get MINI(){return MINI;},onKill,CARGA:CG,cgMem,sceneUpdate,rayHide,casasSolid,audioInit,get MAT_ALL(){return MAT_ALL;},get GFX(){return GFX;},get BOX3(){return BOX3;},get GUNCFG(){return GUNCFG;},PRUEBAS,XRAY,xrayFrame,SLIDE2,PEN,penBox,spawnBullet,updateBullets,HALCON,rifleCfgFor,applyRifleCfg,gsGun,SIL,silCfg,silSaved,SFX,GUN,camLight,get gameTime(){return gameTime;},GSI,gsiDone,gsiRender,M2,m2Tab,m2Sync,m2Sleep,LB,lbRender,lbFrame,openSettings,closeSettings,MIRA,setMira,miraApply,miraClipGeo,miraRifle,openMiras,closeMiras,updateReticle,ENV,VIS,VIS_COL,VIS_HULL,visOn,visFrame,visWho,selfHit,PROF,KTX2,R2_ON,R2_URL,PIC,GYRO,gyroEv,crossApply,btnPress,settingsChanged,perfTexMB(){const t=perfTextures();return {real:SDPerf.textureMB(t),asRGBA:SDPerf.textureMB(t.map(x=>Object.assign({},x,{bytes:0})))};},REMOTES,netScoreHud,shotTargets,MINI,miniLayer,miniPing,clockFrame,setOffTime,get OFF_TIME(){return OFF_TIME;},ACC,accRefresh,INV,invSync,camoApply,openInv,invOpenBox,WSKIN,WS_ST,setWskin,get RIF(){return RIF;},TPV,SELF,get PROFILE(){return PROFILE;},openProfile,endMatch,PJ_MIX,MIX_ORDER,SKINS,get SKIN(){return SKIN;},setSkin,pj2SetPack,rivalSkin,PERF,perfRun,HUD2:true,get H2(){return H2;},leanIn,h2Frame,PJ2,pj2Load,CASA,casaLoad,C2,C2B,C2J,C2S,casa2Load,BAR,barrioLoad,FLORA,RATS,RAT_WORLD,ratsFrame,SHADOW_FADE,setDuelLethal,get DUEL_LETHAL(){return DUEL_LETHAL;},gfxDiagText,get P3ON(){return P3ON;},PU4,COBCC,damagePlayer,TEX,sunFollow,setSunSnap(on){SUN_SNAP=!!on;},sun,P0,E10,e10Lod,DIAG,setTrainMove,LIGHT:{sun,hemi,skyMat,LOOK,P3},P3W,freeze(on){SIM_FREEZE=!!on;},SHOT,VMA,makeSoldier,animateSoldier,BOT_MAT,scene,camera,RemotePlayer,PMprev,PIS,PROOT,RIF,WROOT,SHO_:null,MANUAL,advance(ms){frameBody(last+ms);},get LAST_PELLETS(){return LAST_PELLETS;},SCORE,SCFG,SROOT,SHO,setPrimaryChoice,get PRIMARY(){return PRIMARY;},PCORE,PCFG,setWorld,WORLDS,get WORLD_ID(){return WORLD_ID;},renderer,GFX,gfxApply,get NET(){return NET;},get REMOTE(){return REMOTE;},W,get NAV(){return NAV;},setOffMap,get OFFMAP(){return OFFMAP;},TOUCH,EDIT,openEditor,get SETTINGS(){return SETTINGS;},get LAYOUT(){return LAYOUT;},checkOrientation,MAT,LOAD,TRAINERS,get RANGE_BOTS(){return RANGE_BOTS;},TRAIN,setTrain,setLethal,kitNote,GINS,TDIAG,AU,get TOUCH_EVENTS(){return TOUCH_EVENTS;},impactFX,bodyFX,get DECALS(){return DECALS;},surfaceOf,soundDelay,aimSelfTest,P,PM,WS,WCORE,RECOIL,AIM,BOTS,DUMMIES,BULLETS,EVENTS,PARTS,STATS,get state(){return state;},get mode(){return mode;},setMode,input,startMatch,simTick,frame,toMenu,pause,resume,CASAS,casasSolid,FUENTE,LM,lmLoad,POST};
 })();
 </script>

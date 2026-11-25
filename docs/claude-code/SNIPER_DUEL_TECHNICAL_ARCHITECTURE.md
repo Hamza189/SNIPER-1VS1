@@ -131,6 +131,7 @@ reconciliación, interpolación del rival 110 ms, ping) · `vmrig.js` (materiale
 | `&fachada=cc0` | Fachadas P1 con escaneos de Poly Haven (opción) |
 | `&ratas=0`, `&flora=0` | Sin ratas / sin vegetación |
 | `&sombra=libre`, `&sombrafade=0`, `&sombras=0` | Sombra sin ajuste a texels / sin fundido / sin sombras (diagnóstico) |
+| `?post=1` / `?post=0` | Posprocesado por calidad (25-11, en prueba; se recuerda): ALTO SSAO + bloom + FXAA + color, MEDIO bloom + color con MSAA en el render target, BAJO nada (`client/post.js`, `docs/POSPROCESADO.md`). `&ssao=0` sin SSAO |
 | `?lm=1` / `?lm=0` | Iluminación horneada del PUEBLO (25-11, en prueba; se recuerda): oclusión, cielo y sombra del sol de Blender (`client/lightmap.js`, `tools/lightmap/`, `docs/ILUMINACION-HORNEADA.md`). `&lmao=`, `&lmcielo=`, `&lmsol=0`, `&lmdbg=1` para comparar |
 | `?casa=1` / `?casa=0` | Muestra / oculta CASA ATLAS en los menús (se recuerda) |
 | `?casa2=0` / `?casa2=1` | Oculta / muestra CASA ATLAS 2.0 en los menús (se recuerda; por defecto se muestra). Aprobada el 02-11: duelo y online (`client/casa2.js`, `docs/CASA-ATLAS-2.md`). La CASA ATLAS XL (`?xlv`, `?xltex`) se retiró el 03-11 |

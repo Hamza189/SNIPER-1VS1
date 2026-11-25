@@ -6,6 +6,18 @@ Cada entrada dice qué se decidió o cambió, quién lo decidió, y el estado re
 Las decisiones anteriores al 18-10-2026 están resumidas en `SNIPER_DUEL_MASTER_CONTEXT.md` §4.
 Detalle de cada cambio (antes/después, medidas, cómo revertir): `docs/next-level/NEXT_LEVEL_CHANGELOG.md`.
 
+## 25-11-2026 — Gráficos tipo CoD/PUBG: fase 2, posprocesado por calidad (`?post=1`)
+- **Qué**: `client/post.js`, hecho a mano con `ShaderMaterial` de Three.js r128 (ninguna librería nueva). ALTO: SSAO
+  (media resolución en PC, un tercio en el móvil; solo la escena, el arma no), bloom en dos tamaños, FXAA y corrección
+  de color (contraste, sombras frías y luces cálidas, viñeta). MEDIO: bloom y color, con el MSAA en el render target.
+  BAJO: nada. Con `?post=1` el lienzo ya no pide su propio MSAA.
+- **Coste medido**: +10 llamadas (ALTO) y +4 (MEDIO), mismos triángulos; en la GTX 1050 Ti al tamaño del iPhone, +0,2 ms
+  (+0,3 ms con `?lm=1`). iPhone: PENDIENTE.
+- **Ajustado por las capturas**: bloom más contenido (paredes encaladas que brillaban), SSAO sin grano, menos saturación.
+- Coordinado con la sesión GRAFICOSS (no toca el render ni el posprocesado; recordó `sceneUpdate()` y `rayHide()`).
+- Prueba: `test/post.test.js` (7). Detalle: `docs/POSPROCESADO.md`.
+- **Estado**: IMPLEMENTADO · PROBADO EN NAVEGADOR · PENDIENTE DE QUE EL PROPIETARIO LO VEA (PC e iPhone) con `?post=1`.
+
 ## 25-11-2026 — Gráficos tipo CoD/PUBG sin cambiar de motor: fase 1, iluminación horneada (`?lm=1`)
 Encargo (24-11, de la sesión principal en nombre del propietario): cinco mejoras en orden, una fase y un commit cada una,
 todo detrás de una bandera hasta que el propietario lo vea. Fase 1 hecha:
