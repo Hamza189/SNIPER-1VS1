@@ -65,6 +65,10 @@ const LOOKX = process.env.LOOKX || '';
     await p.evaluate(() => { __SD.setWorld('casa'); }); await p.waitForFunction(() => __SD.CASA.ready || __SD.CASA.failed, null, { timeout: 90000 });
     console.log('CASA ATLAS', await p.evaluate(() => JSON.stringify({ ready: __SD.CASA.ready, tris: __SD.CASA.tris, calls: __SD.CASA.calls })));
   }
+  if (VIEWS.some(v => v[1] === 'barrio' && (!ONLY || ONLY.includes(v[0])))) {   // BARRIO loads its models when it is first shown
+    await p.evaluate(() => { __SD.setWorld('barrio'); }); await p.waitForFunction(() => __SD.BAR.ready || __SD.BAR.failed, null, { timeout: 90000 });
+    console.log('BARRIO', await p.evaluate(() => JSON.stringify({ ready: __SD.BAR.ready, tris: __SD.BAR.tris, calls: __SD.BAR.calls })));
+  }
   await p.waitForTimeout(1500);
   const metrics = {};
   for (const [name, world, x, y, z, yaw, pitch] of VIEWS) {

@@ -6,6 +6,16 @@ Cada entrada dice qué se decidió o cambió, quién lo decidió, y el estado re
 Las decisiones anteriores al 18-10-2026 están resumidas en `SNIPER_DUEL_MASTER_CONTEXT.md` §4.
 Detalle de cada cambio (antes/después, medidas, cómo revertir): `docs/next-level/NEXT_LEVEL_CHANGELOG.md`.
 
+## 25-11-2026 — Gráficos tipo CoD/PUBG: fase 4, más detalle en PUEBLO y BARRIO (`?detalle=1`)
+- **Qué**: `client/detalle.js`. Calcomanías (suciedad, aceite, humedad, grietas, hojas, papeles, churretes, carteles
+  descoloridos, placas, pintadas) y objetos pequeños tumbados (latas, botellas, ladrillos, cascotes ≤ 12 cm).
+  PUEBLO: 464 + 192; BARRIO: 324 + 161. Dos llamadas por mapa; +0,2 ms en la GTX 1050 Ti.
+- **Reglas**: ni cajas ni balas (`core/mapdata.js` igual tras `export-map`), ninguna cobertura falsa, nada sobre
+  ventanas ni puertas, nada dentro de las casas habitables. Las paredes salen de las cajas del mapa: vale para mapas
+  nuevos.
+- Prueba: `test/detalle.test.js` (17, con las cajas reales del servidor). Detalle: `docs/DETALLE.md`.
+- **Estado**: IMPLEMENTADO · PROBADO EN NAVEGADOR · PENDIENTE DE QUE EL PROPIETARIO LO VEA con `?detalle=1`.
+
 ## 25-11-2026 — Gráficos tipo CoD/PUBG: fase 3, una sola dirección de arte (`?estilo=1`)
 - **Guía** `docs/GUIA-DE-ESTILO.md`: la luz con la que se juzga todo, márgenes de color base por superficie (nunca 0 ni
   255; saturación máxima), tabla PBR (metal 0 o 1, rugosidades), desgaste, densidad de texel y una lista para pegar en

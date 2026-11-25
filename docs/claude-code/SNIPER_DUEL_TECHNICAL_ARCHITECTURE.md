@@ -131,6 +131,7 @@ reconciliación, interpolación del rival 110 ms, ping) · `vmrig.js` (materiale
 | `&fachada=cc0` | Fachadas P1 con escaneos de Poly Haven (opción) |
 | `&ratas=0`, `&flora=0` | Sin ratas / sin vegetación |
 | `&sombra=libre`, `&sombrafade=0`, `&sombras=0` | Sombra sin ajuste a texels / sin fundido / sin sombras (diagnóstico) |
+| `?detalle=1` / `?detalle=0` | Más detalle (25-11, en prueba; se recuerda): calcomanías y objetos pequeños tumbados en PUEBLO y BARRIO (`client/detalle.js`, `docs/DETALLE.md`). Sin cajas ni balas nuevas |
 | `?estilo=1` / `?estilo=0` | Guía de estilo (25-11, en prueba; se recuerda): materiales del pueblo ajustados a `docs/GUIA-DE-ESTILO.md` (`KIT3D.STYLE`); comprobador `node tools/estilo-check.js [modelo.glb]` |
 | `?post=1` / `?post=0` | Posprocesado por calidad (25-11, en prueba; se recuerda): ALTO SSAO + bloom + FXAA + color, MEDIO bloom + color con MSAA en el render target, BAJO nada (`client/post.js`, `docs/POSPROCESADO.md`). `&ssao=0` sin SSAO |
 | `?lm=1` / `?lm=0` | Iluminación horneada del PUEBLO (25-11, en prueba; se recuerda): oclusión, cielo y sombra del sol de Blender (`client/lightmap.js`, `tools/lightmap/`, `docs/ILUMINACION-HORNEADA.md`). `&lmao=`, `&lmcielo=`, `&lmsol=0`, `&lmdbg=1` para comparar |
