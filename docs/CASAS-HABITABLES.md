@@ -53,8 +53,14 @@ agachado):
 - Ventanas de 1,20 m con el alféizar a 1,10 m: de pie te asomas y disparas, agachado quedas cubierto. Por la ventana no se
   sale; solo por las puertas. El escaparate del COLMADO es de 2,40 m. Las ventanas altas del TALLER tienen el alféizar a
   1,30 m.
-- Escaleras: una rampa de 1,1 m de ancho y una baranda en la mitad baja del hueco. Los peldaños paran las balas («solo
-  balas», `s: 2`) y no estorban al subir.
+- Escaleras: una rampa de **1,5 m** de ancho (hasta el 26-11-2026, 1,1 m; el propietario: «que sean más anchas y pon
+  una barandilla») y una baranda en la mitad baja del hueco. Los peldaños paran las balas («solo balas», `s: 2`) y no
+  estorban al subir.
+- **Barandilla de la escalera** (26-11-2026): por el lado abierto, de madera sobre barrotes de hierro, inclinada con la
+  escalera; empieza a 0,9 m del pie (los primeros peldaños se pisan también de lado) y acaba 1,2 m antes de arriba (las
+  escaleras suben contra un muro: arriba se sale de lado a la planta alta). Para el movimiento con 5 cajas escalonadas
+  (`_pasamanos`, `s: 0`): no te caes por el lado; las balas pasan entre los barrotes. En PIEDRA la caja de madera del
+  rincón norte se movió 0,4 m (con la escalera más ancha el rincón quedaba sin paso).
 - Balcones de 0,9 m de fondo con baranda de 1,05 m. La baranda es solo para el movimiento: las balas pasan.
 - Tejado y pretil a la misma altura que la caja de antes, así que la silueta y la azotea no cambian.
 

@@ -23,6 +23,7 @@ const SLAB = 0.2;          // forjados (hormigón)
 const DOOR_W = 1.3, DOOR_H = 2.35;
 const WIN_W = 1.2, WIN_SILL = 1.1, WIN_TOP = 2.3;    // ventana: de pie (ojos a 1,62) te asomas; agachado (1,0) te cubres
 const FR_W = 1.2, FR_H = 2.35;                        // puerta balconera
+const STAIR_W = 1.5, RAIL_FROM = 0.9, RAIL_TOP = 1.2, RAIL_T = 0.06, RAIL_H = 0.95;   // escalera: ancho; barandilla desde 0,9 m hasta 1,2 m antes de arriba (salida), grosor y altura
 const INNER = 0xefe9dd;                               // pintura de dentro
 
 // ---- las casas. Caras: 'n' (z mínima, mira a −z), 's' (z máxima), 'w' (x mínima), 'e' (x máxima). u: metros a lo largo
@@ -75,7 +76,7 @@ const HOUSES = [
     stair: { face: 'w', along: 'z', from: 3.8, to: -2.0 },
     walls: [{ a: [-31.06, 0, 32.3], b: [-30.94, 2.6, 35.8] }, { a: [-31.06, 0, 37.4], b: [-30.94, 2.6, 41.7] }],
     walls2: [{ a: [-30.0, 3.1, 37.44], b: [-24.3, 5.4, 37.56] }],
-    crates: [[-28.0, 40.6], [-35.0, 33.5]], extras: ['lantern', 'pots', 'climber'],
+    crates: [[-28.0, 40.6], [-34.6, 33.5]], extras: ['lantern', 'pots', 'climber'],
     ins: { wall: ['rubble', 0xf2ece2], floor: ['slabs', 0xc8baa4], wall2: ['yeso', 0xefe4cf], floor2: ['terracotta', 0xffffff], ceil: ['woodraw', 0xd8c8b0], beams: ['wood', 0x4e3622] },
     items: ['chimenea', 'estante', 'aparador', 'reloj'] },
   { id: 'colmado', key: '-12,27', x: -12, z: 27, w: 10, d: 6, h: 5, floors: 1, tint: 0xebd394, wallMat: 'stucco',
@@ -183,7 +184,8 @@ const B = (n, s, a, b, f, extra) => Object.assign({ n, s, a: a.map(r3), b: b.map
 // ---- the stair of a two-storey house: a ramp from the floor to the upper floor along an inner wall
 function stairOf(H) {
   if (H.floors !== 2 || !H.stair) return null;
-  const S = H.stair, F = faceFrame(H, S.face), W = 1.1, top = upY(H);
+  // 26-11-2026 (owner: «más anchas y con barandilla»): 1.1 → 1.5 m wide, a handrail along the open side (stairRail)
+  const S = H.stair, F = faceFrame(H, S.face), W = STAIR_W, top = upY(H);
   const lo = Math.min(S.from, S.to), hi = Math.max(S.from, S.to), highAtMin = S.to < S.from;
   const n0 = F.out > 0 ? F.inner - W : F.inner, n1 = n0 + W;
   const ramp = S.along === 'x' ? { minX: H.x + lo, maxX: H.x + hi, minZ: n0, maxZ: n1, axis: 'x', hLow: 0, hHigh: top, highAtMin }
@@ -192,6 +194,21 @@ function stairOf(H) {
   const hole = S.along === 'x' ? { x0: ramp.minX - 0.05, x1: ramp.maxX + 0.05, z0: F.out > 0 ? n0 - 0.25 : n0, z1: F.out > 0 ? n1 : n1 + 0.25 }
                                : { x0: F.out > 0 ? n0 - 0.25 : n0, x1: F.out > 0 ? n1 : n1 + 0.25, z0: ramp.minZ - 0.05, z1: ramp.maxZ + 0.05 };
   return { ramp, hole, W, top, highAtMin, along: S.along, out: F.out, face: S.face };
+}
+// the handrail along the open side of the stair: from RAIL_FROM metres up the stair to RAIL_TOP short of its top end (the
+// first steps stay open: you can step on from the side at the bottom; the stairs run up against a wall, so at the top
+// you step off sideways onto the upper floor). line: the rail's axis across the stair; segs: the movement boxes
+// (bottom on the stair under it, top 1 m over its upper end: they keep you on the stair, bullets go through them)
+function stairRail(H) {
+  const st = stairOf(H); if (!st) return null;
+  const r = st.ramp, ax = r.axis, len = ax === 'x' ? r.maxX - r.minX : r.maxZ - r.minZ;
+  const lo = st.highAtMin ? (ax === 'x' ? r.maxX : r.maxZ) : (ax === 'x' ? r.minX : r.minZ), dir = st.highAtMin ? -1 : 1;
+  const open = ax === 'x' ? (st.out > 0 ? r.minZ : r.maxZ) : (st.out > 0 ? r.minX : r.maxX), inw = st.out > 0 ? 1 : -1;   // the open edge; inwards (onto the stair)
+  const line = open + inw * RAIL_T / 2, at = t => lo + dir * t, hAt = t => st.top * t / len, segs = [], K = 5, end = len - RAIL_TOP;
+  for (let k = 0; k < K; k++) { const t0 = RAIL_FROM + (end - RAIL_FROM) * k / K, t1 = RAIL_FROM + (end - RAIL_FROM) * (k + 1) / K;
+    const a = Math.min(at(t0), at(t1)), b = Math.max(at(t0), at(t1)), n0 = Math.min(open, open + inw * RAIL_T), n1 = Math.max(open, open + inw * RAIL_T);
+    segs.push(ax === 'x' ? { a: [a, hAt(t0), n0], b: [b, hAt(t1) + RAIL_H, n1] } : { a: [n0, hAt(t0), a], b: [n1, hAt(t1) + RAIL_H, b] }); }
+  return { ax, len, end, lo, dir, line, at, hAt, segs, top: st.top };
 }
 // the stair's steps: what you see, and (as 'solo balas' boxes) what stops a bullet under them; you walk on the ramp
 function steps(H, n) {
@@ -230,6 +247,8 @@ function boxes(H) {
     }
     // the steps stop bullets (4 blocks), but not the feet (you walk on the ramp)
     steps(H, 4).forEach((s, i) => out.push(B(H.id + '_escalon_' + i, 2, s.a, s.b, 'wood')));
+    // the stair's handrail (movement only, like the balconies' railing: you shoot through its bars)
+    stairRail(H).segs.forEach(s => out.push(B(H.id + '_pasamanos', 0, s.a, s.b, '')));
     // balconies: a floor outside each balcony door and a railing (movement only: you shoot over it)
     for (const f of ['n', 's', 'w', 'e']) for (const o of O[f].filter(o => o.kind === 'balcony')) {
       const F = faceFrame(H, f), D = 0.9, t0 = F.out > 0 ? F.plane : F.plane - D, t1 = t0 + D;
@@ -286,19 +305,28 @@ function visual(H, opt) {
   const O = openings(H), top = H.h, hx = H.w / 2, hz = H.d / 2, X0 = H.x - hx, X1 = H.x + hx, Z0 = H.z - hz, Z1 = H.z + hz;
   const wallK = H.wallMat || 'stucco', plinthK = (H.plinth && H.plinth.mat) || 'stone';
   const I = H.ins || {}, floorS = I.floor || ['herring', 0xd8c8b8], floor2S = I.floor2 || floorS, ceilS = I.ceil || ['yeso', 0xf6f3ec], ceils = [];
-  for (const b of boxes(H)) {
+  const ALLB = boxes(H), MUROS = ALLB.filter(q => /_muro_/.test(q.n));
+  for (const b of ALLB) {
     if (/_muro_/.test(b.n)) {
       const F = faceFrame(H, b.face), ax = F.axis === 'x' ? 2 : 0, cin = [ax, -F.out, INNER];
       // 18-11-2026: neighbouring pieces overlap by 2 mm (same colour, same world UVs: no flicker) so no hairline cracks
       // show between them (the light dashed lines at the joints)
       const along = ax === 2 ? 0 : 2, A = b.a.slice(), Bx = b.b.slice(); if (!b.end0) A[along] -= 0.002; if (!b.end1) Bx[along] += 0.002; if (A[1] > 0.01) A[1] -= 0.002;
+      // 26-11-2026: the ends of a piece are drawn only where no neighbouring piece goes on (the jambs of the openings).
+      // The ends inside the wall had their front edge in the plane of the facade: now and then they won the pixel, and
+      // with the baked light (they are inside the wall: dark) they drew thin black lines at the joints
+      const open = (c, side) => { let r = [[b.a[1], b.b[1]]];
+        for (const q of MUROS) if (q !== b && q.face === b.face && Math.abs((side < 0 ? q.b[along] : q.a[along]) - c) < 1e-4)
+          r = r.flatMap(([y0, y1]) => [[y0, Math.min(y1, q.a[1])], [Math.max(y0, q.b[1]), y1]]).filter(([y0, y1]) => y1 - y0 > 1e-4);
+        return r; };
+      const ends = { along, lo: open(b.a[along], -1), hi: open(b.b[along], 1) };
       if (b.a[1] < 0.01 && H.plinth) {   // plinth: the lower part, standing 2.5 cm out of the facade (a ledge on top)
         const ph = Math.min(H.plinth.h, b.b[1]), a = A.slice(), c = [Bx[0], ph, Bx[2]], e = 0.025;
         if (F.out > 0) c[ax] += e; else a[ax] -= e;
         if (b.end0) a[along] -= e; if (b.end1) c[along] += e;   // round the corners
-        add(plinthK, a, c, H.plinth.col, { cin });
-        if (b.b[1] > ph) add(wallK, [A[0], ph - 0.002, A[2]], Bx, H.tint, { cin });
-      } else add(wallK, A, Bx, H.tint, { cin });
+        add(plinthK, a, c, H.plinth.col, { cin, ends });
+        if (b.b[1] > ph) add(wallK, [A[0], ph - 0.002, A[2]], Bx, H.tint, { cin, ends });
+      } else add(wallK, A, Bx, H.tint, { cin, ends });
     } else if (/_pretil_/.test(b.n)) add(wallK, b.a, b.b, H.tint);
     else if (/_tejado/.test(b.n)) { add('stucco', b.a, [b.b[0], b.b[1] - 0.02, b.b[2]], 0xf2eee6); add('roofterr', [b.a[0], b.b[1] - 0.02, b.a[2]], b.b, 0xd8a080); ceils.push(b); }
     else if (/_forjado_/.test(b.n)) { add('stucco', b.a, [b.b[0], b.b[1] - 0.02, b.b[2]], 0xf2eee6); add(floor2S[0], [b.a[0], b.b[1] - 0.02, b.a[2]], b.b, floor2S[1]); ceils.push(b); }
@@ -308,6 +336,7 @@ function visual(H, opt) {
     }
     else if (/_hoja_/.test(b.n)) add('wood', b.a, b.b, H.door);
     else if (/_balcon_/.test(b.n)) { if (!opt.kit) add('stone', b.a, b.b, 0xe2d8c4); }
+    else if (/_pasamanos/.test(b.n)) continue;   // drawn below, along the slope
     else if (/_baranda|_balaustrada/.test(b.n)) {
       if (opt.kit && /_balaustrada/.test(b.n)) continue;   // the kit balcony has its own ironwork
       const alongX = b.b[0] - b.a[0] >= b.b[2] - b.a[2], L = alongX ? b.b[0] - b.a[0] : b.b[2] - b.a[2], mx = (b.a[0] + b.b[0]) / 2, mz = (b.a[2] + b.b[2]) / 2, r = 0.025;
@@ -381,6 +410,18 @@ function visual(H, opt) {
   else { ring('stone', top - 0.28, top - 0.1, 0.1, 0.1, H.frame); ring('stone', top - 0.1, top, 0.16, 0.1, H.frame); ring('stone', top + 0.35, top + 0.4, 0.04, 0.32, H.frame); }
   if (H.floors === 2) ring('stone', H.fl, H.fl + 0.18, 0.05, 0.1, H.frame);
   for (const s of steps(H, 16)) add('wood', s.a, s.b, 0x7a5638);
+  // the stair's handrail: a wooden rail along the slope on iron bars, a newel post at each end
+  const R = stairRail(H);
+  if (R) {
+    const pt = (t, y) => R.ax === 'x' ? [R.at(t), y, R.line] : [R.line, y, R.at(t)], NS = 16, t0 = RAIL_FROM, t1 = R.end;
+    const stepTop = t => R.top * Math.min(NS, Math.floor(t / R.len * NS) + 1) / NS, railY = t => R.hAt(t) + RAIL_H;
+    add('wood', pt(t0, 0), pt(t1, 0), 0x5a3a24, { beam: { a: pt(t0, railY(t0) - 0.03), b: pt(t1, railY(t1) - 0.03), w: 0.06, h: 0.06 } });
+    add('wood', pt(t0, 0), pt(t1, 0), 0x5a3a24, { beam: { a: pt(t0, R.hAt(t0) + 0.16), b: pt(t1, R.hAt(t1) + 0.16), w: 0.04, h: 0.05 } });   // the lower rail
+    const n = Math.max(2, Math.round((t1 - t0) / 0.16)), q = 0.011;
+    for (let k = 1; k < n; k++) { const t = t0 + (t1 - t0) * k / n, c = pt(t, 0), y0 = stepTop(t), y1 = railY(t) - 0.06;
+      add('iron', [c[0] - q, y0, c[2] - q], [c[0] + q, y1, c[2] + q]); }
+    for (const t of [t0, t1]) { const c = pt(t, 0), w = 0.05; add('wood', [c[0] - w, stepTop(t), c[2] - w], [c[0] + w, railY(t) + 0.06, c[2] + w], 0x4a2e1a); }
+  }
   return V;
 }
 
@@ -511,6 +552,7 @@ function mesh(list, opt) {
   const pos = [], nrm = [], uv = [], col = [], idx = [];
   const srgb = c => [((c >> 16) & 255) / 255, ((c >> 8) & 255) / 255, (c & 255) / 255];
   for (const bx of list) {
+    if (bx.beam) { beam(bx); continue; }
     const [x0, y0, z0] = bx.a, [x1, y1, z1] = bx.b, c0 = bx.col == null ? [1, 1, 1] : srgb(bx.col), c = bx.lit ? c0.map(v => v * boost) : c0, ci = bx.cin ? srgb(bx.cin[2]).map(v => v * boost) : null;
     const F = [
       [[1, 0, 0], [[x1, y0, z1], [x1, y0, z0], [x1, y1, z0], [x1, y1, z1]], p => [-p[2], p[1]]],
@@ -522,9 +564,36 @@ function mesh(list, opt) {
     ];
     for (const [n, q, U] of F) {
       if (n[1] < 0 && y0 < 0.001) continue;
-      const cc = ci && n[bx.cin[0]] === bx.cin[1] ? ci : c, b = pos.length / 3;
-      for (const p of q) { pos.push(p[0], p[1], p[2]); nrm.push(n[0], n[1], n[2]); const t = U(p); uv.push(t[0], t[1]); col.push(cc[0], cc[1], cc[2]); }
-      idx.push(b, b + 1, b + 2, b, b + 2, b + 3);
+      const cc = ci && n[bx.cin[0]] === bx.cin[1] ? ci : c;
+      // bx.ends (wall pieces): an end face only over the heights where no neighbouring piece goes on
+      const E = bx.ends && n[bx.ends.along] ? (n[bx.ends.along] < 0 ? bx.ends.lo : bx.ends.hi) : null;
+      const spans = E ? E.map(([a, b2]) => [Math.max(a, y0), Math.min(b2, y1)]).filter(([a, b2]) => b2 - a > 1e-4) : [[y0, y1]];
+      for (const [ya, yb] of spans) {
+        const b = pos.length / 3;
+        for (const p0 of q) { const p = [p0[0], p0[1] === y0 ? ya : p0[1] === y1 ? yb : p0[1], p0[2]];
+          pos.push(p[0], p[1], p[2]); nrm.push(n[0], n[1], n[2]); const t = U(p); uv.push(t[0], t[1]); col.push(cc[0], cc[1], cc[2]); }
+        idx.push(b, b + 1, b + 2, b, b + 2, b + 3);
+      }
+    }
+  }
+  // a beam (bx.beam = { a, b, w, h }): from centre a to centre b, w wide (level, across it) and h tall (vertical): its
+  // sides stay vertical, its top and bottom follow the slope (a handrail along a stair)
+  function beam(bx) {
+    const { a, b, w, h } = bx.beam, c = bx.col == null ? [1, 1, 1] : srgb(bx.col);
+    const dx = b[0] - a[0], dz = b[2] - a[2], L = Math.hypot(dx, dz) || 1, sx = -dz / L * w / 2, sz = dx / L * w / 2;
+    const P = (e, s, v) => { const o = e ? b : a; return [o[0] + s * sx, o[1] + v * h / 2, o[2] + s * sz]; };
+    const mid = [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2, (a[2] + b[2]) / 2];
+    const F = [[P(0, -1, -1), P(1, -1, -1), P(1, -1, 1), P(0, -1, 1)], [P(1, 1, -1), P(0, 1, -1), P(0, 1, 1), P(1, 1, 1)],
+      [P(0, -1, 1), P(1, -1, 1), P(1, 1, 1), P(0, 1, 1)], [P(0, 1, -1), P(1, 1, -1), P(1, -1, -1), P(0, -1, -1)],
+      [P(0, 1, -1), P(0, -1, -1), P(0, -1, 1), P(0, 1, 1)], [P(1, -1, -1), P(1, 1, -1), P(1, 1, 1), P(1, -1, 1)]];
+    for (let q of F) {
+      const u = [q[1][0] - q[0][0], q[1][1] - q[0][1], q[1][2] - q[0][2]], v = [q[2][0] - q[0][0], q[2][1] - q[0][1], q[2][2] - q[0][2]];
+      let n = [u[1] * v[2] - u[2] * v[1], u[2] * v[0] - u[0] * v[2], u[0] * v[1] - u[1] * v[0]]; const nl = Math.hypot(n[0], n[1], n[2]) || 1; n = n.map(x => x / nl);
+      const fc = [0, 1, 2].map(i => (q[0][i] + q[2][i]) / 2);
+      if (n[0] * (fc[0] - mid[0]) + n[1] * (fc[1] - mid[1]) + n[2] * (fc[2] - mid[2]) < 0) { q = q.slice().reverse(); n = n.map(x => -x); }
+      const bi = pos.length / 3, ax = Math.abs(n[0]) > Math.abs(n[2]) ? 2 : 0;
+      for (const p of q) { pos.push(p[0], p[1], p[2]); nrm.push(n[0], n[1], n[2]); uv.push(Math.abs(n[1]) > 0.7 ? p[0] : p[ax], Math.abs(n[1]) > 0.7 ? p[2] : p[1]); col.push(c[0], c[1], c[2]); }
+      idx.push(bi, bi + 1, bi + 2, bi, bi + 2, bi + 3);
     }
   }
   return { pos: new Float32Array(pos), nrm: new Float32Array(nrm), uv: new Float32Array(uv), col: new Float32Array(col), idx: new Uint32Array(idx) };
@@ -532,6 +601,6 @@ function mesh(list, opt) {
 // is a point inside one of the houses (bots, rats and flora can ask)
 function inside(x, z, m) { m = m || 0; for (const H of HOUSES) if (Math.abs(x - H.x) < H.w / 2 + m && Math.abs(z - H.z) < H.d / 2 + m) return H; return null; }
 
-const SDCasas = { TYPE, freeSpans, deco, HOUSES, byKey, T_WALL, SLAB, DOOR_W, DOOR_H, WIN_W, WIN_SILL, WIN_TOP, upY, openings, wallPieces, boxes, ramps, stairOf, steps, nav, visual, kitPieces, mesh, inside, faceFrame };
+const SDCasas = { TYPE, freeSpans, deco, HOUSES, byKey, T_WALL, SLAB, DOOR_W, DOOR_H, WIN_W, WIN_SILL, WIN_TOP, upY, openings, wallPieces, boxes, ramps, stairOf, stairRail, steps, nav, visual, kitPieces, mesh, inside, faceFrame };
 if (typeof module !== 'undefined' && module.exports) module.exports = SDCasas; else root.SDCasas = SDCasas;
 })(typeof window !== 'undefined' ? window : globalThis);

@@ -49,22 +49,26 @@ function material(T, base, tex, opt) {
   m.name = base.name + '+lm';
   m.aoMap = tex; m.aoMapIntensity = opt.ao != null ? opt.ao : 1;
   const prev = base.onBeforeCompile, prevKey = base.customProgramCacheKey;
-  const U = { uAoSun: { value: opt.aoSun != null ? opt.aoSun : 0.35 }, uLmSun: { value: opt.sun != null ? opt.sun : 1 }, uLmFar: { value: opt.far != null ? opt.far : 0.75 } };
+  const U = { uAoSun: { value: opt.aoSun != null ? opt.aoSun : 0.35 }, uLmSun: { value: opt.sun != null ? opt.sun : 1 }, uLmFar: { value: opt.far != null ? opt.far : 0.75 },
+    uLmBias: { value: opt.bias != null ? opt.bias : 1 } };
   m.userData.lmU = U;
   m.onBeforeCompile = (sh, r) => {
     if (typeof prev === 'function' && prev !== T.Material.prototype.onBeforeCompile) prev.call(m, sh, r);
-    sh.uniforms.uAoSun = U.uAoSun; sh.uniforms.uLmSun = U.uLmSun; sh.uniforms.uLmFar = U.uLmFar;
+    sh.uniforms.uAoSun = U.uAoSun; sh.uniforms.uLmSun = U.uLmSun; sh.uniforms.uLmFar = U.uLmFar; sh.uniforms.uLmBias = U.uLmBias;
     let L = T.ShaderChunk.lights_fragment_begin;
     // la sombra horneada (G) sustituye a la de tiempo real donde esta se apaga (lejos, muros rozados) …
     if (L.includes(SUN_A)) L = L.replace(SUN_A, 'directLight.color *= mix( sdLmSun, sdS, sdF );');
     // … y en BAJO (sin mapa de sombras) es la única; la oclusión oscurece un poco también el sol
     L = L.replace(SUN_IRR, SUN_IRR + '\n#ifndef USE_SHADOWMAP\n directLight.color *= sdLmSun;\n#endif\n directLight.color *= mix( 1.0, sdLm.r, uAoSun );');
     sh.fragmentShader = sh.fragmentShader
-      .replace('#include <common>', '#include <common>\nuniform float uAoSun; uniform float uLmSun; uniform float uLmFar;')
+      .replace('#include <common>', '#include <common>\nuniform float uAoSun; uniform float uLmSun; uniform float uLmFar; uniform float uLmBias;')
       // B counts the ground as hiding the sky: a wall in an open square sees ~0.6 of it and should not darken at all
-      // (the hemisphere light already gives the lower half its ground colour); inside the houses B is ~0.15
-      .replace('#include <aomap_fragment>', 'reflectedLight.indirectDiffuse *= mix( 1.0, clamp( sdLm.b * 1.6, 0.0, 1.0 ), uLmFar );\n#include <aomap_fragment>')
-      .replace('#include <lights_fragment_begin>', 'vec4 sdLm = texture2D( aoMap, vUv2 ); float sdLmSun = mix( 1.0, sdLm.g, uLmSun );\n' + L);
+      // (the hemisphere light already gives the lower half its ground colour); inside the houses B is ~0.15.
+      // (26-11-2026) three.js's own occlusion (aomap_fragment) uses the same read: one read of the image, not two
+      .replace('#include <aomap_fragment>', 'reflectedLight.indirectDiffuse *= mix( 1.0, clamp( sdLm.b * 1.6, 0.0, 1.0 ), uLmFar );\n' + T.ShaderChunk.aomap_fragment.replace('texture2D( aoMap, vUv2 ).r', 'sdLm.r'))
+      .replace('#include <lights_fragment_begin>', 'vec4 sdLm = texture2D( aoMap, vUv2, uLmBias ); float sdLmSun = mix( 1.0, sdLm.g, uLmSun );\n' + L);
+    // (26-11-2026, the owner: «desde lejos se ven rayas que parpadean») uLmBias: the image is read one mipmap level
+    // softer; close by (the image magnified) nothing changes, from far away the 14 cm texels no longer flicker
     // &lmdbg=1: the baked image as it is read (R oclusión, G sol, B cielo), to check the uv2
     if (opt.debug) sh.fragmentShader = sh.fragmentShader.replace('#include <dithering_fragment>', '#include <dithering_fragment>\n gl_FragColor = vec4( sdLm.rgb, 1.0 );');
   };

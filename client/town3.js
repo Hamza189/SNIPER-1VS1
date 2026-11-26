@@ -47,6 +47,13 @@ function vnoise(x, y, seed) {
   return a + (b - a) * sx + (c - a) * sy + (a - b - c + d) * sx * sy;
 }
 
+// is (x, z) within m metres of a convex quad on the ground (corners [x, y, z], in order)
+function inQuad(q, x, z, m) {
+  let s = 0;
+  for (let i = 0; i < 4; i++) { const a = q[i], b = q[(i + 1) % 4], ex = b[0] - a[0], ez = b[2] - a[2], L = Math.hypot(ex, ez) || 1;
+    const d = ((x - a[0]) * ez - (z - a[2]) * ex) / L; s += d > m ? 1 : d < -m ? -1 : 0; }
+  return Math.abs(s) < 4 || false;
+}
 /* ----------------------------------------------------------------- geometry builder (merged meshes) */
 function createBuilder() { const B = {}; for (const k of MATS) B[k] = { pos: [], nrm: [], uv: [], col: [], idx: [] }; return B; }
 function planarUV(p, n) {
@@ -496,9 +503,26 @@ function ground(opt) {
   for (let x = S.x0; x < S.x1 - 0.01; x += cell) for (let z = opt.south ? S.z0 : Math.max(S.z0, 0); z < S.z1 - 0.01; z += cell) {
     const xa = x, xb = Math.min(S.x1, x + cell), za = z, zb = Math.min(S.z1, z + cell);
     if (inRoad((xa + xb) / 2, (za + zb) / 2)) continue;
+    if (opt.inside && !opt.inside((xa + xb) / 2, (za + zb) / 2)) continue;   // the blocks that come into the town (client/contorno.js)
     const c = (px, pz) => { const n = vnoise(px * 0.08, pz * 0.08, 3), n2 = vnoise(px * 0.3, pz * 0.3, 5); const k = 0.86 + n * 0.22 + (n2 - 0.5) * 0.08; return mix([k, k * 0.98, k * 0.95], [0.78, 0.8, 0.62], Math.max(0, n2 - 0.72) * 1.6); };
     quad(B, 'earth', [[xa, 0.008, za], [xa, 0.008, zb], [xb, 0.008, zb], [xb, 0.008, za]], [0, 1, 0], [c(xa, za), c(xa, zb), c(xb, zb), c(xb, za)]);
     if (opt.place && vnoise(xa * 0.21, za * 0.21, 9) > 0.62 && !foot.some(f => xa + 1 > f[0] - 0.3 && xa + 1 < f[1] + 0.3 && za + 1 > f[2] - 0.3 && za + 1 < f[3] + 0.3)) opt.place.push({ k: 'weeds', x: xa + 1, y: 0, z: za + 1, ry: xa * 1.3 + za, s: [1.4, 1, 1.4] });
+  }
+  // 26-11-2026: the ground beyond the old square (client/contorno.js AREAS: [x0, z0, x1, z1, kind])
+  for (const [x0, z0, x1, z1, kind] of opt.areas || []) {
+    if (kind === 'plaza') {   // slabs, a cobble band round the edge; the cross street's asphalt runs on into it
+      flat(B, M_PLAZA, x0, z0 + 0.9, x1 - 0.9, z1 - 0.9, 0.016, C_SLAB);
+      flat(B, M_SET, x0, z0, x1, z0 + 0.9, 0.018, hex(0xcfc6b8)); flat(B, M_SET, x0, z1 - 0.9, x1, z1, 0.018, hex(0xcfc6b8)); flat(B, M_SET, x1 - 0.9, z0 + 0.9, x1, z1 - 0.9, 0.018, hex(0xcfc6b8));
+      flat(B, 'asphalt', x0, -3.5, x0 + 4, 3.5, 0.019, [1, 1, 1]);
+      for (const c of [x0 + 4.4, x0 + 8.2]) flat(B, M_PLAZA, c - 0.2, z0 + 0.9, c + 0.2, z1 - 0.9, 0.019, DK);
+    } else if (kind === 'setts') {   // cobbles with the gutter down the middle
+      const xm = (x0 + x1) / 2; flat(B, M_SET, x0, z0, xm - 0.22, z1, 0.012, C_SET); flat(B, M_SET, xm + 0.22, z0, x1, z1, 0.012, C_SET);
+      for (let z = z0; z < z1; z += 1.2) flat(B, 'slabs', xm - 0.22, z, xm + 0.22, Math.min(z1, z + 1.18), 0.006, hex(0xbdb3a3));
+    } else for (let x = x0; x < x1 - 0.01; x += cell) for (let z = z0; z < z1 - 0.01; z += cell) {   // earth, weeds now and then
+      const xa = x, xb = Math.min(x1, x + cell), za = z, zb = Math.min(z1, z + cell), k = (px, pz) => { const n = vnoise(px * 0.08, pz * 0.08, 3); const v = 0.84 + n * 0.22; return [v, v * 0.98, v * 0.93]; };
+      quad(B, 'earth', [[xa, 0.008, za], [xa, 0.008, zb], [xb, 0.008, zb], [xb, 0.008, za]], [0, 1, 0], [k(xa, za), k(xa, zb), k(xb, zb), k(xb, za)]);
+      if (opt.place && vnoise(xa * 0.37, za * 0.37, 11) > 0.55) opt.place.push({ k: 'weeds', x: xa + 1, y: 0, z: za + 1, ry: xa * 1.3 + za, s: [1.4, 1, 1.4] });
+    }
   }
   return pack(B);
 }
@@ -510,6 +534,7 @@ function backdrop(opt, place) {
   const B = createBuilder();
   const R = rng(opt.seed || 77);
   const fams = Object.keys(FAMILIES);
+  const foot = opt.keepOut ? [] : null;   // the houses' footprints: no tree inside one
   const sides = opt.sides || [
     // [origin, along, out (towards the town), length, which part]
     { O: [-50, 0, 50], R: [1, 0, 0], N: [0, 0, -1], L: 100 },     // north wall, inner face z = 50
@@ -521,7 +546,12 @@ function backdrop(opt, place) {
     while (u < sd.L - 0.5) {
       const wdt = Math.min(sd.L - u, R.uni(5.5, 9.5));
       const fam = R.pick(fams), F0 = FAMILIES[fam];
-      const H = R.pick([7.2, 8.5, 10, 11.5, 13]);
+      let H = R.pick([7.2, 8.5, 10, 11.5, 13]);
+      // (26-11-2026) at an inner corner of the outline (convex0/convex1 false: client/contorno.js) the corner houses of
+      // the two sides stand in the same block: the same height for both, so their roofs cross instead of one floating
+      const cornerH = p => [7.2, 8.5, 10, 11.5, 13][Math.abs(Math.round(p[0] * 7 + p[2] * 13)) % 5];
+      if (u === 0 && sd.convex0 === false) H = cornerH(sd.O);
+      if (u + wdt >= sd.L - 1e-6 && sd.convex1 === false) H = Math.max(u === 0 && sd.convex0 === false ? H : 0, cornerH(add(sd.O, mul(sd.R, sd.L))));
       const depth = R.uni(7, 10);
       // facade frame: origin at this house's left end, facing the town
       const O = add(sd.O, mul(sd.R, u));
@@ -564,14 +594,19 @@ function backdrop(opt, place) {
       const n = Math.max(1, Math.round(wdt)), sx = wdt / n;
       for (let i = 0; i < n; i++) Ff.kit(place, 'eave_lo', (i + 0.5) * sx, H, 0, { s: [sx, 1, 1] });
       const back = mul(sd.N, -depth), ridgeH = H + depth * 0.5 * 0.55;
-      const a = Ff.p(-0.05, H, 0.28), b = Ff.p(wdt + 0.05, H, 0.28);
-      const cA = add(Ff.p(-0.05, ridgeH, 0), mul(back, 0.5)), cB = add(Ff.p(wdt + 0.05, ridgeH, 0), mul(back, 0.5));
+      // 26-11-2026 (client/contorno.js): the first and last house of a side meet another side at a corner: no eave
+      // sticking out past the corner and the gable 6 cm in (else it lies in the plane of the other side's facade)
+      const first = u === 0, last = u + wdt >= sd.L - 1e-6, c0 = flip ? last : first, c1 = flip ? first : last;   // (Ff's u = 0 end, u = wdt end)
+      const oa = c0 ? 0 : -0.05, ob = c1 ? wdt : wdt + 0.05;
+      const a = Ff.p(oa, H, 0.28), b = Ff.p(ob, H, 0.28);
+      const cA = add(Ff.p(oa, ridgeH, 0), mul(back, 0.5)), cB = add(Ff.p(ob, ridgeH, 0), mul(back, 0.5));
       B.uvFn = (p) => { const along = dot(p, Ff.R), up = Math.hypot(p[1] - H, dot(sub(p, a), sd.N)); return [along / 2.2, up / 2.0]; };
       const rc = mix(hex(0xc8704a), hex(R.pick([0xb06040, 0xd08060, 0xa85a3a])), 0.5);
       quad(B, 'rooftiles', [a, b, cB, cA], add(sd.N, [0, 1.6, 0]), rc);
       quad(B, 'rooftiles', [cA, cB, add(b, mul(back, 1)), add(a, mul(back, 1))], add(mul(sd.N, -1), [0, 1.6, 0]), mul(rc, 0.8));
       B.uvFn = null;
-      for (const [uu, sgn] of [[0, -1], [wdt, 1]]) {   // gable ends
+      if (foot) foot.push([Ff.p(0, 0, 0), Ff.p(wdt, 0, 0), add(Ff.p(wdt, 0, 0), back), add(Ff.p(0, 0, 0), back)]);
+      for (const [uu, sgn] of [[c0 ? 0.06 : 0, -1], [c1 ? wdt - 0.06 : wdt, 1]]) {   // gable ends
         const p0 = Ff.p(uu, 0, 0), p1 = Ff.p(uu, H, 0), p2 = add(Ff.p(uu, 0, 0), back), p3 = add(Ff.p(uu, H, 0), back), apx = add(Ff.p(uu, ridgeH, 0), mul(back, 0.5));
         quad(B, 'stucco', [p0, p1, p3, p2], mul(Ff.R, sgn), mul(wall, 0.85));
         quad(B, 'stucco', [p1, apx, apx, p3], mul(Ff.R, sgn), mul(wall, 0.85));
@@ -581,16 +616,18 @@ function backdrop(opt, place) {
       u += wdt;
     }
   }
-  // landmarks and trees behind the rows
+  // landmarks and trees behind the rows (opt.keepOut(x, z): true where no tree may stand; also none inside a house)
+  const free = (x, z) => !(opt.keepOut && (opt.keepOut(x, z) || foot.some(q => inQuad(q, x, z, 2.5))));
   place.push({ k: 'bell_tower', x: -30, y: 0, z: 61, ry: 0, c: 0xf2ece0 });
   if (opt.trees !== false) for (let k = 0; k < 16; k++) {
-    const x = R.uni(-58, 58), z = R.uni(62, 80), t = R();
-    place.push({ k: t < 0.45 ? 'cypress' : t < 0.75 ? 'olive' : 'palm', x, y: 0, z, ry: R.uni(0, 6.28), s: t < 0.45 ? [1, R.uni(0.8, 1.25), 1] : [1, 1, 1] });
+    const x = R.uni(-58, 58), z = R.uni(62, 80), t = R(), sc = R.uni(0.8, 1.25), ry = R.uni(0, 6.28);
+    if (free(x, z)) place.push({ k: t < 0.45 ? 'cypress' : t < 0.75 ? 'olive' : 'palm', x, y: 0, z, ry, s: t < 0.45 ? [1, sc, 1] : [1, 1, 1] });
   }
   if (opt.trees !== false) for (let k = 0; k < 10; k++) {
-    const side = R() < 0.5 ? -1 : 1, x = side * R.uni(60, 74), z = R.uni(4, 55), t = R();
-    place.push({ k: t < 0.5 ? 'cypress' : 'olive', x, y: 0, z, ry: R.uni(0, 6.28) });
+    const side = R() < 0.5 ? -1 : 1, x = side * R.uni(60, 74), z = R.uni(4, 55), t = R(), ry = R.uni(0, 6.28);
+    if (free(x, z)) place.push({ k: t < 0.5 ? 'cypress' : 'olive', x, y: 0, z, ry });
   }
+  if (foot) backdrop.foot = (backdrop.foot || []).concat(foot);
   return pack(B);
 }
 
@@ -602,10 +639,11 @@ const SOUTH_SIDES = [
   { O: [50, 0, 0], R: [0, 0, -1], N: [-1, 0, 0], L: 50 },        // east wall (south half)
 ];
 function backdropSouth(opt, place) {
-  const d = backdrop(Object.assign({ lite: true }, opt, { sides: SOUTH_SIDES, trees: false, seed: (opt && opt.seed) || 4021 }), place), R = rng(913);
-  for (let k = 0; k < 16; k++) { const x = R.uni(-58, 58), z = -R.uni(62, 80), t = R();
-    place.push({ k: t < 0.45 ? 'cypress' : t < 0.75 ? 'olive' : 'palm', x, y: 0, z, ry: R.uni(0, 6.28), s: t < 0.45 ? [1, R.uni(0.8, 1.25), 1] : [1, 1, 1] }); }
-  for (let k = 0; k < 10; k++) { const side = R() < 0.5 ? -1 : 1, x = side * R.uni(60, 74), z = -R.uni(4, 55), t = R(); place.push({ k: t < 0.5 ? 'cypress' : 'olive', x, y: 0, z, ry: R.uni(0, 6.28) }); }
+  const d = backdrop(Object.assign({ lite: true }, opt, { sides: (opt && opt.sides) || SOUTH_SIDES, trees: false, seed: (opt && opt.seed) || 4021 }), place), R = rng(913);
+  const foot = backdrop.foot || [], free = (x, z) => !(opt && opt.keepOut && (opt.keepOut(x, z) || foot.some(q => inQuad(q, x, z, 2.5))));
+  for (let k = 0; k < 16; k++) { const x = R.uni(-58, 58), z = -R.uni(62, 80), t = R(), ry = R.uni(0, 6.28), sc = R.uni(0.8, 1.25);
+    if (free(x, z)) place.push({ k: t < 0.45 ? 'cypress' : t < 0.75 ? 'olive' : 'palm', x, y: 0, z, ry, s: t < 0.45 ? [1, sc, 1] : [1, 1, 1] }); }
+  for (let k = 0; k < 10; k++) { const side = R() < 0.5 ? -1 : 1, x = side * R.uni(60, 74), z = -R.uni(4, 55), t = R(), ry = R.uni(0, 6.28); if (free(x, z)) place.push({ k: t < 0.5 ? 'cypress' : 'olive', x, y: 0, z, ry }); }
   return d;
 }
 function hills(opt) {

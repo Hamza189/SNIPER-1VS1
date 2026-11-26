@@ -87,6 +87,12 @@ for (const H of C.HOUSES.filter(h => h.floors === 2)) {
   s = walk(s, ax === 'x' ? dir : 0, ax === 'x' ? 0 : dir, 3.0);
   s = walk(s, ax === 'x' ? 0 : side, ax === 'x' ? side : 0, 1.0);
   check(H.id + ': se sube la escalera hasta la planta alta (' + C.upY(H) + ' m)', Math.abs(s.y - C.upY(H)) < 0.05 && inBox(H, s.x, s.z, 0.3), 'y ' + s.y.toFixed(2) + ' en ' + s.x.toFixed(1) + ', ' + s.z.toFixed(1));
+  // 26-11-2026: wider (1.5 m) and a handrail on the open side: half way up, walking sideways does not drop you off it
+  check(H.id + ': escalera de 1,5 m de ancho', Math.abs((ax === 'x' ? r.maxZ - r.minZ : r.maxX - r.minX) - 1.5) < 1e-6);
+  { const mid = ax === 'x' ? [(r.minX + r.maxX) / 2, cz] : [cx, (r.minZ + r.maxZ) / 2], t = Math.abs((ax === 'x' ? mid[0] : mid[1]) - lowAt), hy = st.top * t / (ax === 'x' ? r.maxX - r.minX : r.maxZ - r.minZ);
+    let m = at(mid[0], mid[1], hy + 0.05); m = walk(m, ax === 'x' ? 0 : side, ax === 'x' ? side : 0, 1.0); m = walk(m, ax === 'x' ? 0 : side, ax === 'x' ? side : 0, 0.6, { jump: true });
+    check(H.id + ': a media escalera, andando (y saltando) hacia el lado abierto no te caes: barandilla', m.y > hy - 0.3, 'y ' + m.y.toFixed(2) + ' (escalón ' + hy.toFixed(2) + ')'); }
+  check(H.id + ': la barandilla de la escalera (pasamanos) no para balas', C.boxes(H).filter(b => /_pasamanos/.test(b.n)).every(b => b.s === 0) && C.boxes(H).some(b => /_pasamanos/.test(b.n)));
   // walk around the upper floor: to the centre
   s = walk(s, H.x - s.x, H.z - s.z, Math.hypot(H.x - s.x, H.z - s.z) / 3.5);
   check(H.id + ': se anda por la planta alta (centro)', Math.abs(s.y - C.upY(H)) < 0.05, 'y ' + s.y.toFixed(2) + ' en ' + s.x.toFixed(1) + ', ' + s.z.toFixed(1));

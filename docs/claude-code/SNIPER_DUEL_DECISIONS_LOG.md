@@ -6,6 +6,23 @@ Cada entrada dice qué se decidió o cambió, quién lo decidió, y el estado re
 Las decisiones anteriores al 18-10-2026 están resumidas en `SNIPER_DUEL_MASTER_CONTEXT.md` §4.
 Detalle de cada cambio (antes/después, medidas, cómo revertir): `docs/next-level/NEXT_LEVEL_CHANGELOG.md`.
 
+## 26-11-2026 — Luz horneada sin rayas de lejos, escaleras más anchas con barandilla y el PUEBLO deja de ser un cuadrado
+El propietario: «en el cambio de la luz cocinada se ve mejor el juego pero desde lejos se ven rayas que parpadean de la
+textura, más de las ventanas o líneas negras, arréglalo y mejóralo; mejora las escaleras de las casas habitables, que
+sean más anchas y pon una barandilla, y mejora el diseño del mapa, un cuadrado perfecto no tiene gracia».
+- **Rayas de la luz horneada** (`?lm=1`): eran los trozos más finos que un texel (cantos de repisas, bandas, marcos)
+  sin hornear y rellenados con el color del trozo vecino del atlas. Arreglado en el empaquetado (`pack.js`: un texel
+  entero), el acabado (`finish.py`: relleno solo dentro de cada trozo, margen 3) y el juego (`uLmBias`: un mipmap más
+  suave de lejos; `&lmbias=0` como antes). Atlas 7,2 → 5,8 texeles/m. Detalle: `docs/ILUMINACION-HORNEADA.md`.
+- **Escaleras** (`client/casas.js`): 1,1 → 1,5 m de ancho y barandilla de madera y hierro inclinada en el lado abierto
+  (cajas de movimiento escalonadas, las balas pasan; abierta abajo y arriba para entrar y salir). Pruebas nuevas en
+  `test/casas.test.js` (299). `docs/CASAS-HABITABLES.md`.
+- **Contorno** (`client/contorno.js`, nuevo): polígono de 20 esquinas en lugar del cuadrado: plazuela del mirador al
+  este (línea de tiro de 112 m), callejón al sur, patio al oeste y dos manzanas que entran (noroeste y sureste); muros,
+  fachadas de fuera, suelo, red de bots y cajas salen de él. Es el mapa de verdad (online, `pueblo4`): cambia
+  `core/mapdata.js` y se redespliega el servidor. `test/contorno.test.js` (15). `docs/CONTORNO.md`.
+- Se volvió a hornear la luz de todo el pueblo (cambió la geometría).
+- **Estado**: IMPLEMENTADO · PROBADO EN NAVEGADOR · PENDIENTE DE QUE EL PROPIETARIO LO VEA (PC e iPhone).
 ## 26-11-2026 — Gráficos tipo CoD/PUBG: fase 5, paquetes por mapa y texturas por distancia (`?stream=1`)
 - **Qué**: un paquete por mapa (`client/packs.js`, generado por `tools/packs/make.js` mirando qué texturas usan de
   verdad sus mallas): PUEBLO 43 texturas, BARRIO 11. El mapa arranca con versiones de ≤ 256 px (`assets/tex/lo/`,

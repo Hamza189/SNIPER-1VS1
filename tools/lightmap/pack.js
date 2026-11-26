@@ -13,7 +13,7 @@ const LM = require('../../client/lightmap.js');
 const arg = k => { const i = process.argv.indexOf('--' + k); return i > 0 ? process.argv[i + 1] : null; };
 const WORK = path.join(__dirname, '.work'), SRC = path.join(WORK, 'pueblo');
 const OUTD = path.join(__dirname, '..', '..', 'assets', 'lightmaps');
-const SIZE = +(arg('size') || 2048), PAD = +(arg('pad') || 2), WHITE = 4;
+const SIZE = +(arg('size') || 2048), PAD = +(arg('pad') || 3), WHITE = 4;
 const SOLO = arg('solo');
 const HOUSES = require('../../client/casas.js').HOUSES;
 const J = require(SRC + '.json'), B = fs.readFileSync(SRC + '.bin');
@@ -100,7 +100,12 @@ for (const m of J.meshes) {
 }
 // packing at density d (texels per metre): shelves, tallest first; returns the atlas height used
 function pack(d, W) {
-  const items = charts.map(c => { const dd = Math.min(d * c.sc, 1000 / Math.max(c.eu, c.ev, 1e-3)); return { c, dd, w: Math.max(1, Math.ceil(c.eu * dd)) + 2 * PAD, h: Math.max(1, Math.ceil(c.ev * dd)) + 2 * PAD }; });
+  // (26-11-2026) a chart thinner than a texel (the 2–3 cm sides of ledges, bands and frames) is stretched to one whole
+  // texel that way: its texel centre then lies on the face and Blender bakes it. Before, it was left unbaked and the
+  // edge fill gave it the colour of whatever chart was next to it in the atlas: the thin light and dark lines along
+  // corners and windows that crawled when seen from far away
+  const items = charts.map(c => { const dd = Math.min(d * c.sc, 1000 / Math.max(c.eu, c.ev, 1e-3)), du = c.eu * dd < 1 ? 1 / Math.max(c.eu, 1e-6) : dd, dv = c.ev * dd < 1 ? 1 / Math.max(c.ev, 1e-6) : dd;
+    return { c, dd, du, dv, w: Math.max(1, Math.ceil(c.eu * du - 1e-9)) + 2 * PAD, h: Math.max(1, Math.ceil(c.ev * dv - 1e-9)) + 2 * PAD }; });
   items.sort((a, b) => b.h - a.h || b.w - a.w || a.c.id - b.c.id);
   let x = WHITE, y = 0, sh = WHITE;
   for (const it of items) {
@@ -117,8 +122,8 @@ const H = SIZE;
 for (const it of best.items) {
   const c = it.c, uv = c.e.uv;
   for (let i = 0; i < c.V.length; i++) {
-    uv[c.V[i] * 2] = (it.x + PAD + (c.pr[i * 2] - c.u0) * it.dd) / W;
-    uv[c.V[i] * 2 + 1] = (it.y + PAD + (c.pr[i * 2 + 1] - c.v0) * it.dd) / H;
+    uv[c.V[i] * 2] = (it.x + PAD + (c.pr[i * 2] - c.u0) * it.du) / W;
+    uv[c.V[i] * 2 + 1] = (it.y + PAD + (c.pr[i * 2 + 1] - c.v0) * it.dv) / H;
   }
 }
 // vertices that do not receive → the white corner

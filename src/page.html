@@ -2051,8 +2051,11 @@ let GROUND=null;const TOWN_FROM=scene.children.length;
  const r2=new T.Mesh(new T.PlaneGeometry(98,7),MAT.road);r2.rotation.x=-Math.PI/2;r2.position.y=0.014;r2.receiveShadow=true;scene.add(r2);
  var OLD_ROADS=[r1,r2];
  roadTex.repeat.set(2,20);}
-// perimeter walls
-box(102,4,1,MAT.concrete,0,0,-50.5);box(102,4,1,MAT.concrete,0,0,50.5);box(1,4,100,MAT.concrete,-50.5,0,0);box(1,4,100,MAT.concrete,50.5,0,0);
+// perimeter walls (26-11-2026, client/contorno.js: no longer a square; the callejón, the plazuela, the patio and two blocks)
+const OUTLINE=typeof SDContorno!=='undefined'?SDContorno:null;
+if(OUTLINE)for(const c of OUTLINE.walls())box(c.maxX-c.minX,c.maxY-c.minY,c.maxZ-c.minZ,MAT.concrete,(c.minX+c.maxX)/2,0,(c.minZ+c.maxZ)/2);
+else{box(102,4,1,MAT.concrete,0,0,-50.5);box(102,4,1,MAT.concrete,0,0,50.5);box(1,4,100,MAT.concrete,-50.5,0,0);box(1,4,100,MAT.concrete,50.5,0,0);}
+const inTown=(x,z,m)=>OUTLINE?OUTLINE.inside(x,z,m||0):Math.abs(x)<50-(m||0)&&Math.abs(z)<50-(m||0);
 // buildings [x,z,w,d,h,tint]
 /* CASAS HABITABLES (14-11-2026, client/casas.js, docs/CASAS-HABITABLES.md): 8 PUEBLO houses with doors, windows, rooms,
    stairs and balconies instead of a solid box. Part of the map (core/mapdata.js has them: the server agrees). */
@@ -2096,7 +2099,9 @@ addRamp(-5,5,-33,-30,'x',0,4.35,true);
 const LOW=[[-14,-8,6,0.8],[14,8,6,0.8],[-4,15,0.8,5],[5,-15,0.8,5],[-20,0,0.8,6],[20,-2,0.8,6],[0,-22,5,0.8],[-2,22,5,0.8],[-22,28,4,0.8],[22,-24,4,0.8],[-40,-20,0.8,5],[40,22,0.8,5]];
 for(const [x,z,w,d] of LOW){box(w,1.05,d,MAT.bag,x,0,z);}
 // crates [x,z,stack]
-const CRATES=[[6,4,1],[7.2,4,2],[-6,-5,1],[-17,12,2],[-15.8,12,1],[17,-12,1],[-3,33,1],[22,6,1],[-23,-20,2],[-23,-18.8,1],[24,28,1],[-8,-17,1],[9,17,2],[10.2,17,1],[-26,6,1],[40,0,2],[-40,4,1],[0,8,1],[-44,-44,2],[44,-44,1],[-44,44,1],[44,46,2]];
+const CRATES=[[6,4,1],[7.2,4,2],[-6,-5,1],[-17,12,2],[-15.8,12,1],[17,-12,1],[-3,33,1],[22,6,1],[-23,-20,2],[-23,-18.8,1],[24,28,1],[-8,-17,1],[9,17,2],[10.2,17,1],[-26,6,1],[40,0,2],[-40,4,1],[0,8,1],[-44,-44,2],[44,46,2]]
+  // 26-11-2026: the two corner ones moved out of the blocks that now come in; cover in the plazuela, the callejón and the patio
+  .concat(OUTLINE?[[40.6,-45.5,1],[-44,41.6,1],[57,5,2],[55.8,5,1],[58.2,-6.2,1],[20.6,-57.6,1],[-54.4,-27,2],[-54.4,-25.8,1]]:[[44,-44,1],[-44,44,1]]);
 for(const [x,z,s] of CRATES){
   for(let i=0;i<s;i++){const m=new T.Mesh(new T.BoxGeometry(1.2,1.2,1.2),MAT.crate);m.position.set(x,0.6+i*1.2,z);m.rotation.y=(i?0.12:0);m.castShadow=m.receiveShadow=true;scene.add(m);W.ray.push(m);}
   addCollider(x-0.6,0,z-0.6,x+0.6,1.2*s,z+0.6);
@@ -2502,15 +2507,17 @@ if(P3ON){
       p0side:{tex:pre('sidewalk'),tile:1.5,r:0.8,n:1,rough:true,col:0xffffff},
       p0patch:{tex:pre('patch'),tile:2,r:0.9,n:1,rough:true,col:0xffffff}});
   }
-  p3mesh(SDTown3.ground({footprints:foot,fronts,place:P3W.place,p0:P0.on?P0.use:null,south:P31,p4:P4ON}).geo,'ground',gctx,true);
+  p3mesh(SDTown3.ground({footprints:foot,fronts,place:P3W.place,p0:P0.on?P0.use:null,south:P31,p4:P4ON,inside:OUTLINE&&((x,z)=>OUTLINE.inside(x,z)),areas:OUTLINE?OUTLINE.AREAS:null}).geo,'ground',gctx,true);
   if(P0.on)try{p0Details(foot);}catch(e){console.warn('p0',e);}
   // the town outside: its facades stand exactly on the plane of the old 4 m concrete perimeter wall (x, z = ±50), so the
   // lower half of every facade at the end of a street fought that wall for each pixel: a grey mix when standing still,
   // crawling stripes when moving (the owner's "rayas", found by ray casting on 19-10-2026: 102 coplanar hits). Its own
   // materials (same shared textures) with the ground's depth offset, so the facade always wins
-  {const bctx=Object.assign({},P3W.ctx,{cache:{}});p3mesh(SDTown3.backdrop({},P3W.place).geo,'backdrop',bctx,true);
-   if(P31&&GFX.profile!=='bajo')p3mesh(SDTown3.backdropSouth({},P3W.place).geo,'backdropS',bctx,true);}
-  if(P4ON)P3W.place.push(...SDPueblo4.dress(P3W.place.filter(p=>Math.abs(p.x)<49&&Math.abs(p.z)<49)));   // PUEBLO 4.0: washing, window boxes, air conditioners, door plaques, meter boxes
+  // (26-11-2026) one row of houses on every side of the outline: north and side walls as before, the south ones light
+  {const bctx=Object.assign({},P3W.ctx,{cache:{}}),sd=OUTLINE?OUTLINE.sides():null,keepOut=OUTLINE?(x,z)=>OUTLINE.inside(x,z,-4):null;
+   p3mesh(SDTown3.backdrop(sd?{sides:sd.filter(s=>s.mid[1]>=0),keepOut}:{},P3W.place).geo,'backdrop',bctx,true);
+   if(P31&&GFX.profile!=='bajo')p3mesh(SDTown3.backdropSouth(sd?{sides:sd.filter(s=>s.mid[1]<0),keepOut}:{},P3W.place).geo,'backdropS',bctx,true);}
+  if(P4ON)P3W.place.push(...SDPueblo4.dress(P3W.place.filter(p=>inTown(p.x,p.z,1))));   // PUEBLO 4.0: washing, window boxes, air conditioners, door plaques, meter boxes
   // the slice's sandbag walls become stone planters (same boxes), with orange trees on the long ones
   for(const o of P3W.skip)hideOld(o);
   for(const o of P3W.skip){const gp=k=>o.geometry.parameters[k],p=o.position,w=gp('width'),h=gp('height'),d=gp('depth');
@@ -2602,10 +2609,11 @@ if(CASAS.on){
 /* ILUMINACIÓN HORNEADA (24-11-2026, client/lightmap.js, docs/ILUMINACION-HORNEADA.md): oclusión ambiental y sombra del
    sol horneadas en Blender para las paredes y el suelo del PUEBLO (assets/lightmaps/). En prueba: solo con ?lm=1 (se
    recuerda; ?lm=0 lo quita). Lo que se ve: ni cajas, ni balas, ni el servidor. &lmao=0.7 fuerza de la oclusión,
-   &lmsol=0 sin la sombra horneada del sol, &lmcielo=0.75 cuánto oscurece el interior (comparar). */
+   &lmsol=0 sin la sombra horneada del sol, &lmcielo=0.75 cuánto oscurece el interior, &lmbias=1 cuánto más suave se lee de lejos
+   (0 = como antes del 26-11) (comparar). */
 const LM={on:typeof SDLightmap!=='undefined'&&P3ON&&(()=>{const q=(location.search.match(/[?&]lm=([01])\b/)||[])[1];if(q)store.set('lm',q==='1');return !!store.get('lm',false);})(),
   ready:false,failed:false,res:null,tex:null,opt:{ao:+((location.search.match(/[?&]lmao=([0-9.]+)/)||[])[1]||1),sun:/[?&]lmsol=0\b/.test(location.search)?0:1,
-    far:+((location.search.match(/[?&]lmcielo=([0-9.]+)/)||[])[1]||0.75),debug:/[?&]lmdbg=1\b/.test(location.search),cache:new Map()}};
+    far:+((location.search.match(/[?&]lmcielo=([0-9.]+)/)||[])[1]||0.75),bias:+((location.search.match(/[?&]lmbias=([0-9.]+)/)||[])[1]||1),debug:/[?&]lmdbg=1\b/.test(location.search),cache:new Map()}};
 function lmLoad(){
   if(!LM.on||LM.ready||LM.failed)return;
   const fail=e=>{LM.failed=true;console.warn('horneado',e);};
@@ -2642,7 +2650,7 @@ function detBuild(id){
       opt={seed:20261125,bounds:[-48.5,-48.5,48.5,48.5],posters:true,tags:false,damp:false,groundY:detGround(ground),
         skip:(x,z)=>Math.hypot(x,z)<5||(CASAS.on&&!!SDCasas.inside(x,z,0.4)),
         avoid:P3W.place.filter(q=>onWall.test(q.k)).map(q=>({x:q.x,y:(q.y||0)+0.9,z:q.z,r:/^door|shop|balcony|awning/.test(q.k)?1.4:0.9})),
-        windows:P3W.place.filter(q=>/^win_/.test(q.k)&&Math.abs(q.x)<49&&Math.abs(q.z)<49&&!(CASAS.on&&SDCasas.inside(q.x,q.z,-0.5))).map(q=>({x:q.x,y:q.y||0,z:q.z,ry:q.ry||0,w:1.0}))};
+        windows:P3W.place.filter(q=>/^win_/.test(q.k)&&inTown(q.x,q.z,1)&&!(CASAS.on&&SDCasas.inside(q.x,q.z,-0.5))).map(q=>({x:q.x,y:q.y||0,z:q.z,ry:q.ry||0,w:1.0}))};
     }else{
       const ground=[];if(BAR.root)BAR.root.traverse(o=>{if(o.isMesh)ground.push(o);});
       opt={seed:20261126,bounds:[-27.8,-19.8,27.8,19.8],posters:true,tags:true,damp:true,groundY:detGround(ground)};
@@ -2680,7 +2688,8 @@ function casasSolid(on){
 let NAV=[];const NAVMAP=new Map();
 function blockedPt(x,z,inf){for(const c of W.colliders){if(x>c.minX-inf&&x<c.maxX+inf&&z>c.minZ-inf&&z<c.maxZ+inf)return true;}for(const c of (W.ramps||[])){if(x>c.minX-inf&&x<c.maxX+inf&&z>c.minZ-inf&&z<c.maxZ+inf)return true;}return false;}
 function segClear(ax,az,bx,bz,inf){const d=Math.hypot(bx-ax,bz-az);const n=Math.ceil(d/0.3);for(let i=1;i<n;i++){const t=i/n;if(blockedPt(lerp(ax,bx,t),lerp(az,bz,t),inf))return false;}return true;}
-{const S=3;for(let gx=-46;gx<=46;gx+=S)for(let gz=-46;gz<=46;gz+=S){if(!blockedPt(gx,gz,1.0)){NAVMAP.set(gx+','+gz,NAV.length);NAV.push({x:gx,z:gz,n:[]});}}
+{const S=3,bb=OUTLINE?OUTLINE.bounds():{x0:-46,x1:46,z0:-46,z1:46},g0=v=>Math.ceil((v+1)/S)*S-1;   // the same grid as before (…, -46, -43, …), over the whole outline, ≥ 2.9 m from its walls
+ for(let gx=g0(bb.x0);gx<=bb.x1;gx+=S)for(let gz=g0(bb.z0);gz<=bb.z1;gz+=S){if((OUTLINE?inTown(gx,gz,2.9):Math.max(Math.abs(gx),Math.abs(gz))<=46)&&!blockedPt(gx,gz,1.0)){NAVMAP.set(gx+','+gz,NAV.length);NAV.push({x:gx,z:gz,n:[]});}}
  for(const nd of NAV){for(const [dx,dz] of [[S,0],[-S,0],[0,S],[0,-S],[S,S],[S,-S],[-S,S],[-S,-S]]){const j=NAVMAP.get((nd.x+dx)+','+(nd.z+dz));if(j!==undefined&&segClear(nd.x,nd.z,nd.x+dx,nd.z+dz,0.55))nd.n.push(j);}}}
 // CASAS: the ground floor of each house (its own points, linked inside) joined to the grid at each door; only what stands
 // in the way of a walking body counts (the upper floors and balconies are over the door, blockedPt would close it)

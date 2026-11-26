@@ -5,9 +5,12 @@ interior de las casas). → assets/lightmaps/pueblo_lm.jpg
   · Qué texeles horneó Blender: los que caen dentro de algún triángulo (se rasterizan aquí los uv2) y no tienen el color
     de borrado (oclusión 0 y sol 1 a la vez).
   · Suavizado de 3×3 solo entre texeles horneados (quita el grano de las muestras sin mezclar con lo vacío).
-  · Relleno de bordes (8 pasos): cada texel vacío junto a uno horneado toma la media de sus vecinos horneados. El
-    margen de Blender no se aplicaba, y el filtrado y los mipmaps leían el vacío: líneas oscuras/verdes en los bordes.
-  · Lo que sigue vacío, blanco (sin efecto); la esquina (0,0) de 4×4, blanca: ahí apuntan los vértices que no reciben."""
+  · Relleno de bordes: cada texel vacío junto a uno horneado DEL MISMO TROZO toma la media de sus vecinos horneados,
+    hasta llenar el rectángulo del trozo (margen incluido). El margen de Blender no se aplicaba, y el filtrado y los
+    mipmaps leían el vacío: líneas oscuras/verdes en los bordes; mezclar con el trozo de al lado del atlas, líneas finas
+    que parpadeaban de lejos (26-11-2026).
+  · Lo que queda entre trozos, el valor más cercano; la esquina (0,0) de 4×4, blanca: ahí apuntan los vértices que no
+    reciben."""
 import sys, json, pathlib
 import numpy as np
 from PIL import Image, ImageDraw
@@ -37,19 +40,42 @@ for m in cfg['meshes']:
         dr.polygon([tuple(px[idx[t]]), tuple(px[idx[t + 1]]), tuple(px[idx[t + 2]])], fill=255)
 valid = (np.asarray(cov) > 0) & ~((ao <= 0.0) & (sun >= 1.0) & (far <= 0.0))
 
-def nb_sum(a):   # sum of the 3×3 neighbourhood
-    p = np.pad(a, 1)
-    return sum(p[1 + dy:1 + dy + a.shape[0], 1 + dx:1 + dx + a.shape[1]] for dy in (-1, 0, 1) for dx in (-1, 0, 1))
+# (26-11-2026) which chart each texel belongs to (its rectangle in the atlas, margin included): the smoothing and the
+# edge fill only mix texels of the same chart. Before, an unbaked texel took the average of whatever was next to it,
+# often another chart (a room's inside next to a facade): thin dark lines that crawled when seen from far away
+lab = np.zeros((H, W), dtype=np.int32)
+for i, r in enumerate(cfg.get('rects', [])):
+    x, y, w, h = r[0], r[1], r[2], r[3]
+    lab[H - (y + h):H - y, x:x + w] = i + 1                # image rows run top-down; atlas y runs up
+SH = [(dy, dx) for dy in (-1, 0, 1) for dx in (-1, 0, 1)]
+def shift(a, dy, dx, fill=0):
+    p = np.pad(a, 1, constant_values=fill)
+    return p[1 + dy:1 + dy + a.shape[0], 1 + dx:1 + dx + a.shape[1]]
+same = [shift(lab, dy, dx, -1) == lab for dy, dx in SH]  # neighbour in the same chart (or both outside every chart)
+def nb_sum(a, m):   # sum over the 3×3 neighbourhood of the same chart, and how many count
+    s = np.zeros_like(a); n = np.zeros_like(a)
+    for (dy, dx), ok in zip(SH, same):
+        mm = shift(m, dy, dx) * ok; s += shift(a, dy, dx) * mm; n += mm
+    return s, n
 vm = valid.astype(np.float32)
 chans = []
 for a in (ao, sun, far):
     a = np.where(valid, a, 0.0)
-    s, n = nb_sum(a * vm), nb_sum(vm)
-    a = np.where(valid, s / np.maximum(n, 1), 0.0)          # soft, only among baked texels
+    s, n = nb_sum(a, vm)
+    a = np.where(valid, s / np.maximum(n, 1), 0.0)          # soft, only among baked texels of the chart
     m = vm.copy()
-    for _ in range(8):                                      # edge fill
-        s, n = nb_sum(a * m), nb_sum(m)
+    for _ in range(64):                                     # edge fill, inside each chart (its margin included)
+        s, n = nb_sum(a, m)
+        grow = (m == 0) & (n > 0) & (lab > 0)
+        if not grow.any(): break
+        a = np.where(grow, s / np.maximum(n, 1), a); m = np.where(grow, 1.0, m)
+    # what is left between the charts: the nearest value (not white), so the smaller mipmaps do not lighten the edges
+    for _ in range(12):
+        s = np.zeros_like(a); n = np.zeros_like(a)
+        for dy, dx in SH:
+            mm = shift(m, dy, dx); s += shift(a, dy, dx) * mm; n += mm
         grow = (m == 0) & (n > 0)
+        if not grow.any(): break
         a = np.where(grow, s / np.maximum(n, 1), a); m = np.where(grow, 1.0, m)
     chans.append(np.where(m > 0, a, 1.0))
 rgb = np.stack(chans, axis=2)

@@ -64,9 +64,31 @@ node test/lightmap.test.js                        # archivos coherentes
 - Seguridad: cada malla lleva su nº de vértices y una firma de sus posiciones. Si el pueblo cambia y una malla ya no
   coincide, esa malla se queda sin horneado (no se ve mal) y la consola lo dice; hay que volver a hornear.
 
+## 26-11-2026: rayas que parpadeaban de lejos (arreglado) y nuevo horneado
+El propietario, con `?lm=1`: «se ve mejor el juego, pero desde lejos se ven rayas que parpadean, más en las ventanas,
+o líneas negras». Con `&lmdbg=1` se veían líneas de un píxel en esquinas, jambas, bandas y zócalos. Causas y arreglo:
+- **Trozos más finos que un texel** (los cantos de 2–3 cm de repisas, bandas, marcos y zócalos): su texel caía fuera
+  de la cara, Blender no lo horneaba y el relleno de bordes le daba el color del trozo de al lado *en el atlas* (a menudo
+  el interior oscuro de una habitación). `pack.js` ahora estira cada trozo fino a un texel entero en ese sentido (el
+  centro del texel cae en la cara y se hornea).
+- **Relleno de bordes y suavizado solo dentro de cada trozo** (`finish.py`, con los rectángulos de `bake.json`); lo que
+  queda entre trozos toma el valor más cercano en vez de blanco (los mipmaps pequeños ya no aclaran ni oscurecen bordes).
+- **Líneas negras en las juntas de los muros de las casas** (de cerca y de lejos): cada trozo de muro (entre huecos)
+  dibujaba sus 6 caras; las testas de dentro del muro, entre dos trozos, tenían el borde en el plano de la fachada y a
+  veces ganaban el píxel. Con el horneado salen oscuras (están dentro del muro). `client/casas.js` ahora dibuja las
+  testas solo donde no sigue otro trozo (las jambas de puertas y ventanas).
+- **Margen 3 texeles** por lado (antes 2): los mipmaps de lejos no mezclan trozos vecinos.
+- **En el juego, lectura un nivel de mipmap más suave** (`uLmBias`, `&lmbias=1`; `&lmbias=0` como antes): de cerca (la
+  imagen ampliada) no cambia nada; de lejos los texeles de 14–17 cm ya no parpadean. La oclusión de three.js usa la misma
+  lectura (una lectura de textura, no dos).
+- Precio: el atlas baja de 7,2 a 5,8 texeles/m (17 cm por texel; ~20 000 trozos, cada uno con su margen). Mismo
+  tamaño de imagen (2048²) y el mismo coste en el juego.
+- Se volvió a hornear todo también porque cambiaron las escaleras de las casas (1,5 m y barandilla) y el contorno del
+  pueblo (`docs/CONTORNO.md`).
+
 ## Banderas para comparar
 `?lm=1` encendido · `&lmao=0.7` fuerza de la oclusión · `&lmcielo=0.75` cuánto oscurece el interior ·
-`&lmsol=0` sin la sombra horneada del sol.
+`&lmsol=0` sin la sombra horneada del sol · `&lmbias=0` lectura como antes del 26-11 (sin suavizar de lejos).
 
 ## Medidas (25-11-2026)
 Capturas con las mismas cámaras (`tools/capture-scenes.js`, SwiftShader: vale para aspecto, llamadas y triángulos):

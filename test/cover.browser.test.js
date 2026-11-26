@@ -66,7 +66,7 @@ async function audit(page, url, p3, canary) {
             v.fromBufferAttribute(pos, k).applyMatrix4(M);
             const x = v.x, y = v.y, z = v.z;
             if (flora) { out.floraMax = Math.max(out.floraMax || 0, y - M.elements[13]); continue; }   // height above its own ground
-            if (Math.abs(x) > 49.9 || Math.abs(z) > 49.9 || y <= 0.12) continue;
+            if ((window.SDContorno ? !SDContorno.inside(x, z, 0.1) : Math.abs(x) > 49.9 || Math.abs(z) > 49.9) || y <= 0.12) continue;   // outside the town (26-11-2026: its outline, client/contorno.js)
             out.verts++;
             if (y < 2.0) {
               const d = hd(x, y, z, Math.min(y, 1.0) - 0.02);
