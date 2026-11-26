@@ -8398,6 +8398,20 @@ function perfTextures(){const seen=new Set(),out=[];const up=o=>{const ms=o.mate
     out.push({w:im.videoWidth||im.naturalWidth||im.width||0,h:im.videoHeight||im.naturalHeight||im.height||0,mip:tx.generateMipmaps!==false,bytes});}};
   scene.traverse(up);wScene.traverse(up);return out;}
 function perfStatus(t){const e=$('#perfStat');if(t==null){e.hidden=true;return;}e.hidden=false;e.textContent=t;}
+/* 26-11-2026 (el propietario: «no carga el arma del todo bien, sale pixelado, y a veces no salen ni los brazos hasta el 2º o
+   3er mapa»): pulsada pronto, la medida empezaba con las armas y los brazos (viewmodels.glb) aún de camino, o con la versión
+   ligera del aspecto de arma (CARGA PROGRESIVA). Ahora espera, antes del primer mapa, a las armas y los brazos y al modelo
+   completo de los aspectos que llevas (como mucho 90 s; si no llegan, mide igual). En la partida no cambia nada.
+   Devuelve '' si está todo, o lo que falta (para la pantalla). */
+function perfGunWait(){
+  if(!VMA.ready)return VMA.loading?'ARMAS Y BRAZOS':'';   // (&vm=0: no hay modelos que esperar)
+  if(!ARMAS_ON)return '';
+  for(const slot of ['rifle','knife']){const id=WSKIN[slot],S=WS_ST[slot];if(id==='halcon'||id==='navaja'||!WSKINS[slot][id])continue;
+    if(S.cur===id&&S.objs.length&&!S.light)continue;
+    const P=KTX2.prog&&KTX2.prog[WSKINS[slot][id].dir||id],pc=P&&P.n?Math.round(P.done/P.n*100):0;
+    return WSKINS[slot][id].name+(pc?' · '+pc+' %':'');}
+  return '';
+}
 async function perfRun(quick){
   if(PERF.on||state!=='menu')return;PERF.on=true;
   const keep={map:OFFMAP,mode,lethal:DUEL_LETHAL,adapt:GFX.adapt?GFX.adapt.enabled:false,mira:MIRA.id};
@@ -8409,6 +8423,7 @@ async function perfRun(quick){
   const spinS=quick?1.5:10,scopeS=quick?0.8:3,warm=quick?400:2000,maps=[];
   // MENÚ 2: your operator downloads and unpacks while the menu opens; measuring meanwhile would count that too
   if(M2.on){perfStatus('PREPARANDO LA MEDIDA…');await perfUntil(()=>M2.opShown!==false&&!(M2.R&&SKIN_ON&&M2.R.skinPack!==SKINS[SKIN].pack),60000);if(KTX2.chain)await Promise.race([KTX2.chain,perfSleep(30000)]);await perfSleep(500);}
+  if(perfGunWait()){await perfUntil(()=>{const w=perfGunWait();if(w)perfStatus('PREPARANDO LA MEDIDA · CARGANDO '+w);return !w;},90000);precompileNow();await perfSleep(500);}
   for(const [id,name] of [['arena','ARENA DE PRUEBAS'],['pueblo','PUEBLO'],['casa2','CASA ATLAS 2.0']]){
     perfStatus('MIDIENDO · '+name+' · NO TOQUES LA PANTALLA');
     setMode('duel');setDuelLethal(false);setOffMap(id);

@@ -6,6 +6,28 @@ Cada entrada dice qué se decidió o cambió, quién lo decidió, y el estado re
 Las decisiones anteriores al 18-10-2026 están resumidas en `SNIPER_DUEL_MASTER_CONTEXT.md` §4.
 Detalle de cada cambio (antes/después, medidas, cómo revertir): `docs/next-level/NEXT_LEVEL_CHANGELOG.md`.
 
+## 26-11-2026 — MEDIR RENDIMIENTO espera al arma completa y a los brazos antes del primer mapa
+El propietario: «Cuando empiezan las pruebas no carga el arma del todo bien, sale pixelado, y a veces no salen ni los brazos
+hasta la 2ª, 3ª mapa prueba».
+- Causa (reproducido con un iPhone simulado y red de 6 y 25 Mbit/s, aspecto ÚLTIMA): pulsada pronto, la medida empezaba
+  con `viewmodels.glb` (armas y brazos) aún de camino, o con la versión ligera del aspecto de arma (`arma_tp.glb`, la de la
+  CARGA PROGRESIVA). ARENA, y a veces PUEBLO, se medían así; el modelo completo llegaba a mitad de la prueba.
+- **Hecho** (`src/page.html`, `perfGunWait`): antes del primer mapa espera a las armas y los brazos y al modelo completo de
+  los aspectos de fusil y cuchillo que llevas. Pantalla: «PREPARANDO LA MEDIDA · CARGANDO ÚLTIMA · 40 %». Como mucho 90 s
+  (si no llegan, mide igual); después compila los sombreadores. En la partida no cambia nada.
+- Comprobado: con 6 Mbit/s, antes ARENA y PUEBLO salían con el arma ligera; ahora los tres mapas, con el arma completa y los
+  brazos. `test/perf.test.js`: su PUEBLO a veces mide 0 fotogramas con el WebGL por software (pasa igual sin el cambio: esa
+  prueba usa `?perf=low`, donde no hay armas 3D que esperar).
+- **Estado**: IMPLEMENTADO · PROBADO EN NAVEGADOR · PENDIENTE DE VALIDACIÓN EN IPHONE.
+
+## 26-11-2026 — iPhone: PUEBLO vuelve a 60 FPS (la caída a 40 del 24-11 era el móvil caliente)
+- 24-11 (versión 0327930e44) en el iPhone 15 Pro Max: PUEBLO **40,4 FPS**, con un 35 % de tirones, limitado por la GPU.
+  En la GPU del PC, emulando el iPhone, la versión de hoy no era más lenta que la del 19-11 (9,2 frente a 11,4 ms).
+- 26-11 (versión b2fb15a72b), con el iPhone frío y ALTO ×2, pueblo 4.0: ARENA 58,5 FPS · **PUEBLO 60 FPS** (0 % de
+  tirones, CPU 2,9 ms, 185 llamadas, 604 mil triángulos) · CASA ATLAS 2.0 60 FPS.
+- Conclusión: era el iPhone caliente, no el código. Las mallas ocultas del 24-11 quedan **PROBADAS EN IPHONE** (Android,
+  pendiente). Variantes de shader 46 → 71 desde el 19-11: solo la primera vez que aparece algo.
+
 ## 25-11-2026 — Gráficos tipo CoD/PUBG: fase 4, más detalle en PUEBLO y BARRIO (`?detalle=1`)
 - **Qué**: `client/detalle.js`. Calcomanías (suciedad, aceite, humedad, grietas, hojas, papeles, churretes, carteles
   descoloridos, placas, pintadas) y objetos pequeños tumbados (latas, botellas, ladrillos, cascotes ≤ 12 cm).
