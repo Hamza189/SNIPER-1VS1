@@ -8,7 +8,7 @@ const fs = require('fs'), path = require('path'), crypto = require('crypto');
 const ROOT = path.join(__dirname, '..');
 const URL0 = process.env.R2_URL || 'https://sniper-duel-assets.hamzaimtiaz2015.workers.dev/';
 // what lives in R2 and not in the repository (also in .gitignore)
-const R2_FILES = [/^assets\/personaje\/.*_ktx2\.(glb|ktx2)$/, /^assets\/armas\/[^/]+\/arma_ktx2\.glb$/, /^assets\/armas\/[^/]+\/ktx2\/[^/]+\.ktx2$/];
+const R2_FILES = [/^assets\/tex\/ktx2\/[^/]+\.ktx2$/, /^assets\/personaje\/.*_ktx2\.(glb|ktx2)$/, /^assets\/armas\/[^/]+\/arma_ktx2\.glb$/, /^assets\/armas\/[^/]+\/ktx2\/[^/]+\.ktx2$/];
 
 function walk(d, out) {
   for (const e of fs.readdirSync(path.join(ROOT, d), { withFileTypes: true })) {

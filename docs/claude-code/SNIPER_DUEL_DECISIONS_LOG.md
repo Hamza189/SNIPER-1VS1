@@ -6,6 +6,18 @@ Cada entrada dice qué se decidió o cambió, quién lo decidió, y el estado re
 Las decisiones anteriores al 18-10-2026 están resumidas en `SNIPER_DUEL_MASTER_CONTEXT.md` §4.
 Detalle de cada cambio (antes/después, medidas, cómo revertir): `docs/next-level/NEXT_LEVEL_CHANGELOG.md`.
 
+## 26-11-2026 — Gráficos tipo CoD/PUBG: fase 5, paquetes por mapa y texturas por distancia (`?stream=1`)
+- **Qué**: un paquete por mapa (`client/packs.js`, generado por `tools/packs/make.js` mirando qué texturas usan de
+  verdad sus mallas): PUEBLO 43 texturas, BARRIO 11. El mapa arranca con versiones de ≤ 256 px (`assets/tex/lo/`,
+  0,56 MB para el PUEBLO en lugar de 5,1) y carga la buena al acercarse (< 40 m), de una en una, en **KTX2** con el
+  sistema de siempre (R2, `ktx2Ready`/`ktx2Lean`) o en JPG si no se puede; lo que lleva 20 s lejos vuelve a pequeño.
+- **Memoria de la GPU** (lo que importa en el iPhone): texturas del PUEBLO 98 MB en JPG → 25 MB en KTX2; 14 MB al
+  empezar. La descarga de las KTX2 es mayor (19,4 MB frente a 5,1 MB en JPG); `&streamktx2=0` usa JPG.
+- **R2**: 54 KTX2 nuevas subidas con `node tools/r2-subir.js` (25 MB, dentro del plan gratuito de 10 GB). Fuera del
+  repositorio (`.gitignore`), como las de personajes y armas.
+- Probado: sube sin vaivén (un primer intento soltaba texturas por medir mal la distancia; corregido), 0 fallos.
+  Prueba: `test/stream.test.js` (17). Detalle: `docs/TEXTURAS-DISTANCIA.md`.
+- **Estado**: IMPLEMENTADO · PROBADO EN NAVEGADOR · PENDIENTE DE QUE EL PROPIETARIO LO VEA (PC e iPhone) con `?stream=1`.
 ## 26-11-2026 — MEDIR RENDIMIENTO espera al arma completa y a los brazos antes del primer mapa
 El propietario: «Cuando empiezan las pruebas no carga el arma del todo bien, sale pixelado, y a veces no salen ni los brazos
 hasta la 2ª, 3ª mapa prueba».

@@ -11,3 +11,6 @@ assets/personaje/**/*_ktx2.ktx2
 assets/armas/*/arma_ktx2.glb
 assets/armas/*/ktx2/
 _site/
+# 25-11-2026: texturas del pueblo y del barrio en KTX2 (por distancia, docs/TEXTURAS-DISTANCIA.md): también en R2
+assets/tex/ktx2/
+tools/packs/.work/
